@@ -102,23 +102,23 @@ fi
 # TODO: Pull all of this from the main file.
 
 FREETYPE=2.13.3
-HARFBUZZ=10.2.0
+HARFBUZZ=10.4.0
 LIBBACKTRACE=86885d14049fab06ef8a33aac51664230ca09200
 LIBJPEGTURBO=3.1.0
-LIBPNG=1.6.45
+LIBPNG=1.6.47
 LIBWEBP=1.5.0
 LIBZIP=1.11.3
-SDL3=3.2.8
-QT=6.8.2
+SDL3=3.2.10
+QT=6.9.0
 ZLIBNG=2.2.4
-ZSTD=1.5.6
+ZSTD=1.5.7
 
 CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
 LUNASVG=4a1c98ccb1da8a5a92ddc4f97339869b1ae556f4
-SHADERC=fc65b19d2098cf81e55b4edc10adad2ad8268361
+SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-SPIRV_CROSS=vulkan-sdk-1.4.304.0
+SPIRV_CROSS=vulkan-sdk-1.4.309.0
 
 mkdir -p "${INSTALLDIR}"
 mkdir -p deps-build
@@ -137,11 +137,11 @@ fi
 
 cat > SHASUMS <<EOF
 baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$LIBBACKTRACE.tar.gz
-13388fabb361de768ecdf2b65e52bb27d1054cae6ccb6942ba926e378e00db03  SDL3-$SDL3.tar.gz
+f87be7b4dec66db4098e9c167b2aa34e2ca10aeb5443bdde95ae03185ed513e0  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
 5fe7abc6c4601f21fa56ffbf12507e80684942c3134b7888701ede836e6287e2  lunasvg-$LUNASVG.tar.gz
-d1ef912c27e06307f2b2a5b6386070d0b8fae2bb5851f50841df7b73dcf5abdf  shaderc-$SHADERC.tar.gz
+167109d52b65f6eedd66103971b869a71632fe27a63efc2ba5b0e5a1912a094c  shaderc-$SHADERC.tar.gz
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
@@ -158,7 +158,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-11749926914fd488e08e744538f19329332487a6243eec39ef3c63efa154a578  harfbuzz-$HARFBUZZ.tar.gz
+0d25a3f74af4e8744700ac19050af5a80ae330378a5802a5cd71e523bb6fda1f  harfbuzz-$HARFBUZZ.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
@@ -174,7 +174,7 @@ if [ "$SKIP_LIBPNG" != true ]; then
 		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
-926485350139ffb51ef69760db35f78846c805fef3d59bfdcb2fba704663f370  libpng-$LIBPNG.tar.xz
+b213cb381fbb1175327bd708a77aab708a05adde7b471bc267bd15ac99893631  libpng-$LIBPNG.tar.xz
 EOF
 fi
 if [ "$SKIP_LIBWEBP" != true ]; then
@@ -206,7 +206,7 @@ if [ "$SKIP_ZSTD" != true ]; then
 		curl -C - -L -O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
+eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 EOF
 fi
 if [ "$SKIP_QT" != true ]; then
@@ -220,12 +220,12 @@ if [ "$SKIP_QT" != true ]; then
 			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" 
 	fi
 	cat >> SHASUMS <<EOF
-012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05  qtbase-everywhere-src-$QT.tar.xz
-d2a1bbb84707b8a0aec29227b170be00f04383fbf2361943596d09e7e443c8e1  qtimageformats-everywhere-src-$QT.tar.xz
-aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa  qtsvg-everywhere-src-$QT.tar.xz
-326381b7d43f07913612f291abc298ae79bd95382e2233abce982cff2b53d2c0  qttools-everywhere-src-$QT.tar.xz
-d2106e8a580bfd77702c4c1840299288d344902b0e2c758ca813ea04c6d6a3d1  qttranslations-everywhere-src-$QT.tar.xz
-5e46157908295f2bf924462d8c0855b0508ba338ced9e810891fefa295dc9647  qtwayland-everywhere-src-$QT.tar.xz
+c1800c2ea835801af04a05d4a32321d79a93954ee3ae2172bbeacf13d1f0598c  qtbase-everywhere-src-$QT.tar.xz
+2047c6242a57bf97cf40079fa9f91752c137cd9ae84760faa9a2e5e8a440606f  qtimageformats-everywhere-src-$QT.tar.xz
+ec359d930c95935ea48af58b100c2f5d0d275968ec8ca1e0e76629b7159215fc  qtsvg-everywhere-src-$QT.tar.xz
+fa645589cc3f939022401a926825972a44277dead8ec8607d9f2662e6529c9a4  qttools-everywhere-src-$QT.tar.xz
+1d5581ef5fc7c7bc556f2403017983683993bbebfcdf977ef8f180f604668c3f  qttranslations-everywhere-src-$QT.tar.xz
+503416fcb04db503bd130e6a49c45e3e546f091e83406f774a0c703130c91805  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 fi
 
@@ -457,22 +457,22 @@ if [ "$SKIP_QT" != true ]; then
 	patch -u configure.cmake <<EOF
 --- configure.cmake
 +++ configure.cmake
-@@ -14,12 +14,12 @@
- # Presumably because 6.0 ClangConfig.cmake files are not good enough?
- # In any case explicitly request a minimum version of 8.x for now, otherwise
- # building with CMake will fail at compilation time.
+@@ -3,11 +3,11 @@
+ 
+ #### Tests
+ 
 -qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
 +#qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
- # special case end
-
+ 
 -if(TARGET WrapLibClang::WrapLibClang)
 -    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
 -endif()
 +#if(TARGET WrapLibClang::WrapLibClang)
 +#    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
 +#endif()
-
-
+ 
+ 
+ 
 
 EOF
 
