@@ -640,6 +640,14 @@ Olästa meddelanden: {}</translation>
         <source>{:.1f}% of players have this achievement</source>
         <translation>{:.1f}% av spelarna har den här prestationen</translation>
     </message>
+    <message numerus="yes">
+        <source>%n unlocks have not been confirmed by the server.</source>
+        <comment>Pause Menu</comment>
+        <translation>
+            <numerusform>%n upplåsning har inte bekräftats av servern.</numerusform>
+            <numerusform>%n upplåsningar har inte bekräftats av servern.</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -809,7 +817,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>CD-ROM Max Speedup Read/Seek Cycles</source>
-        <translation>Max uppsnabbning av läs/sökningscykler för CD-ROM</translation>
+        <translation type="vanished">Max uppsnabbning av läs/sökningscykler för CD-ROM</translation>
     </message>
     <message>
         <source>CD-ROM Region Check</source>
@@ -846,6 +854,30 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>PCDrv Root Directory</source>
         <translation>Rotkatalog för PCDrv</translation>
+    </message>
+    <message>
+        <source> cycles</source>
+        <translation> cykler</translation>
+    </message>
+    <message>
+        <source> words</source>
+        <translation> ord</translation>
+    </message>
+    <message>
+        <source>CD-ROM Readahead Sectors</source>
+        <translation>CD-ROM Readahead-sektorer</translation>
+    </message>
+    <message>
+        <source> sectors</source>
+        <translation> sektorer</translation>
+    </message>
+    <message>
+        <source>CD-ROM Max Seek Speedup Cycles</source>
+        <translation>CD-ROM Max cykler för sökhastighet</translation>
+    </message>
+    <message>
+        <source>CD-ROM Max Read Speedup Cycles</source>
+        <translation>CD-ROM Max cykler för läshastighet</translation>
     </message>
 </context>
 <context>
@@ -2013,15 +2045,15 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Async Readahead:</source>
-        <translation>Asynkron Readahead:</translation>
+        <translation type="vanished">Asynkron Readahead:</translation>
     </message>
     <message>
         <source>Disabled (Synchronous)</source>
-        <translation>Inaktiverad (synkron)</translation>
+        <translation type="vanished">Inaktiverad (synkron)</translation>
     </message>
     <message>
         <source>%1 sectors (%2 KB / %3 ms)</source>
-        <translation>%1 sektorer (%2 KB / %3 ms)</translation>
+        <translation type="vanished">%1 sektorer (%2 KB / %3 ms)</translation>
     </message>
     <message>
         <source>Region</source>
@@ -2101,15 +2133,15 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Asynchronous Readahead</source>
-        <translation>Asynkrona Readahead</translation>
+        <translation type="vanished">Asynkrona Readahead</translation>
     </message>
     <message>
         <source>8 Sectors</source>
-        <translation>8 sektorer</translation>
+        <translation type="vanished">8 sektorer</translation>
     </message>
     <message>
         <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread. Higher sector numbers can reduce spikes when streaming FMVs or audio on slower storage or when using compression formats such as CHD.</source>
-        <translation>Minskar problem i emuleringen genom att läsa/dekomprimera CD-data asynkront i en arbetstråd. Högre sektornummer kan minska spikar vid strömning av FMV eller ljud på långsammare lagringsmedia eller vid användning av komprimeringsformat som CHD.</translation>
+        <translation type="vanished">Minskar problem i emuleringen genom att läsa/dekomprimera CD-data asynkront i en arbetstråd. Högre sektornummer kan minska spikar vid strömning av FMV eller ljud på långsammare lagringsmedia eller vid användning av komprimeringsformat som CHD.</translation>
     </message>
     <message>
         <source>Automatically applies patches to disc images when they are present in the same directory. Currently only PPF patches are supported with this option.</source>
@@ -2170,6 +2202,22 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
         <translation>Snabbspolar genom minneskortsåtkomst, både inläsning och lagring. Kan minska väntetiderna i spel som ofta använder minneskort.</translation>
+    </message>
+    <message>
+        <source>Frame Rate:</source>
+        <translation>Bildfrekvens:</translation>
+    </message>
+    <message>
+        <source>Force Video Timing</source>
+        <translation>Tvinga videotiming</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message>
+        <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
+        <translation>Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
     </message>
 </context>
 <context>
@@ -4768,7 +4816,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>File Size: %u MB (%u MB on disk)</source>
-        <translation>Filstorlek: %u MB (%u MB på disk)</translation>
+        <translation type="vanished">Filstorlek: %u MB (%u MB på disk)</translation>
     </message>
     <message>
         <source>Replaces these settings with a previously saved controller preset.</source>
@@ -5012,11 +5060,11 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     </message>
     <message>
         <source>About DuckStation</source>
-        <translation>Om DuckStation</translation>
+        <translation type="vanished">Om DuckStation</translation>
     </message>
     <message>
         <source>Accurate Blending</source>
-        <translation>Exakt blending</translation>
+        <translation type="vanished">Exakt blending</translation>
     </message>
     <message>
         <source>Achievement Notifications</source>
@@ -5032,11 +5080,11 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     </message>
     <message>
         <source>Achievements: %u (%u) / %u</source>
-        <translation>Prestationer: %u (%u) / %u</translation>
+        <translation type="vanished">Prestationer: %u (%u) / %u</translation>
     </message>
     <message>
         <source>Achievements: %u / %u</source>
-        <translation>Prestationer: %u / %u</translation>
+        <translation type="vanished">Prestationer: %u / %u</translation>
     </message>
     <message>
         <source>Add Shader</source>
@@ -5068,7 +5116,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     </message>
     <message>
         <source>Allows loading protected games without subchannel information.</source>
-        <translation>Tillåt att läsa in skyddade spel utan underkanalsinformation.</translation>
+        <translation type="vanished">Tillåt att läsa in skyddade spel utan underkanalsinformation.</translation>
     </message>
     <message>
         <source>Alpha Blending</source>
@@ -5236,7 +5284,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Chooses the backend to use for rendering the console/game visuals.</source>
-        <translation>Väljer bakänden att använda för rendering av konsolen/spelets visuella del.</translation>
+        <translation type="vanished">Väljer bakänden att använda för rendering av konsolen/spelets visuella del.</translation>
     </message>
     <message>
         <source>Chooses the language used for UI elements.</source>
@@ -5520,11 +5568,11 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Disables dithering and uses the full 8 bits per channel of color information.</source>
-        <translation>Inaktiverar dithering och använder hela 8 bitar per kanal av färginformation.</translation>
+        <translation type="vanished">Inaktiverar dithering och använder hela 8 bitar per kanal av färginformation.</translation>
     </message>
     <message>
         <source>Disc {} | {}</source>
-        <translation>Skiva {} | {}</translation>
+        <translation type="vanished">Skiva {} | {}</translation>
     </message>
     <message>
         <source>Discord Server</source>
@@ -5700,7 +5748,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Enables smooth scrolling of menus in Big Picture UI.</source>
-        <translation>Aktiverar mjuk rullning i menyer i storbildsläget.</translation>
+        <translation type="vanished">Aktiverar mjuk rullning i menyer i storbildsläget.</translation>
     </message>
     <message>
         <source>Enables the cheats that are selected below.</source>
@@ -5802,7 +5850,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Force Video Timing</source>
-        <translation>Forcera videotiming</translation>
+        <translation type="vanished">Forcera videotiming</translation>
     </message>
     <message>
         <source>Forces a full rescan of all games previously identified.</source>
@@ -5810,7 +5858,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.</source>
-        <translation>Tvingar blandningen att göras i shadern med 16-bitars precision, när man inte använder true color. Icke-trivial prestandapåverkan och onödig för de flesta spel.</translation>
+        <translation type="vanished">Tvingar blandningen att göras i shadern med 16-bitars precision, när man inte använder true color. Icke-trivial prestandapåverkan och onödig för de flesta spel.</translation>
     </message>
     <message>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
@@ -5906,7 +5954,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Genre: %.*s</source>
-        <translation>Genre: %.*s</translation>
+        <translation type="vanished">Genre: %.*s</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -5986,7 +6034,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Last Played: %s</source>
-        <translation>Senast spelat: %s</translation>
+        <translation type="vanished">Senast spelat: %s</translation>
     </message>
     <message>
         <source>Latency Control</source>
@@ -6002,7 +6050,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Leaderboards are not enabled.</source>
-        <translation>Topplistor har inte aktiverats.</translation>
+        <translation type="vanished">Topplistor har inte aktiverats.</translation>
     </message>
     <message>
         <source>Line Detection</source>
@@ -6030,7 +6078,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Load Resume State</source>
-        <translation>Läs in återställt tillstånd</translation>
+        <translation type="vanished">Läs in återställt tillstånd</translation>
     </message>
     <message>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
@@ -6074,7 +6122,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Login Error</source>
-        <translation>Inloggningsfel</translation>
+        <translation type="vanished">Inloggningsfel</translation>
     </message>
     <message>
         <source>Login Failed.
@@ -6474,7 +6522,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Release Date: %s</source>
-        <translation>Utgivet den: %s</translation>
+        <translation type="vanished">Utgivet den: %s</translation>
     </message>
     <message>
         <source>Reload Shaders</source>
@@ -6534,7 +6582,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>RetroAchievements Login</source>
-        <translation>Inloggning för RetroAchievements</translation>
+        <translation type="vanished">Inloggning för RetroAchievements</translation>
     </message>
     <message>
         <source>Return to the previous menu.</source>
@@ -6622,15 +6670,15 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Scaled Dithering</source>
-        <translation>Skalad dithering</translation>
+        <translation type="vanished">Skalad dithering</translation>
     </message>
     <message>
         <source>Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.</source>
-        <translation>Skalar den interna VRAM-upplösningen med den angivna multiplikatorn. Vissa spel kräver 1x VRAM-upplösning.</translation>
+        <translation type="vanished">Skalar den interna VRAM-upplösningen med den angivna multiplikatorn. Vissa spel kräver 1x VRAM-upplösning.</translation>
     </message>
     <message>
         <source>Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>Skalar dithering-mönstret med den interna renderingsupplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
+        <translation type="vanished">Skalar dithering-mönstret med den interna renderingsupplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -6974,7 +7022,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Time Played: %s</source>
-        <translation>Tid spelat: %s</translation>
+        <translation type="vanished">Tid spelat: %s</translation>
     </message>
     <message>
         <source>Timing out in {:.0f} seconds...</source>
@@ -7002,7 +7050,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>True Color Rendering</source>
-        <translation>True Color-rendering</translation>
+        <translation type="vanished">True Color-rendering</translation>
     </message>
     <message>
         <source>Turbo Speed</source>
@@ -7102,7 +7150,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Utilizes the chosen video timing regardless of the game&apos;s setting.</source>
-        <translation>Använder den valda videotimingen oavsett spelets inställning.</translation>
+        <translation type="vanished">Använder den valda videotimingen oavsett spelets inställning.</translation>
     </message>
     <message>
         <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
@@ -7368,6 +7416,126 @@ Du kan inte ångra den här åtgärden.</translation>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
         <translation>När storbildsläget startas visas spellistan i stället för huvudmenyn.</translation>
     </message>
+    <message>
+        <source> (%u MB on disk)</source>
+        <translation> (%u MB på disk)</translation>
+    </message>
+    <message>
+        <source>%d cycles</source>
+        <translation>%d cykler</translation>
+    </message>
+    <message>
+        <source>%u MB</source>
+        <translation>%u MB</translation>
+    </message>
+    <message>
+        <source>Achievements: </source>
+        <translation>Prestationer: </translation>
+    </message>
+    <message>
+        <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
+        <translation>Tillåter att uppstarten kan fortsätta även utan en nödvändig SBI-fil. Dessa spel kommer inte att köras korrekt.</translation>
+    </message>
+    <message>
+        <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
+        <translation>Animerar fönster som öppnas/stängs och växlar mellan olika vyer i Storbildsläget.</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
+        <translation>Kontrollerar hur dithering tillämpas i den emulerade GPU:n. True Color inaktiverar dithering och ger de snyggaste gradienterna.</translation>
+    </message>
+    <message>
+        <source>Disc</source>
+        <translation>Skiva</translation>
+    </message>
+    <message>
+        <source>Dithering</source>
+        <translation>Dithering</translation>
+    </message>
+    <message>
+        <source>Enable GPU-Based Validation</source>
+        <translation>Aktivera GPU-baserad validering</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <translation>Aktivera GPU-baserad validering när den stöds av värdens API för rendering. Endast för användning av utvecklare.</translation>
+    </message>
+    <message>
+        <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
+        <translation>Möjliggör smidig rullning av menyer i Storbildsläget.</translation>
+    </message>
+    <message>
+        <source>File Size: </source>
+        <translation>Filstorlek: </translation>
+    </message>
+    <message>
+        <source>Frame Rate</source>
+        <translation>Bildfrekvens</translation>
+    </message>
+    <message>
+        <source>Genre: </source>
+        <translation>Genre: </translation>
+    </message>
+    <message>
+        <source>Green Giant</source>
+        <translation>Gröna jätten</translation>
+    </message>
+    <message>
+        <source>Last Played: </source>
+        <translation>Senast spelat: </translation>
+    </message>
+    <message>
+        <source>Maximum Read Speedup Cycles</source>
+        <translation>Maximala cykler för läshastighetsökning</translation>
+    </message>
+    <message>
+        <source>Maximum Seek Speedup Cycles</source>
+        <translation>Maximala cykler för sökhastighetsökning</translation>
+    </message>
+    <message>
+        <source>Release Date: </source>
+        <translation>Lanseringsdatum: </translation>
+    </message>
+    <message>
+        <source>Scaled Interlacing</source>
+        <translation>Skalad interlacing</translation>
+    </message>
+    <message>
+        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
+        <translation>Skalerar linjeöverhoppning vid interlaced-rendering till den interna upplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
+    </message>
+    <message>
+        <source>Select Disc for {}</source>
+        <translation>Välj skiva för {}</translation>
+    </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelvisualiseringar.</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
+        <translation>Ställer in den minsta fördröjningen för läshastighetsnivån ”Maximal”.</translation>
+    </message>
+    <message>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
+        <translation>Ställer in den minsta fördröjningen för sökhastighetsnivån ”Maximal”.</translation>
+    </message>
+    <message>
+        <source>Time Played: </source>
+        <translation>Tid spelat: </translation>
+    </message>
+    <message>
+        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
+        <translation>Uppskalar spelets rendering med den angivna multiplikatorn.</translation>
+    </message>
+    <message>
+        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
+        <translation>Använder den valda bildfrekvensen oavsett spelets inställning.</translation>
+    </message>
+    <message>
+        <source>Window Animations</source>
+        <translation>Fönsteranimeringar</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -7466,12 +7634,12 @@ Du kan inte ångra den här åtgärden.</translation>
     <message>
         <source>Accurate blending is not supported by your current GPU.
 It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
-        <translation>Exakt blending stöds inte av din aktuella GPU.
+        <translation type="vanished">Exakt blending stöds inte av din aktuella GPU.
 Den kräver framebuffer fetch, feedback loops eller rasterizer order views.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is not supported when using ROV blending.</source>
-        <translation>Antialiasing för multisamplingar stöds inte när ROV blending används.</translation>
+        <translation type="vanished">Antialiasing för multisamplingar stöds inte när ROV blending används.</translation>
     </message>
     <message>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.
@@ -7490,6 +7658,20 @@ Den kräver framebuffer fetch, feedback loops eller rasterizer order views.</tra
     <message>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>Upplösningsskalan {0}x stöds inte för adaptiv nersampling, använder {1}x.</translation>
+    </message>
+    <message>
+        <source>Shader blending is not supported by your current GPU.
+It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
+        <translation>Shader-blandning stöds inte av din nuvarande GPU.
+Det kräver framebuffer fetch, feedback loopar eller rasterizer order views.</translation>
+    </message>
+    <message>
+        <source>Multisample anti-aliasing is not supported when using shader blending.</source>
+        <translation>Kantutjämning med multisamplingar stöds inte när du använder shader-blandning.</translation>
+    </message>
+    <message>
+        <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
+        <translation>Upplösningsskalan {0}x är inte delbar med nedsamplingsskalan {1}x, nedsampling inaktiverad.</translation>
     </message>
 </context>
 <context>
@@ -7749,7 +7931,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     </message>
     <message>
         <source>Accurate blending enabled.</source>
-        <translation>Exakt blending aktiverat.</translation>
+        <translation type="vanished">Exakt blending aktiverat.</translation>
     </message>
     <message>
         <source>Deinterlacing set to {}.</source>
@@ -7812,7 +7994,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Force Accurate Blending</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Tvinga fram exakt blandning</translation>
+        <translation type="vanished">Tvinga fram exakt blandning</translation>
     </message>
     <message>
         <source>Force Deinterlacing</source>
@@ -7940,7 +8122,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     </message>
     <message>
         <source>True color disabled.</source>
-        <translation>True color inaktiverat.</translation>
+        <translation type="vanished">True color inaktiverat.</translation>
     </message>
     <message>
         <source>Upscaling disabled.</source>
@@ -7956,7 +8138,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     </message>
     <message>
         <source>Scaled dithering.</source>
-        <translation>Skalad dithering.</translation>
+        <translation type="vanished">Skalad dithering.</translation>
     </message>
     <message>
         <source>Widescreen rendering disabled.</source>
@@ -8115,6 +8297,34 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <source>Disc Set</source>
         <translation>Skivuppsättning</translation>
+    </message>
+    <message>
+        <source>Force Shader Blending</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Tvinga shader-blandning</translation>
+    </message>
+    <message>
+        <source>Force Full True Color</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Tvinga fullständig True Color</translation>
+    </message>
+    <message>
+        <source>Disable Full True Color</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Inaktivera fullständig True Color</translation>
+    </message>
+    <message>
+        <source>Disable Scaled Interlacing</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Inaktivera skalad interlacing</translation>
+    </message>
+    <message>
+        <source>Dithering set to {}.</source>
+        <translation>Dithering inställd till {}.</translation>
+    </message>
+    <message>
+        <source>Scaled interlacing disabled.</source>
+        <translation>Skalad interlacing inaktiverad.</translation>
     </message>
 </context>
 <context>
@@ -8657,7 +8867,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>True Color Rendering</source>
-        <translation>True Color-rendering</translation>
+        <translation type="vanished">True Color-rendering</translation>
     </message>
     <message>
         <source>PGXP Geometry Correction</source>
@@ -8673,7 +8883,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Force Video Timing:</source>
-        <translation>Tvinga videotiming:</translation>
+        <translation type="vanished">Tvinga videotiming:</translation>
     </message>
     <message>
         <source>Display Options</source>
@@ -8705,7 +8915,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Scaled Dithering</source>
-        <translation>Skalad dithering</translation>
+        <translation type="vanished">Skalad dithering</translation>
     </message>
     <message>
         <source>Round Upscaled Texture Coordinates</source>
@@ -8713,7 +8923,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Accurate Blending</source>
-        <translation>Exakt blending</translation>
+        <translation type="vanished">Exakt blending</translation>
     </message>
     <message>
         <source>Software Renderer Readbacks</source>
@@ -9294,7 +9504,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelgrafiken. &lt;br&gt;Beroende på system och maskinvara kan Direct3D 11- och OpenGL-hårdvarubakändarna vara tillgängliga. &lt;br&gt;Programvarurenderingen ger bäst kompatibilitet, men är långsammast och erbjuder inga förbättringar.</translation>
+        <translation type="vanished">Väljer den bakände som ska användas för att rendera konsol- och spelgrafiken. &lt;br&gt;Beroende på system och maskinvara kan Direct3D 11- och OpenGL-hårdvarubakändarna vara tillgängliga. &lt;br&gt;Programvarurenderingen ger bäst kompatibilitet, men är långsammast och erbjuder inga förbättringar.</translation>
     </message>
     <message>
         <source>Adapter</source>
@@ -9346,7 +9556,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>Ändrar det bildförhållande som används för att visa konsolens utdata på skärmen. Standardinställningen är Auto (spelets inbyggda) som automatiskt justerar bildförhållandet så att det motsvarar hur ett spel skulle visas på en typisk TV för den tiden.</translation>
+        <translation>Ändrar det bildförhållande som används för att visa konsolens utdata på skärmen. Standardinställningen är Automatiskt (spelets inbyggda) som automatiskt justerar bildförhållandet så att det motsvarar hur ett spel skulle visas på en typisk TV för den tiden.</translation>
     </message>
     <message>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
@@ -9358,7 +9568,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>Bestämmer hur stor del av det område som normalt inte syns på en konsument-TV-apparat som ska beskäras/döljas. Vissa spel visar innehåll i overscan-området eller använder det för skärmeffekter. Visas kanske inte korrekt med inställningen &quot;Alla kanter&quot;. &quot;Endast overscan&quot; är en bra kompromiss mellan stabilitet och att dölja svarta kanter.</translation>
+        <translation>Bestämmer hur stor del av det område som normalt inte syns på en konsument-TV-apparat som ska beskäras/döljas. Vissa spel visar innehåll i overscan-området eller använder det för skärmeffekter. Visas kanske inte korrekt med inställningen &quot;Alla kanter&quot;. &quot;Endast överskanning&quot; är en bra kompromiss mellan stabilitet och att dölja svarta kanter.</translation>
     </message>
     <message>
         <source>Scaling</source>
@@ -9370,15 +9580,15 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Force Video Timing</source>
-        <translation>Tvinga videotiming</translation>
+        <translation type="vanished">Tvinga videotiming</translation>
     </message>
     <message>
         <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
-        <translation>Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
+        <translation type="vanished">Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
     </message>
     <message>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled.</source>
-        <translation>Tvingar precisionen i de färger som matas ut till konsolens framebuffer att använda hela 8 bitars precision per kanal. Detta ger snyggare gradienter till priset av att vissa färger ser lite annorlunda ut. Om du inaktiverar alternativet aktiveras också dithering, som gör övergången mellan färger mindre skarp genom att lägga ett mönster runt dessa bildpunkter. De flesta spel är kompatibla med det här alternativet, men det finns ett antal som inte är det och som kommer att ha trasiga effekter med det aktiverat.</translation>
+        <translation type="vanished">Tvingar precisionen i de färger som matas ut till konsolens framebuffer att använda hela 8 bitars precision per kanal. Detta ger snyggare gradienter till priset av att vissa färger ser lite annorlunda ut. Om du inaktiverar alternativet aktiveras också dithering, som gör övergången mellan färger mindre skarp genom att lägga ett mönster runt dessa bildpunkter. De flesta spel är kompatibla med det här alternativet, men det finns ett antal som inte är det och som kommer att ha trasiga effekter med det aktiverat.</translation>
     </message>
     <message>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
@@ -9450,7 +9660,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>Skalar dither-mönstret till upplösningsskalan för den emulerade GPU:n. Detta gör dither-mönstret mycket mindre uppenbart vid högre upplösningar. Vanligtvis säkert att aktivera.</translation>
+        <translation type="vanished">Skalar dither-mönstret till upplösningsskalan för den emulerade GPU:n. Detta gör dither-mönstret mycket mindre uppenbart vid högre upplösningar. Vanligtvis säkert att aktivera.</translation>
     </message>
     <message>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
@@ -9462,7 +9672,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games actually require this, and there is a &lt;strong&gt;non-trivial&lt;/strong&gt; performance cost.</source>
-        <translation>Tvingar blandningen att göras i shadern med 16-bitars precision när man inte använder true color. Det är väldigt få spel som kräver detta och det innebär en &lt;strong&gt;icke-trivial&lt;/strong&gt; prestandakostnad.</translation>
+        <translation type="vanished">Tvingar blandningen att göras i shadern med 16-bitars precision när man inte använder true color. Det är väldigt få spel som kräver detta och det innebär en &lt;strong&gt;icke-trivial&lt;/strong&gt; prestandakostnad.</translation>
     </message>
     <message>
         <source>Geometry Tolerance</source>
@@ -9739,6 +9949,38 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
         <translation>Bestämmer vilket tema som ska användas för visningselement på skärmen och storbildsgränssnittet.</translation>
+    </message>
+    <message>
+        <source>Dithering:</source>
+        <translation>Dithering:</translation>
+    </message>
+    <message>
+        <source>Scaled Interlacing</source>
+        <translation>Skalad interlacing</translation>
+    </message>
+    <message>
+        <source>Use GPU-Based Validation</source>
+        <translation>Använd GPU-baserad validering</translation>
+    </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
+        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelgrafiken. &lt;br&gt;Beroende på system och maskinvara kan Direct3D 11- och OpenGL-hårdvarubakändar finnas tillgängliga. &lt;br&gt;Programvarurenderingen erbjuder den bästa kompatibiliteten, men är långsammast och erbjuder inga förbättringar.</translation>
+    </message>
+    <message>
+        <source>Dithering</source>
+        <translation>Dithering</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
+        <translation>Kontrollerar hur dithering tillämpas i den emulerade GPU:n. True Color inaktiverar dithering och ger de snyggaste gradienterna. Med skalade alternativ blir dithermönstret mindre märkbart i högre upplösningar. Alternativet Shader-blandning utför blandning i programvara och är mer exakt, men har en &lt;strong&gt;betydande&lt;/strong&gt; prestandaförlust.</translation>
+    </message>
+    <message>
+        <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
+        <translation>Skalar linjeöverhoppning vid interlaced-rendering till den interna upplösningen. Detta gör kamningen mindre uppenbar i högre upplösningar. Vanligtvis säkert att aktivera.</translation>
+    </message>
+    <message>
+        <source>Enable GPU-based validation when supported by the renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
+        <translation>Aktivera GPU-baserad validering när detta stöds av renderarens API. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
 </context>
 <context>
@@ -11651,7 +11893,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
-        <translation>Alla omslagsbildtyper (*.jpg *.jpeg *.png *.webp)</translation>
+        <translation type="vanished">Alla omslagsbildtyper (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <source>You must select a different file to the current cover image.</source>
@@ -11792,6 +12034,26 @@ Detta går inte att ångra.</translation>
     <message>
         <source>AMOLED</source>
         <translation>AMOLED</translation>
+    </message>
+    <message>
+        <source>Change List Background...</source>
+        <translation>Ändra listbakgrund...</translation>
+    </message>
+    <message>
+        <source>Clear List Background</source>
+        <translation>Töm listbakgrund</translation>
+    </message>
+    <message>
+        <source>Green Giant</source>
+        <translation>Gröna jätten</translation>
+    </message>
+    <message>
+        <source>Images (*.jpg *.jpeg *.png *.webp)</source>
+        <translation>Bilder (*.jpg *.jpeg *.png *.webp)</translation>
+    </message>
+    <message>
+        <source>Select Background Image</source>
+        <translation>Välj bakgrundsbild</translation>
     </message>
 </context>
 <context>
@@ -13930,7 +14192,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Auto (Game Native)</source>
         <comment>DisplayAspectRatio</comment>
-        <translation>Auto (spelets inbyggda)</translation>
+        <translation>Automatiskt (spelets inbyggda)</translation>
     </message>
     <message>
         <source>Stretch To Fill</source>
@@ -13980,7 +14242,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Disabled</source>
         <comment>ForceVideoTiming</comment>
-        <translation>Inaktiverad</translation>
+        <translation type="vanished">Inaktiverad</translation>
     </message>
     <message>
         <source>NTSC (60hz)</source>
@@ -14201,6 +14463,41 @@ Vill du skapa denna katalog?</translation>
         <source>FFmpeg</source>
         <comment>MediaCaptureBackend</comment>
         <translation>FFmpeg</translation>
+    </message>
+    <message>
+        <source>Unscaled</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>Oskalad</translation>
+    </message>
+    <message>
+        <source>Unscaled (Shader Blending)</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>Oskalad (Shader-blandning)</translation>
+    </message>
+    <message>
+        <source>Scaled</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>Skalad</translation>
+    </message>
+    <message>
+        <source>Scaled (Shader Blending)</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>Skalad (Shader-blandning)</translation>
+    </message>
+    <message>
+        <source>True Color</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>True Color</translation>
+    </message>
+    <message>
+        <source>True Color (Full)</source>
+        <comment>GPUDitheringMode</comment>
+        <translation>True Color (Fullständig)</translation>
+    </message>
+    <message>
+        <source>Auto-Detect</source>
+        <comment>ForceVideoTiming</comment>
+        <translation>Identifiera automatiskt</translation>
     </message>
 </context>
 <context>
@@ -14755,6 +15052,50 @@ Inloggningstoken genererades %2.</translation>
         <source>Not Logged In.</source>
         <translation>Inte inloggad.</translation>
     </message>
+    <message>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelvisualiseringar.</translation>
+    </message>
+    <message>
+        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
+        <translation>Om du ställer in detta värde till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast för hårdvarubackends. &lt;br&gt;Det här alternativet är vanligtvis säkert, och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
+        <translation>Utjämnar blockigheten i förstorade texturer på 3D-objekt med hjälp av filtrering. &lt;br&gt;Har större effekt på skalor med högre upplösning.</translation>
+    </message>
+    <message>
+        <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
+        <translation>Utjämnar blockigheten i förstorade texturer på 2D-objekt med hjälp av filtrering. Detta filter gäller endast sprites och andra 2D-element, t.ex. HUD.</translation>
+    </message>
+    <message>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
+        <translation>Ändrar det bildförhållande som används för att visa konsolens utdata på skärmen. Standardinställningen är Automatiskt (spelets inbyggda) som automatiskt justerar bildförhållandet så att det motsvarar hur ett spel skulle visas på en typisk TV för den tiden.</translation>
+    </message>
+    <message>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
+        <translation>Bestämmer hur stor del av det område som normalt inte syns på en konsument-TV-apparat som ska beskäras/döljas. Vissa spel visar innehåll i overscan-området eller använder det för skärmeffekter. Visas kanske inte korrekt med inställningen ”Alla kanter. ”Endast överskanning” är en bra kompromiss mellan stabilitet och att dölja svarta kanter.</translation>
+    </message>
+    <message>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <translation>Bestämmer hur den emulerade konsolens utdata ska upp- eller nedskalas till din bildskärms upplösning.</translation>
+    </message>
+    <message>
+        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
+        <translation>Skalar vertexpositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte är kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
+        <translation>Reducerar &quot;vingliga&quot; polygoner och &quot;skeva&quot; texturer som är vanliga i PS1-spel. &lt;strong&gt;Kanske inte är kompatibel med alla spel.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Dithering:</source>
+        <translation>Dithering:</translation>
+    </message>
+    <message>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
+        <translation>Kontrollerar hur dithering tillämpas i den emulerade GPU:n. True Color inaktiverar dithering och ger de snyggaste gradienterna. Med skalade alternativ blir dithermönstret mindre märkbart i högre upplösningar. Alternativet Shader-blandning utför blandning i programvara och är mer exakt, men har en &lt;strong&gt;betydande&lt;/strong&gt; prestandaförlust.</translation>
+    </message>
 </context>
 <context>
     <name>System</name>
@@ -14941,7 +15282,7 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
     </message>
     <message>
         <source>Force frame timings is enabled. Games may run at incorrect speeds.</source>
-        <translation>Force frame timings är aktiverat. Spel kan köras med felaktiga hastigheter.</translation>
+        <translation type="vanished">Force frame timings är aktiverat. Spel kan köras med felaktiga hastigheter.</translation>
     </message>
     <message>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
@@ -14989,7 +15330,7 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
     </message>
     <message>
         <source>True color disabled.</source>
-        <translation>True color inaktiverat.</translation>
+        <translation type="vanished">True color inaktiverat.</translation>
     </message>
     <message>
         <source>Texture filtering disabled.</source>
@@ -15122,6 +15463,14 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
 {0}
 
 Detta kan bero på att din GPU inte har stöd för vald renderare ({1}) eller på grund av att dina grafikdrivrutiner behöver uppdateras.</translation>
+    </message>
+    <message>
+        <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
+        <translation>Bildfrekvensen är inte inställd på automatisk. Spel kan köras med felaktiga hastigheter.</translation>
+    </message>
+    <message>
+        <source>Dithering set to unscaled.</source>
+        <translation>Dithering inställd till oskalad.</translation>
     </message>
 </context>
 <context>
