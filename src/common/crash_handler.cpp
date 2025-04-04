@@ -100,7 +100,7 @@ static void GenerateCrashFilename(wchar_t* buf, size_t len, const wchar_t* prefi
                extension);
 }
 
-static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
+static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi, const std::string_view message)
 {
   wchar_t filename[1024] = {};
   GenerateCrashFilename(filename, std::size(filename), s_write_directory.empty() ? nullptr : s_write_directory.c_str(),
@@ -108,13 +108,13 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
 
   // might fail
   HANDLE hFile = CreateFileW(filename, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-  if (exi && hFile != INVALID_HANDLE_VALUE)
+  DWORD written;
+
+  if (!message.empty() && hFile != INVALID_HANDLE_VALUE)
   {
-    char line[1024];
-    DWORD written;
-    std::snprintf(line, std::size(line), "Exception 0x%08X at 0x%p\n",
-                  static_cast<unsigned>(exi->ExceptionRecord->ExceptionCode), exi->ExceptionRecord->ExceptionAddress);
-    WriteFile(hFile, line, static_cast<DWORD>(std::strlen(line)), &written, nullptr);
+    const char newline = '\n';
+    WriteFile(hFile, message.data(), static_cast<DWORD>(message.length()), &written, nullptr);
+    WriteFile(hFile, &newline, sizeof(newline), &written, nullptr);
   }
 
   GenerateCrashFilename(filename, std::size(filename), s_write_directory.empty() ? nullptr : s_write_directory.c_str(),
@@ -130,10 +130,7 @@ static void WriteMinidumpAndCallstack(PEXCEPTION_POINTERS exi)
   {
     static const char error_message[] = "Failed to write minidump file.\n";
     if (hFile != INVALID_HANDLE_VALUE)
-    {
-      DWORD written;
       WriteFile(hFile, error_message, sizeof(error_message) - 1, &written, nullptr);
-    }
   }
   if (hMinidumpFile != INVALID_HANDLE_VALUE)
     CloseHandle(hMinidumpFile);
@@ -154,7 +151,11 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
     if (s_cleanup_handler)
       s_cleanup_handler();
 
-    WriteMinidumpAndCallstack(exi);
+    char message[128];
+    std::snprintf(message, std::size(message), "Exception 0x%08X at 0x%p",
+                  static_cast<unsigned>(exi->ExceptionRecord->ExceptionCode), exi->ExceptionRecord->ExceptionAddress);
+
+    WriteMinidumpAndCallstack(exi, message);
   }
 
   // returning EXCEPTION_CONTINUE_SEARCH makes sense, except for the fact that it seems to leave zombie processes
@@ -181,9 +182,9 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
   s_write_directory = StringUtil::UTF8StringToWideString(dump_directory);
 }
 
-void CrashHandler::WriteDumpForCaller()
+void CrashHandler::WriteDumpForCaller(std::string_view message)
 {
-  WriteMinidumpAndCallstack(nullptr);
+  WriteMinidumpAndCallstack(nullptr, message);
 }
 
 #elif !defined(__APPLE__) && !defined(__ANDROID__)
@@ -364,7 +365,7 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 
-void CrashHandler::WriteDumpForCaller()
+void CrashHandler::WriteDumpForCaller(std::string_view message)
 {
   LogCallstack(0, nullptr);
 }
@@ -380,7 +381,7 @@ void CrashHandler::SetWriteDirectory(std::string_view dump_directory)
 {
 }
 
-void CrashHandler::WriteDumpForCaller()
+void CrashHandler::WriteDumpForCaller(std::string_view message)
 {
 }
 

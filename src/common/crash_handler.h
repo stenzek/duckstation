@@ -18,7 +18,7 @@ using CleanupHandler = void(*)();
 
 bool Install(CleanupHandler cleanup_handler);
 void SetWriteDirectory(std::string_view dump_directory);
-void WriteDumpForCaller();
+void WriteDumpForCaller(std::string_view message);
 
 #ifndef _WIN32
 

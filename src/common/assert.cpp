@@ -82,7 +82,7 @@ extern "C" __attribute__((weak)) void android_set_abort_message(const char*);
 {
 #ifndef __ANDROID__
   std::fputs(szMsg, stderr);
-  CrashHandler::WriteDumpForCaller();
+  CrashHandler::WriteDumpForCaller(szMsg);
   std::fputs("Aborting application.\n", stderr);
   std::fflush(stderr);
   std::abort();
@@ -121,7 +121,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   }
   else if (result != IDIGNORE)
   {
-    CrashHandler::WriteDumpForCaller();
+    CrashHandler::WriteDumpForCaller(szMsg);
     TerminateProcess(GetCurrentProcess(), 0xBAADC0DE);
   }
 
@@ -153,7 +153,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
   if (result == IDOK)
     __debugbreak();
   else
-    CrashHandler::WriteDumpForCaller();
+    CrashHandler::WriteDumpForCaller(szMsg);
 
   TerminateProcess(GetCurrentProcess(), 0xBAADC0DE);
 
