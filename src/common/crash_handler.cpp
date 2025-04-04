@@ -164,6 +164,37 @@ static LONG NTAPI ExceptionHandler(PEXCEPTION_POINTERS exi)
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file,
+                                    unsigned int line, uintptr_t pReserved)
+{
+  // if the debugger is attached, or we're recursively crashing, let it take care of it.
+  if (!s_in_crash_handler && !IsDebuggerPresent())
+  {
+    s_in_crash_handler = true;
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
+    WriteMinidumpAndCallstack(nullptr, "Invalid parameter handler invoked");
+  }
+
+  __fastfail(FAST_FAIL_INVALID_ARG);
+}
+
+static void PureCallHandler()
+{
+  // if the debugger is attached, or we're recursively crashing, let it take care of it.
+  if (!s_in_crash_handler && !IsDebuggerPresent())
+  {
+    s_in_crash_handler = true;
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
+    WriteMinidumpAndCallstack(nullptr, "Pure call handler invoked");
+  }
+
+  __fastfail(FAST_FAIL_INVALID_ARG);
+}
+
 bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {
   // load dbghelp at install/startup, that way we're not LoadLibrary()'ing after a crash
@@ -172,8 +203,11 @@ bool CrashHandler::Install(CleanupHandler cleanup_handler)
   if (mod)
     s_dbghelp_module.Adopt(mod);
 
-  SetUnhandledExceptionFilter(ExceptionHandler);
   s_cleanup_handler = cleanup_handler;
+
+  SetUnhandledExceptionFilter(ExceptionHandler);
+  _set_invalid_parameter_handler(InvalidParameterHandler);
+  _set_purecall_handler(PureCallHandler);
   return true;
 }
 
