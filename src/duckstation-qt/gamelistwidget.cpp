@@ -1060,6 +1060,10 @@ public:
     painter->drawPixmap(r.topLeft() + QPoint(4, (r.height() - icon_height) / 2), icon);
     r.setLeft(r.left() + 4 + icon.width());
 
+    const QPalette& palette = static_cast<QWidget*>(parent())->palette();
+    const QColor& text_color =
+      palette.color((option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::Text);
+
     if (num_achievements > 0)
     {
       const QFontMetrics fm(painter->fontMetrics());
@@ -1071,10 +1075,9 @@ public:
       const QString first = QStringLiteral("%1").arg(display_hardcore_only ? num_unlocked_hardcore : num_unlocked);
       const QString total = QStringLiteral("/%3").arg(num_achievements);
 
-      const QPalette& palette = static_cast<QWidget*>(parent())->palette();
       const QColor hc_color = QColor(44, 151, 250);
 
-      painter->setPen(display_hardcore_only ? hc_color : palette.color(QPalette::WindowText));
+      painter->setPen(display_hardcore_only ? hc_color : text_color);
       painter->drawText(r, Qt::AlignVCenter, first);
       r.setLeft(r.left() + fm.size(Qt::TextSingleLine, first).width());
 
@@ -1086,11 +1089,12 @@ public:
         r.setLeft(r.left() + fm.size(Qt::TextSingleLine, hc).width());
       }
 
-      painter->setPen(palette.color(QPalette::WindowText));
+      painter->setPen(text_color);
       painter->drawText(r, Qt::AlignVCenter, total);
     }
     else
     {
+      painter->setPen(text_color);
       painter->drawText(r, Qt::AlignVCenter, QStringLiteral("N/A"));
     }
   }
