@@ -1649,20 +1649,20 @@ void MainWindow::setupAdditionalUi()
 
   m_status_renderer_widget = new QLabel(m_ui.statusBar);
   m_status_renderer_widget->setFixedHeight(16);
-  m_status_renderer_widget->setFixedSize(65, 16);
+  m_status_renderer_widget->setFixedSize(80, 16);
   m_status_renderer_widget->hide();
 
   m_status_resolution_widget = new QLabel(m_ui.statusBar);
   m_status_resolution_widget->setFixedHeight(16);
-  m_status_resolution_widget->setFixedSize(70, 16);
+  m_status_resolution_widget->setFixedSize(80, 16);
   m_status_resolution_widget->hide();
 
   m_status_fps_widget = new QLabel(m_ui.statusBar);
-  m_status_fps_widget->setFixedSize(85, 16);
+  m_status_fps_widget->setFixedSize(100, 16);
   m_status_fps_widget->hide();
 
   m_status_vps_widget = new QLabel(m_ui.statusBar);
-  m_status_vps_widget->setFixedSize(125, 16);
+  m_status_vps_widget->setFixedSize(150, 16);
   m_status_vps_widget->hide();
 
   m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
