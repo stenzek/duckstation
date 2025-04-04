@@ -1196,7 +1196,9 @@ void GameListWidget::initialize()
   m_list_view->setContextMenuPolicy(Qt::CustomContextMenu);
   m_list_view->setFrameStyle(QFrame::NoFrame);
   m_list_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+  m_list_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_list_view->verticalScrollBar()->setSingleStep(15);
+
   onCoverScaleChanged();
 
   connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
@@ -1441,10 +1443,13 @@ void GameListWidget::onCoverScaleChanged()
   m_model->updateCacheSize(width(), height());
 
   m_list_view->setSpacing(m_model->getCoverArtSpacing());
+  m_list_view->setIconSize(QSize(m_model->getCoverArtWidth(), m_model->getCoverArtHeight()));
 
   QFont font;
   font.setPointSizeF(20.0f * m_model->getCoverScale());
   m_list_view->setFont(font);
+
+  m_list_view->updateLayout();
 }
 
 void GameListWidget::listZoom(float delta)
@@ -1783,4 +1788,30 @@ void GameListGridListView::wheelEvent(QWheelEvent* e)
   }
 
   QListView::wheelEvent(e);
+}
+
+void GameListGridListView::resizeEvent(QResizeEvent* e)
+{
+  updateLayout();
+  QListView::resizeEvent(e);
+}
+
+void GameListGridListView::updateLayout()
+{
+  const int scrollbar_width = verticalScrollBar()->width();
+  const int item_spacing = spacing();
+  const int icon_margin = style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this) * 2;
+
+  // I hate this +2. Not sure what's not being accounted for, but without it the calculation is off by 2 pixels...
+  const int icon_width = iconSize().width() + icon_margin + item_spacing + 2;
+  const int available_width = width() - scrollbar_width - item_spacing - icon_margin;
+  const int items_per_row = available_width / icon_width;
+  const int margin = (available_width - (items_per_row * icon_width)) / 2;
+
+  m_horizontal_offset = margin;
+}
+
+int GameListGridListView::horizontalOffset() const
+{
+  return QListView::horizontalOffset() - m_horizontal_offset;
 }

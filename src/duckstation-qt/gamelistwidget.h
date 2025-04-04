@@ -152,22 +152,29 @@ private:
   mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
 };
 
-class GameListGridListView : public QListView
+class GameListGridListView final : public QListView
 {
   Q_OBJECT
 
 public:
   GameListGridListView(QWidget* parent = nullptr);
 
+  void updateLayout();
+  int horizontalOffset() const override;
+
 Q_SIGNALS:
   void zoomOut();
   void zoomIn();
 
 protected:
-  void wheelEvent(QWheelEvent* e);
+  void wheelEvent(QWheelEvent* e) override;
+  void resizeEvent(QResizeEvent* e) override;
+
+private:
+  int m_horizontal_offset = 0;
 };
 
-class GameListWidget : public QWidget
+class GameListWidget final : public QWidget
 {
   Q_OBJECT
 
