@@ -1,7 +1,7 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
 [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage/Flatpak), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage/Flatpak x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
 
@@ -69,7 +69,7 @@ Other features include:
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
-Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage/Flatpak formats), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push.
+Binaries of DuckStation for Windows x64/ARM64, Linux x86_64/ARM32/ARM64 (in AppImage/Flatpak formats), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push.
 
 As per the terms of CC-BY-NC-ND, redistribution of **unmodified releases and code** is permitted. However, we would prefer if you linked to https://www.duckstation.org/ instead. Please note that pre-configured settings and packages are considered modifications.
 
@@ -81,7 +81,7 @@ DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If y
 If you must use an older operating system, [v0.1-5624](https://github.com/stenzek/duckstation/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
 
 To download:
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary.
+ - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary. If you have an ARM64 Windows machine such as Snapdragon, download the Windows ARM64 build.
  - Alternatively, direct download link: https://github.com/stenzek/duckstation/releases/download/latest/duckstation-windows-x64-release.zip
  - Extract the archive **to a subdirectory**. The archive has no root subdirectory, so extracting to the current directory will drop a bunch of files in your download directory if you do not extract to a subdirectory.
 
@@ -91,7 +91,7 @@ Once downloaded and extracted, you can launch the emulator with `duckstation-qt-
 
 ### Linux
 
-DuckStation is provided for x86_64 Linux in AppImage and Flatpak formats. The release on [Flathub](https://flathub.org/apps/org.duckstation.DuckStation) is official, and synchronized with the latest rolling/stable release on GitHub.
+DuckStation is provided for x86_64/ARM32/ARM64 Linux in AppImage and Flatpak formats. The release on [Flathub](https://flathub.org/apps/org.duckstation.DuckStation) is official, and synchronized with the latest rolling/stable release on GitHub.
 
 #### AppImage
 
@@ -162,7 +162,6 @@ Each release includes the latest version of the database, however you are free t
 Requirements:
  - Visual Studio 2022
 
-
 1. Clone the respository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Download the dependencies pack from https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/latest/deps-x64.7z, and extract it to `dep\msvc`.
 3. Open the Visual Studio solution `duckstation.sln` in the root, or "Open Folder" for cmake build.
@@ -203,7 +202,6 @@ Requirements:
  - CMake
  - Xcode
 
-
 1. Clone the repository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Build the dependencies. This will take a while. `scripts/deps/build-dependencies-mac.sh deps`.
 2. Run CMake to configure the build system: `cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$PWD/deps"`. 
@@ -220,11 +218,9 @@ This is located in the following places depending on the platform you're using:
 - Linux: `$XDG_DATA_HOME/duckstation`, or `~/.local/share/duckstation`.
 - macOS: `~/Library/Application Support/DuckStation`.
 
-So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation
-for the first time.
+So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation for the first time.
 
-If you wish to use a "portable" build, where the user directory is the same as where the executable is located, create an empty file named `portable.txt`
-in the same directory as the DuckStation executable.
+If you wish to use a "portable" build, where the user directory is the same as where the executable is located, create an empty file named `portable.txt` in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
 Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> Controllers`.
