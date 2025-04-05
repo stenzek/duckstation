@@ -764,9 +764,14 @@ bool FullscreenUI::Initialize()
   LoadBackground();
 
   if (open_main_window)
+  {
     ReturnToMainWindow();
+    ForceKeyNavEnabled();
+  }
   else
+  {
     UpdateRunIdleState();
+  }
 
   return true;
 }
@@ -7701,7 +7706,10 @@ void FullscreenUI::DrawGameListWindow()
       if (NavButton(icons[i], static_cast<GameListView>(i) == s_state.game_list_view, true, ITEM_WIDTH,
                     LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
       {
-        s_state.game_list_view = static_cast<GameListView>(i);
+        BeginTransition([]() {
+          s_state.game_list_view =
+            (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+        });
       }
     }
 
