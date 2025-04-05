@@ -2567,20 +2567,13 @@ bool QtHost::ShouldShowDebugOptions()
   return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
-void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
+void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check_memcard_busy)
 {
   if (!System::IsValid())
     return;
 
-  if (!allow_confirm)
-  {
-    g_emu_thread->shutdownSystem(save_state, false);
-  }
-  else
-  {
-    QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-                              Q_ARG(bool, true), Q_ARG(bool, save_state));
-  }
+  QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
+                            Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, check_memcard_busy));
 }
 
 void Host::RequestResetSettings(bool system, bool controller)

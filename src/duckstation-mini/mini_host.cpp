@@ -1291,7 +1291,7 @@ void Host::RequestExitBigPicture()
   // sorry dude
 }
 
-void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
+void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check_memcard_busy)
 {
   // TODO: Confirm
   if (System::IsValid())

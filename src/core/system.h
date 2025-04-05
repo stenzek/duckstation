@@ -445,6 +445,6 @@ void UpdateRichPresence(bool update_session_time);
 namespace Host {
 
 /// Requests shut down of the current virtual machine.
-void RequestSystemShutdown(bool allow_confirm, bool save_state);
+void RequestSystemShutdown(bool allow_confirm, bool save_state, bool check_memcard_busy);
 
 } // namespace Host

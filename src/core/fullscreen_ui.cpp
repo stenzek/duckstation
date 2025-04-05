@@ -1600,7 +1600,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
 
   ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
     if (result)
-      Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state); });
+      Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
     else
       ClosePauseMenuImmediately();
   });

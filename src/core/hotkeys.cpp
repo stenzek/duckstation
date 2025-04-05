@@ -200,7 +200,7 @@ DEFINE_HOTKEY("TogglePause", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOO
 DEFINE_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Power Off System"),
               [](s32 pressed) {
                 if (!pressed && CanPause())
-                  Host::RequestSystemShutdown(true, g_settings.save_state_on_exit);
+                  Host::RequestSystemShutdown(true, g_settings.save_state_on_exit, true);
               })
 
 DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),

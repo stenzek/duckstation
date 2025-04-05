@@ -2072,9 +2072,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit); });
+          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false); });
+          [this]() { requestShutdown(false, false, false, true); });
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
   connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
@@ -2499,7 +2499,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   event->ignore();
 
   // Exit cancelled?
-  if (!requestShutdown(true, true, g_settings.save_state_on_exit))
+  if (!requestShutdown(true, true, g_settings.save_state_on_exit, true))
     return;
 
   // Application will be exited in VM stopped handler.
@@ -2619,8 +2619,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
   func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_save_to_state /* = true */,
-                                 bool save_state /* = true */)
+bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_memcard_busy)
 {
   if (!s_system_valid)
     return true;
@@ -2666,14 +2665,14 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     updateWindowState(true);
 
   // Now we can actually shut down the VM.
-  g_emu_thread->shutdownSystem(save_state, true);
+  g_emu_thread->shutdownSystem(save_state, check_memcard_busy);
   return true;
 }
 
 void MainWindow::requestExit(bool allow_confirm /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit))
+  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true))
     return;
 
   // VM stopped signal won't have fired yet, so queue an exit if we still have one.
