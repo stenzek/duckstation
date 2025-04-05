@@ -2660,9 +2660,12 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     const u32 progress_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor));
     dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
                       progress_rounding);
-    dl->AddRectFilled(progress_bb.Min,
-                      ImVec2(progress_bb.Min.x + unlocked_fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                      progress_color, progress_rounding);
+    if (s_state.game_summary.num_unlocked_achievements > 0)
+    {
+      dl->AddRectFilled(progress_bb.Min,
+                        ImVec2(progress_bb.Min.x + unlocked_fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+                        progress_color, progress_rounding);
+    }
 
     buffer.format("{}/{}", s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements);
     text_size =
@@ -2872,9 +2875,12 @@ void Achievements::DrawAchievementsWindow()
                                static_cast<float>(s_state.game_summary.num_core_achievements);
         dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
                           progress_rounding);
-        dl->AddRectFilled(progress_bb.Min,
-                          ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                          ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
+        if (s_state.game_summary.num_unlocked_achievements > 0)
+        {
+          dl->AddRectFilled(progress_bb.Min,
+                            ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+                            ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
+        }
 
         text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
         text_size =
