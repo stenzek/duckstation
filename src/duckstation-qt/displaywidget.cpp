@@ -307,7 +307,6 @@ bool DisplayWidget::event(QEvent* event)
     }
 
     case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonRelease:
     {
       if (!m_relative_mouse_enabled || !InputManager::IsUsingRawInput())
@@ -316,9 +315,22 @@ bool DisplayWidget::event(QEvent* event)
         emit windowMouseButtonEvent(static_cast<int>(button_index), event->type() != QEvent::MouseButtonRelease);
       }
 
+      return true;
+    }
+
+    case QEvent::MouseButtonDblClick:
+    {
+      // since we don't get press and release events for double-click, we need to send both the down and up
+      // otherwise the second click in a double click won't be registered by the input system
+      if (!m_relative_mouse_enabled || !InputManager::IsUsingRawInput())
+      {
+        const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+        emit windowMouseButtonEvent(static_cast<int>(button_index), true);
+        emit windowMouseButtonEvent(static_cast<int>(button_index), false);
+      }
+
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
-      if (event->type() == QEvent::MouseButtonDblClick &&
-          static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
+      if (static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
           ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled &&
             !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
