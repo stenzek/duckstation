@@ -2670,7 +2670,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize,
                 ImVec2(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                        progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f)),
-                text_color, buffer.c_str(), buffer.end_ptr());
+                ImGui::GetColorU32(UIStyle.PrimaryTextColor), buffer.c_str(), buffer.end_ptr());
     text_pos.y += progress_height + paragraph_spacing;
 
     if (pending_count > 0)
