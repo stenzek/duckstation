@@ -786,8 +786,7 @@ bool FullscreenUI::AreAnyDialogsOpen()
 {
   return (s_state.input_binding_dialog.IsOpen() || ImGuiFullscreen::IsAnyFixedPopupDialogOpen() ||
           ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsInputDialogOpen() ||
-          ImGuiFullscreen::IsFileSelectorOpen() || ImGuiFullscreen::IsMessageBoxDialogOpen() ||
-          ImGuiFullscreen::HasToast() || ImGuiFullscreen::HasAnyNotifications());
+          ImGuiFullscreen::IsFileSelectorOpen() || ImGuiFullscreen::IsMessageBoxDialogOpen());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
@@ -797,7 +796,8 @@ void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 
 void FullscreenUI::UpdateRunIdleState()
 {
-  const bool new_run_idle = HasActiveWindow();
+  const bool new_run_idle =
+    (HasActiveWindow() || ImGuiFullscreen::HasToast() || ImGuiFullscreen::HasAnyNotifications());
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
 }
 
