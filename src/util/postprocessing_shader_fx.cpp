@@ -818,13 +818,14 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform& 
     }
     else if (source == "frametime")
     {
-      if (ui.type.base != reshadefx::type::t_float || ui.type.components() > 1)
+      if ((!ui.type.is_integral() && !ui.type.is_floating_point()) || ui.type.components() > 1)
       {
         Error::SetStringFmt(error, "Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(),
                             ui.name);
         return false;
       }
 
+      // If it's an integer type, value is going to be garbage, user can deal with it.
       *si = SourceOptionType::FrameTime;
       return true;
     }
