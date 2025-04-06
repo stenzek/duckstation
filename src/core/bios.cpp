@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "bios.h"
@@ -45,7 +45,7 @@ static constexpr const ImageInfo s_image_info_by_hash[] = {
   {"SCPH-5501, 5503, 7003 (v3.0 11-18-96 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 5, MakeHashFromString("490f666e1afb15b7362b406ed1cea246")},
   {"SCPH-5502, 5552 (v3.0 01-06-97 E)", ConsoleRegion::PAL, false, ImageInfo::FastBootPatch::Type1, 5, MakeHashFromString("32736f17079d0b2b7024407c39bd3050")},
   {"SCPH-7000, 7500, 9000 (v4.0 08-18-97 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("8e4c14f567745eff2f0408c8129f72a6")},
-  {"SCPH-7000W (v4.1 11-14-97 A)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("b84be139db3ee6cbd075630aa20a6553")},
+  {"SCPH-7000W (v4.1 11-14-97 A)", ConsoleRegion::NTSC_J, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("b84be139db3ee6cbd075630aa20a6553")},
   {"SCPH-7001, 7501, 7503, 9001, 9003, 9903 (v4.1 12-16-97 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129")},
   {"SCPH-7002, 7502, 9002 (v4.1 12-16-97 E)", ConsoleRegion::PAL, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee")},
   {"SCPH-100 (v4.3 03-11-00 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("8abc1b549a4a80954addc48ef02c4521")},
