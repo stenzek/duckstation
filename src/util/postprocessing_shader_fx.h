@@ -116,7 +116,10 @@ private:
     std::unique_ptr<GPUTexture> texture;
     std::string reshade_name; // TODO: we might be able to drop this
     GPUTexture::Format format;
-    float rt_scale;
+    u32 render_target_width;
+    u32 render_target_height;
+    bool render_target;
+    bool storage_access;
   };
 
   struct Sampler
@@ -133,6 +136,7 @@ private:
     llvm::SmallVector<TextureID, GPUDevice::MAX_RENDER_TARGETS> render_targets;
     llvm::SmallVector<Sampler, GPUDevice::MAX_TEXTURE_SAMPLERS> samplers;
     u32 num_vertices;
+    bool clear_render_targets;
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
     std::string name;

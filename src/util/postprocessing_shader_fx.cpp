@@ -1104,17 +1104,25 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
   for (const reshadefx::texture& ti : mod.textures)
   {
     Texture tex;
+    tex.storage_access = false;
+    tex.render_target = false;
+    tex.render_target_width = 0;
+    tex.render_target_height = 0;
 
     if (!ti.semantic.empty())
     {
       DEV_LOG("Ignoring semantic {} texture {}", ti.semantic, ti.unique_name);
       continue;
     }
-    if (ti.render_target)
+    if (ti.render_target || ti.storage_access)
     {
-      tex.rt_scale = 1.0f;
       tex.format = MapTextureFormat(ti.format);
-      DEV_LOG("Creating render target '{}' {}", ti.unique_name, GPUTexture::GetFormatName(tex.format));
+      tex.render_target = true;
+      tex.storage_access = ti.storage_access;
+      tex.render_target_width = ti.width;
+      tex.render_target_height = ti.height;
+      DEV_LOG("Creating {}x{} render target{} '{}' {}", ti.width, ti.height,
+              ti.storage_access ? " with storage access" : "", ti.unique_name, GPUTexture::GetFormatName(tex.format));
     }
     else
     {
@@ -1140,7 +1148,6 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         }
       }
 
-      tex.rt_scale = 0.0f;
       tex.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
                                                GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
                                                image.GetPitch(), error);
@@ -1162,6 +1169,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
       Pass pass;
       pass.num_vertices = pi.num_vertices;
+      pass.clear_render_targets = pi.clear_render_targets;
 
       if (is_final)
       {
@@ -1195,8 +1203,11 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       else
       {
         Texture new_rt;
-        new_rt.rt_scale = 1.0f;
         new_rt.format = backbuffer_format;
+        new_rt.render_target = true;
+        new_rt.storage_access = false;
+        new_rt.render_target_width = 0;
+        new_rt.render_target_height = 0;
         pass.render_targets.push_back(static_cast<TextureID>(m_textures.size()));
         m_textures.push_back(std::move(new_rt));
       }
@@ -1450,15 +1461,16 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
 
   for (Texture& tex : m_textures)
   {
-    if (tex.rt_scale == 0.0f)
+    if (!tex.render_target)
       continue;
 
     g_gpu_device->RecycleTexture(std::move(tex.texture));
 
-    const u32 t_width = std::max(static_cast<u32>(static_cast<float>(width) * tex.rt_scale), 1u);
-    const u32 t_height = std::max(static_cast<u32>(static_cast<float>(height) * tex.rt_scale), 1u);
-    tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format,
-                                             GPUTexture::Flags::None, nullptr, 0, error);
+    const u32 t_width = (tex.render_target_width > 0) ? tex.render_target_width : width;
+    const u32 t_height = (tex.render_target_height > 0) ? tex.render_target_height : height;
+    tex.texture = g_gpu_device->FetchTexture(
+      t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format,
+      tex.storage_access ? GPUTexture::Flags::AllowBindAsImage : GPUTexture::Flags::None, nullptr, 0, error);
     if (!tex.texture)
       return {};
   }
@@ -1476,9 +1488,6 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
   GL_SCOPE_FMT("PostProcessingShaderFX {}", m_name);
 
   m_frame_count++;
-
-  // Reshade always draws at full size.
-  g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, target_width, target_height));
 
   // Reshade timer variable is in milliseconds.
   time *= 1000.0f;
@@ -1763,9 +1772,12 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
     if (pass.render_targets.size() == 1 && pass.render_targets[0] == OUTPUT_COLOR_TEXTURE && !final_target)
     {
       // Special case: drawing to final buffer.
-      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
+      GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
+      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(swap_chain);
       if (pres != GPUDevice::PresentResult::OK)
         return pres;
+
+      g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(swap_chain->GetSizeVec()));
     }
     else
     {
@@ -1776,9 +1788,14 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
                    GetTextureNameForID(pass.render_targets[i]));
         render_targets[i] = GetTextureByID(pass.render_targets[i], input_color, input_depth, final_target);
         DebugAssert(render_targets[i]);
+
+        if (pass.clear_render_targets)
+          g_gpu_device->ClearRenderTarget(render_targets[i], 0);
       }
 
       g_gpu_device->SetRenderTargets(render_targets.data(), static_cast<u32>(pass.render_targets.size()), nullptr);
+      if (!pass.render_targets.empty())
+        g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(render_targets[0]->GetSizeVec()));
     }
 
     g_gpu_device->SetPipeline(pass.pipeline.get());
