@@ -1822,8 +1822,9 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 
   // If we're not logged in, don't apply hardcore mode restrictions.
   // If we later log in, we'll start with it off anyway.
-  const bool wanted_hardcore_mode =
-    (IsLoggedInOrLoggingIn() || s_state.load_game_request) && g_settings.achievements_hardcore_mode;
+  const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_state.load_game_request) &&
+                                    (HasActiveGame() || s_state.load_game_request) &&
+                                    g_settings.achievements_hardcore_mode;
   if (s_state.hardcore_mode == wanted_hardcore_mode)
     return false;
 
@@ -1864,7 +1865,7 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
   }
 
   // Reload setting to permit cheating-like things if we were just disabled.
-  if (!enabled)
+  if (!enabled && System::IsValid())
     Host::RunOnCPUThread([]() { System::ApplySettings(false); });
 
   // Toss away UI state, because it's invalid now

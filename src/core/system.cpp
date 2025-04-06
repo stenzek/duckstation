@@ -1756,6 +1756,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (disc)
   {
     // Check for resuming with hardcore mode.
+    const bool hc_mode_was_enabled = Achievements::IsHardcoreModeActive();
     if (parameters.disable_achievements_hardcore_mode)
       Achievements::DisableHardcoreMode();
     else
@@ -1793,6 +1794,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         return true;
       }
     }
+
+    // Need to reinit things like emulation speed, cpu overclock, etc.
+    if (Achievements::IsHardcoreModeActive() != hc_mode_was_enabled)
+      ApplySettings(false);
   }
 
   // Are we fast booting? Must be checked after updating game settings.
