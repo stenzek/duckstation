@@ -441,6 +441,7 @@ struct Settings : public GPUSettings
   };
 
   void Load(const SettingsInterface& si, const SettingsInterface& controller_si);
+  void LoadPGXPSettings(const SettingsInterface& si);
   void Save(SettingsInterface& si, bool ignore_base) const;
   static void Clear(SettingsInterface& si);
 

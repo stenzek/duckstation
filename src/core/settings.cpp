@@ -265,17 +265,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
-  gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
-  gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
-  gpu_pgxp_color_correction = si.GetBoolValue("GPU", "PGXPColorCorrection", false);
-  gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
-  gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
-  gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
-  gpu_pgxp_tolerance = si.GetFloatValue("GPU", "PGXPTolerance", -1.0f);
-  gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
-  gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
-  gpu_pgxp_transparent_depth = si.GetBoolValue("GPU", "PGXPTransparentDepthTest", false);
-  SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
+  LoadPGXPSettings(si);
   gpu_show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
@@ -529,6 +519,21 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   if (si.GetBoolValue("Display", "Stretch", false))
     display_aspect_ratio = DisplayAspectRatio::MatchWindow;
 #endif
+}
+
+void Settings::LoadPGXPSettings(const SettingsInterface& si)
+{
+  gpu_pgxp_culling = si.GetBoolValue("GPU", "PGXPCulling", true);
+  gpu_pgxp_texture_correction = si.GetBoolValue("GPU", "PGXPTextureCorrection", true);
+  gpu_pgxp_color_correction = si.GetBoolValue("GPU", "PGXPColorCorrection", false);
+  gpu_pgxp_vertex_cache = si.GetBoolValue("GPU", "PGXPVertexCache", false);
+  gpu_pgxp_cpu = si.GetBoolValue("GPU", "PGXPCPU", false);
+  gpu_pgxp_preserve_proj_fp = si.GetBoolValue("GPU", "PGXPPreserveProjFP", false);
+  gpu_pgxp_tolerance = si.GetFloatValue("GPU", "PGXPTolerance", -1.0f);
+  gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
+  gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
+  gpu_pgxp_transparent_depth = si.GetBoolValue("GPU", "PGXPTransparentDepthTest", false);
+  SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 }
 
 void Settings::Save(SettingsInterface& si, bool ignore_base) const

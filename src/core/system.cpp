@@ -5755,18 +5755,19 @@ void System::ToggleWidescreen()
 
   if (g_settings.gpu_widescreen_hack)
   {
-    Host::AddKeyedOSDMessage(
-      "WidescreenHack",
-      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen hack is now enabled, and aspect ratio is set to {}."),
+    Host::AddIconOSDMessage(
+      "ToggleWidescreen", ICON_FA_SHAPES,
+      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen rendering is now enabled, and aspect ratio is set to {}."),
                   Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)),
-      5.0f);
+      Host::OSD_QUICK_DURATION);
   }
   else
   {
-    Host::AddKeyedOSDMessage(
-      "WidescreenHack",
-      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen hack is now disabled, and aspect ratio is set to {}."),
-                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio), 5.0f));
+    Host::AddIconOSDMessage(
+      "ToggleWidescreen", ICON_FA_SHAPES,
+      fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen rendering is now disabled, and aspect ratio is set to {}."),
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio),
+                  Host::OSD_QUICK_DURATION));
   }
 
   UpdateGTEAspectRatio();
