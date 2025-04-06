@@ -300,10 +300,10 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define END_ARRAY )\n";
     ss << "#define VECTOR_BROADCAST(type, value) (type(value))\n";
 
-    ss << "float saturate(float value) { return clamp(value, 0.0, 1.0); }\n";
-    ss << "float2 saturate(float2 value) { return clamp(value, float2(0.0, 0.0), float2(1.0, 1.0)); }\n";
-    ss << "float3 saturate(float3 value) { return clamp(value, float3(0.0, 0.0, 0.0), float3(1.0, 1.0, 1.0)); }\n";
-    ss << "float4 saturate(float4 value) { return clamp(value, float4(0.0, 0.0, 0.0, 0.0), float4(1.0, 1.0, 1.0, "
+    ss << "float saturate(float value) { return clamp(value, 0.0, 1.0); }\n"
+          "float2 saturate(float2 value) { return clamp(value, float2(0.0, 0.0), float2(1.0, 1.0)); }\n"
+          "float3 saturate(float3 value) { return clamp(value, float3(0.0, 0.0, 0.0), float3(1.0, 1.0, 1.0)); }\n"
+          "float4 saturate(float4 value) { return clamp(value, float4(0.0, 0.0, 0.0, 0.0), float4(1.0, 1.0, 1.0, "
           "1.0)); }\n";
   }
   else
@@ -346,6 +346,15 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define BEGIN_ARRAY(type, size) {\n";
     ss << "#define END_ARRAY }\n";
     ss << "#define VECTOR_BROADCAST(type, value) ((type)(value))\n";
+    ss << "uint packUnorm4x8(float4 value) {\n"
+          "  uint4 packed = uint4(round(saturate(value) * 255.0));\n"
+          "  return packed.x | (packed.y << 8) | (packed.z << 16) | (packed.w << 24);\n"
+          "}\n"
+          "\n"
+          "float4 unpackUnorm4x8(uint value) {\n"
+          "  uint4 packed = uint4(value & 0xffu, (value >> 8) & 0xffu, (value >> 16) & 0xffu, value >> 24);\n"
+          "  return float4(packed) / 255.0;\n"
+          "}\n";
   }
 
   ss << "\n";
