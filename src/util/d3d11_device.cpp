@@ -696,7 +696,14 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
   }
 
   m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::unorm8(clear_color).F32);
-  m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
+
+  // Ugh, have to clear out any UAV bindings...
+  if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages && !m_current_compute_shader)
+    m_context->OMSetRenderTargetsAndUnorderedAccessViews(1, SC->GetRTVArray(), nullptr, 0, 0, nullptr, nullptr);
+  else
+    m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
+  if (m_current_compute_shader)
+    UnbindComputePipeline();
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;

@@ -1627,7 +1627,7 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
       MetalShader temp_shader(GPUShaderStage::Compute, m_shaders, function);
       GPUPipeline::ComputeConfig config;
-      config.layout = GPUPipeline::Layout::ComputeSingleTextureAndPushConstants;
+      config.layout = GPUPipeline::Layout::ComputeMultiTextureAndPushConstants;
       config.compute_shader = &temp_shader;
 
       std::unique_ptr<GPUPipeline> pipeline = CreatePipeline(config, nullptr);

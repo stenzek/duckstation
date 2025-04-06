@@ -182,8 +182,11 @@ public:
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
 
-    // 128 byte UBO via push constants, 1 texture, compute shader.
-    ComputeSingleTextureAndPushConstants,
+    // Multiple textures, 1 streamed UBO, compute shader.
+    ComputeMultiTextureAndUBO,
+
+    // 128 byte UBO via push constants, multiple textures, compute shader.
+    ComputeMultiTextureAndPushConstants,
 
     MaxCount
   };
@@ -697,10 +700,17 @@ public:
       0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
-      1,                    // ComputeSingleTextureAndPushConstants
+      MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndUBO
+      MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndPushConstants
     };
 
     return counts[static_cast<u8>(layout)];
+  }
+
+  /// Returns true if the given pipeline layout is used for compute shaders.
+  static constexpr bool IsComputeLayout(GPUPipeline::Layout layout)
+  {
+    return (layout >= GPUPipeline::Layout::ComputeMultiTextureAndUBO);
   }
 
   /// Returns the number of thread groups to dispatch for a given total count and local size.
