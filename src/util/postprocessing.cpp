@@ -607,7 +607,10 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
       ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
       Host::AddIconOSDMessage(
         "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
-        fmt::format("Failed to compile post-processing shader '{}'. Disabling post-processing.", shader->GetName()));
+        fmt::format(TRANSLATE_FS("PostProcessing",
+                                 "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
+                    shader->GetName(), error.GetDescription()),
+        Host::OSD_ERROR_DURATION);
       m_enabled = false;
       return false;
     }
