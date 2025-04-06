@@ -136,6 +136,8 @@ private:
     llvm::SmallVector<TextureID, GPUDevice::MAX_RENDER_TARGETS> render_targets;
     llvm::SmallVector<Sampler, GPUDevice::MAX_TEXTURE_SAMPLERS> samplers;
     u32 num_vertices;
+    u16 dispatch_size[3];
+    bool is_compute;
     bool clear_render_targets;
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

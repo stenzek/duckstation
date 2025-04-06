@@ -1174,9 +1174,85 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
       Pass pass;
       pass.num_vertices = pi.num_vertices;
+      pass.is_compute = !pi.cs_entry_point.empty();
       pass.clear_render_targets = pi.clear_render_targets;
+      pass.dispatch_size[0] = Truncate16(pi.viewport_width);
+      pass.dispatch_size[1] = Truncate16(pi.viewport_height);
+      pass.dispatch_size[2] = Truncate16(pi.viewport_dispatch_z);
 
-      if (is_final)
+      if (pass.is_compute)
+      {
+        if (is_final)
+        {
+          Error::SetStringFmt(error, "Compute pass '{}' cannot be final pass", pi.name);
+          return false;
+        }
+        else if (!pi.render_target_names[0].empty())
+        {
+          Error::SetStringFmt(error, "Compute pass '{}' has render target", pi.name);
+          return false;
+        }
+
+        TextureID rts[GPUDevice::MAX_RENDER_TARGETS];
+        for (TextureID& rt : rts)
+          rt = static_cast<TextureID>(m_textures.size());
+
+        // storage images => bind RT as image
+        for (const reshadefx::storage_binding& sb : pi.storage_bindings)
+        {
+          if (sb.binding >= GPUDevice::MAX_RENDER_TARGETS)
+          {
+            Error::SetStringFmt(error, "Compute pass '{}' has render target has out-of-range image binding {}", pi.name,
+                                sb.binding);
+            return false;
+          }
+
+          if (rts[sb.binding] != static_cast<TextureID>(m_textures.size()))
+            continue;
+
+          for (const reshadefx::texture& ti : mod.textures)
+          {
+            if (ti.unique_name == sb.texture_name)
+            {
+              // must be a render target, or another texture
+              for (u32 i = 0; i < static_cast<u32>(m_textures.size()); i++)
+              {
+                if (m_textures[i].reshade_name == ti.unique_name)
+                {
+                  // hook it up
+                  rts[sb.binding] = static_cast<TextureID>(i);
+                  break;
+                }
+              }
+
+              break;
+            }
+          }
+
+          if (rts[sb.binding] == static_cast<TextureID>(m_textures.size()))
+          {
+            Error::SetStringFmt(error, "Compute pass '{}' has unknown image '{}' at binding {}", pi.name,
+                                sb.texture_name, sb.binding);
+            return false;
+          }
+        }
+
+        // must be consecutive
+        for (u32 i = 0; i < GPUDevice::MAX_RENDER_TARGETS; i++)
+        {
+          if (rts[i] == static_cast<TextureID>(m_textures.size()))
+            continue;
+
+          if (i > 0 && rts[i - 1] == static_cast<TextureID>(m_textures.size()))
+          {
+            Error::SetStringFmt(error, "Compute pass '{}' has non-consecutive image bindings (index {})", pi.name, i);
+            return false;
+          }
+
+          pass.render_targets.push_back(rts[i]);
+        }
+      }
+      else if (is_final)
       {
         pass.render_targets.push_back(OUTPUT_COLOR_TEXTURE);
       }
@@ -1389,8 +1465,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     return false;
   }
 
-  auto get_shader = [cg_language, &cg, error](const std::string& name, const std::span<Sampler> samplers,
-                                              GPUShaderStage stage) {
+  auto get_shader = [cg_language, &cg, error](const std::string& name, GPUShaderStage stage) {
     const std::string real_code = cg->finalize_code_for_entry_point(name);
     const char* entry_point = (cg_language == GPUShaderLanguage::HLSL) ? name.c_str() : "main";
 
@@ -1412,6 +1487,9 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
+  GPUPipeline::ComputeConfig cplconfig;
+  cplconfig.layout = GPUPipeline::Layout::ComputeMultiTextureAndUBO;
+
   progress->PushState();
 
   size_t total_passes = 0;
@@ -1428,40 +1506,69 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
       DebugAssert(passnum < m_passes.size());
       Pass& pass = m_passes[passnum++];
 
-      auto vs = get_shader(info.vs_entry_point, pass.samplers, GPUShaderStage::Vertex);
-      auto fs = get_shader(info.ps_entry_point, pass.samplers, GPUShaderStage::Fragment);
-      if (!vs || !fs)
+      if (!info.cs_entry_point.empty())
       {
-        progress->PopState();
-        return false;
-      }
+        if (!info.vs_entry_point.empty() || !info.ps_entry_point.empty())
+        {
+          Error::SetStringFmt(error, "Pass {} has both graphics and compute shaders", info.name);
+          progress->PopState();
+          return false;
+        }
 
-      for (size_t i = 0; i < pass.render_targets.size(); i++)
-      {
-        plconfig.color_formats[i] =
-          ((pass.render_targets[i] >= 0) ? m_textures[pass.render_targets[i]].format : format);
-      }
-      for (size_t i = pass.render_targets.size(); i < GPUDevice::MAX_RENDER_TARGETS; i++)
-        plconfig.color_formats[i] = GPUTexture::Format::Unknown;
-      plconfig.depth_format = GPUTexture::Format::Unknown;
+        auto cs = get_shader(info.cs_entry_point, GPUShaderStage::Compute);
+        if (!cs)
+        {
+          progress->PopState();
+          return false;
+        }
 
-      plconfig.blend = MapBlendState(info);
-      plconfig.primitive = MapPrimitive(info.topology);
-      plconfig.vertex_shader = vs.get();
-      plconfig.fragment_shader = fs.get();
-      plconfig.geometry_shader = nullptr;
-      if (!plconfig.vertex_shader || !plconfig.fragment_shader)
-      {
-        progress->PopState();
-        return false;
-      }
+        cplconfig.compute_shader = cs.get();
 
-      pass.pipeline = g_gpu_device->CreatePipeline(plconfig, error);
-      if (!pass.pipeline)
+        pass.pipeline = g_gpu_device->CreatePipeline(cplconfig, error);
+        if (!pass.pipeline)
+        {
+          Error::AddPrefixFmt(error, "Failed to create compute pipeline for pass '{}': ", info.name);
+          progress->PopState();
+          return false;
+        }
+      }
+      else
       {
-        Error::AddPrefixFmt(error, "Failed to create pipeline for pass '{}': ", info.name);
-        progress->PopState();
-        return false;
+        auto vs = get_shader(info.vs_entry_point, GPUShaderStage::Vertex);
+        auto fs = get_shader(info.ps_entry_point, GPUShaderStage::Fragment);
+        if (!vs || !fs)
+        {
+          progress->PopState();
+          return false;
+        }
+
+        for (size_t i = 0; i < pass.render_targets.size(); i++)
+        {
+          plconfig.color_formats[i] =
+            ((pass.render_targets[i] >= 0) ? m_textures[pass.render_targets[i]].format : format);
+        }
+        for (size_t i = pass.render_targets.size(); i < GPUDevice::MAX_RENDER_TARGETS; i++)
+          plconfig.color_formats[i] = GPUTexture::Format::Unknown;
+        plconfig.depth_format = GPUTexture::Format::Unknown;
+
+        plconfig.blend = MapBlendState(info);
+        plconfig.primitive = MapPrimitive(info.topology);
+        plconfig.vertex_shader = vs.get();
+        plconfig.fragment_shader = fs.get();
+        plconfig.geometry_shader = nullptr;
+        if (!plconfig.vertex_shader || !plconfig.fragment_shader)
+        {
+          progress->PopState();
+          return false;
+        }
+
+        pass.pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+        if (!pass.pipeline)
+        {
+          Error::AddPrefixFmt(error, "Failed to create pipeline for pass '{}': ", info.name);
+          progress->PopState();
+          return false;
+        }
       }
 
       progress->SetProgressValue(passnum);
@@ -1812,9 +1919,17 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
           g_gpu_device->ClearRenderTarget(render_targets[i], 0);
       }
 
-      g_gpu_device->SetRenderTargets(render_targets.data(), static_cast<u32>(pass.render_targets.size()), nullptr);
-      if (!pass.render_targets.empty())
-        g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(render_targets[0]->GetSizeVec()));
+      if (!pass.is_compute)
+      {
+        g_gpu_device->SetRenderTargets(render_targets.data(), static_cast<u32>(pass.render_targets.size()), nullptr);
+        if (!pass.render_targets.empty())
+          g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(render_targets[0]->GetSizeVec()));
+      }
+      else
+      {
+        g_gpu_device->SetRenderTargets(render_targets.data(), static_cast<u32>(pass.render_targets.size()), nullptr,
+                                       GPUPipeline::BindRenderTargetsAsImages);
+      }
     }
 
     g_gpu_device->SetPipeline(pass.pipeline.get());
@@ -1847,7 +1962,11 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
         g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
     }
 
-    g_gpu_device->Draw(pass.num_vertices, 0);
+    // TODO: group size is incorrect for Metal
+    if (pass.is_compute)
+      g_gpu_device->Dispatch(pass.dispatch_size[0], pass.dispatch_size[1], pass.dispatch_size[2], 1, 1, 1);
+    else
+      g_gpu_device->Draw(pass.num_vertices, 0);
   }
 
   // Don't leave any textures bound.
