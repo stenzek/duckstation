@@ -337,7 +337,8 @@ void PostProcessingShaderConfigWidget::createUi()
 
   for (PostProcessing::ShaderOption& option : m_options)
   {
-    if (option.ui_name.empty())
+    const bool should_hide = option.ShouldHide();
+    if (should_hide && option.help_text.empty())
       continue;
 
     if (!last_category || option.category != *last_category)
@@ -367,6 +368,17 @@ void PostProcessingShaderConfigWidget::createUi()
     }
 
     const QString tooltip = QString::fromStdString(option.tooltip);
+
+    if (!option.help_text.empty())
+    {
+      QLabel* label = new QLabel(QString::fromStdString(option.help_text), this);
+      label->setWordWrap(true);
+      m_layout->addWidget(label, row++, 0, 1, 3);
+      m_widgets.push_back(label);
+    }
+
+    if (should_hide)
+      continue;
 
     if (option.type == PostProcessing::ShaderOption::Type::Bool)
     {

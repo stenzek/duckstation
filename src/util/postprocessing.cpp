@@ -90,6 +90,13 @@ u32 PostProcessing::ShaderOption::ParseFloatVector(std::string_view line, ValueV
   return ParseVector<float>(line, values);
 }
 
+bool PostProcessing::ShaderOption::ShouldHide() const
+{
+  // Typical for reshade shaders to have help text in ui_text, and a radio button with no valid range.
+  return (ui_name.empty() || (StringUtil::StripWhitespace(ui_name).empty() &&
+                              std::memcmp(min_value.data(), max_value.data(), sizeof(min_value)) == 0));
+}
+
 u32 PostProcessing::ShaderOption::ParseIntVector(std::string_view line, ValueVector* values)
 {
   return ParseVector<s32>(line, values);

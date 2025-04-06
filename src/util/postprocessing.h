@@ -49,11 +49,6 @@ struct ShaderOption
   using ValueVector = std::array<Value, MAX_VECTOR_COMPONENTS>;
   static_assert(sizeof(ValueVector) == sizeof(u32) * MAX_VECTOR_COMPONENTS);
 
-  std::string name;
-  std::string ui_name;
-  std::string dependent_option;
-  std::string category;
-  std::string tooltip;
   Type type;
   u32 vector_size;
   u32 buffer_size;
@@ -63,7 +58,15 @@ struct ShaderOption
   ValueVector max_value;
   ValueVector step_value;
   ValueVector value;
+  std::string name;
+  std::string ui_name;
+  std::string dependent_option;
+  std::string category;
+  std::string tooltip;
+  std::string help_text;
   std::vector<std::string> choice_options;
+
+  bool ShouldHide() const;
 
   static u32 ParseIntVector(std::string_view line, ValueVector* values);
   static u32 ParseFloatVector(std::string_view line, ValueVector* values);

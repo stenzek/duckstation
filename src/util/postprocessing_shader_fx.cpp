@@ -638,6 +638,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::effect_modu
     opt.name = ui.name;
     opt.category = GetStringAnnotationValue(ui.annotations, "ui_category", std::string_view());
     opt.tooltip = GetStringAnnotationValue(ui.annotations, "ui_tooltip", std::string_view());
+    opt.help_text = GetStringAnnotationValue(ui.annotations, "ui_text", std::string_view());
 
     if (!GetBooleanAnnotationValue(ui.annotations, "hidden", false))
     {

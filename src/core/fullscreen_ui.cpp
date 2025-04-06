@@ -5854,7 +5854,23 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
     for (PostProcessing::ShaderOption& opt : si.options)
     {
-      if (opt.ui_name.empty())
+      if (!opt.help_text.empty())
+      {
+        const float width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+        const ImVec2 text_size =
+          UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, width, opt.help_text.c_str(),
+                                            opt.help_text.c_str() + opt.help_text.length());
+        ImVec2 pos, size;
+        ImGuiFullscreen::GetMenuButtonFrameBounds(LayoutUnscale(text_size.y), &pos, &size);
+        const ImVec2& frame_padding = ImGui::GetStyle().FramePadding;
+        const ImRect rect = ImRect(pos + frame_padding, pos + size - frame_padding);
+        ImGui::ItemSize(size);
+        RenderShadowedTextClipped(UIStyle.MediumFont, rect.Min, rect.Max, ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                                  opt.help_text.c_str(), opt.help_text.c_str() + opt.help_text.length(), &text_size,
+                                  ImVec2(0.0f, 0.0f), width, &rect);
+      }
+
+      if (opt.ShouldHide())
         continue;
 
       switch (opt.type)
