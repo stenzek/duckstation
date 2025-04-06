@@ -75,10 +75,12 @@ As per the terms of CC-BY-NC-ND, redistribution of **unmodified releases and cod
 
 For x86 machines (most systems), you will need a CPU that supports the SSE4.1 instruction set for the "normal" build. This includes all Intel CPUs manufactured after 2007, and AMD CPUs manufactured after 2011. If you have a CPU that is older, you will need to download the "SSE2" build from the releases page, which has lower performance but still supports these CPUs.
 
+The main releases page is limited to the last 30 releases due to automatic updater limitations. Older releases can be downloaded from https://github.com/duckstation/old-releases/releases.
+
 ### Windows
 
 DuckStation **requires** Windows 10/11, specifically version 1809 or newer. If you are still using Windows 7/8/8.1, DuckStation **will not run** on your operating system. Running these operating systems in 2023 should be considered a security risk, and I would recommend updating to something which receives vendor support.
-If you must use an older operating system, [v0.1-5624](https://github.com/stenzek/duckstation/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
+If you must use an older operating system, [v0.1-5624](https://github.com/duckstation/old-releases/releases/tag/v0.1-5624) is the last version which will run. But do not expect to recieve any assistance, these builds are no longer supported.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download the Windows x64 build. This is a zip archive containing the prebuilt binary. If you have an ARM64 Windows machine such as Snapdragon, download the Windows ARM64 build.
