@@ -1161,6 +1161,11 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
     m_textures.push_back(std::move(tex));
   }
 
+  // need potentially up to two backbuffers
+  std::array<std::optional<TextureID>, 2> backbuffer_texture_ids;
+  std::optional<TextureID> read_backbuffer;
+  u32 current_backbuffer = 0;
+
   for (const reshadefx::technique& tech : mod.techniques)
   {
     for (const reshadefx::pass& pi : tech.passes)
@@ -1202,14 +1207,28 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       }
       else
       {
-        Texture new_rt;
-        new_rt.format = backbuffer_format;
-        new_rt.render_target = true;
-        new_rt.storage_access = false;
-        new_rt.render_target_width = 0;
-        new_rt.render_target_height = 0;
-        pass.render_targets.push_back(static_cast<TextureID>(m_textures.size()));
-        m_textures.push_back(std::move(new_rt));
+        // swap to the other backbuffer, sample from the previous written
+        if (backbuffer_texture_ids[current_backbuffer].has_value())
+        {
+          read_backbuffer = backbuffer_texture_ids[current_backbuffer];
+          current_backbuffer ^= 1;
+        }
+
+        if (!backbuffer_texture_ids[current_backbuffer].has_value())
+        {
+          Texture new_rt;
+          new_rt.format = backbuffer_format;
+          new_rt.render_target = true;
+          new_rt.storage_access = false;
+          new_rt.render_target_width = 0;
+          new_rt.render_target_height = 0;
+          new_rt.reshade_name = fmt::format("| BackBuffer{} |", current_backbuffer);
+
+          backbuffer_texture_ids[current_backbuffer] = static_cast<TextureID>(m_textures.size());
+          m_textures.push_back(std::move(new_rt));
+        }
+
+        pass.render_targets.push_back(backbuffer_texture_ids[current_backbuffer].value());
       }
 
       u32 texture_slot = 0;
@@ -1232,7 +1251,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             // found the texture, now look for our side of it
             if (ti.semantic == "COLOR")
             {
-              sampler.texture_id = INPUT_COLOR_TEXTURE;
+              sampler.texture_id = read_backbuffer.value_or(INPUT_COLOR_TEXTURE);
               break;
             }
             else if (ti.semantic == "DEPTH")
