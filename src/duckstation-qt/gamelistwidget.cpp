@@ -1056,9 +1056,10 @@ public:
     const QPixmap& icon = (num_achievements > 0) ? (mastered ? m_model->getMasteredAchievementsPixmap() :
                                                                m_model->getHasAchievementsPixmap()) :
                                                    m_model->getNoAchievementsPixmap();
-    const int icon_height = static_cast<int>(icon.width() / icon.devicePixelRatio());
+    const int icon_width = static_cast<int>(icon.width() / icon.devicePixelRatio());
+    const int icon_height = icon_width;
     painter->drawPixmap(r.topLeft() + QPoint(4, (r.height() - icon_height) / 2), icon);
-    r.setLeft(r.left() + 4 + icon.width());
+    r.setLeft(r.left() + 12 + icon_width);
 
     const QPalette& palette = static_cast<QWidget*>(parent())->palette();
     const QColor& text_color =
