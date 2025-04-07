@@ -2809,13 +2809,12 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
     return;
   }
 
-  ResetFocusHere();
-
   s32 choice = -1;
 
   if (m_checkable)
   {
     BeginMenuButtons();
+    ResetFocusHere();
 
     for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
     {
@@ -2835,6 +2834,7 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
   else
   {
     // draw background first, because otherwise it'll obscure the frame border
+    bool found_selected = false;
     for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
     {
       const auto& option = m_options[i];
@@ -2846,13 +2846,19 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
       pos.y += size.y * static_cast<float>(i);
       ImGui::RenderFrame(pos, pos + size, ImGui::GetColorU32(UIStyle.PrimaryColor), false,
                          LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+      if (!found_selected)
+        found_selected = true;
     }
 
     BeginMenuButtons();
+    ResetFocusHere();
+
+    const bool appearing = ImGui::IsWindowAppearing();
 
     for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
     {
       auto& option = m_options[i];
+
       if (option.second ? MenuButtonWithValue(option.first.c_str(), nullptr, ICON_FA_CHECK, true,
                                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) :
                           MenuButtonWithoutSummary(option.first.c_str()))
@@ -2860,6 +2866,12 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
         choice = i;
         for (s32 j = 0; j < static_cast<s32>(m_options.size()); j++)
           m_options[j].second = (j == i);
+      }
+
+      if (option.second && appearing)
+      {
+        ImGui::SetItemDefaultFocus();
+        ImGui::SetScrollHereY(0.5f);
       }
     }
 
