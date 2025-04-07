@@ -1543,6 +1543,8 @@ private:
 					emit_load(position, false)));
 		}
 
+#if 0
+		// Disabled because it breaks on MacOS/Metal - point size should not be defined for a non-point primitive.
 		// Add code that sets the point size to a default value (in case this vertex shader is used with point primitives)
 		if (point_size_variable == 0 && func.type == shader_type::vertex)
 		{
@@ -1554,6 +1556,7 @@ private:
 			// gl_PointSize = 1.0
 			emit_store(point_size, emit_constant({ type::t_float, 1, 1 }, 1));
 		}
+#endif
 
 		leave_block_and_return(0);
 		leave_function();
