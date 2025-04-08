@@ -8,6 +8,7 @@
 #include "cpu_pgxp.h"
 #include "bus.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "gpu_types.h"
 #include "settings.h"
@@ -270,7 +271,8 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
   if ((addr & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
     return &s_mem[PGXP_MEM_SCRATCH_OFFSET + ((addr & SCRATCHPAD_OFFSET_MASK) >> 2)];
 
-  const u32 paddr = (addr & PHYSICAL_MEMORY_ADDRESS_MASK);
+  // Don't worry about >512MB here for performance reasons.
+  const u32 paddr = (addr & KSEG_MASK);
   if (paddr < Bus::RAM_MIRROR_END)
     return &s_mem[(paddr & Bus::g_ram_mask) >> 2];
   else

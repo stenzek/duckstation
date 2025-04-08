@@ -4,6 +4,7 @@
 #include "memory_scanner.h"
 #include "bus.h"
 #include "cpu_core.h"
+#include "cpu_core_private.h"
 
 #include "common/log.h"
 
@@ -11,7 +12,7 @@
 
 LOG_CHANNEL(Cheats);
 
-static bool IsValidScanAddress(PhysicalMemoryAddress address)
+static bool IsValidScanAddress(VirtualMemoryAddress address)
 {
   if ((address & CPU::SCRATCHPAD_ADDR_MASK) == CPU::SCRATCHPAD_ADDR &&
       (address & CPU::SCRATCHPAD_OFFSET_MASK) < CPU::SCRATCHPAD_SIZE)
@@ -19,12 +20,11 @@ static bool IsValidScanAddress(PhysicalMemoryAddress address)
     return true;
   }
 
-  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
-
-  if (address < Bus::RAM_MIRROR_END)
+  const PhysicalMemoryAddress phys_address = CPU::VirtualAddressToPhysical(address);
+  if (phys_address < Bus::RAM_MIRROR_END)
     return true;
 
-  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
+  if (phys_address >= Bus::BIOS_BASE && phys_address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
     return true;
 
   return false;

@@ -625,7 +625,7 @@ void Bus::MapFastmemViews()
 
     auto MapRAM = [](u32 base_address) {
       // Don't map RAM that isn't accessible.
-      if ((base_address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK) >= g_ram_mapped_size)
+      if (CPU::VirtualAddressToPhysical(base_address) >= g_ram_mapped_size)
         return;
 
       u8* ram_ptr = g_ram + (base_address & g_ram_mask);
@@ -676,7 +676,7 @@ void Bus::RemapFastmemViews()
 
 bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
 {
-  const PhysicalMemoryAddress paddr = address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+  const PhysicalMemoryAddress paddr = CPU::VirtualAddressToPhysical(address);
 
   switch (g_settings.cpu_fastmem_mode)
   {

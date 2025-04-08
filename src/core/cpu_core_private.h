@@ -10,6 +10,13 @@ struct fastjmp_buf;
 
 namespace CPU {
 
+// Memory address mask used for fetching as well as loadstores (removes cached/uncached/user/kernel bits).
+enum : PhysicalMemoryAddress
+{
+  KSEG_MASK = 0x1FFFFFFF,
+  KUSEG_MASK = 0x7FFFFFFF,
+};
+
 void SetPC(u32 new_pc);
 
 // exceptions
@@ -104,7 +111,8 @@ ALWAYS_INLINE static Segment GetSegmentForAddress(VirtualMemoryAddress address)
 
 ALWAYS_INLINE static constexpr PhysicalMemoryAddress VirtualAddressToPhysical(VirtualMemoryAddress address)
 {
-  return (address & PHYSICAL_MEMORY_ADDRESS_MASK);
+  // KUSEG goes to the first 2GB, others are only 512MB.
+  return (address & ((address & 0x80000000u) ? KSEG_MASK : KUSEG_MASK));
 }
 
 ALWAYS_INLINE static VirtualMemoryAddress PhysicalAddressToVirtual(PhysicalMemoryAddress address, Segment segment)

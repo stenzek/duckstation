@@ -777,9 +777,8 @@ template<PGXPMode pgxp_mode>
       }
       else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
       {
-        AddPendingTicks(
-          static_cast<TickCount>(block->size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(
-                                                 block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
+        AddPendingTicks(static_cast<TickCount>(
+          block->size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(block->pc & KSEG_MASK, MemoryAccessSize::Word))));
       }
       else
       {
@@ -857,8 +856,8 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 
   const PageProtectionMode protection = GetProtectionModeForPC(start_pc);
   const bool use_icache = CPU::IsCachedAddress(start_pc);
-  const bool dynamic_fetch_ticks = (!use_icache && Bus::GetMemoryAccessTimePtr(start_pc & PHYSICAL_MEMORY_ADDRESS_MASK,
-                                                                               MemoryAccessSize::Word) != nullptr);
+  const bool dynamic_fetch_ticks =
+    (!use_icache && Bus::GetMemoryAccessTimePtr(VirtualAddressToPhysical(start_pc), MemoryAccessSize::Word) != nullptr);
   u32 pc = start_pc;
   bool is_branch_delay_slot = false;
   bool is_load_delay_slot = false;

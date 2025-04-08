@@ -84,7 +84,7 @@ void CPU::Recompiler::Recompiler::BeginBlock()
 
   if (g_settings.bios_tty_logging)
   {
-    const u32 masked_pc = (m_block->pc & PHYSICAL_MEMORY_ADDRESS_MASK);
+    const u32 masked_pc = VirtualAddressToPhysical(m_block->pc);
     if (masked_pc == 0xa0)
       GenerateCall(reinterpret_cast<const void*>(&CPU::HandleA0Syscall));
     else if (masked_pc == 0xb0)
@@ -1735,8 +1735,7 @@ void CPU::Recompiler::Recompiler::TruncateBlock()
 
 const TickCount* CPU::Recompiler::Recompiler::GetFetchMemoryAccessTimePtr() const
 {
-  const TickCount* ptr =
-    Bus::GetMemoryAccessTimePtr(m_block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word);
+  const TickCount* ptr = Bus::GetMemoryAccessTimePtr(VirtualAddressToPhysical(m_block->pc), MemoryAccessSize::Word);
   AssertMsg(ptr, "Address has dynamic fetch ticks");
   return ptr;
 }
@@ -2437,10 +2436,9 @@ CPU::Recompiler::Recompiler::SpecValue CPU::Recompiler::Recompiler::SpecReadMem(
     return value;
   }
 
-  const PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
-  if (Bus::IsRAMAddress(phys_addr))
+  if (CPU::CodeCache::AddressInRAM(address))
   {
-    u32 ram_offset = phys_addr & Bus::g_ram_mask;
+    u32 ram_offset = address & Bus::g_ram_mask;
     std::memcpy(&value, &Bus::g_ram[ram_offset], sizeof(value));
     return value;
   }
@@ -2457,9 +2455,10 @@ void CPU::Recompiler::Recompiler::SpecWriteMem(u32 address, SpecValue value)
     return;
   }
 
-  const PhysicalMemoryAddress phys_addr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
-  if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR || Bus::IsRAMAddress(phys_addr))
+  if ((address & SCRATCHPAD_ADDR_MASK) == SCRATCHPAD_ADDR)
     m_speculative_constants.memory.emplace(address, value);
+  else if (CPU::CodeCache::AddressInRAM(address))
+    m_speculative_constants.memory.emplace(address & Bus::g_ram_mask, value);
 }
 
 void CPU::Recompiler::Recompiler::SpecInvalidateMem(VirtualMemoryAddress address)

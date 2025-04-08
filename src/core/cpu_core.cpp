@@ -2476,8 +2476,8 @@ template<PGXPMode pgxp_mode, bool debug>
         if (s_trace_to_log)
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
-        // handle all mirrors of the syscall trampoline
-        const u32 masked_pc = (g_state.current_instruction_pc & PHYSICAL_MEMORY_ADDRESS_MASK);
+        // handle all mirrors of the syscall trampoline. will catch 200000A0 etc, but those aren't fetchable anyway
+        const u32 masked_pc = (g_state.current_instruction_pc & KSEG_MASK);
         if (masked_pc == 0xA0) [[unlikely]]
           HandleA0Syscall();
         else if (masked_pc == 0xB0) [[unlikely]]
@@ -2721,7 +2721,10 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
 {
   using namespace Bus;
 
-  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+  // We can shortcut around VirtualAddressToPhysical() here because we're never going to be
+  // calling with an out-of-range address.
+  DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
+  address &= KSEG_MASK;
 
   if (address < RAM_MIRROR_END)
   {
@@ -2764,7 +2767,8 @@ TickCount CPU::GetInstructionReadTicks(VirtualMemoryAddress address)
 {
   using namespace Bus;
 
-  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+  DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
+  address &= KSEG_MASK;
 
   if (address < RAM_MIRROR_END)
   {
@@ -2784,7 +2788,8 @@ TickCount CPU::GetICacheFillTicks(VirtualMemoryAddress address)
 {
   using namespace Bus;
 
-  address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+  DebugAssert(VirtualAddressToPhysical(address) == (address & KSEG_MASK));
+  address &= KSEG_MASK;
 
   if (address < RAM_MIRROR_END)
   {
@@ -3030,7 +3035,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
         return true;
       }
 
-      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+      address &= KSEG_MASK;
     }
     break;
 
@@ -3046,7 +3051,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
 
     case 0x05: // KSEG1 - physical memory uncached
     {
-      address &= PHYSICAL_MEMORY_ADDRESS_MASK;
+      address &= KSEG_MASK;
     }
     break;
   }
@@ -3231,7 +3236,7 @@ bool CPU::SafeReadMemoryBytes(VirtualMemoryAddress addr, void* data, u32 length)
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     u8* ptr = static_cast<u8*>(data);
@@ -3255,7 +3260,7 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     const u8* ptr = static_cast<const u8*>(data);
@@ -3284,7 +3289,7 @@ bool CPU::SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length)
   using namespace Bus;
 
   const u32 seg = (addr >> 29);
-  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & KSEG_MASK) >= RAM_MIRROR_END) ||
       (((addr & g_ram_mask) + length) > g_ram_size))
   {
     while ((addr & 3u) != 0 && length > 0)
@@ -3328,7 +3333,7 @@ void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccess
   if (seg != 0 && seg != 4 && seg != 5)
     return nullptr;
 
-  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  const PhysicalMemoryAddress paddr = VirtualAddressToPhysical(address);
   if (paddr < RAM_MIRROR_END)
   {
     if (read_ticks)
@@ -3364,7 +3369,7 @@ void* CPU::GetDirectWriteMemoryPointer(VirtualMemoryAddress address, MemoryAcces
   if (seg != 0 && seg != 4 && seg != 5)
     return nullptr;
 
-  const PhysicalMemoryAddress paddr = address & PHYSICAL_MEMORY_ADDRESS_MASK;
+  const PhysicalMemoryAddress paddr = address & KSEG_MASK;
 
   if (paddr < RAM_MIRROR_END)
     return &g_ram[paddr & g_ram_mask];
