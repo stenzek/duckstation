@@ -346,6 +346,14 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define BEGIN_ARRAY(type, size) {\n";
     ss << "#define END_ARRAY }\n";
     ss << "#define VECTOR_BROADCAST(type, value) ((type)(value))\n";
+  }
+
+  // Pack functions missing from GLSL ES 3.0.
+  if (!m_glsl || m_shader_language == GPUShaderLanguage::GLSLES)
+  {
+    if (m_shader_language == GPUShaderLanguage::GLSLES)
+      ss << "#if __VERSION__ < 310\n";
+
     ss << "uint packUnorm4x8(float4 value) {\n"
           "  uint4 packed = uint4(round(saturate(value) * 255.0));\n"
           "  return packed.x | (packed.y << 8) | (packed.z << 16) | (packed.w << 24);\n"
@@ -355,6 +363,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
           "  uint4 packed = uint4(value & 0xffu, (value >> 8) & 0xffu, (value >> 16) & 0xffu, value >> 24);\n"
           "  return float4(packed) / 255.0;\n"
           "}\n";
+
+    if (m_shader_language == GPUShaderLanguage::GLSLES)
+      ss << "#endif\n";
   }
 
   ss << "\n";
