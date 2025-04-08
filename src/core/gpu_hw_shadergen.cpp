@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 //
 // NOTE: Some parts of this file have more permissive licenses. They are marked appropriately.
@@ -829,6 +829,98 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 
   ialpha = float(res != 0u);
   texcol = unpackUnorm4x8(res);
+}
+
+#undef src
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::Scale2x)
+  {
+    // Based on https://www.scale2x.it/algorithm
+    ss << R"(
+#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
+
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
+{
+	float2 bcoords = floor(coords);
+
+	uint E = src(+0, +0);
+	uint B = src(+0, - 1);
+	uint D = src(-1, +0);
+	uint F = src(+1, +0);
+	uint H = src(+0, +1);
+
+	uint J = (D == B && B != F && D != H) ? D : E;
+	uint K = (B == F && D != F && H != F) ? F : E;
+	uint L = (H == D && F != D && B != D) ? D : E;
+	uint M = (H == F && D != H && B != F) ? F : E;
+
+	// select quadrant based on fractional part of texture coordinates
+	float2 fpart = frac(coords);
+	uint res = (fpart.x < 0.5f) ? ((fpart.y < 0.5f) ? J : L) : ((fpart.y < 0.5f) ? K : M);
+
+	ialpha = float(res != 0u);
+	texcol = unpackUnorm4x8(res);
+}
+
+#undef src
+)";
+  }
+  else if (texture_filter == GPUTextureFilter::Scale3x)
+  {
+    // Based on https://www.scale2x.it/algorithm
+    ss << R"(
+#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
+
+void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
+{
+	float2 bcoords = floor(coords);
+
+	uint E = src(+0, +0);
+	uint B = src(+0, -1);
+	uint D = src(-1, +0);
+	uint F = src(+1, +0);
+	uint H = src(+0, +1);
+
+	uint res = E;
+	if (B != H && D != F) {
+		uint A = src(-1, -1);
+		uint C = src(+1, -1);
+		uint G = src(-1, +1);
+		uint I = src(+1, +1);
+
+		uint E0 = (D == B) ? D : E;
+		uint E1 = (D == B && E != C) || (B == F && E != A) ? B : E;
+		uint E2 = (B == F) ? F : E;
+		uint E3 = (D == B && E != G) || (D == H && E != A) ? D : E;
+		uint E4 = E;
+		uint E5 = (B == F && E != I) || (H == F && E != C) ? F : E;
+		uint E6 = (D == H) ? D : E;
+		uint E7 = (D == H && E != I) || (H == F && E != G) ? H : E;
+		uint E8 = (H == F) ? F : E;
+
+		// select quadrant based on fractional part of texture coordinates
+		float2 fpart = frac(coords);
+		uint R0, R1, R2;
+		if (fpart.y < 0.34f) {
+			R0 = E0;
+			R1 = E1;
+			R2 = E2;
+		} else if (fpart.y < 0.67f) {
+			R0 = E3;
+			R1 = E4;
+			R2 = E5;
+		} else {
+			R0 = E6;
+			R1 = E7;
+			R2 = E8;
+		}
+
+		res = (fpart.x < 0.34f) ? R0 : ((fpart.x < 0.67f) ? R1 : R2);
+	}
+
+	ialpha = float(res != 0u);
+	texcol = unpackUnorm4x8(res);
 }
 
 #undef src

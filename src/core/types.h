@@ -97,6 +97,8 @@ enum class GPUTextureFilter : u8
   JINC2BinAlpha,
   xBR,
   xBRBinAlpha,
+  Scale2x,
+  Scale3x,
   MMPX,
   Count
 };
