@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "spu.h"
 #include "cdrom.h"
 #include "dma.h"
 #include "host.h"
-#include "imgui.h"
+#include "imgui_overlays.h"
 #include "interrupt_controller.h"
 #include "system.h"
 #include "timing_event.h"
@@ -25,6 +25,7 @@
 
 #include "IconsEmoji.h"
 #include "fmt/format.h"
+#include "imgui.h"
 
 #include <memory>
 
@@ -32,6 +33,11 @@ LOG_CHANNEL(SPU);
 
 // Enable to dump all voices of the SPU audio individually.
 // #define SPU_DUMP_ALL_VOICES 1
+
+// VU meter is only enabled in devel builds due to speed impact.
+#ifdef _DEVEL
+#define SPU_ENABLE_VU_METER 1
+#endif
 
 ALWAYS_INLINE static constexpr s32 Clamp16(s32 value)
 {
@@ -424,6 +430,13 @@ struct SPUState
   // +1 for reverb output
   std::array<std::unique_ptr<WAVWriter>, NUM_VOICES + 1> s_voice_dump_writers;
 #endif
+
+#ifdef _DEVEL
+  s16 output_peaks[2] = {};
+  s16 cd_audio_peaks[2] = {};
+  s16 reverb_peaks[2] = {};
+  s16 voice_peaks[NUM_VOICES][2] = {};
+#endif
 };
 } // namespace
 
@@ -432,6 +445,21 @@ ALIGN_TO_CACHE_LINE static std::array<u8, RAM_SIZE> s_ram{};
 ALIGN_TO_CACHE_LINE static std::array<s16, (44100 / 60) * 2> s_muted_output_buffer{};
 
 } // namespace SPU
+
+#ifdef SPU_ENABLE_VU_METER
+
+static bool IsVUMeterActive()
+{
+  return ImGuiManager::IsSPUDebugWindowEnabled();
+}
+
+ALWAYS_INLINE_RELEASE static void UpdateDebugPeaks(s16 peaks[2], s32 left, s32 right)
+{
+  peaks[0] = std::max(static_cast<s16>(std::abs(Clamp16(left))), peaks[0]);
+  peaks[1] = std::max(static_cast<s16>(std::abs(Clamp16(right))), peaks[1]);
+}
+
+#endif
 
 void SPU::Initialize()
 {
@@ -2127,6 +2155,11 @@ ALWAYS_INLINE_RELEASE std::tuple<s32, s32> SPU::SampleVoice(u32 voice_index)
   voice.left_volume.Tick();
   voice.right_volume.Tick();
 
+#ifdef SPU_ENABLE_VU_METER
+  if (IsVUMeterActive())
+    UpdateDebugPeaks(s_state.voice_peaks[voice_index], left, right);
+#endif
+
 #ifdef SPU_DUMP_ALL_VOICES
   if (s_state.s_voice_dump_writers[voice_index])
   {
@@ -2339,6 +2372,11 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
   s_state.last_reverb_output[0] = *left_out = ApplyVolume(out[0], s_state.reverb_registers.vLOUT);
   s_state.last_reverb_output[1] = *right_out = ApplyVolume(out[1], s_state.reverb_registers.vROUT);
 
+#ifdef SPU_ENABLE_VU_METER
+  if (IsVUMeterActive())
+    UpdateDebugPeaks(s_state.reverb_peaks, *left_out, *right_out);
+#endif
+
 #ifdef SPU_DUMP_ALL_VOICES
   if (s_state.s_voice_dump_writers[NUM_VOICES])
   {
@@ -2433,6 +2471,11 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
           reverb_in_left += cd_audio_volume_left;
           reverb_in_right += cd_audio_volume_right;
         }
+
+#ifdef SPU_ENABLE_VU_METER
+        if (IsVUMeterActive())
+          UpdateDebugPeaks(s_state.cd_audio_peaks, cd_audio_volume_left, cd_audio_volume_right);
+#endif
       }
 
       // Compute reverb.
@@ -2444,8 +2487,20 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
       right_sum += reverb_out_right;
 
       // Apply main volume after clamping. A maximum volume should not overflow here because both are 16-bit values.
+#ifdef SPU_ENABLE_VU_METER
+      const s16 final_left = static_cast<s16>(ApplyVolume(Clamp16(left_sum), s_state.main_volume_left.current_level));
+      const s16 final_right =
+        static_cast<s16>(ApplyVolume(Clamp16(right_sum), s_state.main_volume_right.current_level));
+      *(output_frame++) = final_left;
+      *(output_frame++) = final_right;
+
+      if (IsVUMeterActive())
+        UpdateDebugPeaks(s_state.output_peaks, final_left, final_right);
+#else
       *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(left_sum), s_state.main_volume_left.current_level));
       *(output_frame++) = static_cast<s16>(ApplyVolume(Clamp16(right_sum), s_state.main_volume_right.current_level));
+#endif
+
       s_state.main_volume_left.Tick();
       s_state.main_volume_right.Tick();
 
@@ -2519,6 +2574,45 @@ void SPU::DrawDebugStateWindow(float scale)
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
 
+#ifdef SPU_ENABLE_VU_METER
+  const auto draw_vu_meter = [&scale](s16* peaks) {
+    constexpr s32 num_sections = 12;
+    constexpr s32 amp_per_section = 32767 / num_sections;
+    const s32 lidx = peaks[0] / amp_per_section;
+    const s32 ridx = peaks[1] / amp_per_section;
+
+    const ImVec2 section_size = ImVec2(std::floor(scale * 8.0f), std::floor(scale * 4.0f));
+    const float divider_size = std::floor(scale * 1.0f);
+    ImVec2 left_start = ImGui::GetCursorPos() + ImVec2(0.0f, std::floor(scale * 4.0f));
+    ImVec2 right_start = left_start + ImVec2(0.0f, section_size.y + divider_size);
+    for (s32 i = 0; i < num_sections; i++)
+    {
+      u32 left_color = IM_COL32(30, 30, 30, 255);
+      if (peaks[0] > 0 && lidx >= i)
+      {
+        left_color = IM_COL32(255, 0, 0, 255);
+        left_color = (i <= 8) ? IM_COL32(255, 255, 0, 255) : left_color;
+        left_color = (i <= 6) ? IM_COL32(0, 255, 0, 255) : left_color;
+      }
+      u32 right_color = IM_COL32(30, 30, 30, 255);
+      if (peaks[1] > 0 && ridx >= i)
+      {
+        right_color = IM_COL32(255, 0, 0, 255);
+        right_color = (i <= 8) ? IM_COL32(255, 255, 0, 255) : right_color;
+        right_color = (i <= 6) ? IM_COL32(0, 255, 0, 255) : right_color;
+      }
+
+      ImGui::GetWindowDrawList()->AddRectFilled(left_start, left_start + section_size, left_color);
+      ImGui::GetWindowDrawList()->AddRectFilled(right_start, right_start + section_size, right_color);
+      left_start.x += section_size.x + divider_size;
+      right_start.x += section_size.x + divider_size;
+    }
+
+    peaks[0] = 0;
+    peaks[1] = 0;
+  };
+#endif
+
   // status
   if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -2565,6 +2659,11 @@ void SPU::DrawDebugStateWindow(float scale)
     ImGui::Text("Left: %d%%", ApplyVolume(100, s_state.main_volume_left.current_level));
     ImGui::SameLine(offsets[1]);
     ImGui::Text("Right: %d%%", ApplyVolume(100, s_state.main_volume_right.current_level));
+#ifdef SPU_ENABLE_VU_METER
+    ImGui::SameLine(offsets[2]);
+    draw_vu_meter(s_state.output_peaks);
+    ImGui::NewLine();
+#endif
 
     ImGui::Text("CD Audio: ");
     ImGui::SameLine(offsets[0]);
@@ -2576,6 +2675,11 @@ void SPU::DrawDebugStateWindow(float scale)
     ImGui::SameLine(offsets[3]);
     ImGui::TextColored(s_state.SPUCNT.cd_audio_enable ? active_color : inactive_color, "Right Volume: %d%%",
                        ApplyVolume(100, s_state.cd_audio_volume_left));
+#ifdef SPU_ENABLE_VU_METER
+    ImGui::SameLine(offsets[5]);
+    draw_vu_meter(s_state.cd_audio_peaks);
+    ImGui::NewLine();
+#endif
 
     ImGui::Text("Transfer FIFO: ");
     ImGui::SameLine(offsets[0]);
@@ -2586,18 +2690,21 @@ void SPU::DrawDebugStateWindow(float scale)
   // draw voice states
   if (ImGui::CollapsingHeader("Voice State", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    static constexpr u32 NUM_COLUMNS = 12;
+    static constexpr std::array column_titles = {
+      "#",       "StartAddr", "RepeatAddr", "CurAddr", "SampleIdx", "SampleRate",
+      "VolLeft", "VolRight",  "ADSRPhase",  "ADSRVol", "ADSRTicks",
+#ifdef SPU_ENABLE_VU_METER
+      ,          "VUMeter"
+#endif
+    };
+    static constexpr std::array adsr_phases = {"Off", "Attack", "Decay", "Sustain", "Release"};
 
-    ImGui::Columns(NUM_COLUMNS);
+    ImGui::Columns(static_cast<int>(column_titles.size()));
 
     // headers
-    static constexpr std::array<const char*, NUM_COLUMNS> column_titles = {
-      {"#", "InterpIndex", "SampleIndex", "CurAddr", "StartAddr", "RepeatAddr", "SampleRate", "VolLeft", "VolRight",
-       "ADSRPhase", "ADSRVol", "ADSRTicks"}};
-    static constexpr std::array<const char*, 5> adsr_phases = {{"Off", "Attack", "Decay", "Sustain", "Release"}};
-    for (u32 i = 0; i < NUM_COLUMNS; i++)
+    for (const char* column_title : column_titles)
     {
-      ImGui::TextUnformatted(column_titles[i]);
+      ImGui::TextUnformatted(column_title);
       ImGui::NextColumn();
     }
 
@@ -2608,18 +2715,16 @@ void SPU::DrawDebugStateWindow(float scale)
       ImVec4 color = v.IsOn() ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
       ImGui::TextColored(color, "%u", ZeroExtend32(voice_index));
       ImGui::NextColumn();
-      if (IsVoiceNoiseEnabled(voice_index))
-        ImGui::TextColored(color, "NOISE");
-      else
-        ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.interpolation_index.GetValue()));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.sample_index.GetValue()));
-      ImGui::NextColumn();
-      ImGui::TextColored(color, "%04X", ZeroExtend32(v.current_address));
-      ImGui::NextColumn();
       ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adpcm_start_address));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%04X", ZeroExtend32(v.regs.adpcm_repeat_address));
+      ImGui::NextColumn();
+      ImGui::TextColored(color, "%04X", ZeroExtend32(v.current_address));
+      ImGui::NextColumn();
+      if (IsVoiceNoiseEnabled(voice_index))
+        ImGui::TextColored(color, "NOISE");
+      else
+        ImGui::TextColored(color, "%u", ZeroExtend32(v.counter.sample_index.GetValue()));
       ImGui::NextColumn();
       ImGui::TextColored(color, "%.2f", (float(v.regs.adpcm_sample_rate) / 4096.0f) * 44100.0f);
       ImGui::NextColumn();
@@ -2633,6 +2738,10 @@ void SPU::DrawDebugStateWindow(float scale)
       ImGui::NextColumn();
       ImGui::TextColored(color, "%d", v.adsr_envelope.counter);
       ImGui::NextColumn();
+#ifdef SPU_ENABLE_VU_METER
+      draw_vu_meter(s_state.voice_peaks[voice_index]);
+      ImGui::NextColumn();
+#endif
     }
 
     ImGui::Columns(1);
@@ -2664,6 +2773,11 @@ void SPU::DrawDebugStateWindow(float scale)
                 s_state.last_reverb_input[1], s_state.last_reverb_output[0], s_state.last_reverb_output[1]);
     ImGui::Text("Output Volume: Left %d%% Right %d%%", ApplyVolume(100, s_state.reverb_registers.vLOUT),
                 ApplyVolume(100, s_state.reverb_registers.vROUT));
+#ifdef SPU_ENABLE_VU_METER
+    ImGui::SameLine();
+    draw_vu_meter(s_state.reverb_peaks);
+    ImGui::NewLine();
+#endif
 
     ImGui::Text("Pitch Modulation: ");
     for (u32 i = 1; i < NUM_VOICES; i++)

@@ -171,6 +171,15 @@ bool ImGuiManager::AreAnyDebugWindowsEnabled(const SettingsInterface& si)
   return false;
 }
 
+bool ImGuiManager::IsSPUDebugWindowEnabled()
+{
+#ifndef __ANDROID__
+  return (s_debug_window_state[1].window_handle != nullptr);
+#else
+  return false;
+#endif
+}
+
 bool ImGuiManager::UpdateDebugWindowConfig()
 {
 #ifndef __ANDROID__
