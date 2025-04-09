@@ -201,12 +201,6 @@ bool QtHost::EarlyProcessStartup()
   }
 #endif
 
-  // Config-based RAIntegration switch must happen before the main window is displayed.
-#ifdef ENABLE_RAINTEGRATION
-  if (!Achievements::IsUsingRAIntegration() && Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
-    Achievements::SwitchToRAIntegration();
-#endif
-
   Error error;
   if (System::ProcessStartup(&error)) [[likely]]
     return true;
@@ -2725,9 +2719,6 @@ void QtHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -nogui: Disables main window from being shown, exits on shutdown.\n");
   std::fprintf(stderr, "  -bigpicture: Automatically starts big picture UI.\n");
   std::fprintf(stderr, "  -earlyconsole: Creates console as early as possible, for logging.\n");
-#ifdef ENABLE_RAINTEGRATION
-  std::fprintf(stderr, "  -raintegration: Use RAIntegration instead of built-in achievement support.\n");
-#endif
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -2858,13 +2849,6 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
         s_cleanup_after_update = AutoUpdaterDialog::isSupported();
         continue;
       }
-#ifdef ENABLE_RAINTEGRATION
-      else if (CHECK_ARG("-raintegration"))
-      {
-        Achievements::SwitchToRAIntegration();
-        continue;
-      }
-#endif
       else if (CHECK_ARG("--"))
       {
         no_more_args = true;

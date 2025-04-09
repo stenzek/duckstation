@@ -21,6 +21,12 @@
     <ClCompile Include="src\rcheevos\trigger.c" />
     <ClCompile Include="src\rcheevos\value.c" />
     <ClCompile Include="src\rc_client.c" />
+    <ClCompile Include="src\rc_client_external.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\rc_client_raintegration.c">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\rc_compat.c" />
     <ClCompile Include="src\rc_util.c" />
     <ClCompile Include="src\rhash\md5.c" />
@@ -43,7 +49,16 @@
     <ClInclude Include="include\rc_util.h" />
     <ClInclude Include="src\rapi\rc_api_common.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />
+    <ClInclude Include="src\rc_client_external.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\rc_client_external_versions.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="src\rc_client_internal.h" />
+    <ClInclude Include="src\rc_client_raintegration_internal.h">
+      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="src\rc_compat.h" />
     <ClInclude Include="src\rc_version.h" />
     <ClInclude Include="src\rhash\md5.h" />
@@ -59,7 +74,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>RC_DISABLE_LUA=1;RCHEEVOS_URL_SSL=1;RC_NO_THREADS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RCHEEVOS_URL_SSL=1;RC_NO_THREADS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">RC_CLIENT_SUPPORTS_RAINTEGRATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>

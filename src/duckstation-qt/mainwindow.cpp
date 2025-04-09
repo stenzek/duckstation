@@ -21,7 +21,6 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-#include "core/achievements.h"
 #include "core/cheats.h"
 #include "core/game_list.h"
 #include "core/host.h"
@@ -178,11 +177,6 @@ void MainWindow::initialize()
   restoreStateFromConfig();
   switchToGameListView();
   updateWindowTitle();
-
-#ifdef ENABLE_RAINTEGRATION
-  if (Achievements::IsUsingRAIntegration())
-    Achievements::RAIntegration::MainWindowChanged((void*)winId());
-#endif
 
 #ifdef _WIN32
   registerForDeviceNotifications();
@@ -794,6 +788,8 @@ void MainWindow::recreate()
     dlg->setCategoryRow(settings_window_row);
     QtUtils::ShowOrRaiseWindow(dlg);
   }
+
+  notifyRAIntegrationOfWindowChange();
 }
 
 void MainWindow::destroySubWindows()
@@ -1697,37 +1693,6 @@ void MainWindow::setupAdditionalUi()
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
-
-#ifdef ENABLE_RAINTEGRATION
-  if (Achievements::IsUsingRAIntegration())
-  {
-    QMenu* raMenu = new QMenu(QStringLiteral("&RAIntegration"));
-    m_ui.menuBar->insertMenu(m_ui.menuDebug->menuAction(), raMenu);
-    connect(raMenu, &QMenu::aboutToShow, this, [this, raMenu]() {
-      raMenu->clear();
-
-      const auto items = Achievements::RAIntegration::GetMenuItems();
-      for (const auto& [id, title, checked] : items)
-      {
-        if (id == 0)
-        {
-          raMenu->addSeparator();
-          continue;
-        }
-
-        QAction* raAction = raMenu->addAction(QString::fromUtf8(title));
-        if (checked)
-        {
-          raAction->setCheckable(true);
-          raAction->setChecked(checked);
-        }
-
-        connect(raAction, &QAction::triggered, this,
-                [id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
-      }
-    });
-  }
-#endif
 }
 
 void MainWindow::updateToolbarActions()
@@ -3089,3 +3054,100 @@ bool QtHost::IsSystemLocked()
 {
   return (s_system_locked.load(std::memory_order_acquire) > 0);
 }
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+#include "core/achievements.h"
+#include "core/achievements_private.h"
+
+#include "rc_client_raintegration.h"
+
+void MainWindow::onRAIntegrationMenuChanged()
+{
+  const auto lock = Achievements::GetLock();
+
+  if (!Achievements::IsUsingRAIntegration())
+  {
+    if (m_raintegration_menu)
+    {
+      m_ui.menuBar->removeAction(m_raintegration_menu->menuAction());
+      m_raintegration_menu->deleteLater();
+      m_raintegration_menu = nullptr;
+    }
+
+    return;
+  }
+
+  if (!m_raintegration_menu)
+  {
+    m_raintegration_menu = new QMenu(QStringLiteral("&RAIntegration"));
+    m_ui.menuBar->insertMenu(m_ui.menuDebug->menuAction(), m_raintegration_menu);
+  }
+
+  m_raintegration_menu->clear();
+
+  const rc_client_raintegration_menu_t* menu = rc_client_raintegration_get_menu(Achievements::GetClient());
+  if (!menu)
+    return;
+
+  for (const rc_client_raintegration_menu_item_t& item :
+       std::span<const rc_client_raintegration_menu_item_t>(menu->items, menu->num_items))
+  {
+    if (item.id == 0)
+    {
+      m_raintegration_menu->addSeparator();
+      continue;
+    }
+
+    QAction* action = m_raintegration_menu->addAction(QString::fromUtf8(item.label));
+    action->setEnabled(item.enabled != 0);
+    action->setCheckable(item.checked != 0);
+    action->setChecked(item.checked != 0);
+    connect(action, &QAction::triggered, this, [id = item.id]() {
+      Host::RunOnCPUThread([id]() {
+        // not locked in case a callback fires immediately and tries to lock
+        // client will be safe since this is running on the main thread
+        if (!Achievements::IsUsingRAIntegration())
+          return;
+
+        rc_client_raintegration_activate_menu_item(Achievements::GetClient(), id);
+      });
+    });
+  }
+}
+
+void MainWindow::notifyRAIntegrationOfWindowChange()
+{
+  const auto lock = Achievements::GetLock();
+  if (!Achievements::IsUsingRAIntegration())
+    return;
+
+  HWND hwnd = static_cast<HWND>((void*)winId());
+  Host::RunOnCPUThread([hwnd]() {
+    const auto lock = Achievements::GetLock();
+    if (!Achievements::IsUsingRAIntegration())
+      return;
+
+    rc_client_raintegration_update_main_window_handle(Achievements::GetClient(), hwnd);
+  });
+
+  onRAIntegrationMenuChanged();
+}
+
+void Host::OnRAIntegrationMenuChanged()
+{
+  QMetaObject::invokeMethod(g_main_window, "onRAIntegrationMenuChanged", Qt::QueuedConnection);
+}
+
+#else // RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+void MainWindow::onRAIntegrationMenuChanged()
+{
+  // has to be stubbed out because otherwise moc won't find it
+}
+
+void MainWindow::notifyRAIntegrationOfWindowChange()
+{
+}
+
+#endif // RC_CLIENT_SUPPORTS_RAINTEGRATION

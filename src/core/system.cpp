@@ -1551,7 +1551,7 @@ void System::UpdateInputSettingsLayer(std::string input_profile_name, std::uniqu
 
 void System::ResetSystem()
 {
-  if (!IsValid() || !Achievements::ConfirmGameChange())
+  if (!IsValid())
     return;
 
   InternalReset();
@@ -1591,8 +1591,6 @@ void System::PauseSystem(bool paused)
     InputManager::PauseVibration();
     InputManager::UpdateHostMouseMode();
 
-    Achievements::OnSystemPaused(true);
-
     if (g_settings.inhibit_screensaver)
       PlatformMisc::ResumeScreensaver();
 
@@ -1609,8 +1607,6 @@ void System::PauseSystem(bool paused)
     FullscreenUI::OnSystemResumed();
 
     InputManager::UpdateHostMouseMode();
-
-    Achievements::OnSystemPaused(false);
 
     if (g_settings.inhibit_screensaver)
       PlatformMisc::SuspendScreensaver();

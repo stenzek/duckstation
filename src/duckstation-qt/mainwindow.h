@@ -209,9 +209,11 @@ private Q_SLOTS:
   void onGameListEntryContextMenuRequested(const QPoint& point);
 
   void onUpdateCheckComplete();
+  void onRAIntegrationMenuChanged();
 
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
+
 
 protected:
   void showEvent(QShowEvent* event) override;
@@ -277,6 +279,7 @@ private:
 
   void registerForDeviceNotifications();
   void unregisterForDeviceNotifications();
+  void notifyRAIntegrationOfWindowChange();
 
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu);
@@ -344,6 +347,10 @@ private:
 
 #ifdef _WIN32
   void* m_device_notification_handle = nullptr;
+#endif
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  QMenu* m_raintegration_menu = nullptr;
 #endif
 };
 

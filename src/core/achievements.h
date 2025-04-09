@@ -89,9 +89,6 @@ void OnSystemDestroyed();
 /// Called when the system is being reset. Resets the internal state of all achievement tracking.
 void OnSystemReset();
 
-/// Called when the system is being paused and resumed.
-void OnSystemPaused(bool paused);
-
 /// Called when the system changes game.
 void GameChanged(CDImage* image);
 
@@ -126,9 +123,7 @@ bool IsHardcoreModeActive();
 
 /// RAIntegration only exists for Windows, so no point checking it on other platforms.
 bool IsUsingRAIntegration();
-
-/// Hook for RAIntegration to confirm reset/shutdown.
-bool ConfirmGameChange();
+bool IsRAIntegrationAvailable();
 
 /// Returns true if the achievement system is active. Achievements can be active without a valid client.
 bool IsActive();
@@ -207,22 +202,11 @@ void DrawLeaderboardsWindow();
 
 #endif // __ANDROID__
 
-#ifdef ENABLE_RAINTEGRATION
-/// Prevents the internal implementation from being used. Instead, RAIntegration will be
-/// called into when achievement-related events occur.
-void SwitchToRAIntegration();
-
-namespace RAIntegration {
-void MainWindowChanged(void* new_handle);
-void GameChanged();
-std::vector<std::tuple<int, std::string, bool>> GetMenuItems();
-void ActivateMenuItem(int item);
-} // namespace RAIntegration
-#endif
 } // namespace Achievements
 
 /// Functions implemented in the frontend.
 namespace Host {
+
 /// Called if the big picture UI requests achievements login, or token login fails.
 void OnAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 
@@ -235,4 +219,12 @@ void OnAchievementsRefreshed();
 
 /// Called whenever hardcore mode is toggled.
 void OnAchievementsHardcoreModeChanged(bool enabled);
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+/// Called when the RAIntegration menu changes.
+void OnRAIntegrationMenuChanged();
+
+#endif
+
 } // namespace Host

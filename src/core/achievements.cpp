@@ -62,13 +62,6 @@
 
 LOG_CHANNEL(Achievements);
 
-#ifdef ENABLE_RAINTEGRATION
-// RA_Interface ends up including windows.h, with its silly macros.
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#endif
-#include "RA_Interface.h"
-#endif
 namespace Achievements {
 
 static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav";
@@ -233,6 +226,13 @@ static void BuildProgressDatabase(const rc_client_all_progress_list_t* allprog);
 static void UpdateProgressDatabase(bool force);
 static void ClearProgressDatabase();
 
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+static void BeginLoadRAIntegration();
+static void UnloadRAIntegration();
+
+#endif
+
 namespace {
 
 struct PauseMenuAchievementInfo
@@ -248,10 +248,6 @@ struct State
   bool has_achievements = false;
   bool has_leaderboards = false;
   bool has_rich_presence = false;
-
-#ifdef ENABLE_RAINTEGRATION
-  bool using_raintegration = false;
-#endif
 
   std::recursive_mutex mutex; // large
 
@@ -297,6 +293,11 @@ struct State
   rc_client_hash_library_t* fetch_hash_library_result = nullptr;
   rc_client_async_handle_t* fetch_all_progress_request = nullptr;
   rc_client_all_progress_list_t* fetch_all_progress_result = nullptr;
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  rc_client_async_handle_t* load_raintegration_request = nullptr;
+  bool using_raintegration = false;
+#endif
 };
 
 } // namespace
@@ -566,20 +567,11 @@ void Achievements::UpdateGlyphRanges()
 
 bool Achievements::IsActive()
 {
-#ifdef ENABLE_RAINTEGRATION
-  return (s_state.client != nullptr) || s_state.using_raintegration;
-#else
   return (s_state.client != nullptr);
-#endif
 }
 
 bool Achievements::IsHardcoreModeActive()
 {
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    return RA_HardcoreModeIsActive() != 0;
-#endif
-
   if (!s_state.client)
     return false;
 
@@ -655,6 +647,11 @@ bool Achievements::Initialize()
     return false;
 
   rc_client_set_event_handler(s_state.client, ClientEventHandler);
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (g_settings.achievements_use_raintegration)
+    BeginLoadRAIntegration();
+#endif
 
   // Hardcore starts off. We enable it on first boot.
   rc_client_set_hardcore_enabled(s_state.client, false);
@@ -752,9 +749,6 @@ bool Achievements::TryLoggingInWithToken()
 
 void Achievements::UpdateSettings(const Settings& old_config)
 {
-  if (IsUsingRAIntegration())
-    return;
-
   if (!g_settings.achievements_enabled)
   {
     // we're done here
@@ -768,6 +762,16 @@ void Achievements::UpdateSettings(const Settings& old_config)
     Initialize();
     return;
   }
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (g_settings.achievements_use_raintegration != old_config.achievements_use_raintegration)
+  {
+    // RAIntegration requires a full client reload?
+    Shutdown();
+    Initialize();
+    return;
+  }
+#endif
 
   if (g_settings.achievements_hardcore_mode != old_config.achievements_hardcore_mode)
   {
@@ -822,6 +826,11 @@ void Achievements::Shutdown()
     rc_client_abort_async(s_state.client, s_state.login_request);
     s_state.login_request = nullptr;
   }
+
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+  if (s_state.using_raintegration)
+    UnloadRAIntegration();
+#endif
 
   DestroyClient(&s_state.client, &s_state.http_downloader);
 }
@@ -898,11 +907,6 @@ void Achievements::IdleUpdate()
   if (!IsActive())
     return;
 
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    return;
-#endif
-
   const auto lock = GetLock();
 
   s_state.http_downloader->PollRequests();
@@ -922,14 +926,6 @@ void Achievements::FrameUpdate()
 {
   if (!IsActive())
     return;
-
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    RA_DoAchievementsFrame();
-    return;
-  }
-#endif
 
   auto lock = GetLock();
 
@@ -1162,27 +1158,11 @@ void Achievements::OnSystemDestroyed()
   UpdateGlyphRanges();
 }
 
-void Achievements::OnSystemPaused(bool paused)
-{
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    RA_SetPaused(paused);
-#endif
-}
-
 void Achievements::OnSystemReset()
 {
   const auto lock = GetLock();
   if (!IsActive())
     return;
-
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    RA_OnReset();
-    return;
-  }
-#endif
 
   // Do we need to enable hardcore mode?
   if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client))
@@ -1263,12 +1243,6 @@ bool Achievements::IdentifyGame(CDImage* image)
   }
 
   s_state.game_hash = game_hash;
-
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    RAIntegration::GameChanged();
-#endif
-
   return true;
 }
 
@@ -1834,16 +1808,6 @@ void Achievements::DisableHardcoreMode(bool show_message, bool display_game_summ
   if (!IsActive())
     return;
 
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    if (RA_HardcoreModeIsActive())
-      RA_DisableHardcore();
-
-    return;
-  }
-#endif
-
   const auto lock = GetLock();
   if (!rc_client_get_hardcore_enabled(s_state.client))
     return;
@@ -1919,7 +1883,7 @@ bool Achievements::DoState(StateWrapper& sw)
   {
     // if we're active, make sure we've downloaded and activated all the achievements
     // before deserializing, otherwise that state's going to get lost.
-    if (!IsUsingRAIntegration() && s_state.load_game_request)
+    if (s_state.load_game_request)
     {
       // Messy because GPU-thread, but at least it looks pretty.
       GPUThread::RunOnThread([]() {
@@ -1938,14 +1902,7 @@ bool Achievements::DoState(StateWrapper& sw)
     {
       // reset runtime, no data (state might've been created without cheevos)
       WARNING_LOG("State is missing cheevos data, resetting runtime");
-#ifdef ENABLE_RAINTEGRATION
-      if (IsUsingRAIntegration())
-        RA_OnReset();
-      else
-        rc_client_reset(s_state.client);
-#else
       rc_client_reset(s_state.client);
-#endif
 
       return !sw.HasError();
     }
@@ -1954,20 +1911,11 @@ bool Achievements::DoState(StateWrapper& sw)
     if (sw.HasError())
       return false;
 
-#ifdef ENABLE_RAINTEGRATION
-    if (IsUsingRAIntegration())
+    const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
+    if (result != RC_OK)
     {
-      RA_RestoreState(reinterpret_cast<const char*>(data.data()));
-    }
-    else
-#endif
-    {
-      const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
-      if (result != RC_OK)
-      {
-        WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
-        rc_client_reset(s_state.client);
-      }
+      WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
+      rc_client_reset(s_state.client);
     }
 
     return true;
@@ -1976,46 +1924,22 @@ bool Achievements::DoState(StateWrapper& sw)
   {
     const size_t size_pos = sw.GetPosition();
 
-#ifdef ENABLE_RAINTEGRATION
-    if (IsUsingRAIntegration())
-    {
-      const int size = RA_CaptureState(nullptr, 0);
-      u32 write_size = static_cast<u32>(std::max(size, 0));
-      sw.Do(&write_size);
+    u32 data_size = static_cast<u32>(rc_client_progress_size(s_state.client));
+    sw.Do(&data_size);
 
-      const std::span<u8> data = sw.GetDeferredBytes(write_size);
-      if (!data.empty())
+    if (data_size > 0)
+    {
+      const std::span<u8> data = sw.GetDeferredBytes(data_size);
+      if (!sw.HasError()) [[likely]]
       {
-        const int result = RA_CaptureState(reinterpret_cast<char*>(data.data()), size);
-        if (result != static_cast<int>(size))
+        const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data_size);
+        if (result != RC_OK)
         {
-          WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
-          write_size = 0;
+          // set data to zero, effectively serializing nothing
+          WARNING_LOG("Failed to serialize cheevos state ({})", result);
+          data_size = 0;
           sw.SetPosition(size_pos);
-          sw.Do(&write_size);
-        }
-      }
-    }
-    else
-#endif
-    {
-      u32 data_size = static_cast<u32>(rc_client_progress_size(s_state.client));
-      sw.Do(&data_size);
-
-      if (data_size > 0)
-      {
-        const std::span<u8> data = sw.GetDeferredBytes(data_size);
-        if (!sw.HasError()) [[likely]]
-        {
-          const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data_size);
-          if (result != RC_OK)
-          {
-            // set data to zero, effectively serializing nothing
-            WARNING_LOG("Failed to serialize cheevos state ({})", result);
-            data_size = 0;
-            sw.SetPosition(size_pos);
-            sw.Do(&data_size);
-          }
+          sw.Do(&data_size);
         }
       }
     }
@@ -2281,7 +2205,7 @@ std::string Achievements::GetLoggedInUserBadgePath()
 
 u32 Achievements::GetPauseThrottleFrames()
 {
-  if (!IsActive() || !IsHardcoreModeActive() || IsUsingRAIntegration())
+  if (!IsActive() || !IsHardcoreModeActive())
     return 0;
 
   u32 frames_remaining = 0;
@@ -2314,23 +2238,8 @@ void Achievements::Logout()
   ClearProgressDatabase();
 }
 
-bool Achievements::ConfirmGameChange()
-{
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    return RA_ConfirmLoadNewRom(false);
-#endif
-
-  return true;
-}
-
 bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 {
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    return (RA_WarnDisableHardcore(trigger) != 0);
-#endif
-
   // I really hope this doesn't deadlock :/
   const bool confirmed = Host::ConfirmMessage(
     TRANSLATE("Achievements", "Confirm Hardcore Mode Disable"),
@@ -2346,30 +2255,19 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
 
 void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
 {
-  auto real_callback = [callback = std::move(callback)](bool res) mutable {
-    // don't run the callback in the middle of rendering the UI
-    Host::RunOnCPUThread([callback = std::move(callback), res]() {
-      if (res)
-        DisableHardcoreMode(true, true);
-      callback(res);
-    });
-  };
-
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    const bool result = (RA_WarnDisableHardcore(trigger) != 0);
-    real_callback(result);
-    return;
-  }
-#endif
-
   Host::ConfirmMessageAsync(
     TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
     fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you want to "
                                              "disable hardcore mode? {0} will be cancelled if you select No."),
                 trigger),
-    std::move(real_callback));
+    [callback = std::move(callback)](bool res) mutable {
+      // don't run the callback in the middle of rendering the UI
+      Host::RunOnCPUThread([callback = std::move(callback), res]() {
+        if (res)
+          DisableHardcoreMode(true, true);
+        callback(res);
+      });
+    });
 }
 
 void Achievements::ClearUIState()
@@ -4665,200 +4563,132 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
   return (iter != m_entries.end() && iter->game_id == game_id) ? &(*iter) : nullptr;
 }
 
-#ifdef ENABLE_RAINTEGRATION
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
-#include "RA_Consoles.h"
+#include "common/windows_headers.h"
+
+#include "rc_client_raintegration.h"
+
+namespace Achievements {
+
+static void RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
+static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client);
+static void RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
+                                             rc_client_t* client);
+static void RAIntegrationGetGameNameCallback(char* buffer, uint32_t buffer_size, rc_client_t* client);
+
+} // namespace Achievements
 
 bool Achievements::IsUsingRAIntegration()
 {
   return s_state.using_raintegration;
 }
 
-namespace Achievements::RAIntegration {
-static void InitializeRAIntegration(void* main_window_handle);
-
-static int RACallbackIsActive();
-static void RACallbackCauseUnpause();
-static void RACallbackCausePause();
-static void RACallbackRebuildMenu();
-static void RACallbackEstimateTitle(char* buf);
-static void RACallbackResetEmulator();
-static void RACallbackLoadROM(const char* unused);
-static unsigned char RACallbackReadRAM(unsigned int address);
-static unsigned int RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
-static void RACallbackWriteRAM(unsigned int address, unsigned char value);
-static unsigned char RACallbackReadScratchpad(unsigned int address);
-static unsigned int RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer, unsigned int nBytes);
-static void RACallbackWriteScratchpad(unsigned int address, unsigned char value);
-
-static bool s_raintegration_initialized = false;
-} // namespace Achievements::RAIntegration
-
-void Achievements::SwitchToRAIntegration()
+bool Achievements::IsRAIntegrationAvailable()
 {
-  s_state.using_raintegration = true;
+  return (FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "RA_Integration-x64.dll").c_str()) ||
+          FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "RA_Integration.dll").c_str()));
 }
 
-void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
+void Achievements::BeginLoadRAIntegration()
 {
-  RA_InitClient((HWND)main_window_handle, "DuckStation", g_scm_tag_str);
-  RA_SetUserAgentDetail(Host::GetHTTPUserAgent().c_str());
-
-  RA_InstallSharedFunctions(RACallbackIsActive, RACallbackCauseUnpause, RACallbackCausePause, RACallbackRebuildMenu,
-                            RACallbackEstimateTitle, RACallbackResetEmulator, RACallbackLoadROM);
-  RA_SetConsoleID(PlayStation);
-
-  // Apparently this has to be done early, or the memory inspector doesn't work.
-  // That's a bit unfortunate, because the RAM size can vary between games, and depending on the option.
-  RA_InstallMemoryBank(0, RACallbackReadRAM, RACallbackWriteRAM, Bus::RAM_2MB_SIZE);
-  RA_InstallMemoryBankBlockReader(0, RACallbackReadRAMBlock);
-  RA_InstallMemoryBank(1, RACallbackReadScratchpad, RACallbackWriteScratchpad, CPU::SCRATCHPAD_SIZE);
-  RA_InstallMemoryBankBlockReader(1, RACallbackReadScratchpadBlock);
-
-  // Fire off a login anyway. Saves going into the menu and doing it.
-  RA_AttemptLogin(0);
-
-  s_raintegration_initialized = true;
-
-  // this is pretty lame, but we may as well persist until we exit anyway
-  std::atexit(RA_Shutdown);
+  const std::optional<WindowInfo> wi = Host::GetTopLevelWindowInfo();
+  const std::wstring wapproot = StringUtil::UTF8StringToWideString(EmuFolders::AppRoot);
+  s_state.load_raintegration_request = rc_client_begin_load_raintegration(
+    s_state.client, wapproot.c_str(),
+    (wi.has_value() && wi->type == WindowInfo::Type::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
+    "DuckStation", g_scm_tag_str, RAIntegrationBeginLoadCallback, nullptr);
 }
 
-void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
+void Achievements::RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client,
+                                                  void* userdata)
 {
-  if (s_raintegration_initialized)
+  if (result != RC_OK)
   {
-    RA_UpdateHWnd((HWND)new_handle);
+    std::string message = fmt::format("Failed to load RAIntegration:\n{}", error_message ? error_message : "");
+    Host::ReportErrorAsync("RAIntegration Error", message);
     return;
   }
 
-  InitializeRAIntegration(new_handle);
-}
-
-void Achievements::RAIntegration::GameChanged()
-{
-  s_state.game_id = s_state.game_hash.has_value() ? RA_IdentifyHash(GameHashToString(s_state.game_hash.value())) : 0;
-  RA_ActivateGame(s_state.game_id);
-}
-
-std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::GetMenuItems()
-{
-  std::array<RA_MenuItem, 64> items;
-  const int num_items = RA_GetPopupMenuItems(items.data());
-
-  std::vector<std::tuple<int, std::string, bool>> ret;
-  ret.reserve(static_cast<u32>(num_items));
-
-  for (int i = 0; i < num_items; i++)
   {
-    const RA_MenuItem& it = items[i];
-    if (!it.sLabel)
-      ret.emplace_back(0, std::string(), false);
-    else
-      ret.emplace_back(static_cast<int>(it.nID), StringUtil::WideStringToUTF8String(it.sLabel), it.bChecked);
+    const auto lock = GetLock();
+
+    rc_client_raintegration_set_write_memory_function(client, RAIntegrationWriteMemoryCallback);
+    rc_client_raintegration_set_console_id(client, RC_CONSOLE_PLAYSTATION);
+    rc_client_raintegration_set_get_game_name_function(client, RAIntegrationGetGameNameCallback);
+    rc_client_raintegration_set_event_handler(client, RAIntegrationEventHandler);
+
+    s_state.using_raintegration = true;
   }
 
-  return ret;
+  INFO_COLOR_LOG(StrongGreen, "RAIntegration loaded.");
+
+  Host::OnRAIntegrationMenuChanged();
 }
 
-void Achievements::RAIntegration::ActivateMenuItem(int item)
+void Achievements::UnloadRAIntegration()
 {
-  RA_InvokeDialog(item);
-}
-
-int Achievements::RAIntegration::RACallbackIsActive()
-{
-  return static_cast<int>(HasActiveGame());
-}
-
-void Achievements::RAIntegration::RACallbackCauseUnpause()
-{
-  Host::RunOnCPUThread([]() { System::PauseSystem(false); });
-}
-
-void Achievements::RAIntegration::RACallbackCausePause()
-{
-  Host::RunOnCPUThread([]() { System::PauseSystem(true); });
-}
-
-void Achievements::RAIntegration::RACallbackRebuildMenu()
-{
-  // unused, we build the menu on demand
-}
-
-void Achievements::RAIntegration::RACallbackEstimateTitle(char* buf)
-{
-  StringUtil::Strlcpy(buf, System::GetGameTitle(), 256);
-}
-
-void Achievements::RAIntegration::RACallbackResetEmulator()
-{
-  if (System::IsValid())
-    System::ResetSystem();
-}
-
-void Achievements::RAIntegration::RACallbackLoadROM(const char* unused)
-{
-  // unused
-  UNREFERENCED_PARAMETER(unused);
-}
-
-unsigned char Achievements::RAIntegration::RACallbackReadRAM(unsigned int address)
-{
-  if (!System::IsValid())
-    return 0;
-
-  u8 value = 0;
-  CPU::SafeReadMemoryByte(address, &value);
-  return value;
-}
-
-void Achievements::RAIntegration::RACallbackWriteRAM(unsigned int address, unsigned char value)
-{
-  CPU::SafeWriteMemoryByte(address, value);
-}
-
-unsigned int Achievements::RAIntegration::RACallbackReadRAMBlock(unsigned int nAddress, unsigned char* pBuffer,
-                                                                 unsigned int nBytes)
-{
-  if (nAddress >= Bus::g_ram_size)
-    return 0;
-
-  const u32 copy_size = std::min<u32>(Bus::g_ram_size - nAddress, nBytes);
-  std::memcpy(pBuffer, Bus::g_unprotected_ram + nAddress, copy_size);
-  return copy_size;
-}
-
-unsigned char Achievements::RAIntegration::RACallbackReadScratchpad(unsigned int address)
-{
-  if (!System::IsValid() || address >= CPU::SCRATCHPAD_SIZE)
-    return 0;
-
-  return CPU::g_state.scratchpad[address];
-}
-
-void Achievements::RAIntegration::RACallbackWriteScratchpad(unsigned int address, unsigned char value)
-{
-  if (address >= CPU::SCRATCHPAD_SIZE)
+  if (!s_state.using_raintegration)
     return;
 
-  CPU::g_state.scratchpad[address] = value;
+  rc_client_unload_raintegration(s_state.client);
+  s_state.using_raintegration = false;
+  Host::OnRAIntegrationMenuChanged();
 }
 
-unsigned int Achievements::RAIntegration::RACallbackReadScratchpadBlock(unsigned int nAddress, unsigned char* pBuffer,
-                                                                        unsigned int nBytes)
+void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client)
 {
-  if (nAddress >= CPU::SCRATCHPAD_SIZE)
-    return 0;
+  switch (event->type)
+  {
+    case RC_CLIENT_RAINTEGRATION_EVENT_MENUITEM_CHECKED_CHANGED:
+    case RC_CLIENT_RAINTEGRATION_EVENT_MENU_CHANGED:
+    {
+      Host::OnRAIntegrationMenuChanged();
+    }
+    break;
 
-  const u32 copy_size = std::min<u32>(CPU::SCRATCHPAD_SIZE - nAddress, nBytes);
-  std::memcpy(pBuffer, &CPU::g_state.scratchpad[nAddress], copy_size);
-  return copy_size;
+    case RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED:
+    {
+      // Could get called from a different thread...
+      Host::RunOnCPUThread([]() {
+        const auto lock = GetLock();
+        OnHardcoreModeChanged(rc_client_get_hardcore_enabled(s_state.client) != 0, false, false);
+      });
+    }
+    break;
+
+    case RC_CLIENT_RAINTEGRATION_EVENT_PAUSE:
+    {
+      Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+    }
+    break;
+
+    default:
+      ERROR_LOG("Unhandled RAIntegration event {}", static_cast<u32>(event->type));
+      break;
+  }
+}
+
+void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
+                                                    rc_client_t* client)
+{
+  // I hope this is called on the CPU thread...
+  CPU::SafeWriteMemoryBytes(address, buffer, num_bytes);
+}
+
+void Achievements::RAIntegrationGetGameNameCallback(char* buffer, uint32_t buffer_size, rc_client_t* client)
+{
+  StringUtil::Strlcpy(buffer, System::GetGameTitle(), buffer_size);
 }
 
 #else
 
 bool Achievements::IsUsingRAIntegration()
+{
+  return false;
+}
+
+bool Achievements::IsRAIntegrationAvailable()
 {
   return false;
 }

@@ -161,20 +161,8 @@ void SettingsWindow::addPages()
          "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
          "Shift+Wheel to scroll this panel."));
 
-    if (!Achievements::IsUsingRAIntegration())
-    {
-      addWidget(m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), std::move(title),
-                std::move(icon_text), std::move(help_text));
-    }
-    else
-    {
-      QLabel* placeholder_label =
-        new QLabel(QStringLiteral("RAIntegration is being used, built-in RetroAchievements support is disabled."),
-                   m_ui.settingsContainer);
-      placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-
-      addWidget(placeholder_label, std::move(title), std::move(icon_text), std::move(help_text));
-    }
+    addWidget(m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), std::move(title),
+              std::move(icon_text), std::move(help_text));
   }
 
   if (!isPerGameSettings())

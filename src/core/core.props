@@ -4,7 +4,6 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="('$(Platform)'!='ARM64')">ENABLE_RAINTEGRATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64')">ENABLE_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64')">ENABLE_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
@@ -17,6 +16,7 @@
       
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\xbyak\xbyak</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">XBYAK_NO_EXCEPTION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">RC_CLIENT_SUPPORTS_RAINTEGRATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='ARM' Or '$(Platform)'=='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\vixl\include</AdditionalIncludeDirectories>
     </ClCompile>

@@ -81,6 +81,8 @@
     <ClCompile Include="src\rc_compat.c" />
     <ClCompile Include="src\rc_util.c" />
     <ClCompile Include="src\rc_client.c" />
+    <ClCompile Include="src\rc_client_external.c" />
+    <ClCompile Include="src\rc_client_raintegration.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rc_consoles.h">
@@ -137,6 +139,9 @@
     <ClInclude Include="include\rc_util.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="src\rc_client_external.h" />
+    <ClInclude Include="src\rc_client_external_versions.h" />
+    <ClInclude Include="src\rc_client_raintegration_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="src\rc_client_types.natvis" />

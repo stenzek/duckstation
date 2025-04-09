@@ -6223,19 +6223,6 @@ void FullscreenUI::DrawAudioSettingsPage()
 
 void FullscreenUI::DrawAchievementsSettingsPage()
 {
-#ifdef ENABLE_RAINTEGRATION
-  if (Achievements::IsUsingRAIntegration())
-  {
-    BeginMenuButtons();
-    MenuButtonWithoutSummary(
-      FSUI_ICONSTR(ICON_FA_BAN,
-                   FSUI_CSTR("RAIntegration is being used instead of the built-in achievements implementation.")),
-      false);
-    EndMenuButtons();
-    return;
-  }
-#endif
-
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();

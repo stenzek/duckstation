@@ -24,11 +24,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="settingsGroupBox">
      <property name="title">
       <string>Settings</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="settingsLayout">
       <item row="1" column="1">
        <widget class="QCheckBox" name="spectatorMode">
         <property name="text">
@@ -61,6 +61,13 @@
        <widget class="QCheckBox" name="hardcoreMode">
         <property name="text">
          <string>Enable Hardcore Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="useRAIntegration">
+        <property name="text">
+         <string>Enable RAIntegration (Development Only)</string>
         </property>
        </widget>
       </item>
