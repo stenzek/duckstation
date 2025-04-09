@@ -47,7 +47,7 @@ static int rc_classify_condition(const rc_condition_t* cond) {
   }
 }
 
-static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr) {
+static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr, const rc_parse_state_t* parent_parse) {
   rc_parse_state_t parse;
   rc_memrefs_t memrefs;
   rc_condition_t condition;
@@ -55,8 +55,9 @@ static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr) {
   uint32_t index = 0;
   uint32_t chain_length = 1;
 
-  rc_init_parse_state(&parse, NULL, NULL, 0);
+  rc_init_parse_state(&parse, NULL);
   rc_init_parse_state_memrefs(&parse, &memrefs);
+  parse.ignore_non_parse_errors = parent_parse->ignore_non_parse_errors;
 
   do {
     rc_parse_condition_internal(&condition, &memaddr, &parse);
@@ -109,7 +110,7 @@ static int rc_find_next_classification(const char* memaddr) {
   rc_condition_t condition;
   int classification;
 
-  rc_init_parse_state(&parse, NULL, NULL, 0);
+  rc_init_parse_state(&parse, NULL);
   rc_init_parse_state_memrefs(&parse, &memrefs);
 
   do {
@@ -215,7 +216,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
   }
 
   memset(&local_condset, 0, sizeof(local_condset));
-  result = rc_classify_conditions(&local_condset, *memaddr);
+  result = rc_classify_conditions(&local_condset, *memaddr, parse);
   if (result < 0) {
     parse->offset = result;
     return NULL;
@@ -260,7 +261,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
     if (parse->offset < 0)
       return NULL;
 
-    if (condition.oper == RC_OPERATOR_NONE) {
+    if (condition.oper == RC_OPERATOR_NONE && !parse->ignore_non_parse_errors) {
       switch (condition.type) {
         case RC_CONDITION_ADD_ADDRESS:
         case RC_CONDITION_ADD_SOURCE:
@@ -285,8 +286,10 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
       case RC_CONDITION_MEASURED:
         if (measured_target != 0) {
           /* multiple Measured flags cannot exist in the same group */
-          parse->offset = RC_MULTIPLE_MEASURED;
-          return NULL;
+          if (!parse->ignore_non_parse_errors) {
+            parse->offset = RC_MULTIPLE_MEASURED;
+            return NULL;
+          }
         }
         else if (parse->is_value) {
           measured_target = (uint32_t)-1;
@@ -304,15 +307,17 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
         else if (condition.operand2.type == RC_OPERAND_FP) {
           measured_target = (unsigned)condition.operand2.value.dbl;
         }
-        else {
+        else if (!parse->ignore_non_parse_errors) {
           parse->offset = RC_INVALID_MEASURED_TARGET;
           return NULL;
         }
 
         if (parse->measured_target && measured_target != parse->measured_target) {
           /* multiple Measured flags in separate groups must have the same target */
-          parse->offset = RC_MULTIPLE_MEASURED;
-          return NULL;
+          if (!parse->ignore_non_parse_errors) {
+            parse->offset = RC_MULTIPLE_MEASURED;
+            return NULL;
+          }
         }
 
         parse->measured_target = measured_target;
@@ -321,7 +326,7 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
       case RC_CONDITION_STANDARD:
       case RC_CONDITION_TRIGGER:
         /* these flags are not allowed in value expressions */
-        if (parse->is_value) {
+        if (parse->is_value && !parse->ignore_non_parse_errors) {
           parse->offset = RC_INVALID_VALUE_FLAG;
           return NULL;
         }
@@ -507,6 +512,10 @@ static void rc_condset_evaluate_reset_if(rc_condition_t* condition, rc_eval_stat
   const uint8_t cond_valid = rc_condset_evaluate_condition(condition, eval_state);
 
   if (cond_valid) {
+    /* flag the condition as being responsible for the reset */
+    /* make sure not to modify bit0, as we use bitwise-and operators to combine truthiness */
+    condition->is_true |= 0x02;
+
     /* set cannot be valid if we've hit a reset condition */
     eval_state->is_true = eval_state->is_primed = 0;
 
@@ -552,9 +561,11 @@ static void rc_condset_evaluate_measured(rc_condition_t* condition, rc_eval_stat
 }
 
 static void rc_condset_evaluate_measured_if(rc_condition_t* condition, rc_eval_state_t* eval_state) {
-  rc_condset_evaluate_standard(condition, eval_state);
+  const uint8_t cond_valid = rc_condset_evaluate_condition(condition, eval_state);
 
-  eval_state->can_measure &= condition->is_true;
+  eval_state->is_true &= cond_valid;
+  eval_state->is_primed &= cond_valid;
+  eval_state->can_measure &= cond_valid;
 }
 
 static void rc_condset_evaluate_add_hits(rc_condition_t* condition, rc_eval_state_t* eval_state) {
@@ -699,6 +710,17 @@ int rc_test_condset(rc_condset_t* self, rc_eval_state_t* eval_state) {
   }
 
   if (self->num_measured_conditions) {
+    /* IMPORTANT: reset hit counts on these conditions before processing them so
+     *            the MeasuredIf logic and Measured value are correct.
+     *      NOTE: a ResetIf in a later alt group may not have been processed yet.
+     *            Accept that as a weird edge case, and just recommend the user
+     *            move the ResetIf if it becomes a problem. */
+    if (eval_state->was_reset) {
+      int i;
+      for (i = 0; i < self->num_measured_conditions; ++i)
+        conditions[i].current_hits = 0;
+    }
+
     /* the measured value must be calculated every frame, even if hit counts will be reset */
     rc_test_condset_internal(conditions, self->num_measured_conditions, eval_state, 0);
     conditions += self->num_measured_conditions;

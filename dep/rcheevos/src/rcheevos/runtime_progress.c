@@ -28,8 +28,6 @@ typedef struct rc_runtime_progress_t {
   uint32_t buffer_size;
 
   uint32_t chunk_size_offset;
-
-  lua_State* L;
 } rc_runtime_progress_t;
 
 #define assert_chunk_size(expected_size) assert((uint32_t)(progress->offset - progress->chunk_size_offset - 4) == (uint32_t)(expected_size))
@@ -40,7 +38,7 @@ typedef struct rc_runtime_progress_t {
 
 #define RC_VAR_FLAG_HAS_COND_DATA         0x01000000
 
-#define RC_COND_FLAG_IS_TRUE                            0x00000001
+#define RC_COND_FLAG_IS_TRUE_MASK                       0x00000003
 #define RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF        0x00010000
 #define RC_COND_FLAG_OPERAND1_MEMREF_CHANGED_THIS_FRAME 0x00020000
 #define RC_COND_FLAG_OPERAND2_IS_INDIRECT_MEMREF        0x00100000
@@ -116,11 +114,10 @@ static void rc_runtime_progress_end_chunk(rc_runtime_progress_t* progress)
   }
 }
 
-static void rc_runtime_progress_init(rc_runtime_progress_t* progress, const rc_runtime_t* runtime, lua_State* L)
+static void rc_runtime_progress_init(rc_runtime_progress_t* progress, const rc_runtime_t* runtime)
 {
   memset(progress, 0, sizeof(rc_runtime_progress_t));
   progress->runtime = runtime;
-  progress->L = L;
 }
 
 #define RC_RUNTIME_SERIALIZED_MEMREF_SIZE 16 /* 4x uint: address, flags, value, prior */
@@ -302,7 +299,7 @@ static int rc_runtime_progress_is_indirect_memref(rc_operand_t* oper)
     case RC_OPERAND_CONST:
     case RC_OPERAND_FP:
     case RC_OPERAND_RECALL:
-    case RC_OPERAND_LUA:
+    case RC_OPERAND_FUNC:
       return 0;
 
     default:
@@ -325,9 +322,7 @@ static int rc_runtime_progress_write_condset(rc_runtime_progress_t* progress, rc
 
   cond = condset->conditions;
   while (cond) {
-    flags = 0;
-    if (cond->is_true)
-      flags |= RC_COND_FLAG_IS_TRUE;
+    flags = (cond->is_true & RC_COND_FLAG_IS_TRUE_MASK);
 
     if (rc_runtime_progress_is_indirect_memref(&cond->operand1)) {
       flags |= RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF;
@@ -381,7 +376,7 @@ static int rc_runtime_progress_read_condset(rc_runtime_progress_t* progress, rc_
     cond->current_hits = rc_runtime_progress_read_uint(progress);
     flags = rc_runtime_progress_read_uint(progress);
 
-    cond->is_true = (flags & RC_COND_FLAG_IS_TRUE) ? 1 : 0;
+    cond->is_true = (flags & RC_COND_FLAG_IS_TRUE_MASK);
 
     if (flags & RC_COND_FLAG_OPERAND1_IS_INDIRECT_MEMREF) {
       if (!rc_operand_is_memref(&cond->operand1)) /* this should never happen, but better safe than sorry */
@@ -897,12 +892,14 @@ static int rc_runtime_progress_serialize_internal(rc_runtime_progress_t* progres
   return RC_OK;
 }
 
-uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L)
+uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L)
 {
   rc_runtime_progress_t progress;
   int result;
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  (void)unused_L;
+
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer_size = 0xFFFFFFFF;
 
   result = rc_runtime_progress_serialize_internal(&progress);
@@ -912,31 +909,33 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, lua_State* L)
   return progress.offset;
 }
 
-int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, lua_State* L)
+int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, void* unused_L)
 {
-  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, L);
+  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, unused_L);
 }
 
-int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, lua_State* L)
+int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, void* unused_L)
 {
   rc_runtime_progress_t progress;
+
+  (void)unused_L;
 
   if (!buffer)
     return RC_INVALID_STATE;
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer = (uint8_t*)buffer;
   progress.buffer_size = buffer_size;
 
   return rc_runtime_progress_serialize_internal(&progress);
 }
 
-int rc_runtime_deserialize_progress(rc_runtime_t* runtime, const uint8_t* serialized, lua_State* L)
+int rc_runtime_deserialize_progress(rc_runtime_t* runtime, const uint8_t* serialized, void* unused_L)
 {
-  return rc_runtime_deserialize_progress_sized(runtime, serialized, 0xFFFFFFFF, L);
+  return rc_runtime_deserialize_progress_sized(runtime, serialized, 0xFFFFFFFF, unused_L);
 }
 
-int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* serialized, uint32_t serialized_size, lua_State* L)
+int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* serialized, uint32_t serialized_size, void* unused_L)
 {
   rc_runtime_progress_t progress;
   md5_state_t state;
@@ -948,12 +947,14 @@ int rc_runtime_deserialize_progress_sized(rc_runtime_t* runtime, const uint8_t* 
   int seen_rich_presence = 0;
   int result = RC_OK;
 
+  (void)unused_L;
+
   if (!serialized || serialized_size < RC_RUNTIME_MIN_BUFFER_SIZE) {
     rc_runtime_reset(runtime);
     return RC_INSUFFICIENT_BUFFER;
   }
 
-  rc_runtime_progress_init(&progress, runtime, L);
+  rc_runtime_progress_init(&progress, runtime);
   progress.buffer = (uint8_t*)serialized;
 
   if (rc_runtime_progress_read_uint(&progress) != RC_RUNTIME_MARKER) {

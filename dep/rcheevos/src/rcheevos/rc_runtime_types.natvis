@@ -134,7 +134,7 @@
         <DisplayString Condition="value==RC_OPERAND_DELTA">{RC_OPERAND_DELTA}</DisplayString>
         <DisplayString Condition="value==RC_OPERAND_CONST">{RC_OPERAND_CONST}</DisplayString>
         <DisplayString Condition="value==RC_OPERAND_FP">{RC_OPERAND_FP}</DisplayString>
-        <DisplayString Condition="value==RC_OPERAND_LUA">{RC_OPERAND_LUA}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_FUNC">{RC_OPERAND_FUNC}</DisplayString>
         <DisplayString Condition="value==RC_OPERAND_PRIOR">{RC_OPERAND_PRIOR}</DisplayString>
         <DisplayString Condition="value==RC_OPERAND_BCD">{RC_OPERAND_BCD}</DisplayString>
         <DisplayString Condition="value==RC_OPERAND_INVERTED">{RC_OPERAND_INVERTED}</DisplayString>
@@ -153,7 +153,7 @@
         <DisplayString Condition="type==RC_OPERAND_CONST">{{value {value.num}}}</DisplayString>
         <DisplayString Condition="type==RC_OPERAND_FP">{{value {value.dbl}}}</DisplayString>
         <DisplayString Condition="type==RC_OPERAND_RECALL">{{recall}}</DisplayString>
-        <DisplayString Condition="type==RC_OPERAND_LUA">{{lua @{value.luafunc}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_FUNC">{{func @{value}}}</DisplayString>
         <DisplayString Condition="type==0xFF">{{none}}</DisplayString>
         <DisplayString>{{unknown}}</DisplayString>
         <Expand>

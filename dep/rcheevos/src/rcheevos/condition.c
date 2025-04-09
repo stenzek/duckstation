@@ -255,7 +255,7 @@ void rc_parse_condition_internal(rc_condition_t* self, const char** memaddr, rc_
     /* non-modifying statements must have a second operand */
     if (!can_modify) {
       /* measured does not require a second operand when used in a value */
-      if (self->type != RC_CONDITION_MEASURED) {
+      if (self->type != RC_CONDITION_MEASURED && !parse->ignore_non_parse_errors) {
         parse->offset = RC_INVALID_OPERATOR;
         return;
       }
@@ -274,14 +274,16 @@ void rc_parse_condition_internal(rc_condition_t* self, const char** memaddr, rc_
       case RC_CONDITION_ADD_SOURCE:
       case RC_CONDITION_SUB_SOURCE:
       case RC_CONDITION_ADD_ADDRESS:
-      case RC_CONDITION_REMEMBER:
         /* prevent parse errors on legacy achievements where a condition was present before changing the type */
         self->oper = RC_OPERATOR_NONE;
         break;
 
       default:
-        parse->offset = RC_INVALID_OPERATOR;
-        return;
+        if (!parse->ignore_non_parse_errors) {
+          parse->offset = RC_INVALID_OPERATOR;
+          return;
+        }
+        break;
     }
   }
 

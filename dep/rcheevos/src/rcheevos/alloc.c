@@ -94,9 +94,9 @@ char* rc_alloc_str(rc_parse_state_t* parse, const char* text, size_t length) {
   return ptr;
 }
 
-void rc_init_preparse_state(rc_preparse_state_t* preparse, lua_State* L, int funcs_ndx)
+void rc_init_preparse_state(rc_preparse_state_t* preparse)
 {
-  rc_init_parse_state(&preparse->parse, NULL, L, funcs_ndx);
+  rc_init_parse_state(&preparse->parse, NULL);
   rc_init_parse_state_memrefs(&preparse->parse, &preparse->memrefs);
 }
 
@@ -275,16 +275,8 @@ void rc_preparse_copy_memrefs(rc_parse_state_t* parse, rc_memrefs_t* memrefs)
   }
 }
 
-void rc_reset_parse_state(rc_parse_state_t* parse, void* buffer, lua_State* L, int funcs_ndx)
+void rc_reset_parse_state(rc_parse_state_t* parse, void* buffer)
 {
-#ifndef RC_DISABLE_LUA
-  parse->L = L;
-  parse->funcs_ndx = funcs_ndx;
-#else
-  (void)L;
-  (void)funcs_ndx;
-#endif
-
   parse->buffer = buffer;
 
   parse->offset = 0;
@@ -300,17 +292,18 @@ void rc_reset_parse_state(rc_parse_state_t* parse, void* buffer, lua_State* L, i
   parse->is_value = 0;
   parse->has_required_hits = 0;
   parse->measured_as_percent = 0;
+  parse->ignore_non_parse_errors = 0;
 
   parse->scratch.strings = NULL;
 }
 
-void rc_init_parse_state(rc_parse_state_t* parse, void* buffer, lua_State* L, int funcs_ndx)
+void rc_init_parse_state(rc_parse_state_t* parse, void* buffer)
 {
   /* could use memset here, but rc_parse_state_t contains a 512 byte buffer that doesn't need to be initialized */
   rc_buffer_init(&parse->scratch.buffer);
   memset(&parse->scratch.objs, 0, sizeof(parse->scratch.objs));
 
-  rc_reset_parse_state(parse, buffer, L, funcs_ndx);
+  rc_reset_parse_state(parse, buffer);
 }
 
 void rc_destroy_parse_state(rc_parse_state_t* parse)

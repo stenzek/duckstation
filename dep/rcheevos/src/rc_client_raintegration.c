@@ -172,7 +172,7 @@ static void rc_client_init_raintegration(rc_client_t* client,
     const char* host_url = client->state.raintegration->get_host_url();
     if (host_url) {
       if (strcmp(host_url, "OFFLINE") != 0) {
-        if (strcmp(host_url, "https://retroachievements.org") != 0)
+        if (strcmp(host_url, rc_api_default_host()) != 0)
           rc_client_set_host(client, host_url);
       }
       else if (client->state.raintegration->init_client_offline) {
@@ -344,7 +344,7 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
 
   if (client->state.raintegration->get_host_url) {
     const char* host_url = client->state.raintegration->get_host_url();
-    if (host_url && strcmp(host_url, "https://retroachievements.org") != 0 &&
+    if (host_url && strcmp(host_url, rc_api_default_host()) != 0 &&
                     strcmp(host_url, "OFFLINE") != 0) {
       /* if the DLL specifies a custom host, use it */
       rc_client_set_host(client, host_url);
@@ -352,7 +352,7 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
   }
 
   memset(&request, 0, sizeof(request));
-  rc_api_url_build_dorequest_url(&request);
+  rc_api_url_build_dorequest_url(&request, &client->state.host);
   rc_url_builder_init(&builder, &request.buffer, 48);
   rc_url_builder_append_str_param(&builder, "r", "latestintegration");
   request.post_data = rc_url_builder_finalize(&builder);

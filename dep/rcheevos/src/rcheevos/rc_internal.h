@@ -211,9 +211,6 @@ typedef struct {
   /* memory accessors */
   rc_peek_t peek;
   void* peek_userdata;
-#ifndef RC_DISABLE_LUA
-  lua_State* L;
-#endif
 
   /* processing state */
   rc_typed_value_t measured_value;     /* captured Measured value */
@@ -241,11 +238,6 @@ rc_eval_state_t;
 typedef struct {
   int32_t offset;
 
-#ifndef RC_DISABLE_LUA
-  lua_State* L;
-  int funcs_ndx;
-#endif
-
   void* buffer;
   rc_scratch_t scratch;
 
@@ -264,6 +256,7 @@ typedef struct {
   uint8_t is_value;
   uint8_t has_required_hits;
   uint8_t measured_as_percent;
+  uint8_t ignore_non_parse_errors;
 }
 rc_parse_state_t;
 
@@ -272,17 +265,15 @@ typedef struct rc_preparse_state_t {
   rc_memrefs_t memrefs;
 } rc_preparse_state_t;
 
-void rc_init_parse_state(rc_parse_state_t* parse, void* buffer, lua_State* L, int funcs_ndx);
+void rc_init_parse_state(rc_parse_state_t* parse, void* buffer);
 void rc_init_parse_state_memrefs(rc_parse_state_t* parse, rc_memrefs_t* memrefs);
-void rc_reset_parse_state(rc_parse_state_t* parse, void* buffer, lua_State* L, int funcs_ndx);
+void rc_reset_parse_state(rc_parse_state_t* parse, void* buffer);
 void rc_destroy_parse_state(rc_parse_state_t* parse);
-void rc_init_preparse_state(rc_preparse_state_t* preparse, lua_State* L, int funcs_ndx);
+void rc_init_preparse_state(rc_preparse_state_t* preparse);
 void rc_preparse_alloc_memrefs(rc_memrefs_t* memrefs, rc_preparse_state_t* preparse);
 void rc_preparse_reserve_memrefs(rc_preparse_state_t* preparse, rc_memrefs_t* memrefs);
 void rc_preparse_copy_memrefs(rc_parse_state_t* parse, rc_memrefs_t* memrefs);
 void rc_destroy_preparse_state(rc_preparse_state_t *preparse);
-void rc_copy_memrefs_into_parse_state(rc_parse_state_t* parse, rc_memref_t* memrefs);
-void rc_sync_operand(rc_operand_t* operand, rc_parse_state_t* parse, const rc_memref_t* memrefs);
 
 void* rc_alloc(void* pointer, int32_t* offset, uint32_t size, uint32_t alignment, rc_scratch_t* scratch, uint32_t scratch_object_pointer_offset);
 void* rc_alloc_scratch(void* pointer, int32_t* offset, uint32_t size, uint32_t alignment, rc_scratch_t* scratch, uint32_t scratch_object_pointer_offset);
@@ -360,12 +351,12 @@ void rc_operand_set_float_const(rc_operand_t* self, double value);
 
 int rc_is_valid_variable_character(char ch, int is_first);
 void rc_parse_value_internal(rc_value_t* self, const char** memaddr, rc_parse_state_t* parse);
-int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t peek, void* ud, lua_State* L);
+int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t peek, void* ud);
 void rc_reset_value(rc_value_t* self);
 int rc_value_from_hits(rc_value_t* self);
 rc_value_t* rc_alloc_variable(const char* memaddr, size_t memaddr_len, rc_parse_state_t* parse);
 uint32_t rc_count_values(const rc_value_t* values);
-void rc_update_values(rc_value_t* values, rc_peek_t peek, void* ud, lua_State* L);
+void rc_update_values(rc_value_t* values, rc_peek_t peek, void* ud);
 void rc_reset_values(rc_value_t* values);
 
 void rc_typed_value_convert(rc_typed_value_t* value, char new_type);

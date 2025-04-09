@@ -117,7 +117,7 @@ void rc_runtime_deactivate_achievement(rc_runtime_t* self, uint32_t id) {
   }
 }
 
-int rc_runtime_activate_achievement(rc_runtime_t* self, uint32_t id, const char* memaddr, lua_State* L, int funcs_idx) {
+int rc_runtime_activate_achievement(rc_runtime_t* self, uint32_t id, const char* memaddr, void* unused_L, int unused_funcs_idx) {
   void* trigger_buffer;
   rc_trigger_t* trigger;
   rc_runtime_trigger_t* runtime_trigger;
@@ -126,6 +126,9 @@ int rc_runtime_activate_achievement(rc_runtime_t* self, uint32_t id, const char*
   uint8_t md5[16];
   int32_t size;
   uint32_t i;
+
+  (void)unused_L;
+  (void)unused_funcs_idx;
 
   if (memaddr == NULL)
     return RC_INVALID_MEMORY_OPERAND;
@@ -165,7 +168,7 @@ int rc_runtime_activate_achievement(rc_runtime_t* self, uint32_t id, const char*
   }
 
   /* item has not been previously registered, determine how much space we need for it, and allocate it */
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
   preparse.parse.existing_memrefs = self->memrefs;
   trigger = RC_ALLOC(rc_trigger_t, &preparse.parse);
   rc_parse_trigger_internal(trigger, &preparse_memaddr, &preparse.parse);
@@ -179,7 +182,7 @@ int rc_runtime_activate_achievement(rc_runtime_t* self, uint32_t id, const char*
     return RC_OUT_OF_MEMORY;
 
   /* populate the item, using the communal memrefs pool */
-  rc_reset_parse_state(&preparse.parse, trigger_buffer, L, funcs_idx);
+  rc_reset_parse_state(&preparse.parse, trigger_buffer);
   rc_preparse_reserve_memrefs(&preparse, self->memrefs);
   trigger = RC_ALLOC(rc_trigger_t, &preparse.parse);
   rc_parse_trigger_internal(trigger, &memaddr, &preparse.parse);
@@ -298,7 +301,7 @@ void rc_runtime_deactivate_lboard(rc_runtime_t* self, uint32_t id) {
   }
 }
 
-int rc_runtime_activate_lboard(rc_runtime_t* self, uint32_t id, const char* memaddr, lua_State* L, int funcs_idx) {
+int rc_runtime_activate_lboard(rc_runtime_t* self, uint32_t id, const char* memaddr, void* unused_L, int unused_funcs_idx) {
   void* lboard_buffer;
   uint8_t md5[16];
   rc_lboard_t* lboard;
@@ -306,6 +309,9 @@ int rc_runtime_activate_lboard(rc_runtime_t* self, uint32_t id, const char* mema
   rc_runtime_lboard_t* runtime_lboard;
   int size;
   uint32_t i;
+
+  (void)unused_L;
+  (void)unused_funcs_idx;
 
   if (memaddr == 0)
     return RC_INVALID_MEMORY_OPERAND;
@@ -345,7 +351,7 @@ int rc_runtime_activate_lboard(rc_runtime_t* self, uint32_t id, const char* mema
   }
 
   /* item has not been previously registered, determine how much space we need for it, and allocate it */
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
   preparse.parse.existing_memrefs = self->memrefs;
   lboard = RC_ALLOC(rc_lboard_t, &preparse.parse);
   rc_parse_lboard_internal(lboard, memaddr, &preparse.parse);
@@ -359,7 +365,7 @@ int rc_runtime_activate_lboard(rc_runtime_t* self, uint32_t id, const char* mema
     return RC_OUT_OF_MEMORY;
 
   /* populate the item, using the communal memrefs pool */
-  rc_reset_parse_state(&preparse.parse, lboard_buffer, L, funcs_idx);
+  rc_reset_parse_state(&preparse.parse, lboard_buffer);
   rc_preparse_reserve_memrefs(&preparse, self->memrefs);
   lboard = RC_ALLOC(rc_lboard_t, &preparse.parse);
   rc_parse_lboard_internal(lboard, memaddr, &preparse.parse);
@@ -416,11 +422,14 @@ int rc_runtime_format_lboard_value(char* buffer, int size, int32_t value, int fo
   return rc_format_value(buffer, size, value, format);
 }
 
-int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua_State* L, int funcs_idx) {
+int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, void* unused_L, int unused_funcs_idx) {
   rc_richpresence_t* richpresence;
   rc_preparse_state_t preparse;
   uint8_t md5[16];
   int size;
+
+  (void)unused_L;
+  (void)unused_funcs_idx;
 
   if (script == NULL)
     return RC_MISSING_DISPLAY_STRING;
@@ -437,7 +446,7 @@ int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua
   }
 
   /* no existing match found, parse script */
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
   preparse.parse.existing_memrefs = self->memrefs;
   richpresence = RC_ALLOC(rc_richpresence_t, &preparse.parse);
   preparse.parse.variables = &richpresence->values;
@@ -464,7 +473,7 @@ int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua
   if (!self->richpresence->buffer)
     return RC_OUT_OF_MEMORY;
 
-  rc_reset_parse_state(&preparse.parse, self->richpresence->buffer, L, funcs_idx);
+  rc_reset_parse_state(&preparse.parse, self->richpresence->buffer);
   rc_preparse_reserve_memrefs(&preparse, self->memrefs);
   richpresence = RC_ALLOC(rc_richpresence_t, &preparse.parse);
   preparse.parse.variables = &richpresence->values;
@@ -491,9 +500,9 @@ int rc_runtime_activate_richpresence(rc_runtime_t* self, const char* script, lua
   return RC_OK;
 }
 
-int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, size_t buffersize, rc_runtime_peek_t peek, void* peek_ud, lua_State* L) {
+int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, size_t buffersize, rc_runtime_peek_t peek, void* peek_ud, void* unused_L) {
   if (self->richpresence && self->richpresence->richpresence)
-    return rc_get_richpresence_display_string(self->richpresence->richpresence, buffer, buffersize, peek, peek_ud, L);
+    return rc_get_richpresence_display_string(self->richpresence->richpresence, buffer, buffersize, peek, peek_ud, unused_L);
 
   *buffer = '\0';
   return 0;
@@ -510,7 +519,7 @@ int rc_runtime_get_richpresence_strings(const rc_runtime_t* self, const char** b
   return err;
 }
 
-void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, lua_State* L) {
+void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, void* unused_L) {
   rc_runtime_event_t runtime_event;
   int i;
 
@@ -542,7 +551,7 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
 
     old_measured_value = trigger->measured_value;
     old_state = trigger->state;
-    new_state = rc_evaluate_trigger(trigger, peek, ud, L);
+    new_state = rc_evaluate_trigger(trigger, peek, ud, unused_L);
 
     /* trigger->state doesn't actually change to RESET, RESET just serves as a notification.
      * handle the notification, then look at the actual state */
@@ -644,7 +653,7 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
     }
 
     lboard_state = lboard->state;
-    switch (rc_evaluate_lboard(lboard, &runtime_event.value, peek, ud, L))
+    switch (rc_evaluate_lboard(lboard, &runtime_event.value, peek, ud, unused_L))
     {
       case RC_LBOARD_STATE_STARTED: /* leaderboard is running */
         if (lboard_state != RC_LBOARD_STATE_STARTED) {
@@ -682,7 +691,7 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
   }
 
   if (self->richpresence && self->richpresence->richpresence)
-    rc_update_richpresence(self->richpresence->richpresence, peek, ud, L);
+    rc_update_richpresence(self->richpresence->richpresence, peek, ud, unused_L);
 }
 
 void rc_runtime_reset(rc_runtime_t* self) {

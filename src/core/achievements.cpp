@@ -4485,7 +4485,7 @@ void Achievements::UpdateProgressDatabase(bool force)
          std::span<const rc_client_achievement_bucket_t>(achievements->buckets, achievements->num_buckets))
     {
       for (const rc_client_achievement_t* achievement :
-           std::span<rc_client_achievement_t*>(bucket.achievements, bucket.num_achievements))
+           std::span<const rc_client_achievement_t*>(bucket.achievements, bucket.num_achievements))
       {
         achievements_unlocked += BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE) != 0);
         achievements_unlocked_hardcore +=

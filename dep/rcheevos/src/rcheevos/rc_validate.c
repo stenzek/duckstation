@@ -364,6 +364,13 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
         break;
 
       case RC_CONDITION_RESET_IF:
+        if (in_add_hits) {
+          /* ResetIf at the end of a hit chain does not require a hit target.
+           * It's meant to reset things if some subset of conditions have been true. */
+          in_add_hits = 0;
+          is_combining = 0;
+          break;
+        }
         if (cond->required_hits == 1) {
           snprintf(result, result_size, "Condition %d: Hit target of 1 is redundant on ResetIf", index);
           return 0;

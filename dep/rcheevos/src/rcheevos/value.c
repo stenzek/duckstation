@@ -244,7 +244,7 @@ void rc_parse_value_internal(rc_value_t* self, const char** memaddr, rc_parse_st
 int rc_value_size(const char* memaddr) {
   rc_value_with_memrefs_t* value;
   rc_preparse_state_t preparse;
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
 
   value = RC_ALLOC(rc_value_with_memrefs_t, &preparse.parse);
   rc_parse_value_internal(&value->value, &memaddr, &preparse.parse);
@@ -254,19 +254,22 @@ int rc_value_size(const char* memaddr) {
   return preparse.parse.offset;
 }
 
-rc_value_t* rc_parse_value(void* buffer, const char* memaddr, lua_State* L, int funcs_ndx) {
+rc_value_t* rc_parse_value(void* buffer, const char* memaddr, void* unused_L, int unused_funcs_idx) {
   rc_value_with_memrefs_t* value;
   rc_preparse_state_t preparse;
   const char* preparse_memaddr = memaddr;
 
+  (void)unused_L;
+  (void)unused_funcs_idx;
+
   if (!buffer || !memaddr)
     return NULL;
 
-  rc_init_preparse_state(&preparse, L, funcs_ndx);
+  rc_init_preparse_state(&preparse);
   value = RC_ALLOC(rc_value_with_memrefs_t, &preparse.parse);
   rc_parse_value_internal(&value->value, &preparse_memaddr, &preparse.parse);
 
-  rc_reset_parse_state(&preparse.parse, buffer, L, funcs_ndx);
+  rc_reset_parse_state(&preparse.parse, buffer);
   value = RC_ALLOC(rc_value_with_memrefs_t, &preparse.parse);
   rc_preparse_alloc_memrefs(&value->memrefs, &preparse);
 
@@ -284,7 +287,7 @@ static void rc_update_value_memrefs(rc_value_t* self, rc_peek_t peek, void* ud) 
   }
 }
 
-int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t peek, void* ud, lua_State* L) {
+int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t peek, void* ud) {
   rc_eval_state_t eval_state;
   rc_condset_t* condset;
   int valid = 0;
@@ -298,11 +301,6 @@ int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t
     memset(&eval_state, 0, sizeof(eval_state));
     eval_state.peek = peek;
     eval_state.peek_userdata = ud;
-#ifndef RC_DISABLE_LUA
-    eval_state.L = L;
-#else
-    (void)L;
-#endif
 
     rc_test_condset(condset, &eval_state);
 
@@ -335,9 +333,11 @@ int rc_evaluate_value_typed(rc_value_t* self, rc_typed_value_t* value, rc_peek_t
   return valid;
 }
 
-int32_t rc_evaluate_value(rc_value_t* self, rc_peek_t peek, void* ud, lua_State* L) {
+int32_t rc_evaluate_value(rc_value_t* self, rc_peek_t peek, void* ud, void* unused_L) {
   rc_typed_value_t result;
-  int valid = rc_evaluate_value_typed(self, &result, peek, ud, L);
+  int valid = rc_evaluate_value_typed(self, &result, peek, ud);
+
+  (void)unused_L;
 
   if (valid) {
     /* if not paused, store the value so that it's available when paused. */
@@ -430,12 +430,12 @@ uint32_t rc_count_values(const rc_value_t* values) {
   return count;
 }
 
-void rc_update_values(rc_value_t* values, rc_peek_t peek, void* ud, lua_State* L) {
+void rc_update_values(rc_value_t* values, rc_peek_t peek, void* ud) {
   rc_typed_value_t result;
 
   rc_value_t* value = values;
   for (; value; value = value->next) {
-    if (rc_evaluate_value_typed(value, &result, peek, ud, L)) {
+    if (rc_evaluate_value_typed(value, &result, peek, ud)) {
       /* store the raw bytes and type to be restored by rc_typed_value_from_memref_value  */
       rc_update_memref_value(&value->value, result.value.u32);
       value->value.type = result.type;

@@ -131,7 +131,7 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
 int rc_lboard_size(const char* memaddr) {
   rc_lboard_with_memrefs_t* lboard;
   rc_preparse_state_t preparse;
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
 
   lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
   rc_parse_lboard_internal(&lboard->lboard, memaddr, &preparse.parse);
@@ -141,18 +141,21 @@ int rc_lboard_size(const char* memaddr) {
   return preparse.parse.offset;
 }
 
-rc_lboard_t* rc_parse_lboard(void* buffer, const char* memaddr, lua_State* L, int funcs_ndx) {
+rc_lboard_t* rc_parse_lboard(void* buffer, const char* memaddr, void* unused_L, int unused_funcs_idx) {
   rc_lboard_with_memrefs_t* lboard;
   rc_preparse_state_t preparse;
+
+  (void)unused_L;
+  (void)unused_funcs_idx;
 
   if (!buffer || !memaddr)
     return 0;
 
-  rc_init_preparse_state(&preparse, L, funcs_ndx);
+  rc_init_preparse_state(&preparse);
   lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
   rc_parse_lboard_internal(&lboard->lboard, memaddr, &preparse.parse);
 
-  rc_reset_parse_state(&preparse.parse, buffer, L, funcs_ndx);
+  rc_reset_parse_state(&preparse.parse, buffer);
   lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
   rc_preparse_alloc_memrefs(&lboard->memrefs, &preparse);
 
@@ -170,7 +173,7 @@ static void rc_update_lboard_memrefs(rc_lboard_t* self, rc_peek_t peek, void* ud
   }
 }
 
-int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* peek_ud, lua_State* L) {
+int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* peek_ud, void* unused_L) {
   int start_ok, cancel_ok, submit_ok;
 
   rc_update_lboard_memrefs(self, peek, peek_ud);
@@ -179,9 +182,9 @@ int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* 
     return RC_LBOARD_STATE_INACTIVE;
 
   /* these are always tested once every frame, to ensure hit counts work properly */
-  start_ok = rc_test_trigger(&self->start, peek, peek_ud, L);
-  cancel_ok = rc_test_trigger(&self->cancel, peek, peek_ud, L);
-  submit_ok = rc_test_trigger(&self->submit, peek, peek_ud, L);
+  start_ok = rc_test_trigger(&self->start, peek, peek_ud, unused_L);
+  cancel_ok = rc_test_trigger(&self->cancel, peek, peek_ud, unused_L);
+  submit_ok = rc_test_trigger(&self->submit, peek, peek_ud, unused_L);
 
   switch (self->state)
   {
@@ -238,13 +241,13 @@ int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* 
   switch (self->state) {
     case RC_LBOARD_STATE_STARTED:
       if (self->progress) {
-        *value = rc_evaluate_value(self->progress, peek, peek_ud, L);
+        *value = rc_evaluate_value(self->progress, peek, peek_ud, unused_L);
         break;
       }
       /* fallthrough */ /* to RC_LBOARD_STATE_TRIGGERED */
 
     case RC_LBOARD_STATE_TRIGGERED:
-      *value = rc_evaluate_value(&self->value, peek, peek_ud, L);
+      *value = rc_evaluate_value(&self->value, peek, peek_ud, unused_L);
       break;
 
     default:

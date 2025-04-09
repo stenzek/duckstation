@@ -155,7 +155,7 @@ const char* rc_error_str(int ret)
 {
   switch (ret) {
     case RC_OK: return "OK";
-    case RC_INVALID_LUA_OPERAND: return "Invalid Lua operand";
+    case RC_INVALID_FUNC_OPERAND: return "Invalid function operand";
     case RC_INVALID_MEMORY_OPERAND: return "Invalid memory operand";
     case RC_INVALID_CONST_OPERAND: return "Invalid constant operand";
     case RC_INVALID_FP_OPERAND: return "Invalid floating-point operand";
@@ -193,6 +193,7 @@ const char* rc_error_str(int ret)
     case RC_INSUFFICIENT_BUFFER: return "Buffer not large enough";
     case RC_INVALID_VARIABLE_NAME: return "Invalid variable name";
     case RC_UNKNOWN_VARIABLE_NAME: return "Unknown variable name";
+    case RC_NOT_FOUND: return "Not found";
     default: return "Unknown error";
   }
 }

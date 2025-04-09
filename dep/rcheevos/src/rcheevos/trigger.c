@@ -52,7 +52,7 @@ void rc_parse_trigger_internal(rc_trigger_t* self, const char** memaddr, rc_pars
 int rc_trigger_size(const char* memaddr) {
   rc_trigger_with_memrefs_t* trigger;
   rc_preparse_state_t preparse;
-  rc_init_preparse_state(&preparse, NULL, 0);
+  rc_init_preparse_state(&preparse);
 
   trigger = RC_ALLOC(rc_trigger_with_memrefs_t, &preparse.parse);
   rc_parse_trigger_internal(&trigger->trigger, &memaddr, &preparse.parse);
@@ -62,21 +62,24 @@ int rc_trigger_size(const char* memaddr) {
   return preparse.parse.offset;
 }
 
-rc_trigger_t* rc_parse_trigger(void* buffer, const char* memaddr, lua_State* L, int funcs_ndx) {
+rc_trigger_t* rc_parse_trigger(void* buffer, const char* memaddr, void* unused_L, int unused_funcs_idx) {
   rc_trigger_with_memrefs_t* trigger;
   rc_preparse_state_t preparse;
   const char* preparse_memaddr = memaddr;
+
+  (void)unused_L;
+  (void)unused_funcs_idx;
 
   if (!buffer || !memaddr)
     return NULL;
 
   /* first pass : determine how many memrefs are needed */
-  rc_init_preparse_state(&preparse, L, funcs_ndx);
+  rc_init_preparse_state(&preparse);
   trigger = RC_ALLOC(rc_trigger_with_memrefs_t, &preparse.parse);
   rc_parse_trigger_internal(&trigger->trigger, &preparse_memaddr, &preparse.parse);
 
   /* allocate the trigger and memrefs */
-  rc_reset_parse_state(&preparse.parse, buffer, L, funcs_ndx);
+  rc_reset_parse_state(&preparse.parse, buffer);
   trigger = RC_ALLOC(rc_trigger_with_memrefs_t, &preparse.parse);
   rc_preparse_alloc_memrefs(&trigger->memrefs, &preparse);
 
@@ -146,7 +149,7 @@ rc_memrefs_t* rc_trigger_get_memrefs(rc_trigger_t* self) {
   return NULL;
 }
 
-int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, lua_State* L) {
+int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, void* unused_L) {
   rc_eval_state_t eval_state;
   rc_condset_t* condset;
   rc_typed_value_t measured_value;
@@ -154,6 +157,8 @@ int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, lua_State*
   int ret;
   char is_paused;
   char is_primed;
+
+  (void)unused_L;
 
   switch (self->state)
   {
@@ -181,11 +186,6 @@ int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, lua_State*
   memset(&eval_state, 0, sizeof(eval_state));
   eval_state.peek = peek;
   eval_state.peek_userdata = ud;
-#ifndef RC_DISABLE_LUA
-  eval_state.L = L;
-#else
-  (void)L;
-#endif
 
   measured_value.type = RC_VALUE_TYPE_NONE;
 
@@ -316,11 +316,11 @@ int rc_evaluate_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, lua_State*
   return self->state;
 }
 
-int rc_test_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, lua_State* L) {
+int rc_test_trigger(rc_trigger_t* self, rc_peek_t peek, void* ud, void* unused_L) {
   /* for backwards compatibilty, rc_test_trigger always assumes the achievement is active */
   self->state = RC_TRIGGER_STATE_ACTIVE;
 
-  return (rc_evaluate_trigger(self, peek, ud, L) == RC_TRIGGER_STATE_TRIGGERED);
+  return (rc_evaluate_trigger(self, peek, ud, unused_L) == RC_TRIGGER_STATE_TRIGGERED);
 }
 
 void rc_reset_trigger(rc_trigger_t* self) {
