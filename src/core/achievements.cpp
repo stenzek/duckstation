@@ -1207,7 +1207,7 @@ void Achievements::GameChanged(CDImage* image)
 
 bool Achievements::IdentifyGame(CDImage* image)
 {
-  if (s_state.game_path == image->GetPath())
+  if (s_state.game_path == (image ? std::string_view(image->GetPath()) : std::string_view()))
   {
     WARNING_LOG("Game path is unchanged.");
     return false;
@@ -1238,7 +1238,6 @@ bool Achievements::IdentifyGame(CDImage* image)
   {
     // only the path has changed - different format/save state/etc.
     INFO_LOG("Detected path change to '{}'", s_state.game_path);
-    s_state.game_path = image->GetPath();
     return false;
   }
 
