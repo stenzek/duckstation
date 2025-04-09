@@ -2723,8 +2723,8 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
   {
     if (selected->is_file)
     {
-      std::string path = std::move(selected->full_path);
-      const FileSelectorCallback callback = std::move(m_callback);
+      std::string path = std::exchange(selected->full_path, std::string());
+      const FileSelectorCallback callback = std::exchange(m_callback, FileSelectorCallback());
       StartClose();
       callback(std::move(path));
     }
@@ -2735,8 +2735,8 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
   }
   else if (directory_selected)
   {
-    std::string path = std::move(m_current_directory);
-    const FileSelectorCallback callback = std::move(m_callback);
+    std::string path = std::exchange(m_current_directory, std::string());
+    const FileSelectorCallback callback = std::exchange(m_callback, FileSelectorCallback());
     StartClose();
     callback(std::move(path));
   }
@@ -2888,10 +2888,10 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
     // because the callback may open another dialog, and we don't want to close that one.
     if (!m_checkable)
     {
-      auto option = std::move(m_options[choice]);
-      const ChoiceDialogCallback callback = std::move(m_callback);
+      const ChoiceDialogOptions options = std::exchange(m_options, ChoiceDialogOptions());
+      const ChoiceDialogCallback callback = std::exchange(m_callback, ChoiceDialogCallback());
       StartClose();
-      callback(choice, option.first, option.second);
+      callback(choice, options[choice].first, options[choice].second);
     }
     else
     {
@@ -2993,8 +2993,8 @@ void ImGuiFullscreen::InputStringDialog::Draw()
   if (MenuButtonWithoutSummary(m_ok_text.c_str(), ok_enabled) && ok_enabled)
   {
     // have to move out in case they open another dialog in the callback
-    InputStringDialogCallback cb = std::move(m_callback);
-    std::string text = std::move(m_text);
+    const InputStringDialogCallback cb = std::exchange(m_callback, InputStringDialogCallback());
+    std::string text = std::exchange(m_text, std::string());
     StartClose();
     cb(std::move(text));
   }
@@ -3075,7 +3075,7 @@ void ImGuiFullscreen::MessageDialog::Draw()
   {
     // have to move out in case they open another dialog in the callback
     StartClose();
-    InvokeCallback(std::move(m_callback), result);
+    InvokeCallback(std::exchange(m_callback, CallbackVariant()), result);
   }
 }
 
