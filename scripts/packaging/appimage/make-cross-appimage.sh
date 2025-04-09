@@ -70,6 +70,7 @@ declare -a SYSLIBS=(
 	"libbrotlicommon.so.1"
 	"libbrotlidec.so.1"
 	"libbsd.so.0"
+	"libcom_err.so.2"
 	"libcrypto.so.3"
 	"libcurl.so.4"
 	"libffi.so.8"
