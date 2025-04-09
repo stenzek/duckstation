@@ -46,8 +46,7 @@ void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 p
 void CloseLoadingScreen();
 
 void SetTheme();
-
-#ifndef __ANDROID__
+void UpdateRunIdleState();
 
 static constexpr float SHORT_TRANSITION_TIME = 0.08f;
 static constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
@@ -68,6 +67,8 @@ TransitionState GetTransitionState();
 GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
 void RenderTransitionBlend(GPUSwapChain* swap_chain);
 
+#ifndef __ANDROID__
+
 std::vector<std::string_view> GetThemeNames();
 std::span<const char* const> GetThemeConfigNames();
 
@@ -79,7 +80,6 @@ void OpenLeaderboardsWindow();
 void ReturnToMainWindow();
 void ReturnToPreviousWindow();
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
-void UpdateRunIdleState();
 
 class BackgroundProgressCallback final : public ProgressCallback
 {
