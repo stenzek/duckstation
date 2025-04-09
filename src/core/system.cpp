@@ -542,7 +542,7 @@ void System::CPUThreadShutdown()
   ShutdownDiscordPresence();
 #endif
 
-  Achievements::Shutdown(false);
+  Achievements::Shutdown();
 
   InputManager::CloseSources();
 
@@ -1349,10 +1349,15 @@ void System::ApplySettings(bool display_osd_messages)
   LoadSettings(display_osd_messages);
 
   // If we've disabled/enabled game settings, we need to reload without it.
-  // Also reload cheats when safe mode is toggled, because patches might change.
   if (g_settings.apply_game_settings != old_settings.apply_game_settings)
   {
     UpdateGameSettingsLayer();
+    LoadSettings(display_osd_messages);
+  }
+  else if (g_settings.achievements_hardcore_mode != old_settings.achievements_hardcore_mode)
+  {
+    // Hardcore mode enabled/disabled. May need to disable restrictions.
+    Achievements::UpdateSettings(old_settings);
     LoadSettings(display_osd_messages);
   }
 
@@ -1546,18 +1551,8 @@ void System::UpdateInputSettingsLayer(std::string input_profile_name, std::uniqu
 
 void System::ResetSystem()
 {
-  if (!IsValid())
+  if (!IsValid() || !Achievements::ConfirmGameChange())
     return;
-
-  if (!Achievements::ConfirmSystemReset())
-    return;
-
-  if (Achievements::ResetHardcoreMode(false))
-  {
-    // Make sure a pre-existing cheat file hasn't been loaded when resetting after enabling HC mode.
-    Cheats::ReloadCheats(true, true, false, true, true);
-    ApplySettings(false);
-  }
 
   InternalReset();
 
@@ -1731,6 +1726,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
+  Achievements::OnSystemStarting(disc.get(), parameters.disable_achievements_hardcore_mode);
 
   // Determine console region. Has to be done here, because gamesettings can override it.
   s_state.region = (g_settings.region == ConsoleRegion::Auto) ? auto_console_region : g_settings.region;
@@ -1755,13 +1751,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Achievement hardcore checks before committing to anything.
   if (disc)
   {
-    // Check for resuming with hardcore mode.
-    const bool hc_mode_was_enabled = Achievements::IsHardcoreModeActive();
-    if (parameters.disable_achievements_hardcore_mode)
-      Achievements::DisableHardcoreMode();
-    else
-      Achievements::ResetHardcoreMode(true);
-
     if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
     {
       const bool is_exe_override_boot = parameters.save_state.empty();
@@ -1794,10 +1783,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         return true;
       }
     }
-
-    // Need to reinit things like emulation speed, cpu overclock, etc.
-    if (Achievements::IsHardcoreModeActive() != hc_mode_was_enabled)
-      ApplySettings(false);
   }
 
   // Are we fast booting? Must be checked after updating game settings.
@@ -1994,6 +1979,7 @@ void System::DestroySystem()
   CPU::Shutdown();
   Bus::Shutdown();
   TimingEvents::Shutdown();
+  Achievements::OnSystemDestroyed();
   ClearRunningGame();
   GPUThread::DestroyGPUBackend();
 
@@ -2042,8 +2028,6 @@ void System::ClearRunningGame()
 
   Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                       s_state.running_game_hash);
-
-  Achievements::GameChanged(s_state.running_game_path, nullptr, false);
 
   UpdateRichPresence(true);
 }
@@ -2780,7 +2764,7 @@ void System::InternalReset()
   MDEC::Reset();
   SIO::Reset();
   PCDrv::Reset();
-  Achievements::Reset();
+  Achievements::OnSystemReset();
   s_state.frame_number = 1;
   s_state.internal_frame_number = 0;
 }
@@ -2963,7 +2947,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   ClearMemorySaveStates(false, false);
 
   // Updating game/loading settings can turn on hardcore mode. Catch this.
-  Achievements::DisableHardcoreMode();
+  Achievements::DisableHardcoreMode(true, true);
 
   return LoadStateDataFromBuffer(buffer.state_data.cspan(0, buffer.state_size), buffer.version, error, update_display);
 }
@@ -4205,17 +4189,17 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   }
 
   UpdateGameSettingsLayer();
+  ApplySettings(true);
 
   if (!IsReplayingGPUDump())
   {
-    Achievements::GameChanged(s_state.running_game_path, image, booting);
-
     // Cheats are loaded later in Initialize().
     if (!booting)
+    {
+      Achievements::GameChanged(image);
       Cheats::ReloadCheats(true, true, false, true, true);
+    }
   }
-
-  ApplySettings(true);
 
   if (s_state.running_game_serial != prev_serial)
   {

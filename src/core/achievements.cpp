@@ -7,6 +7,7 @@
 #include "achievements_private.h"
 #include "bios.h"
 #include "bus.h"
+#include "cheats.h"
 #include "cpu_core.h"
 #include "fullscreen_ui.h"
 #include "game_list.h"
@@ -144,14 +145,14 @@ static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static void ClearGameHash();
 static bool TryLoggingInWithToken();
-static void SetHardcoreMode(bool enabled, bool force_display_message);
+static void EnableHardcodeMode(bool display_message, bool display_game_summary);
+static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsLoggedInOrLoggingIn();
-static bool CanEnableHardcoreMode();
 static void FinishLogin(const rc_client_t* client);
 static void ShowLoginNotification();
-static void IdentifyGame(const std::string& path, CDImage* image);
+static bool IdentifyGame(CDImage* image);
+static bool IdentifyCurrentGame();
 static void BeginLoadGame();
-static void BeginChangeDisc();
 static void UpdateGameSummary(bool update_progress_database, bool force_update_progress_database);
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_path);
@@ -244,7 +245,6 @@ struct PauseMenuAchievementInfo
 struct State
 {
   rc_client_t* client = nullptr;
-  bool hardcore_mode = false;
   bool has_achievements = false;
   bool has_leaderboards = false;
   bool has_rich_presence = false;
@@ -330,9 +330,8 @@ const rc_client_user_game_summary_t& Achievements::GetGameSummary()
 
 void Achievements::ReportError(std::string_view sv)
 {
-  std::string error = fmt::format("Achievements error: {}", sv);
-  ERROR_LOG(error.c_str());
-  Host::AddOSDMessage(std::move(error), Host::OSD_CRITICAL_ERROR_DURATION);
+  ERROR_LOG(sv);
+  Host::AddIconOSDWarning(std::string(), ICON_EMOJI_WARNING, std::string(sv), Host::OSD_CRITICAL_ERROR_DURATION);
 }
 
 template<typename... T>
@@ -581,7 +580,11 @@ bool Achievements::IsHardcoreModeActive()
     return RA_HardcoreModeIsActive() != 0;
 #endif
 
-  return s_state.hardcore_mode;
+  if (!s_state.client)
+    return false;
+
+  const auto lock = GetLock();
+  return rc_client_get_hardcore_enabled(s_state.client);
 }
 
 bool Achievements::HasActiveGame()
@@ -651,25 +654,27 @@ bool Achievements::Initialize()
   if (!CreateClient(&s_state.client, &s_state.http_downloader))
     return false;
 
-  // Hardcore starts off. We enable it on first boot.
-  s_state.hardcore_mode = false;
-
   rc_client_set_event_handler(s_state.client, ClientEventHandler);
 
-  rc_client_set_hardcore_enabled(s_state.client, s_state.hardcore_mode);
+  // Hardcore starts off. We enable it on first boot.
+  rc_client_set_hardcore_enabled(s_state.client, false);
   rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
   rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
   rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
 
-  // Begin disc identification early, before the login finishes.
-  if (System::IsValid())
-    IdentifyGame(System::GetDiscPath(), nullptr);
-
+  // Start logging in. This can take a while.
   TryLoggingInWithToken();
 
-  // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
-  if (System::IsValid() && IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
-    DisplayHardcoreDeferredMessage();
+  // Are we running a game?
+  if (System::IsValid())
+  {
+    IdentifyCurrentGame();
+    BeginLoadGame();
+
+    // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
+    if (IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
+      DisplayHardcoreDeferredMessage();
+  }
 
   return true;
 }
@@ -753,7 +758,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (!g_settings.achievements_enabled)
   {
     // we're done here
-    Shutdown(false);
+    Shutdown();
     return;
   }
 
@@ -766,26 +771,23 @@ void Achievements::UpdateSettings(const Settings& old_config)
 
   if (g_settings.achievements_hardcore_mode != old_config.achievements_hardcore_mode)
   {
-    // Hardcore mode can only be enabled through reset (ResetChallengeMode()).
-    if (s_state.hardcore_mode && !g_settings.achievements_hardcore_mode)
-    {
-      ResetHardcoreMode(false);
-    }
-    else if (!s_state.hardcore_mode && g_settings.achievements_hardcore_mode)
-    {
-      if (HasActiveGame())
-        DisplayHardcoreDeferredMessage();
-    }
+    // Enables have to wait for reset, disables can go through immediately.
+    if (g_settings.achievements_hardcore_mode)
+      DisplayHardcoreDeferredMessage();
+    else
+      DisableHardcoreMode(true, true);
   }
 
   // These cannot be modified while a game is loaded, so just toss state and reload.
+  auto lock = GetLock();
   if (HasActiveGame())
   {
+    lock.unlock();
     if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
         g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
         g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
     {
-      Shutdown(false);
+      Shutdown();
       Initialize();
       return;
     }
@@ -801,48 +803,27 @@ void Achievements::UpdateSettings(const Settings& old_config)
   }
 }
 
-bool Achievements::Shutdown(bool allow_cancel)
+void Achievements::Shutdown()
 {
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    if (System::IsValid() && allow_cancel && !RA_ConfirmLoadNewRom(true))
-      return false;
-
-    RA_SetPaused(false);
-    RA_ActivateGame(0);
-    return true;
-  }
-#endif
-
   if (!IsActive())
-    return true;
+    return;
 
   auto lock = GetLock();
   Assert(s_state.client && s_state.http_downloader);
 
   ClearGameInfo();
   ClearGameHash();
-  DisableHardcoreMode();
+  DisableHardcoreMode(false, false);
   UpdateGlyphRanges();
   CancelHashDatabaseRequests();
 
-  if (s_state.load_game_request)
-  {
-    rc_client_abort_async(s_state.client, s_state.load_game_request);
-    s_state.load_game_request = nullptr;
-  }
   if (s_state.login_request)
   {
     rc_client_abort_async(s_state.client, s_state.login_request);
     s_state.login_request = nullptr;
   }
 
-  s_state.hardcore_mode = false;
   DestroyClient(&s_state.client, &s_state.http_downloader);
-
-  Host::OnAchievementsRefreshed();
-  return true;
 }
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)
@@ -892,7 +873,7 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
                                                   RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
                                                status_code;
     rr.body_length = data.size();
-    rr.body = reinterpret_cast<const char*>(data.data());
+    rr.body = data.empty() ? nullptr : reinterpret_cast<const char*>(data.data());
 
     callback(&rr, callback_data);
   };
@@ -1147,40 +1128,109 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
   lock.lock();
 }
 
-void Achievements::GameChanged(const std::string& path, CDImage* image, bool booting)
+void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
 {
   std::unique_lock lock(s_state.mutex);
 
   if (!IsActive())
     return;
 
-  IdentifyGame(path, image);
-
   // if we're not logged in, and there's no login request, retry logging in
   // this'll happen if we had no network connection on startup, but gained it before starting a game.
-  // follow the same order as Initialize() - identify, then log in
-  if (!IsLoggedInOrLoggingIn() && booting)
+  if (!IsLoggedInOrLoggingIn())
   {
     WARNING_LOG("Not logged in on game booting, trying again.");
     TryLoggingInWithToken();
   }
+
+  // HC should have been disabled, we're now enabling it
+  // only enable hardcore mode if we're logged in, or waiting for a login response
+  AssertMsg(!rc_client_get_hardcore_enabled(s_state.client), "Hardcode mode should be disabled prior to boot");
+  if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
+    EnableHardcodeMode(false, false);
+
+  // now we can finally identify the game
+  IdentifyGame(image);
+  BeginLoadGame();
 }
 
-void Achievements::IdentifyGame(const std::string& path, CDImage* image)
+void Achievements::OnSystemDestroyed()
 {
-  if (s_state.game_path == path)
+  ClearGameInfo();
+  ClearGameHash();
+  DisableHardcoreMode(false, false);
+  UpdateGlyphRanges();
+}
+
+void Achievements::OnSystemPaused(bool paused)
+{
+#ifdef ENABLE_RAINTEGRATION
+  if (IsUsingRAIntegration())
+    RA_SetPaused(paused);
+#endif
+}
+
+void Achievements::OnSystemReset()
+{
+  const auto lock = GetLock();
+  if (!IsActive())
+    return;
+
+#ifdef ENABLE_RAINTEGRATION
+  if (IsUsingRAIntegration())
   {
-    WARNING_LOG("Game path is unchanged.");
+    RA_OnReset();
     return;
   }
+#endif
 
-  std::unique_ptr<CDImage> temp_image;
-  if (!path.empty() && !image)
+  // Do we need to enable hardcore mode?
+  if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client))
   {
-    temp_image = CDImage::Open(path.c_str(), g_settings.cdrom_load_image_patches, nullptr);
-    image = temp_image.get();
-    if (!temp_image)
-      ERROR_LOG("Failed to open temporary CD image '{}'", path);
+    // This will raise the silly reset event, but we can safely ignore that since we're immediately resetting the client
+    DEV_LOG("Enabling hardcore mode after reset");
+    EnableHardcodeMode(true, true);
+  }
+
+  DEV_LOG("Reset client");
+  rc_client_reset(s_state.client);
+}
+
+void Achievements::GameChanged(CDImage* image)
+{
+  std::unique_lock lock(s_state.mutex);
+
+  if (!IsActive())
+    return;
+
+  // disc changed?
+  if (!IdentifyGame(image))
+    return;
+
+  // cancel previous requests
+  if (s_state.load_game_request)
+  {
+    rc_client_abort_async(s_state.client, s_state.load_game_request);
+    s_state.load_game_request = nullptr;
+  }
+
+  // Use a hash that will never match if we removed the disc. See rc_client_begin_change_media().
+  TinyString game_hash_str;
+  if (s_state.game_hash.has_value())
+    game_hash_str = GameHashToString(s_state.game_hash.value());
+  else
+    game_hash_str = "[NO HASH]";
+
+  s_state.load_game_request = rc_client_begin_change_media_from_hash(
+    s_state.client, game_hash_str.c_str(), ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+}
+
+bool Achievements::IdentifyGame(CDImage* image)
+{
+  if (s_state.game_path == image->GetPath())
+  {
+    WARNING_LOG("Game path is unchanged.");
+    return false;
   }
 
   std::optional<GameHash> game_hash;
@@ -1189,99 +1239,69 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     u32 bytes_hashed;
     game_hash = GetGameHash(image, &bytes_hashed);
     if (game_hash.has_value())
-      INFO_LOG("RA Hash: {} ({} bytes hashed)", GameHashToString(game_hash.value()), bytes_hashed);
+    {
+      INFO_COLOR_LOG(StrongOrange, "RA Hash: {} ({} bytes hashed)", GameHashToString(game_hash.value()), bytes_hashed);
+    }
+    else
+    {
+      // If we are starting with this game and it's bad, notify the user that this is why.
+      Host::AddIconOSDWarning(
+        "AchievementsHashFailed", ICON_EMOJI_WARNING,
+        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+        Host::OSD_ERROR_DURATION);
+    }
   }
+
+  s_state.game_path = image ? image->GetPath() : std::string();
 
   if (s_state.game_hash == game_hash)
   {
     // only the path has changed - different format/save state/etc.
-    INFO_LOG("Detected path change from '{}' to '{}'", s_state.game_path, path);
-    s_state.game_path = path;
-    return;
+    INFO_LOG("Detected path change to '{}'", s_state.game_path);
+    s_state.game_path = image->GetPath();
+    return false;
   }
 
-  ClearGameHash();
-  s_state.game_path = path;
-  s_state.game_hash = std::move(game_hash);
+  s_state.game_hash = game_hash;
 
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
-  {
     RAIntegration::GameChanged();
-    return;
-  }
 #endif
 
-  // shouldn't have a load game request when we're not logged in.
-  Assert(IsLoggedInOrLoggingIn() || !s_state.load_game_request);
+  return true;
+}
 
-  // bail out if we're not logged in, just save the hash
-  if (!IsLoggedInOrLoggingIn())
+bool Achievements::IdentifyCurrentGame()
+{
+  DebugAssert(System::IsValid());
+
+  // this crap is only needed because we can't grab the image from the reader...
+  std::unique_ptr<CDImage> temp_image;
+  if (const std::string& disc_path = System::GetDiscPath(); !disc_path.empty())
   {
-    INFO_LOG("Skipping load game because we're not logged in.");
-    DisableHardcoreMode();
-    return;
+    Error error;
+    temp_image = CDImage::Open(disc_path.c_str(), g_settings.cdrom_load_image_patches, &error);
+    if (!temp_image)
+      ERROR_LOG("Failed to open disc for late game identification: {}", error.GetDescription());
   }
 
-  if (!rc_client_is_game_loaded(s_state.client))
-    BeginLoadGame();
-  else
-    BeginChangeDisc();
+  return IdentifyGame(temp_image.get());
 }
 
 void Achievements::BeginLoadGame()
 {
-  ClearGameInfo();
+  DebugAssert(IsLoggedInOrLoggingIn());
 
   if (!s_state.game_hash.has_value())
   {
-    // when we're booting the bios, this will fail
-    if (!s_state.game_path.empty())
-    {
-      Host::AddKeyedOSDMessage(
-        "retroachievements_disc_read_failed",
-        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
-        Host::OSD_ERROR_DURATION);
-    }
-
-    DisableHardcoreMode();
-    UpdateGlyphRanges();
+    // no need to go through ClientLoadGameCallback, just bail out straight away
+    DisableHardcoreMode(false, false);
     return;
   }
 
   s_state.load_game_request = rc_client_begin_load_game(s_state.client, GameHashToString(s_state.game_hash.value()),
                                                         ClientLoadGameCallback, nullptr);
-}
-
-void Achievements::BeginChangeDisc()
-{
-  // cancel previous requests
-  if (s_state.load_game_request)
-  {
-    rc_client_abort_async(s_state.client, s_state.load_game_request);
-    s_state.load_game_request = nullptr;
-  }
-
-  if (!s_state.game_hash.has_value())
-  {
-    // when we're booting the bios, this will fail
-    if (!s_state.game_path.empty())
-    {
-      Host::AddKeyedOSDMessage(
-        "retroachievements_disc_read_failed",
-        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
-        Host::OSD_ERROR_DURATION);
-    }
-
-    ClearGameInfo();
-    DisableHardcoreMode();
-    UpdateGlyphRanges();
-    return;
-  }
-
-  s_state.load_game_request =
-    rc_client_begin_change_media_from_hash(s_state.client, GameHashToString(s_state.game_hash.value()),
-                                           ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
 }
 
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
@@ -1300,13 +1320,21 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
       UpdateGlyphRanges();
     }
 
-    DisableHardcoreMode();
+    DisableHardcoreMode(false, false);
     return;
   }
   else if (result == RC_LOGIN_REQUIRED)
   {
     // We would've asked to re-authenticate, so leave HC on for now.
     // Once we've done so, we'll reload the game.
+    return;
+  }
+  else if (result == RC_HARDCORE_DISABLED)
+  {
+    if (error_message)
+      ReportError(error_message);
+
+    OnHardcoreModeChanged(false, true, false);
     return;
   }
   else if (result != RC_OK)
@@ -1318,15 +1346,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
       UpdateGlyphRanges();
     }
 
-    DisableHardcoreMode();
+    DisableHardcoreMode(false, false);
     return;
-  }
-  else if (result == RC_HARDCORE_DISABLED)
-  {
-    if (error_message)
-      ReportError(error_message);
-
-    DisableHardcoreMode();
   }
 
   const rc_client_game_t* info = rc_client_get_game_info(s_state.client);
@@ -1339,7 +1360,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
       UpdateGlyphRanges();
     }
 
-    DisableHardcoreMode();
+    DisableHardcoreMode(false, false);
     return;
   }
 
@@ -1349,13 +1370,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   // Only display summary if the game title has changed across discs.
   const bool display_summary = (s_state.game_id != info->id || s_state.game_title != info->title);
 
-  // If the game has a RetroAchievements entry but no achievements or leaderboards,
-  // enforcing hardcore mode is pointless.
-  if (!has_achievements && !has_leaderboards)
-    DisableHardcoreMode();
-
-  // We should have matched hardcore mode state.
-  Assert(s_state.hardcore_mode == (rc_client_get_hardcore_enabled(client) != 0));
+  // If the game has a RetroAchievements entry but no achievements or leaderboards, enforcing hardcore mode
+  // is pointless. Have to re-query leaderboards because hidden should still trip HC.
+  if (!has_achievements && !rc_client_has_leaderboards(client, true))
+    DisableHardcoreMode(false, false);
 
   s_state.game_id = info->id;
   s_state.game_title = info->title;
@@ -1469,7 +1487,7 @@ void Achievements::DisplayAchievementSummary()
 
 void Achievements::DisplayHardcoreDeferredMessage()
 {
-  if (g_settings.achievements_hardcore_mode && !s_state.hardcore_mode && System::IsValid())
+  if (g_settings.achievements_hardcore_mode && System::IsValid())
   {
     GPUThread::RunOnThread([]() {
       if (!FullscreenUI::Initialize())
@@ -1484,12 +1502,7 @@ void Achievements::DisplayHardcoreDeferredMessage()
 
 void Achievements::HandleResetEvent(const rc_client_event_t* event)
 {
-  // We handle system resets ourselves, but still need to reset the client's state.
-  INFO_LOG("Resetting runtime due to reset event");
-  rc_client_reset(s_state.client);
-
-  if (HasActiveGame())
-    UpdateGameSummary(false, false);
+  WARNING_LOG("Ignoring RC_CLIENT_EVENT_RESET.");
 }
 
 void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
@@ -1806,32 +1819,17 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
   });
 }
 
-void Achievements::Reset()
+void Achievements::EnableHardcodeMode(bool display_message, bool display_game_summary)
 {
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-  {
-    RA_OnReset();
-    return;
-  }
-#endif
-
-  if (!IsActive())
+  DebugAssert(IsActive());
+  if (rc_client_get_hardcore_enabled(s_state.client))
     return;
 
-  DEV_LOG("Reset client");
-  rc_client_reset(s_state.client);
+  rc_client_set_hardcore_enabled(s_state.client, true);
+  OnHardcoreModeChanged(true, display_message, display_game_summary);
 }
 
-void Achievements::OnSystemPaused(bool paused)
-{
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    RA_SetPaused(paused);
-#endif
-}
-
-void Achievements::DisableHardcoreMode()
+void Achievements::DisableHardcoreMode(bool show_message, bool display_game_summary)
 {
   if (!IsActive())
     return;
@@ -1846,43 +1844,19 @@ void Achievements::DisableHardcoreMode()
   }
 #endif
 
-  if (!s_state.hardcore_mode)
-    return;
-
-  SetHardcoreMode(false, true);
-}
-
-bool Achievements::ResetHardcoreMode(bool is_booting)
-{
-  if (!IsActive())
-    return false;
-
   const auto lock = GetLock();
-
-  // If we're not logged in, don't apply hardcore mode restrictions.
-  // If we later log in, we'll start with it off anyway.
-  const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_state.load_game_request) &&
-                                    (HasActiveGame() || s_state.load_game_request) &&
-                                    g_settings.achievements_hardcore_mode;
-  if (s_state.hardcore_mode == wanted_hardcore_mode)
-    return false;
-
-  if (!is_booting && wanted_hardcore_mode && !CanEnableHardcoreMode())
-    return false;
-
-  SetHardcoreMode(wanted_hardcore_mode, false);
-  return true;
-}
-
-void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
-{
-  if (enabled == s_state.hardcore_mode)
+  if (!rc_client_get_hardcore_enabled(s_state.client))
     return;
 
-  // new mode
-  s_state.hardcore_mode = enabled;
+  rc_client_set_hardcore_enabled(s_state.client, false);
+  OnHardcoreModeChanged(false, show_message, display_game_summary);
+}
 
-  if (System::IsValid() && (HasActiveGame() || force_display_message))
+void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary)
+{
+  INFO_COLOR_LOG(StrongYellow, "Hardcore mode/restrictions are now {}.", enabled ? "ACTIVE" : "inactive");
+
+  if (System::IsValid() && display_message)
   {
     GPUThread::RunOnThread([enabled]() {
       if (!FullscreenUI::Initialize())
@@ -1895,17 +1869,28 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
     });
   }
 
-  rc_client_set_hardcore_enabled(s_state.client, enabled);
-  DebugAssert((rc_client_get_hardcore_enabled(s_state.client) != 0) == enabled);
-  if (HasActiveGame())
+  if (HasActiveGame() && display_game_summary)
   {
     UpdateGameSummary(true, true);
     DisplayAchievementSummary();
   }
 
+  DebugAssert((rc_client_get_hardcore_enabled(s_state.client) != 0) == enabled);
+
   // Reload setting to permit cheating-like things if we were just disabled.
-  if (!enabled && System::IsValid())
+  if (System::IsValid())
+  {
+    // Make sure a pre-existing cheat file hasn't been loaded when resetting after enabling HC mode.
+    Cheats::ReloadCheats(true, true, false, true, true);
+
+    // Defer settings update in case something is using it.
     Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+  }
+  else if (System::GetState() == System::State::Starting)
+  {
+    // Initial HC enable, activate restrictions.
+    System::ApplySettings(false);
+  }
 
   // Toss away UI state, because it's invalid now
   ClearUIState();
@@ -1946,9 +1931,6 @@ bool Achievements::DoState(StateWrapper& sw)
 
       GPUThread::RunOnThread([]() { FullscreenUI::CloseLoadingScreen(); });
     }
-
-    // loading an old state without cheevos, so reset the runtime
-    Achievements::Reset();
 
     u32 data_size = 0;
     sw.DoEx(&data_size, REQUIRED_VERSION, 0u);
@@ -2096,12 +2078,6 @@ bool Achievements::IsLoggedInOrLoggingIn()
   return (rc_client_get_user_info(s_state.client) != nullptr || s_state.login_request);
 }
 
-bool Achievements::CanEnableHardcoreMode()
-{
-  // have to re-query leaderboards because hidden should still trip HC
-  return (s_state.load_game_request || s_state.has_achievements || rc_client_has_leaderboards(s_state.client, true));
-}
-
 bool Achievements::Login(const char* username, const char* password, Error* error)
 {
   auto lock = GetLock();
@@ -2145,7 +2121,10 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
 
   // If we were't a temporary client, get the game loaded.
   if (System::IsValid() && !is_temporary_client)
+  {
+    IdentifyCurrentGame();
     BeginLoadGame();
+  }
 
   return true;
 }
@@ -2223,9 +2202,6 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
   }
 
   FinishLogin(client);
-
-  if (System::IsValid())
-    BeginLoadGame();
 }
 
 void Achievements::FinishLogin(const rc_client_t* client)
@@ -2338,7 +2314,7 @@ void Achievements::Logout()
   ClearProgressDatabase();
 }
 
-bool Achievements::ConfirmSystemReset()
+bool Achievements::ConfirmGameChange()
 {
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -2364,7 +2340,7 @@ bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
   if (!confirmed)
     return false;
 
-  DisableHardcoreMode();
+  DisableHardcoreMode(true, true);
   return true;
 }
 
@@ -2374,7 +2350,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
     // don't run the callback in the middle of rendering the UI
     Host::RunOnCPUThread([callback = std::move(callback), res]() {
       if (res)
-        DisableHardcoreMode();
+        DisableHardcoreMode(true, true);
       callback(res);
     });
   };
@@ -2826,7 +2802,7 @@ void Achievements::DrawAchievementsWindow()
   using ImGuiFullscreen::RenderShadowedTextClipped;
   using ImGuiFullscreen::UIStyle;
 
-  auto lock = Achievements::GetLock();
+  const auto lock = Achievements::GetLock();
 
   // achievements can get turned off via the main UI
   if (!s_state.achievement_list)
@@ -2886,7 +2862,7 @@ void Achievements::DrawAchievementsWindow()
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFont->FontSize));
       text.assign(s_state.game_title);
 
-      if (s_state.hardcore_mode)
+      if (rc_client_get_hardcore_enabled(s_state.client))
         text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
 
       top += UIStyle.LargeFont->FontSize + spacing;

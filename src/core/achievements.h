@@ -77,17 +77,23 @@ bool Initialize();
 /// Updates achievements settings.
 void UpdateSettings(const Settings& old_config);
 
-/// Resets the internal state of all achievement tracking. Call on system reset.
-void Reset();
+/// Shuts down the RetroAchievements client.
+void Shutdown();
 
-/// Called when the system is being reset. If it returns false, the reset should be aborted.
-bool ConfirmSystemReset();
+/// Called when the system is start. Engages hardcore mode if enabled.
+void OnSystemStarting(CDImage* image, bool disable_hardcore_mode);
 
-/// Called when the system is being shut down. If Shutdown() returns false, the shutdown should be aborted.
-bool Shutdown(bool allow_cancel);
+/// Called when the system is shutting down. If this returns false, the shutdown should be aborted.
+void OnSystemDestroyed();
+
+/// Called when the system is being reset. Resets the internal state of all achievement tracking.
+void OnSystemReset();
 
 /// Called when the system is being paused and resumed.
 void OnSystemPaused(bool paused);
+
+/// Called when the system changes game.
+void GameChanged(CDImage* image);
 
 /// Called once a frame at vsync time on the CPU thread.
 void FrameUpdate();
@@ -108,14 +114,8 @@ bool Login(const char* username, const char* password, Error* error);
 /// Logs out of RetroAchievements, clearing any credentials.
 void Logout();
 
-/// Called when the system changes game, or is booting.
-void GameChanged(const std::string& path, CDImage* image, bool booting);
-
-/// Re-enables hardcore mode if it is enabled in the settings.
-bool ResetHardcoreMode(bool is_booting);
-
 /// Forces hardcore mode off until next reset.
-void DisableHardcoreMode();
+void DisableHardcoreMode(bool show_message, bool display_game_summary);
 
 /// Prompts the user to disable hardcore mode, if they agree, returns true.
 bool ConfirmHardcoreModeDisable(const char* trigger);
@@ -126,6 +126,9 @@ bool IsHardcoreModeActive();
 
 /// RAIntegration only exists for Windows, so no point checking it on other platforms.
 bool IsUsingRAIntegration();
+
+/// Hook for RAIntegration to confirm reset/shutdown.
+bool ConfirmGameChange();
 
 /// Returns true if the achievement system is active. Achievements can be active without a valid client.
 bool IsActive();

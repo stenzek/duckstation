@@ -56,7 +56,7 @@ void AchievementLoginDialog::cancelClicked()
   {
     Host::RunOnCPUThread([]() {
       if (System::IsValid() && !Achievements::HasActiveGame())
-        Achievements::DisableHardcoreMode();
+        Achievements::DisableHardcoreMode(false, false);
     });
   }
 

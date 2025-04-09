@@ -1677,7 +1677,7 @@ void Host::OnAchievementsRefreshed()
 
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
-  emit g_emu_thread->achievementsChallengeModeChanged(enabled);
+  emit g_emu_thread->achievementsHardcoreModeChanged(enabled);
 }
 
 void Host::OnCoverDownloaderOpenRequested()

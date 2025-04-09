@@ -155,7 +155,7 @@ Q_SIGNALS:
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
   void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
-  void achievementsChallengeModeChanged(bool enabled);
+  void achievementsHardcoreModeChanged(bool enabled);
   void cheatEnabled(quint32 index, bool enabled);
   void mediaCaptureStarted();
   void mediaCaptureStopped();

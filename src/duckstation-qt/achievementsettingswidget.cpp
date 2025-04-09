@@ -138,9 +138,11 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
     return;
 
   // don't bother prompting if the game doesn't have achievements
-  auto lock = Achievements::GetLock();
-  if (!Achievements::HasActiveGame())
-    return;
+  {
+    auto lock = Achievements::GetLock();
+    if (!Achievements::HasActiveGame())
+      return;
+  }
 
   if (QMessageBox::question(
         QtUtils::GetRootWidget(this), tr("Reset System"),
