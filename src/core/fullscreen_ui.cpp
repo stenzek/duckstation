@@ -1165,8 +1165,12 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
     return;
 
   s_state.current_main_window = type;
-  ImGui::SetWindowFocus(nullptr);
-  QueueResetFocus(FocusResetType::ViewChanged);
+  if (!AreAnyDialogsOpen())
+  {
+    ImGui::SetWindowFocus(nullptr);
+    QueueResetFocus(FocusResetType::ViewChanged);
+  }
+
   UpdateRunIdleState();
   FixStateIfPaused();
 }
