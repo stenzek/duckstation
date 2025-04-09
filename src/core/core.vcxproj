@@ -170,9 +170,6 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\rainterface\rainterface.vcxproj" Condition="'$(Platform)'!='ARM64'">
-      <Project>{e4357877-d459-45c7-b8f6-dcbb587bb528}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\rapidyaml\rapidyaml.vcxproj">
       <Project>{1ad23a8a-4c20-434c-ae6b-0e07759eeb1e}</Project>
     </ProjectReference>
