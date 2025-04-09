@@ -29,7 +29,10 @@ ShaderGen::ShaderGen(RenderAPI render_api, GPUShaderLanguage shader_language, bo
   {
 #ifdef ENABLE_OPENGL
     if (m_render_api == RenderAPI::OpenGL || m_render_api == RenderAPI::OpenGLES)
-      m_glsl_version_string = GetGLSLVersionString(m_render_api, GetGLSLVersion(render_api));
+    {
+      m_glsl_version = GetGLSLVersion(render_api);
+      m_glsl_version_string = GetGLSLVersionString(m_render_api, m_glsl_version);
+    }
 
     m_use_glsl_interface_blocks =
       (shader_language == GPUShaderLanguage::GLSLVK || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
@@ -349,11 +352,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
   }
 
   // Pack functions missing from GLSL ES 3.0.
-  if (!m_glsl || m_shader_language == GPUShaderLanguage::GLSLES)
+  // We can't rely on __VERSION__ because Adreno is a broken turd and reports 300 even for GLES 3.2.
+  if (!m_glsl || (m_shader_language == GPUShaderLanguage::GLSLES && m_glsl_version < 310))
   {
-    if (m_shader_language == GPUShaderLanguage::GLSLES)
-      ss << "#if __VERSION__ < 310\n";
-
     ss << "uint packUnorm4x8(float4 value) {\n"
           "  uint4 packed = uint4(round(saturate(value) * 255.0));\n"
           "  return packed.x | (packed.y << 8) | (packed.z << 16) | (packed.w << 24);\n"
@@ -363,9 +364,6 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
           "  uint4 packed = uint4(value & 0xffu, (value >> 8) & 0xffu, (value >> 16) & 0xffu, value >> 24);\n"
           "  return float4(packed) / 255.0;\n"
           "}\n";
-
-    if (m_shader_language == GPUShaderLanguage::GLSLES)
-      ss << "#endif\n";
   }
 
   ss << "\n";

@@ -76,5 +76,6 @@ protected:
   bool m_use_glsl_binding_layout = false;
   mutable bool m_has_uniform_buffer = false;
 
+  u32 m_glsl_version = 0;
   TinyString m_glsl_version_string;
 };
