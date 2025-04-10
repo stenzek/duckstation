@@ -137,6 +137,7 @@ template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static void ClearGameHash();
+static bool HasSavedCredentials();
 static bool TryLoggingInWithToken();
 static void EnableHardcodeMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
@@ -717,10 +718,17 @@ void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownl
   http->reset();
 }
 
+bool Achievements::HasSavedCredentials()
+{
+  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
+  return (!username.empty() && !api_token.empty());
+}
+
 bool Achievements::TryLoggingInWithToken()
 {
-  std::string username = Host::GetBaseStringSettingValue("Cheevos", "Username");
-  std::string api_token = Host::GetBaseStringSettingValue("Cheevos", "Token");
+  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
   if (username.empty() || api_token.empty())
     return false;
 
@@ -1264,8 +1272,6 @@ bool Achievements::IdentifyCurrentGame()
 
 void Achievements::BeginLoadGame()
 {
-  DebugAssert(IsLoggedInOrLoggingIn());
-
   if (!s_state.game_hash.has_value())
   {
     // no need to go through ClientLoadGameCallback, just bail out straight away
@@ -1300,6 +1306,12 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   {
     // We would've asked to re-authenticate, so leave HC on for now.
     // Once we've done so, we'll reload the game.
+    if (!HasSavedCredentials())
+    {
+      DisableHardcoreMode(false, false);
+      return;
+    }
+
     return;
   }
   else if (result == RC_HARDCORE_DISABLED)
@@ -2221,6 +2233,7 @@ void Achievements::Logout()
     {
       ClearGameInfo();
       UpdateGlyphRanges();
+      DisableHardcoreMode(false, false);
     }
 
     CancelHashDatabaseRequests();
