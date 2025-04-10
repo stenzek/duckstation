@@ -1153,10 +1153,18 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   }
 
   // HC should have been disabled, we're now enabling it
-  // only enable hardcore mode if we're logged in, or waiting for a login response
-  AssertMsg(!rc_client_get_hardcore_enabled(s_state.client), "Hardcode mode should be disabled prior to boot");
-  if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
-    EnableHardcodeMode(false, false);
+  // RAIntegration can enable hardcode mode outside of us, so we need to double-check
+  if (rc_client_get_hardcore_enabled(s_state.client))
+  {
+    WARNING_LOG("Hardcore mode was enabled on system starting.");
+    OnHardcoreModeChanged(true, false, false);
+  }
+  else
+  {
+    // only enable hardcore mode if we're logged in, or waiting for a login response
+    if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
+      EnableHardcodeMode(false, false);
+  }
 
   // now we can finally identify the game
   IdentifyGame(image);
