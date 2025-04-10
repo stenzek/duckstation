@@ -14,7 +14,7 @@ rc_client_t* GetClient();
 
 const rc_client_user_game_summary_t& GetGameSummary();
 
-std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
+std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                     bool download_if_missing = true);
 std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
 

@@ -150,7 +150,7 @@ static void BeginLoadGame();
 static void UpdateGameSummary(bool update_progress_database, bool force_update_progress_database);
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_path);
-static const std::string& GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, int state);
+static const std::string& GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked);
 static void UpdateGlyphRanges();
 
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
@@ -274,7 +274,7 @@ struct State
   rc_client_async_handle_t* load_game_request = nullptr;
 
   rc_client_achievement_list_t* achievement_list = nullptr;
-  std::vector<std::tuple<const void*, int, std::string>> achievement_badge_paths;
+  std::vector<std::tuple<const void*, std::string, bool>> achievement_badge_paths;
 
   std::optional<PauseMenuAchievementInfo> most_recent_unlock = {};
   std::optional<PauseMenuAchievementInfo> achievement_nearest_completion = {};
@@ -1095,7 +1095,7 @@ void Achievements::UpdateRecentUnlockAndAlmostThere()
 
     info->title = achievement->title;
     info->description = achievement->description;
-    info->badge_path = GetAchievementBadgePath(achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED, true);
+    info->badge_path = GetAchievementBadgePath(achievement, false);
   };
 
   cache_info(most_recent_unlock, s_state.most_recent_unlock);
@@ -1506,7 +1506,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
     else
       title = cheevo->title;
 
-    std::string badge_path = GetAchievementBadgePath(cheevo, cheevo->state);
+    std::string badge_path = GetAchievementBadgePath(cheevo, false);
 
     GPUThread::RunOnThread([id = cheevo->id, duration = g_settings.achievements_notification_duration,
                             title = std::move(title), description = std::string(cheevo->description),
@@ -1711,11 +1711,11 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
     return;
   }
 
-  s_state.active_challenge_indicators.push_back(AchievementChallengeIndicator{
-    .achievement = event->achievement,
-    .badge_path = GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED),
-    .opacity = 0.0f,
-    .active = true});
+  s_state.active_challenge_indicators.push_back(
+    AchievementChallengeIndicator{.achievement = event->achievement,
+                                  .badge_path = GetAchievementBadgePath(event->achievement, false),
+                                  .opacity = 0.0f,
+                                  .active = true});
 
   DEV_LOG("Show challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
 }
@@ -1741,8 +1741,7 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
     s_state.active_progress_indicator.emplace();
 
   s_state.active_progress_indicator->achievement = event->achievement;
-  s_state.active_progress_indicator->badge_path =
-    GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
+  s_state.active_progress_indicator->badge_path = GetAchievementBadgePath(event->achievement, false);
   s_state.active_progress_indicator->opacity = 0.0f;
   s_state.active_progress_indicator->active = true;
 }
@@ -1959,35 +1958,33 @@ bool Achievements::DoState(StateWrapper& sw)
   }
 }
 
-std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
+std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                                   bool download_if_missing)
 {
-  const std::string path = GetLocalImagePath(achievement->badge_name, (state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED) ?
-                                                                        RC_IMAGE_TYPE_ACHIEVEMENT :
-                                                                        RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED);
+  const std::string path =
+    GetLocalImagePath(achievement->badge_name, locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT);
   if (download_if_missing && !path.empty() && !FileSystem::FileExists(path.c_str()))
   {
-    char buf[URL_BUFFER_SIZE];
-    const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
-    if (res == RC_OK)
-      DownloadImage(buf, path);
+    const std::string_view url = locked ? achievement->badge_locked_url : achievement->badge_url;
+    if (url.empty())
+      ReportFmtError("Acheivement {} with badge name {} has no badge URL", achievement->id, achievement->badge_name);
     else
-      ReportRCError(res, "rc_client_achievement_get_image_url() for {} failed", achievement->title);
+      DownloadImage(std::string(url), path);
   }
 
   return path;
 }
 
-const std::string& Achievements::GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, int state)
+const std::string& Achievements::GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked)
 {
-  for (const auto& [l_cheevo, l_state, l_path] : s_state.achievement_badge_paths)
+  for (const auto& [l_cheevo, l_path, l_state] : s_state.achievement_badge_paths)
   {
-    if (l_cheevo == achievement && l_state == state)
+    if (l_cheevo == achievement && l_state == locked)
       return l_path;
   }
 
-  std::string path = GetAchievementBadgePath(achievement, state);
-  return std::get<2>(s_state.achievement_badge_paths.emplace_back(achievement, state, std::move(path)));
+  std::string path = GetAchievementBadgePath(achievement, locked);
+  return std::get<1>(s_state.achievement_badge_paths.emplace_back(achievement, std::move(path), locked));
 }
 
 std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry)
@@ -2964,7 +2961,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   if (!visible)
     return;
 
-  const std::string& badge_path = GetCachedAchievementBadgePath(cheevo, cheevo->state);
+  const std::string& badge_path =
+    GetCachedAchievementBadgePath(cheevo, cheevo->state != RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
 
   const ImVec2 image_size(
     LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT));
