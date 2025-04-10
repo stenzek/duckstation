@@ -1455,11 +1455,15 @@ void Achievements::DisplayAchievementSummary()
                                                      s_state.game_summary.points_core),
                                  s_state.game_summary.points_unlocked));
 
+      summary.append('\n');
       if (IsHardcoreModeActive())
       {
-        summary.append('\n');
         summary.append(
           TRANSLATE_SV("Achievements", "Hardcore mode is enabled. Cheats and save states are unavailable."));
+      }
+      else
+      {
+        summary.append(TRANSLATE_SV("Achievements", "Hardcore mode is disabled. Leaderboards will not be tracked."));
       }
     }
     else
