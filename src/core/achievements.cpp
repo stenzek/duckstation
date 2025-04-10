@@ -167,6 +167,7 @@ static void ClientEventHandler(const rc_client_event_t* event, rc_client_t* clie
 static void HandleResetEvent(const rc_client_event_t* event);
 static void HandleUnlockEvent(const rc_client_event_t* event);
 static void HandleGameCompleteEvent(const rc_client_event_t* event);
+static void HandleSubsetCompleteEvent(const rc_client_event_t* event);
 static void HandleLeaderboardStartedEvent(const rc_client_event_t* event);
 static void HandleLeaderboardFailedEvent(const rc_client_event_t* event);
 static void HandleLeaderboardSubmittedEvent(const rc_client_event_t* event);
@@ -959,6 +960,10 @@ void Achievements::ClientEventHandler(const rc_client_event_t* event, rc_client_
       HandleGameCompleteEvent(event);
       break;
 
+    case RC_CLIENT_EVENT_SUBSET_COMPLETED:
+      HandleSubsetCompleteEvent(event);
+      break;
+
     case RC_CLIENT_EVENT_LEADERBOARD_STARTED:
       HandleLeaderboardStartedEvent(event);
       break;
@@ -1530,20 +1535,53 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
   if (g_settings.achievements_notifications)
   {
-    std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_state.game_title);
     std::string message = fmt::format(
-      TRANSLATE_FS("Achievements", "{0}, {1}"),
+      TRANSLATE_FS("Achievements", "Game complete.\n{0}, {1}."),
       TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
                            s_state.game_summary.num_unlocked_achievements),
       TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
 
     GPUThread::RunOnThread(
-      [title = std::move(title), message = std::move(message), icon = s_state.game_icon]() mutable {
+      [title = s_state.game_title, message = std::move(message), icon = s_state.game_icon]() mutable {
         if (!FullscreenUI::Initialize())
           return;
 
         ImGuiFullscreen::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
                                          std::move(message), std::move(icon));
+      });
+  }
+}
+
+void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
+{
+  INFO_LOG("Subset {} ({}) complete", event->subset->title, event->subset->id);
+  UpdateGameSummary(false, false);
+
+  if (g_settings.achievements_notifications)
+  {
+    // Need to grab the icon for the subset.
+    std::string badge_path;
+    if (const std::string_view badge_url = event->subset->badge_url; !badge_url.empty())
+    {
+      badge_path = GetLocalImagePath(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
+      if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str()))
+        DownloadImage(std::string(badge_url), badge_path);
+    }
+
+    std::string title = event->subset->title;
+    std::string message = fmt::format(
+      TRANSLATE_FS("Achievements", "Subset complete.\n{0}, {1}."),
+      TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+                           s_state.game_summary.num_unlocked_achievements),
+      TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
+
+    GPUThread::RunOnThread(
+      [title = std::move(title), message = std::move(message), badge_path = std::move(badge_path)]() mutable {
+        if (!FullscreenUI::Initialize())
+          return;
+
+        ImGuiFullscreen::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
+                                         std::move(message), std::move(badge_path));
       });
   }
 }
