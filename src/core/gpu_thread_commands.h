@@ -154,10 +154,11 @@ struct GPUBackendUpdateDisplayCommand : public GPUThreadCommand
   bool interlaced_display_enabled : 1;
   bool interlaced_display_field : 1;
   bool interlaced_display_interleaved : 1;
+  bool interleaved_480i_mode : 1;
   bool display_24bit : 1;
   bool display_disabled : 1;
   bool submit_frame : 1;
-  bool : 2;
+  bool : 1;
 
   GPUBackendFramePresentationParameters frame;
 };

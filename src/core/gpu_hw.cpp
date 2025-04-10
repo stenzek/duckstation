@@ -3908,6 +3908,11 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   GPUTextureCache::Compact();
 
+  // If this is a 480i single buffer game, then rendering should complete within one vblank.
+  // Therefore we should clear the depth buffer, because the drawing area may not change.
+  if (m_pgxp_depth_buffer && cmd->interleaved_480i_mode)
+    CopyAndClearDepthBuffer(true);
+
   if (g_gpu_settings.gpu_show_vram)
   {
     if (IsUsingMultisampling())

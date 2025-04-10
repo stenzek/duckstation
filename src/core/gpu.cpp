@@ -1962,6 +1962,7 @@ void GPU::UpdateDisplay(bool submit_frame)
   cmd->interlaced_display_enabled = interlaced;
   cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
   cmd->interlaced_display_interleaved = line_skip;
+  cmd->interleaved_480i_mode = m_GPUSTAT.InInterleaved480iMode();
   cmd->display_24bit = m_GPUSTAT.display_area_color_depth_24;
   cmd->display_disabled = IsDisplayDisabled();
   cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
