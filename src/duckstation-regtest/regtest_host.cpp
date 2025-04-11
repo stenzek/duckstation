@@ -535,6 +535,15 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   // noop
 }
 
+#ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+
+void Host::OnRAIntegrationMenuChanged()
+{
+  // noop
+}
+
+#endif
+
 void Host::OnCoverDownloaderOpenRequested()
 {
   // noop
