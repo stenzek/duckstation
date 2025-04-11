@@ -2587,7 +2587,10 @@ void Host::RequestExitBigPicture()
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 {
   std::optional<WindowInfo> ret;
-  QMetaObject::invokeMethod(g_main_window, &MainWindow::getWindowInfo, Qt::BlockingQueuedConnection, &ret);
+  if (QThread::isMainThread())
+    ret = g_main_window->getWindowInfo();
+  else
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::getWindowInfo, Qt::BlockingQueuedConnection, &ret);
   return ret;
 }
 

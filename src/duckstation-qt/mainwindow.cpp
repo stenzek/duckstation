@@ -3104,32 +3104,26 @@ void MainWindow::onRAIntegrationMenuChanged()
     action->setCheckable(item.checked != 0);
     action->setChecked(item.checked != 0);
     connect(action, &QAction::triggered, this, [id = item.id]() {
-      Host::RunOnCPUThread([id]() {
-        // not locked in case a callback fires immediately and tries to lock
-        // client will be safe since this is running on the main thread
-        if (!Achievements::IsUsingRAIntegration())
-          return;
+      const auto lock = Achievements::GetLock();
+      if (!Achievements::IsUsingRAIntegration())
+        return;
 
-        rc_client_raintegration_activate_menu_item(Achievements::GetClient(), id);
-      });
+      rc_client_raintegration_activate_menu_item(Achievements::GetClient(), id);
     });
   }
 }
 
 void MainWindow::notifyRAIntegrationOfWindowChange()
 {
-  const auto lock = Achievements::GetLock();
-  if (!Achievements::IsUsingRAIntegration())
-    return;
-
   HWND hwnd = static_cast<HWND>((void*)winId());
-  Host::RunOnCPUThread([hwnd]() {
+
+  {
     const auto lock = Achievements::GetLock();
     if (!Achievements::IsUsingRAIntegration())
       return;
 
     rc_client_raintegration_update_main_window_handle(Achievements::GetClient(), hwnd);
-  });
+  }
 
   onRAIntegrationMenuChanged();
 }
