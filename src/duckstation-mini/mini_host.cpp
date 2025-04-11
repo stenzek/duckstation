@@ -77,11 +77,9 @@ static bool SetDataDirectory();
 static bool SetCriticalFolders();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static std::string GetResourcePath(std::string_view name, bool allow_override);
-static void ProcessCPUThreadEvents(bool block);
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
 static void WarnAboutInterface();
-static void RunOnUIThread(std::function<void()> func);
 static void StartCPUThread();
 static void StopCPUThread();
 static void ProcessCPUThreadEvents(bool block);
@@ -580,7 +578,7 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
 
   std::optional<WindowInfo> wi;
 
-  MiniHost::RunOnUIThread([render_api, fullscreen, error, &wi]() {
+  Host::RunOnUIThread([render_api, fullscreen, error, &wi]() {
     const std::string window_title = GetWindowTitle(System::GetGameTitle());
     const SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, window_title.c_str());
@@ -656,7 +654,7 @@ void Host::ReleaseRenderWindow()
   if (!s_state.sdl_window)
     return;
 
-  MiniHost::RunOnUIThread([]() {
+  Host::RunOnUIThread([]() {
     if (!s_state.fullscreen.load(std::memory_order_acquire))
     {
       int window_x = SDL_WINDOWPOS_UNDEFINED, window_y = SDL_WINDOWPOS_UNDEFINED;
@@ -909,17 +907,6 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
   }
 }
 
-void MiniHost::RunOnUIThread(std::function<void()> func)
-{
-  std::function<void()>* pfunc = new std::function<void()>(std::move(func));
-
-  SDL_Event ev;
-  ev.user = {};
-  ev.type = s_state.func_event_id;
-  ev.user.data1 = pfunc;
-  SDL_PushEvent(&ev);
-}
-
 void MiniHost::ProcessCPUThreadPlatformMessages()
 {
   // This is lame. On Win32, we need to pump messages, even though *we* don't have any windows
@@ -1038,7 +1025,7 @@ void MiniHost::CPUThreadEntryPoint()
   System::CPUThreadShutdown();
 
   // Tell the UI thread to shut down.
-  RunOnUIThread([]() { s_state.ui_thread_running = false; });
+  Host::RunOnUIThread([]() { s_state.ui_thread_running = false; });
 }
 
 void MiniHost::CPUThreadMainLoop()
@@ -1209,6 +1196,19 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
   s_state.cpu_thread_event_posted.notify_one();
   if (block)
     s_state.cpu_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+}
+
+void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
+{
+  using namespace MiniHost;
+
+  std::function<void()>* pfunc = new std::function<void()>(std::move(function));
+
+  SDL_Event ev;
+  ev.user = {};
+  ev.type = s_state.func_event_id;
+  ev.user.data1 = pfunc;
+  SDL_PushEvent(&ev);
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)

@@ -661,7 +661,7 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
         return;
     }
 
-    QtHost::RunOnUIThread([this, address, new_bp_state, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([this, address, new_bp_state, bps = CPU::CopyBreakpointList()]() {
       m_code_model->setBreakpointState(address, new_bp_state);
       refreshBreakpointList(bps);
     });
@@ -715,7 +715,7 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 void DebuggerWindow::refreshBreakpointList()
 {
   Host::RunOnCPUThread(
-    [this]() { QtHost::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() { refreshBreakpointList(bps); }); });
+    [this]() { Host::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() { refreshBreakpointList(bps); }); });
 }
 
 void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
@@ -743,7 +743,7 @@ void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 {
   Host::RunOnCPUThread([this, address, type]() {
     const bool result = CPU::AddBreakpoint(type, address);
-    QtHost::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
       if (!result)
       {
         QMessageBox::critical(this, windowTitle(),
@@ -763,7 +763,7 @@ void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 {
   Host::RunOnCPUThread([this, address, type]() {
     const bool result = CPU::RemoveBreakpoint(type, address);
-    QtHost::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
       if (!result)
       {
         QMessageBox::critical(this, windowTitle(), tr("Failed to remove breakpoint. This breakpoint may not exist."));
