@@ -1576,6 +1576,11 @@ u32 Bus::EXP2ReadHandler(VirtualMemoryAddress address)
     // nocash expansion area
     value = UINT32_C(0xFFFFFFFF);
   }
+  else if (offset == 0x80)
+  {
+    // pcsx_present()
+    value = UINT32_C(0xFFFFFFFF);
+  }
   else
   {
     WARNING_LOG("EXP2 read: 0x{:08X}", address);
