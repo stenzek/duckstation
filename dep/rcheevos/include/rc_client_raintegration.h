@@ -74,6 +74,12 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration(
     const char* client_name, const char* client_version,
     rc_client_callback_t callback, void* callback_userdata);
 
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_raintegration_deferred(rc_client_t* client,
+    const wchar_t* search_directory, rc_client_callback_t callback, void* callback_userdata);
+
+RC_EXPORT int RC_CCONV rc_client_finish_load_raintegration(rc_client_t* client,
+    HWND main_window_handle, const char* client_name, const char* client_version, const char** error_message);
+
 RC_EXPORT void RC_CCONV rc_client_unload_raintegration(rc_client_t* client);
 
 RC_EXPORT void RC_CCONV rc_client_raintegration_update_main_window_handle(rc_client_t* client, HWND main_window_handle);

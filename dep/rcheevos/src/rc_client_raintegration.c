@@ -128,6 +128,7 @@ typedef struct rc_client_version_validation_callback_data_t {
   char* client_name;
   char* client_version;
   rc_client_async_handle_t async_handle;
+  uint8_t defer_load;
 } rc_client_version_validation_callback_data_t;
 
 int rc_client_version_less(const char* left, const char* right)
@@ -163,8 +164,8 @@ int rc_client_version_less(const char* left, const char* right)
   return 0;
 }
 
-static void rc_client_init_raintegration(rc_client_t* client,
-    rc_client_version_validation_callback_data_t* version_validation_callback_data)
+static int rc_client_init_raintegration(rc_client_t* client, HWND main_window_handle, const char* client_name,
+  const char* client_version, const char** error_message)
 {
   rc_client_raintegration_init_client_func_t init_func = client->state.raintegration->init_client;
 
@@ -182,15 +183,13 @@ static void rc_client_init_raintegration(rc_client_t* client,
     }
   }
 
-  if (!init_func || !init_func(version_validation_callback_data->main_window_handle,
-      version_validation_callback_data->client_name,
-      version_validation_callback_data->client_version)) {
-    const char* error_message = "RA_Integration initialization failed";
+  if (!init_func || !init_func(main_window_handle, client_name, client_version)) {
+    *error_message = "RA_Integration initialization failed";
 
     rc_client_unload_raintegration(client);
 
-    RC_CLIENT_LOG_ERR(client, error_message);
-    version_validation_callback_data->callback(RC_ABORTED, error_message, client, version_validation_callback_data->callback_userdata);
+    RC_CLIENT_LOG_ERR(client, *error_message);
+    return RC_ABORTED;
   }
   else {
     rc_client_external_t* external_client = (rc_client_external_t*)
@@ -198,12 +197,12 @@ static void rc_client_init_raintegration(rc_client_t* client,
     memset(external_client, 0, sizeof(*external_client));
 
     if (!client->state.raintegration->get_external_client(external_client, RC_CLIENT_EXTERNAL_VERSION)) {
-      const char* error_message = "RA_Integration external client export failed";
+      *error_message = "RA_Integration external client export failed";
 
       rc_client_unload_raintegration(client);
 
-      RC_CLIENT_LOG_ERR(client, error_message);
-      version_validation_callback_data->callback(RC_ABORTED, error_message, client, version_validation_callback_data->callback_userdata);
+      RC_CLIENT_LOG_ERR(client, *error_message);
+      return RC_ABORTED;
     }
     else {
       /* copy state to the external client */
@@ -227,11 +226,9 @@ static void rc_client_init_raintegration(rc_client_t* client,
       /* attach the external client and call the callback */
       client->state.external_client = external_client;
 
-      client->state.raintegration->hMainWindow = version_validation_callback_data->main_window_handle;
+      client->state.raintegration->hMainWindow = main_window_handle;
       client->state.raintegration->bIsInited = 1;
-
-      version_validation_callback_data->callback(RC_OK, NULL,
-         client, version_validation_callback_data->callback_userdata);
+      return RC_OK;
     }
   }
 }
@@ -290,7 +287,15 @@ static void rc_client_version_validation_callback(const rc_api_server_response_t
       else {
         RC_CLIENT_LOG_INFO_FORMATTED(client, "Validated RA_Integration version %s (minimum %s)", current_version, minimum_version);
 
-        rc_client_init_raintegration(client, version_validation_callback_data);
+        if (version_validation_callback_data->defer_load) {
+          // let the caller complete the initialization
+          version_validation_callback_data->callback(RC_OK, NULL, client, version_validation_callback_data->callback_userdata);
+        } else {
+          const char* error_message = NULL;
+          result = rc_client_init_raintegration(client, version_validation_callback_data->main_window_handle,
+            version_validation_callback_data->client_name, version_validation_callback_data->client_version, &error_message);
+          version_validation_callback_data->callback(result, error_message, client, version_validation_callback_data->callback_userdata);
+        }
       }
     }
 
@@ -369,9 +374,97 @@ rc_client_async_handle_t* rc_client_begin_load_raintegration(rc_client_t* client
   callback_data->client_name = strdup(client_name);
   callback_data->client_version = strdup(client_version);
   callback_data->main_window_handle = main_window_handle;
+  callback_data->defer_load = 0;
 
   client->callbacks.server_call(&request, rc_client_version_validation_callback, callback_data, client);
   return &callback_data->async_handle;
+}
+
+rc_client_async_handle_t* rc_client_begin_load_raintegration_deferred(rc_client_t* client,
+                                                                               const wchar_t* search_directory,
+                                                                               rc_client_callback_t callback,
+                                                                               void* callback_userdata) {
+rc_client_version_validation_callback_data_t* callback_data;
+  rc_api_url_builder_t builder;
+  rc_api_request_t request;
+
+  if (!client) {
+    callback(RC_INVALID_STATE, "client is required", client, callback_userdata);
+    return NULL;
+  }
+
+  if (client->state.user != RC_CLIENT_USER_STATE_NONE) {
+    callback(RC_INVALID_STATE, "Cannot initialize RAIntegration after login", client, callback_userdata);
+    return NULL;
+  }
+
+  if (!client->state.raintegration) {
+    rc_client_raintegration_load_dll(client, search_directory, callback, callback_userdata);
+    if (!client->state.raintegration)
+      return NULL;
+  }
+
+  if (client->state.raintegration->get_host_url) {
+    const char* host_url = client->state.raintegration->get_host_url();
+    if (host_url && strcmp(host_url, rc_api_default_host()) != 0 &&
+                    strcmp(host_url, "OFFLINE") != 0) {
+      /* if the DLL specifies a custom host, use it */
+      rc_client_set_host(client, host_url);
+    }
+  }
+
+  memset(&request, 0, sizeof(request));
+  rc_api_url_build_dorequest_url(&request, &client->state.host);
+  rc_url_builder_init(&builder, &request.buffer, 48);
+  rc_url_builder_append_str_param(&builder, "r", "latestintegration");
+  request.post_data = rc_url_builder_finalize(&builder);
+
+  callback_data = calloc(1, sizeof(*callback_data));
+  if (!callback_data) {
+    callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), client, callback_userdata);
+    return NULL;
+  }
+
+  callback_data->client = client;
+  callback_data->callback = callback;
+  callback_data->callback_userdata = callback_userdata;
+  callback_data->client_name = NULL;
+  callback_data->client_version = NULL;
+  callback_data->main_window_handle = NULL;
+  callback_data->defer_load = 1;
+
+  client->callbacks.server_call(&request, rc_client_version_validation_callback, callback_data, client);
+  return &callback_data->async_handle;
+}
+
+int rc_client_finish_load_raintegration(rc_client_t* client, HWND main_window_handle, const char* client_name,
+                                        const char* client_version, const char** error_message)
+{
+  if (client == NULL || main_window_handle == NULL || client_name == NULL || client_version == NULL) {
+    *error_message = "client is required";
+    rc_client_unload_raintegration(client);
+    return RC_ABORTED;
+  }
+
+  if (main_window_handle == NULL) {
+    *error_message = "main_window_handle is required";
+    rc_client_unload_raintegration(client);
+    return RC_ABORTED;
+  }
+
+  if (client_name == NULL) {
+    *error_message = "client_name is required";
+    rc_client_unload_raintegration(client);
+    return RC_ABORTED;
+  }
+
+  if (client_version == NULL) {
+    *error_message = "client_version is required";
+    rc_client_unload_raintegration(client);
+    return RC_ABORTED;
+  }
+
+  return rc_client_init_raintegration(client, main_window_handle, client_name, client_version, error_message);
 }
 
 void rc_client_raintegration_update_main_window_handle(rc_client_t* client, HWND main_window_handle)
