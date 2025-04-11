@@ -1037,7 +1037,7 @@ void MainWindow::populateCheatsMenu(QMenu* menu)
     if (Cheats::AreCheatsEnabled() && names.empty())
       return;
 
-    QtHost::RunOnUIThread([menu, names = std::move(names)]() {
+    Host::RunOnUIThread([menu, names = std::move(names)]() {
       if (names.empty())
       {
         QAction* action = menu->addAction(tr("Cheats are not enabled."));
@@ -2368,9 +2368,9 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
     if (path.empty() || serial.empty())
       return;
 
-    QtHost::RunOnUIThread([title = std::string(System::GetGameTitle()), path = std::string(path),
-                           serial = std::string(serial), hash = System::GetGameHash(), region = System::GetDiscRegion(),
-                           category]() {
+    Host::RunOnUIThread([title = std::string(System::GetGameTitle()), path = std::string(path),
+                         serial = std::string(serial), hash = System::GetGameHash(), region = System::GetDiscRegion(),
+                         category]() {
       SettingsWindow::openGamePropertiesDialog(path, title, std::move(serial), hash, region, category);
     });
   });

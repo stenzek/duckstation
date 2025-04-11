@@ -381,6 +381,11 @@ void RegTestHost::ProcessCPUThreadEvents()
   }
 }
 
+void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
+{
+  RunOnCPUThread(std::move(function), block);
+}
+
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   //

@@ -1149,7 +1149,7 @@ void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel
     return;
   }
 
-  QtHost::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
+  Host::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
     auto lock = g_main_window->pauseAndLockSystem();
 
     const bool result =
@@ -1378,7 +1378,7 @@ void EmuThread::startControllerTest()
     return;
   }
 
-  QtHost::RunOnUIThread([path = std::move(path)]() mutable {
+  Host::RunOnUIThread([path = std::move(path)]() mutable {
     {
       auto lock = g_main_window->pauseAndLockSystem();
       if (QMessageBox::question(
@@ -1397,7 +1397,7 @@ void EmuThread::startControllerTest()
   });
 }
 
-void EmuThread::runOnEmuThread(std::function<void()> callback)
+void EmuThread::runOnEmuThread(const std::function<void()>& callback)
 {
   callback();
 }
@@ -1411,11 +1411,11 @@ void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false 
                             Q_ARG(std::function<void()>, std::move(function)));
 }
 
-void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= false*/)
+void Host::RunOnUIThread(std::function<void()> function, bool block /* = false*/)
 {
   // main window always exists, so it's fine to attach it to that.
   QMetaObject::invokeMethod(g_main_window, "runOnUIThread", block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
-                            Q_ARG(const std::function<void()>&, func));
+                            Q_ARG(std::function<void()>, std::move(function)));
 }
 
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
@@ -1432,7 +1432,7 @@ void QtAsyncTask::create(QObject* owner, WorkCallback callback)
   connect(task, &QtAsyncTask::completed, owner, [task]() { std::get<CompletionCallback>(task->m_callback)(); });
   System::QueueAsyncTask([task]() {
     task->m_callback = std::get<WorkCallback>(task->m_callback)();
-    QtHost::RunOnUIThread([task]() {
+    Host::RunOnUIThread([task]() {
       emit task->completed(task);
       delete task;
     });
@@ -1710,10 +1710,9 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
     }
   }
 
-  QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), select_directory, callback = std::move(callback),
-                         filters_str = std::move(filters_str),
-                         initial_directory = QtUtils::StringViewToQString(initial_directory),
-                         from_cpu_thread]() mutable {
+  Host::RunOnUIThread([title = QtUtils::StringViewToQString(title), select_directory, callback = std::move(callback),
+                       filters_str = std::move(filters_str),
+                       initial_directory = QtUtils::StringViewToQString(initial_directory), from_cpu_thread]() mutable {
     auto lock = g_main_window->pauseAndLockSystem();
 
     QString path;
@@ -2103,9 +2102,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   else
   {
     // Otherwise, use the desktop UI.
-    QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
-                           callback = std::move(callback), yes_text = QtUtils::StringViewToQString(yes_text),
-                           no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
+    Host::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
+                         callback = std::move(callback), yes_text = QtUtils::StringViewToQString(yes_text),
+                         no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
       bool result;
@@ -2136,14 +2135,14 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
 
 void Host::OpenURL(std::string_view url)
 {
-  QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
+  Host::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
 }
 
 std::string Host::GetClipboardText()
 {
   // Hope this doesn't deadlock...
   std::string ret;
-  QtHost::RunOnUIThread(
+  Host::RunOnUIThread(
     [&ret]() {
       QClipboard* clipboard = QGuiApplication::clipboard();
       if (clipboard)
@@ -2155,7 +2154,7 @@ std::string Host::GetClipboardText()
 
 bool Host::CopyTextToClipboard(std::string_view text)
 {
-  QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
+  Host::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {
     QClipboard* clipboard = QGuiApplication::clipboard();
     if (clipboard)
       clipboard->setText(text);
@@ -2543,7 +2542,7 @@ void QtHost::QueueSettingsSave()
 {
   if (!QThread::isMainThread())
   {
-    QtHost::RunOnUIThread(QueueSettingsSave);
+    Host::RunOnUIThread(QueueSettingsSave);
     return;
   }
 

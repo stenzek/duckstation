@@ -225,7 +225,7 @@ std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageL
 
 bool Host::ChangeLanguage(const char* new_language)
 {
-  QtHost::RunOnUIThread([new_language = std::string(new_language)]() {
+  Host::RunOnUIThread([new_language = std::string(new_language)]() {
     Host::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
     Host::CommitBaseSettingChanges();
     QtHost::UpdateApplicationLanguage(g_main_window);
@@ -283,8 +283,7 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, std::string_
   // If we don't have any specific glyph range, assume Central European, except if English, then keep the size down.
   if ((!gi || !gi->used_glyphs) && language != "en")
   {
-    glyph_ranges.insert(glyph_ranges.end(), std::begin(s_central_european_ranges),
-                        std::end(s_central_european_ranges));
+    glyph_ranges.insert(glyph_ranges.end(), std::begin(s_central_european_ranges), std::end(s_central_european_ranges));
   }
 
   // List terminator.
