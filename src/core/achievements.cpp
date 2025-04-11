@@ -638,9 +638,6 @@ const std::string& Achievements::GetRichPresenceString()
 
 bool Achievements::Initialize()
 {
-  if (IsUsingRAIntegration())
-    return true;
-
   auto lock = GetLock();
   AssertMsg(g_settings.achievements_enabled, "Achievements are enabled");
   Assert(!s_state.client && !s_state.http_downloader);
@@ -4631,6 +4628,8 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
 
 namespace Achievements {
 
+static void FinishLoadRAIntegration();
+
 static void RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client);
 static void RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
@@ -4652,12 +4651,9 @@ bool Achievements::IsRAIntegrationAvailable()
 
 void Achievements::BeginLoadRAIntegration()
 {
-  const std::optional<WindowInfo> wi = Host::GetTopLevelWindowInfo();
   const std::wstring wapproot = StringUtil::UTF8StringToWideString(EmuFolders::AppRoot);
-  s_state.load_raintegration_request = rc_client_begin_load_raintegration(
-    s_state.client, wapproot.c_str(),
-    (wi.has_value() && wi->type == WindowInfo::Type::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
-    "DuckStation", g_scm_tag_str, RAIntegrationBeginLoadCallback, nullptr);
+  s_state.load_raintegration_request = rc_client_begin_load_raintegration_deferred(
+    s_state.client, wapproot.c_str(), RAIntegrationBeginLoadCallback, nullptr);
 }
 
 void Achievements::RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client,
@@ -4670,18 +4666,39 @@ void Achievements::RAIntegrationBeginLoadCallback(int result, const char* error_
     return;
   }
 
+  // set this so we can unload it if the request changes
+  s_state.using_raintegration = true;
+
+  INFO_COLOR_LOG(StrongGreen, "RAIntegration DLL loaded, initializing.");
+  Host::RunOnUIThread(&Achievements::FinishLoadRAIntegration);
+}
+
+void Achievements::FinishLoadRAIntegration()
+{
+  const std::optional<WindowInfo> wi = Host::GetTopLevelWindowInfo();
+  const auto lock = GetLock();
+
+  // disabled externally?
+  if (!s_state.using_raintegration)
+    return;
+
+  const char* error_message = nullptr;
+  const int res = rc_client_finish_load_raintegration(
+    s_state.client,
+    (wi.has_value() && wi->type == WindowInfo::Type::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
+    "DuckStation", g_scm_tag_str, &error_message);
+  if (res != RC_OK)
   {
-    const auto lock = GetLock();
-
-    rc_client_raintegration_set_write_memory_function(client, RAIntegrationWriteMemoryCallback);
-    rc_client_raintegration_set_console_id(client, RC_CONSOLE_PLAYSTATION);
-    rc_client_raintegration_set_get_game_name_function(client, RAIntegrationGetGameNameCallback);
-    rc_client_raintegration_set_event_handler(client, RAIntegrationEventHandler);
-
-    s_state.using_raintegration = true;
+    std::string message = fmt::format("Failed to initialize RAIntegration:\n{}", error_message ? error_message : "");
+    Host::ReportErrorAsync("RAIntegration Error", message);
+    s_state.using_raintegration = false;
+    return;
   }
 
-  INFO_COLOR_LOG(StrongGreen, "RAIntegration loaded.");
+  rc_client_raintegration_set_write_memory_function(s_state.client, RAIntegrationWriteMemoryCallback);
+  rc_client_raintegration_set_console_id(s_state.client, RC_CONSOLE_PLAYSTATION);
+  rc_client_raintegration_set_get_game_name_function(s_state.client, RAIntegrationGetGameNameCallback);
+  rc_client_raintegration_set_event_handler(s_state.client, RAIntegrationEventHandler);
 
   Host::OnRAIntegrationMenuChanged();
 }
