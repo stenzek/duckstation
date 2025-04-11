@@ -55,7 +55,18 @@ static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
+static void ProcessCPUThreadEvents();
 static void GPUThreadEntryPoint();
+
+struct RegTestHostState
+{
+  ALIGN_TO_CACHE_LINE std::mutex cpu_thread_events_mutex;
+  std::condition_variable cpu_thread_event_done;
+  std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
+  u32 blocking_cpu_events_pending = 0;
+};
+
+static RegTestHostState s_state;
 
 } // namespace RegTestHost
 
@@ -326,6 +337,8 @@ void Host::OnMediaCaptureStopped()
 
 void Host::PumpMessagesOnCPUThread()
 {
+  RegTestHost::ProcessCPUThreadEvents();
+
   s_frames_remaining--;
   if (s_frames_remaining == 0)
   {
@@ -336,8 +349,36 @@ void Host::PumpMessagesOnCPUThread()
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
-  // only one thread in this version...
-  function();
+  using namespace RegTestHost;
+
+  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  s_state.cpu_thread_events.emplace_back(std::move(function), block);
+  s_state.blocking_cpu_events_pending += BoolToUInt32(block);
+  if (block)
+    s_state.cpu_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+}
+
+void RegTestHost::ProcessCPUThreadEvents()
+{
+  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+
+  for (;;)
+  {
+    if (s_state.cpu_thread_events.empty())
+      break;
+
+    auto event = std::move(s_state.cpu_thread_events.front());
+    s_state.cpu_thread_events.pop_front();
+    lock.unlock();
+    event.first();
+    lock.lock();
+
+    if (event.second)
+    {
+      s_state.blocking_cpu_events_pending--;
+      s_state.cpu_thread_event_done.notify_one();
+    }
+  }
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -996,6 +1037,7 @@ cleanup:
     s_gpu_thread.Join();
   }
 
+  RegTestHost::ProcessCPUThreadEvents();
   System::CPUThreadShutdown();
   System::ProcessShutdown();
   return result;
