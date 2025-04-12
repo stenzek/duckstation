@@ -843,7 +843,7 @@ bool ImGuiFullscreen::ResetFocusHere()
   // Set the flag that we drew an active/hovered item active for a frame, because otherwise there's one frame where
   // there'll be no frame drawn, which will cancel the animation. Also set the appearing flag, so that the default
   // focus set does actually go through.
-  if (!GImGui->NavDisableHighlight && GImGui->NavDisableMouseHover)
+  if (GImGui->NavCursorVisible && GImGui->NavHighlightItemUnderNav)
   {
     window->Appearing = true;
     s_state.has_hovered_menu_item = s_state.had_hovered_menu_item;
@@ -890,8 +890,8 @@ void ImGuiFullscreen::ForceKeyNavEnabled()
   g.NavInputSource = (g.NavInputSource == ImGuiInputSource_Mouse || g.NavInputSource == ImGuiInputSource_None) ?
                        ImGuiInputSource_Keyboard :
                        g.ActiveIdSource;
-  g.NavDisableHighlight = false;
-  g.NavDisableMouseHover = true;
+  g.NavCursorVisible = true;
+  g.NavHighlightItemUnderNav = true;
 }
 
 bool ImGuiFullscreen::WantsToCloseMenu()
@@ -1702,7 +1702,7 @@ bool ImGuiFullscreen::FloatingButton(std::string_view text, float x, float y, fl
   const ImGuiID id = window->GetID(IMSTR_START_END(text));
   if (enabled)
   {
-    if (!ImGui::ItemAdd(bb, id))
+    if (!ImGui::ItemAdd(bb, id, nullptr, repeat_button ? ImGuiItemFlags_ButtonRepeat : 0))
       return false;
   }
   else
@@ -1716,7 +1716,7 @@ bool ImGuiFullscreen::FloatingButton(std::string_view text, float x, float y, fl
   bool pressed;
   if (enabled)
   {
-    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, repeat_button ? ImGuiButtonFlags_Repeat : 0);
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
     if (hovered)
     {
       const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
