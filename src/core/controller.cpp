@@ -42,14 +42,14 @@ static constexpr std::array<const Controller::ControllerInfo*, static_cast<size_
 
 const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> Controller::PortDisplayOrder = {{0, 2, 3, 4, 1, 5, 6, 7}};
 
-const char* Controller::ControllerInfo::GetDisplayName() const
+std::string_view Controller::ControllerInfo::GetDisplayName() const
 {
-  return Host::TranslateToCString("ControllerType", display_name);
+  return Host::TranslateToStringView("ControllerType", display_name);
 }
 
-const char* Controller::ControllerInfo::GetBindingDisplayName(const ControllerBindingInfo& bi) const
+std::string_view Controller::ControllerInfo::GetBindingDisplayName(const ControllerBindingInfo& bi) const
 {
-  return Host::TranslateToCString(name, bi.display_name);
+  return Host::TranslateToStringView(name, bi.display_name);
 }
 
 Controller::Controller(u32 index) : m_index(index)

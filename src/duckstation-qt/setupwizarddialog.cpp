@@ -416,7 +416,7 @@ void SetupWizardDialog::setupControllerPage(bool initial)
     const PadWidgets& w = pad_widgets[port];
 
     for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
-      w.type_combo->addItem(QString::fromUtf8(cinfo->GetDisplayName()), QString::fromUtf8(cinfo->name));
+      w.type_combo->addItem(QtUtils::StringViewToQString(cinfo->GetDisplayName()), QString::fromUtf8(cinfo->name));
 
     ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
       nullptr, w.type_combo, section, "Type",

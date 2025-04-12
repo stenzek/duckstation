@@ -418,7 +418,7 @@ static void PopulatePostProcessingChain(SettingsInterface* si, const char* secti
 static void BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                        const char* key, std::string_view display_name);
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                   const char* name, const char* display_name, const char* icon_name,
+                                   const char* name, std::string_view display_name, std::string_view icon_name,
                                    bool show_type = true);
 static void StartAutomaticBindingForPort(u32 port);
 static void StartClearBindingsForPort(u32 port);
@@ -2466,7 +2466,7 @@ TinyString FullscreenUI::GetEffectiveTinyStringSetting(SettingsInterface* bsi, c
 }
 
 void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                          const char* name, const char* display_name, const char* icon_name,
+                                          const char* name, std::string_view display_name, std::string_view icon_name,
                                           bool show_type)
 {
   if (type == InputBindingInfo::Type::Pointer || type == InputBindingInfo::Type::RelativePointer)
@@ -2492,7 +2492,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   if (show_type)
   {
-    if (icon_name)
+    if (!icon_name.empty())
     {
       title.format("{} {}", icon_name, display_name);
     }
@@ -2527,32 +2527,31 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   if (oneline)
   {
-    ImGui::PushFont(UIStyle.LargeFont);
+    if (value.empty())
+      value.assign(FSUI_VSTR("-"));
 
-    const ImVec2 value_size(ImGui::CalcTextSize(value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr));
+    const ImVec2 value_size =
+      UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize, bb.Max.x - bb.Min.x, 0.0f, IMSTR_START_END(value));
     const float text_end = bb.Max.x - value_size.x;
     const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
 
-    ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
-                             ImVec2(0.0f, 0.0f), &title_bb);
-    ImGui::RenderTextClipped(bb.Min, bb.Max, value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr, &value_size,
-                             ImVec2(1.0f, 0.5f), &bb);
-    ImGui::PopFont();
+    RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                              show_type ? title.view() : display_name, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+    RenderShadowedTextClipped(UIStyle.LargeFont, bb.Min, bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                              value.empty() ? FSUI_VSTR("-") : value.view(), &value_size, ImVec2(1.0f, 0.5f), 0.0f,
+                              &bb);
   }
   else
   {
     const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
     const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-    ImGui::PushFont(UIStyle.LargeFont);
-    ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
-                             ImVec2(0.0f, 0.0f), &title_bb);
-    ImGui::PopFont();
-
-    ImGui::PushFont(UIStyle.MediumFont);
-    ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
-                             nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
-    ImGui::PopFont();
+    RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                              show_type ? title.view() : display_name, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
+                              ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                              value.empty() ? FSUI_VSTR("No Binding") : value.view(), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                              &summary_bb);
   }
 
   if (clicked)
@@ -4958,12 +4957,12 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
         {
-          const char* dispname = nullptr;
+          std::string_view dispname;
           for (const Controller::ControllerBindingInfo& bi : ci->bindings)
           {
             if (bind == bi.name)
             {
-              dispname = bi.icon_name ? bi.icon_name : ci->GetBindingDisplayName(bi);
+              dispname = bi.icon_name ? std::string_view(bi.icon_name) : ci->GetBindingDisplayName(bi);
               break;
             }
           }

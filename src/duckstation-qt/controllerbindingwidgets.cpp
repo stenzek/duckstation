@@ -62,7 +62,7 @@ ControllerBindingWidget::~ControllerBindingWidget() = default;
 void ControllerBindingWidget::populateControllerTypes()
 {
   for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
-    m_ui.controllerType->addItem(QString::fromUtf8(cinfo->GetDisplayName()), QVariant(static_cast<int>(cinfo->type)));
+    m_ui.controllerType->addItem(QtUtils::StringViewToQString(cinfo->GetDisplayName()), QVariant(static_cast<int>(cinfo->type)));
 
   m_controller_info = Controller::GetControllerInfo(
     m_dialog->getStringValue(m_config_section.c_str(), "Type",
@@ -503,7 +503,8 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         axis_layout = new QGridLayout(axis_gbox);
       }
 
-      QGroupBox* gbox = new QGroupBox(QString::fromUtf8(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
+      QGroupBox* gbox =
+        new QGroupBox(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
       QWidget* widget;
       if (bi.type != InputBindingInfo::Type::Motor)
@@ -537,7 +538,8 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         button_layout = new QGridLayout(button_gbox);
       }
 
-      QGroupBox* gbox = new QGroupBox(QString::fromUtf8(m_controller_info->GetBindingDisplayName(bi)), button_gbox);
+      QGroupBox* gbox =
+        new QGroupBox(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), button_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
       InputBindingWidget* widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
       temp->addWidget(widget);
@@ -673,7 +675,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
       continue;
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setText(QString::fromUtf8(cinfo->GetBindingDisplayName(bi)));
+    item->setText(QtUtils::StringViewToQString(cinfo->GetBindingDisplayName(bi)));
     item->setCheckState((std::find(m_binds.begin(), m_binds.end(), &bi) != m_binds.end()) ? Qt::Checked :
                                                                                             Qt::Unchecked);
     m_ui.bindList->addItem(item);

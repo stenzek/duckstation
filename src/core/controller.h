@@ -43,10 +43,10 @@ public:
     std::span<const SettingInfo> settings;
 
     /// Returns localized controller type name.
-    const char* GetDisplayName() const;
+    std::string_view GetDisplayName() const;
 
     /// Returns localized controller type name.
-    const char* GetBindingDisplayName(const ControllerBindingInfo& bi) const;
+    std::string_view GetBindingDisplayName(const ControllerBindingInfo& bi) const;
   };
 
   /// Default stick deadzone/sensitivity.
