@@ -18117,7 +18117,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1586"/>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished">True Color (Полный)</translation>
+        <translation type="unfinished">True Color (полный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1623"/>
