@@ -984,7 +984,6 @@ private:
   void CloseShaderCache();
   bool CreateResources(Error* error);
   void DestroyResources();
-
   static bool IsTexturePoolType(GPUTexture::Type type);
 
   static size_t s_total_vram_usage;

@@ -6,7 +6,6 @@
 #include "host.h"
 #include "image.h"
 #include "imgui_fullscreen.h"
-#include "imgui_glyph_ranges.inl"
 #include "input_manager.h"
 #include "shadergen.h"
 
@@ -40,6 +39,11 @@
 #include <unordered_map>
 
 LOG_CHANNEL(ImGuiManager);
+
+// TODO: for dynamic fonts
+// max texture size
+// lock/bake osd font
+// gc fonts on scale change
 
 namespace ImGuiManager {
 namespace {
@@ -76,13 +80,10 @@ static void SetStyle(ImGuiStyle& style, float scale);
 static void SetKeyMap();
 static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
-static bool AddImGuiFonts(bool debug_font, bool fullscreen_fonts);
-static ImFont* AddTextFont(float size, const ImWchar* glyph_range);
-static ImFont* AddFixedFont(float size);
-static bool AddIconFonts(float size, const ImWchar* emoji_range);
+static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
 static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation);
-static bool UpdateImGuiFontTexture();
+static void UpdateTextures();
 static void SetCommonIOOptions(ImGuiIO& io);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(void* userdata);
@@ -100,8 +101,12 @@ static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, 
 static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
-static constexpr std::array<ImWchar, 4> ASCII_FONT_RANGE = {{0x20, 0x7F, 0x00, 0x00}};
-static constexpr std::array<ImWchar, 6> DEFAULT_FONT_RANGE = {{0x0020, 0x00FF, 0x2022, 0x2022, 0x0000, 0x0000}};
+static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)> TEXT_FONT_NAMES = {{
+  "Roboto-VariableFont_wdth,wght.ttf", // Default
+  "NotoSansSC-VariableFont_wght.ttf",  // Chinese
+  "NotoSansJP-VariableFont_wght.ttf",  // Japanese
+  "NotoSansKR-VariableFont_wght.ttf",  // Korean
+}};
 
 namespace {
 
@@ -133,13 +138,9 @@ struct ALIGN_TO_CACHE_LINE State
   std::array<s8, 2> left_stick_axis_state = {};
 
   std::unique_ptr<GPUPipeline> imgui_pipeline;
-  std::unique_ptr<GPUTexture> imgui_font_texture;
 
-  ImFont* debug_font = nullptr;
-  ImFont* osd_font = nullptr;
+  ImFont* text_font = nullptr;
   ImFont* fixed_font = nullptr;
-  ImFont* medium_font = nullptr;
-  ImFont* large_font = nullptr;
 
   std::deque<OSDMessage> osd_active_messages;
 
@@ -148,12 +149,9 @@ struct ALIGN_TO_CACHE_LINE State
   // mapping of host key -> imgui key
   ALIGN_TO_CACHE_LINE std::unordered_map<u32, ImGuiKey> imgui_key_map;
 
-  std::string font_path;
-  std::vector<WCharType> font_range;
-  std::vector<WCharType> dynamic_font_range;
-  std::vector<WCharType> dynamic_emoji_range;
+  TextFontOrder text_font_order = {};
 
-  DynamicHeapArray<u8> standard_font_data;
+  std::array<DynamicHeapArray<u8>, static_cast<size_t>(TextFont::MaxCount)> text_fonts_data;
   DynamicHeapArray<u8> fixed_font_data;
   DynamicHeapArray<u8> icon_fa_font_data;
   DynamicHeapArray<u8> icon_pf_font_data;
@@ -166,57 +164,18 @@ static State s_state;
 
 } // namespace ImGuiManager
 
-void ImGuiManager::SetFontPathAndRange(std::string path, std::vector<WCharType> range)
+ImGuiManager::TextFontOrder ImGuiManager::GetDefaultTextFontOrder()
 {
-  if (s_state.font_path == path && s_state.font_range == range)
-    return;
-
-  s_state.font_path = std::move(path);
-  s_state.font_range = std::move(range);
-  s_state.standard_font_data = {};
-  ReloadFontDataIfActive();
+  return {TextFont::Default, TextFont::Japanese, TextFont::Chinese, TextFont::Korean};
 }
 
-void ImGuiManager::SetDynamicFontRange(std::vector<WCharType> font_range, std::vector<WCharType> emoji_range)
+void ImGuiManager::SetTextFontOrder(const TextFontOrder& order)
 {
-  if (s_state.dynamic_font_range == font_range && s_state.dynamic_emoji_range == emoji_range)
+  if (s_state.text_font_order == order)
     return;
 
-  s_state.dynamic_font_range = std::move(font_range);
-  s_state.dynamic_emoji_range = std::move(emoji_range);
+  s_state.text_font_order = order;
   ReloadFontDataIfActive();
-}
-
-std::vector<ImGuiManager::WCharType> ImGuiManager::CompactFontRange(std::span<const WCharType> range)
-{
-  std::vector<ImWchar> ret;
-
-  for (auto it = range.begin(); it != range.end();)
-  {
-    auto next_it = it;
-    ++next_it;
-
-    // Combine sequential ranges.
-    const ImWchar start_codepoint = *it;
-    ImWchar end_codepoint = start_codepoint;
-    while (next_it != range.end())
-    {
-      const ImWchar next_codepoint = *next_it;
-      if (next_codepoint != (end_codepoint + 1))
-        break;
-
-      // Yep, include it.
-      end_codepoint = next_codepoint;
-      ++next_it;
-    }
-
-    ret.push_back(start_codepoint);
-    ret.push_back(end_codepoint);
-
-    it = next_it;
-  }
-
-  return ret;
 }
 
 void ImGuiManager::SetGlobalScale(float global_scale)
@@ -247,7 +206,8 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 
   ImGuiIO& io = s_state.imgui_context->IO;
   io.IniFilename = nullptr;
-  io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset;
+  io.BackendFlags |=
+    ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_RendererHasTextures;
 #ifndef __ANDROID__
   // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
   io.ConfigFlags |=
@@ -268,17 +228,8 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   FullscreenUI::SetTheme();
 
-  if (!CompilePipelines(error))
+  if (!CreateFontAtlas(error) || !CompilePipelines(error))
     return false;
-
-  if (!AddImGuiFonts(false, false) || !UpdateImGuiFontTexture())
-  {
-    Error::SetString(error, "Failed to create ImGui font text");
-    return false;
-  }
-
-  // don't need the font data anymore, save some memory
-  io.Fonts->ClearTexData();
 
   NewFrame();
 
@@ -290,17 +241,23 @@ void ImGuiManager::Shutdown()
 {
   DestroySoftwareCursorTextures();
 
-  s_state.debug_font = nullptr;
+  s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;
-  s_state.medium_font = nullptr;
-  s_state.large_font = nullptr;
-  ImGuiFullscreen::SetFonts(nullptr, nullptr);
+  ImGuiFullscreen::SetFont(nullptr);
 
   s_state.imgui_pipeline.reset();
-  g_gpu_device->RecycleTexture(std::move(s_state.imgui_font_texture));
 
   if (s_state.imgui_context)
   {
+    for (ImTextureData* tex : s_state.imgui_context->IO.Fonts->TexList)
+    {
+      if (tex->Status == ImTextureStatus_Destroyed)
+        return;
+
+      std::unique_ptr<GPUTexture> gtex(reinterpret_cast<GPUTexture*>(tex->GetTexID()));
+      tex->Status = ImTextureStatus_Destroyed;
+    }
+
     ImGui::DestroyContext(s_state.imgui_context);
     s_state.imgui_context = nullptr;
   }
@@ -364,20 +321,19 @@ void ImGuiManager::UpdateScale()
   const float window_scale =
     (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
   const float scale = std::max(window_scale * s_state.global_prescale, 1.0f);
+  const bool scale_changed = (scale == s_state.global_scale);
 
-  if ((!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()) && scale == s_state.global_scale)
+  if (!ImGuiFullscreen::UpdateLayoutScale() && !scale_changed)
     return;
 
-  s_state.global_scale = scale;
-  SetStyle(s_state.imgui_context->Style, s_state.global_scale);
-
-  if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
+  if (scale_changed)
   {
-    GPUThread::ReportFatalErrorAndShutdown("Failed to create ImGui font text");
-    return;
+    s_state.global_scale = scale;
+    SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   }
 
-  UpdateImGuiFontTexture();
+  // force font GC
+  ImGui::GetIO().Fonts->CompactCache();
 }
 
 void ImGuiManager::NewFrame()
@@ -469,30 +425,11 @@ bool ImGuiManager::CompilePipelines(Error* error)
   return true;
 }
 
-bool ImGuiManager::UpdateImGuiFontTexture()
-{
-  ImGuiIO& io = ImGui::GetIO();
-
-  unsigned char* pixels;
-  int width, height;
-  io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-  Error error;
-  const bool result = g_gpu_device->ResizeTexture(
-    &s_state.imgui_font_texture, static_cast<u32>(width), static_cast<u32>(height), GPUTexture::Type::Texture,
-    GPUTexture::Format::RGBA8, GPUTexture::Flags::None, pixels, sizeof(u32) * width, &error);
-  if (!result) [[unlikely]]
-    ERROR_LOG("Failed to resize ImGui font texture: {}", error.GetDescription());
-
-  // always update pointer, it could change
-  io.Fonts->SetTexID(s_state.imgui_font_texture.get());
-  return result;
-}
-
 void ImGuiManager::CreateDrawLists()
 {
   ImGui::EndFrame();
   ImGui::Render();
+  UpdateTextures();
 }
 
 void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation)
@@ -547,7 +484,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
         clip = g_gpu_device->FlipToLowerLeft(clip, post_rotated_height);
 
       g_gpu_device->SetScissor(clip);
-      g_gpu_device->SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId),
+      g_gpu_device->SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->GetTexID()),
                                       g_gpu_device->GetLinearSampler());
 
       if (pcmd->UserCallback) [[unlikely]]
@@ -572,6 +509,73 @@ void ImGuiManager::RenderDrawLists(GPUSwapChain* swap_chain)
 void ImGuiManager::RenderDrawLists(GPUTexture* texture)
 {
   RenderDrawLists(texture->GetWidth(), texture->GetHeight(), WindowInfo::PreRotation::Identity);
+}
+
+void ImGuiManager::UpdateTextures()
+{
+  for (ImTextureData* const tex : s_state.imgui_context->IO.Fonts->TexList)
+  {
+    switch (tex->Status)
+    {
+      case ImTextureStatus_WantCreate:
+      {
+        DebugAssert(tex->Format == ImTextureFormat_RGBA32);
+        DEV_LOG("Create {}x{} ImGui texture", tex->Width, tex->Height);
+
+        Error error;
+        std::unique_ptr<GPUTexture> gtex = g_gpu_device->FetchTexture(
+          tex->Width, tex->Height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+          GPUTexture::Flags::None, tex->GetPixels(), tex->GetPitch(), &error);
+        if (!gtex) [[unlikely]]
+        {
+          ERROR_LOG("Failed to create {}x{} imgui texture: {}", tex->Width, tex->Height, error.GetDescription());
+          continue;
+        }
+
+        tex->SetTexID(reinterpret_cast<ImTextureID>(gtex.release()));
+        tex->Status = ImTextureStatus_OK;
+      }
+      break;
+
+      case ImTextureStatus_WantUpdates:
+      {
+        // TODO: Do we want to just update the whole dirty area? Probably need a heuristic...
+        GPUTexture* const gtex = reinterpret_cast<GPUTexture*>(tex->GetTexID());
+        for (const ImTextureRect& rc : tex->Updates)
+        {
+          DEV_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
+          if (!gtex->Update(rc.x, rc.y, rc.w, rc.h, tex->GetPixelsAt(rc.x, rc.y), tex->GetPitch())) [[unlikely]]
+          {
+            ERROR_LOG("Failed to update {}x{} rect @ {},{} in imgui texture", rc.w, rc.h, rc.x, rc.y);
+            continue;
+          }
+        }
+
+        // Updates is cleared by ImGui NewFrame.
+        tex->Status = ImTextureStatus_OK;
+      }
+      break;
+
+      case ImTextureStatus_WantDestroy:
+      {
+        std::unique_ptr<GPUTexture> gtex(reinterpret_cast<GPUTexture*>(tex->GetTexID()));
+        if (gtex)
+        {
+          DEV_LOG("Destroy {}x{} ImGui texture", gtex->GetWidth(), gtex->GetHeight());
+          g_gpu_device->RecycleTexture(std::move(gtex));
+        }
+
+        tex->SetTexID(nullptr);
+        tex->Status = ImTextureStatus_Destroyed;
+      }
+      break;
+
+      case ImTextureStatus_Destroyed:
+      case ImTextureStatus_OK:
+      default:
+        continue;
+    }
+  }
 }
 
 void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
@@ -763,20 +767,27 @@ void ImGuiManager::SetKeyMap()
 
 bool ImGuiManager::LoadFontData(Error* error)
 {
-  if (s_state.standard_font_data.empty())
+  Timer load_timer;
+
+  // only load used text fonts, that way we don't waste memory on mini
+  for (const TextFont text_font : s_state.text_font_order)
   {
-    std::optional<DynamicHeapArray<u8>> font_data = s_state.font_path.empty() ?
-                                                      Host::ReadResourceFile("fonts/Roboto-Regular.ttf", true, error) :
-                                                      FileSystem::ReadBinaryFile(s_state.font_path.c_str(), error);
+    const u32 index = static_cast<u32>(text_font);
+    if (!s_state.text_fonts_data[index].empty())
+      continue;
+
+    std::optional<DynamicHeapArray<u8>> font_data =
+      Host::ReadResourceFile(TinyString::from_format("fonts/{}", TEXT_FONT_NAMES[index]), true, error);
     if (!font_data.has_value())
       return false;
 
-    s_state.standard_font_data = std::move(font_data.value());
+    s_state.text_fonts_data[index] = std::move(font_data.value());
   }
 
   if (s_state.fixed_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf", true, error);
+    std::optional<DynamicHeapArray<u8>> font_data =
+      Host::ReadResourceFile("fonts/RobotoMono-VariableFont_wght.ttf", true, error);
     if (!font_data.has_value())
       return false;
 
@@ -804,170 +815,120 @@ bool ImGuiManager::LoadFontData(Error* error)
   if (s_state.emoji_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data =
-      Host::ReadCompressedResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf.zst", true, error);
+      Host::ReadResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf", true, error);
     if (!font_data.has_value())
       return false;
 
     s_state.emoji_font_data = std::move(font_data.value());
   }
 
+  DEV_LOG("Loading font data took {} ms", load_timer.GetTimeMilliseconds());
   return true;
 }
 
-ImFont* ImGuiManager::AddTextFont(float size, const ImWchar* glyph_range)
+bool ImGuiManager::CreateFontAtlas(Error* error)
 {
-  ImFontConfig cfg;
-  cfg.FontDataOwnedByAtlas = false;
-  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-    s_state.standard_font_data.data(), static_cast<int>(s_state.standard_font_data.size()), size, &cfg, glyph_range);
-}
-
-ImFont* ImGuiManager::AddFixedFont(float size)
-{
-  ImFontConfig cfg;
-  cfg.FontDataOwnedByAtlas = false;
-  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.fixed_font_data.data(),
-                                                    static_cast<int>(s_state.fixed_font_data.size()), size, &cfg,
-                                                    ASCII_FONT_RANGE.data());
-}
-
-bool ImGuiManager::AddIconFonts(float size, const ImWchar* emoji_range)
-{
-  {
-    ImFontConfig cfg;
-    cfg.MergeMode = true;
-    cfg.PixelSnapH = true;
-    cfg.GlyphMinAdvanceX = size;
-    cfg.GlyphMaxAdvanceX = size;
-    cfg.FontDataOwnedByAtlas = false;
-
-    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
-                                                    static_cast<int>(s_state.icon_fa_font_data.size()), size * 0.75f,
-                                                    &cfg, FA_ICON_RANGE)) [[unlikely]]
-    {
-      return false;
-    }
-  }
-
-  {
-    ImFontConfig cfg;
-    cfg.MergeMode = true;
-    cfg.PixelSnapH = true;
-    cfg.GlyphMinAdvanceX = size;
-    cfg.GlyphMaxAdvanceX = size;
-    cfg.FontDataOwnedByAtlas = false;
-
-    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_pf_font_data.data(),
-                                                    static_cast<int>(s_state.icon_pf_font_data.size()), size * 1.2f,
-                                                    &cfg, PF_ICON_RANGE)) [[unlikely]]
-    {
-      return false;
-    }
-  }
-
-  {
-    ImFontConfig cfg;
-    cfg.MergeMode = true;
-    cfg.PixelSnapH = true;
-    cfg.GlyphMinAdvanceX = size;
-    cfg.GlyphMaxAdvanceX = size;
-    cfg.FontDataOwnedByAtlas = false;
-    cfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LoadColor | ImGuiFreeTypeBuilderFlags_Bitmap;
-
-    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.emoji_font_data.data(),
-                                                    static_cast<int>(s_state.emoji_font_data.size()), size * 0.9f, &cfg,
-                                                    emoji_range)) [[unlikely]]
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
-{
-  const float window_scale =
-    (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
-  const float debug_font_size = std::ceil(15.0f * window_scale);
-  const float standard_font_size = std::ceil(15.0f * s_state.global_scale);
-  const float osd_font_size = std::ceil(17.0f * s_state.global_scale);
-
-  INFO_LOG("Allocating fonts winscale={} globalscale={} debug={} fullscreen={}", window_scale, s_state.global_scale,
-           debug_font, fullscreen_fonts);
-
-  // need to generate arrays if dynamic ranges are present
-  const ImWchar* text_range = s_state.font_range.empty() ? DEFAULT_FONT_RANGE.data() : s_state.font_range.data();
-  const ImWchar* emoji_range = EMOJI_ICON_RANGE;
-  std::vector<ImWchar> full_text_range, full_emoji_range;
-  if (!s_state.dynamic_font_range.empty())
-  {
-    // skip the zeros, we'll add them afterwards
-    const size_t base_size = s_state.font_range.empty() ? DEFAULT_FONT_RANGE.size() : s_state.font_range.size();
-    Assert(base_size > 2);
-    full_text_range.reserve(base_size + s_state.dynamic_font_range.size());
-    full_text_range.insert(full_text_range.end(), &text_range[0], &text_range[base_size - 2]);
-    full_text_range.insert(full_text_range.end(), s_state.dynamic_font_range.begin(), s_state.dynamic_font_range.end());
-    full_text_range.insert(full_text_range.end(), 2, 0);
-    text_range = full_text_range.data();
-  }
-  if (!s_state.dynamic_emoji_range.empty())
-  {
-    // skip the zeros, we'll add them afterwards
-    size_t base_size = 0;
-    for (const ImWchar* c = EMOJI_ICON_RANGE; *c != 0; c++)
-      base_size++;
-
-    Assert(base_size > 2);
-    full_emoji_range.reserve(base_size + s_state.dynamic_emoji_range.size());
-    full_emoji_range.insert(full_emoji_range.end(), &EMOJI_ICON_RANGE[0], &EMOJI_ICON_RANGE[base_size]);
-    full_emoji_range.insert(full_emoji_range.end(), s_state.dynamic_emoji_range.begin(),
-                            s_state.dynamic_emoji_range.end());
-    full_emoji_range.insert(full_emoji_range.end(), 2, 0);
-    emoji_range = full_emoji_range.data();
-  }
+  Timer load_timer;
 
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  if (debug_font)
+  const float default_text_size = GetOSDFontSize();
+  const float default_text_weight = 400.0f;
+  const float default_fixed_weight = 500.0f;
+
+  ImFontConfig text_cfg;
+  text_cfg.FontDataOwnedByAtlas = false;
+
+  // First text font has to be added before the icon fonts.
+  // Remaining fonts are added after the icon font, otherwise the wrong glyphs will be used in the UI.
+  const TextFont first_font = s_state.text_font_order.front();
+  auto& first_font_data = s_state.text_fonts_data[static_cast<size_t>(first_font)];
+  Assert(!first_font_data.empty());
+  s_state.text_font =
+    ImGui::GetIO().Fonts->AddFontFromMemoryTTF(first_font_data.data(), static_cast<int>(first_font_data.size()),
+                                               default_text_size, default_text_weight, &text_cfg);
+  if (!s_state.text_font)
   {
-    s_state.debug_font = AddTextFont(debug_font_size, ASCII_FONT_RANGE.data());
-    if (!s_state.debug_font)
-      return false;
+    Error::SetStringFmt(error, "Failed to add primary text font {}", static_cast<u32>(s_state.text_font_order.front()));
+    return false;
   }
 
-  s_state.fixed_font = AddFixedFont(standard_font_size);
+  // Add icon fonts.
+  ImFontConfig icon_cfg;
+  icon_cfg.MergeMode = true;
+  icon_cfg.FontDataOwnedByAtlas = false;
+  icon_cfg.PixelSnapH = true;
+  icon_cfg.GlyphMinAdvanceX = default_text_size;
+  icon_cfg.GlyphMaxAdvanceX = default_text_size;
+
+  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
+                                                  static_cast<int>(s_state.icon_fa_font_data.size()),
+                                                  default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to add FA icon font");
+    return false;
+  }
+
+  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_pf_font_data.data(),
+                                                  static_cast<int>(s_state.icon_pf_font_data.size()),
+                                                  default_text_size * 1.2f, 0.0f, &icon_cfg)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to add PF icon font");
+    return false;
+  }
+
+  // Only for emoji font.
+  icon_cfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LoadColor | ImGuiFreeTypeLoaderFlags_Bitmap;
+
+  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.emoji_font_data.data(),
+                                                  static_cast<int>(s_state.emoji_font_data.size()),
+                                                  default_text_size * 0.9f, 0.0f, &icon_cfg)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to add emoji icon font");
+    return false;
+  }
+
+  // Now we can add the remaining text fonts.
+  text_cfg.MergeMode = true;
+  for (size_t i = 1; i < s_state.text_font_order.size(); i++)
+  {
+    const TextFont text_font_idx = s_state.text_font_order[i];
+    if (text_font_idx == first_font)
+      continue;
+
+    auto& font_data = s_state.text_fonts_data[static_cast<size_t>(text_font_idx)];
+    Assert(!font_data.empty());
+    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(font_data.data(), static_cast<int>(font_data.size()),
+                                                    default_text_size, default_text_weight, &text_cfg))
+    {
+      Error::SetStringFmt(error, "Failed to add text font {}", static_cast<u32>(text_font_idx));
+      return false;
+    }
+  }
+
+  // Add the fixed-width font separately last.
+  ImFontConfig fixed_cfg;
+  fixed_cfg.FontDataOwnedByAtlas = false;
+  s_state.fixed_font = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.fixed_font_data.data(),
+                                                                  static_cast<int>(s_state.fixed_font_data.size()),
+                                                                  GetFixedFontSize(), default_fixed_weight, &fixed_cfg);
   if (!s_state.fixed_font)
-    return false;
-
-  s_state.osd_font = AddTextFont(osd_font_size, text_range);
-  if (!s_state.osd_font || !AddIconFonts(osd_font_size, emoji_range))
-    return false;
-  if (!debug_font)
-    s_state.debug_font = s_state.osd_font;
-
-  if (fullscreen_fonts)
   {
-    const float medium_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE);
-    s_state.medium_font = AddTextFont(medium_font_size, text_range);
-    if (!s_state.medium_font || !AddIconFonts(medium_font_size, emoji_range))
-      return false;
-
-    const float large_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE);
-    s_state.large_font = AddTextFont(large_font_size, text_range);
-    if (!s_state.large_font || !AddIconFonts(large_font_size, emoji_range))
-      return false;
-  }
-  else
-  {
-    s_state.medium_font = nullptr;
-    s_state.large_font = nullptr;
+    Error::SetStringView(error, "Failed to add fixed-width font");
+    return false;
   }
 
-  ImGuiFullscreen::SetFonts(s_state.medium_font, s_state.large_font);
+  ImGuiFullscreen::SetFont(s_state.text_font);
 
-  return io.Fonts->Build();
+  if (!io.Fonts->Build())
+  {
+    Error::SetStringView(error, "Build() failed");
+    return false;
+  }
+
+  DEV_LOG("Creating font atlas took {} ms", load_timer.GetTimeMilliseconds());
+  return true;
 }
 
 void ImGuiManager::ReloadFontDataIfActive()
@@ -977,72 +938,14 @@ void ImGuiManager::ReloadFontDataIfActive()
 
   ImGui::EndFrame();
 
-  if (!LoadFontData(nullptr))
+  Error error;
+  if (!CreateFontAtlas(&error)) [[unlikely]]
   {
-    GPUThread::ReportFatalErrorAndShutdown("Failed to load font data");
+    GPUThread::ReportFatalErrorAndShutdown(fmt::format("Failed to recreate font atlas:\n{}", error.GetDescription()));
     return;
   }
 
-  if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
-  {
-    GPUThread::ReportFatalErrorAndShutdown("Failed to create ImGui font text");
-    return;
-  }
-
-  UpdateImGuiFontTexture();
   NewFrame();
-}
-
-bool ImGuiManager::AddFullscreenFontsIfMissing()
-{
-  if (HasFullscreenFonts())
-    return true;
-
-  // can't do this in the middle of a frame
-  ImGui::EndFrame();
-
-  const bool debug_font = HasDebugFont();
-  if (!AddImGuiFonts(debug_font, true))
-  {
-    GPUThread::ReportFatalErrorAndShutdown("Failed to lazily allocate fullscreen fonts.");
-    AddImGuiFonts(debug_font, false);
-  }
-
-  UpdateImGuiFontTexture();
-  NewFrame();
-
-  return HasFullscreenFonts();
-}
-
-bool ImGuiManager::HasDebugFont()
-{
-  return (s_state.debug_font != s_state.osd_font);
-}
-
-bool ImGuiManager::AddDebugFontIfMissing()
-{
-  if (HasDebugFont())
-    return true;
-
-  // can't do this in the middle of a frame
-  ImGui::EndFrame();
-
-  const bool fullscreen_font = HasFullscreenFonts();
-  if (!AddImGuiFonts(true, fullscreen_font))
-  {
-    ERROR_LOG("Failed to lazily allocate fullscreen fonts.");
-    AddImGuiFonts(true, fullscreen_font);
-  }
-
-  UpdateImGuiFontTexture();
-  NewFrame();
-
-  return HasDebugFont();
-}
-
-bool ImGuiManager::HasFullscreenFonts()
-{
-  return (s_state.medium_font && s_state.large_font);
 }
 
 void ImGuiManager::AddOSDMessage(std::string key, std::string message, float duration, bool is_warning)
@@ -1162,7 +1065,9 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
   static constexpr float MOVE_DURATION = 0.5f;
 
-  ImFont* const font = s_state.osd_font;
+  ImFont* const font = s_state.text_font;
+  const float font_size = GetOSDFontSize();
+  const float font_weight = UIStyle.NormalFontWeight;
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
   const float margin = std::ceil(s_state.screen_margin * scale);
@@ -1186,7 +1091,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ++iter;
 
-    const ImVec2 text_size = font->CalcTextSizeA(font->FontSize, max_width, max_width, IMSTR_START_END(msg.text));
+    const ImVec2 text_size =
+      font->CalcTextSizeA(font_size, font_weight, max_width, max_width, IMSTR_START_END(msg.text));
     float box_width = text_size.x + padding + padding;
     const float box_height = text_size.y + padding + padding;
 
@@ -1265,7 +1171,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
                       rounding);
-    RenderShadowedTextClipped(dl, font, text_rect.Min, text_rect.Max,
+    RenderShadowedTextClipped(dl, font, font_size, font_weight, text_rect.Min, text_rect.Max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
                               ImVec2(0.0f, 0.0f), max_width, &text_rect, scale);
 
@@ -1333,14 +1239,14 @@ float ImGuiManager::GetScreenMargin()
   return s_state.screen_margin;
 }
 
-ImFont* ImGuiManager::GetDebugFont()
+ImFont* ImGuiManager::GetTextFont()
 {
-  return s_state.debug_font;
+  return s_state.text_font;
 }
 
-ImFont* ImGuiManager::GetOSDFont()
+float ImGuiManager::GetFixedFontSize()
 {
-  return s_state.osd_font;
+  return std::ceil(15.0f * s_state.global_scale);
 }
 
 ImFont* ImGuiManager::GetFixedFont()
@@ -1348,16 +1254,14 @@ ImFont* ImGuiManager::GetFixedFont()
   return s_state.fixed_font;
 }
 
-ImFont* ImGuiManager::GetMediumFont()
+float ImGuiManager::GetDebugFontSize(float window_scale)
 {
-  AddFullscreenFontsIfMissing();
-  return s_state.medium_font;
+  return std::ceil(15.0f * window_scale);
 }
 
-ImFont* ImGuiManager::GetLargeFont()
+float ImGuiManager::GetOSDFontSize()
 {
-  AddFullscreenFontsIfMissing();
-  return s_state.large_font;
+  return std::ceil(17.0f * s_state.global_scale);
 }
 
 bool ImGuiManager::WantsTextInput()
@@ -1739,13 +1643,12 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
     return false;
   }
 
-  AddDebugFontIfMissing();
-
   state->imgui_context = ImGui::CreateContext(s_state.imgui_context->IO.Fonts);
   state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
     ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
   state->imgui_context->IO.IniFilename = nullptr;
-  state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+  state->imgui_context->IO.BackendFlags |=
+    ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_RendererHasTextures;
   state->imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
   SetCommonIOOptions(state->imgui_context->IO);
 
@@ -1809,15 +1712,17 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
 
   ImGui::SetCurrentContext(state->imgui_context);
 
+  const float window_scale = state->swap_chain->GetScale();
+
   ImGui::NewFrame();
-  ImGui::PushFont(s_state.debug_font);
+  ImGui::PushFont(s_state.text_font, GetDebugFontSize(window_scale));
   ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
   ImGui::SetNextWindowSize(state->imgui_context->IO.DisplaySize, ImGuiCond_Always);
   if (ImGui::Begin("AuxRenderWindowMain", nullptr,
                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoCollapse))
   {
-    draw_callback(state->swap_chain->GetScale());
+    draw_callback(window_scale);
   }
 
   ImGui::End();

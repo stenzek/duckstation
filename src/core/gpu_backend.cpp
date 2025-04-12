@@ -585,7 +585,7 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
   {
     if (g_gpu_settings.gpu_pgxp_depth_buffer)
     {
-      str.format("{}{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W | {} DBC",
+      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W | \x01{}\x02 DBC",
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
                  s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes,
@@ -593,7 +593,7 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
     }
     else
     {
-      str.format("{}{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W",
+      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W",
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
                  s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes);

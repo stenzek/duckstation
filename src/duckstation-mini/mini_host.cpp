@@ -57,8 +57,10 @@ namespace MiniHost {
 /// Use two async worker threads, should be enough for most tasks.
 static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
-static constexpr u32 DEFAULT_WINDOW_WIDTH = 1280;
-static constexpr u32 DEFAULT_WINDOW_HEIGHT = 720;
+//static constexpr u32 DEFAULT_WINDOW_WIDTH = 1280;
+//static constexpr u32 DEFAULT_WINDOW_HEIGHT = 720;
+static constexpr u32 DEFAULT_WINDOW_WIDTH = 1920;
+static constexpr u32 DEFAULT_WINDOW_HEIGHT = 1080;
 
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr auto CPU_THREAD_POLL_INTERVAL =
@@ -303,9 +305,6 @@ bool MiniHost::InitializeConfig()
   // We need to create the console window early, otherwise it appears in front of the main window.
   if (!Log::IsConsoleOutputEnabled() && s_state.base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
     Log::SetConsoleOutputParams(true, s_state.base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
-
-  // imgui setup, make sure it doesn't bug out
-  ImGuiManager::SetFontPathAndRange(std::string(), {0x0020, 0x00FF, 0x2022, 0x2022, 0, 0});
 
   return true;
 }

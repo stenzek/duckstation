@@ -7,6 +7,7 @@
 
 #include "common/types.h"
 
+#include <array>
 #include <memory>
 #include <span>
 #include <string>
@@ -57,6 +58,17 @@ namespace ImGuiManager {
 
 using WCharType = u32;
 
+enum class TextFont : u8
+{
+  Default,
+  Chinese,
+  Japanese,
+  Korean,
+  MaxCount
+};
+
+using TextFontOrder = std::array<TextFont, static_cast<size_t>(TextFont::MaxCount)>;
+
 /// Default size for screen margins.
 #ifndef __ANDROID__
 static constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
@@ -64,15 +76,9 @@ static constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
 static constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
 #endif
 
-/// Sets the path to the font to use. Empty string means to use the default.
-void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
-
-/// Sets the normal/emoji font range to use. Empty means no glyphs will be rasterized.
-/// Should NOT be terminated with zeros, unlike the font range above.
-void SetDynamicFontRange(std::vector<WCharType> font_range, std::vector<WCharType> emoji_range);
-
-/// Returns a compacted font range, with adjacent glyphs merged into one pair.
-std::vector<WCharType> CompactFontRange(std::span<const WCharType> range);
+/// Sets the order for text fonts.
+TextFontOrder GetDefaultTextFontOrder();
+void SetTextFontOrder(const TextFontOrder& order);
 
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
@@ -121,34 +127,18 @@ float GetGlobalScale();
 /// Returns the screen margins, or "safe zone".
 float GetScreenMargin();
 
-/// Returns true if fullscreen fonts are present.
-bool HasFullscreenFonts();
-
-/// Allocates/adds fullscreen fonts if they're not loaded.
-bool AddFullscreenFontsIfMissing();
-
-/// Returns true if there is a separate debug font.
-bool HasDebugFont();
-
-/// Changes whether a debug font is generated. Otherwise, the OSD font will be used for GetStandardFont().
-bool AddDebugFontIfMissing();
-
-/// Returns the standard font for external drawing.
-ImFont* GetDebugFont();
-
 /// Returns the standard font for on-screen display drawing.
-ImFont* GetOSDFont();
+ImFont* GetTextFont();
 
 /// Returns the fixed-width font for external drawing.
+float GetFixedFontSize();
 ImFont* GetFixedFont();
 
-/// Returns the medium font for external drawing, scaled by ImGuiFullscreen.
-/// This font is allocated on demand.
-ImFont* GetMediumFont();
+/// Returns the standard font for external drawing.
+float GetDebugFontSize(float window_scale);
 
-/// Returns the large font for external drawing, scaled by ImGuiFullscreen.
-/// This font is allocated on demand.
-ImFont* GetLargeFont();
+/// Returns the font size for rendering the OSD.
+float GetOSDFontSize();
 
 /// Returns true if imgui wants to intercept text input.
 bool WantsTextInput();
