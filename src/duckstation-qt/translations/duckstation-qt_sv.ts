@@ -280,6 +280,14 @@ Inloggningstoken genererades %2.</translation>
         <source>Not Logged In.</source>
         <translation>Inte inloggad.</translation>
     </message>
+    <message>
+        <source>Enable RAIntegration (Development Only)</source>
+        <translation>Aktivera RAIntegration (endast för utveckling)</translation>
+    </message>
+    <message>
+        <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
+        <translation>När den är aktiverad läser DuckStation in RAIntegration DLL vilket möjliggör utveckling av prestationer.&lt;br&gt;Filen RA_Integration.dll måste placeras i samma katalog som DuckStations-körbara fil.</translation>
+    </message>
 </context>
 <context>
     <name>Achievements</name>
@@ -321,11 +329,11 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Mastered {}</source>
-        <translation>Bemästrat {}</translation>
+        <translation type="vanished">Bemästrat {}</translation>
     </message>
     <message>
         <source>{0}, {1}</source>
-        <translation>{0}, {1}</translation>
+        <translation type="vanished">{0}, {1}</translation>
     </message>
     <message numerus="yes">
         <source>%n achievements</source>
@@ -647,6 +655,22 @@ Olästa meddelanden: {}</translation>
             <numerusform>%n upplåsning har inte bekräftats av servern.</numerusform>
             <numerusform>%n upplåsningar har inte bekräftats av servern.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
+        <translation>Hardcore-läget är inaktiverat. Topplistor kommer inte att kontrolleras.</translation>
+    </message>
+    <message>
+        <source>Game complete.
+{0}, {1}.</source>
+        <translation>Spelet är färdigställt.
+{0}, {1}.</translation>
+    </message>
+    <message>
+        <source>Subset complete.
+{0}, {1}.</source>
+        <translation>Delmängd färdigställt.
+{0}, {1}.</translation>
     </message>
 </context>
 <context>
@@ -5978,7 +6002,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Hardcore mode will be enabled on next game restart.</source>
-        <translation>Hardcore-läget kommer att aktiveras vid systemomstart.</translation>
+        <translation type="vanished">Hardcore-läget kommer att aktiveras vid systemomstart.</translation>
     </message>
     <message>
         <source>Hide Cursor In Fullscreen</source>
@@ -6106,7 +6130,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Logging</source>
-        <translation>Loggning</translation>
+        <translation type="vanished">Loggning</translation>
     </message>
     <message>
         <source>Logging Settings</source>
@@ -6474,7 +6498,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
-        <translation>RAIntegration används istället för den inbyggda prestationsimplementationen.</translation>
+        <translation type="vanished">RAIntegration används istället för den inbyggda prestationsimplementationen.</translation>
     </message>
     <message>
         <source>Read Speedup</source>
@@ -7535,6 +7559,10 @@ Du kan inte ångra den här åtgärden.</translation>
     <message>
         <source>Window Animations</source>
         <translation>Fönsteranimeringar</translation>
+    </message>
+    <message>
+        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
+        <translation>Hardcore-läget kommer inte att aktiveras förrän systemet har startats om. Vill du starta om systemet nu?</translation>
     </message>
 </context>
 <context>
@@ -10073,23 +10101,23 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>General</source>
-        <translation>Allmänt</translation>
+        <translation type="vanished">Allmänt</translation>
     </message>
     <message>
         <source>Fast Forward</source>
-        <translation>Snabbspolning</translation>
+        <translation type="vanished">Snabbspolning</translation>
     </message>
     <message>
         <source>Toggle Fast Forward</source>
-        <translation>Växla snabbspolning</translation>
+        <translation type="vanished">Växla snabbspolning</translation>
     </message>
     <message>
         <source>Turbo</source>
-        <translation>Turbo</translation>
+        <translation type="vanished">Turbo</translation>
     </message>
     <message>
         <source>Toggle Turbo</source>
-        <translation>Växla turbo</translation>
+        <translation type="vanished">Växla turbo</translation>
     </message>
     <message>
         <source>Toggle Fullscreen</source>
@@ -10486,6 +10514,42 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Save Global State 10</source>
         <translation>Spara globalt tillstånd 10</translation>
+    </message>
+    <message>
+        <source>Interface</source>
+        <translation>Gränssnitt</translation>
+    </message>
+    <message>
+        <source>Fast Forward (Hold)</source>
+        <translation>Snabbspola (Håll)</translation>
+    </message>
+    <message>
+        <source>Fast Forward (Toggle)</source>
+        <translation>Snabbspola (Växla)</translation>
+    </message>
+    <message>
+        <source>Turbo (Hold)</source>
+        <translation>Turbo (Håll)</translation>
+    </message>
+    <message>
+        <source>Turbo (Toggle)</source>
+        <translation>Turbo (Växla)</translation>
+    </message>
+    <message>
+        <source>Free Camera</source>
+        <translation>Fri kamera</translation>
+    </message>
+    <message>
+        <source>Debugging</source>
+        <translation>Felsökning</translation>
+    </message>
+    <message>
+        <source>Toggle PGXP Preserve Projection Precision</source>
+        <translation>Växla PGXP bevara projektionsprecision</translation>
+    </message>
+    <message>
+        <source>Toggle VRAM View</source>
+        <translation>Växla VRAM-vy</translation>
     </message>
 </context>
 <context>
@@ -13152,11 +13216,11 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
     </message>
     <message>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
-        <translation>Hack för bredbild är nu aktiverad. Bildförhållande är inställt till {}.</translation>
+        <translation type="vanished">Hack för bredbild är nu aktiverad. Bildförhållande är inställt till {}.</translation>
     </message>
     <message>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
-        <translation>Hack för bredbild är nu inaktiverad. Bildförhållande är inställt till {}.</translation>
+        <translation type="vanished">Hack för bredbild är nu inaktiverad. Bildförhållande är inställt till {}.</translation>
     </message>
     <message>
         <source>Switching to {} renderer...</source>
@@ -13242,6 +13306,30 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
         <translation>Misslyckades med att växla till exklusiv helskärm, använder kantlöst fönster istället.</translation>
     </message>
+    <message>
+        <source>PGXP Preserve Projection Precision is now enabled.</source>
+        <translation>PGXP bevara projektionsprecisionen är nu aktiverat.</translation>
+    </message>
+    <message>
+        <source>PGXP Preserve Projection Precision is now disabled.</source>
+        <translation>PGXP bevara projektionsprecisionen är nu inaktiverat.</translation>
+    </message>
+    <message>
+        <source>Now showing VRAM.</source>
+        <translation>Nu visas VRAM.</translation>
+    </message>
+    <message>
+        <source>Now showing display.</source>
+        <translation>Nu visas skärmen.</translation>
+    </message>
+    <message>
+        <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
+        <translation>Bredbildsrendering är nu aktiverad och bildförhållandet är inställt på {}.</translation>
+    </message>
+    <message>
+        <source>Widescreen rendering is now disabled, and aspect ratio is set to {}.</source>
+        <translation>Bredbildsrendering är nu inaktiverad och bildförhållandet är inställt på {}.</translation>
+    </message>
 </context>
 <context>
     <name>PlayStationMouse</name>
@@ -13325,6 +13413,12 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
     <message>
         <source>Unknown Error</source>
         <translation>Okänt fel</translation>
+    </message>
+    <message>
+        <source>Failed to compile post-processing shader &apos;{}&apos;. Disabling post-processing.
+{}</source>
+        <translation>Misslyckades med att kompilera efterbehandlings-shader &apos;{}&apos;. Inaktiverar efterbearbetning.
+{}</translation>
     </message>
 </context>
 <context>
@@ -14498,6 +14592,21 @@ Vill du skapa denna katalog?</translation>
         <source>Auto-Detect</source>
         <comment>ForceVideoTiming</comment>
         <translation>Identifiera automatiskt</translation>
+    </message>
+    <message>
+        <source>Scale2x (EPX)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Scale2x (EPX)</translation>
+    </message>
+    <message>
+        <source>Scale3x (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>Scale3x (Långsam)</translation>
+    </message>
+    <message>
+        <source>MMPX (Slow)</source>
+        <comment>GPUTextureFilter</comment>
+        <translation>MMPX (Långsam)</translation>
     </message>
 </context>
 <context>

@@ -52,18 +52,20 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-#define TR_CONTEXT "FullscreenUI"
+using namespace std::literals::string_view_literals;
+
+#define TR_CONTEXT "FullscreenUI"sv
 
 namespace {
 template<size_t L>
 class IconStackString : public SmallStackString<L>
 {
 public:
-  ALWAYS_INLINE IconStackString(const char* icon, const char* str)
+  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str)
   {
     SmallStackString<L>::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
   }
-  ALWAYS_INLINE IconStackString(const char* icon, const char* str, const char* suffix)
+  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str, std::string_view suffix)
   {
     SmallStackString<L>::format("{} {}##{}", icon, Host::TranslateToStringView(TR_CONTEXT, str), suffix);
   }
@@ -73,10 +75,10 @@ public:
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str))
 #define FSUI_ICONVSTR(icon, str) IconStackString<128>(icon, str).view()
 #define FSUI_ICONCSTR(icon, str) IconStackString<128>(icon, str).c_str()
-#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str)
-#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str)
-#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str)
-#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str))
+#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str##sv)
+#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str##sv)
+#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str##sv)
+#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str##sv))
 #define FSUI_NSTR(str) str
 
 using ImGuiFullscreen::ChoiceDialogOptions;
@@ -3905,10 +3907,9 @@ void FullscreenUI::DrawSettingsWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow();
 
-    if (s_state.game_settings_entry)
-      NavTitle(s_state.game_settings_entry->title.c_str());
-    else
-      NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
+    NavTitle(s_state.game_settings_entry ?
+               std::string_view(s_state.game_settings_entry->title) :
+               Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
@@ -5101,7 +5102,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         TinyString title;
         title.format(ICON_FA_COG "{}", Host::TranslateToStringView(ci->name, si.display_name));
-        const char* description = Host::TranslateToCString(ci->name, si.description);
+        std::string_view description = Host::TranslateToStringView(ci->name, si.description);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
@@ -5161,12 +5162,12 @@ void FullscreenUI::DrawHotkeySettingsPage()
   {
     if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
     {
-      MenuHeading(Host::TranslateToCString("Hotkeys", hotkey->category));
+      MenuHeading(Host::TranslateToStringView("Hotkeys", hotkey->category));
       last_category = hotkey;
     }
 
     DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
-                           Host::TranslateToCString("Hotkeys", hotkey->display_name), nullptr, false);
+                           Host::TranslateToStringView("Hotkeys", hotkey->display_name), std::string_view(), false);
   }
 
   EndMenuButtons();
@@ -7716,7 +7717,7 @@ void FullscreenUI::DrawGameListWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
-    NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
+    NavTitle(Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     for (u32 i = 0; i < count; i++)

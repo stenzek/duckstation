@@ -1166,8 +1166,6 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
 
 void ImGuiManager::SetCommonIOOptions(ImGuiIO& io)
 {
-  io.BackendUsingLegacyKeyArrays = 0;
-  io.BackendUsingLegacyNavInputArray = 0;
   io.KeyRepeatDelay = 0.5f;
   io.GetClipboardTextFn = GetClipboardTextImpl;
   io.SetClipboardTextFn = SetClipboardTextImpl;
