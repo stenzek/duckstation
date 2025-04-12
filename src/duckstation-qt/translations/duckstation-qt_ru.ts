@@ -10496,7 +10496,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="868"/>
         <source>Serial</source>
-        <translation type="unfinished">Серийный номер</translation>
+        <translation>Серийный номер</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="871"/>
@@ -10728,7 +10728,7 @@ Please configure a supported controller from the list above.</source>
         <location filename="../gamelistwidget.cpp" line="901"/>
         <source>Serial</source>
         <translatorcomment>*Идентификатор</translatorcomment>
-        <translation type="unfinished">Серийный номер</translation>
+        <translation>Серийный номер</translation>
     </message>
     <message>
         <location filename="../gamelistwidget.cpp" line="902"/>
@@ -18466,7 +18466,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="2140"/>
         <source>Separate Card Per Game (Serial)</source>
         <comment>MemoryCardType</comment>
-        <translation type="unfinished">Отдельная карта для каждой игры (серийный номер)</translation>
+        <translation>Отдельная карта для каждой игры (серийный номер)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="2141"/>
