@@ -52,18 +52,20 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-#define TR_CONTEXT "FullscreenUI"
+using namespace std::literals::string_view_literals;
+
+#define TR_CONTEXT "FullscreenUI"sv
 
 namespace {
 template<size_t L>
 class IconStackString : public SmallStackString<L>
 {
 public:
-  ALWAYS_INLINE IconStackString(const char* icon, const char* str)
+  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str)
   {
     SmallStackString<L>::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
   }
-  ALWAYS_INLINE IconStackString(const char* icon, const char* str, const char* suffix)
+  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str, std::string_view suffix)
   {
     SmallStackString<L>::format("{} {}##{}", icon, Host::TranslateToStringView(TR_CONTEXT, str), suffix);
   }
@@ -73,10 +75,10 @@ public:
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str))
 #define FSUI_ICONVSTR(icon, str) IconStackString<128>(icon, str).view()
 #define FSUI_ICONCSTR(icon, str) IconStackString<128>(icon, str).c_str()
-#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str)
-#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str)
-#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str)
-#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str))
+#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str##sv)
+#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str##sv)
+#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str##sv)
+#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str##sv))
 #define FSUI_NSTR(str) str
 
 using ImGuiFullscreen::ChoiceDialogOptions;
