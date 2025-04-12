@@ -6241,8 +6241,22 @@ void FullscreenUI::DrawAchievementsSettingsPage()
         "Cheevos", "ChallengeMode", false, enabled))
   {
     if (GPUThread::HasGPUBackend() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
-      ShowToast(std::string(), FSUI_STR("Hardcore mode will be enabled on next game restart."));
+    {
+      const auto lock = Achievements::GetLock();
+      if (Achievements::HasActiveGame())
+      {
+        OpenConfirmMessageDialog(
+          FSUI_ICONSTR(ICON_FA_HARD_HAT, "Hardcore Mode"),
+          FSUI_CSTR(
+            "Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+          [](bool result) {
+            if (result)
+              Host::RunOnCPUThread(&System::ResetSystem);
+          });
+      }
+    }
   }
+
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_INBOX, "Achievement Notifications"),
     FSUI_CSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
@@ -9325,7 +9339,7 @@ TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
 TRANSLATE_NOOP("FullscreenUI", "Green Giant");
 TRANSLATE_NOOP("FullscreenUI", "Grey Matter");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
-TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will be enabled on next game restart.");
+TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Hides the mouse pointer/cursor when the emulator is in fullscreen mode.");
 TRANSLATE_NOOP("FullscreenUI", "Hotkey Settings");
@@ -9469,7 +9483,6 @@ TRANSLATE_NOOP("FullscreenUI", "Provides vibration and LED control support over 
 TRANSLATE_NOOP("FullscreenUI", "Purple Rain");
 TRANSLATE_NOOP("FullscreenUI", "Push a controller button or axis now.");
 TRANSLATE_NOOP("FullscreenUI", "Quick Save");
-TRANSLATE_NOOP("FullscreenUI", "RAIntegration is being used instead of the built-in achievements implementation.");
 TRANSLATE_NOOP("FullscreenUI", "Read Speedup");
 TRANSLATE_NOOP("FullscreenUI", "Readahead Sectors");
 TRANSLATE_NOOP("FullscreenUI", "Recompiler Fast Memory Access");
