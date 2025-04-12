@@ -4749,8 +4749,9 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
 void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
                                                     rc_client_t* client)
 {
-  // I hope this is called on the CPU thread...
-  CPU::SafeWriteMemoryBytes(address, buffer, num_bytes);
+  // This can be called on the UI thread, so always queue it.
+  llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
+  Host::RunOnCPUThread([address, data = std::move(data)]() { CPU::SafeWriteMemoryBytes(address, data); });
 }
 
 void Achievements::RAIntegrationGetGameNameCallback(char* buffer, uint32_t buffer_size, rc_client_t* client)
