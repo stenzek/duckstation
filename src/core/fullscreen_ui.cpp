@@ -3905,10 +3905,9 @@ void FullscreenUI::DrawSettingsWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow();
 
-    if (s_state.game_settings_entry)
-      NavTitle(s_state.game_settings_entry->title.c_str());
-    else
-      NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
+    NavTitle(s_state.game_settings_entry ?
+               std::string_view(s_state.game_settings_entry->title) :
+               Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
@@ -5101,7 +5100,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       {
         TinyString title;
         title.format(ICON_FA_COG "{}", Host::TranslateToStringView(ci->name, si.display_name));
-        const char* description = Host::TranslateToCString(ci->name, si.description);
+        std::string_view description = Host::TranslateToStringView(ci->name, si.description);
         switch (si.type)
         {
           case SettingInfo::Type::Boolean:
@@ -5161,12 +5160,12 @@ void FullscreenUI::DrawHotkeySettingsPage()
   {
     if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
     {
-      MenuHeading(Host::TranslateToCString("Hotkeys", hotkey->category));
+      MenuHeading(Host::TranslateToStringView("Hotkeys", hotkey->category));
       last_category = hotkey;
     }
 
     DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
-                           Host::TranslateToCString("Hotkeys", hotkey->display_name), nullptr, false);
+                           Host::TranslateToStringView("Hotkeys", hotkey->display_name), std::string_view(), false);
   }
 
   EndMenuButtons();
@@ -7716,7 +7715,7 @@ void FullscreenUI::DrawGameListWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
-    NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
+    NavTitle(Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     for (u32 i = 0; i < count; i++)
