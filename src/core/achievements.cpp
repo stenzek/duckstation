@@ -2433,10 +2433,9 @@ void Achievements::DrawGameOverlays()
     AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
     const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
 
-    const char* text_start = s_state.active_progress_indicator->achievement->measured_progress;
-    const char* text_end = text_start + std::strlen(text_start);
+    const std::string_view text = s_state.active_progress_indicator->achievement->measured_progress;
     const ImVec2 text_size =
-      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, text_start, text_end);
+      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(text));
 
     const ImVec2 box_min = ImVec2(position.x - image_size.x - text_size.x - spacing - padding * 2.0f,
                                   position.y - image_size.y - padding * 2.0f);
@@ -2457,8 +2456,8 @@ void Achievements::DrawGameOverlays()
       box_min + ImVec2(padding + image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
     const ImRect text_clip_rect(text_pos, box_max);
     RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, box_max,
-                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text_start, text_end,
-                              &text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
+                              ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
 
     if (!indicator.active && opacity <= 0.01f)
     {
@@ -2481,7 +2480,7 @@ void Achievements::DrawGameOverlays()
       for (u32 i = 0; i < indicator.text.length(); i++)
         width_string.append('0');
       const ImVec2 size = ImGuiFullscreen::UIStyle.MediumFont->CalcTextSizeA(
-        ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
+        ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(width_string));
 
       const ImRect box(ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f), position);
       dl->AddRectFilled(box.Min, box.Max,
@@ -2489,16 +2488,14 @@ void Achievements::DrawGameOverlays()
 
       const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
       const ImVec2 text_size = ImGuiFullscreen::UIStyle.MediumFont->CalcTextSizeA(
-        ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, indicator.text.c_str(),
-        indicator.text.c_str() + indicator.text.length());
+        ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(indicator.text));
       const ImVec2 text_pos = ImVec2(box.Max.x - padding - text_size.x, box.Min.y + padding);
-      RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, box.Max, text_col, indicator.text.c_str(),
-                                indicator.text.c_str() + indicator.text.length(), &text_size, ImVec2(0.0f, 0.0f), 0.0f,
-                                &box);
+      RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, box.Max, text_col, indicator.text, &text_size,
+                                ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       const ImVec2 icon_pos = ImVec2(box.Min.x + padding, box.Min.y + padding);
       RenderShadowedTextClipped(dl, UIStyle.MediumFont, icon_pos, box.Max, text_col, ICON_FA_STOPWATCH, nullptr,
-                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
+                                ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       if (!indicator.active && opacity <= 0.01f)
       {
@@ -2555,11 +2552,10 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
 
   const auto get_achievement_height = [&badge_size, &badge_text_width, &text_spacing](std::string_view description,
                                                                                       bool show_measured) {
-    const ImVec2 description_size =
-      description.empty() ?
-        ImVec2(0.0f, 0.0f) :
-        UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, badge_text_width, description.data(),
-                                          description.data() + description.length());
+    const ImVec2 description_size = description.empty() ?
+                                      ImVec2(0.0f, 0.0f) :
+                                      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX,
+                                                                        badge_text_width, IMSTR_START_END(description));
     const float text_height = UIStyle.MediumFont->FontSize + text_spacing + description_size.y;
     return std::max(text_height, badge_size);
   };
@@ -2596,26 +2592,25 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     const ImVec2 image_max = ImVec2(text_pos.x + badge_size, text_pos.y + badge_size);
     ImVec2 badge_text_pos = ImVec2(image_max.x + text_spacing + text_spacing, text_pos.y);
     const ImVec4 clip_rect = ImVec4(badge_text_pos.x, badge_text_pos.y, badge_text_pos.x + badge_text_width, box_max.y);
-    const ImVec2 description_size =
-      description.empty() ?
-        ImVec2(0.0f, 0.0f) :
-        UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, badge_text_width, description.data(),
-                                          description.data() + description.length());
+    const ImVec2 description_size = description.empty() ?
+                                      ImVec2(0.0f, 0.0f) :
+                                      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX,
+                                                                        badge_text_width, IMSTR_START_END(description));
 
     GPUTexture* badge_tex = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
     dl->AddImage(badge_tex, text_pos, image_max);
 
     if (!title.empty())
     {
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, badge_text_pos, title_text_color, title.data(),
-                  title.data() + title.length(), 0.0f, &clip_rect);
+      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, badge_text_pos, title_text_color,
+                  IMSTR_START_END(title), 0.0f, &clip_rect);
       badge_text_pos.y += UIStyle.MediumFont->FontSize + text_spacing;
     }
 
     if (!description.empty())
     {
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, badge_text_pos, text_color, description.data(),
-                  description.data() + description.length(), badge_text_width, &clip_rect);
+      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, badge_text_pos, text_color,
+                  IMSTR_START_END(description), badge_text_width, &clip_rect);
       badge_text_pos.y += description_size.y;
     }
 
@@ -2631,11 +2626,10 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     const float unlocked_fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
                                     static_cast<float>(s_state.game_summary.num_core_achievements);
     buffer.format("{}%", static_cast<u32>(std::ceil(unlocked_fraction * 100.0f)));
-    text_size =
-      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, buffer.c_str(), buffer.end_ptr());
+    text_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(buffer));
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize,
-                ImVec2(text_pos.x + (box_content_width - text_size.x), text_pos.y), text_color, buffer.c_str(),
-                buffer.end_ptr());
+                ImVec2(text_pos.x + (box_content_width - text_size.x), text_pos.y), text_color,
+                IMSTR_START_END(buffer));
     text_pos.y += UIStyle.MediumFont->FontSize + paragraph_spacing;
 
     const ImRect progress_bb(text_pos, text_pos + ImVec2(box_content_width, progress_height));
@@ -2650,12 +2644,11 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     }
 
     buffer.format("{}/{}", s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements);
-    text_size =
-      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, buffer.c_str(), buffer.end_ptr());
+    text_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(buffer));
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize,
                 ImVec2(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                        progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f)),
-                ImGui::GetColorU32(UIStyle.PrimaryTextColor), buffer.c_str(), buffer.end_ptr());
+                ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(buffer));
     text_pos.y += progress_height + paragraph_spacing;
 
     if (pending_count > 0)
@@ -2663,8 +2656,8 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
       buffer.format(ICON_EMOJI_WARNING " {}",
                     TRANSLATE_PLURAL_SSTR("Achievements", "%n unlocks have not been confirmed by the server.",
                                           "Pause Menu", pending_count));
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, title_text_color, buffer.c_str(),
-                  buffer.end_ptr());
+      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, title_text_color,
+                  IMSTR_START_END(buffer));
       text_pos.y += UIStyle.MediumFont->FontSize + paragraph_spacing;
     }
   }
@@ -2672,8 +2665,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   if (s_state.most_recent_unlock.has_value())
   {
     buffer.format(ICON_FA_LOCK_OPEN " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Most Recent", "Pause Menu"));
-    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, buffer.c_str(),
-                buffer.end_ptr());
+    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, IMSTR_START_END(buffer));
     text_pos.y += UIStyle.MediumFont->FontSize + paragraph_spacing;
 
     draw_achievement_with_summary(s_state.most_recent_unlock->title, s_state.most_recent_unlock->description,
@@ -2686,8 +2678,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   if (s_state.achievement_nearest_completion.has_value())
   {
     buffer.format(ICON_FA_LOCK " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Nearest Completion", "Pause Menu"));
-    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, buffer.c_str(),
-                buffer.end_ptr());
+    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, IMSTR_START_END(buffer));
     text_pos.y += UIStyle.MediumFont->FontSize + paragraph_spacing;
 
     draw_achievement_with_summary(s_state.achievement_nearest_completion->title,
@@ -2716,8 +2707,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
 
     buffer.format(ICON_FA_STOPWATCH " {}",
                   TRANSLATE_DISAMBIG_SV("Achievements", "Active Challenge Achievements", "Pause Menu"));
-    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, buffer.c_str(),
-                buffer.end_ptr());
+    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_color, IMSTR_START_END(buffer));
     text_pos.y += UIStyle.MediumFont->FontSize;
 
     for (const AchievementChallengeIndicator& indicator : s_state.active_challenge_indicators)
@@ -2794,7 +2784,7 @@ void Achievements::DrawAchievementsWindow()
 
       if (!s_state.game_icon.empty())
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon.c_str());
+        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
         if (badge)
         {
           ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
@@ -2821,8 +2811,8 @@ void Achievements::DrawAchievementsWindow()
 
       top += UIStyle.LargeFont->FontSize + spacing;
 
-      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
-                                text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), text,
+                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFont->FontSize));
       if (s_state.game_summary.num_core_achievements > 0)
@@ -2849,8 +2839,8 @@ void Achievements::DrawAchievementsWindow()
 
       RenderShadowedTextClipped(
         UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
-        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text.c_str(),
-        text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
+        ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
       if (s_state.game_summary.num_core_achievements > 0)
       {
@@ -2870,12 +2860,12 @@ void Achievements::DrawAchievementsWindow()
 
         text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
         text_size =
-          UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
+          UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(text));
         const ImVec2 text_pos(
           progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
         dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos,
-                    ImGui::GetColorU32(UIStyle.PrimaryTextColor), text.c_str(), text.end_ptr());
+                    ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(text));
         // top += progress_height + spacing;
       }
     }
@@ -3028,11 +3018,11 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + spacing;
   text = TRANSLATE_PLURAL_SSTR("Achievements", "%n points", "Achievement points", cheevo->points);
   const ImVec2 points_size(
-    UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
+    UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(text)));
   const float points_template_start = bb.Max.x - points_template_size.x;
   const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
 
-  const char* right_icon_text;
+  std::string_view right_icon_text;
   switch (cheevo->type)
   {
     case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
@@ -3054,8 +3044,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
       break;
   }
 
-  const ImVec2 right_icon_size(
-    UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize, FLT_MAX, 0.0f, right_icon_text));
+  const ImVec2 right_icon_size =
+    UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(right_icon_text));
 
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
@@ -3067,18 +3057,18 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y),
                        ImVec2(bb.Max.x, midpoint));
 
-  RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, cheevo->title, nullptr, nullptr,
+  RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, cheevo->title, nullptr,
                             ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-  RenderShadowedTextClipped(UIStyle.LargeFont, lock_bb.Min, lock_bb.Max, text_color, right_icon_text, nullptr,
-                            &right_icon_size, ImVec2(0.0f, 0.0f), 0.0f, &lock_bb);
-  RenderShadowedTextClipped(UIStyle.MediumFont, points_bb.Min, points_bb.Max, summary_color, text.c_str(),
-                            text.end_ptr(), &points_size, ImVec2(0.0f, 0.0f), 0.0f, &points_bb);
+  RenderShadowedTextClipped(UIStyle.LargeFont, lock_bb.Min, lock_bb.Max, text_color, right_icon_text, &right_icon_size,
+                            ImVec2(0.0f, 0.0f), 0.0f, &lock_bb);
+  RenderShadowedTextClipped(UIStyle.MediumFont, points_bb.Min, points_bb.Max, summary_color, text, &points_size,
+                            ImVec2(0.0f, 0.0f), 0.0f, &points_bb);
 
   if (cheevo->description && summary_length > 0)
   {
-    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color, cheevo->description,
-                              cheevo->description + summary_length, &summary_text_size, ImVec2(0.0f, 0.0f),
-                              summary_wrap_width, &summary_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color,
+                              std::string_view(cheevo->description, summary_length), &summary_text_size,
+                              ImVec2(0.0f, 0.0f), summary_wrap_width, &summary_bb);
   }
 
   // display hc if hc is active
@@ -3091,14 +3081,14 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     text.format(TRANSLATE_FS("Achievements", "Unlocked: {} | {:.1f}% of players have this achievement"), date,
                 rarity_to_display);
 
-    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color,
-                              text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color, text,
+                              nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
   }
   else
   {
     text.format(TRANSLATE_FS("Achievements", "{:.1f}% of players have this achievement"), rarity_to_display);
-    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color,
-                              text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color, text,
+                              nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
   }
 
   if (!is_unlocked && is_measured)
@@ -3116,14 +3106,12 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
                       ImGui::GetColorU32(ImGuiFullscreen::UIStyle.SecondaryColor), progress_rounding);
 
-    const ImVec2 text_size =
-      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, measured_progress.data(),
-                                        measured_progress.data() + measured_progress.size());
+    const ImVec2 text_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f,
+                                                               IMSTR_START_END(measured_progress));
     const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos,
-                ImGui::GetColorU32(ImGuiFullscreen::UIStyle.PrimaryTextColor), measured_progress.data(),
-                measured_progress.data() + measured_progress.size());
+                ImGui::GetColorU32(ImGuiFullscreen::UIStyle.PrimaryTextColor), IMSTR_START_END(measured_progress));
   }
 
   if (clicked)
@@ -3225,7 +3213,7 @@ void Achievements::DrawLeaderboardsWindow()
 
       if (!s_state.game_icon.empty())
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon.c_str());
+        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
         if (badge)
         {
           ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
@@ -3261,8 +3249,8 @@ void Achievements::DrawLeaderboardsWindow()
 
       top += UIStyle.LargeFont->FontSize + spacing;
 
-      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text.c_str(), text.end_ptr(),
-                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
       u32 summary_color;
       if (is_leaderboard_open)
@@ -3273,8 +3261,8 @@ void Achievements::DrawLeaderboardsWindow()
         top += UIStyle.LargeFont->FontSize + spacing_small;
 
         RenderShadowedTextClipped(UIStyle.LargeFont, subtitle_bb.Min, subtitle_bb.Max,
-                                  ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
-                                  text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
+                                  ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text,
+                                  nullptr, ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
 
         text.assign(s_state.open_leaderboard->description);
         summary_color = ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])));
@@ -3291,8 +3279,8 @@ void Achievements::DrawLeaderboardsWindow()
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFont->FontSize));
       top += UIStyle.MediumFont->FontSize + spacing_small;
 
-      RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color, text.c_str(),
-                                text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+      RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color, text, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
       if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
       {
@@ -3306,8 +3294,7 @@ void Achievements::DrawLeaderboardsWindow()
 
         RenderShadowedTextClipped(UIStyle.MediumFont, hardcore_warning_bb.Min, hardcore_warning_bb.Max,
                                   ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]))),
-                                  text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                                  &hardcore_warning_bb);
+                                  text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &hardcore_warning_bb);
       }
 
       if (is_leaderboard_open)
@@ -3360,14 +3347,12 @@ void Achievements::DrawLeaderboardsWindow()
 
         const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, heading_color,
-                                  TRANSLATE("Achievements", "Rank"), nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                                  &rank_bb);
+                                  TRANSLATE_SV("Achievements", "Rank"), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &rank_bb);
         text_start_x += rank_column_width + column_spacing;
 
         const ImRect user_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         RenderShadowedTextClipped(UIStyle.LargeFont, user_bb.Min, user_bb.Max, heading_color,
-                                  TRANSLATE("Achievements", "Name"), nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                                  &user_bb);
+                                  TRANSLATE_SV("Achievements", "Name"), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &user_bb);
         text_start_x += name_column_width + column_spacing;
 
         static const char* value_headings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
@@ -3379,16 +3364,16 @@ void Achievements::DrawLeaderboardsWindow()
         const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         RenderShadowedTextClipped(
           UIStyle.LargeFont, score_bb.Min, score_bb.Max, heading_color,
-          Host::TranslateToCString(
+          Host::TranslateToStringView(
             "Achievements",
             value_headings[std::min<u8>(s_state.open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
-          nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &score_bb);
+          nullptr, ImVec2(0.0f, 0.0f), 0.0f, &score_bb);
         text_start_x += time_column_width + column_spacing;
 
         const ImRect date_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         RenderShadowedTextClipped(UIStyle.LargeFont, date_bb.Min, date_bb.Max, heading_color,
-                                  TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr, ImVec2(0.0f, 0.0f),
-                                  0.0f, &date_bb);
+                                  TRANSLATE_SV("Achievements", "Date Submitted"), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                  &date_bb);
 
         const float line_thickness = LayoutScale(1.0f);
         const float line_padding = LayoutScale(5.0f);
@@ -3468,7 +3453,7 @@ void Achievements::DrawLeaderboardsWindow()
           const ImVec2 pos_min(0.0f, heading_height);
           const ImVec2 pos_max(display_size.x, display_size.y);
           RenderShadowedTextClipped(UIStyle.LargeFont, pos_min, pos_max, text_color,
-                                    TRANSLATE("Achievements", "Downloading leaderboard data, please wait..."), nullptr,
+                                    TRANSLATE_SV("Achievements", "Downloading leaderboard data, please wait..."),
                                     nullptr, ImVec2(0.5f, 0.5f), 0.0f);
         }
       }
@@ -3486,15 +3471,15 @@ void Achievements::DrawLeaderboardsWindow()
         // Fetch next chunk if the loading indicator becomes visible (i.e. we scrolled enough).
         bool visible, hovered;
         text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
-        ImGuiFullscreen::MenuButtonFrame(text.c_str(), false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                         &visible, &hovered, &bb.Min, &bb.Max);
+        ImGuiFullscreen::MenuButtonFrame(text, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible,
+                                         &hovered, &bb.Min, &bb.Max);
         if (visible)
         {
           const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
           const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 
-          RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text.c_str(),
-                                    text.end_ptr(), nullptr, ImVec2(0, 0), 0.0f, &title_bb);
+          RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text, nullptr,
+                                    ImVec2(0, 0), 0.0f, &title_bb);
 
           if (!s_state.leaderboard_fetch_handle)
             FetchNextLeaderboardEntries();
@@ -3554,8 +3539,8 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
                                               ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
   const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, text_color, text.c_str(), text.end_ptr(),
-                            nullptr, ImVec2(0.0f, 0.0f), 0.0f, &rank_bb);
+  RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, text_color, text, nullptr, ImVec2(0.0f, 0.0f),
+                            0.0f, &rank_bb);
   text_start_x += rank_column_width + column_spacing;
 
   const float icon_size = bb.Max.y - bb.Min.y;
@@ -3584,20 +3569,20 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   }
 
   const ImRect user_bb(ImVec2(text_start_x + column_spacing + icon_size, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  RenderShadowedTextClipped(UIStyle.LargeFont, user_bb.Min, user_bb.Max, text_color, entry.user, nullptr, nullptr,
+  RenderShadowedTextClipped(UIStyle.LargeFont, user_bb.Min, user_bb.Max, text_color, entry.user, nullptr,
                             ImVec2(0.0f, 0.0f), 0.0f, &user_bb);
   text_start_x += name_column_width + column_spacing;
 
   const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  RenderShadowedTextClipped(UIStyle.LargeFont, score_bb.Min, score_bb.Max, text_color, entry.display, nullptr, nullptr,
+  RenderShadowedTextClipped(UIStyle.LargeFont, score_bb.Min, score_bb.Max, text_color, entry.display, nullptr,
                             ImVec2(0.0f, 0.0f), 0.0f, &score_bb);
   text_start_x += time_column_width + column_spacing;
 
   const ImRect time_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   SmallString submit_time;
   FullscreenUI::TimeToPrintableString(&submit_time, entry.submitted);
-  RenderShadowedTextClipped(UIStyle.LargeFont, time_bb.Min, time_bb.Max, text_color, submit_time.c_str(),
-                            submit_time.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &time_bb);
+  RenderShadowedTextClipped(UIStyle.LargeFont, time_bb.Min, time_bb.Max, text_color, submit_time, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &time_bb);
 
   if (pressed)
   {
@@ -3630,13 +3615,13 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
   RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
-                            lboard->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+                            lboard->title, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
   if (lboard->description && lboard->description[0] != '\0')
   {
     RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
                               ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
-                              lboard->description, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+                              lboard->description, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   if (pressed)

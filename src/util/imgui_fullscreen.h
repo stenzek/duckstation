@@ -23,9 +23,13 @@ class GPUTexture;
 class SmallStringBase;
 
 namespace ImGuiFullscreen {
+
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
          static_cast<float>(hex & 0xFFu) / 255.0f, static_cast<float>(alpha) / 255.0f)
+
+// end_ptr() for string_view
+#define IMSTR_START_END(sv) (sv).data(), (sv).data() + (sv).length()
 
 static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
@@ -230,7 +234,7 @@ void CancelPendingMenuClose();
 void PushPrimaryColor();
 void PopPrimaryColor();
 
-void DrawWindowTitle(const char* title);
+void DrawWindowTitle(std::string_view title);
 
 bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, bool expand_to_screen_width = false,
                             bool footer = false);
@@ -264,60 +268,60 @@ void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding =
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
 void EndMenuButtons();
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
-bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
+bool MenuButtonFrame(std::string_view str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
                      ImVec2* max, ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
 void ResetMenuButtonFrame();
-void RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color, const char* text,
-                               const char* text_end, const ImVec2* text_size_if_known = nullptr,
+void RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
+                               std::string_view text, const ImVec2* text_size_if_known = nullptr,
                                const ImVec2& align = ImVec2(0, 0), float wrap_width = 0.0f,
                                const ImRect* clip_rect = nullptr);
 void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max,
-                               u32 color, const char* text, const char* text_end,
-                               const ImVec2* text_size_if_known = nullptr, const ImVec2& align = ImVec2(0, 0),
-                               float wrap_width = 0.0f, const ImRect* clip_rect = nullptr);
+                               u32 color, std::string_view text, const ImVec2* text_size_if_known = nullptr,
+                               const ImVec2& align = ImVec2(0, 0), float wrap_width = 0.0f,
+                               const ImRect* clip_rect = nullptr);
 void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max,
-                               u32 color, const char* text, const char* text_end, const ImVec2* text_size_if_known,
-                               const ImVec2& align, float wrap_width, const ImRect* clip_rect, float shadow_offset);
-void MenuHeading(const char* title, bool draw_line = true);
-bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
-bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
-                const ImVec2& text_align = ImVec2(0.0f, 0.0f));
-bool MenuButtonWithoutSummary(const char* title, bool enabled = true,
+                               u32 color, std::string_view text, const ImVec2* text_size_if_known, const ImVec2& align,
+                               float wrap_width, const ImRect* clip_rect, float shadow_offset);
+void MenuHeading(std::string_view title, bool draw_line = true);
+bool MenuHeadingButton(std::string_view title, std::string_view value = {}, bool enabled = true, bool draw_line = true);
+bool MenuButton(std::string_view title, std::string_view summary, bool enabled = true,
+                float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
+                ImFont* summary_font = UIStyle.MediumFont, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
+bool MenuButtonWithoutSummary(std::string_view title, bool enabled = true,
                               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont,
                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
-bool MenuButtonWithValue(const char* title, const char* summary, const char* value, bool enabled = true,
+bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::string_view value, bool enabled = true,
                          float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
                          ImFont* summary_font = UIStyle.MediumFont);
-bool MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id, const ImVec2& image_size,
-                     bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
+bool MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
+                     const ImVec2& image_size, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                      const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f),
                      ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
-bool FloatingButton(const char* text, float x, float y, float width = -1.0f,
+bool FloatingButton(std::string_view text, float x, float y, float width = -1.0f,
                     float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, float anchor_x = 0.0f, float anchor_y = 0.0f,
                     bool enabled = true, ImFont* font = UIStyle.LargeFont, ImVec2* out_position = nullptr,
                     bool repeat_button = false);
-bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled = true,
+bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true,
                   float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
                   ImFont* summary_font = UIStyle.MediumFont);
-bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
+bool ThreeWayToggleButton(std::string_view title, std::string_view summary, std::optional<bool>* v, bool enabled = true,
                           float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
                           ImFont* summary_font = UIStyle.MediumFont);
-bool RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment,
+bool RangeButton(std::string_view title, std::string_view summary, s32* value, s32 min, s32 max, s32 increment,
                  const char* format = "%d", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
-                 const char* ok_text = "OK");
-bool RangeButton(const char* title, const char* summary, float* value, float min, float max, float increment,
+                 std::string_view ok_text = "OK");
+bool RangeButton(std::string_view title, std::string_view summary, float* value, float min, float max, float increment,
                  const char* format = "%f", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
-                 const char* ok_text = "OK");
-bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
+                 std::string_view ok_text = "OK");
+bool EnumChoiceButtonImpl(std::string_view title, std::string_view summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled, float height, ImFont* font, ImFont* summary_font);
 
 template<typename DataType, typename CountType>
-ALWAYS_INLINE static bool EnumChoiceButton(const char* title, const char* summary, DataType* value_pointer,
+ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_view summary, DataType* value_pointer,
                                            const char* (*to_display_name_function)(DataType value), CountType count,
                                            bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                                            ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont)
@@ -341,18 +345,19 @@ ALWAYS_INLINE static bool EnumChoiceButton(const char* title, const char* summar
 
 void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void EndNavBar();
-void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
+void NavTitle(std::string_view title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+              ImFont* font = UIStyle.LargeFont);
 void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
                           float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-bool NavButton(const char* title, bool is_active, bool enabled = true, float width = -1.0f,
+bool NavButton(std::string_view title, bool is_active, bool enabled = true, float width = -1.0f,
                float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
-bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
+bool NavTab(std::string_view title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
             ImFont* font = UIStyle.LargeFont);
 
 bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, const ImVec4& bg_color,
                          u32 num_items);
 void EndHorizontalMenu();
-bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description,
+bool HorizontalMenuItem(GPUTexture* icon, std::string_view title, std::string_view description,
                         u32 color = IM_COL32(255, 255, 255, 255));
 
 using FileSelectorCallback = std::function<void(std::string path)>;
@@ -393,10 +398,10 @@ float GetNotificationVerticalPosition();
 float GetNotificationVerticalDirection();
 void SetNotificationVerticalPosition(float position, float direction);
 
-void OpenBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
-void CloseBackgroundProgressDialog(const char* str_id);
-bool IsBackgroundProgressDialogOpen(const char* str_id);
+void OpenBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max, s32 value);
+void UpdateBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max, s32 value);
+void CloseBackgroundProgressDialog(std::string_view str_id);
+bool IsBackgroundProgressDialogOpen(std::string_view str_id);
 
 /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
 /// such as compiling shaders when starting up.

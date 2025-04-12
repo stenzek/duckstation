@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_manager.h"
@@ -1034,8 +1034,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
       break;
 
     const ImVec2 pos(position_x, actual_y);
-    const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, max_width, max_width, msg.text.c_str(),
-                                               msg.text.c_str() + msg.text.length()));
+    const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, max_width, max_width, IMSTR_START_END(msg.text)));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
     const ImRect text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
@@ -1043,9 +1042,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y),
                       ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)), rounding);
     RenderShadowedTextClipped(dl, font, text_rect.Min, text_rect.Max,
-                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text.c_str(),
-                              msg.text.c_str() + msg.text.length(), &text_size, ImVec2(0.0f, 0.0f), max_width,
-                              &text_rect, scale);
+                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
+                              ImVec2(0.0f, 0.0f), max_width, &text_rect, scale);
     position_y += size.y + spacing;
   }
 }
