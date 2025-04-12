@@ -25,7 +25,7 @@
     <message>
         <location filename="../aboutdialog.cpp" line="45"/>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt; console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation type="unfinished">DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
+        <translation>DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation&lt;span style=&quot;vertical-align:super;&quot;&gt;TM&lt;/span&gt;, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
     </message>
     <message>
         <location filename="../aboutdialog.cpp" line="48"/>
@@ -130,7 +130,7 @@ Do you want to enable tracking now?</source>
     <message>
         <location filename="../achievementlogindialog.cpp" line="91"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Включить хардкорный режим</translation>
+        <translation>Включить режим режим &quot;Хардкор&quot;</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="92"/>
@@ -139,11 +139,11 @@ Do you want to enable tracking now?</source>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Хардкорный режим в настоящее время не включен. Включение хардкорного режима позволяет вам поставить время, результат и участвовать в таблицах лидеров для конкретной игры.
+        <translation type="unfinished">Режим &quot;Хардкор&quot; в настоящее время не включен. Включение режима &quot;Хардкор&quot; позволяет вам поставить время, результат и участвовать в таблицах лидеров для конкретной игры.
 
-Однако хардкорный режим также не позволяет использовать сохранения состояний, читы и функции замедления.
+Однако режим &quot;Хардкор&quot; также не позволяет использовать сохранения состояний, читы и функции замедления.
 
-Хотите включить хардкорный режим?</translation>
+Хотите включить режим &quot;Хардкор&quot;?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="109"/>
@@ -154,7 +154,7 @@ Do you want to enable hardcore mode?</source>
     <message>
         <location filename="../achievementlogindialog.cpp" line="110"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation>Хардкорный режим не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
+        <translation>Режим &quot;Хардкор&quot; не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="40"/>
@@ -229,7 +229,7 @@ Do you want to enable hardcore mode?</source>
         <location filename="../achievementsettingswidget.ui" line="70"/>
         <location filename="../achievementsettingswidget.cpp" line="112"/>
         <source>Enable RAIntegration (Development Only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить RAIntegration (только для разработчиков)</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="80"/>
@@ -272,7 +272,7 @@ Login token generated at:</source>
         <location filename="../achievementsettingswidget.ui" line="63"/>
         <location filename="../achievementsettingswidget.cpp" line="46"/>
         <source>Enable Hardcore Mode</source>
-        <translation>Включить хардкорный режим</translation>
+        <translation>Включить режим &quot;Хардкор&quot;</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="239"/>
@@ -349,7 +349,7 @@ Login token generated at:</source>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="113"/>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Когда эта функция включена, DuckStation загружает библиотеку RAIntegration DLL, которая позволяет разрабатывать достижения.&lt;br&gt; Файл RA_Integration.dll должен быть помещен в ту же директорию, что и исполняемый файл DuckStation.</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="165"/>
@@ -360,7 +360,7 @@ Login token generated at:</source>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="166"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation>Хардкорный режим не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
+        <translation>Режим &quot;Хардкор&quot; не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
     </message>
     <message numerus="yes">
         <location filename="../achievementsettingswidget.cpp" line="179"/>
@@ -414,7 +414,7 @@ Login token generated on %2.</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1496"/>
         <source>Hardcore mode will be enabled on system reset.</source>
-        <translation type="unfinished">Хардкорный режим будет включен при сбросе системы.</translation>
+        <translation>Режим &quot;Хардкор&quot; будет включен при сбросе системы.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1519"/>
@@ -521,7 +521,7 @@ Leaderboard Position: {} of {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1948"/>
         <source>Downloading achievements data...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка данных о достижениях...</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2168"/>
@@ -532,7 +532,7 @@ Error: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2175"/>
         <source>RetroAchievements Login Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>RetroAchievements Не удалось войти в систему</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2216"/>
@@ -545,29 +545,29 @@ Unread messages: {}</source>
         <location filename="../../core/achievements.cpp" line="2301"/>
         <location filename="../../core/achievements.cpp" line="2315"/>
         <source>Confirm Hardcore Mode Disable</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Подтверждение отключения режима &quot;Хардкор&quot;</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2625"/>
         <source>Achievements Unlocked</source>
         <comment>Pause Menu</comment>
-        <translation type="unfinished"></translation>
+        <translation>Достижения разблокированы</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="2657"/>
         <source>%n unlocks have not been confirmed by the server.</source>
         <comment>Pause Menu</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Сервер не подтвердил %n разблокировку.</numerusform>
+            <numerusform>Сервер не подтвердил %n разблокировки.</numerusform>
+            <numerusform>Сервер не подтвердил %n разблокировок.</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2667"/>
         <source>Most Recent</source>
         <comment>Pause Menu</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Самые последние</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2680"/>
@@ -584,12 +584,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="3081"/>
         <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
-        <translation type="unfinished"></translation>
+        <translation>Разблокировано: {} | {:.1f}% игроков имеют это достижение</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="3089"/>
         <source>{:.1f}% of players have this achievement</source>
-        <translation type="unfinished"></translation>
+        <translation>{:.1f}% игроков имеют это достижение</translation>
     </message>
     <message>
         <source>Confirm Hardcore Mode</source>
@@ -599,7 +599,7 @@ Unread messages: {}</source>
         <location filename="../../core/achievements.cpp" line="2302"/>
         <location filename="../../core/achievements.cpp" line="2316"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
-        <translation type="unfinished">{0} нельзя выполнить, пока активен хардкорный режим. Вы хотите отключить хардкорный режим? {0} будет отменен\о, если вы выберете Нет.</translation>
+        <translation>{0} нельзя выполнить, пока активен режим &quot;Хардкор&quot;. Вы хотите отключить режим &quot;Хардкор&quot;? {0} будет отменено, если вы выберете &quot;Нет&quot;.</translation>
     </message>
     <message>
         <source>Cannot {} while hardcode mode is active.</source>
@@ -620,7 +620,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2810"/>
         <source> (Hardcore Mode)</source>
-        <translation> (Хардкорный режим)</translation>
+        <translation> (режим &quot;Хардкор&quot;)</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="2822"/>
@@ -635,12 +635,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="2933"/>
         <source>Missable</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Пропущенные</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2934"/>
         <source>Progression</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Прогрессия</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2935"/>
@@ -803,18 +803,19 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1887"/>
         <source>Hardcore mode is now enabled.</source>
-        <translation>Хардкорный режим включен.</translation>
+        <translation>Режим &quot;Хардкор&quot; включен.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1548"/>
         <source>Game complete.
 {0}, {1}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Игра завершена.
+{0}, {1}.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1888"/>
         <source>Hardcore mode is now disabled.</source>
-        <translation>Хардкорный режим отключен.</translation>
+        <translation>Режим &quot;Хардкор&quot; отключен.</translation>
     </message>
     <message>
         <source>{} (Hardcore Mode)</source>
@@ -828,12 +829,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1459"/>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation>Хардкорный режим включен. Читы и сохранения состояний недоступны.</translation>
+        <translation>Включён режим &quot;Хардкор&quot;. Читы и сохранения недоступны.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1463"/>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим &quot;Хардкор&quot; отключён. Лидеры не будут отслеживаться.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1468"/>
@@ -850,7 +851,7 @@ Unread messages: {}</source>
         <location filename="../../core/achievements.cpp" line="1583"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n достижение</numerusform>
             <numerusform>%n достижения</numerusform>
             <numerusform>%n достижений</numerusform>
@@ -877,7 +878,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="3292"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation type="unfinished">Отправка результатов отключена, так как режим хардкора выключен. Список лидеров доступен только для чтения.</translation>
+        <translation type="unfinished">Отправка результатов отключена, так как режим &quot;Хардкор&quot; выключен. Список лидеров доступен только для чтения.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="3317"/>
@@ -2845,12 +2846,12 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/cheats.cpp" line="1053"/>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{0} и {1} отключаются достижениями хардкорного режима/безопасного режима.</translation>
+        <translation>{0} и {1} отключаются достижениями в режиме &quot;Хардкора&quot;/безопасном режиме.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1055"/>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation>{} отключается достижениями хардкорного режима/безопасного режима.</translation>
+        <translation>{} отключается достижениями в режиме &quot;Хардкора&quot;/безопасном режиме.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1088"/>
@@ -3097,7 +3098,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.ui" line="77"/>
         <source>Frame Rate:</source>
-        <translation type="unfinished"></translation>
+        <translation>Частота кадров:</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="96"/>
@@ -3169,7 +3170,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отключено</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="88"/>
@@ -5520,7 +5521,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="220"/>
         <source>&amp;Remove</source>
-        <translation type="unfinished">&amp;Удалить</translation>
+        <translation>&amp;Удалить</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="328"/>
@@ -5540,12 +5541,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="268"/>
         <source>Debugger</source>
-        <translation type="unfinished">Отладчик</translation>
+        <translation>Отладчик</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="268"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось добавить точку останова, вы находитесь в допустимой функции?</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="325"/>
@@ -6676,7 +6677,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9070"/>
         <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
-        <translation type="unfinished"></translation>
+        <translation>Анимация открытия/закрытия окон и переключения между видами в пользовательском интерфейсе Big Picture.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9071"/>
@@ -6686,22 +6687,22 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9264"/>
         <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
-        <translation type="unfinished"></translation>
+        <translation>Обеспечивает плавную прокрутку меню в пользовательском интерфейсе Big Picture.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9296"/>
         <source>File Size: </source>
-        <translation type="unfinished"></translation>
+        <translation>Размер файла: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9328"/>
         <source>Genre: </source>
-        <translation type="unfinished"></translation>
+        <translation>Жанр: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9667"/>
         <source>Theme</source>
-        <translation type="unfinished">Тема</translation>
+        <translation>Тема</translation>
     </message>
     <message>
         <source>About DuckStation</source>
@@ -6860,7 +6861,9 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите восстановить настройки по умолчанию? Любые предпочтения будут потеряны.
+
+Отменить это действие нельзя.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9077"/>
@@ -7238,17 +7241,17 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9150"/>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
-        <translation type="unfinished"></translation>
+        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9151"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation type="unfinished">Управляет громкостью звука, воспроизводимого на хосте, при перемотке вперед.</translation>
+        <translation>Регулирует громкость звука, воспроизводимого на хосте при перемотке вперед.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9152"/>
         <source>Controls the volume of the audio played on the host.</source>
-        <translation type="unfinished">Управляет громкостью звука, воспроизводимого на хосте.</translation>
+        <translation>Регулирует громкость звука, воспроизводимого на хосте.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9153"/>
@@ -7320,17 +7323,19 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9168"/>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Тёмная</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9169"/>
         <source>Dark Ruby</source>
-        <translation type="unfinished">Темный Рубин</translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Тёмный рубин</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9170"/>
         <source>Deadzone</source>
-        <translation type="unfinished">Мертвая зона</translation>
+        <translation>Мертвая зона</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9171"/>
@@ -7340,7 +7345,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9172"/>
         <source>Default</source>
-        <translation type="unfinished">По умолчанию</translation>
+        <translation>По умолчанию</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9173"/>
@@ -7426,7 +7431,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9192"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="unfinished">Определить, как вывод эмулируемой консоли масштабируется или понижается до разрешения вашего монитора.</translation>
+        <translation>Определяет, как вывод эмулируемой консоли будет масштабирован в соответствии с разрешением вашего монитора.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9193"/>
@@ -7624,12 +7629,12 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9235"/>
         <source>Enable GPU-Based Validation</source>
-        <translation type="unfinished"></translation>
+        <translation>Включение проверки на основе GPU</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9236"/>
         <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Включите проверку на основе GPU, если она поддерживается API рендерера хоста. Только для разработчиков.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9237"/>
@@ -7772,7 +7777,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9271"/>
         <source>Enter the name of the controller preset you wish to create.</source>
-        <translation type="unfinished"></translation>
+        <translation>Введите имя предустановки контроллера, который вы хотите создать.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9276"/>
@@ -7881,22 +7886,24 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9334"/>
         <source>Green Giant</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Зеленый гигант</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9335"/>
         <source>Grey Matter</source>
-        <translation type="unfinished">Серая материя</translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Серая материя</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9337"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation type="unfinished">Хардкорный режим не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
+        <translation>Режим &quot;Хардкора&quot; не будет включен до тех пор, пока система не будет сброшена. Вы хотите перезагрузить систему сейчас?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9344"/>
         <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Если эта опция включена, изображение будет смешиваться с прозрачностью наложенного изображения.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9345"/>
@@ -7927,7 +7934,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9357"/>
         <source>Last Played: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Последняя игра: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9359"/>
@@ -7942,7 +7949,8 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9365"/>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Светлая</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9366"/>
@@ -7996,12 +8004,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9394"/>
         <source>Maximum Read Speedup Cycles</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Максимальное ускорение циклов чтения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9395"/>
         <source>Maximum Seek Speedup Cycles</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Максимальное количество циклов ускорения поиска</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9401"/>
@@ -8078,12 +8086,13 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9477"/>
         <source>Purple Rain</source>
-        <translation type="unfinished">Фиолетовый дождь</translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Фиолетовый дождь</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9491"/>
         <source>Release Date: </source>
-        <translation type="unfinished"></translation>
+        <translation>Дата выпуска: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9497"/>
@@ -8103,12 +8112,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9509"/>
         <source>Resets all settings to the defaults.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс всех настроек к значениям по умолчанию.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished">Сброс настроек</translation>
+        <translation>Сброс настроек</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9515"/>
@@ -8188,12 +8197,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9542"/>
         <source>Scaled Interlacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабированная чересстрочная развертка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9543"/>
         <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабирует пропуск строк при чересстрочной отрисовки до внутреннего разрешения, делая его менее заметным. Обычно безопасно включать.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9547"/>
@@ -8243,7 +8252,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9560"/>
         <source>Select Disc for {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать диск для {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9561"/>
@@ -8270,12 +8279,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9567"/>
         <source>Selects the backend to use for rendering the console/game visuals.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбирает движок, который будет использоваться для отрисовки консоли/игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9568"/>
         <source>Selects the color style to be used for Big Picture UI.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор цветового стиля, который будет использоваться для пользовательского интерфейса Big Picture.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9570"/>
@@ -8300,17 +8309,17 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9582"/>
         <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Устанавливает минимальную задержку для уровня ускорения чтения &apos;Максимум&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9583"/>
         <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Устанавливает минимальную задержку для уровня ускорения поиска &apos;Максимум&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9591"/>
         <source>Settings reset to default.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Настройки сбрасываются по умолчанию.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9594"/>
@@ -8420,7 +8429,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9672"/>
         <source>Time Played: </source>
-        <translation type="unfinished"></translation>
+        <translation>Время игры: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9673"/>
@@ -8437,7 +8446,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9727"/>
         <source>Window Animations</source>
-        <translation type="unfinished"></translation>
+        <translation>Анимация окон</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9729"/>
@@ -8508,7 +8517,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8972"/>
         <source> (%u MB on disk)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%u МБ на диске)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8974"/>
@@ -8525,7 +8534,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8976"/>
         <source>%d cycles</source>
-        <translation type="unfinished"></translation>
+        <translation>%d циклов</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8977"/>
@@ -8541,17 +8550,18 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8979"/>
         <source>%u MB</source>
-        <translation type="unfinished"></translation>
+        <translation>%u МБ</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9046"/>
         <source>AMOLED</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>AMOLED</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9054"/>
         <source>Achievements: </source>
-        <translation type="unfinished"></translation>
+        <translation>Достижения: </translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9060"/>
@@ -8562,7 +8572,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9065"/>
         <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
-        <translation type="unfinished"></translation>
+        <translation>Позволяет продолжить загрузку даже при отсутствии требуемого SBI-файла. Такие игры не будут запускаться корректно.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9066"/>
@@ -8626,12 +8636,13 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9123"/>
         <source>Clear Mappings</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить сопоставления</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9131"/>
         <source>Cobalt Sky</source>
-        <translation type="unfinished">Кобальтовое небо</translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Кобальтовое небо</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9134"/>
@@ -8721,7 +8732,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9217"/>
         <source>Dithering</source>
-        <translation type="unfinished"></translation>
+        <translation>Дизеринг</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9225"/>
@@ -8892,7 +8903,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9303"/>
         <source>Frame Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Частота кадров</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9304"/>
@@ -9033,7 +9044,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9336"/>
         <source>Hardcore Mode</source>
-        <translation>Хардкорный режим</translation>
+        <translation>Режим &quot;Хардкора&quot;</translation>
     </message>
     <message>
         <source>Hardcore mode will be enabled on next game restart.</source>
@@ -9596,7 +9607,8 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9462"/>
         <source>Pinky Pals</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Тема</translatorcomment>
+        <translation>Пинки Палс</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9463"/>
@@ -9641,7 +9653,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9471"/>
         <source>Preserve Projection Precision</source>
-        <translation type="unfinished">Сохранение точности проекции</translation>
+        <translation>Сохранение точности проецирования</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9474"/>
@@ -10486,7 +10498,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9690"/>
         <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштабирует отрисовку игры на указанный множитель.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9691"/>
@@ -10523,8 +10535,9 @@ Please check your username and password, and try again.</source>
         <location filename="../../core/fullscreen_ui.cpp" line="9698"/>
         <source>Use Software Renderer For Readbacks</source>
         <translatorcomment>Настройки графики
-*Обратного чтения-считывания-считываний *отображение *визуализация *обратных ссылок</translatorcomment>
-        <translation type="unfinished">Программная отрисовка для обратных чтений</translation>
+*Использование программной отрисовки для считывания данных
+*отображение *визуализация</translatorcomment>
+        <translation>Использовать считывание данных с программной отрисовки</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9699"/>
@@ -10589,7 +10602,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9710"/>
         <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Используется выбранная частота кадров независимо от настроек игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9711"/>
@@ -10630,7 +10643,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9717"/>
         <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
-        <translation type="unfinished"></translation>
+        <translation>При запуске режима Big Picture вместо главного меню будет отображаться список игр.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9718"/>
@@ -10975,12 +10988,13 @@ Do you want to {0} anyway?</source>
         <location filename="../../core/gpu_hw.cpp" line="683"/>
         <source>Shader blending is not supported by your current GPU.
 It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
-        <translation type="unfinished"></translation>
+        <translation>Смешивание шейдеров не поддерживается вашим текущим ГП.
+Для этого требуется выборка из фреймбуфера, петли обратной связи или просмотр порядка растеризации.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="693"/>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
-        <translation type="unfinished"></translation>
+        <translation>Мультисэмплерное сглаживание не поддерживается при использовании шейдерного смешивания.</translation>
     </message>
     <message>
         <source>Accurate blending is not supported by your current GPU.
@@ -11007,7 +11021,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../../core/gpu_hw.cpp" line="731"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштаб разрешения {0}x не делится на масштаб понижающей дискретизации {1}x, понижающая дискретизация отключена.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="740"/>
@@ -11346,6 +11360,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="352"/>
         <source>Unknown</source>
+        <translatorcomment>*Неизвестно</translatorcomment>
         <translation type="unfinished">Неизвестен</translation>
     </message>
     <message>
@@ -11495,7 +11510,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="501"/>
         <source>Software renderer readbacks enabled.</source>
-        <translation>Программная отрисовка обратных чтений включена.</translation>
+        <translation>Считывание данных с программной отрисовки включено.</translation>
     </message>
     <message>
         <source>Accurate blending enabled.</source>
@@ -11558,7 +11573,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="728"/>
         <source>PGXP preserve projection precision disabled.</source>
-        <translation>Сохранение точности проекции PGXP отключено.</translation>
+        <translation>Сохранение точности проецирования PGXP отключено.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="665"/>
@@ -11569,23 +11584,24 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="115"/>
         <source>Force Shader Blending</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно: Смешивание шейдеров</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="116"/>
         <source>Force Full True Color</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно: Full True Color</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="573"/>
         <source>Dithering set to {}.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*в</translatorcomment>
+        <translation type="unfinished">Дизеринг установлен на {}.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="613"/>
         <source>Scaled interlacing disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабированный интерлейс отключен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="673"/>
@@ -11668,7 +11684,7 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="113"/>
         <source>Force Software Renderer For Readbacks</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Принудительно: Программная отрисовка для обратных чтений</translation>
+        <translation>Принудительно: Считывание данных с программной отрисовки</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="114"/>
@@ -11714,13 +11730,13 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="121"/>
         <source>Disable True Color</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished">Отключить: Отрисовка True Color</translation>
+        <translation>Отключить: True Color</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="122"/>
         <source>Disable Full True Color</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отключить: Full True Color</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="123"/>
@@ -11750,7 +11766,7 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="127"/>
         <source>Disable Scaled Interlacing</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отключить: Масштабированная чересстрочная развертка</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="128"/>
@@ -11934,7 +11950,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="902"/>
         <source>Traits</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Параметры</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="912"/>
@@ -12768,7 +12784,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="193"/>
         <source>Dithering:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дизеринг:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="216"/>
@@ -12852,7 +12868,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="420"/>
         <location filename="../graphicssettingswidget.cpp" line="458"/>
         <source>Scaled Interlacing</source>
-        <translation type="unfinished"></translation>
+        <translation>Масштабированная чересстрочная развертка</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1120"/>
@@ -12971,7 +12987,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="360"/>
         <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Software Renderer Readbacks</source>
-        <translation type="unfinished">Программная отрисовка обратных чтений</translation>
+        <translation>Считывание данных с программной отрисовки</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="388"/>
@@ -13023,7 +13039,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="578"/>
         <location filename="../graphicssettingswidget.cpp" line="491"/>
         <source>Preserve Projection Precision</source>
-        <translation>Сохранение точности проекции</translation>
+        <translation>Сохранение точности проецирования</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="571"/>
@@ -13183,7 +13199,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="777"/>
         <source>Theme:</source>
-        <translation type="unfinished">Тема:</translation>
+        <translation>Тема:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="804"/>
@@ -13283,7 +13299,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1426"/>
         <location filename="../graphicssettingswidget.cpp" line="636"/>
         <source>Use GPU-Based Validation</source>
-        <translation type="unfinished"></translation>
+        <translation>Использовать проверку на основе ГП</translation>
     </message>
     <message>
         <source>Texture Replacements</source>
@@ -13440,7 +13456,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="355"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="unfinished">Установка этого значения выше 1x повысит разрешение отрисованных 3D-полигонов и линий. Применяется только к аппаратным серверным модулям. &lt;br&gt;Этот вариант обычно безопасен, так как большинство игр отлично смотрятся в более высоких разрешениях. Более высокие разрешения требуют более мощного графического процессора.</translation>
+        <translation>Установка значения больше 1x увеличит разрешение отрисованных 3D-полигонов и линий. Применяется только для аппаратных движков. &lt;br&gt;Этот вариант обычно безопасен: большинство игр прекрасно выглядят на высоких разрешениях. Для высоких разрешений требуется более мощный ГП.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="359"/>
@@ -13468,7 +13484,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="363"/>
         <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation type="unfinished">Выбор масштаба разрешения, который будет применен к окончательному изображению. 1x будет понижать разрешение до исходного разрешения консоли.</translation>
+        <translation type="unfinished">Выбор масштаба разрешения, который будет применяться к конечному изображению. 1x будет понижать разрешение до исходного разрешения консоли.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="366"/>
@@ -13492,12 +13508,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="376"/>
         <source>Dithering</source>
-        <translation type="unfinished"></translation>
+        <translation>Дизеринг</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="378"/>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Опции &quot;Смешивание шейдеров&quot; выполняют смешивание программно и являются более точными, но имеют &lt;strong&gt;значительное&lt;/strong&gt; снижение производительности.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="383"/>
@@ -13532,7 +13548,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="400"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="unfinished">Определить, как вывод эмулируемой консоли масштабируется или понижается до разрешения вашего монитора.</translation>
+        <translation>Определяет, как вывод эмулируемой консоли будет масштабирован в соответствии с разрешением вашего монитора.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="402"/>
@@ -13607,12 +13623,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="345"/>
         <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбирает движок, который будет использоваться для отрисовки консоли/игры. &lt;br&gt;В зависимости от вашей системы и аппаратного обеспечения могут быть доступны аппаратные движки Direct3D 11 и OpenGL. &lt;br&gt;Программная отрисовка обеспечивает наилучшую совместимость, но является самым медленным и не предлагает никаких улучшений.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="368"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
-        <translation type="unfinished">Сглаживает блочность увеличенных текстур 3D-объектов с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект в масштабах с более высоким разрешением.</translation>
+        <translation>Сглаживает блочность увеличенных текстур на 3D-объектах с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект в масштабах с более высоким разрешением.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="403"/>
@@ -13667,7 +13683,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="423"/>
         <location filename="../graphicssettingswidget.cpp" line="514"/>
         <source>Automatic</source>
-        <translation type="unfinished">Автоматический</translation>
+        <translation>Автоматический</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="424"/>
@@ -13839,7 +13855,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="473"/>
         <source>-1.00px (Disabled)</source>
-        <translation type="unfinished">-1,00 пикс (отключено)</translation>
+        <translation>-1,00 пикс (отключено)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="474"/>
@@ -13872,7 +13888,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="488"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translatorcomment>*Отсечения *Отбраковки *Отсеивания *Корректировка *Коррекция</translatorcomment>
-        <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии. Требует включения корректировка геометрии.</translation>
+        <translation>Повышает точность отсеивания полигонов, уменьшая количество дыр в геометрии. Требует включения &quot;Корректировка геометрии&quot;.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="492"/>
@@ -13887,7 +13903,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="498"/>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation type="unfinished">Использует позиции вершин в экранном пространстве для получения точных позиций вместо отслеживания доступа к памяти. Может обеспечить совместимость с PGXP для некоторых игр, но &lt;strong&gt;обычно не дает никакой пользы&lt;/strong&gt;</translation>
+        <translation>Использует позиции вершин в пространстве экрана для получения точных позиций, вместо того чтобы отслеживать обращения к памяти. Может обеспечить совместимость с PGXP для некоторых игр, но &lt;strong&gt;обычно не дает никаких преимуществ.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="501"/>
@@ -13897,7 +13913,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="505"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting..</source>
-        <translation type="unfinished">Включает проверку глубины для полупрозрачных полигонов. Обычно это включает тени и при включенной проверке глубины имеют тенденцию проступать сквозь землю. Запись глубины для полупрозрачных полигонов отключена независимо от этой настройки.</translation>
+        <translation>Включает проверку глубины для полупрозрачных полигонов. Обычно это включает тени и при включенной проверке глубины имеют тенденцию проступать сквозь землю. Запись глубины для полупрозрачных полигонов отключена независимо от этой настройки.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="512"/>
@@ -13918,12 +13934,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="514"/>
         <source>Theme</source>
-        <translation type="unfinished">Тема</translation>
+        <translation>Тема</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="515"/>
         <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет тему, которая будет использоваться для элементов экранного меню и пользовательского интерфейса Big Picture.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="517"/>
@@ -14039,7 +14055,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="561"/>
         <source>Backend</source>
-        <translation type="unfinished">Движок</translation>
+        <translation>Движок</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="563"/>
@@ -14199,7 +14215,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="637"/>
         <source>Enable GPU-based validation when supported by the renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Включает проверку на основе ГП, если она поддерживается API рендерера. &lt;strong&gt;Исключительно для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="661"/>
@@ -14263,7 +14279,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="625"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation type="unfinished">Записывает фоны, которые можно заменить, в каталог дампа.</translation>
+        <translation>Записывает фоны, которые можно заменить, в каталог дампа.</translation>
     </message>
     <message>
         <source>Dump Size Threshold</source>
@@ -14290,12 +14306,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="459"/>
         <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштабирует пропуск строк при чересстрочном рендеринге до внутреннего разрешения. Это делает прочесывание менее заметным при высоких разрешениях. Обычно безопасно включать.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="634"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished">Включите отладку, если она поддерживается API-интерфейсом отрисовки хоста. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
+        <translation>Включите отладку, если она поддерживается API-интерфейсом отрисовки хоста. &lt;strong&gt;Только для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="640"/>
@@ -14768,62 +14784,62 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="510"/>
         <source>Freecam Move Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Left</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="517"/>
         <source>Freecam Move Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Right</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="523"/>
         <source>Freecam Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Up</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="531"/>
         <source>Freecam Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Down</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="538"/>
         <source>Freecam Move Forward</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Forward</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="545"/>
         <source>Freecam Move Backward</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Move Backward</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="552"/>
         <source>Freecam Rotate Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Свободная камера: Поворот влево</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="559"/>
         <source>Freecam Rotate Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Свободная камера: Поворот вправо</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="566"/>
         <source>Freecam Rotate Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Свободная камера: Поворот вперед</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="573"/>
         <source>Freecam Rotate Backward</source>
-        <translation type="unfinished"></translation>
+        <translation>Свободная камера: Поворот назад</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="580"/>
         <source>Freecam Roll Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Roll Left</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="587"/>
         <source>Freecam Roll Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Roll Left</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="659"/>
@@ -14922,12 +14938,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="785"/>
         <source>Toggle PGXP Preserve Projection Precision</source>
-        <translation type="unfinished"></translation>
+        <translation>Переключить: Сохранение точности проецирования PGXP</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="802"/>
         <source>Toggle VRAM View</source>
-        <translation type="unfinished"></translation>
+        <translation>Переключить: Просмотр VRAM</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="711"/>
@@ -16401,12 +16417,12 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="988"/>
         <source>Change List Background...</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменить задний фон списка...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="993"/>
         <source>Clear List Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить задний фон списка</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="429"/>
@@ -16738,7 +16754,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.cpp" line="100"/>
         <source>Images (*.jpg *.jpeg *.png *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Изображения (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="316"/>
@@ -16932,7 +16948,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="2399"/>
         <source>Select Background Image</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор фонового изображения</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2751"/>
@@ -17149,27 +17165,27 @@ This action cannot be undone.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="15"/>
         <source>Classic Windows</source>
-        <translation>Классические окна</translation>
+        <translation>Классический Windows</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="17"/>
         <source>Fusion</source>
-        <translation>Fusion</translation>
+        <translation>Слияние</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="18"/>
         <source>Dark Fusion (Gray)</source>
-        <translation>Dark Fusion (Серый)</translation>
+        <translation>Тёмное слияние (Серый)</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="19"/>
         <source>Dark Fusion (Blue)</source>
-        <translation>Dark Fusion (Синий)</translation>
+        <translation>Тёмное слияние (Синий)</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="20"/>
         <source>AMOLED</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="21"/>
@@ -17184,12 +17200,12 @@ This action cannot be undone.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="23"/>
         <source>Green Giant</source>
-        <translation type="unfinished"></translation>
+        <translation>Зелёный гигант</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="24"/>
         <source>Pinky Pals</source>
-        <translation type="unfinished"></translation>
+        <translation>Пинки Палс</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="25"/>
@@ -17204,7 +17220,7 @@ This action cannot be undone.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="27"/>
         <source>QDarkStyle</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">QDarkStyle</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="2606"/>
@@ -17667,12 +17683,12 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="22"/>
         <source>DuckStation Memory Card (*.mcd)</source>
-        <translation type="unfinished"></translation>
+        <translation>Карта памяти DuckStation (*.mcd)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="23"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation type="unfinished"></translation>
+        <translation>Все импортируемые типы карт памяти (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <location filename="../memorycardeditorwindow.cpp" line="253"/>
@@ -18629,7 +18645,8 @@ You must delete the memory card manually if you want to save.</source>
         <location filename="../../core/pad.cpp" line="220"/>
         <source>Save state contains controller type {0} in port {1}.
        Leaving {2} connected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохраннёное состояние содержит контроллер типа {0} в порту {1}.
+       Остается подключенным {2}.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="293"/>
@@ -18765,22 +18782,22 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../../core/hotkeys.cpp" line="797"/>
         <source>PGXP Preserve Projection Precision is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение точности проецирования PGXP включён.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="798"/>
         <source>PGXP Preserve Projection Precision is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение точности проецирования PGXP отключён.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="814"/>
         <source>Now showing VRAM.</source>
-        <translation type="unfinished"></translation>
+        <translation>Теперь VRAM отображается.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="815"/>
         <source>Now showing display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Теперь отображается на экране.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="606"/>
@@ -18856,12 +18873,12 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../../core/system.cpp" line="5745"/>
         <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Включена широкоэкранная отрисовка, а соотношение сторон установлено на {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="5753"/>
         <source>Widescreen rendering is now disabled, and aspect ratio is set to {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключена широкоэкранная отрисовка, а соотношение сторон установлено на {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4372"/>
@@ -19043,7 +19060,8 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <location filename="../../util/postprocessing.cpp" line="617"/>
         <source>Failed to compile post-processing shader &apos;{}&apos;. Disabling post-processing.
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось скомпилировать шейдер постобработки &apos;{}&apos;. Отключение постобработки.
+{}</translation>
     </message>
 </context>
 <context>
@@ -19227,7 +19245,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="561"/>
         <source>Display Rectangle</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отображать прямоугольник</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="563"/>
@@ -20036,55 +20054,55 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1545"/>
         <source>Scale2x (EPX)</source>
         <comment>GPUTextureFilter</comment>
-        <translation type="unfinished"></translation>
+        <translation>Scale2x (EPX)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1546"/>
         <source>Scale3x (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation type="unfinished"></translation>
+        <translation>Scale3x (медленный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1547"/>
         <source>MMPX (Slow)</source>
         <comment>GPUTextureFilter</comment>
-        <translation type="unfinished"></translation>
+        <translation>MMPX (медленный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1581"/>
         <source>Unscaled</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Без масштабирования</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1582"/>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Без масштабирования (смешивание шейдеров)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1583"/>
         <source>Scaled</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Масштабирование</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1584"/>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Масштабирование (смешивание шейдеров)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1585"/>
         <source>True Color</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">True Color</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1586"/>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">True Color (Полный)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1623"/>
@@ -20770,7 +20788,9 @@ Do you want to create this directory?</source>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите восстановить настройки по умолчанию? Любые предпочтения будут потеряны.
+
+Отменить это действие нельзя.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="143"/>
@@ -21052,42 +21072,42 @@ Do you want to continue?</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="734"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;It is recommended to use the &lt;span style=&quot; font-weight:700;&quot;&gt;Automatic &lt;/span&gt;renderer. You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;На этой странице представлены некоторые часто устанавливаемые параметры графики в DuckStation.&lt;/p&gt;&lt;p&gt;Эти опции, как правило, безопасны для использования и совместимы с большинством игр. Изменение внутреннего разрешения и включение коррекции геометрии PGXP значительно улучшит графическую достоверность большинства игр.&lt;/p&gt;&lt;p&gt;Рекомендуется использовать &lt;span style=&quot; font-weight:700;&quot;&gt;Автоматический &lt;/span&gt; отрисовщик. Вы можете изменить эти и другие параметры в разделе &lt;span style=&quot; font-weight:700;&quot;&gt;Настройка графики &lt;/span&gt;после завершения настройки.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="758"/>
         <source>Renderer:</source>
-        <translation type="unfinished">Отрисовщик:</translation>
+        <translation>Отрисовщик:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="765"/>
         <source>Selects the backend to use for rendering the console/game visuals.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбирает движок, который будет использоваться для отрисовки консоли/игры.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="772"/>
         <source>Internal Resolution:</source>
-        <translation type="unfinished">Внутреннее разрешение:</translation>
+        <translation>Внутреннее разрешение:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="779"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="unfinished">Установка этого значения выше 1x повысит разрешение отрисованных 3D-полигонов и линий. Применяется только к аппаратным серверным модулям. &lt;br&gt;Этот вариант обычно безопасен, так как большинство игр отлично смотрятся в более высоких разрешениях. Более высокие разрешения требуют более мощного графического процессора.</translation>
+        <translation>Установка значения больше 1x увеличит разрешение отрисованных 3D-полигонов и линий. Применяется только для аппаратных движков. &lt;br&gt;Этот вариант обычно безопасен: большинство игр прекрасно выглядят на высоких разрешениях. Для высоких разрешений требуется более мощный ГП.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="786"/>
         <source>Texture Filtering:</source>
-        <translation type="unfinished">Фильтрация текстур:</translation>
+        <translation>Фильтрация текстур:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="793"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
-        <translation type="unfinished">Сглаживает блочность увеличенных текстур 3D-объектов с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект в масштабах с более высоким разрешением.</translation>
+        <translation>Сглаживает блочность увеличенных текстур на 3D-объектах с помощью фильтрации. &lt;br&gt;Будет иметь больший эффект в масштабах с более высоким разрешением.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="800"/>
         <source>Sprite Texture Filtering:</source>
-        <translation type="unfinished">Фильтрация текстур спрайтов:</translation>
+        <translation>Фильтрация текстур спрайтов:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="807"/>
@@ -21097,7 +21117,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="814"/>
         <source>Aspect Ratio:</source>
-        <translation type="unfinished">Соотношение сторон:</translation>
+        <translation>Соотношение сторон:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="823"/>
@@ -21107,82 +21127,82 @@ Do you want to continue?</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="840"/>
         <source>:</source>
-        <translation type="unfinished">:</translation>
+        <translation>:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="859"/>
         <source>Crop:</source>
-        <translation type="unfinished">Режим обрезки:</translation>
+        <translation>Режим обрезки:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="866"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="unfinished">Определить, какую часть области, которая обычно не видна на потребительском телевизоре, необходимо обрезать/скрыть. Некоторые игры отображают контент в области нерезкости или используют ее для экранных эффектов. Может отображаться неправильно при настройке «Все границы». «Только нерабочая область» предлагает хороший компромисс между стабильностью и скрытием черных границ.</translation>
+        <translation>Определить, какую часть области, которая обычно не видна на потребительском телевизоре, необходимо обрезать/скрыть. Некоторые игры отображают контент в области нерезкости или используют ее для экранных эффектов. Может отображаться неправильно при настройке «Все границы». «Только нерабочая область» предлагает хороший компромисс между стабильностью и скрытием черных границ.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="873"/>
         <source>Scaling:</source>
-        <translation type="unfinished">Масштабирование:</translation>
+        <translation>Масштабирование:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="880"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="unfinished">Определить, как вывод эмулируемой консоли масштабируется или понижается до разрешения вашего монитора.</translation>
+        <translation>Определяет, как вывод эмулируемой консоли будет масштабирован в соответствии с разрешением вашего монитора.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="889"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="unfinished">Масштабирует положение вершин в экранном пространстве до широкоэкранного соотношения сторон, существенно увеличивая поле зрения с 4:3 до выбранного соотношения сторон дисплея в 3D-играх. &lt;b&gt;&lt;u&gt;Может быть совместимо не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Масштабирует положение вершин в пространстве экрана в соответствии с широкоэкранным соотношением сторон, по сути, увеличивая поле зрения с 4:3 до выбранного соотношения сторон экрана в 3D-играх. &lt;b&gt;&lt;u&gt;Может быть совместим не со всеми играми.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="892"/>
         <source>Widescreen Rendering</source>
-        <translation type="unfinished">Широкоэкранная отрисовка</translation>
+        <translation>Широкоэкранная отрисовка</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="899"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation type="unfinished">Уменьшает количество «шатких» полигонов и «деформаций» текстур, которые часто встречаются в играх для PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
+        <translation>Уменьшает количество «шатких» полигонов и «деформаций» текстур, которые часто встречаются в играх для PS1. &lt;strong&gt;Может быть совместимо не со всеми играми.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="902"/>
         <source>PGXP Geometry Correction</source>
-        <translation type="unfinished">Корректировка геометрии PGXP</translation>
+        <translation>Корректировка геометрии PGXP</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="911"/>
         <source>Dithering:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дизеринг:</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="918"/>
         <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Управляет тем, как применяется дизеринг в эмулируемом ГП. True Color отключает дизеринг и создает наиболее приятные на вид градиенты. Опции масштабирования делают шаблон дизеринга менее заметным на высоких разрешениях. Опции &quot;Смешивание шейдеров&quot; выполняют смешивание программно и являются более точными, но имеют &lt;strong&gt;значительное&lt;/strong&gt; снижение производительности.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="959"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation поддерживает получение достижений и отслеживание таблиц лидеров с помощью RetroAchievements.&lt;/p&gt;&lt;p&gt;Если у вас есть аккаунт в RetroAchievements, вы можете воспользоваться формой ниже, чтобы войти в систему. Если нет, вы можете зарегистрироваться на сайте &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Учетная запись RetroAchievements &lt;span style=&quot; font-weight:700;&quot;&gt;не&lt;/span&gt; требуется для использования DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="969"/>
         <source>Settings</source>
-        <translation type="unfinished">Настройки</translation>
+        <translation>Настройки</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="975"/>
         <source>Enable Achievements</source>
-        <translation type="unfinished">Включить достижения</translation>
+        <translation>Включить достижения</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="982"/>
         <source>Enable Hardcore Mode</source>
-        <translation type="unfinished">Включить хардкорный режим</translation>
+        <translation>Включить режим &quot;Хардкор&quot;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="992"/>
         <source>Account</source>
-        <translation type="unfinished">Учетная запись</translation>
+        <translation>Учетная запись</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="998"/>
@@ -21194,13 +21214,13 @@ Login token generated at:</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="1011"/>
         <source>View Profile...</source>
-        <translation type="unfinished">Просмотр профиля...</translation>
+        <translation>Просмотр профиля...</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="1018"/>
         <location filename="../setupwizarddialog.cpp" line="678"/>
         <source>Login...</source>
-        <translation type="unfinished">Авторизация...</translation>
+        <translation>Авторизация...</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="1059"/>
@@ -21230,12 +21250,12 @@ Login token generated at:</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="112"/>
         <source>Graphics Setup</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройка графики</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="119"/>
         <source>RetroAchievements</source>
-        <translation type="unfinished"></translation>
+        <translation>RetroAchievements</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="126"/>
@@ -21339,18 +21359,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../setupwizarddialog.cpp" line="670"/>
         <source>Username: %1
 Login token generated on %2.</source>
-        <translation type="unfinished">Имя пользователя: %1
+        <translation>Имя пользователя: %1
 Токен входа сгенерирован %2.</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.cpp" line="673"/>
         <source>Logout</source>
-        <translation type="unfinished">Выйти</translation>
+        <translation>Выйти</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.cpp" line="677"/>
         <source>Not Logged In.</source>
-        <translation type="unfinished">Не авторизован.</translation>
+        <translation>Не авторизован.</translation>
     </message>
     <message>
         <source>Default (None)</source>
@@ -21737,12 +21757,12 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4769"/>
         <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
-        <translation type="unfinished"></translation>
+        <translation>Частота кадров не установлена в автоматическом режиме. Игры могут работать на неправильной скорости.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4834"/>
         <source>Dithering set to unscaled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Дизеринг установлен на значение &quot;Без масштабирования&quot;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4838"/>
@@ -21822,7 +21842,7 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4879"/>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CD-ROM SubQ Skew включён. Это приведет к поломке игр.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="5308"/>
@@ -21983,7 +22003,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
         <location filename="../texturereplacementsettingsdialog.ui" line="291"/>
         <location filename="../texturereplacementsettingsdialog.ui" line="311"/>
         <source>px</source>
-        <translation type="unfinished"> пикс.</translation>
+        <translation> пикс.</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="143"/>
@@ -21995,8 +22015,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="168"/>
         <source>Maximum Write Splits:</source>
-        <translatorcomment>*записей</translatorcomment>
-        <translation type="unfinished">Максимальное разделение записи:</translation>
+        <translation>Максимальное количество записей:</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="187"/>
@@ -22006,7 +22025,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="194"/>
         <source>Bilinear Replacement Scaling</source>
-        <translation type="unfinished">Масштабирование с билинейной заменой</translation>
+        <translation>Масштабирование с билинейной заменой</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="206"/>
