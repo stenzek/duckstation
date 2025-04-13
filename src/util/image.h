@@ -98,7 +98,10 @@ public:
   std::optional<DynamicHeapArray<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY,
                                                    Error* error = nullptr) const;
 
-  std::optional<Image> ConvertToRGBA8(Error* error) const;
+  std::optional<Image> ConvertToRGBA8(Error* error = nullptr) const;
+
+  static bool ConvertToRGBA8(void* RESTRICT pixels_out, u32 pixels_out_pitch, const void* RESTRICT pixels_in,
+                             u32 pixels_in_pitch, u32 width, u32 height, ImageFormat format, Error* error = nullptr);
 
   void FlipY();
 
