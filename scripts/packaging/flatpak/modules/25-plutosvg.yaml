@@ -1,19 +1,20 @@
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-name: lunasvg
+name: plutosvg
 buildsystem: cmake-ninja
 builddir: true
 config-opts:
   - "-DCMAKE_BUILD_TYPE=Release"
   - "-DBUILD_SHARED_LIBS=ON"
-  - "-DLUNASVG_BUILD_EXAMPLES=OFF"
+  - "-DPLUTOSVG_ENABLE_FREETYPE=ON"
+  - "-DPLUTOSVG_BUILD_EXAMPLES=OFF"
 build-options:
   strip: true
 sources:
   - type: git
-    url: "https://github.com/stenzek/lunasvg.git"
-    commit: "9af1ac7b90658a279b372add52d6f77a4ebb482c"
+    url: "https://github.com/stenzek/plutosvg.git"
+    commit: "bc845bb6b6511e392f9e1097b26f70cf0b3c33be"
 cleanup:
   - /bin
   - /include

@@ -35,7 +35,7 @@ modules:
   - "modules/22-cpuinfo.yaml"
   - "modules/23-discord-rpc.yaml"
   - "modules/24-soundtouch.yaml"
-  - "modules/25-lunasvg.yaml"
+  - "modules/25-plutosvg.yaml"
   - "modules/30-sdl3.yaml"
 
   # Main module.

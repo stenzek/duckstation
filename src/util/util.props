@@ -6,7 +6,7 @@
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);CPUINFO_SHARED=1;ENABLE_VULKAN=1;ENABLE_SDL=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);ENABLE_OPENGL=1</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\kissfft\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\ffmpeg\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\ffmpeg\include;$(DepsIncludeDir)plutosvg;</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\glad\include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -25,7 +25,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)spirv_cross</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;lunasvg.lib;SDL3.lib;soundtouch.lib;zlib.lib;zstd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);freetype.lib;jpeg.lib;libpng16.lib;libwebp.lib;plutosvg.lib;SDL3.lib;soundtouch.lib;zlib.lib;zstd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -41,7 +41,7 @@
     <DepsDLLs Include="$(DepsBinDir)libwebp.dll" />
     <DepsDLLs Include="$(DepsBinDir)libwebpdemux.dll" />
     <DepsDLLs Include="$(DepsBinDir)libwebpmux.dll" />
-    <DepsDLLs Include="$(DepsBinDir)lunasvg.dll" />
+    <DepsDLLs Include="$(DepsBinDir)plutosvg.dll" />
     <DepsDLLs Include="$(DepsBinDir)SDL3.dll" />
     <DepsDLLs Include="$(DepsBinDir)shaderc_shared.dll" />
     <DepsDLLs Include="$(DepsBinDir)soundtouch.dll" />

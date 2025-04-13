@@ -17,9 +17,8 @@
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
 
-#include "lunasvg_c.h"
-
 #include <jpeglib.h>
+#include <plutosvg.h>
 #include <png.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
@@ -391,26 +390,32 @@ bool Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, 
     return false;
   }
 
-  std::unique_ptr<lunasvg_document, void (*)(lunasvg_document*)> doc(
-    lunasvg_document_load_from_data(data.data(), data.size()), lunasvg_document_destroy);
+  std::unique_ptr<plutosvg_document, void (*)(plutosvg_document*)> doc(
+    plutosvg_document_load_from_data(reinterpret_cast<const char*>(data.data()), static_cast<int>(data.size_bytes()),
+                                     static_cast<float>(width), static_cast<float>(height), nullptr, nullptr),
+    plutosvg_document_destroy);
   if (!doc)
   {
-    Error::SetStringView(error, "lunasvg_document_load_from_data() failed");
+    Error::SetStringView(error, "plutosvg_document_load_from_data() failed");
     return false;
   }
 
-  std::unique_ptr<lunasvg_bitmap, void (*)(lunasvg_bitmap*)> bitmap(
-    lunasvg_document_render_to_bitmap(doc.get(), width, height, 0), lunasvg_bitmap_destroy);
+  const plutovg_color_t current_color = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+
+  std::unique_ptr<plutovg_surface, void (*)(plutovg_surface*)> bitmap(
+    plutosvg_document_render_to_surface(doc.get(), nullptr, static_cast<int>(width), static_cast<int>(height),
+                                        &current_color, nullptr, nullptr),
+    plutovg_surface_destroy);
   if (!bitmap)
   {
-    Error::SetStringView(error, "lunasvg_document_render_to_bitmap() failed");
+    Error::SetStringView(error, "plutosvg_document_render_to_surface() failed");
     return false;
   }
 
   // lunasvg works in BGRA, swap to RGBA
   Resize(width, height, ImageFormat::RGBA8, false);
-  SwapBGRAToRGBA(m_pixels.get(), m_pitch, lunasvg_bitmap_data(bitmap.get()), lunasvg_bitmap_stride(bitmap.get()), width,
-                 height);
+  SwapBGRAToRGBA(m_pixels.get(), m_pitch, plutovg_surface_get_data(bitmap.get()),
+                 plutovg_surface_get_stride(bitmap.get()), width, height);
   return true;
 }
 

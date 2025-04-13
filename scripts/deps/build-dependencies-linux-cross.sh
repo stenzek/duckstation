@@ -115,7 +115,7 @@ ZSTD=1.5.7
 
 CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
-LUNASVG=4a1c98ccb1da8a5a92ddc4f97339869b1ae556f4
+PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
 SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 SPIRV_CROSS=vulkan-sdk-1.4.309.0
@@ -130,7 +130,7 @@ if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; t
 		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 		-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
-		-o "lunasvg-$LUNASVG.tar.gz" "https://github.com/stenzek/lunasvg/archive/$LUNASVG.tar.gz" \
+		-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG.tar.gz" \
 		-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz" \
 		-o "soundtouch-$SOUNDTOUCH.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH.tar.gz"
 fi
@@ -140,7 +140,7 @@ baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$
 f87be7b4dec66db4098e9c167b2aa34e2ca10aeb5443bdde95ae03185ed513e0  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
-5fe7abc6c4601f21fa56ffbf12507e80684942c3134b7888701ede836e6287e2  lunasvg-$LUNASVG.tar.gz
+cc8eed38daf68aaaaa96e904f68f5524c02f10b5d42062b91cdc93f93445f68a  plutosvg-$PLUTOSVG.tar.gz
 167109d52b65f6eedd66103971b869a71632fe27a63efc2ba5b0e5a1912a094c  shaderc-$SHADERC.tar.gz
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
@@ -530,11 +530,11 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-echo "Building lunasvg..."
-rm -fr "lunasvg-$LUNASVG"
-tar xf "lunasvg-$LUNASVG.tar.gz"
-cd "lunasvg-$LUNASVG"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DLUNASVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+echo "Building plutosvg..."
+rm -fr "plutosvg-$PLUTOSVG"
+tar xf "plutosvg-$PLUTOSVG.tar.gz"
+cd "plutosvg-$PLUTOSVG"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..

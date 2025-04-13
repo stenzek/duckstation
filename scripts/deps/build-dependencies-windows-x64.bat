@@ -57,7 +57,7 @@ set ZSTD=1.5.7
 
 set CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 set DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
-set LUNASVG=4a1c98ccb1da8a5a92ddc4f97339869b1ae556f4
+set PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
 set SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 set SPIRV_CROSS=vulkan-sdk-1.4.309.0
@@ -81,7 +81,7 @@ call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/r
 
 call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO%.zip" 3430f8bae57623347b2b30a8ff041b0288f90ad99b4c2487c3d520863ce4a4e3 || goto error
 call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 4492cbe690a16546da9a9d89f14340352cad3b0ac5484b969749d6ab6f1ee836 || goto error
-call :downloadfile "lunasvg-%LUNASVG%.zip" "https://github.com/stenzek/lunasvg/archive/%LUNASVG%.zip" 536d00fcafcb71b1e3680516266a0299e87b8723f0d29c1c1bcd9c4118de4d00 || goto error
+call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/stenzek/plutosvg/archive/%PLUTOSVG%.zip" ae6c6bd93a9ea0451b853545595b2c6c99104b22c193afd8e00cfbc0f3e27298 || goto error
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" cafd87502d799060d2b6bbf9c885226f75f6e0b21e8cd87a43806da019412811 || goto error
 call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
 call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" eb4f6a3bb6b08aaa62f435b3dbf26b180702ca52398d3650d0dd538f56742cdc || goto error
@@ -289,11 +289,11 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
-echo Building lunasvg...
-rmdir /S /Q "lunasvg-%LUNASVG%"
-%SEVENZIP% x "lunasvg-%LUNASVG%.zip" || goto error
-cd "lunasvg-%LUNASVG%" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DLUNASVG_BUILD_EXAMPLES=OFF -B build -G Ninja
+echo Building plutosvg...
+rmdir /S /Q "plutosvg-%PLUTOSVG%"
+%SEVENZIP% x "plutosvg-%PLUTOSVG%.zip" || goto error
+cd "plutosvg-%PLUTOSVG%" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

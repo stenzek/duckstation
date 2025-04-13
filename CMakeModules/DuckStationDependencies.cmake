@@ -16,7 +16,7 @@ find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
 find_package(PNG 1.6.40 REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(Freetype 2.13.2 REQUIRED) # 2.13.3, but flatpak is still on 2.13.2.
-find_package(lunasvg 2.4.1 REQUIRED)
+find_package(plutosvg 0.0.6 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
 find_package(SoundTouch 2.3.3 REQUIRED)

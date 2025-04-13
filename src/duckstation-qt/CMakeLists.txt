@@ -212,7 +212,7 @@ if(WIN32)
   #set_source_files_properties(${TS_FILES} PROPERTIES OUTPUT_LOCATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/translations")
 
   set(DEPS_TO_COPY cpuinfo.dll discord-rpc.dll dxcompiler.dll dxil.dll freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll
-                   libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll lunasvg.dll SDL3.dll shaderc_shared.dll
+                   libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll plutosvg.dll SDL3.dll shaderc_shared.dll
                    soundtouch.dll spirv-cross-c-shared.dll zlib1.dll zstd.dll)
   foreach(DEP ${DEPS_TO_COPY})
     list(APPEND DEP_BINS "${CMAKE_PREFIX_PATH}/bin/${DEP}")

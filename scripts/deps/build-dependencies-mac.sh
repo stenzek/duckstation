@@ -50,7 +50,7 @@ QT=6.9.0
 
 CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
-LUNASVG=4a1c98ccb1da8a5a92ddc4f97339869b1ae556f4
+PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
 SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 SPIRV_CROSS=vulkan-sdk-1.4.309.0
@@ -97,7 +97,7 @@ fa645589cc3f939022401a926825972a44277dead8ec8607d9f2662e6529c9a4  qttools-everyw
 1d5581ef5fc7c7bc556f2403017983683993bbebfcdf977ef8f180f604668c3f  qttranslations-everywhere-src-$QT.tar.xz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
-5fe7abc6c4601f21fa56ffbf12507e80684942c3134b7888701ede836e6287e2  lunasvg-$LUNASVG.tar.gz
+cc8eed38daf68aaaaa96e904f68f5524c02f10b5d42062b91cdc93f93445f68a  plutosvg-$PLUTOSVG.tar.gz
 167109d52b65f6eedd66103971b869a71632fe27a63efc2ba5b0e5a1912a094c  shaderc-$SHADERC.tar.gz
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
@@ -120,7 +120,7 @@ curl -L \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 	-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
-	-o "lunasvg-$LUNASVG.tar.gz" "https://github.com/stenzek/lunasvg/archive/$LUNASVG.tar.gz" \
+	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG.tar.gz" \
 	-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz" \
 	-o "soundtouch-$SOUNDTOUCH.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH.tar.gz"
 
@@ -394,11 +394,11 @@ cmake --build build --parallel
 cmake --install build
 cd ..
 
-echo "Building lunasvg..."
-rm -fr "lunasvg-$LUNASVG"
-tar xf "lunasvg-$LUNASVG.tar.gz"
-cd "lunasvg-$LUNASVG"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DLUNASVG_BUILD_EXAMPLES=OFF -B build
+echo "Building plutosvg..."
+rm -fr "plutosvg-$PLUTOSVG"
+tar xf "plutosvg-$PLUTOSVG.tar.gz"
+cd "plutosvg-$PLUTOSVG"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build
 cmake --build build --parallel
 cmake --install build
 cd ..

@@ -51,10 +51,7 @@
 #error "Cannot enable both IMGUI_ENABLE_FREETYPE_LUNASVG and IMGUI_ENABLE_FREETYPE_PLUTOSVG"
 #endif
 #ifdef  IMGUI_ENABLE_FREETYPE_LUNASVG
-#include FT_OTSVG_H             // <freetype/otsvg.h>
-#include FT_BBOX_H              // <freetype/ftbbox.h>
-#include <algorithm>
-#include <lunasvg_c.h>
+#error Lunasvg is not supported
 #endif
 #ifdef  IMGUI_ENABLE_FREETYPE_PLUTOSVG
 #include <plutosvg.h>
@@ -92,14 +89,6 @@ static void  ImGuiFreeTypeDefaultFreeFunc(void* ptr, void* user_data) { IM_UNUSE
 static void* (*GImGuiFreeTypeAllocFunc)(size_t size, void* user_data) = ImGuiFreeTypeDefaultAllocFunc;
 static void  (*GImGuiFreeTypeFreeFunc)(void* ptr, void* user_data) = ImGuiFreeTypeDefaultFreeFunc;
 static void* GImGuiFreeTypeAllocatorUserData = nullptr;
-
-// Lunasvg support
-#ifdef IMGUI_ENABLE_FREETYPE_LUNASVG
-static FT_Error ImGuiLunasvgPortInit(FT_Pointer* state);
-static void     ImGuiLunasvgPortFree(FT_Pointer* state);
-static FT_Error ImGuiLunasvgPortRender(FT_GlyphSlot slot, FT_Pointer* _state);
-static FT_Error ImGuiLunasvgPortPresetSlot(FT_GlyphSlot slot, FT_Bool cache, FT_Pointer* _state);
-#endif
 
 //-------------------------------------------------------------------------
 // Code
@@ -818,13 +807,6 @@ static bool ImFontAtlasBuildWithFreeType(ImFontAtlas* atlas)
     // If you don't call FT_Add_Default_Modules() the rest of code may work, but FreeType won't use our custom allocator.
     FT_Add_Default_Modules(ft_library);
 
-#ifdef IMGUI_ENABLE_FREETYPE_LUNASVG
-    // Install svg hooks for FreeType
-    // https://freetype.org/freetype2/docs/reference/ft2-properties.html#svg-hooks
-    // https://freetype.org/freetype2/docs/reference/ft2-svg_fonts.html#svg_fonts
-    SVG_RendererHooks hooks = { ImGuiLunasvgPortInit, ImGuiLunasvgPortFree, ImGuiLunasvgPortRender, ImGuiLunasvgPortPresetSlot };
-    FT_Property_Set(ft_library, "ot-svg", "svg-hooks", &hooks);
-#endif // IMGUI_ENABLE_FREETYPE_LUNASVG
 #ifdef IMGUI_ENABLE_FREETYPE_PLUTOSVG
     // With plutosvg, use provided hooks
     FT_Property_Set(ft_library, "ot-svg", "svg-hooks", plutosvg_ft_svg_hooks());
@@ -849,137 +831,6 @@ void ImGuiFreeType::SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* u
     GImGuiFreeTypeFreeFunc = free_func;
     GImGuiFreeTypeAllocatorUserData = user_data;
 }
-
-#ifdef IMGUI_ENABLE_FREETYPE_LUNASVG
-// For more details, see https://gitlab.freedesktop.org/freetype/freetype-demos/-/blob/master/src/rsvg-port.c
-// The original code from the demo is licensed under CeCILL-C Free Software License Agreement (https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/LICENSE.TXT)
-struct LunasvgPortState
-{
-    LunasvgPortState();
-    ~LunasvgPortState();
-
-    FT_Error err = FT_Err_Ok;
-    lunasvg_matrix* matrix = nullptr;
-    lunasvg_document* svg = nullptr;
-};
-
-LunasvgPortState::LunasvgPortState()
-{
-  matrix = lunasvg_matrix_create();
-}
-
-LunasvgPortState::~LunasvgPortState()
-{
-  lunasvg_matrix_destroy(matrix);
-  if (svg)
-    lunasvg_document_destroy(svg);
-}
-
-static FT_Error ImGuiLunasvgPortInit(FT_Pointer* _state)
-{
-    *_state = IM_NEW(LunasvgPortState)();
-    return FT_Err_Ok;
-}
-
-static void ImGuiLunasvgPortFree(FT_Pointer* _state)
-{
-    IM_DELETE(*(LunasvgPortState**)_state);
-}
-
-static FT_Error ImGuiLunasvgPortRender(FT_GlyphSlot slot, FT_Pointer* _state)
-{
-    LunasvgPortState* state = *(LunasvgPortState**)_state;
-
-    // If there was an error while loading the svg in ImGuiLunasvgPortPresetSlot(), the renderer hook still get called, so just returns the error.
-    if (state->err != FT_Err_Ok)
-        return state->err;
-
-    // rows is height, pitch (or stride) equals to width * sizeof(int32)
-    lunasvg_bitmap* bitmap = lunasvg_bitmap_create_with_data((uint8_t*)slot->bitmap.buffer, slot->bitmap.width, slot->bitmap.rows, slot->bitmap.pitch);
-    lunasvg_document_set_identity_matrix(state->svg); // Reset the svg matrix to the default value
-    lunasvg_document_render(state->svg, bitmap, state->matrix);              // state->matrix is already scaled and translated
-    lunasvg_bitmap_destroy(bitmap);
-    state->err = FT_Err_Ok;
-    return state->err;
-}
-
-static FT_Error ImGuiLunasvgPortPresetSlot(FT_GlyphSlot slot, FT_Bool cache, FT_Pointer* _state)
-{
-    FT_SVG_Document   document = (FT_SVG_Document)slot->other;
-    LunasvgPortState* state = *(LunasvgPortState**)_state;
-    FT_Size_Metrics&  metrics = document->metrics;
-
-    // This function is called twice, once in the FT_Load_Glyph() and another right before ImGuiLunasvgPortRender().
-    // If it's the latter, don't do anything because it's // already done in the former.
-    if (cache)
-        return state->err;
-
-    if (state->svg)
-      lunasvg_document_destroy(state->svg);
-    state->svg = lunasvg_document_load_from_data(document->svg_document, document->svg_document_length);
-    if (state->svg == nullptr)
-    {
-        state->err = FT_Err_Invalid_SVG_Document;
-        return state->err;
-    }
-
-    lunasvg_box* box = lunasvg_box_create();
-    double box_x, box_y, box_w, box_h;
-    lunasvg_document_get_box(state->svg, box);
-    lunasvg_box_get_values(box, &box_x, &box_y, &box_w, &box_h);
-
-    double scale = std::min(metrics.x_ppem / box_w, metrics.y_ppem / box_h);
-    double xx = (double)document->transform.xx / (1 << 16);
-    double xy = -(double)document->transform.xy / (1 << 16);
-    double yx = -(double)document->transform.yx / (1 << 16);
-    double yy = (double)document->transform.yy / (1 << 16);
-    double x0 = (double)document->delta.x / 64 * box_w / metrics.x_ppem;
-    double y0 = -(double)document->delta.y / 64 * box_h / metrics.y_ppem;
-
-    // Scale and transform, we don't translate the svg yet
-    lunasvg_matrix_identity(state->matrix);
-    lunasvg_matrix_scale(state->matrix, scale, scale);
-    lunasvg_matrix_transform(state->matrix, xx, xy, yx, yy, x0, y0);
-    lunasvg_document_set_matrix(state->svg, state->matrix);
-
-    // Pre-translate the matrix for the rendering step
-    lunasvg_matrix_translate(state->matrix, -box_x, -box_y);
-
-    // Get the box again after the transformation
-    lunasvg_document_get_box(state->svg, box);
-    lunasvg_box_get_values(box, &box_x, &box_y, &box_w, &box_h);
-    lunasvg_box_destroy(box);
-
-    // Calculate the bitmap size
-    slot->bitmap_left = FT_Int(box_x);
-    slot->bitmap_top = FT_Int(-box_y);
-    slot->bitmap.rows = (unsigned int)(ImCeil((float)box_h));
-    slot->bitmap.width = (unsigned int)(ImCeil((float)box_w));
-    slot->bitmap.pitch = slot->bitmap.width * 4;
-    slot->bitmap.pixel_mode = FT_PIXEL_MODE_BGRA;
-
-    // Compute all the bearings and set them correctly. The outline is scaled already, we just need to use the bounding box.
-    double metrics_width = box_w;
-    double metrics_height = box_h;
-    double horiBearingX = box_x;
-    double horiBearingY = -box_y;
-    double vertBearingX = slot->metrics.horiBearingX / 64.0 - slot->metrics.horiAdvance / 64.0 / 2.0;
-    double vertBearingY = (slot->metrics.vertAdvance / 64.0 - slot->metrics.height / 64.0) / 2.0;
-    slot->metrics.width = FT_Pos(IM_ROUND(metrics_width * 64.0));   // Using IM_ROUND() assume width and height are positive
-    slot->metrics.height = FT_Pos(IM_ROUND(metrics_height * 64.0));
-    slot->metrics.horiBearingX = FT_Pos(horiBearingX * 64);
-    slot->metrics.horiBearingY = FT_Pos(horiBearingY * 64);
-    slot->metrics.vertBearingX = FT_Pos(vertBearingX * 64);
-    slot->metrics.vertBearingY = FT_Pos(vertBearingY * 64);
-
-    if (slot->metrics.vertAdvance == 0)
-        slot->metrics.vertAdvance = FT_Pos(metrics_height * 1.2 * 64.0);
-
-    state->err = FT_Err_Ok;
-    return state->err;
-}
-
-#endif // #ifdef IMGUI_ENABLE_FREETYPE_LUNASVG
 
 //-----------------------------------------------------------------------------
 

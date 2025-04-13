@@ -113,7 +113,7 @@ declare -a DEPLIBS=(
 
 	"libcpuinfo.so"
 	"libdiscord-rpc.so"
-	"liblunasvg.so"
+	"libplutosvg.so.0"
 	"libshaderc_ds.so"
 	"libsoundtouch.so.2"
 	"libspirv-cross-c-shared.so.0"
