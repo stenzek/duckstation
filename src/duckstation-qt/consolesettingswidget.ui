@@ -28,7 +28,7 @@
      <property name="title">
       <string>Console</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -38,6 +38,16 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="region"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="forceVideoTimingLabel">
+        <property name="text">
+         <string>Frame Rate:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="forceVideoTiming"/>
       </item>
       <item row="2" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -71,16 +81,6 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="forceVideoTimingLabel">
-        <property name="text">
-         <string>Frame Rate:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="forceVideoTiming"/>
-      </item>
      </layout>
     </widget>
    </item>
@@ -89,7 +89,7 @@
      <property name="title">
       <string>CPU Emulation</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
+     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="cpuExecutionModeLabel">
         <property name="text">
@@ -175,7 +175,7 @@
      <property name="title">
       <string>CD-ROM Emulation</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_4">
+     <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -252,7 +252,7 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="cdromSeekSpeedup">
         <property name="currentText">
-         <string/>
+         <string>None (Normal Speed)</string>
         </property>
         <item>
          <property name="text">

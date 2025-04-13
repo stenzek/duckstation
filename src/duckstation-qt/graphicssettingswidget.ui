@@ -31,7 +31,7 @@
      <property name="title">
       <string/>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout_18" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -85,7 +85,7 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QFormLayout" name="formLayout_2">
+         <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
           <property name="topMargin">
            <number>6</number>
           </property>
@@ -146,6 +146,26 @@
           <item row="3" column="1">
            <widget class="QComboBox" name="spriteTextureFiltering"/>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="gpuDitheringModeLabel">
+            <property name="text">
+             <string>Dithering:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="gpuDitheringMode"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Deinterlacing:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="displayDeinterlacing"/>
+          </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
@@ -187,35 +207,15 @@
             </item>
            </layout>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="gpuDitheringModeLabel">
-            <property name="text">
-             <string>Dithering:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="gpuDitheringMode"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Deinterlacing:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QComboBox" name="displayDeinterlacing"/>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="displayCropMode"/>
-          </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Crop:</string>
             </property>
            </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="displayCropMode"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel" name="label_8">
@@ -306,7 +306,7 @@
          <property name="title">
           <string>Display Options</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_7">
+         <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="exclusiveFullscreenLabel">
             <property name="text">
@@ -330,6 +330,16 @@
              <string>Screen Position:</string>
             </property>
            </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QComboBox" name="displayAlignment"/>
+            </item>
+            <item>
+             <widget class="QComboBox" name="displayRotation"/>
+            </item>
+           </layout>
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
@@ -363,16 +373,6 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QComboBox" name="displayAlignment"/>
-            </item>
-            <item>
-             <widget class="QComboBox" name="displayRotation"/>
-            </item>
-           </layout>
-          </item>
          </layout>
         </widget>
        </item>
@@ -381,7 +381,7 @@
          <property name="title">
           <string>Rendering Options</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_6">
+         <layout class="QGridLayout" name="gridLayout_12" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="msaaModeLabel">
             <property name="text">
@@ -495,7 +495,7 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QFormLayout" name="formLayout_4">
+         <layout class="QGridLayout" name="gridLayout_13" columnstretch="0,1">
           <property name="topMargin">
            <number>6</number>
           </property>
@@ -642,7 +642,7 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QFormLayout" name="formLayout_5">
+         <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,1">
           <property name="topMargin">
            <number>6</number>
           </property>
@@ -665,6 +665,33 @@
              <number>500</number>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Screen Margins:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="osdMargin">
+            <property name="suffix">
+             <string>px</string>
+            </property>
+            <property name="maximum">
+             <number>200</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Theme:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="fullscreenUITheme"/>
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
@@ -754,33 +781,6 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Screen Margins:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="osdMargin">
-            <property name="suffix">
-             <string>px</string>
-            </property>
-            <property name="maximum">
-             <number>200</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Theme:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="fullscreenUITheme"/>
-          </item>
          </layout>
         </widget>
        </item>
@@ -821,7 +821,7 @@
          <property name="title">
           <string>Screenshots</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_3">
+         <layout class="QGridLayout" name="gridLayout_15" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="label_21">
             <property name="text">
@@ -867,7 +867,7 @@
          <property name="title">
           <string>Media Capture</string>
          </property>
-         <layout class="QFormLayout" name="captureTabGroupBoxLayout">
+         <layout class="QGridLayout" name="gridLayout_16" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
             <property name="text">
@@ -1160,52 +1160,45 @@
          <property name="title">
           <string>Texture Replacement</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_8">
-          <item row="0" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_6">
-            <item row="3" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_4"/>
-            </item>
-            <item row="0" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <item>
-               <widget class="QCheckBox" name="enableTextureDumping">
-                <property name="text">
-                 <string>Enable Texture Dumping</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="textureReplacementOptions">
-                <property name="icon">
-                 <iconset theme="settings-3-line"/>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="enableTextureReplacements">
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="enableTextureReplacements">
+            <property name="text">
+             <string>Enable Texture Replacement</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QCheckBox" name="enableTextureDumping">
               <property name="text">
-               <string>Enable Texture Replacement</string>
+               <string>Enable Texture Dumping</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="dumpReplacedTextures">
-              <property name="text">
-               <string>Dump Replaced Textures</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="alwaysTrackUploads">
-              <property name="text">
-               <string>Always Track Uploads</string>
+            <item>
+             <widget class="QToolButton" name="textureReplacementOptions">
+              <property name="icon">
+               <iconset theme="settings-3-line"/>
               </property>
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="alwaysTrackUploads">
+            <property name="text">
+             <string>Always Track Uploads</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="dumpReplacedTextures">
+            <property name="text">
+             <string>Dump Replaced Textures</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1215,31 +1208,27 @@
          <property name="title">
           <string>VRAM Write (Background) Replacement</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_9">
-          <item row="0" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_7">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="vramWriteReplacement">
-              <property name="text">
-               <string>Enable VRAM Write Replacement</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="useOldMDECRoutines">
-              <property name="text">
-               <string>Use Old MDEC Routines</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="vramWriteDumping">
-              <property name="text">
-               <string>Enable VRAM Write Dumping</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="vramWriteReplacement">
+            <property name="text">
+             <string>Enable VRAM Write Replacement</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="vramWriteDumping">
+            <property name="text">
+             <string>Enable VRAM Write Dumping</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="useOldMDECRoutines">
+            <property name="text">
+             <string>Use Old MDEC Routines</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1321,7 +1310,7 @@
          <property name="title">
           <string>GPU Dump Recording/Playback</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_12">
+         <layout class="QGridLayout" name="gridLayout_17" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="groupDumpCompressionModeLabel">
             <property name="text">
@@ -1347,87 +1336,83 @@
          <property name="title">
           <string>Device Options</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_10">
-          <item row="0" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_8">
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="disableComputeShaders">
-              <property name="text">
-               <string>Disable Compute Shaders</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="disableDualSource">
-              <property name="text">
-               <string>Disable Dual-Source Blending</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="useDebugDevice">
-              <property name="text">
-               <string>Use Debug Device</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="disableMemoryImport">
-              <property name="text">
-               <string>Disable Memory Import</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QCheckBox" name="disableRasterOrderViews">
-              <property name="text">
-               <string>Disable Rasterizer Order Views</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="disableTextureCopyToSelf">
-              <property name="text">
-               <string>Disable Texture Copy To Self</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="disableTextureBuffers">
-              <property name="text">
-               <string>Disable Texture Buffers</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
-              <property name="text">
-               <string>Disable Framebuffer Fetch</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="disableCompressedTextures">
-              <property name="text">
-               <string>Disable Compressed Textures</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="disableShaderCache">
-              <property name="text">
-               <string>Disable Shader Cache</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="useGPUBasedValidation">
-              <property name="text">
-               <string>Use GPU-Based Validation</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="useDebugDevice">
+            <property name="text">
+             <string>Use Debug Device</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="useGPUBasedValidation">
+            <property name="text">
+             <string>Use GPU-Based Validation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="disableShaderCache">
+            <property name="text">
+             <string>Disable Shader Cache</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="disableCompressedTextures">
+            <property name="text">
+             <string>Disable Compressed Textures</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="disableDualSource">
+            <property name="text">
+             <string>Disable Dual-Source Blending</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="disableFramebufferFetch">
+            <property name="text">
+             <string>Disable Framebuffer Fetch</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="disableTextureBuffers">
+            <property name="text">
+             <string>Disable Texture Buffers</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="disableTextureCopyToSelf">
+            <property name="text">
+             <string>Disable Texture Copy To Self</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="disableMemoryImport">
+            <property name="text">
+             <string>Disable Memory Import</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QCheckBox" name="disableRasterOrderViews">
+            <property name="text">
+             <string>Disable Rasterizer Order Views</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="disableComputeShaders">
+            <property name="text">
+             <string>Disable Compute Shaders</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

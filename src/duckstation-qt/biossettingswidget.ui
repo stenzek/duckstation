@@ -145,7 +145,7 @@
      <property name="title">
       <string>Parallel Port</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">

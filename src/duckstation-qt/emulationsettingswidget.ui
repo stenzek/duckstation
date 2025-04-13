@@ -28,7 +28,7 @@
      <property name="title">
       <string>Speed Control</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
@@ -135,8 +135,8 @@
      <property name="title">
       <string>Rewind/Runahead</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0" colspan="2">
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="rewindEnable">
         <property name="text">
          <string>Enable Rewinding</string>
@@ -278,7 +278,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

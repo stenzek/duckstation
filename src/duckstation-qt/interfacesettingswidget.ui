@@ -173,7 +173,7 @@
      <property name="title">
       <string>Updates</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="autoUpdateTagLabel">
         <property name="text">
