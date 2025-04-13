@@ -4949,7 +4949,8 @@ void FullscreenUI::DrawControllerSettingsPage()
         continue;
 
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
-                             TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"), nullptr, true);
+                             TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"),
+                             std::string_view(), true);
 
       SmallString binds_string =
         bsi->GetSmallStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", macro_index + 1).c_str());
