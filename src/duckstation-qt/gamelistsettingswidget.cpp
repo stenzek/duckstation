@@ -89,7 +89,7 @@ bool GameListSettingsWidget::event(QEvent* event)
   {
     case QEvent::LayoutRequest:
     case QEvent::Resize:
-      QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
+      QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 120});
       break;
 
     default:

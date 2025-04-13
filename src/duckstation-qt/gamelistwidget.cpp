@@ -1637,12 +1637,12 @@ void GameListWidget::resizeTableViewColumnsToFit()
                                                      200, // genre
                                                      50,  // year
                                                      100, // players
-                                                     80,  // time played
-                                                     80,  // last played
+                                                     85,  // time played
+                                                     85,  // last played
                                                      80,  // file size
                                                      80,  // size
-                                                     50,  // region
-                                                     90,  // achievements
+                                                     55,  // region
+                                                     100, // achievements
                                                      100  // compatibility
                                                    });
 }
