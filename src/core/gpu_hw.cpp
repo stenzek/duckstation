@@ -3854,6 +3854,8 @@ void GPU_HW::FlushRender()
                            m_batch.transparency_mode != GPUTransparencyMode::Disabled ?
                              GPUTextureCache::PaletteRecordFlags::HasSemiTransparentDraws :
                              GPUTextureCache::PaletteRecordFlags::None);
+    if (!texture) [[unlikely]]
+      m_batch.texture_mode = static_cast<BatchTextureMode>(m_texture_cache_key.mode);
   }
 
   if (m_batch_ubo_dirty)

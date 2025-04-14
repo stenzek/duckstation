@@ -260,6 +260,10 @@ static void SetHashCacheTextureFormat();
 static bool CompilePipelines(Error* error);
 static void DestroyPipelines();
 
+static std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                GPUTexture::Type type, GPUTexture::Format format,
+                                                GPUTexture::Flags flags, const void* data = nullptr,
+                                                u32 data_stride = 0);
 static const Source* ReturnSource(Source* source, const GSVector4i uv_rect, PaletteRecordFlags flags);
 static Source* CreateSource(SourceKey key);
 
@@ -1419,6 +1423,26 @@ void GPUTextureCache::DecodeTexture(u8 page, GPUTexturePaletteReg palette, GPUTe
     texture->Update(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, tex_map, tex_stride);
 }
 
+std::unique_ptr<GPUTexture> GPUTextureCache::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                                          GPUTexture::Type type, GPUTexture::Format format,
+                                                          GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                          u32 data_stride /* = 0 */)
+{
+  Error error;
+  std::unique_ptr<GPUTexture> tex =
+    g_gpu_device->FetchTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, &error);
+  if (!tex) [[unlikely]]
+  {
+    ERROR_LOG("Failed to create {}x{} texture for cache: {}", width, height, error.GetDescription());
+    Host::AddIconOSDWarning("TCFetchTextureFailed", ICON_EMOJI_WARNING,
+                            fmt::format(TRANSLATE_FS("GPU_HW", "Failed to allocate {}x{} texture for cache:\n{}"),
+                                        width, height, error.GetDescription()),
+                            Host::OSD_ERROR_DURATION);
+  }
+
+  return tex;
+}
+
 const GPUTextureCache::Source* GPUTextureCache::LookupSource(SourceKey key, const GSVector4i rect,
                                                              PaletteRecordFlags flags)
 {
@@ -1441,31 +1465,34 @@ const GPUTextureCache::Source* GPUTextureCache::LookupSource(SourceKey key, cons
 const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, const GSVector4i uv_rect,
                                                              PaletteRecordFlags flags)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
-  // GL_INS_FMT("Tex hash: {:016X}", source->texture_hash);
-  // GL_INS_FMT("Palette hash: {:016X}", source->palette_hash);
-  if (!uv_rect.eq(INVALID_RECT))
+  if (source) [[likely]]
   {
-    LoopXWrappedPages(source->key.page, TexturePageCountForMode(source->key.mode), [&uv_rect](u32 pn) {
-      const PageEntry& pe = s_state.pages[pn];
-      ListIterate(pe.writes, [&uv_rect](const VRAMWrite* vrw) {
-        if (const GSVector4i intersection = uv_rect.rintersect(vrw->write_rect); !intersection.rempty())
-          GL_INS_FMT("TC: VRAM write was {:016X} ({})", vrw->hash, intersection);
+#if defined(_DEBUG) || defined(_DEVEL)
+    // GL_INS_FMT("Tex hash: {:016X}", source->texture_hash);
+    // GL_INS_FMT("Palette hash: {:016X}", source->palette_hash);
+    if (!uv_rect.eq(INVALID_RECT))
+    {
+      LoopXWrappedPages(source->key.page, TexturePageCountForMode(source->key.mode), [&uv_rect](u32 pn) {
+        const PageEntry& pe = s_state.pages[pn];
+        ListIterate(pe.writes, [&uv_rect](const VRAMWrite* vrw) {
+          if (const GSVector4i intersection = uv_rect.rintersect(vrw->write_rect); !intersection.rempty())
+            GL_INS_FMT("TC: VRAM write was {:016X} ({})", vrw->hash, intersection);
+        });
       });
-    });
-    if (TextureModeHasPalette(source->key.mode))
-      GL_INS_FMT("TC: Palette was {:016X}", source->palette_hash);
-  }
+      if (TextureModeHasPalette(source->key.mode))
+        GL_INS_FMT("TC: Palette was {:016X}", source->palette_hash);
+    }
 #endif
 
-  DebugAssert(source->from_hash_cache);
-  source->from_hash_cache->last_used_frame = System::GetFrameNumber();
+    DebugAssert(source->from_hash_cache);
+    source->from_hash_cache->last_used_frame = System::GetFrameNumber();
 
-  // TODO: Cache var.
-  if (g_gpu_settings.texture_replacements.dump_textures)
-  {
-    source->active_uv_rect = source->active_uv_rect.runion(uv_rect);
-    source->palette_record_flags |= flags;
+    // TODO: Cache var.
+    if (g_gpu_settings.texture_replacements.dump_textures)
+    {
+      source->active_uv_rect = source->active_uv_rect.runion(uv_rect);
+      source->palette_record_flags |= flags;
+    }
   }
 
   return source;
@@ -2274,14 +2301,10 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
   entry.ref_count = 0;
   entry.last_used_frame = 0;
   entry.sources = {};
-  entry.texture =
-    g_gpu_device->FetchTexture(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
+  entry.texture = FetchTexture(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
                                s_state.hash_cache_texture_format, GPUTexture::Flags::None);
   if (!entry.texture)
-  {
-    ERROR_LOG("Failed to create texture.");
     return nullptr;
-  }
 
   DecodeTexture(key.page, key.palette, key.mode, entry.texture.get());
 
@@ -3738,8 +3761,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   }
 
   // Grab the actual texture beforehand, in case we OOM.
-  std::unique_ptr<GPUTexture> replacement_tex = g_gpu_device->FetchTexture(
-    new_width, new_height, 1, 1, 1, GPUTexture::Type::Texture, REPLACEMENT_TEXTURE_FORMAT, GPUTexture::Flags::None);
+  std::unique_ptr<GPUTexture> replacement_tex = FetchTexture(new_width, new_height, 1, 1, 1, GPUTexture::Type::Texture,
+                                                             REPLACEMENT_TEXTURE_FORMAT, GPUTexture::Flags::None);
   if (!replacement_tex)
   {
     ERROR_LOG("Failed to create {}x{} texture.", new_width, new_height);
