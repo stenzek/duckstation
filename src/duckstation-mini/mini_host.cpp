@@ -1050,7 +1050,7 @@ void MiniHost::CPUThreadMainLoop()
 
 void MiniHost::GPUThreadEntryPoint()
 {
-  Threading::SetNameOfCurrentThread("CPU Thread");
+  Threading::SetNameOfCurrentThread("GPU Thread");
   GPUThread::Internal::GPUThreadEntryPoint();
 }
 

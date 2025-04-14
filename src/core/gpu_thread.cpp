@@ -494,7 +494,7 @@ void GPUThread::Internal::DoRunIdle()
   if (!PresentFrameAndRestoreContext())
     return;
 
-  if (!g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
+  if (g_gpu_device->HasMainSwapChain() && !g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
     g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
 }
 
@@ -548,7 +548,7 @@ void GPUThread::StopFullscreenUI()
   // Don't need to reconfigure if we already have a system.
   if (System::IsValid())
   {
-    RunOnThread([]() { s_state.requested_fullscreen_ui = true; });
+    RunOnThread([]() { s_state.requested_fullscreen_ui = false; });
     return;
   }
 
