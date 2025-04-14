@@ -533,7 +533,7 @@ MemoryCard* Pad::GetMemoryCard(u32 slot)
 void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
 {
   INFO_LOG("Memory card slot {}: {}", slot,
-           dev ? (dev->GetFilename().empty() ? "<no file configured>" : dev->GetFilename().c_str()) : "<unplugged>");
+           dev ? (dev->GetPath().empty() ? "<no file configured>" : dev->GetPath().c_str()) : "<unplugged>");
 
   s_state.memory_cards[slot] = std::move(dev);
 }

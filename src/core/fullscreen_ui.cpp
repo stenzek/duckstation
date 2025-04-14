@@ -1489,7 +1489,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
 
   SystemBootParameters params;
-  params.filename = std::move(path);
+  params.path = std::move(path);
   params.save_state = std::move(state);
   params.override_fast_boot = std::move(fast_boot);
   Host::RunOnCPUThread([params = std::move(params)]() mutable {
@@ -7067,7 +7067,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
                                                           bool global)
 {
   const std::string path =
-    (global ? System::GetGlobalSaveStateFileName(slot) : System::GetGameSaveStateFileName(serial, slot));
+    (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(serial, slot));
   if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
   {
     InitializePlaceholderSaveStateListEntry(li, slot, global);
@@ -7233,8 +7233,8 @@ void FullscreenUI::DrawSaveStateSelector()
       if (!System::IsValid())
         return;
 
-      std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                                System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
+      std::string path(global ? System::GetGlobalSaveStatePath(slot) :
+                                System::GetGameSaveStatePath(System::GetGameSerial(), slot));
       Error error;
       if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
       {
@@ -8262,7 +8262,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
             DoSetCoverImage(std::move(entry_path));
             break;
           case 3: // Resume Game
-            DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
+            DoStartPath(entry_path, System::GetGameSaveStatePath(entry_serial, -1));
             break;
           case 4: // Load State
             BeginTransition([entry_serial = std::move(entry_serial), entry_path = std::move(entry_path)]() {

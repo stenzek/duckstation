@@ -27,8 +27,7 @@ public:
 
   const MemoryCardImage::DataArray& GetData() const { return m_data; }
   MemoryCardImage::DataArray& GetData() { return m_data; }
-  const std::string& GetFilename() const { return m_path; }
-  void SetFilename(std::string filename) { m_path = std::move(filename); }
+  const std::string& GetPath() const { return m_path; }
 
   void Reset();
   bool DoState(StateWrapper& sw);

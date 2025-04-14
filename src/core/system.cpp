@@ -109,7 +109,7 @@ SystemBootParameters::SystemBootParameters(const SystemBootParameters&) = defaul
 
 SystemBootParameters::SystemBootParameters(SystemBootParameters&& other) = default;
 
-SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std::move(filename_))
+SystemBootParameters::SystemBootParameters(std::string path_) : path(std::move(path_))
 {
 }
 
@@ -939,9 +939,9 @@ GameHash System::GetGameHashFromFile(const char* path)
   return GetGameHashFromBuffer(FileSystem::GetDisplayNameFromPath(path), data->cspan());
 }
 
-GameHash System::GetGameHashFromBuffer(const std::string_view filename, const std::span<const u8> data)
+GameHash System::GetGameHashFromBuffer(const std::string_view path, const std::span<const u8> data)
 {
-  return GetGameHashFromBuffer(filename, data, IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
+  return GetGameHashFromBuffer(path, data, IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
 }
 
 std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories)
@@ -1630,7 +1630,7 @@ bool System::SaveResumeState(Error* error)
     return false;
   }
 
-  std::string path(GetGameSaveStateFileName(s_state.running_game_serial, -1));
+  std::string path(GetGameSaveStatePath(s_state.running_game_serial, -1));
   return SaveState(std::move(path), error, false, true);
 }
 
@@ -1641,13 +1641,13 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     // loading a state, so pull the media path from the save state to avoid a double change
     std::string state_media(GetMediaPathFromSaveState(parameters.save_state.c_str()));
     if (FileSystem::FileExists(state_media.c_str()))
-      parameters.filename = std::move(state_media);
+      parameters.path = std::move(state_media);
   }
 
-  if (parameters.filename.empty())
-    INFO_LOG("Boot Filename: <BIOS/Shell>");
+  if (parameters.path.empty())
+    INFO_LOG("Boot Path: <BIOS/Shell>");
   else
-    INFO_LOG("Boot Filename: {}", parameters.filename);
+    INFO_LOG("Boot Path: {}", parameters.path);
 
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
@@ -1656,21 +1656,21 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   BootMode boot_mode = BootMode::FullBoot;
   std::string exe_override;
   std::unique_ptr<GPUDump::Player> gpu_dump;
-  if (!parameters.filename.empty())
+  if (!parameters.path.empty())
   {
-    if (IsExePath(parameters.filename))
+    if (IsExePath(parameters.path))
     {
       boot_mode = BootMode::BootEXE;
-      exe_override = parameters.filename;
+      exe_override = parameters.path;
     }
-    else if (IsPsfPath(parameters.filename))
+    else if (IsPsfPath(parameters.path))
     {
       boot_mode = BootMode::BootPSF;
-      exe_override = parameters.filename;
+      exe_override = parameters.path;
     }
-    else if (IsGPUDumpPath(parameters.filename))
+    else if (IsGPUDumpPath(parameters.path))
     {
-      gpu_dump = GPUDump::Player::Open(parameters.filename, error);
+      gpu_dump = GPUDump::Player::Open(parameters.path, error);
       if (!gpu_dump)
         return false;
 
@@ -1679,25 +1679,25 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
     if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
-      const DiscRegion file_region = ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
-                                                                         GetRegionForPsf(parameters.filename.c_str()));
+      const DiscRegion file_region = ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.path.c_str()) :
+                                                                         GetRegionForPsf(parameters.path.c_str()));
       INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
       auto_console_region = GetConsoleRegionForDiscRegion(file_region);
     }
     else if (boot_mode != BootMode::ReplayGPUDump)
     {
-      INFO_LOG("Loading CD image '{}'...", Path::GetFileName(parameters.filename));
-      disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, error);
+      INFO_LOG("Loading CD image '{}'...", Path::GetFileName(parameters.path));
+      disc = CDImage::Open(parameters.path.c_str(), g_settings.cdrom_load_image_patches, error);
       if (!disc)
       {
-        Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.filename));
+        Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.path));
         return false;
       }
 
-      disc_region = GameList::GetCustomRegionForPath(parameters.filename).value_or(GetRegionForImage(disc.get()));
+      disc_region = GameList::GetCustomRegionForPath(parameters.path).value_or(GetRegionForImage(disc.get()));
       auto_console_region = GetConsoleRegionForDiscRegion(disc_region);
       INFO_LOG("Auto-detected console {} region for '{}' (region {})",
-               Settings::GetConsoleRegionName(auto_console_region), parameters.filename,
+               Settings::GetConsoleRegionName(auto_console_region), parameters.path,
                Settings::GetDiscRegionName(disc_region));
     }
   }
@@ -1706,7 +1706,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
   {
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
-                        Path::GetFileName(parameters.filename));
+                        Path::GetFileName(parameters.path));
     return false;
   }
 
@@ -1721,7 +1721,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   FullscreenUI::OnSystemStarting();
 
   // Update running game, this will apply settings as well.
-  UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
+  UpdateRunningGame(disc ? disc->GetPath() : parameters.path, disc.get(), true);
   Achievements::OnSystemStarting(disc.get(), parameters.disable_achievements_hardcore_mode);
 
   // Determine console region. Has to be done here, because gamesettings can override it.
@@ -3881,8 +3881,8 @@ void System::UpdateMemoryCardTypes()
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
     {
-      if (const std::string& filename = card->GetFilename(); !filename.empty())
-        INFO_LOG("Memory Card Slot {}: {}", i + 1, filename);
+      if (const std::string& path = card->GetPath(); !path.empty())
+        INFO_LOG("Memory Card Slot {}: {}", i + 1, path);
 
       Pad::SetMemoryCard(i, std::move(card));
     }
@@ -3902,8 +3902,8 @@ void System::UpdatePerGameMemoryCards()
     std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
     if (card)
     {
-      if (const std::string& filename = card->GetFilename(); !filename.empty())
-        INFO_LOG("Memory Card Slot {}: {}", i + 1, filename);
+      if (const std::string& path = card->GetPath(); !path.empty())
+        INFO_LOG("Memory Card Slot {}: {}", i + 1, path);
 
       Pad::SetMemoryCard(i, std::move(card));
     }
@@ -4006,28 +4006,28 @@ void System::UpdateMultitaps()
   }
 }
 
-bool System::DumpRAM(const char* filename)
+bool System::DumpRAM(const char* path)
 {
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, Bus::g_unprotected_ram, Bus::g_ram_size);
+  return FileSystem::WriteBinaryFile(path, Bus::g_unprotected_ram, Bus::g_ram_size);
 }
 
-bool System::DumpVRAM(const char* filename)
+bool System::DumpVRAM(const char* path)
 {
   if (!IsValid())
     return false;
 
-  return g_gpu.DumpVRAMToFile(filename);
+  return g_gpu.DumpVRAMToFile(path);
 }
 
-bool System::DumpSPURAM(const char* filename)
+bool System::DumpSPURAM(const char* path)
 {
   if (!IsValid())
     return false;
 
-  return FileSystem::WriteBinaryFile(filename, SPU::GetRAM().data(), SPU::RAM_SIZE);
+  return FileSystem::WriteBinaryFile(path, SPU::GetRAM().data(), SPU::RAM_SIZE);
 }
 
 bool System::HasMedia()
@@ -4035,7 +4035,7 @@ bool System::HasMedia()
   return CDROM::HasMedia();
 }
 
-std::string System::GetMediaFileName()
+std::string System::GetMediaPath()
 {
   if (!CDROM::HasMedia())
     return {};
@@ -5484,7 +5484,7 @@ void System::StopMediaCapture(std::unique_ptr<MediaCapture> cap)
   }
 }
 
-std::string System::GetGameSaveStateFileName(std::string_view serial, s32 slot)
+std::string System::GetGameSaveStatePath(std::string_view serial, s32 slot)
 {
   if (slot < 0)
     return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_resume.sav", serial));
@@ -5492,7 +5492,7 @@ std::string System::GetGameSaveStateFileName(std::string_view serial, s32 slot)
     return Path::Combine(EmuFolders::SaveStates, fmt::format("{}_{}.sav", serial, slot));
 }
 
-std::string System::GetGlobalSaveStateFileName(s32 slot)
+std::string System::GetGlobalSaveStatePath(s32 slot)
 {
   if (slot < 0)
     return Path::Combine(EmuFolders::SaveStates, "resume.sav");
@@ -5517,13 +5517,13 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(std::string_view seria
 
   if (!serial.empty())
   {
-    add_path(GetGameSaveStateFileName(serial, -1), -1, false);
+    add_path(GetGameSaveStatePath(serial, -1), -1, false);
     for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
-      add_path(GetGameSaveStateFileName(serial, i), i, false);
+      add_path(GetGameSaveStatePath(serial, i), i, false);
   }
 
   for (s32 i = 1; i <= GLOBAL_SAVE_STATE_SLOTS; i++)
-    add_path(GetGlobalSaveStateFileName(i), i, true);
+    add_path(GetGlobalSaveStatePath(i), i, true);
 
   return si;
 }
@@ -5531,7 +5531,7 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(std::string_view seria
 std::optional<SaveStateInfo> System::GetSaveStateInfo(std::string_view serial, s32 slot)
 {
   const bool global = serial.empty();
-  std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(serial, slot);
+  std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(serial, slot);
 
   FlushSaveStates();
 
@@ -5703,17 +5703,6 @@ std::string System::GetMostRecentResumeSaveStatePath()
   }
 
   return std::move(most_recent->FileName);
-}
-
-std::string System::GetCheatFileName()
-{
-  std::string ret;
-
-  const std::string& title = System::GetGameTitle();
-  if (!title.empty())
-    ret = Path::Combine(EmuFolders::Cheats, fmt::format("{}.cht", title.c_str()));
-
-  return ret;
 }
 
 void System::ToggleWidescreen()

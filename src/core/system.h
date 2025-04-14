@@ -40,10 +40,10 @@ struct SystemBootParameters
   SystemBootParameters();
   SystemBootParameters(const SystemBootParameters&);
   SystemBootParameters(SystemBootParameters&&);
-  SystemBootParameters(std::string filename_);
+  SystemBootParameters(std::string path_);
   ~SystemBootParameters();
 
-  std::string filename;
+  std::string path;
   std::string save_state;
   std::string override_exe;
   std::optional<bool> override_fast_boot;
@@ -147,7 +147,7 @@ bool GetGameDetailsFromImage(CDImage* cdi, std::string* out_id = nullptr, GameHa
                              std::string* out_executable_name = nullptr,
                              std::vector<u8>* out_executable_data = nullptr);
 GameHash GetGameHashFromFile(const char* path);
-GameHash GetGameHashFromBuffer(const std::string_view filename, const std::span<const u8> data);
+GameHash GetGameHashFromBuffer(const std::string_view path, const std::span<const u8> data);
 DiscRegion GetRegionForSerial(const std::string_view serial);
 DiscRegion GetRegionFromSystemArea(CDImage* cdi);
 DiscRegion GetRegionForImage(CDImage* cdi);
@@ -298,16 +298,16 @@ bool IsSavingMemoryCards();
 void SwapMemoryCards();
 
 /// Dumps RAM to a file.
-bool DumpRAM(const char* filename);
+bool DumpRAM(const char* path);
 
 /// Dumps video RAM to a file.
-bool DumpVRAM(const char* filename);
+bool DumpVRAM(const char* path);
 
 /// Dumps sound RAM to a file.
-bool DumpSPURAM(const char* filename);
+bool DumpSPURAM(const char* path);
 
 bool HasMedia();
-std::string GetMediaFileName();
+std::string GetMediaPath();
 bool InsertMedia(const char* path);
 void RemoveMedia();
 
@@ -347,16 +347,13 @@ void SetRewindState(bool enabled);
 void DoFrameStep();
 
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
-std::string GetGameSaveStateFileName(std::string_view serial, s32 slot);
+std::string GetGameSaveStatePath(std::string_view serial, s32 slot);
 
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
-std::string GetGlobalSaveStateFileName(s32 slot);
+std::string GetGlobalSaveStatePath(s32 slot);
 
 /// Returns the most recent resume save state.
 std::string GetMostRecentResumeSaveStatePath();
-
-/// Returns the path to the cheat file for the specified game title.
-std::string GetCheatFileName();
 
 /// Powers off the system, optionally saving the resume state.
 void ShutdownSystem(bool save_resume_state);

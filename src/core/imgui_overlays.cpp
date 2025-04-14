@@ -925,7 +925,7 @@ void SaveStateSelectorUI::RefreshList()
   {
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
-      std::string path(System::GetGameSaveStateFileName(serial, i));
+      std::string path(System::GetGameSaveStatePath(serial, i));
       std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
 
       ListEntry li;
@@ -949,7 +949,7 @@ void SaveStateSelectorUI::RefreshList()
 
   for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
   {
-    std::string path(System::GetGlobalSaveStateFileName(i));
+    std::string path(System::GetGlobalSaveStatePath(i));
     std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(path.c_str());
 
     ListEntry li;
@@ -1278,11 +1278,11 @@ std::string SaveStateSelectorUI::GetCurrentSlotPath()
   if (!s_state.current_slot_global)
   {
     if (const std::string& serial = GPUThread::GetGameSerial(); !serial.empty())
-      filename = System::GetGameSaveStateFileName(serial, s_state.current_slot + 1);
+      filename = System::GetGameSaveStatePath(serial, s_state.current_slot + 1);
   }
   else
   {
-    filename = System::GetGlobalSaveStateFileName(s_state.current_slot + 1);
+    filename = System::GetGlobalSaveStatePath(s_state.current_slot + 1);
   }
 
   return filename;

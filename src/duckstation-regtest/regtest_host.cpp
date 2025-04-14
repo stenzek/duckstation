@@ -912,9 +912,9 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
 #undef CHECK_ARG_PARAM
     }
 
-    if (autoboot && !autoboot->filename.empty())
-      autoboot->filename += ' ';
-    AutoBoot(autoboot)->filename += argv[i];
+    if (autoboot && !autoboot->path.empty())
+      autoboot->path += ' ';
+    AutoBoot(autoboot)->path += argv[i];
   }
 
   return true;
@@ -971,13 +971,13 @@ int main(int argc, char* argv[])
   if (!RegTestHost::ParseCommandLineParameters(argc, argv, autoboot))
     return EXIT_FAILURE;
 
-  if (!autoboot || autoboot->filename.empty())
+  if (!autoboot || autoboot->path.empty())
   {
     ERROR_LOG("No boot path specified.");
     return EXIT_FAILURE;
   }
 
-  if (!RegTestHost::SetNewDataRoot(autoboot->filename))
+  if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
   // Only one async worker.
@@ -992,7 +992,7 @@ int main(int argc, char* argv[])
 
   Error error;
   int result = -1;
-  INFO_LOG("Trying to boot '{}'...", autoboot->filename);
+  INFO_LOG("Trying to boot '{}'...", autoboot->path);
   if (!System::BootSystem(std::move(autoboot.value()), &error))
   {
     ERROR_LOG("Failed to boot system: {}", error.GetDescription());

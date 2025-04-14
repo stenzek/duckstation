@@ -1154,7 +1154,7 @@ void MainWindow::startFileOrChangeDisc(const QString& path)
   std::optional<std::string> save_path;
   if (!serial.empty())
   {
-    std::string resume_path(System::GetGameSaveStateFileName(serial.c_str(), -1));
+    std::string resume_path(System::GetGameSaveStatePath(serial.c_str(), -1));
     std::optional<bool> resume = promptForResumeState(resume_path);
     if (!resume.has_value())
     {
@@ -1421,7 +1421,7 @@ void MainWindow::onGameListEntryActivated()
   std::optional<std::string> save_path;
   if (!entry->serial.empty())
   {
-    std::string resume_path(System::GetGameSaveStateFileName(entry->serial.c_str(), -1));
+    std::string resume_path(System::GetGameSaveStatePath(entry->serial.c_str(), -1));
     std::optional<bool> resume = promptForResumeState(resume_path);
     if (!resume.has_value())
     {

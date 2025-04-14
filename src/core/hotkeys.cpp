@@ -78,8 +78,8 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
     return;
   }
 
-  std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                            System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
+  std::string path(global ? System::GetGlobalSaveStatePath(slot) :
+                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
   if (!FileSystem::FileExists(path.c_str()))
   {
     Host::AddKeyedOSDMessage("LoadState",
@@ -110,8 +110,8 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
     return;
   }
 
-  std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                            System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
+  std::string path(global ? System::GetGlobalSaveStatePath(slot) :
+                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
   Error error;
   if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
   {

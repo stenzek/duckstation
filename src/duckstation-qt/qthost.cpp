@@ -1481,8 +1481,8 @@ void EmuThread::loadState(bool global, qint32 slot)
   if (!global && System::GetGameSerial().empty())
     return;
 
-  bootOrLoadState(global ? System::GetGlobalSaveStateFileName(slot) :
-                           System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
+  bootOrLoadState(global ? System::GetGlobalSaveStatePath(slot) :
+                           System::GetGameSaveStatePath(System::GetGameSerial(), slot));
 }
 
 void EmuThread::saveState(const QString& filename, bool block_until_done /* = false */)
@@ -1515,10 +1515,10 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
     return;
 
   Error error;
-  if (!System::SaveState((global ? System::GetGlobalSaveStateFileName(slot) :
-                                   System::GetGameSaveStateFileName(System::GetGameSerial(), slot))
-                           .c_str(),
-                         &error, g_settings.create_save_state_backups, false))
+  if (!System::SaveState(
+        (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(System::GetGameSerial(), slot))
+          .c_str(),
+        &error, g_settings.create_save_state_backups, false))
   {
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
   }
@@ -2866,9 +2866,9 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 #undef CHECK_ARG_PARAM
     }
 
-    if (autoboot && !autoboot->filename.empty())
-      autoboot->filename += ' ';
-    AutoBoot(autoboot)->filename += args[i].toStdString();
+    if (autoboot && !autoboot->path.empty())
+      autoboot->path += ' ';
+    AutoBoot(autoboot)->path += args[i].toStdString();
   }
 
   // To do anything useful, we need the config initialized.
@@ -2881,11 +2881,11 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
   // Check the file we're starting actually exists.
 
-  if (autoboot && !autoboot->filename.empty() && !FileSystem::FileExists(autoboot->filename.c_str()))
+  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
   {
     QMessageBox::critical(
       nullptr, qApp->translate("QtHost", "Error"),
-      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->filename)));
+      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->path)));
     return false;
   }
 
@@ -2893,19 +2893,19 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   {
     AutoBoot(autoboot);
 
-    if (autoboot->filename.empty())
+    if (autoboot->path.empty())
     {
       // loading global state, -1 means resume the last game
       if (state_index.value() < 0)
         autoboot->save_state = System::GetMostRecentResumeSaveStatePath();
       else
-        autoboot->save_state = System::GetGlobalSaveStateFileName(state_index.value());
+        autoboot->save_state = System::GetGlobalSaveStatePath(state_index.value());
     }
     else
     {
       // loading game state
-      const std::string game_serial(GameDatabase::GetSerialForPath(autoboot->filename.c_str()));
-      autoboot->save_state = System::GetGameSaveStateFileName(game_serial, state_index.value());
+      const std::string game_serial = GameDatabase::GetSerialForPath(autoboot->path.c_str());
+      autoboot->save_state = System::GetGameSaveStatePath(game_serial, state_index.value());
     }
 
     if (autoboot->save_state.empty() || !FileSystem::FileExists(autoboot->save_state.c_str()))
@@ -2918,7 +2918,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
   // check autoboot parameters, if we set something like fullscreen without a bios
   // or disc, we don't want to actually start.
-  if (autoboot && autoboot->filename.empty() && autoboot->save_state.empty() && !starting_bios)
+  if (autoboot && autoboot->path.empty() && autoboot->save_state.empty() && !starting_bios)
     autoboot.reset();
 
   // if we don't have autoboot, we definitely don't want batch mode (because that'll skip
