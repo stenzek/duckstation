@@ -3008,7 +3008,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
     if (badge)
     {
-      ImGui::GetWindowDrawList()->AddImage(badge, bb.Min, bb.Min + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+      const ImRect image_bb = ImGuiFullscreen::CenterImage(ImRect(bb.Min, bb.Min + image_size), badge);
+      ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                                            IM_COL32(255, 255, 255, 255));
     }
   }
@@ -3564,8 +3565,9 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   }
   if (icon_tex)
   {
-    ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(icon_tex), icon_bb.Min,
-                                         icon_bb.Min + ImVec2(icon_size, icon_size));
+    const ImRect fit_icon_bb =
+      ImGuiFullscreen::CenterImage(ImRect(icon_bb.Min, icon_bb.Min + ImVec2(icon_size, icon_size)), icon_tex);
+    ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(icon_tex), fit_icon_bb.Min, fit_icon_bb.Max);
   }
 
   const ImRect user_bb(ImVec2(text_start_x + column_spacing + icon_size, bb.Min.y), ImVec2(bb.Max.x, midpoint));
