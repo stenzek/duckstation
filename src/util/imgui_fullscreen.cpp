@@ -1246,7 +1246,8 @@ void ImGuiFullscreen::PrerenderMenuButtonBorder()
 void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 0.0f */,
                                        float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */,
                                        float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */,
-                                       float item_height /* = LAYOUT_MENU_BUTTON_HEIGHT */)
+                                       float item_height /* = LAYOUT_MENU_BUTTON_HEIGHT */,
+                                       float item_spacing /* = LAYOUT_MENU_BUTTON_SPACING */)
 {
   s_state.menu_button_index = 0;
 
@@ -1279,11 +1280,12 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /*
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, LayoutScale(LAYOUT_MENU_BUTTON_SPACING)));
 
   if (y_align != 0.0f)
   {
-    const float real_item_height = LayoutScale(item_height) + (LayoutScale(y_padding) * 2.0f);
+    const float real_item_height =
+      LayoutScale(item_height) + (LayoutScale(y_padding) * 2.0f) + LayoutScale(item_spacing);
     const float total_size = (static_cast<float>(num_items) * real_item_height) + (LayoutScale(y_padding) * 2.0f);
     const float window_height = ImGui::GetWindowHeight();
     if (window_height > total_size)
@@ -1919,7 +1921,7 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
 
   if (IsFixedPopupDialogOpen(title) &&
       BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                            LayoutScale(500.0f, 194.0f)))
+                            LayoutScale(500.0f, 200.0f)))
   {
     BeginMenuButtons();
 
@@ -1985,7 +1987,7 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
 
   if (IsFixedPopupDialogOpen(title) &&
       BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                            LayoutScale(500.0f, 194.0f)))
+                            LayoutScale(500.0f, 200.0f)))
   {
     BeginMenuButtons();
 
@@ -2812,7 +2814,8 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
   const float title_height =
     UIStyle.LargeFont->FontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + (LayoutScale(10.0f) * 2.0f);
   const float item_height =
-    (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f);
+    (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) +
+     LayoutScale(LAYOUT_MENU_BUTTON_SPACING));
   const float height = title_height + (item_height * static_cast<float>(std::min<size_t>(9, m_options.size())));
 
   if (!BeginRender(LayoutScale(10.0f), LayoutScale(20.0f), ImVec2(width, height)))
@@ -2858,7 +2861,7 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
 
       ImVec2 pos, size;
       GetMenuButtonFrameBounds(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &pos, &size);
-      pos.y += size.y * static_cast<float>(i);
+      pos.y += (size.y + ImGui::GetStyle().ItemSpacing.y) * static_cast<float>(i);
       ImGui::RenderFrame(pos, pos + size, ImGui::GetColorU32(UIStyle.PrimaryColor), false,
                          LayoutScale(MENU_ITEM_BORDER_ROUNDING));
       if (!found_selected)
@@ -3918,7 +3921,7 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     // dark
     UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x212121, 0xff);
     UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xaaaaaa, 0xff);
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xc0);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);

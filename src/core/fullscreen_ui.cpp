@@ -2934,7 +2934,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 194.0f)))
+                             LayoutScale(500.0f, 200.0f)))
   {
     return;
   }
@@ -2985,7 +2985,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 194.0f)))
+                             LayoutScale(500.0f, 200.0f)))
   {
     return;
   }
@@ -3045,7 +3045,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 194.0f)))
+                             LayoutScale(500.0f, 200.0f)))
   {
     return;
   }
@@ -3288,7 +3288,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 194.0f)))
+                             LayoutScale(500.0f, 200.0f)))
   {
     return;
   }
@@ -5091,7 +5091,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
       if (IsFixedPopupDialogOpen(freq_label) &&
           BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                LayoutScale(500.0f, 194.0f)))
+                                LayoutScale(500.0f, 200.0f)))
       {
         BeginMenuButtons();
 
@@ -5937,7 +5937,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
           if (IsFixedPopupDialogOpen(tstr) &&
               BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                    LayoutScale(500.0f, 194.0f)))
+                                    LayoutScale(500.0f, 200.0f)))
           {
             BeginMenuButtons();
 
@@ -6008,7 +6008,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
           if (IsFixedPopupDialogOpen(tstr) &&
               BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                    LayoutScale(500.0f, 194.0f)))
+                                    LayoutScale(500.0f, 200.0f)))
           {
             BeginMenuButtons();
 
@@ -6668,7 +6668,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
       if (IsFixedPopupDialogOpen(title) &&
           BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                LayoutScale(500.0f, 194.0f)))
+                                LayoutScale(500.0f, 200.0f)))
       {
         BeginMenuButtons();
 
@@ -7543,7 +7543,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), LayoutScale(820.0f, 625.0f)))
+  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), LayoutScale(820.0f, 640.0f)))
   {
     ClearSaveStateEntryList();
     return;
@@ -8665,7 +8665,7 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 void FullscreenUI::DrawAboutWindow()
 {
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(1020.0f, 590.0f)))
+                             LayoutScale(1020.0f, 600.0f)))
   {
     return;
   }

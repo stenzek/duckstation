@@ -40,6 +40,7 @@ static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
 static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
+static constexpr float LAYOUT_MENU_BUTTON_SPACING = 4.0f;
 static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
@@ -266,7 +267,8 @@ void DrawFullscreenFooter();
 
 void PrerenderMenuButtonBorder();
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
-                      float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT);
+                      float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT,
+                      float item_spacing = LAYOUT_MENU_BUTTON_SPACING);
 void EndMenuButtons();
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 bool MenuButtonFrame(std::string_view str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
