@@ -88,6 +88,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
 
   bool Animations;
   bool SmoothScrolling;
+  bool MenuBorders;
 };
 
 extern UIStyles UIStyle;
@@ -177,6 +178,7 @@ bool Initialize(const char* placeholder_image_path);
 void SetTheme(std::string_view theme);
 void SetAnimations(bool enabled);
 void SetSmoothScrolling(bool enabled);
+void SetMenuBorders(bool enabled);
 void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();
 

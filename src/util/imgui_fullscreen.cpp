@@ -328,6 +328,11 @@ void ImGuiFullscreen::SetSmoothScrolling(bool enabled)
   UIStyle.SmoothScrolling = enabled;
 }
 
+void ImGuiFullscreen::SetMenuBorders(bool enabled)
+{
+  UIStyle.MenuBorders = enabled;
+}
+
 const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
 {
   return s_state.placeholder_texture;
@@ -1279,7 +1284,7 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /*
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, LayoutScale(LAYOUT_MENU_BUTTON_SPACING)));
 
   if (y_align != 0.0f)
@@ -2303,7 +2308,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(item_padding, item_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
   if (!BeginFullscreenWindow(position, size, name, bg_color, 0.0f, ImVec2()))

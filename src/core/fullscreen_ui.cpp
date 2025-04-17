@@ -738,6 +738,7 @@ bool FullscreenUI::Initialize()
 
   ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
+  ImGuiFullscreen::SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", true));
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
@@ -4232,6 +4233,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                         "FullscreenUISmoothScrolling", true))
   {
     ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", true));
+  }
+
+  if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
+                        FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
+                        "FullscreenUIMenuBorders", true))
+  {
+    ImGuiFullscreen::SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", true));
   }
 
   MenuHeading(FSUI_VSTR("Behavior"));
@@ -9271,6 +9279,7 @@ TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL templ
 TRANSLATE_NOOP("FullscreenUI", "Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Downsampling");
 TRANSLATE_NOOP("FullscreenUI", "Downsampling Display Scale");
+TRANSLATE_NOOP("FullscreenUI", "Draws a border around the currently-selected item for readability.");
 TRANSLATE_NOOP("FullscreenUI", "Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
 TRANSLATE_NOOP("FullscreenUI", "DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.");
 TRANSLATE_NOOP("FullscreenUI", "Dump Replaced Textures");
@@ -9449,6 +9458,7 @@ TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card {} Type");
 TRANSLATE_NOOP("FullscreenUI", "Menu Background");
+TRANSLATE_NOOP("FullscreenUI", "Menu Borders");
 TRANSLATE_NOOP("FullscreenUI", "Merge Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Merges multi-disc games into one item in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
