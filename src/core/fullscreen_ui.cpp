@@ -6371,7 +6371,28 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     return;
   }
 
+  const std::string_view ra_title = "RetroAchivements";
+  const ImVec2 ra_title_size =
+    UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(ra_title));
+  const float ra_title_spacing = LayoutScale(10.0f);
+  GPUTexture* ra_logo = GetCachedTexture("images/ra-icon.webp");
+  const ImVec2 ra_logo_size = ImVec2(UIStyle.LargeFont->FontSize * 1.85f, UIStyle.LargeFont->FontSize);
+  const ImVec2 ra_logo_imgsize = CenterImage(ra_logo_size, ra_logo).GetSize();
+  const ImRect work_rect = ImGui::GetCurrentWindow()->WorkRect;
+  const float indent = (work_rect.GetWidth() - (ra_logo_size.x + ra_title_spacing + ra_title_size.x)) * 0.5f;
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  const ImVec2 ra_logo_pos = work_rect.Min + ImVec2(indent, 0.0f);
+  dl->AddImage(ra_logo, ra_logo_pos, ra_logo_pos + ra_logo_imgsize);
+  dl->AddText(UIStyle.LargeFont, UIStyle.LargeFont->FontSize,
+              ra_logo_pos + ImVec2(ra_logo_size.x + ra_title_spacing, 0.0f), ImGui::GetColorU32(ImGuiCol_Text),
+              IMSTR_START_END(ra_title));
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ra_logo_size.y + LayoutScale(15.0f));
+
   BeginMenuButtons();
+  ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(20.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
   if (!login_error)
   {
@@ -6389,7 +6410,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
   ResetFocusHere();
 
-  const float item_margin = LayoutScale(10.0f);
   const float item_width = LayoutScale(550.0f);
 
   ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
@@ -6399,13 +6419,16 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   ImGui::NextColumn();
 
   ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
-  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   ImGui::SetNextItemWidth(item_width);
   ImGui::InputTextWithHint("##password", FSUI_CSTR("Password"), password, sizeof(password),
                            is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
                                            ImGuiInputTextFlags_Password);
 
-  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+  ImGui::PopStyleVar(2);
+  ImGui::PopStyleColor();
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(15.0f));
 
   const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
@@ -7066,8 +7089,7 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
 bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                           bool global)
 {
-  const std::string path =
-    (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(serial, slot));
+  const std::string path = (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(serial, slot));
   if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
   {
     InitializePlaceholderSaveStateListEntry(li, slot, global);
