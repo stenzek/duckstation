@@ -251,7 +251,7 @@ static void UpdateTransitionState();
 // Backgrounds
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr const char* DEFAULT_BACKGROUND_NAME = "Default";
+static constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
 
 static bool HasBackground();
 static void LoadBackground();
