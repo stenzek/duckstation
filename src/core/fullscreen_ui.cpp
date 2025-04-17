@@ -97,6 +97,7 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
 using ImGuiFullscreen::LAYOUT_SMALL_POPUP_PADDING;
+using ImGuiFullscreen::LAYOUT_WIDGET_FRAME_ROUNDING;
 using ImGuiFullscreen::UIStyle;
 
 using ImGuiFullscreen::AddNotification;
@@ -2940,6 +2941,9 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   BeginMenuButtons();
 
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
   ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
   s32 dlg_value = static_cast<s32>(value.value_or(default_value));
   if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
@@ -2951,6 +2955,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
     SetSettingsChanged(bsi);
   }
+
+  ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
@@ -2986,6 +2992,9 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   BeginMenuButtons();
 
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
   const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
   ImGui::SetNextItemWidth(end);
   float dlg_value = value.value_or(default_value) * multiplier;
@@ -3001,6 +3010,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
     SetSettingsChanged(bsi);
   }
+
+  ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
@@ -3059,11 +3070,16 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
                     ((tmp_value.value() - std::floor(tmp_value.value())) < 0.01f) ? "%.0f" : "%f", tmp_value.value());
     }
 
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
     if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
     {
       dlg_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
       dlg_value_changed = true;
     }
+
+    ImGui::PopStyleVar(2);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   }
@@ -3172,6 +3188,9 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   BeginMenuButtons();
 
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
   const float midpoint = LayoutScale(150.0f);
   const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
   ImGui::TextUnformatted("Left: ");
@@ -3231,6 +3250,8 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
   if (changed)
     SetSettingsChanged(bsi);
 
+  ImGui::PopStyleVar(2);
+
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                ImVec2(0.5f, 0.0f)))
   {
@@ -3285,12 +3306,17 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
 
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
     std::snprintf(str_value, std::size(str_value), "%d", dlg_value);
     if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
     {
       dlg_value = StringUtil::FromChars<s32>(str_value).value_or(dlg_value);
       dlg_value_changed = true;
     }
+
+    ImGui::PopStyleVar(2);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   }
@@ -6391,7 +6417,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   BeginMenuButtons();
   ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(20.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
   if (!login_error)

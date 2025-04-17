@@ -1926,7 +1926,12 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
 
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
     changed = ImGui::SliderInt("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
+
+    ImGui::PopStyleVar(2);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
@@ -1987,7 +1992,12 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
 
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
     changed = ImGui::SliderFloat("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
+
+    ImGui::PopStyleVar(2);
 
     if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
@@ -2285,7 +2295,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
 
   const float item_padding = LayoutScale(LAYOUT_HORIZONTAL_MENU_PADDING);
   const float item_width = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH);
-  const float item_spacing = LayoutScale(30.0f);
+  const float item_spacing = LayoutScale(40.0f);
   const float menu_width = static_cast<float>(num_items) * (item_width + item_spacing) - item_spacing;
   const float menu_height = LayoutScale(LAYOUT_HORIZONTAL_MENU_HEIGHT);
 

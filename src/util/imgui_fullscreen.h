@@ -51,6 +51,7 @@ static constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
 static constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
 static constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
 static constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
+static constexpr float LAYOUT_WIDGET_FRAME_ROUNDING = 20.0f;
 
 struct ALIGN_TO_CACHE_LINE UIStyles
 {
