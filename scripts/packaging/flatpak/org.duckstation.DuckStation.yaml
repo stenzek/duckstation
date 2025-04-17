@@ -3,7 +3,7 @@
 
 app-id: "org.duckstation.DuckStation"
 runtime: "org.kde.Platform"
-runtime-version: "6.8"
+runtime-version: "6.9"
 sdk: "org.kde.Sdk"
 sdk-extensions:
   - "org.freedesktop.Sdk.Extension.llvm19"
