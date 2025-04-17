@@ -35,7 +35,7 @@ LOG_CHANNEL(SPU);
 // #define SPU_DUMP_ALL_VOICES 1
 
 // VU meter is only enabled in devel builds due to speed impact.
-#ifdef _DEVEL
+#if defined(_DEBUG) || defined(_DEVEL)
 #define SPU_ENABLE_VU_METER 1
 #endif
 
