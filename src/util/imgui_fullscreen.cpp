@@ -985,7 +985,8 @@ void ImGuiFullscreen::EndFullscreenColumns()
   ImGui::PopStyleVar(3);
 }
 
-bool ImGuiFullscreen::BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background)
+bool ImGuiFullscreen::BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background,
+                                                  const ImVec2& padding)
 {
   start = LayoutScale(start);
   end = LayoutScale(end);
@@ -999,15 +1000,19 @@ bool ImGuiFullscreen::BeginFullscreenColumnWindow(float start, float end, const 
   const ImVec2 size(end - start, ImGui::GetCurrentWindow()->Size.y);
 
   ImGui::PushStyleColor(ImGuiCol_ChildBg, background);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
 
   ImGui::SetCursorPos(pos);
 
-  return ImGui::BeginChild(name, size, false, ImGuiWindowFlags_NavFlattened);
+  return ImGui::BeginChild(name, size,
+                           (padding.x != 0.0f || padding.y != 0.0f) ? ImGuiChildFlags_AlwaysUseWindowPadding : 0,
+                           ImGuiWindowFlags_NavFlattened);
 }
 
 void ImGuiFullscreen::EndFullscreenColumnWindow()
 {
   ImGui::EndChild();
+  ImGui::PopStyleVar();
   ImGui::PopStyleColor();
 }
 

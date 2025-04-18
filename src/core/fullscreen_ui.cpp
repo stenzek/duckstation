@@ -7875,7 +7875,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
   if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries",
-                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha())))
+                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), ImVec2(10.0f, 10.0f)))
   {
     const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
 

@@ -245,7 +245,7 @@ bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, boo
 void EndFullscreenColumns();
 
 bool BeginFullscreenColumnWindow(float start, float end, const char* name,
-                                 const ImVec4& background = UIStyle.BackgroundColor);
+                                 const ImVec4& background = UIStyle.BackgroundColor, const ImVec2& padding = ImVec2());
 void EndFullscreenColumnWindow();
 
 bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
