@@ -1283,9 +1283,9 @@ std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
                         s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
 }
 
-void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
+void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y, bool raw_input)
 {
-  if (index >= MAX_POINTER_DEVICES || s_relative_mouse_mode_active) [[unlikely]]
+  if (index >= MAX_POINTER_DEVICES || (s_relative_mouse_mode_active && !raw_input)) [[unlikely]]
     return;
 
   const float dx = x - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);

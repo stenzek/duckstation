@@ -348,7 +348,7 @@ u32 GetPointerCount();
 std::pair<float, float> GetPointerAbsolutePosition(u32 index);
 
 /// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
-void UpdatePointerAbsolutePosition(u32 index, float x, float y);
+void UpdatePointerAbsolutePosition(u32 index, float x, float y, bool raw_input = false);
 
 /// Resets the accumulated pointer movement. Use when pointer tracking was interrupted.
 void ResetPointerRelativeDelta(u32 index);

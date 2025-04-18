@@ -3,6 +3,9 @@
 
 #include "win32_raw_input_source.h"
 #include "input_manager.h"
+#include "platform_misc.h"
+
+#include "core/gpu_thread.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -313,16 +316,6 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
 
       const RAWMOUSE& rm = event->data.mouse;
 
-      s32 dx = rm.lLastX;
-      s32 dy = rm.lLastY;
-
-      // handle absolute positioned devices
-      if ((rm.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
-      {
-        dx -= std::exchange(dx, state.last_x);
-        dy -= std::exchange(dy, state.last_y);
-      }
-
       unsigned long button_mask =
         (rm.usButtonFlags & (rm.usButtonFlags ^ std::exchange(state.button_state, rm.usButtonFlags))) &
         ALL_BUTTON_MASKS;
@@ -341,10 +334,56 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
         button_mask &= ~(1u << bit_index);
       }
 
-      if (dx != 0)
-        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, static_cast<float>(dx), true);
-      if (dy != 0)
-        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, static_cast<float>(dy), true);
+      // handle absolute positioned devices
+      if ((rm.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE)
+      {
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-rawmouse#remarks
+        RECT rect;
+        if (rm.usFlags & MOUSE_VIRTUAL_DESKTOP)
+        {
+          rect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+          rect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+          rect.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+          rect.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        }
+        else
+        {
+          rect.left = 0;
+          rect.top = 0;
+          rect.right = GetSystemMetrics(SM_CXSCREEN);
+          rect.bottom = GetSystemMetrics(SM_CYSCREEN);
+        }
+
+        int absolute_x = MulDiv(rm.lLastX, rect.right, USHRT_MAX) + rect.left;
+        int absolute_y = MulDiv(rm.lLastY, rect.bottom, USHRT_MAX) + rect.top;
+
+        // This is truely awful. But for something that isn't used much, it's the easiest way to get the render rect...
+        const WindowInfo& render_wi = GPUThread::GetRenderWindowInfo();
+        if (render_wi.type == WindowInfo::Type::Win32 &&
+            GetWindowRect(static_cast<HWND>(render_wi.window_handle), &rect))
+        {
+          absolute_x -= rect.left;
+          absolute_y -= rect.top;
+        }
+
+        InputManager::UpdatePointerAbsolutePosition(pointer_index, static_cast<float>(absolute_x),
+                                                    static_cast<float>(absolute_y), true);
+      }
+      else
+      {
+        // relative is easy
+        if (rm.lLastX != 0)
+        {
+          InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, static_cast<float>(rm.lLastX),
+                                                   true);
+        }
+
+        if (rm.lLastY != 0)
+        {
+          InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, static_cast<float>(rm.lLastY),
+                                                   true);
+        }
+      }
 
       return true;
     }
