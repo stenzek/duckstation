@@ -23,7 +23,7 @@ jobs:
 
     runs-on: ${{ matrix.setup.runner }}
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.8
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.9
       options: --privileged
     timeout-minutes: 60
     steps:
