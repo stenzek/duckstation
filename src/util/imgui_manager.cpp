@@ -1706,7 +1706,7 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
     ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
   state->imgui_context->IO.IniFilename = nullptr;
-  state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+  state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
   state->imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
   SetCommonIOOptions(state->imgui_context->IO);
 
