@@ -54,7 +54,7 @@ enum class GPUBackendCommandType : u8
   DrawPreciseLine,
 };
 
-struct GPUThreadCommand
+struct alignas(16) GPUThreadCommand
 {
   u32 size;
   GPUBackendCommandType type;
@@ -63,7 +63,7 @@ struct GPUThreadCommand
   {
     // Ensure size is a multiple of 8 (minimum data size) so we don't end up with an unaligned command.
     // NOTE: If we ever end up putting vectors in the command packets, this should be raised.
-    constexpr u32 COMMAND_QUEUE_ALLOCATION_ALIGNMENT = 8;
+    constexpr u32 COMMAND_QUEUE_ALLOCATION_ALIGNMENT = alignof(GPUThreadCommand);
     return Common::AlignUpPow2(size, COMMAND_QUEUE_ALLOCATION_ALIGNMENT);
   }
 };
