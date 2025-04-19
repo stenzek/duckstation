@@ -547,6 +547,7 @@ struct Settings : public GPUSettings
   static const char* GetDisplayScreenshotFormatName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
+  static std::optional<DisplayScreenshotFormat> GetDisplayScreenshotFormatFromFileName(const std::string_view filename);
 
   static std::optional<MemoryCardType> ParseMemoryCardTypeName(const char* str);
   static const char* GetMemoryCardTypeName(MemoryCardType type);

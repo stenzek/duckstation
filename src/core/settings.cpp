@@ -2131,6 +2131,21 @@ const char* Settings::GetDisplayScreenshotFormatExtension(DisplayScreenshotForma
   return s_display_screenshot_format_extensions[static_cast<size_t>(format)];
 }
 
+std::optional<DisplayScreenshotFormat> Settings::GetDisplayScreenshotFormatFromFileName(const std::string_view filename)
+{
+  const std::string_view extension = Path::GetExtension(filename);
+  int index = 0;
+  for (const char* name : s_display_screenshot_format_extensions)
+  {
+    if (StringUtil::EqualNoCase(extension, name))
+      return static_cast<DisplayScreenshotFormat>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
 static constexpr const std::array s_memory_card_type_names = {
   "None", "Shared", "PerGame", "PerGameTitle", "PerGameFileTitle", "NonPersistent",
 };
