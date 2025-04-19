@@ -1032,6 +1032,8 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     // acquire for IO.MousePos and system state.
     std::atomic_thread_fence(std::memory_order_acquire);
 
+    ImGuiManager::RenderDebugWindows();
+
     FullscreenUI::Render();
 
     if (backend)
@@ -1046,7 +1048,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     if (backend && !GPUThread::IsSystemPaused())
       ImGuiManager::RenderSoftwareCursors();
 
-    ImGuiManager::RenderDebugWindows();
+    ImGuiManager::CreateDrawLists();
 
     // render offscreen for transitions
     if (FullscreenUI::IsTransitionActive())
@@ -1060,7 +1062,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
           g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
 
         g_gpu_device->SetRenderTarget(rtex);
-        g_gpu_device->RenderImGui(rtex);
+        ImGuiManager::RenderDrawLists(rtex);
       }
     }
   }
@@ -1079,7 +1081,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     if (FullscreenUI::IsTransitionActive())
       FullscreenUI::RenderTransitionBlend(swap_chain);
     else
-      g_gpu_device->RenderImGui(swap_chain);
+      ImGuiManager::RenderDrawLists(swap_chain);
 
     const GPUDevice::Features features = g_gpu_device->GetFeatures();
     const bool scheduled_present = (present_time != 0);

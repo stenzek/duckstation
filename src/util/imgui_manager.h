@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
+#include "util/gpu_texture.h"
 
 #include "common/types.h"
 
@@ -14,6 +16,7 @@ class Error;
 struct WindowInfo;
 
 class GPUSwapChain;
+class GPUTexture;
 
 struct ImGuiContext;
 struct ImFont;
@@ -91,13 +94,20 @@ float GetWindowWidth();
 float GetWindowHeight();
 
 /// Updates internal state when the window is size.
-void WindowResized(float width, float height);
+void WindowResized(GPUTexture::Format format, float width, float height);
 
 /// Updates scaling of the on-screen elements.
 void RequestScaleUpdate();
 
 /// Call at the beginning of the frame to set up ImGui state.
 void NewFrame();
+
+/// Creates the draw list for the frame, akin to ImGui::Render().
+void CreateDrawLists();
+
+/// Renders ImGui screen elements. Call before EndPresent().
+void RenderDrawLists(GPUSwapChain* swap_chain);
+void RenderDrawLists(GPUTexture* texture);
 
 /// Renders any on-screen display elements.
 void RenderOSDMessages();

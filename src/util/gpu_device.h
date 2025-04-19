@@ -870,18 +870,16 @@ public:
   virtual void EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 submit_time = 0) = 0;
   virtual void SubmitPresent(GPUSwapChain* swap_chain) = 0;
 
-  /// Renders ImGui screen elements. Call before EndPresent().
-  void RenderImGui(GPUSwapChain* swap_chain);
-  void RenderImGui(GPUTexture* texture);
-
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
 
-  bool UpdateImGuiFontTexture();
   bool UsesLowerLeftOrigin() const;
   static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                     GPUTexture::Format format, GPUTexture::Flags flags, bool preserve = true);
+                     GPUTexture::Format format, GPUTexture::Flags flags, bool preserve = true, Error* error = nullptr);
+  bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
+                     GPUTexture::Format format, GPUTexture::Flags flags, const void* replace_data,
+                     u32 replace_data_pitch, Error* error = nullptr);
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
@@ -990,9 +988,6 @@ private:
   static bool IsTexturePoolType(GPUTexture::Type type);
 
   static size_t s_total_vram_usage;
-
-  std::unique_ptr<GPUPipeline> m_imgui_pipeline;
-  std::unique_ptr<GPUTexture> m_imgui_font_texture;
 
   SamplerMap m_sampler_map;
 

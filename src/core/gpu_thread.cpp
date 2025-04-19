@@ -1273,7 +1273,7 @@ void GPUThread::DisplayWindowResizedOnThread()
   // our imgui stuff can't cope with 0x0/hidden windows
   const float f_width = static_cast<float>(std::max(swap_chain->GetWidth(), 1u));
   const float f_height = static_cast<float>(std::max(swap_chain->GetHeight(), 1u));
-  ImGuiManager::WindowResized(f_width, f_height);
+  ImGuiManager::WindowResized(swap_chain->GetFormat(), f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
 
   if (s_state.gpu_backend)

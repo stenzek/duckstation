@@ -3329,16 +3329,16 @@ void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_vi
 
   DrawLoadingScreen(image, message, progress_min, progress_max, progress_value, false);
 
-  ImGui::EndFrame();
+  ImGuiManager::CreateDrawLists();
 
   GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
   if (g_gpu_device->BeginPresent(swap_chain) == GPUDevice::PresentResult::OK)
   {
-    g_gpu_device->RenderImGui(swap_chain);
+    ImGuiManager::RenderDrawLists(swap_chain);
     g_gpu_device->EndPresent(swap_chain, false);
   }
 
-  ImGui::NewFrame();
+  ImGuiManager::NewFrame();
 }
 
 void ImGuiFullscreen::OpenOrUpdateLoadingScreen(std::string_view image, std::string_view message,

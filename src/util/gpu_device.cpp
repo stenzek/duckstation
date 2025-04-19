@@ -19,7 +19,6 @@
 #include "common/timer.h"
 
 #include "fmt/format.h"
-#include "imgui.h"
 #include "shaderc/shaderc.h"
 #include "spirv_cross_c.h"
 #include "xxhash.h"
@@ -669,57 +668,6 @@ bool GPUDevice::CreateResources(Error* error)
   }
   GL_OBJECT_NAME(m_nearest_sampler, "Nearest Sampler");
   GL_OBJECT_NAME(m_linear_sampler, "Nearest Sampler");
-
-  const RenderAPI render_api = GetRenderAPI();
-  ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), m_features.dual_source_blend,
-                      m_features.framebuffer_fetch);
-
-  std::unique_ptr<GPUShader> imgui_vs =
-    CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateImGuiVertexShader(), error);
-  std::unique_ptr<GPUShader> imgui_fs =
-    CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateImGuiFragmentShader(), error);
-  if (!imgui_vs || !imgui_fs)
-  {
-    Error::AddPrefix(error, "Failed to compile ImGui shaders: ");
-    return false;
-  }
-  GL_OBJECT_NAME(imgui_vs, "ImGui Vertex Shader");
-  GL_OBJECT_NAME(imgui_fs, "ImGui Fragment Shader");
-
-  static constexpr GPUPipeline::VertexAttribute imgui_attributes[] = {
-    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, pos)),
-    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, uv)),
-    GPUPipeline::VertexAttribute::Make(2, GPUPipeline::VertexAttribute::Semantic::Color, 0,
-                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
-  };
-
-  GPUPipeline::GraphicsConfig plconfig;
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-  plconfig.input_layout.vertex_attributes = imgui_attributes;
-  plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
-  plconfig.primitive = GPUPipeline::Primitive::Triangles;
-  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
-  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
-  plconfig.blend.write_mask = 0x7;
-  plconfig.SetTargetFormats(m_main_swap_chain ? m_main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8);
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
-  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  plconfig.vertex_shader = imgui_vs.get();
-  plconfig.geometry_shader = nullptr;
-  plconfig.fragment_shader = imgui_fs.get();
-
-  m_imgui_pipeline = CreatePipeline(plconfig, error);
-  if (!m_imgui_pipeline)
-  {
-    Error::AddPrefix(error, "Failed to compile ImGui pipeline: ");
-    return false;
-  }
-  GL_OBJECT_NAME(m_imgui_pipeline, "ImGui Pipeline");
-
   return true;
 }
 
@@ -727,141 +675,11 @@ void GPUDevice::DestroyResources()
 {
   m_empty_texture.reset();
 
-  m_imgui_font_texture.reset();
-  m_imgui_pipeline.reset();
-
-  m_imgui_pipeline.reset();
-
   m_linear_sampler = nullptr;
   m_nearest_sampler = nullptr;
   m_sampler_map.clear();
 
   m_shader_cache.Close();
-}
-
-void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
-{
-  GL_SCOPE("RenderImGui");
-
-  ImGui::Render();
-
-  const ImDrawData* draw_data = ImGui::GetDrawData();
-  if (draw_data->CmdListsCount == 0 || !swap_chain)
-    return;
-
-  const s32 post_rotated_height = swap_chain->GetPostRotatedHeight();
-  SetPipeline(m_imgui_pipeline.get());
-  SetViewport(0, 0, swap_chain->GetPostRotatedWidth(), post_rotated_height);
-
-  const bool prerotated = (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity);
-  GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
-    0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
-  if (prerotated)
-    mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
-  PushUniformBuffer(&mproj, sizeof(mproj));
-
-  // Render command lists
-  const bool flip = UsesLowerLeftOrigin();
-  for (int n = 0; n < draw_data->CmdListsCount; n++)
-  {
-    const ImDrawList* cmd_list = draw_data->CmdLists[n];
-    static_assert(sizeof(ImDrawIdx) == sizeof(DrawIndex));
-
-    u32 base_vertex, base_index;
-    UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size, &base_vertex);
-    UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
-
-    for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-    {
-      const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-      if ((pcmd->ElemCount == 0 && !pcmd->UserCallback) || pcmd->ClipRect.z <= pcmd->ClipRect.x ||
-          pcmd->ClipRect.w <= pcmd->ClipRect.y)
-      {
-        continue;
-      }
-
-      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
-
-      if (prerotated)
-        clip = GPUSwapChain::PreRotateClipRect(swap_chain->GetPreRotation(), swap_chain->GetSizeVec(), clip);
-      if (flip)
-        clip = FlipToLowerLeft(clip, post_rotated_height);
-
-      SetScissor(clip);
-      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler);
-
-      if (pcmd->UserCallback) [[unlikely]]
-      {
-        pcmd->UserCallback(cmd_list, pcmd);
-        PushUniformBuffer(&mproj, sizeof(mproj));
-        SetPipeline(m_imgui_pipeline.get());
-      }
-      else
-      {
-        DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
-      }
-    }
-  }
-}
-
-void GPUDevice::RenderImGui(GPUTexture* texture)
-{
-  GL_SCOPE("RenderImGui");
-
-  ImGui::Render();
-
-  const ImDrawData* draw_data = ImGui::GetDrawData();
-  if (draw_data->CmdListsCount == 0)
-    return;
-
-  SetPipeline(m_imgui_pipeline.get());
-  SetViewport(0, 0, texture->GetWidth(), texture->GetHeight());
-
-  const GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
-    0.0f, 0.0f, static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()), 0.0f, 1.0f);
-  PushUniformBuffer(&mproj, sizeof(mproj));
-
-  // Render command lists
-  const bool flip = UsesLowerLeftOrigin();
-  for (int n = 0; n < draw_data->CmdListsCount; n++)
-  {
-    const ImDrawList* cmd_list = draw_data->CmdLists[n];
-    static_assert(sizeof(ImDrawIdx) == sizeof(DrawIndex));
-
-    u32 base_vertex, base_index;
-    UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size, &base_vertex);
-    UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
-
-    for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-    {
-      const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-      if ((pcmd->ElemCount == 0 && !pcmd->UserCallback) || pcmd->ClipRect.z <= pcmd->ClipRect.x ||
-          pcmd->ClipRect.w <= pcmd->ClipRect.y)
-      {
-        continue;
-      }
-
-      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
-      if (flip)
-        clip = FlipToLowerLeft(clip, texture->GetHeight());
-
-      SetScissor(clip);
-      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler);
-
-      if (pcmd->UserCallback) [[unlikely]]
-      {
-        pcmd->UserCallback(cmd_list, pcmd);
-        PushUniformBuffer(&mproj, sizeof(mproj));
-        SetPipeline(m_imgui_pipeline.get());
-      }
-      else
-      {
-        DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
-      }
-    }
-  }
 }
 
 void GPUDevice::UploadVertexBuffer(const void* vertices, u32 vertex_size, u32 vertex_count, u32* base_vertex)
@@ -1039,40 +857,6 @@ std::array<float, 4> GPUDevice::RGBA8ToFloat(u32 rgba)
                               static_cast<float>((rgba >> 8) & UINT32_C(0xFF)) * (1.0f / 255.0f),
                               static_cast<float>((rgba >> 16) & UINT32_C(0xFF)) * (1.0f / 255.0f),
                               static_cast<float>(rgba >> 24) * (1.0f / 255.0f)};
-}
-
-bool GPUDevice::UpdateImGuiFontTexture()
-{
-  ImGuiIO& io = ImGui::GetIO();
-
-  unsigned char* pixels;
-  int width, height;
-  io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-  const u32 pitch = sizeof(u32) * width;
-
-  if (m_imgui_font_texture && m_imgui_font_texture->GetWidth() == static_cast<u32>(width) &&
-      m_imgui_font_texture->GetHeight() == static_cast<u32>(height) &&
-      m_imgui_font_texture->Update(0, 0, static_cast<u32>(width), static_cast<u32>(height), pixels, pitch))
-  {
-    io.Fonts->SetTexID(m_imgui_font_texture.get());
-    return true;
-  }
-
-  Error error;
-  std::unique_ptr<GPUTexture> new_font =
-    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, GPUTexture::Flags::None,
-                 pixels, pitch, &error);
-  if (!new_font) [[unlikely]]
-  {
-    ERROR_LOG("Failed to create new ImGui font texture: {}", error.GetDescription());
-    return false;
-  }
-
-  RecycleTexture(std::move(m_imgui_font_texture));
-  m_imgui_font_texture = std::move(new_font);
-  io.Fonts->SetTexID(m_imgui_font_texture.get());
-  return true;
 }
 
 bool GPUDevice::UsesLowerLeftOrigin() const
@@ -1327,7 +1111,8 @@ void GPUDevice::TrimTexturePool()
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */)
+                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */,
+                              Error* error /* = nullptr */)
 {
   GPUTexture* old_tex = tex->get();
   if (old_tex && old_tex->GetWidth() == new_width && old_tex->GetHeight() == new_height && old_tex->GetType() == type &&
@@ -1337,37 +1122,66 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
   }
 
   DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
-  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags);
+  std::unique_ptr<GPUTexture> new_tex =
+    FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags, nullptr, 0, error);
   if (!new_tex) [[unlikely]]
-  {
-    ERROR_LOG("Failed to create new {}x{} texture", new_width, new_height);
     return false;
-  }
 
-  if (old_tex)
+  if (preserve)
   {
-    if (old_tex->GetState() == GPUTexture::State::Cleared)
+    if (old_tex)
     {
-      if (type == GPUTexture::Type::RenderTarget)
-        ClearRenderTarget(new_tex.get(), old_tex->GetClearColor());
+      if (old_tex->GetState() == GPUTexture::State::Cleared)
+      {
+        if (type == GPUTexture::Type::RenderTarget)
+          ClearRenderTarget(new_tex.get(), old_tex->GetClearColor());
+      }
+      else if (old_tex->GetState() == GPUTexture::State::Dirty)
+      {
+        const u32 copy_width = std::min(new_width, old_tex->GetWidth());
+        const u32 copy_height = std::min(new_height, old_tex->GetHeight());
+        if (type == GPUTexture::Type::RenderTarget)
+          ClearRenderTarget(new_tex.get(), 0);
+
+        if (old_tex->GetFormat() == new_tex->GetFormat())
+          CopyTextureRegion(new_tex.get(), 0, 0, 0, 0, old_tex, 0, 0, 0, 0, copy_width, copy_height);
+      }
     }
-    else if (old_tex->GetState() == GPUTexture::State::Dirty)
+    else
     {
-      const u32 copy_width = std::min(new_width, old_tex->GetWidth());
-      const u32 copy_height = std::min(new_height, old_tex->GetHeight());
+      // If we're expecting data to be there, make sure to clear it.
       if (type == GPUTexture::Type::RenderTarget)
         ClearRenderTarget(new_tex.get(), 0);
-
-      if (old_tex->GetFormat() == new_tex->GetFormat())
-        CopyTextureRegion(new_tex.get(), 0, 0, 0, 0, old_tex, 0, 0, 0, 0, copy_width, copy_height);
     }
   }
-  else if (preserve)
+
+  RecycleTexture(std::move(*tex));
+  *tex = std::move(new_tex);
+  return true;
+}
+
+bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
+                              GPUTexture::Format format, GPUTexture::Flags flags, const void* replace_data,
+                              u32 replace_data_pitch, Error* error /* = nullptr */)
+{
+  GPUTexture* old_tex = tex->get();
+  if (old_tex && old_tex->GetWidth() == new_width && old_tex->GetHeight() == new_height && old_tex->GetType() == type &&
+      old_tex->GetFormat() == format && old_tex->GetFlags() == flags)
   {
-    // If we're expecting data to be there, make sure to clear it.
-    if (type == GPUTexture::Type::RenderTarget)
-      ClearRenderTarget(new_tex.get(), 0);
+    if (replace_data && !old_tex->Update(0, 0, new_width, new_height, replace_data, replace_data_pitch))
+    {
+      Error::SetStringView(error, "Texture update failed.");
+      return false;
+    }
+
+    return true;
   }
+
+  DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
+  std::unique_ptr<GPUTexture> new_tex =
+    FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags, replace_data, replace_data_pitch, error);
+  if (!new_tex) [[unlikely]]
+    return false;
 
   RecycleTexture(std::move(*tex));
   *tex = std::move(new_tex);

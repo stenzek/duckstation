@@ -8,6 +8,7 @@
 #include "imgui_fullscreen.h"
 #include "imgui_glyph_ranges.inl"
 #include "input_manager.h"
+#include "shadergen.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
 #include "core/fullscreen_ui.h"
@@ -79,6 +80,9 @@ static bool AddImGuiFonts(bool debug_font, bool fullscreen_fonts);
 static ImFont* AddTextFont(float size, const ImWchar* glyph_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size, const ImWchar* emoji_range);
+static bool CompilePipelines(Error* error);
+static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation);
+static bool UpdateImGuiFontTexture();
 static void SetCommonIOOptions(ImGuiIO& io);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(void* userdata);
@@ -122,10 +126,14 @@ struct ALIGN_TO_CACHE_LINE State
 
   float window_width = 0.0f;
   float window_height = 0.0f;
+  GPUTexture::Format window_format = GPUTexture::Format::Unknown;
   bool scale_changed = false;
 
   // we maintain a second copy of the stick state here so we can map it to the dpad
   std::array<s8, 2> left_stick_axis_state = {};
+
+  std::unique_ptr<GPUPipeline> imgui_pipeline;
+  std::unique_ptr<GPUTexture> imgui_font_texture;
 
   ImFont* debug_font = nullptr;
   ImFont* osd_font = nullptr;
@@ -228,9 +236,10 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
     return false;
   }
 
+  GPUSwapChain* const main_swap_chain = g_gpu_device->GetMainSwapChain();
+
   s_state.global_prescale = global_scale;
-  s_state.global_scale = std::max(
-    (g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f) * global_scale, 1.0f);
+  s_state.global_scale = std::max((main_swap_chain ? main_swap_chain->GetScale() : 1.0f) * global_scale, 1.0f);
   s_state.screen_margin = std::max(screen_margin, 0.0f);
   s_state.scale_changed = false;
 
@@ -249,10 +258,9 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   SetCommonIOOptions(io);
 
   s_state.last_render_time = Timer::GetCurrentValue();
-  s_state.window_width =
-    g_gpu_device->HasMainSwapChain() ? static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) : 0.0f;
-  s_state.window_height =
-    g_gpu_device->HasMainSwapChain() ? static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight()) : 0.0f;
+  s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8;
+  s_state.window_width = main_swap_chain ? static_cast<float>(main_swap_chain->GetWidth()) : 0.0f;
+  s_state.window_height = main_swap_chain ? static_cast<float>(main_swap_chain->GetHeight()) : 0.0f;
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
   io.DisplaySize = ImVec2(s_state.window_width, s_state.window_height);
 
@@ -260,10 +268,12 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   FullscreenUI::SetTheme();
 
-  if (!AddImGuiFonts(false, false) || !g_gpu_device->UpdateImGuiFontTexture())
+  if (!CompilePipelines(error))
+    return false;
+
+  if (!AddImGuiFonts(false, false) || !UpdateImGuiFontTexture())
   {
     Error::SetString(error, "Failed to create ImGui font text");
-    ImGui::DestroyContext();
     return false;
   }
 
@@ -280,17 +290,20 @@ void ImGuiManager::Shutdown()
 {
   DestroySoftwareCursorTextures();
 
-  if (s_state.imgui_context)
-  {
-    ImGui::DestroyContext(s_state.imgui_context);
-    s_state.imgui_context = nullptr;
-  }
-
   s_state.debug_font = nullptr;
   s_state.fixed_font = nullptr;
   s_state.medium_font = nullptr;
   s_state.large_font = nullptr;
   ImGuiFullscreen::SetFonts(nullptr, nullptr);
+
+  s_state.imgui_pipeline.reset();
+  g_gpu_device->RecycleTexture(std::move(s_state.imgui_font_texture));
+
+  if (s_state.imgui_context)
+  {
+    ImGui::DestroyContext(s_state.imgui_context);
+    s_state.imgui_context = nullptr;
+  }
 }
 
 ImGuiContext* ImGuiManager::GetMainContext()
@@ -313,8 +326,20 @@ float ImGuiManager::GetWindowHeight()
   return s_state.window_height;
 }
 
-void ImGuiManager::WindowResized(float width, float height)
+void ImGuiManager::WindowResized(GPUTexture::Format format, float width, float height)
 {
+  if (s_state.window_format != format) [[unlikely]]
+  {
+    Error error;
+    s_state.window_format = format;
+    if (!CompilePipelines(&error))
+    {
+      error.AddPrefix("Failed to compile pipelines after window format change:\n");
+      GPUThread::ReportFatalErrorAndShutdown(error.GetDescription());
+      return;
+    }
+  }
+
   s_state.window_width = width;
   s_state.window_height = height;
   ImGui::GetMainViewport()->Size = ImGui::GetIO().DisplaySize = ImVec2(width, height);
@@ -342,10 +367,12 @@ void ImGuiManager::UpdateScale()
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
 
   if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
-    Panic("Failed to create ImGui font text");
+  {
+    GPUThread::ReportFatalErrorAndShutdown("Failed to create ImGui font text");
+    return;
+  }
 
-  if (!g_gpu_device->UpdateImGuiFontTexture())
-    Panic("Failed to recreate font texture after scale+resize");
+  UpdateImGuiFontTexture();
 }
 
 void ImGuiManager::NewFrame()
@@ -379,6 +406,167 @@ void ImGuiManager::NewFrame()
     else
       Host::EndTextInput();
   }
+}
+
+bool ImGuiManager::CompilePipelines(Error* error)
+{
+  const RenderAPI render_api = g_gpu_device->GetRenderAPI();
+  const GPUDevice::Features features = g_gpu_device->GetFeatures();
+  const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), features.dual_source_blend,
+                            features.framebuffer_fetch);
+
+  std::unique_ptr<GPUShader> imgui_vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                                   shadergen.GenerateImGuiVertexShader(), error);
+  std::unique_ptr<GPUShader> imgui_fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                                   shadergen.GenerateImGuiFragmentShader(), error);
+  if (!imgui_vs || !imgui_fs)
+  {
+    Error::AddPrefix(error, "Failed to compile ImGui shaders: ");
+    return false;
+  }
+  GL_OBJECT_NAME(imgui_vs, "ImGui Vertex Shader");
+  GL_OBJECT_NAME(imgui_fs, "ImGui Fragment Shader");
+
+  static constexpr GPUPipeline::VertexAttribute imgui_attributes[] = {
+    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, pos)),
+    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ImDrawVert, uv)),
+    GPUPipeline::VertexAttribute::Make(2, GPUPipeline::VertexAttribute::Semantic::Color, 0,
+                                       GPUPipeline::VertexAttribute::Type::UNorm8, 4, OFFSETOF(ImDrawVert, col)),
+  };
+
+  GPUPipeline::GraphicsConfig plconfig;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.input_layout.vertex_attributes = imgui_attributes;
+  plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
+  plconfig.blend.write_mask = 0x7;
+  plconfig.SetTargetFormats(s_state.window_format);
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  plconfig.vertex_shader = imgui_vs.get();
+  plconfig.geometry_shader = nullptr;
+  plconfig.fragment_shader = imgui_fs.get();
+
+  s_state.imgui_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_state.imgui_pipeline)
+  {
+    Error::AddPrefix(error, "Failed to compile ImGui pipeline: ");
+    return false;
+  }
+
+  GL_OBJECT_NAME(s_state.imgui_pipeline, "ImGui Pipeline");
+  return true;
+}
+
+bool ImGuiManager::UpdateImGuiFontTexture()
+{
+  ImGuiIO& io = ImGui::GetIO();
+
+  unsigned char* pixels;
+  int width, height;
+  io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+  Error error;
+  const bool result = g_gpu_device->ResizeTexture(
+    &s_state.imgui_font_texture, static_cast<u32>(width), static_cast<u32>(height), GPUTexture::Type::Texture,
+    GPUTexture::Format::RGBA8, GPUTexture::Flags::None, pixels, sizeof(u32) * width, &error);
+  if (!result) [[unlikely]]
+    ERROR_LOG("Failed to resize ImGui font texture: {}", error.GetDescription());
+
+  // always update pointer, it could change
+  io.Fonts->SetTexID(s_state.imgui_font_texture.get());
+  return result;
+}
+
+void ImGuiManager::CreateDrawLists()
+{
+  ImGui::EndFrame();
+  ImGui::Render();
+}
+
+void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation)
+{
+  const ImDrawData* draw_data = ImGui::GetDrawData();
+  if (draw_data->CmdListsCount == 0)
+    return;
+
+  const GSVector2i window_size = GSVector2i(static_cast<s32>(window_width), static_cast<s32>(window_height));
+  const u32 post_rotated_width =
+    WindowInfo::ShouldSwapDimensionsForPreRotation(prerotation) ? window_height : window_width;
+  const u32 post_rotated_height =
+    WindowInfo::ShouldSwapDimensionsForPreRotation(prerotation) ? window_width : window_height;
+
+  g_gpu_device->SetViewport(0, 0, static_cast<s32>(post_rotated_width), static_cast<s32>(post_rotated_height));
+  g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
+
+  const bool prerotated = (prerotation != WindowInfo::PreRotation::Identity);
+  GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(0.0f, 0.0f, static_cast<float>(window_width),
+                                                                   static_cast<float>(window_height), 0.0f, 1.0f);
+  if (prerotated)
+    mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * mproj;
+  g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+
+  // Render command lists
+  const bool flip = g_gpu_device->UsesLowerLeftOrigin();
+  for (int n = 0; n < draw_data->CmdListsCount; n++)
+  {
+    const ImDrawList* cmd_list = draw_data->CmdLists[n];
+    static_assert(sizeof(ImDrawIdx) == sizeof(GPUDevice::DrawIndex));
+
+    u32 base_vertex, base_index;
+    g_gpu_device->UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size,
+                                     &base_vertex);
+    g_gpu_device->UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
+
+    for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+    {
+      const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+
+      if ((pcmd->ElemCount == 0 && !pcmd->UserCallback) || pcmd->ClipRect.z <= pcmd->ClipRect.x ||
+          pcmd->ClipRect.w <= pcmd->ClipRect.y)
+      {
+        continue;
+      }
+
+      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
+
+      if (prerotated)
+        clip = GPUSwapChain::PreRotateClipRect(prerotation, window_size, clip);
+      if (flip)
+        clip = g_gpu_device->FlipToLowerLeft(clip, post_rotated_height);
+
+      g_gpu_device->SetScissor(clip);
+      g_gpu_device->SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId),
+                                      g_gpu_device->GetLinearSampler());
+
+      if (pcmd->UserCallback) [[unlikely]]
+      {
+        pcmd->UserCallback(cmd_list, pcmd);
+        g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+        g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
+      }
+      else
+      {
+        g_gpu_device->DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
+      }
+    }
+  }
+}
+
+void ImGuiManager::RenderDrawLists(GPUSwapChain* swap_chain)
+{
+  RenderDrawLists(swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetPreRotation());
+}
+
+void ImGuiManager::RenderDrawLists(GPUTexture* texture)
+{
+  RenderDrawLists(texture->GetWidth(), texture->GetHeight(), WindowInfo::PreRotation::Identity);
 }
 
 void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
@@ -785,14 +973,18 @@ void ImGuiManager::ReloadFontDataIfActive()
   ImGui::EndFrame();
 
   if (!LoadFontData(nullptr))
-    Panic("Failed to load font data");
+  {
+    GPUThread::ReportFatalErrorAndShutdown("Failed to load font data");
+    return;
+  }
 
   if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
-    Panic("Failed to create ImGui font text");
+  {
+    GPUThread::ReportFatalErrorAndShutdown("Failed to create ImGui font text");
+    return;
+  }
 
-  if (!g_gpu_device->UpdateImGuiFontTexture())
-    Panic("Failed to recreate font texture after scale+resize");
-
+  UpdateImGuiFontTexture();
   NewFrame();
 }
 
@@ -807,11 +999,11 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
   const bool debug_font = HasDebugFont();
   if (!AddImGuiFonts(debug_font, true))
   {
-    ERROR_LOG("Failed to lazily allocate fullscreen fonts.");
+    GPUThread::ReportFatalErrorAndShutdown("Failed to lazily allocate fullscreen fonts.");
     AddImGuiFonts(debug_font, false);
   }
 
-  g_gpu_device->UpdateImGuiFontTexture();
+  UpdateImGuiFontTexture();
   NewFrame();
 
   return HasFullscreenFonts();
@@ -837,7 +1029,7 @@ bool ImGuiManager::AddDebugFontIfMissing()
     AddImGuiFonts(true, fullscreen_font);
   }
 
-  g_gpu_device->UpdateImGuiFontTexture();
+  UpdateImGuiFontTexture();
   NewFrame();
 
   return HasDebugFont();
@@ -1592,15 +1784,13 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   ImGui::End();
   ImGui::PopFont();
 
+  CreateDrawLists();
+
   const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
   if (pres == GPUDevice::PresentResult::OK)
   {
-    g_gpu_device->RenderImGui(state->swap_chain.get());
+    RenderDrawLists(state->swap_chain.get());
     g_gpu_device->EndPresent(state->swap_chain.get(), false);
-  }
-  else
-  {
-    ImGui::EndFrame();
   }
 
   ImGui::SetCurrentContext(GetMainContext());
