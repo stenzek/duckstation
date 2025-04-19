@@ -893,6 +893,11 @@ void SmallStringBase::set_size(u32 new_size, bool shrink_if_smaller /*= false*/)
 {
   DebugAssert(new_size <= m_buffer_size);
   m_length = new_size;
+#if _DEBUG
+  std::memset(m_buffer + new_size, 0, m_buffer_size - new_size);
+#else
+  m_buffer[new_size] = 0;
+#endif
   if (shrink_if_smaller)
     shrink_to_fit();
 }
