@@ -104,6 +104,9 @@ extern const CodeInfo* FindCodeInInfoList(const CodeInfoList& list, const std::s
 /// Searches for a given code by name.
 extern CodeInfo* FindCodeInInfoList(CodeInfoList& list, const std::string_view name);
 
+/// Formats the given cheat code in the format that it would be saved to a file.
+extern std::string FormatCodeForFile(const CodeInfo& code);
+
 /// Imports all codes from the provided string.
 extern bool ImportCodesFromString(CodeInfoList* dst, const std::string_view file_contents, FileFormat file_format,
                                   bool stop_on_error, Error* error);

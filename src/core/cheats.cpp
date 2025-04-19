@@ -210,7 +210,6 @@ static std::vector<std::string> FindChtFilesOnDisk(const std::string_view serial
 static bool ExtractCodeInfo(CodeInfoList* dst, const std::string_view file_data, bool from_database, bool stop_on_error,
                             Error* error);
 static void AppendCheatToList(CodeInfoList* dst, CodeInfo code);
-static std::string FormatCodeForFile(const CodeInfo& code);
 
 static bool ShouldLoadDatabaseCheats();
 static bool AreAnyPatchesEnabled();
