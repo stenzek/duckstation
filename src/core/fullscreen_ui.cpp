@@ -7544,6 +7544,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
   if (!InitializeSaveStateListEntryFromSerial(&slentry, entry->serial, -1, false))
     return false;
 
+  slentry.game_path = entry->path;
   s_state.save_state_selector_slots.push_back(std::move(slentry));
   OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
   return true;
