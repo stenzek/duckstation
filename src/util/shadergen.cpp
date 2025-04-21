@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "shadergen.h"
@@ -272,6 +272,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define uint2 uvec2\n";
     ss << "#define uint3 uvec3\n";
     ss << "#define uint4 uvec4\n";
+    ss << "#define bool2 bvec2\n";
+    ss << "#define bool3 bvec3\n";
+    ss << "#define bool4 bvec4\n";
     ss << "#define float2x2 mat2\n";
     ss << "#define float3x3 mat3\n";
     ss << "#define float4x4 mat4\n";
@@ -324,6 +327,9 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define uivec2 uint2\n";
     ss << "#define uivec3 uint3\n";
     ss << "#define uivec4 uint4\n";
+    ss << "#define bvec2 bool2\n";
+    ss << "#define bvec3 bool3\n";
+    ss << "#define bvec4 bool4\n";
     ss << "#define mat2 float2x2\n";
     ss << "#define mat3 float3x3\n";
     ss << "#define mat4 float4x4\n";

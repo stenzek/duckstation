@@ -309,9 +309,10 @@ float4 resampler(float4 x)
 
    // res = (x==float4(0.0, 0.0, 0.0, 0.0)) ?  float4(wa*wb)  :  sin(x*wa)*sin(x*wb)/(x*x);
    // Need to use mix(.., equal(..)) since we want zero check to be component wise
-   res = lerp(sin(x*wa)*sin(x*wb)/(x*x), float4(wa*wb, wa*wb, wa*wb, wa*wb), VECTOR_COMP_EQ(x,float4(0.0, 0.0, 0.0, 0.0)));
-
-   return res;
+   float4 a = sin(x * wa) * sin(x * wb) / (x * x);
+   float4 b = float4(wa*wb, wa*wb, wa*wb, wa*wb);
+   bool4 s = VECTOR_COMP_EQ(x, float4(0.0, 0.0, 0.0, 0.0));
+   return float4(s.x ? b.x : a.x, s.y ? b.y : a.y, s.z ? b.z : a.z, s.w ? b.w : a.w);
 }
 
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
