@@ -178,7 +178,14 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   if (data)
   {
     tex->Update(0, 0, width, height, data, data_stride);
-    tex->TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    if (type == GPUTexture::Type::Texture)
+    {
+      // resource barrier must be in the same command buffer as the upload
+      tex->TransitionSubresourceToState(GetInitCommandList(), 0u, 0u, D3D12_RESOURCE_STATE_COPY_DEST,
+                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+      tex->m_resource_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    }
   }
 
   return tex;
