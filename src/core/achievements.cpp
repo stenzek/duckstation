@@ -141,7 +141,9 @@ static bool HasSavedCredentials();
 static bool TryLoggingInWithToken();
 static void EnableHardcodeMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
+static bool IsRAIntegrationInitializing();
 static bool IsLoggedInOrLoggingIn();
+static void FinishInitialize();
 static void FinishLogin(const rc_client_t* client);
 static void ShowLoginNotification();
 static bool IdentifyGame(CDImage* image);
@@ -299,6 +301,7 @@ struct State
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   rc_client_async_handle_t* load_raintegration_request = nullptr;
   bool using_raintegration = false;
+  bool raintegration_loading = false;
 #endif
 };
 
@@ -658,6 +661,15 @@ bool Achievements::Initialize()
   rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
   rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
 
+  // We can't do an internal client login while using RAIntegration, since the two will conflict.
+  if (!IsRAIntegrationInitializing())
+    FinishInitialize();
+
+  return true;
+}
+
+void Achievements::FinishInitialize()
+{
   // Start logging in. This can take a while.
   TryLoggingInWithToken();
 
@@ -671,8 +683,6 @@ bool Achievements::Initialize()
     if (IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
       DisplayHardcoreDeferredMessage();
   }
-
-  return true;
 }
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
@@ -1138,7 +1148,7 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
 {
   std::unique_lock lock(s_state.mutex);
 
-  if (!IsActive())
+  if (!IsActive() || IsRAIntegrationInitializing())
     return;
 
   // if we're not logged in, and there's no login request, retry logging in
@@ -1179,7 +1189,7 @@ void Achievements::OnSystemDestroyed()
 void Achievements::OnSystemReset()
 {
   const auto lock = GetLock();
-  if (!IsActive())
+  if (!IsActive()|| IsRAIntegrationInitializing())
     return;
 
   // Do we need to enable hardcore mode?
@@ -1198,7 +1208,7 @@ void Achievements::GameChanged(CDImage* image)
 {
   std::unique_lock lock(s_state.mutex);
 
-  if (!IsActive())
+  if (!IsActive()|| IsRAIntegrationInitializing())
     return;
 
   // disc changed?
@@ -4616,6 +4626,7 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
 namespace Achievements {
 
 static void FinishLoadRAIntegration();
+static void FinishLoadRAIntegrationOnCPUThread();
 
 static void RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client);
@@ -4636,8 +4647,17 @@ bool Achievements::IsRAIntegrationAvailable()
           FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "RA_Integration.dll").c_str()));
 }
 
+bool Achievements::IsRAIntegrationInitializing()
+{
+  return (s_state.using_raintegration && (s_state.load_raintegration_request || s_state.raintegration_loading));
+}
+
 void Achievements::BeginLoadRAIntegration()
 {
+  // set the flag so we don't try to log in immediately, need to wait for RAIntegration to load first
+  s_state.using_raintegration = true;
+  s_state.raintegration_loading = true;
+
   const std::wstring wapproot = StringUtil::UTF8StringToWideString(EmuFolders::AppRoot);
   s_state.load_raintegration_request = rc_client_begin_load_raintegration_deferred(
     s_state.client, wapproot.c_str(), RAIntegrationBeginLoadCallback, nullptr);
@@ -4646,15 +4666,16 @@ void Achievements::BeginLoadRAIntegration()
 void Achievements::RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client,
                                                   void* userdata)
 {
+  s_state.load_raintegration_request = nullptr;
+
   if (result != RC_OK)
   {
+    s_state.raintegration_loading = false;
+
     std::string message = fmt::format("Failed to load RAIntegration:\n{}", error_message ? error_message : "");
     Host::ReportErrorAsync("RAIntegration Error", message);
     return;
   }
-
-  // set this so we can unload it if the request changes
-  s_state.using_raintegration = true;
 
   INFO_COLOR_LOG(StrongGreen, "RAIntegration DLL loaded, initializing.");
   Host::RunOnUIThread(&Achievements::FinishLoadRAIntegration);
@@ -4679,6 +4700,7 @@ void Achievements::FinishLoadRAIntegration()
     std::string message = fmt::format("Failed to initialize RAIntegration:\n{}", error_message ? error_message : "");
     Host::ReportErrorAsync("RAIntegration Error", message);
     s_state.using_raintegration = false;
+    Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
     return;
   }
 
@@ -4688,6 +4710,17 @@ void Achievements::FinishLoadRAIntegration()
   rc_client_raintegration_set_event_handler(s_state.client, RAIntegrationEventHandler);
 
   Host::OnRAIntegrationMenuChanged();
+
+  Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
+}
+
+void Achievements::FinishLoadRAIntegrationOnCPUThread()
+{
+  // note: this is executed even for the failure case.
+  // we want to finish initializing with internal client if RAIntegration didn't load.
+  const auto lock = GetLock();
+  s_state.raintegration_loading = false;
+  FinishInitialize();
 }
 
 void Achievements::UnloadRAIntegration()
@@ -4695,7 +4728,14 @@ void Achievements::UnloadRAIntegration()
   if (!s_state.using_raintegration)
     return;
 
+  if (s_state.load_raintegration_request)
+  {
+    rc_client_abort_async(s_state.client, s_state.load_raintegration_request);
+    s_state.load_raintegration_request = nullptr;
+  }
+
   rc_client_unload_raintegration(s_state.client);
+  s_state.raintegration_loading = false;
   s_state.using_raintegration = false;
   Host::OnRAIntegrationMenuChanged();
 }
@@ -4754,6 +4794,11 @@ bool Achievements::IsUsingRAIntegration()
 }
 
 bool Achievements::IsRAIntegrationAvailable()
+{
+  return false;
+}
+
+bool Achievements::IsRAIntegrationInitializing()
 {
   return false;
 }
