@@ -418,7 +418,10 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
       cursor_color_str[0] == '#' ? std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str),
       16));
     if (cursor_color_opt.has_value())
+    {
       cursor_color = cursor_color_opt.value();
+      cursor_color = (cursor_color & 0x00FF00u) | ((cursor_color >> 16) & 0xFFu) | ((cursor_color & 0xFFu) << 16);
+    }
   }
 
   const s32 prev_pointer_index = GetSoftwarePointerIndex();

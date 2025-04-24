@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "guncon.h"
@@ -323,7 +323,10 @@ void GunCon::LoadSettings(const SettingsInterface& si, const char* section, bool
       cursor_color_str[0] == '#' ? std::string_view(cursor_color_str).substr(1) : std::string_view(cursor_color_str),
       16));
     if (cursor_color_opt.has_value())
+    {
       cursor_color = cursor_color_opt.value();
+      cursor_color = (cursor_color & 0x00FF00u) | ((cursor_color >> 16) & 0xFFu) | ((cursor_color & 0xFFu) << 16);
+    }
   }
 
   const s32 prev_pointer_index = GetSoftwarePointerIndex();
