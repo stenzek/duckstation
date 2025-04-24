@@ -94,6 +94,7 @@ private:
   u16 m_button_state = UINT16_C(0xFFFF);
   u8 m_shoot_offscreen = 0;
   bool m_position_valid = false;
+  bool m_irq_enabled = false;
 
   TransferState m_transfer_state = TransferState::Idle;
 
