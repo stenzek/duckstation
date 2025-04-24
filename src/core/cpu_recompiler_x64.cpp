@@ -598,12 +598,21 @@ void CPU::X64Recompiler::EndBlockWithException(Exception excode)
   Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // TODO: flush load delay
-  // TODO: break for pcdrv
 
   cg->mov(RWARG1, Cop0Registers::CAUSE::MakeValueForException(excode, m_current_instruction_branch_delay_slot, false,
                                                               inst->cop.cop_n));
   cg->mov(RWARG2, m_current_instruction_pc);
-  cg->call(static_cast<void (*)(u32, u32)>(&CPU::RaiseException));
+
+  if (excode != Exception::BP)
+  {
+    cg->call(static_cast<void (*)(u32, u32)>(&CPU::RaiseException));
+  }
+  else
+  {
+    cg->mov(RWARG3, inst->bits);
+    cg->call(&CPU::RaiseBreakException);
+  }
+
   m_dirty_pc = false;
 
   EndAndLinkBlock(std::nullopt, true, false);

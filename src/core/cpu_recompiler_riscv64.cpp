@@ -659,12 +659,19 @@ void CPU::RISCV64Recompiler::EndBlockWithException(Exception excode)
   Flush(FLUSH_END_BLOCK | FLUSH_FOR_EXCEPTION | FLUSH_FOR_C_CALL);
 
   // TODO: flush load delay
-  // TODO: break for pcdrv
 
   EmitMov(RARG1, Cop0Registers::CAUSE::MakeValueForException(excode, m_current_instruction_branch_delay_slot, false,
                                                              inst->cop.cop_n));
   EmitMov(RARG2, m_current_instruction_pc);
-  EmitCall(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)));
+  if (excode != Exception::BP)
+  {
+    EmitCall(reinterpret_cast<const void*>(static_cast<void (*)(u32, u32)>(&CPU::RaiseException)));
+  }
+  else
+  {
+    EmitMov(RARG3, inst->bits);
+    EmitCall(reinterpret_cast<const void*>(&CPU::RaiseBreakException));
+  }
   m_dirty_pc = false;
 
   EndAndLinkBlock(std::nullopt, true, false);
