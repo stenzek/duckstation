@@ -505,7 +505,7 @@ void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamp
 
   if (enabled)
   {
-    s_state.file_handle = FileSystem::OpenManagedCFile(filename, "wb");
+    s_state.file_handle = FileSystem::OpenManagedSharedCFile(filename, "wb", FileSystem::FileShareMode::DenyWrite);
     if (!s_state.file_handle) [[unlikely]]
     {
       ExecuteCallbacks(PackCategory(Channel::Log, Level::Error, Color::Default), nullptr,
