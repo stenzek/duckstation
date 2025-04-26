@@ -392,13 +392,13 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogJoystick", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogJoystick",
                   "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
-   "1.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
+   "0", "0", "1", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("AnalogJoystick", "Analog Sensitivity"),
    TRANSLATE_NOOP(
      "AnalogJoystick",
      "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
      "controllers, e.g. DualShock 4, Xbox One Controller."),
-   "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
+   "1.33", "0.01", "2", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("AnalogJoystick", "Invert Left Stick"),
    TRANSLATE_NOOP("AnalogJoystick", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr, nullptr,
    s_invert_settings, 0.0f},

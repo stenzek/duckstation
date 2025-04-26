@@ -662,20 +662,20 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("JogCon", "Analog Deadzone"),
    TRANSLATE_NOOP("JogCon",
                   "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
-   "0.00f", "0.00f", "1.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
+   "0", "0", "1", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "AnalogSensitivity", TRANSLATE_NOOP("JogCon", "Analog Sensitivity"),
    TRANSLATE_NOOP("JogCon", "Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended "
                             "when using recent controllers, e.g. DualShock 4, Xbox One Controller."),
-   "1.33f", "0.01f", "2.00f", "0.01f", "%.0f%%", nullptr, 100.0f},
+   "1.33", "0.01", "2", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "ButtonDeadzone", TRANSLATE_NOOP("JogCon", "Button/Trigger Deadzone"),
    TRANSLATE_NOOP(
      "JogCon",
      "Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored."),
-   "0.25", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+   "0.25", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Float, "SteeringHoldDeadzone", TRANSLATE_NOOP("JogCon", "Steering Hold Deadzone"),
    TRANSLATE_NOOP(
      "JogCon", "Sets the deadzone for holding the wheel at the set position, i.e. when it will not trigger an effect."),
-   "0.03", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
+   "0.03", "0.01", "1", "0.01", "%.0f%%", nullptr, 100.0f},
 };
 
 const Controller::ControllerInfo JogCon::INFO = {

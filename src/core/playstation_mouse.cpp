@@ -208,11 +208,11 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 };
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "SensitivityX", TRANSLATE_NOOP("PlayStationMouse", "Horizontal Sensitivity"),
-   TRANSLATE_NOOP("PlayStationMouse", "Adjusts the correspondance between physical and virtual mouse movement."), "1.0",
-   "0.01", "2.0", "0.01", "%.0f", nullptr, 100.0f},
+   TRANSLATE_NOOP("PlayStationMouse", "Adjusts the correspondance between physical and virtual mouse movement."), "1",
+   "0.01", "2", "0.01", "%.0f", nullptr, 100.0f},
   {SettingInfo::Type::Float, "SensitivityY", TRANSLATE_NOOP("PlayStationMouse", "Vertical Sensitivity"),
-   TRANSLATE_NOOP("PlayStationMouse", "Adjusts the correspondance between physical and virtual mouse movement."), "1.0",
-   "0.01", "2.0", "0.01", "%.0f", nullptr, 100.0f},
+   TRANSLATE_NOOP("PlayStationMouse", "Adjusts the correspondance between physical and virtual mouse movement."), "1",
+   "0.01", "2", "0.01", "%.0f", nullptr, 100.0f},
 };
 
 const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,

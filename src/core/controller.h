@@ -18,7 +18,6 @@
 
 class SettingsInterface;
 class StateWrapper;
-class HostInterface;
 
 class Controller
 {

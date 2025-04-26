@@ -753,11 +753,11 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "SteeringDeadzone", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Deadzone"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0.00f", "0.00f", "0.99f", "0.01f",
-   "%.0f%%", nullptr, 100.0f},
+   TRANSLATE_NOOP("NeGconRumble", "Sets deadzone size for steering axis."), "0", "0", "0.99", "0.01", "%.0f%%", nullptr,
+   100.0f},
   {SettingInfo::Type::Float, "SteeringSensitivity", TRANSLATE_NOOP("NeGconRumble", "Steering Axis Sensitivity"),
-   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1.00f", "0.01f", "2.00f", "0.01f",
-   "%.0f%%", nullptr, 100.0f},
+   TRANSLATE_NOOP("NeGconRumble", "Sets the steering axis scaling factor."), "1", "0.01", "2", "0.01", "%.0f%%",
+   nullptr, 100.0f},
   {SettingInfo::Type::Integer, "LargeMotorVibrationBias", TRANSLATE_NOOP("NeGconRumble", "Large Motor Vibration Bias"),
    TRANSLATE_NOOP("NeGconRumble",
                   "Sets the bias value for the large vibration motor. If vibration in some games is too weak or not "
