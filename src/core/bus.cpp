@@ -1809,7 +1809,7 @@ template<MemoryAccessSize size>
 u32 Bus::HWHandlers::SIORead(PhysicalMemoryAddress address)
 {
   const u32 offset = address & SIO_MASK;
-  u32 value = SIO::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset));
+  u32 value = SIO::ReadRegister(FIXUP_HALFWORD_OFFSET(size, offset), 1u << static_cast<u32>(size));
   value = FIXUP_HALFWORD_READ_VALUE(size, offset, value);
   BUS_CYCLES(2);
   return value;

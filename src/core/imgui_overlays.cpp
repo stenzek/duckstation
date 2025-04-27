@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_overlays.h"
@@ -18,6 +18,7 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "sio.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
@@ -108,7 +109,7 @@ static void UpdateInputOverlay(void* buffer);
 
 #ifndef __ANDROID__
 
-static constexpr size_t NUM_DEBUG_WINDOWS = 7;
+static constexpr size_t NUM_DEBUG_WINDOWS = 8;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
   {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 500, 425},
@@ -118,6 +119,7 @@ static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_wi
   {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
   {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
   {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
+  {"SIO", "SIO State", ":icons/applications-system.png", &SIO::DrawDebugStateWindow, 600, 400},
 }};
 static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
 

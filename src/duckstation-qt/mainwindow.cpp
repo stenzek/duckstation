@@ -2212,6 +2212,7 @@ void MainWindow::connectSignals()
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowMDECState, "DebugWindows", "MDEC", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowDMAState, "DebugWindows", "DMA", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowSIOState, "DebugWindows", "SIO", false);
 }
 
 void MainWindow::updateTheme()

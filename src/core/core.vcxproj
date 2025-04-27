@@ -75,6 +75,7 @@
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="sio.cpp" />
+    <ClCompile Include="sio_connection.cpp" />
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="timers.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="settings.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="sio.h" />
+    <ClInclude Include="sio_connection.h" />
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="system_private.h" />
