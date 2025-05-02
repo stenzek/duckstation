@@ -245,7 +245,6 @@ static void DrawAboutWindow();
 static void FixStateIfPaused();
 static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 static bool CompileTransitionPipelines();
-static void UpdateTransitionState();
 
 //////////////////////////////////////////////////////////////////////////
 // Backgrounds

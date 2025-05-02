@@ -47,6 +47,7 @@ void CloseLoadingScreen();
 
 void SetTheme();
 void UpdateRunIdleState();
+void UpdateTransitionState();
 
 static constexpr float SHORT_TRANSITION_TIME = 0.08f;
 static constexpr float DEFAULT_TRANSITION_TIME = 0.15f;

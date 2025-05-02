@@ -1066,6 +1066,11 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       }
     }
   }
+  else
+  {
+    // transitions still need to be updated otherwise the fade timer breaks
+    FullscreenUI::UpdateTransitionState();
+  }
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   const GPUDevice::PresentResult pres = skip_present ?
