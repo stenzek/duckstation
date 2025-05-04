@@ -1189,7 +1189,7 @@ void Achievements::OnSystemDestroyed()
 void Achievements::OnSystemReset()
 {
   const auto lock = GetLock();
-  if (!IsActive()|| IsRAIntegrationInitializing())
+  if (!IsActive() || IsRAIntegrationInitializing())
     return;
 
   // Do we need to enable hardcore mode?
@@ -1208,7 +1208,7 @@ void Achievements::GameChanged(CDImage* image)
 {
   std::unique_lock lock(s_state.mutex);
 
-  if (!IsActive()|| IsRAIntegrationInitializing())
+  if (!IsActive() || IsRAIntegrationInitializing())
     return;
 
   // disc changed?
@@ -4776,9 +4776,31 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
 void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* buffer, uint32_t num_bytes,
                                                     rc_client_t* client)
 {
+  if ((address + num_bytes) > 0x200400U) [[unlikely]]
+    return;
+
   // This can be called on the UI thread, so always queue it.
   llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
-  Host::RunOnCPUThread([address, data = std::move(data)]() { CPU::SafeWriteMemoryBytes(address, data); });
+  Host::RunOnCPUThread([address, data = std::move(data)]() {
+    u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
+    const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
+
+    switch (data.size())
+    {
+      case 1:
+        std::memcpy(&src[offset], data.data(), 1);
+        break;
+      case 2:
+        std::memcpy(&src[offset], data.data(), 2);
+        break;
+      case 4:
+        std::memcpy(&src[offset], data.data(), 4);
+        break;
+      default:
+        [[unlikely]] std::memcpy(&src[offset], data.data(), data.size());
+        break;
+    }
+  });
 }
 
 void Achievements::RAIntegrationGetGameNameCallback(char* buffer, uint32_t buffer_size, rc_client_t* client)
