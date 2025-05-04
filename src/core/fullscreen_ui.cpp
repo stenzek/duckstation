@@ -8729,8 +8729,13 @@ void FullscreenUI::OpenAchievementsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasAchievements())
   {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
-                                                        FSUI_STR("Achievements are not enabled."));
+    GPUThread::RunOnThread([]() {
+      if (!Initialize())
+        return;
+
+      ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
+                                                          FSUI_STR("Achievements are not enabled."));
+    });
     return;
   }
 
@@ -8764,8 +8769,13 @@ void FullscreenUI::OpenLeaderboardsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
-                                                        FSUI_STR("Achievements are not enabled."));
+    GPUThread::RunOnThread([]() {
+      if (!Initialize())
+        return;
+
+      ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
+                                                          FSUI_STR("Achievements are not enabled."));
+    });
     return;
   }
 
