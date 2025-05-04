@@ -108,7 +108,7 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Owned by GPU thread.
   ALIGN_TO_CACHE_LINE std::unique_ptr<GPUBackend> gpu_backend;
-  ALIGN_TO_CACHE_LINE std::unique_ptr<GPUPresenter> gpu_presenter;
+  std::unique_ptr<GPUPresenter> gpu_presenter;
   std::atomic<u32> command_fifo_read_ptr{0};
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
