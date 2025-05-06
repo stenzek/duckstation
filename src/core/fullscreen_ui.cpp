@@ -94,6 +94,8 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
+using ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING;
+using ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
 using ImGuiFullscreen::LAYOUT_SMALL_POPUP_PADDING;
@@ -3967,7 +3969,7 @@ void FullscreenUI::DrawSettingsWindow()
         TinyString::from_format("settings_page_{}", static_cast<u32>(s_state.settings_page)).c_str(),
         ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
                s_state.settings_last_bg_alpha),
-        0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     ResetFocusHere();
 
@@ -7331,7 +7333,7 @@ void FullscreenUI::DrawSaveStateSelector()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         "##save_state_selector_list", ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
     ResetFocusHere();
     BeginMenuButtons();
@@ -7349,13 +7351,13 @@ void FullscreenUI::DrawSaveStateSelector()
     const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing +
                               UIStyle.LargeFont->FontSize + summary_spacing + UIStyle.MediumFont->FontSize;
     const ImVec2 item_size(item_width, item_height);
-    const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
+    const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetContentRegionAvail().x / item_width_with_spacing));
     const float start_x =
       (static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) *
       0.5f;
 
     u32 grid_x = 0;
-    ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
+    ImGui::SetCursorPosX(start_x);
     for (u32 i = 0; i < s_state.save_state_selector_slots.size();)
     {
       SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
@@ -7875,7 +7877,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
   if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries",
-                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), ImVec2(10.0f, 10.0f)))
+                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()),
+                                  ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
     const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
 
@@ -8154,7 +8157,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "game_grid",
-        ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha())))
+        ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
+        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
     EndFullscreenWindow();
     return;
@@ -8177,7 +8181,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const ImVec2 image_size(image_width, image_height);
   const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + UIStyle.MediumFont->FontSize;
   const ImVec2 item_size(item_width, item_height);
-  const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
+  const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetContentRegionAvail().x / item_width_with_spacing));
   const float start_x =
     (static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
   const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
@@ -8185,7 +8189,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   SmallString draw_title;
 
   u32 grid_x = 0;
-  ImGui::SetCursorPos(ImVec2(start_x, 0.0f));
+  ImGui::SetCursorPosX(start_x);
   for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
   {
     ImGuiWindow* window = ImGui::GetCurrentWindow();

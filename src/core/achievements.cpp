@@ -2907,7 +2907,8 @@ void Achievements::DrawAchievementsWindow()
   if (ImGuiFullscreen::BeginFullscreenWindow(
         ImVec2(0.0f, heading_height),
         ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-        "achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
+        "achievements", background, 0.0f,
+        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING), 0))
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
     static constexpr std::pair<const char*, const char*> bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
@@ -3422,7 +3423,8 @@ void Achievements::DrawLeaderboardsWindow()
     if (ImGuiFullscreen::BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-          "leaderboards", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
+          "leaderboards", background, 0.0f,
+          ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING), 0))
     {
       ImGuiFullscreen::ResetFocusHere();
       ImGuiFullscreen::BeginMenuButtons();
@@ -3453,7 +3455,8 @@ void Achievements::DrawLeaderboardsWindow()
     if (ImGuiFullscreen::BeginFullscreenWindow(
           ImVec2(0.0f, heading_height),
           ImVec2(display_size.x, display_size.y - heading_height - LayoutScale(ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT)),
-          "leaderboard", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
+          "leaderboard", background, 0.0f,
+          ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING), 0))
     {
       // Defer focus reset until loading finishes.
       if (!s_state.is_showing_all_leaderboard_entries ||

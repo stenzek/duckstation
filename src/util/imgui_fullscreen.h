@@ -42,6 +42,7 @@ static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
 static constexpr float LAYOUT_MENU_BUTTON_SPACING = 4.0f;
 static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
+static constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
 static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
