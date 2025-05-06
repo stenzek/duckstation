@@ -71,8 +71,6 @@ static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroac
 static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachievements.org/user/{}";
 static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 
-static constexpr size_t URL_BUFFER_SIZE = 256;
-
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
@@ -150,7 +148,8 @@ static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
 static void BeginLoadGame();
 static void UpdateGameSummary(bool update_progress_database, bool force_update_progress_database);
-static std::string GetLocalImagePath(const std::string_view image_name, int type);
+static std::string GetImageURL(const char* image_name, u32 type);
+static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
 static const std::string& GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked);
 static void UpdateGlyphRanges();
@@ -399,7 +398,21 @@ std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::strin
   return ret;
 }
 
-std::string Achievements::GetLocalImagePath(const std::string_view image_name, int type)
+std::string Achievements::GetImageURL(const char* image_name, u32 type)
+{
+  std::string ret;
+
+  const rc_api_fetch_image_request_t image_request = {.image_name = image_name, .image_type = type};
+  rc_api_request_t request;
+  int result = rc_api_init_fetch_image_request(&request, &image_request);
+  if (result == RC_OK)
+    ret = request.url;
+
+  rc_api_destroy_request(&request);
+  return ret;
+}
+
+std::string Achievements::GetLocalImagePath(const std::string_view image_name, u32 type)
 {
   std::string_view prefix;
   std::string_view suffix;
@@ -1393,12 +1406,8 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (display_summary)
     GPUThread::RunOnThread(&FullscreenUI::Initialize);
 
-  char url_buf[URL_BUFFER_SIZE];
-  if (int err = rc_client_game_get_image_url(info, url_buf, std::size(url_buf)); err == RC_OK)
-    s_state.game_icon_url = url_buf;
-  else
-    ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-
+  s_state.game_icon_url =
+    info->badge_url ? std::string(info->badge_url) : GetImageURL(info->badge_name, RC_IMAGE_TYPE_GAME);
   s_state.game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
   if (!s_state.game_icon.empty() && !s_state.game_icon_url.empty() &&
       !FileSystem::FileExists(s_state.game_icon.c_str()))
@@ -1576,15 +1585,18 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
   INFO_LOG("Subset {} ({}) complete", event->subset->title, event->subset->id);
   UpdateGameSummary(false, false);
 
-  if (g_settings.achievements_notifications)
+  if (g_settings.achievements_notifications && event->subset->badge_name)
   {
     // Need to grab the icon for the subset.
-    std::string badge_path;
-    if (const std::string_view badge_url = event->subset->badge_url; !badge_url.empty())
+    std::string badge_path = GetLocalImagePath(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
+    if (!FileSystem::FileExists(badge_path.c_str()))
     {
-      badge_path = GetLocalImagePath(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
-      if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str()))
-        DownloadImage(std::string(badge_url), badge_path);
+      std::string url;
+      if (IsUsingRAIntegration() || !event->subset->badge_url)
+        url = GetImageURL(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
+      else
+        url = event->subset->badge_url;
+      DownloadImage(std::move(url), badge_path);
     }
 
     std::string title = event->subset->title;
@@ -2018,12 +2030,20 @@ bool Achievements::DoState(StateWrapper& sw)
 std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                                   bool download_if_missing)
 {
-  const std::string path =
-    GetLocalImagePath(achievement->badge_name, locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT);
+  const u32 image_type = locked ? RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED : RC_IMAGE_TYPE_ACHIEVEMENT;
+  const std::string path = GetLocalImagePath(achievement->badge_name, image_type);
   if (download_if_missing && !path.empty() && !FileSystem::FileExists(path.c_str()))
   {
-    const std::string_view url = locked ? achievement->badge_locked_url : achievement->badge_url;
-    if (url.empty())
+    std::string url;
+    const char* url_ptr;
+
+    // RAIntegration doesn't set the URL fields.
+    if (IsUsingRAIntegration() || !(url_ptr = locked ? achievement->badge_locked_url : achievement->badge_url))
+      url = GetImageURL(achievement->badge_name, image_type);
+    else
+      url = std::string(url_ptr);
+
+    if (url.empty()) [[unlikely]]
       ReportFmtError("Acheivement {} with badge name {} has no badge URL", achievement->id, achievement->badge_name);
     else
       DownloadImage(std::string(url), path);
@@ -2046,17 +2066,12 @@ const std::string& Achievements::GetCachedAchievementBadgePath(const rc_client_a
 
 std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry)
 {
-  // TODO: maybe we should just cache these in memory...
   const std::string path = GetLocalImagePath(entry->user, RC_IMAGE_TYPE_USER);
-
   if (!FileSystem::FileExists(path.c_str()))
   {
-    char buf[URL_BUFFER_SIZE];
-    const int res = rc_client_leaderboard_entry_get_user_image_url(entry, buf, std::size(buf));
-    if (res == RC_OK)
-      DownloadImage(buf, path);
-    else
-      ReportRCError(res, "rc_client_leaderboard_entry_get_user_image_url() for {} failed", entry->user);
+    std::string url = GetImageURL(entry->user, RC_IMAGE_TYPE_USER);
+    if (!url.empty())
+      DownloadImage(std::move(url), path);
   }
 
   return path;
@@ -2257,12 +2272,13 @@ std::string Achievements::GetLoggedInUserBadgePath()
   badge_path = GetLocalImagePath(user->username, RC_IMAGE_TYPE_USER);
   if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
   {
-    char url[URL_BUFFER_SIZE];
-    const int res = rc_client_user_get_image_url(user, url, std::size(url));
-    if (res == RC_OK)
-      DownloadImage(url, badge_path);
+    std::string url;
+    if (IsUsingRAIntegration() || !user->avatar_url)
+      url = GetImageURL(user->username, RC_IMAGE_TYPE_USER);
     else
-      ReportRCError(res, "rc_client_user_get_image_url() failed: ");
+      url = user->avatar_url;
+
+    DownloadImage(std::move(url), badge_path);
   }
 
   return badge_path;
