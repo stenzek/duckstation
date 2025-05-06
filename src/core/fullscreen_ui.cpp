@@ -734,7 +734,8 @@ bool FullscreenUI::Initialize()
   if (s_state.initialized)
     return true;
 
-  if (s_state.tried_to_initialize)
+  // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
+  if (s_state.tried_to_initialize || !ImGuiManager::IsInitialized())
     return false;
 
   ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));

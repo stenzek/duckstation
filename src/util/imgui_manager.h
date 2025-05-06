@@ -86,6 +86,9 @@ void Shutdown();
 /// Returns main ImGui context.
 ImGuiContext* GetMainContext();
 
+/// Returns true if there is currently a context created.
+bool IsInitialized();
+
 /// Sets the size of the screen margins, or "safe zone".
 void SetScreenMargin(float margin);
 

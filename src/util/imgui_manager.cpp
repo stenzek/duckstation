@@ -311,6 +311,11 @@ ImGuiContext* ImGuiManager::GetMainContext()
   return s_state.imgui_context;
 }
 
+bool ImGuiManager::IsInitialized()
+{
+  return (s_state.imgui_context != nullptr);
+}
+
 void ImGuiManager::SetScreenMargin(float margin)
 {
   s_state.screen_margin = std::max(margin, 0.0f);
