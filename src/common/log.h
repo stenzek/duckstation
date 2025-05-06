@@ -33,8 +33,8 @@ enum class Color : u32
 {
   Default,
   Black,
-  Green,
   Red,
+  Green,
   Blue,
   Magenta,
   Orange,
