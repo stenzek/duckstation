@@ -44,12 +44,6 @@
      <property name="icon">
       <iconset theme="disc-line"/>
      </property>
-     <actiongroup name="actionGroupChangeDiscSubImages"/>
-     <addaction name="actionChangeDiscFromFile"/>
-     <addaction name="actionChangeDiscFromDevice"/>
-     <addaction name="actionChangeDiscFromGameList"/>
-     <addaction name="actionRemoveDisc"/>
-     <addaction name="separator"/>
     </widget>
     <widget class="QMenu" name="menuCheats">
      <property name="title">

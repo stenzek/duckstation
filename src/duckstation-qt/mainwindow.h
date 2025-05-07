@@ -169,7 +169,6 @@ private Q_SLOTS:
   void onChangeDiscFromGameListActionTriggered();
   void onChangeDiscFromDeviceActionTriggered();
   void onChangeDiscMenuAboutToShow();
-  void onChangeDiscMenuAboutToHide();
   void onLoadStateMenuAboutToShow();
   void onSaveStateMenuAboutToShow();
   void onCheatsActionTriggered();
@@ -286,12 +285,6 @@ private:
 
   void populateLoadStateMenu(std::string_view game_serial, QMenu* menu);
   void populateSaveStateMenu(std::string_view game_serial, QMenu* menu);
-
-  /// Fills menu with the current playlist entries. The disc index is marked as checked.
-  void populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group);
-
-  /// Fills menu with the current cheat options.
-  void populateCheatsMenu(QMenu* menu);
 
   const GameList::Entry* resolveDiscSetEntry(const GameList::Entry* entry,
                                              std::unique_lock<std::recursive_mutex>& lock);
