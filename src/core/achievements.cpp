@@ -858,7 +858,10 @@ void Achievements::Shutdown()
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   if (s_state.using_raintegration)
+  {
     UnloadRAIntegration();
+    return;
+  }
 #endif
 
   DestroyClient(&s_state.client, &s_state.http_downloader);
@@ -4744,8 +4747,7 @@ void Achievements::FinishLoadRAIntegrationOnCPUThread()
 
 void Achievements::UnloadRAIntegration()
 {
-  if (!s_state.using_raintegration)
-    return;
+  DebugAssert(s_state.using_raintegration && s_state.client);
 
   if (s_state.load_raintegration_request)
   {
@@ -4753,9 +4755,16 @@ void Achievements::UnloadRAIntegration()
     s_state.load_raintegration_request = nullptr;
   }
 
-  rc_client_unload_raintegration(s_state.client);
+  // Have to unload it on the UI thread, otherwise the DLL unload races the UI thread message processing.
+  s_state.http_downloader->WaitForAllRequests();
+  s_state.http_downloader.reset();
   s_state.raintegration_loading = false;
   s_state.using_raintegration = false;
+  Host::RunOnUIThread([client = std::exchange(s_state.client, nullptr)]() {
+    rc_client_unload_raintegration(client);
+    rc_client_destroy(client);
+  });
+
   Host::OnRAIntegrationMenuChanged();
 }
 
