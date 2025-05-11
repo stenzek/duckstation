@@ -3247,7 +3247,7 @@ static void rc_client_fetch_hash_library_callback(const rc_api_server_response_t
   else
   {
     rc_client_hash_library_t* list;
-    const size_t list_size = sizeof(*list) + sizeof(rc_client_leaderboard_entry_t) * hashlib_response.num_entries;
+    const size_t list_size = sizeof(*list) + sizeof(rc_client_hash_library_entry_t) * hashlib_response.num_entries;
     size_t needed_size = list_size;
     uint32_t i;
 
@@ -3339,21 +3339,24 @@ void rc_client_destroy_hash_library(rc_client_hash_library_t* list)
   free(list);
 }
 
-typedef struct rc_client_fetch_all_progress_callback_data_t
+/* ===== Fetch Game Hashes ===== */
+
+typedef struct rc_client_fetch_all_user_progress_callback_data_t
 {
   rc_client_t* client;
-  rc_client_fetch_all_progress_list_callback_t callback;
+  rc_client_fetch_all_user_progress_callback_t callback;
   void* callback_userdata;
   uint32_t console_id;
   rc_client_async_handle_t async_handle;
-} rc_client_fetch_all_progress_callback_data_t;
+} rc_client_fetch_all_user_progress_callback_data_t;
 
-static void rc_client_fetch_all_progress_callback(const rc_api_server_response_t* server_response, void* callback_data)
+static void rc_client_fetch_all_user_progress_callback(const rc_api_server_response_t* server_response,
+                                                       void* callback_data)
 {
-  rc_client_fetch_all_progress_callback_data_t* ap_callback_data =
-    (rc_client_fetch_all_progress_callback_data_t*)callback_data;
+  rc_client_fetch_all_user_progress_callback_data_t* ap_callback_data =
+    (rc_client_fetch_all_user_progress_callback_data_t*)callback_data;
   rc_client_t* client = ap_callback_data->client;
-  rc_api_fetch_all_progress_response_t ap_response;
+  rc_api_fetch_all_user_progress_response_t ap_response;
   const char* error_message;
   int result;
 
@@ -3367,7 +3370,7 @@ static void rc_client_fetch_all_progress_callback(const rc_api_server_response_t
     return;
   }
 
-  result = rc_api_process_fetch_all_progress_server_response(&ap_response, server_response);
+  result = rc_api_process_fetch_all_user_progress_server_response(&ap_response, server_response);
   error_message = rc_client_server_error_message(&result, server_response->http_status_code, &ap_response.response);
   if (error_message)
   {
@@ -3377,10 +3380,10 @@ static void rc_client_fetch_all_progress_callback(const rc_api_server_response_t
   }
   else
   {
-    rc_client_all_progress_list_t* list;
-    const size_t list_size = sizeof(*list) + sizeof(rc_client_all_progress_list_entry_t) * ap_response.num_entries;
+    rc_client_all_user_progress_t* list;
+    const size_t list_size = sizeof(*list) + sizeof(rc_client_all_user_progress_entry_t) * ap_response.num_entries;
 
-    list = (rc_client_all_progress_list_t*)malloc(list_size);
+    list = (rc_client_all_user_progress_t*)malloc(list_size);
     if (!list)
     {
       ap_callback_data->callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), NULL, client,
@@ -3388,10 +3391,10 @@ static void rc_client_fetch_all_progress_callback(const rc_api_server_response_t
     }
     else
     {
-      rc_client_all_progress_list_entry_t* entry = list->entries =
-        (rc_client_all_progress_list_entry_t*)((uint8_t*)list + sizeof(*list));
-      const rc_api_all_progress_entry_t* hlentry = ap_response.entries;
-      const rc_api_all_progress_entry_t* stop = hlentry + ap_response.num_entries;
+      rc_client_all_user_progress_entry_t* entry = list->entries =
+        (rc_client_all_user_progress_entry_t*)((uint8_t*)list + sizeof(*list));
+      const rc_api_all_user_progress_entry_t* hlentry = ap_response.entries;
+      const rc_api_all_user_progress_entry_t* stop = hlentry + ap_response.num_entries;
 
       for (; hlentry < stop; ++hlentry, ++entry)
       {
@@ -3407,16 +3410,16 @@ static void rc_client_fetch_all_progress_callback(const rc_api_server_response_t
     }
   }
 
-  rc_api_destroy_fetch_all_progress_response(&ap_response);
+  rc_api_destroy_fetch_all_user_progress_response(&ap_response);
   free(ap_callback_data);
 }
 
-rc_client_async_handle_t* rc_client_begin_fetch_all_progress_list(rc_client_t* client, uint32_t console_id,
-                                                                  rc_client_fetch_all_progress_list_callback_t callback,
+rc_client_async_handle_t* rc_client_begin_fetch_all_user_progress(rc_client_t* client, uint32_t console_id,
+                                                                  rc_client_fetch_all_user_progress_callback_t callback,
                                                                   void* callback_userdata)
 {
-  rc_api_fetch_all_progress_request_t api_params;
-  rc_client_fetch_all_progress_callback_data_t* callback_data;
+  rc_api_fetch_all_user_progress_request_t api_params;
+  rc_client_fetch_all_user_progress_callback_data_t* callback_data;
   rc_client_async_handle_t* async_handle;
   rc_api_request_t request;
   int result;
@@ -3437,7 +3440,7 @@ rc_client_async_handle_t* rc_client_begin_fetch_all_progress_list(rc_client_t* c
   api_params.api_token = client->user.token;
   api_params.console_id = console_id;
 
-  result = rc_api_init_fetch_all_progress_request_hosted(&request, &api_params, &client->state.host);
+  result = rc_api_init_fetch_all_user_progress_request_hosted(&request, &api_params, &client->state.host);
 
   if (result != RC_OK)
   {
@@ -3446,7 +3449,7 @@ rc_client_async_handle_t* rc_client_begin_fetch_all_progress_list(rc_client_t* c
     return NULL;
   }
 
-  callback_data = (rc_client_fetch_all_progress_callback_data_t*)calloc(1, sizeof(*callback_data));
+  callback_data = (rc_client_fetch_all_user_progress_callback_data_t*)calloc(1, sizeof(*callback_data));
   if (!callback_data)
   {
     callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), NULL, client, callback_userdata);
@@ -3460,13 +3463,13 @@ rc_client_async_handle_t* rc_client_begin_fetch_all_progress_list(rc_client_t* c
 
   async_handle = &callback_data->async_handle;
   rc_client_begin_async(client, async_handle);
-  client->callbacks.server_call(&request, rc_client_fetch_all_progress_callback, callback_data, client);
+  client->callbacks.server_call(&request, rc_client_fetch_all_user_progress_callback, callback_data, client);
   rc_api_destroy_request(&request);
 
   return rc_client_async_handle_valid(client, async_handle) ? async_handle : NULL;
 }
 
-void rc_client_destroy_all_progress_list(rc_client_all_progress_list_t* list)
+void rc_client_destroy_all_user_progress(rc_client_all_user_progress_t* list)
 {
   free(list);
 }

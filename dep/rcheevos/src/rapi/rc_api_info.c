@@ -2,7 +2,6 @@
 #include "rc_api_common.h"
 #include "rc_api_runtime.h"
 
-#include "rc_consoles.h"
 #include "rc_runtime_types.h"
 
 #include "../rc_compat.h"
@@ -509,9 +508,7 @@ int rc_api_init_fetch_hash_library_request_hosted(rc_api_request_t* request,
   rc_api_url_builder_t builder;
   rc_api_url_build_dorequest_url(request, host);
 
-  if (api_params->console_id == RC_CONSOLE_UNKNOWN)
-    return RC_INVALID_STATE;
-
+  /* note: unauthenticated request */
   rc_url_builder_init(&builder, &request->buffer, 48);
   rc_url_builder_append_str_param(&builder, "r", "hashlibrary");
   rc_url_builder_append_unum_param(&builder, "c", api_params->console_id);
@@ -529,7 +526,6 @@ int rc_api_process_fetch_hash_library_server_response(rc_api_fetch_hash_library_
   rc_json_iterator_t iterator;
   rc_json_field_t field;
   int result;
-  char* end;
 
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
@@ -545,36 +541,36 @@ int rc_api_process_fetch_hash_library_server_response(rc_api_fetch_hash_library_
   if (result != RC_OK)
     return result;
 
-  if (!fields[2].value_start)
-  {
+  if (!fields[2].value_start) {
     /* call rc_json_get_required_object to generate the error message */
     rc_json_get_required_object(NULL, 0, &response->response, &fields[2], "MD5List");
     return RC_MISSING_VALUE;
   }
 
   response->num_entries = fields[2].array_size;
-  rc_buffer_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_hash_library_entry_t)));
+  if (response->num_entries > 0) {
+    rc_buffer_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_hash_library_entry_t)));
 
-  response->entries = (rc_api_hash_library_entry_t*)rc_buffer_alloc(
-    &response->response.buffer, response->num_entries * sizeof(rc_api_hash_library_entry_t));
-  if (!response->entries)
-    return RC_OUT_OF_MEMORY;
+    response->entries = (rc_api_hash_library_entry_t*)rc_buffer_alloc(
+      &response->response.buffer, response->num_entries * sizeof(rc_api_hash_library_entry_t));
+    if (!response->entries)
+      return RC_OUT_OF_MEMORY;
 
-  memset(&iterator, 0, sizeof(iterator));
-  iterator.json = fields[2].value_start;
-  iterator.end = fields[2].value_end;
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = fields[2].value_start;
+    iterator.end = fields[2].value_end;
 
-  entry = response->entries;
-  while (rc_json_get_next_object_field(&iterator, &field))
-  {
-    /* TODO: This isn't handling escape characters in the key, the RC JSON parsing functions have no method for it. */
-    entry->hash = rc_buffer_strncpy(&response->response.buffer, field.name, field.name_len);
+    entry = response->entries;
+    while (rc_json_get_next_object_field(&iterator, &field)) {
+      /* TODO: This isn't handling escape characters in the key, the RC JSON parsing functions have no method for it. */
+      entry->hash = rc_buffer_strncpy(&response->response.buffer, field.name, field.name_len);
 
-    field.name = "";
-    if (!rc_json_get_unum(&entry->game_id, &field, ""))
-      return RC_MISSING_VALUE;
+      field.name = "";
+      if (!rc_json_get_unum(&entry->game_id, &field, ""))
+        return RC_MISSING_VALUE;
 
-    ++entry;
+      ++entry;
+    }
   }
 
   return RC_OK;

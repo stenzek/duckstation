@@ -216,19 +216,19 @@ RC_EXPORT void RC_CCONV rc_api_destroy_fetch_followed_users_response(rc_api_fetc
 /* --- Fetch All Progress --- */
 
 /**
- * API parameters for a fetch all progress request.
+ * API parameters for a fetch all user progress request.
  */
-typedef struct rc_api_fetch_all_progress_request_t {
+typedef struct rc_api_fetch_all_user_progress_request_t {
   /* The username of the player */
   const char* username;
   /* The API token from the login request */
   const char* api_token;
   /* The unique identifier of the console to query */
   uint32_t console_id;
-} rc_api_fetch_all_progress_request_t;
+} rc_api_fetch_all_user_progress_request_t;
 
-/* An all-progress entry */
-typedef struct rc_api_all_progress_entry_t {
+/* An all-user-progress entry */
+typedef struct rc_api_all_user_progress_entry_t {
   /* The unique identifier of the game */
   uint32_t game_id;
   /* The total number of achievements for this game */
@@ -237,25 +237,25 @@ typedef struct rc_api_all_progress_entry_t {
   uint32_t num_unlocked_achievements;
   /* The total number of unlocked achievements for this game in hardcore mode */
   uint32_t num_unlocked_achievements_hardcore;
-} rc_api_all_progress_entry_t;
+} rc_api_all_user_progress_entry_t;
 
 /**
- * Response data for a fetch all progress request.
+ * Response data for a fetch all user progress request.
  */
-typedef struct rc_api_fetch_all_progress_response_t {
+typedef struct rc_api_fetch_all_user_progress_response_t {
   /* An array of entries, one per game */
-  rc_api_all_progress_entry_t* entries;
+  rc_api_all_user_progress_entry_t* entries;
   /* The number of items in the entries array */
   uint32_t num_entries;
 
   /* Common server-provided response information */
   rc_api_response_t response;
-} rc_api_fetch_all_progress_response_t;
+} rc_api_fetch_all_user_progress_response_t;
 
-RC_EXPORT int RC_CCONV rc_api_init_fetch_all_progress_request(rc_api_request_t* request, const rc_api_fetch_all_progress_request_t* api_params);
-RC_EXPORT int RC_CCONV rc_api_init_fetch_all_progress_request_hosted(rc_api_request_t* request, const rc_api_fetch_all_progress_request_t* api_params, const rc_api_host_t* host);
-RC_EXPORT int RC_CCONV rc_api_process_fetch_all_progress_server_response(rc_api_fetch_all_progress_response_t* response, const rc_api_server_response_t* server_response);
-RC_EXPORT void RC_CCONV rc_api_destroy_fetch_all_progress_response(rc_api_fetch_all_progress_response_t* response);
+RC_EXPORT int RC_CCONV rc_api_init_fetch_all_user_progress_request(rc_api_request_t* request, const rc_api_fetch_all_user_progress_request_t* api_params);
+RC_EXPORT int RC_CCONV rc_api_init_fetch_all_user_progress_request_hosted(rc_api_request_t* request, const rc_api_fetch_all_user_progress_request_t* api_params, const rc_api_host_t* host);
+RC_EXPORT int RC_CCONV rc_api_process_fetch_all_user_progress_server_response(rc_api_fetch_all_user_progress_response_t* response, const rc_api_server_response_t* server_response);
+RC_EXPORT void RC_CCONV rc_api_destroy_fetch_all_user_progress_response(rc_api_fetch_all_user_progress_response_t* response);
 
 RC_END_C_DECLS
 

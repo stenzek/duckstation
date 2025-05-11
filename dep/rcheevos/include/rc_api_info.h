@@ -239,7 +239,10 @@ RC_EXPORT void RC_CCONV rc_api_destroy_fetch_game_titles_response(rc_api_fetch_g
  * API parameters for a fetch games list request.
  */
 typedef struct rc_api_fetch_hash_library_request_t {
-  /* The unique identifier of the console to query */
+  /**
+   * The unique identifier of the console to query.
+   * Passing RC_CONSOLE_UNKNOWN will return hashes for all consoles.
+   */
   uint32_t console_id;
 } rc_api_fetch_hash_library_request_t;
 
