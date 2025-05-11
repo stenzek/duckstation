@@ -432,6 +432,7 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
       if (parse->addsource_parent.type != RC_OPERAND_NONE) {
         /* type determined by leaf */
         rc_operand_addsource(&condition->operand1, parse, condition->operand1.size);
+        condition->operand1.is_combining = 1;
       }
 
       memcpy(&parse->remember, &condition->operand1, sizeof(parse->remember));
@@ -465,6 +466,7 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
       if (parse->addsource_parent.type != RC_OPERAND_NONE) {
         /* type determined by leaf */
         rc_operand_addsource(&condition->operand1, parse, condition->operand1.size);
+        condition->operand1.is_combining = 1;
 
         if (parse->buffer)
           condition->optimized_comparator = rc_condition_determine_comparator(condition);
@@ -474,6 +476,49 @@ void rc_condition_update_parse_state(rc_condition_t* condition, rc_parse_state_t
       parse->indirect_parent.type = RC_OPERAND_NONE;
       break;
   }
+}
+
+static const rc_modified_memref_t* rc_operand_get_modified_memref(const rc_operand_t* operand) {
+  if (!rc_operand_is_memref(operand))
+    return NULL;
+
+  if (operand->value.memref->value.memref_type != RC_MEMREF_TYPE_MODIFIED_MEMREF)
+    return NULL;
+
+  return (rc_modified_memref_t*)operand->value.memref;
+}
+
+/* rc_condition_update_parse_state will mutate the operand1 to point at the modified memref
+ * containing the accumulated result up until that point. this function returns the original
+ * unmodified operand1 from parsing the definition.
+ */
+const rc_operand_t* rc_condition_get_real_operand1(const rc_condition_t* self) {
+  const rc_operand_t* operand = &self->operand1;
+  const rc_modified_memref_t* modified_memref;
+
+  if (operand->is_combining) {
+    /* operand = "previous + current" - extract current */
+    const rc_modified_memref_t* combining_modified_memref = rc_operand_get_modified_memref(operand);
+    if (combining_modified_memref)
+      operand = &combining_modified_memref->modifier;
+  }
+
+  /* modifying operators are merged into an rc_modified_memref_t
+   * if operand1 is a modified memref, assume it's been merged with the right side and
+   * extract the parent which is the actual operand1. */
+  modified_memref = rc_operand_get_modified_memref(operand);
+  if (modified_memref) {
+    if (modified_memref->modifier_type == RC_OPERATOR_INDIRECT_READ) {
+      /* if the modified memref is an indirect read, the parent is the indirect
+       * address and the modifier is the offset. the actual size and address are
+       * stored in the modified memref - use it */
+    } else if (rc_operator_is_modifying(self->oper) && self->oper != RC_OPERATOR_NONE) {
+      /* operand = "parent*modifier" - extract parent.modifier will already be in operand2 */
+      operand = &modified_memref->parent;
+    }
+  }
+
+  return operand;
 }
 
 int rc_condition_is_combining(const rc_condition_t* self) {

@@ -364,7 +364,7 @@
     <Type Name="rc_client_t">
         <Expand>
             <Item Name="game">game</Item>
-            <Item Name="hashes">*((__rc_client_game_hash_list_t*)&amp;hashes)</Item>
+            <Item Name="hashes">*((__rc_client_game_hash_list_t*)this)</Item>
             <Item Name="user">user</Item>
             <Item Name="callbacks">callbacks</Item>
             <Item Name="state">state</Item>

@@ -80,7 +80,7 @@ const char* rc_api_default_host(void);
 void rc_api_url_build_dorequest_url(rc_api_request_t* request, const rc_api_host_t* host);
 int rc_api_url_build_dorequest(rc_api_url_builder_t* builder, const char* api, const char* username, const char* api_token);
 
-const char* rc_api_build_avatar_url(rc_buffer_t* buffer, uint32_t image_type, const char* username);
+const char* rc_api_build_avatar_url(rc_buffer_t* buffer, uint32_t image_type, const char* image_name);
 
 RC_END_C_DECLS
 

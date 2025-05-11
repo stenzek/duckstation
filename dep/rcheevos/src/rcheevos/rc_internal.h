@@ -335,10 +335,12 @@ int rc_test_condition(rc_condition_t* self, rc_eval_state_t* eval_state);
 void rc_evaluate_condition_value(rc_typed_value_t* value, rc_condition_t* self, rc_eval_state_t* eval_state);
 int rc_condition_is_combining(const rc_condition_t* self);
 void rc_condition_convert_to_operand(const rc_condition_t* condition, rc_operand_t* operand, rc_parse_state_t* parse);
+const rc_operand_t* rc_condition_get_real_operand1(const rc_condition_t* self);
 
 int rc_parse_operand(rc_operand_t* self, const char** memaddr, rc_parse_state_t* parse);
 void rc_evaluate_operand(rc_typed_value_t* value, const rc_operand_t* self, rc_eval_state_t* eval_state);
 int rc_operator_is_modifying(int oper);
+int rc_memsize_is_float(uint8_t size);
 int rc_operand_is_float_memref(const rc_operand_t* self);
 int rc_operand_is_float(const rc_operand_t* self);
 int rc_operand_is_recall(const rc_operand_t* self);

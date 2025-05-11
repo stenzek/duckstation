@@ -64,6 +64,7 @@ typedef struct rc_client_load_state_t
 
 #ifdef RC_CLIENT_SUPPORTS_HASH
   rc_hash_iterator_t hash_iterator;
+  rc_client_game_hash_t* tried_hashes[4];
 #endif
   rc_client_pending_media_t* pending_media;
 
@@ -2235,40 +2236,31 @@ static void rc_client_process_resolved_hash(rc_client_load_state_t* load_state)
       return;
     }
 
-    if (load_state->game->media_hash &&
-        load_state->game->media_hash->game_hash &&
-        load_state->game->media_hash->game_hash->next) {
+    if (load_state->tried_hashes[1]) {
       /* multiple hashes were tried, create a CSV */
-      struct rc_client_game_hash_t* game_hash = load_state->game->media_hash->game_hash;
-      int count = 1;
+      size_t i;
+      size_t count = 0;
       char* ptr;
-      size_t size;
+      size_t size = 0;
 
-      size = strlen(game_hash->hash) + 1;
-      while (game_hash->next) {
-        game_hash = game_hash->next;
-        size += strlen(game_hash->hash) + 1;
+      for (i = 0; i < sizeof(load_state->tried_hashes) / sizeof(load_state->tried_hashes[0]); ++i) {
+        if (!load_state->tried_hashes[i])
+          break;
+
+        size += strlen(load_state->tried_hashes[i]->hash) + 1;
         count++;
       }
 
       ptr = (char*)rc_buffer_alloc(&load_state->game->buffer, size);
-      ptr += size - 1;
-      *ptr = '\0';
-      game_hash = load_state->game->media_hash->game_hash;
-      do {
-        const size_t hash_len = strlen(game_hash->hash);
-        ptr -= hash_len;
-        memcpy(ptr, game_hash->hash, hash_len);
-
-        game_hash = game_hash->next;
-        if (!game_hash)
-          break;
-
-        ptr--;
-        *ptr = ',';
-      } while (1);
-
       load_state->game->public_.hash = ptr;
+      for (i = 0; i < count; i++) {
+        const size_t hash_len = strlen(load_state->tried_hashes[i]->hash);
+        memcpy(ptr, load_state->tried_hashes[i]->hash, hash_len);
+        ptr += hash_len;
+        *ptr++ = ',';
+      }
+      *(ptr - 1) = '\0';
+
       load_state->game->public_.console_id = RC_CONSOLE_UNKNOWN;
     } else {
       /* only a single hash was tried, capture it */
@@ -2293,6 +2285,12 @@ static void rc_client_process_resolved_hash(rc_client_load_state_t* load_state)
 
     if (load_state->hash->game_id == 0) {
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
+ #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
+      if (client->state.raintegration && client->state.raintegration->set_console_id) {
+        if (load_state->game->public_.console_id != RC_CONSOLE_UNKNOWN)
+          client->state.raintegration->set_console_id(load_state->game->public_.console_id);
+      }
+ #endif
       if (client->state.external_client) {
         if (client->state.external_client->load_unknown_game) {
           client->state.external_client->load_unknown_game(load_state->game->public_.hash);
@@ -2504,6 +2502,9 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 {
   rc_client_t* client = load_state->client;
   rc_client_game_hash_t* old_hash;
+#ifdef RC_CLIENT_SUPPORTS_HASH
+  size_t i;
+#endif
 
   if (!rc_client_attach_load_state(client, load_state)) {
     rc_client_free_load_state(load_state);
@@ -2512,6 +2513,24 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 
   old_hash = load_state->hash;
   load_state->hash = rc_client_find_game_hash(client, hash);
+
+#ifdef RC_CLIENT_SUPPORTS_HASH
+  i = 0;
+  do {
+    if (!load_state->tried_hashes[i]) {
+      load_state->tried_hashes[i] = load_state->hash;
+      break;
+    }
+
+    if (load_state->tried_hashes[i] == load_state->hash)
+      break;
+
+    if (++i == sizeof(load_state->tried_hashes) / sizeof(load_state->tried_hashes[0])) {
+      RC_CLIENT_LOG_VERBOSE(client, "tried_hashes buffer is full");
+      break;
+    }
+  } while (1);
+#endif
 
   if (file_path) {
     rc_client_media_hash_t* media_hash =
@@ -2553,12 +2572,37 @@ static rc_client_async_handle_t* rc_client_load_game(rc_client_load_state_t* loa
 
     rc_api_destroy_request(&request);
   }
+  else if (load_state->hash->game_id != RC_CLIENT_UNKNOWN_GAME_ID &&
+           client->state.external_client && client->state.external_client->begin_load_game) {
+    rc_client_begin_async(client, &load_state->async_handle);
+    client->state.external_client->begin_load_game(client, load_state->hash->hash, rc_client_external_load_state_callback, load_state);
+  }
 #endif
   else {
     rc_client_begin_fetch_game_data(load_state);
   }
 
   return (client->state.load == load_state) ? &load_state->async_handle : NULL;
+}
+
+static void rc_client_abort_load_in_progress(rc_client_t* client)
+{
+  rc_client_load_state_t* load_state;
+
+  rc_mutex_lock(&client->state.mutex);
+
+  load_state = client->state.load;
+  if (load_state) {
+    /* this mimics rc_client_abort_async without nesting the lock */
+    load_state->async_handle.aborted = RC_CLIENT_ASYNC_ABORTED;
+
+    client->state.load = NULL;
+  }
+
+  rc_mutex_unlock(&client->state.mutex);
+
+  if (load_state && load_state->callback)
+    load_state->callback(RC_ABORTED, "The requested game is no longer active", load_state->client, load_state->callback_userdata);
 }
 
 rc_client_async_handle_t* rc_client_begin_load_game(rc_client_t* client, const char* hash, rc_client_callback_t callback, void* callback_userdata)
@@ -2574,6 +2618,8 @@ rc_client_async_handle_t* rc_client_begin_load_game(rc_client_t* client, const c
     callback(RC_INVALID_STATE, "hash is required", client, callback_userdata);
     return NULL;
   }
+
+  rc_client_abort_load_in_progress(client);
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   if (client->state.external_client && client->state.external_client->begin_load_game)
@@ -2615,6 +2661,8 @@ rc_client_async_handle_t* rc_client_begin_identify_and_load_game(rc_client_t* cl
     callback(RC_INVALID_STATE, "client is required", client, callback_userdata);
     return NULL;
   }
+
+  rc_client_abort_load_in_progress(client);
 
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   /* if a add_game_hash handler exists, do the identification locally, then pass the
@@ -5991,6 +6039,9 @@ void rc_client_reset(rc_client_t* client)
 
 int rc_client_can_pause(rc_client_t* client, uint32_t* frames_remaining)
 {
+  if (!client)
+    return 1;
+
 #ifdef RC_CLIENT_SUPPORTS_EXTERNAL
   if (client->state.external_client && client->state.external_client->can_pause)
     return client->state.external_client->can_pause(frames_remaining);

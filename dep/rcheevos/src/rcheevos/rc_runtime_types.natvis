@@ -120,7 +120,7 @@
         </Expand>
     </Type>
     <Type Name="__rc_operand_memref_t">
-        <DisplayString Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">... {*((__rc_memsize_enum_func_t*)&amp;operand.size)} {operand.value.memref->address,x}</DisplayString>
+        <DisplayString Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">... {*((__rc_memsize_enum_func_t*)&amp;operand.size)} {((rc_modified_memref_t*)operand.value.memref)->parent,na}</DisplayString>
         <DisplayString Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_VALUE">value {((rc_value_t*)operand.value.memref)->name,s}</DisplayString>
         <DisplayString>{*((__rc_memsize_enum_func_t*)&amp;operand.size)} {operand.value.memref->address,x}</DisplayString>
         <Expand>

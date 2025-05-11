@@ -199,8 +199,10 @@ static uint32_t rc_max_chain_value(const rc_operand_t* operand)
 {
   if (rc_operand_is_memref(operand) && operand->value.memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
     const rc_modified_memref_t* modified_memref = (const rc_modified_memref_t*)operand->value.memref;
-    const uint32_t op_max = rc_max_chain_value(&modified_memref->parent);
-    return rc_scale_value(op_max, modified_memref->modifier_type, &modified_memref->modifier);
+    if (modified_memref->modifier_type != RC_OPERATOR_INDIRECT_READ) {
+      const uint32_t op_max = rc_max_chain_value(&modified_memref->parent);
+      return rc_scale_value(op_max, modified_memref->modifier_type, &modified_memref->modifier);
+    }
   }
 
   return rc_max_value(operand);
@@ -304,11 +306,13 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
   }
 
   for (cond = condset->conditions; cond; cond = cond->next, ++index) {
-    const int is_memref1 = rc_operand_is_memref(&cond->operand1);
+    /* validate the original operands first */
+    const rc_operand_t* operand1 = rc_condition_get_real_operand1(cond);
+    int is_memref1 = rc_operand_is_memref(operand1);
     const int is_memref2 = rc_operand_is_memref(&cond->operand2);
 
     if (!in_add_address) {
-      if (is_memref1 && !rc_validate_memref(cond->operand1.value.memref, buffer, sizeof(buffer), console_id, max_address)) {
+      if (is_memref1 && !rc_validate_memref(operand1->value.memref, buffer, sizeof(buffer), console_id, max_address)) {
         snprintf(result, result_size, "Condition %d: %s", index, buffer);
         return 0;
       }
@@ -321,8 +325,8 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
       in_add_address = 0;
     }
 
-    if (rc_operand_is_recall(&cond->operand1)) {
-      if (rc_operand_type_is_memref(cond->operand1.memref_access_type) && !cond->operand1.value.memref) {
+    if (rc_operand_is_recall(operand1)) {
+      if (rc_operand_type_is_memref(operand1->memref_access_type) && !operand1->value.memref) {
         snprintf(result, result_size, "Condition %d: Recall used before Remember", index);
         return 0;
       }
@@ -343,8 +347,16 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
         continue;
 
       case RC_CONDITION_ADD_ADDRESS:
-        if (cond->operand1.type == RC_OPERAND_DELTA || cond->operand1.type == RC_OPERAND_PRIOR) {
+        if (operand1->type == RC_OPERAND_DELTA || operand1->type == RC_OPERAND_PRIOR) {
           snprintf(result, result_size, "Condition %d: Using pointer from previous frame", index);
+          return 0;
+        }
+        if (rc_operand_is_float(&cond->operand1) || rc_operand_is_float(&cond->operand2)) {
+          snprintf(result, result_size, "Condition %d: Using non-integer value in AddAddress calcuation", index);
+          return 0;
+        }
+        if (rc_operand_type_is_transform(cond->operand1.type)) {
+          snprintf(result, result_size, "Condition %d: Using transformed value in AddAddress calcuation", index);
           return 0;
         }
         in_add_address = 1;
@@ -390,22 +402,26 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
         break;
     }
 
+    /* original operands are valid. now switch to the derived operands for logic
+     * combining/comparing them */
+    operand1 = &cond->operand1;
+    is_memref1 = rc_operand_is_memref(operand1);
+
     /* check for comparing two differently sized memrefs */
     if (is_memref1 && is_memref2 &&
-        cond->operand1.value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF &&
+        operand1->value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF &&
         cond->operand2.value.memref->value.memref_type == RC_MEMREF_TYPE_MEMREF &&
-        rc_max_value(&cond->operand1) != rc_max_value(&cond->operand2)) {
+        rc_max_value(operand1) != rc_max_value(&cond->operand2)) {
       snprintf(result, result_size, "Condition %d: Comparing different memory sizes", index);
       return 0;
     }
 
-    if (is_memref1 && rc_operand_is_float(&cond->operand1)) {
+    if (is_memref1 && rc_operand_is_float(operand1)) {
       /* if left side is a float, right side will be converted to a float, so don't do range validation */
     }
     else if (is_memref1 || is_memref2) {
       /* if either side is a memref, check for impossible comparisons */
       const size_t prefix_length = snprintf(result, result_size, "Condition %d: ", index);
-      const rc_operand_t* operand1 = &cond->operand1;
       const rc_operand_t* operand2 = &cond->operand2;
       uint8_t oper = cond->oper;
       uint32_t max = rc_max_chain_value(operand1);
@@ -414,8 +430,8 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, char result
 
       if (!is_memref1) {
         /* pretend constant was on right side */
+        operand2 = operand1;
         operand1 = &cond->operand2;
-        operand2 = &cond->operand1;
         max_val = max;
         max = rc_max_value(&cond->operand2);
 

@@ -124,6 +124,9 @@ typedef struct rc_operand_t {
 
   /* specifies how to read the memref for some types (RC_OPERAND_*) */
   uint8_t memref_access_type;
+
+  /* if set, this operand is combining the current condition with the previous one */
+  uint8_t is_combining;
 }
 rc_operand_t;
 
