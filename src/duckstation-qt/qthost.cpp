@@ -1343,7 +1343,7 @@ void EmuThread::reloadTextureReplacements()
   }
 
   if (System::IsValid())
-    GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true); });
+    GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
 }
 
 void EmuThread::captureGPUFrameDump()

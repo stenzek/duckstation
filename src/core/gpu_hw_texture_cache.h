@@ -130,7 +130,7 @@ bool AreSourcePagesDrawn(SourceKey key, const GSVector4i rect);
 void Compact();
 
 void GameSerialChanged();
-void ReloadTextureReplacements(bool show_info);
+void ReloadTextureReplacements(bool show_info, bool show_info_if_none);
 
 // VRAM Write Replacements
 GPUTexture* GetVRAMReplacement(u32 width, u32 height, const void* pixels);

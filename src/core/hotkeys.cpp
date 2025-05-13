@@ -464,7 +464,7 @@ DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Texture Replacements"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true); });
+                  GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true, true); });
               })
 
 DEFINE_HOTKEY("IncreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),

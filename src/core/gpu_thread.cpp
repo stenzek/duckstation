@@ -1399,7 +1399,8 @@ void GPUThread::SetGameSerial(std::string serial)
     s_state.game_serial = std::move(serial);
     if (changed)
     {
-      GPUTextureCache::GameSerialChanged();
+      if (HasGPUBackend())
+        GPUTextureCache::GameSerialChanged();
       if (SaveStateSelectorUI::IsOpen())
         SaveStateSelectorUI::RefreshList();
     }

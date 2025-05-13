@@ -27,6 +27,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
+#include "IconsFontAwesome5.h"
 
 #ifndef XXH_STATIC_LINKING_ONLY
 #define XXH_STATIC_LINKING_ONLY
@@ -599,8 +600,12 @@ bool GPUTextureCache::Initialize(GPU_HW* backend, Error* error)
   s_state.hw_backend = backend;
 
   SetHashCacheTextureFormat();
-  ReloadTextureReplacements(false);
+
+  // note: safe because the CPU thread is waiting for the GPU thread to finish initializing
+  ReloadTextureReplacements(System::GetState() == System::State::Starting, false);
+
   UpdateVRAMTrackingState();
+
   if (!CompilePipelines(error))
     return false;
 
@@ -639,7 +644,7 @@ bool GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
       }
     }
 
-    ReloadTextureReplacements(false);
+    ReloadTextureReplacements(false, false);
   }
 
   UpdateVRAMTrackingState();
@@ -2719,7 +2724,7 @@ size_t GPUTextureCache::DumpedTextureKeyHash::operator()(const DumpedTextureKey&
 
 void GPUTextureCache::GameSerialChanged()
 {
-  ReloadTextureReplacements(false);
+  ReloadTextureReplacements(false, false);
 }
 
 GPUTexture* GPUTextureCache::GetVRAMReplacement(u32 width, u32 height, const void* pixels)
@@ -3618,7 +3623,7 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
   return (s_state.config != old_config);
 }
 
-void GPUTextureCache::ReloadTextureReplacements(bool show_info)
+void GPUTextureCache::ReloadTextureReplacements(bool show_info, bool show_info_if_none)
 {
   s_state.dumped_textures.clear();
   s_state.dumped_vram_writes.clear();
@@ -3655,11 +3660,14 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
     const int total =
       static_cast<int>(s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
                        s_state.texture_page_texture_replacements.size());
-    Host::AddIconOSDMessage("ReloadTextureReplacements", ICON_EMOJI_REFRESH,
-                            (total > 0) ? TRANSLATE_PLURAL_STR("GPU_HW", "%n replacement textures found.",
-                                                               "Replacement texture count", total) :
-                                          TRANSLATE_STR("GPU_HW", "No replacement textures found."),
-                            Host::OSD_INFO_DURATION);
+    if (total > 0 || show_info_if_none)
+    {
+      Host::AddIconOSDMessage("ReloadTextureReplacements", ICON_FA_IMAGES,
+                              (total > 0) ? TRANSLATE_PLURAL_STR("GPU_HW", "%n replacement textures found.",
+                                                                 "Replacement texture count", total) :
+                                            TRANSLATE_STR("GPU_HW", "No replacement textures found."),
+                              Host::OSD_INFO_DURATION);
+    }
   }
 }
 

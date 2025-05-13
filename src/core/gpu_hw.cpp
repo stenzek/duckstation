@@ -299,7 +299,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   else
   {
     // Still potentially have VRAM texture replacements.
-    GPUTextureCache::ReloadTextureReplacements(false);
+    GPUTextureCache::ReloadTextureReplacements(System::GetState() == System::State::Starting, false);
   }
 
   UpdateDownsamplingLevels();
