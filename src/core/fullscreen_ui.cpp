@@ -4880,7 +4880,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                     false);
 #ifdef _WIN32
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_COG, "Enable XInput Input Source"),
-                    FSUI_VSTR("The XInput source provides support for XBox 360/XBox One/XBox Series controllers."),
+                    FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
+                              "are using a XInput wrapper library."),
                     "InputSources", "XInput", false);
 #endif
 
@@ -9726,6 +9727,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
 TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller preset.");
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
 TRANSLATE_NOOP("FullscreenUI", "Summary");
+TRANSLATE_NOOP("FullscreenUI", "Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.");
 TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");
@@ -9736,7 +9738,6 @@ TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");
 TRANSLATE_NOOP("FullscreenUI", "Textures Directory");
 TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers.");
-TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
 TRANSLATE_NOOP("FullscreenUI", "Theme");
