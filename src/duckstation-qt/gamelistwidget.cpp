@@ -30,6 +30,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
+#include <algorithm>
 
 static constexpr float MIN_SCALE = 0.1f;
 static constexpr float MAX_SCALE = 2.0f;
@@ -938,9 +939,10 @@ public:
     m_filter_region = region;
     invalidateRowsFilter();
   }
-  void setFilterName(const QString& name)
+  void setFilterName(std::string name)
   {
-    m_filter_name = name;
+    m_filter_name = std::move(name);
+    std::transform(m_filter_name.begin(), m_filter_name.end(), m_filter_name.begin(), StringUtil::ToLower);
     invalidateRowsFilter();
   }
 
@@ -970,11 +972,15 @@ public:
     if (m_filter_region != DiscRegion::Count && entry->region != m_filter_region)
       return false;
 
-    if (!m_filter_name.isEmpty() &&
-          !QString::fromStdString(entry->path).contains(m_filter_name, Qt::CaseInsensitive) &&
-          !QString::fromStdString(entry->serial).contains(m_filter_name, Qt::CaseInsensitive) &&
-          !QString::fromStdString(entry->title).contains(m_filter_name, Qt::CaseInsensitive))
-      return false;
+    if (!m_filter_name.empty())
+    {
+      if (!((!entry->IsDiscSet() && !entry->path.empty() && StringUtil::ContainsNoCase(entry->path, m_filter_name)) ||
+            (!entry->serial.empty() && StringUtil::ContainsNoCase(entry->serial, m_filter_name)) ||
+            (!entry->title.empty() && StringUtil::ContainsNoCase(entry->title, m_filter_name))))
+      {
+        return false;
+      }
+    }
 
     return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
   }
@@ -988,7 +994,7 @@ private:
   GameListModel* m_model;
   GameList::EntryType m_filter_type = GameList::EntryType::MaxCount;
   DiscRegion m_filter_region = DiscRegion::Count;
-  QString m_filter_name;
+  std::string m_filter_name;
   bool m_merge_disc_sets = true;
 };
 
@@ -1155,7 +1161,7 @@ void GameListWidget::initialize()
     m_sort_model->setFilterRegion((index == 0) ? DiscRegion::Count : static_cast<DiscRegion>(index - 1));
   });
   connect(m_ui.searchText, &QLineEdit::textChanged, this,
-          [this](const QString& text) { m_sort_model->setFilterName(text); });
+          [this](const QString& text) { m_sort_model->setFilterName(text.toStdString()); });
   connect(m_ui.searchText, &QLineEdit::returnPressed, this, &GameListWidget::onSearchReturnPressed);
 
   GameListCenterIconStyleDelegate* center_icon_delegate = new GameListCenterIconStyleDelegate(this);
