@@ -1656,7 +1656,7 @@ template<MemoryAccessSize size>
 u32 Bus::SIO2ReadHandler(PhysicalMemoryAddress address)
 {
   // Stub for using PS2 BIOS.
-  if (!System::IsUsingPS2BIOS()) [[unlikely]]
+  if (System::IsUsingKnownPS1BIOS()) [[unlikely]]
   {
     // Throw exception when not using PS2 BIOS.
     return UnmappedReadHandler<size>(address);
@@ -1670,7 +1670,7 @@ template<MemoryAccessSize size>
 void Bus::SIO2WriteHandler(PhysicalMemoryAddress address, u32 value)
 {
   // Stub for using PS2 BIOS.
-  if (!System::IsUsingPS2BIOS()) [[unlikely]]
+  if (System::IsUsingKnownPS1BIOS()) [[unlikely]]
   {
     // Throw exception when not using PS2 BIOS.
     UnmappedWriteHandler<size>(address, value);

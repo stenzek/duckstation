@@ -226,7 +226,7 @@ const std::string& GetExeOverride();
 const GameDatabase::Entry* GetGameDatabaseEntry();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
-bool IsUsingPS2BIOS();
+bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
 
 /// Returns the time elapsed in the current play session.

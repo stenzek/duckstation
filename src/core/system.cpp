@@ -795,9 +795,9 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
-bool System::IsUsingPS2BIOS()
+bool System::IsUsingKnownPS1BIOS()
 {
-  return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type2);
+  return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type1);
 }
 
 bool System::IsDiscPath(std::string_view path)
