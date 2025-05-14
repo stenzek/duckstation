@@ -2082,12 +2082,14 @@ void CPU::CheckForExecutionModeChange()
   WARNING_LOG("Execution mode changed from {} to {}", Settings::GetCPUExecutionModeName(s_current_execution_mode),
               Settings::GetCPUExecutionModeName(new_execution_mode));
 
+  // Clear bus error flag, it can get set in the rec and we don't want to fire it later in the int.
+  g_state.bus_error = false;
+
   const bool new_interpreter = (new_execution_mode == CPUExecutionMode::Interpreter);
   if (g_state.using_interpreter != new_interpreter)
   {
     // Have to clear out the icache too, only the tags are valid in the recs.
     ClearICache();
-    g_state.bus_error = false;
 
     if (new_interpreter)
     {
@@ -2464,7 +2466,6 @@ template<PGXPMode pgxp_mode, bool debug>
       g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
       g_state.next_instruction_is_branch_delay_slot = false;
       g_state.branch_was_taken = false;
-      g_state.exception_raised = false;
 
       // fetch the next instruction - even if this fails, it'll still refetch on the flush so we can continue
       if (!FetchInstruction())
@@ -2579,6 +2580,7 @@ void CPU::CodeCache::InterpretCachedBlock(const Block* block)
   // set up the state so we've already fetched the instruction
   DebugAssert(g_state.pc == block->pc);
   g_state.npc = block->pc + 4;
+  g_state.exception_raised = false;
 
   const Instruction* instruction = block->Instructions();
   const Instruction* end_instruction = instruction + block->size;
@@ -2594,7 +2596,6 @@ void CPU::CodeCache::InterpretCachedBlock(const Block* block)
     g_state.current_instruction_in_branch_delay_slot = info->is_branch_delay_slot; // TODO: let int set it instead
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
     g_state.branch_was_taken = false;
-    g_state.exception_raised = false;
 
     // update pc
     g_state.pc = g_state.npc;
@@ -2625,6 +2626,8 @@ template<PGXPMode pgxp_mode>
 void CPU::CodeCache::InterpretUncachedBlock()
 {
   g_state.npc = g_state.pc;
+  g_state.exception_raised = false;
+  g_state.bus_error = false;
   if (!FetchInstructionForInterpreterFallback())
     return;
 
@@ -2642,7 +2645,6 @@ void CPU::CodeCache::InterpretUncachedBlock()
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
     g_state.next_instruction_is_branch_delay_slot = false;
     g_state.branch_was_taken = false;
-    g_state.exception_raised = false;
 
     // Fetch the next instruction, except if we're in a branch delay slot. The "fetch" is done in the next block.
     const bool branch = IsBranchInstruction(g_state.current_instruction);
@@ -2684,12 +2686,16 @@ template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::CPU>();
 
 bool CPU::RecompilerThunks::InterpretInstruction()
 {
+  g_state.exception_raised = false;
+  g_state.bus_error = false;
   ExecuteInstruction<PGXPMode::Disabled, false>();
   return g_state.exception_raised;
 }
 
 bool CPU::RecompilerThunks::InterpretInstructionPGXP()
 {
+  g_state.exception_raised = false;
+  g_state.bus_error = false;
   ExecuteInstruction<PGXPMode::Memory, false>();
   return g_state.exception_raised;
 }
