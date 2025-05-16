@@ -511,7 +511,8 @@ int rc_api_init_fetch_hash_library_request_hosted(rc_api_request_t* request,
   /* note: unauthenticated request */
   rc_url_builder_init(&builder, &request->buffer, 48);
   rc_url_builder_append_str_param(&builder, "r", "hashlibrary");
-  rc_url_builder_append_unum_param(&builder, "c", api_params->console_id);
+  if (api_params->console_id != 0)
+    rc_url_builder_append_unum_param(&builder, "c", api_params->console_id);
 
   request->post_data = rc_url_builder_finalize(&builder);
   request->content_type = RC_CONTENT_TYPE_URLENCODED;
