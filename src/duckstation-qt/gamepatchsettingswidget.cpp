@@ -79,7 +79,7 @@ void GamePatchSettingsWidget::disableAllPatches()
 void GamePatchSettingsWidget::reloadList()
 {
   std::vector<Cheats::CodeInfo> patches =
-    Cheats::GetCodeInfoList(m_dialog->getGameSerial(), std::nullopt, false, true, true);
+    Cheats::GetCodeInfoList(m_dialog->getGameSerial(), m_dialog->getGameHash(), false, true, true);
   std::vector<std::string> enabled_list =
     m_dialog->getSettingsInterface()->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
