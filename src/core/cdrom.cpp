@@ -308,8 +308,8 @@ static void ClearAsyncInterrupt();
 static void DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late);
 static void QueueDeliverAsyncInterrupt();
 static void SendACKAndStat();
-static void SendErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
-static void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
+static void SendErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = ERROR_REASON_NOT_READY);
+static void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = ERROR_REASON_NOT_READY);
 static void UpdateStatusRegister();
 static void UpdateInterruptRequest();
 static bool HasPendingDiscEvent();
@@ -353,6 +353,7 @@ static void ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& 
 static void ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq);
 static void ProcessCDDASector(const u8* raw_sector, const CDImage::SubChannelQ& subq, bool subq_valid);
 static void StopReadingWithDataEnd();
+static void StopReadingWithError(u8 reason = ERROR_REASON_NOT_READY);
 static void StartMotor();
 static void StopMotor();
 static void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
@@ -3224,6 +3225,15 @@ void CDROM::StopReadingWithDataEnd()
   ClearDriveState();
 }
 
+void CDROM::StopReadingWithError(u8 reason)
+{
+  ClearAsyncInterrupt();
+  CDROM::SendAsyncErrorResponse(STAT_ERROR, reason);
+
+  s_state.secondary_status.ClearActiveBits();
+  ClearDriveState();
+}
+
 void CDROM::StartMotor()
 {
   if (s_state.drive_state == DriveState::SpinningUp)
@@ -3249,9 +3259,11 @@ void CDROM::StopMotor()
 void CDROM::DoSectorRead()
 {
   // TODO: Queue the next read here and swap the buffer.
-  // TODO: Error handling
   if (!s_reader.WaitForReadToComplete())
-    Panic("Sector read failed");
+  {
+    StopReadingWithError();
+    return;
+  }
 
   s_state.current_lba = s_reader.GetLastReadSector();
   s_state.current_subq_lba = s_state.current_lba;
