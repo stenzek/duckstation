@@ -2919,7 +2919,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>The XInput source provides support for XBox 360 / XBox One / XBox Series controllers, and third party controllers which implement the XInput protocol.</source>
-        <translation>XInput-källan ger stöd för XBox 360 / XBox One / XBox Series-handkontroller samt tredjepartskontroller som implementerar XInput-protokollet.</translation>
+        <translation type="vanished">XInput-källan ger stöd för XBox 360 / XBox One / XBox Series-handkontroller samt tredjepartskontroller som implementerar XInput-protokollet.</translation>
     </message>
     <message>
         <source>Enable XInput Input Source</source>
@@ -3004,6 +3004,10 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>Detected Devices</source>
         <translation>Identifierade enheter</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XInput-källan ger stöd för styrenheter som använder XInput-protokollet. Denna källa bör &lt;span style=&quot; font-weight:700;&quot;&gt;endast&lt;/span&gt; användas om du använder ett XInput-wrapperbibliotek.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -7022,7 +7026,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>The XInput source provides support for XBox 360/XBox One/XBox Series controllers.</source>
-        <translation>XInput-källan ger stöd för XBox 360/XBox One/XBox Series-kontroller.</translation>
+        <translation type="vanished">XInput-källan ger stöd för XBox 360/XBox One/XBox Series-kontroller.</translation>
     </message>
     <message>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
@@ -7564,6 +7568,18 @@ Du kan inte ångra den här åtgärden.</translation>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation>Hardcore-läget kommer inte att aktiveras förrän systemet har startats om. Vill du starta om systemet nu?</translation>
     </message>
+    <message>
+        <source>Draws a border around the currently-selected item for readability.</source>
+        <translation>Ritar en ram runt det valda objektet för att underlätta läsbarheten.</translation>
+    </message>
+    <message>
+        <source>Menu Borders</source>
+        <translation>Menyramar</translation>
+    </message>
+    <message>
+        <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
+        <translation>Stöd för styrenheter som använder XInput-protokollet. XInput bör endast användas om du använder ett XInput-wrapper-bibliotek.</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -7700,6 +7716,12 @@ Det kräver framebuffer fetch, feedback loopar eller rasterizer order views.</tr
     <message>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
         <translation>Upplösningsskalan {0}x är inte delbar med nedsamplingsskalan {1}x, nedsampling inaktiverad.</translation>
+    </message>
+    <message>
+        <source>Failed to allocate {}x{} texture for cache:
+{}</source>
+        <translation>Det gick inte att allokera {}x{}-textur för cache:
+{}</translation>
     </message>
 </context>
 <context>
@@ -7933,6 +7955,14 @@ Are you sure you want to continue?</source>
 Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avmarkerar &quot;Läs in databasfusk&quot;.
 
 Är du säker på att du vill fortsätta?</translation>
+    </message>
+    <message>
+        <source>Confirm Game Settings Enable</source>
+        <translation>Bekräfta aktivering av spelinställningar</translation>
+    </message>
+    <message>
+        <source>&lt;h3&gt;Game settings are currently disabled.&lt;/h3&gt;&lt;p&gt;This is &lt;strong&gt;not&lt;/strong&gt; the default. Enabling this cheat will not have any effect until game settings are enabled. Do you want to do this now?</source>
+        <translation>&lt;h3&gt;Spelinställningarna är för närvarande inaktiverade.&lt;/h3&gt;&lt;p&gt;Detta är &lt;strong&gt;inte&lt;/strong&gt; standardinställningen. Aktivering av detta fusk har ingen effekt förrän spelinställningarna är aktiverade. Vill du göra det nu?</translation>
     </message>
 </context>
 <context>
