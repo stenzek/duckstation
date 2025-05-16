@@ -93,7 +93,7 @@ static void ClearOSDMessages(bool clear_warnings);
 static void AcquirePendingOSDMessages(Timer::Value current_time);
 static void DrawOSDMessages(Timer::Value current_time);
 static void CreateSoftwareCursorTextures();
-static void UpdateSoftwareCursorTexture(u32 index);
+static void UpdateSoftwareCursorTexture(SoftwareCursor& cursor, const std::string& image_path);
 static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
 
@@ -1536,10 +1536,12 @@ void ImGuiManager::SetClipboardTextImpl(void* userdata, const char* text)
 
 void ImGuiManager::CreateSoftwareCursorTextures()
 {
-  for (u32 i = 0; i < static_cast<u32>(s_state.software_cursors.size()); i++)
+  for (SoftwareCursor& sc : s_state.software_cursors)
   {
-    if (!s_state.software_cursors[i].image_path.empty())
-      UpdateSoftwareCursorTexture(i);
+    // This would normally be a racey read, but when we're initializing ImGuiManager, it's during a reconfigure of the
+    // GPUThread. That means that the CPU thread is waiting for the reconfigure to finish.
+    if (!sc.image_path.empty())
+      UpdateSoftwareCursorTexture(sc, sc.image_path);
   }
 }
 
@@ -1549,10 +1551,9 @@ void ImGuiManager::DestroySoftwareCursorTextures()
     sc.texture.reset();
 }
 
-void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
+void ImGuiManager::UpdateSoftwareCursorTexture(SoftwareCursor& sc, const std::string& image_path)
 {
-  SoftwareCursor& sc = s_state.software_cursors[index];
-  if (sc.image_path.empty())
+  if (image_path.empty())
   {
     sc.texture.reset();
     return;
@@ -1560,9 +1561,10 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
 
   Error error;
   Image image;
-  if (!image.LoadFromFile(sc.image_path.c_str(), &error))
+  if (!image.LoadFromFile(image_path.c_str(), &error))
   {
-    ERROR_LOG("Failed to load software cursor {} image '{}': {}", index, sc.image_path, error.GetDescription());
+    ERROR_LOG("Failed to load software cursor {} image '{}': {}", std::distance(s_state.software_cursors.data(), &sc),
+              image_path, error.GetDescription());
     return;
   }
   g_gpu_device->RecycleTexture(std::move(sc.texture));
@@ -1571,8 +1573,8 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
                                           image.GetPitch(), &error);
   if (!sc.texture)
   {
-    ERROR_LOG("Failed to upload {}x{} software cursor {} image '{}': {}", image.GetWidth(), image.GetHeight(), index,
-              sc.image_path, error.GetDescription());
+    ERROR_LOG("Failed to upload {}x{} software cursor {} image '{}': {}", image.GetWidth(), image.GetHeight(),
+              std::distance(s_state.software_cursors.data(), &sc), image_path, error.GetDescription());
     return;
   }
 
@@ -1616,8 +1618,13 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
   const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
   sc.image_path = std::move(image_path);
   sc.scale = image_scale;
-  if (g_gpu_device)
-    UpdateSoftwareCursorTexture(index);
+  if (GPUThread::IsGPUBackendRequested())
+  {
+    GPUThread::RunOnThread([index, image_path = sc.image_path]() {
+      if (GPUThread::HasGPUBackend())
+        UpdateSoftwareCursorTexture(s_state.software_cursors[index], image_path);
+    });
+  }
 
   // Hide the system cursor when we activate a software cursor.
   if (is_hiding_or_showing && index <= InputManager::MAX_POINTER_DEVICES)
