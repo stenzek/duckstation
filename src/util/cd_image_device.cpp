@@ -544,7 +544,7 @@ bool CDImageDeviceWin32::ReadSectorToBuffer(LBA lba)
     const u32 expected_size = SCSIReadCommandOutputSize(m_scsi_read_mode);
     if (size.value_or(0) != expected_size)
     {
-      ERROR_LOG("Read of LBA {} failed: only got {} of {} bytes", lba, size.value(), expected_size);
+      ERROR_LOG("Read of LBA {} failed: only got {} of {} bytes", lba, size.value_or(0), expected_size);
       return false;
     }
   }
@@ -1015,7 +1015,7 @@ bool CDImageDeviceLinux::ReadSectorToBuffer(LBA lba)
     const u32 expected_size = SCSIReadCommandOutputSize(m_scsi_read_mode);
     if (size.value_or(0) != expected_size)
     {
-      ERROR_LOG("Read of LBA {} failed: only got {} of {} bytes", lba, size.value(), expected_size);
+      ERROR_LOG("Read of LBA {} failed: only got {} of {} bytes", lba, size.value_or(0), expected_size);
       return false;
     }
   }
