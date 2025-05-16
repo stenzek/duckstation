@@ -119,7 +119,5 @@ void GamePatchSettingsWidget::reloadList()
     layout->addWidget(label);
   }
 
-  layout->addStretch(1);
-
   m_ui.scrollArea->setWidget(container);
 }
