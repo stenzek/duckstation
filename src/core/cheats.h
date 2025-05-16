@@ -60,6 +60,7 @@ struct CodeInfo
   CodeType type = CodeType::Gameshark;
   CodeActivation activation = CodeActivation::EndFrame;
   bool from_database = false;
+  bool disallow_for_achievements = false;
 
   std::string_view GetNamePart() const;
   std::string_view GetNameParentPart() const;

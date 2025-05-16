@@ -15,7 +15,8 @@
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-                                               const std::string& description, bool enabled, SettingsWindow* dialog,
+                                               const std::string& description, bool enabled,
+                                               bool disallowed_for_achievements, SettingsWindow* dialog,
                                                QWidget* parent)
   : QWidget(parent), m_dialog(dialog), m_name(name)
 {
@@ -23,8 +24,10 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 
   m_ui.name->setText(QString::fromStdString(name));
   m_ui.description->setText(
-    tr("<strong>Author: </strong>%1<br>%2")
+    tr("<strong>Author: </strong>%1%2<br>%3")
       .arg(author.empty() ? tr("Unknown") : QString::fromStdString(author))
+      .arg(disallowed_for_achievements ? tr("<br><strong>Not permitted in RetroAchievements hardcore mode.</strong>") :
+                                         QString())
       .arg(description.empty() ? tr("No description provided.") : QString::fromStdString(description)));
 
   DebugAssert(dialog->getSettingsInterface());
@@ -108,8 +111,8 @@ void GamePatchSettingsWidget::reloadList()
       }
 
       const bool enabled = (std::find(enabled_list.begin(), enabled_list.end(), pi.name) != enabled_list.end());
-      GamePatchDetailsWidget* it =
-        new GamePatchDetailsWidget(std::move(pi.name), pi.author, pi.description, enabled, m_dialog, container);
+      GamePatchDetailsWidget* it = new GamePatchDetailsWidget(
+        std::move(pi.name), pi.author, pi.description, pi.disallow_for_achievements, enabled, m_dialog, container);
       layout->addWidget(it);
     }
   }

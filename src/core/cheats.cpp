@@ -1320,6 +1320,10 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
           }
         }
       }
+      else if (key == "DisallowForAchievements")
+      {
+        current_code.disallow_for_achievements = StringUtil::FromChars<bool>(value).value_or(false);
+      }
       else if (key == "Ignore")
       {
         ignore_this_code = StringUtil::FromChars<bool>(value).value_or(false);
