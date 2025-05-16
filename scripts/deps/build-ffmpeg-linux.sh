@@ -50,6 +50,7 @@ AMF=1.4.34
 OPUS=1.5.2
 SVT_AV1=2.3.0
 GLSLANG=15.3.0
+VULKAN_HEADERS=1.4.315
 
 # Encoder list from freedesktop SDK, which apparently came from Fedora.
 # Disabled list: av1_qsv h264_qsv hevc_qsv mjpeg_qsv mpeg2_qsv vc1_qsv vp8_qsv vp9_qsv
@@ -145,6 +146,9 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 	if [ ! -f "glslang-$GLSLANG.tar.gz" ]; then
 		curl -C - -L -o "glslang-$GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/refs/tags/$GLSLANG.tar.gz"
 	fi
+	if [ ! -f "Vulkan-Headers-$VULKAN_HEADERS.tar.gz" ]; then
+		curl -C - -L -o "Vulkan-Headers-$VULKAN_HEADERS.tar.gz" "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/v$VULKAN_HEADERS.tar.gz"
+	fi
 fi
 
 cat > SHASUMS <<EOF
@@ -162,6 +166,7 @@ e935eded7d81631a538bfae703fd1e293aad1c7fd3407ba00440c95105d2011e  libvpx-$LIBVPX
 eaae8af0ac742dc7d542c9439ac72f1f385ce838392dc849cae4536af9210094  speex-$SPEEX.tar.gz
 d4a77bb13a0a2d75c9a17c60260fc7dd3cb48ee8e9ad3a60071f87a923275e93  SVT-AV1-$SVT_AV1.tar.gz
 c6c21fe1873c37e639a6a9ac72d857ab63a5be6893a589f34e09a6c757174201  glslang-$GLSLANG.tar.gz
+77e3a78db853f8b9c5bc3ddef04e637bef9744e01d6a8c90ebe0ddcd916c0c50  Vulkan-Headers-$VULKAN_HEADERS.tar.gz
 EOF
 
 shasum -a 256 --check SHASUMS
@@ -289,6 +294,15 @@ rm -fr SVT-AV1-v$SVT_AV1-*
 tar xf "SVT-AV1-$SVT_AV1.tar.gz"
 cd SVT-AV1-v$SVT_AV1-*
 cmake -B build-ds -G Ninja -DCMAKE_INSTALL_PREFIX="$DEPSINSTALLDIR" -DCMAKE_PREFIX_PATH="$DEPSINSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
+cmake --build build-ds --parallel
+cmake --install build-ds
+cd ..
+
+echo "Building Vulkan-Headers..."
+rm -fr "Vulkan-Headers-$VULKAN_HEADERS"
+tar xf "Vulkan-Headers-$VULKAN_HEADERS.tar.gz"
+cd "Vulkan-Headers-$VULKAN_HEADERS"
+cmake -B build-ds -G Ninja -DCMAKE_INSTALL_PREFIX="$DEPSINSTALLDIR" -DCMAKE_PREFIX_PATH="$DEPSINSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF
 cmake --build build-ds --parallel
 cmake --install build-ds
 cd ..
