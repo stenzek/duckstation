@@ -27,6 +27,7 @@
 #include "common/log.h"
 #include "common/xorshift_prng.h"
 
+#include "IconsEmoji.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
@@ -3259,8 +3260,13 @@ void CDROM::StopMotor()
 void CDROM::DoSectorRead()
 {
   // TODO: Queue the next read here and swap the buffer.
-  if (!s_reader.WaitForReadToComplete())
+  if (!s_reader.WaitForReadToComplete()) [[unlikely]]
   {
+    Host::AddIconOSDWarning(
+      "DiscReadError", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("OSDMessage", "Failed to read sector from disc image. The game will probably crash now.\nYour "
+                                  "dump may be corrupted, or the physical disc is scratched."),
+      Host::OSD_CRITICAL_ERROR_DURATION);
     StopReadingWithError();
     return;
   }
