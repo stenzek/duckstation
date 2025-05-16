@@ -9,7 +9,7 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(SDL3 3.2.0 REQUIRED)
+find_package(SDL3 3.2.14 REQUIRED)
 find_package(zstd 1.5.6 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
@@ -40,7 +40,7 @@ if(ENABLE_WAYLAND)
 endif()
 
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.8.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 endif()
 
 find_package(Shaderc REQUIRED)

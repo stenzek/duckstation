@@ -36,19 +36,20 @@ DEPSINSTALLDIR="$PWD/ffmpeg-deps"
 echo "Installation directory is $INSTALLDIR"
 echo "FFmpeg dependencies directory is $DEPSINSTALLDIR"
 
-FFMPEG=7.0.2
+FFMPEG=7.1.1
 LAME=3.100
-LIBVPX=1.14.1
+LIBVPX=1.15.0
 FDK_AAC=0fc0e0e0b89de3becd5f099eae725f13eeecc0d1
-LIBAOM=3ab84a7710ee34db3e43b3e61c7d69ab80276a33
+LIBAOM=fc5cf6a132697487fbaa9965b249012e0238768f
 LIBOGG=1.3.5
 LIBVORBIS=1.3.7
 LIBTHEORA=1.1.1
-FLAC=1.4.3
+FLAC=1.5.0
 SPEEX=1.2.0
 AMF=1.4.34
 OPUS=1.5.2
-SVT_AV1=2.2.1
+SVT_AV1=2.3.0
+GLSLANG=15.3.0
 
 # Encoder list from freedesktop SDK, which apparently came from Fedora.
 # Disabled list: av1_qsv h264_qsv hevc_qsv mjpeg_qsv mpeg2_qsv vc1_qsv vp8_qsv vp9_qsv
@@ -65,8 +66,8 @@ FFMPEG_ENCODER_LIST=""\
 "dvdsub dvvideo exr ffv1 ffvhuff flac "\
 "flashsv flashsv2 flv g723_1 gif h261 "\
 "h263 h263_v4l2m2m h263p h264_amf "\
-"h264_v4l2m2m h264_vaapi hdr hevc_amf "\
-"hevc_v4l2m2m hevc_vaapi huffyuv jpegls "\
+"h264_v4l2m2m h264_vaapi h264_vulkan hdr hevc_amf "\
+"hevc_v4l2m2m hevc_vaapi hevc_vulkan huffyuv jpegls "\
 "jpeg2000 libaom libaom_av1 libmp3lame "\
 "libopus libschroedinger libspeex libsvtav1 libtheora "\
 "libvorbis libvpx_vp8 libvpx_vp9 libwebp "\
@@ -141,22 +142,26 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 	if [ ! -f "SVT-AV1-$SVT_AV1.tar.gz" ]; then
 		curl -C - -L -O "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v$SVT_AV1/SVT-AV1-$SVT_AV1.tar.gz"
 	fi
+	if [ ! -f "glslang-$GLSLANG.tar.gz" ]; then
+		curl -C - -L -o "glslang-$GLSLANG.tar.gz" "https://github.com/KhronosGroup/glslang/archive/refs/tags/$GLSLANG.tar.gz"
+	fi
 fi
 
 cat > SHASUMS <<EOF
 5393759308f6d7bc9eb1ed8013c954e03aadb85f0ed6e96f969a5df447b0f79c  AMF-headers.tar.gz
 7322744f239a0d8460fde84e92cca77f2fe9d7e25a213789659df9e86b696b42  fdk-aac-stripped-$FDK_AAC.tar.gz
-8646515b638a3ad303e23af6a3587734447cb8fc0a0c064ecdb8e95c4fd8b389  ffmpeg-$FFMPEG.tar.xz
-6c58e69cd22348f441b861092b825e591d0b822e106de6eb0ee4d05d27205b70  flac-$FLAC.tar.xz
+733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1  ffmpeg-$FFMPEG.tar.xz
+f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920  flac-$FLAC.tar.xz
 ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e  lame-$LAME.tar.gz
 0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664  libogg-$LIBOGG.tar.gz
 b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc  libtheora-$LIBTHEORA.tar.bz2
 0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab  libvorbis-$LIBVORBIS.tar.gz
 b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc  libtheora-$LIBTHEORA.tar.bz2
-901747254d80a7937c933d03bd7c5d41e8e6c883e0665fadcb172542167c7977  libvpx-$LIBVPX.tar.gz
+e935eded7d81631a538bfae703fd1e293aad1c7fd3407ba00440c95105d2011e  libvpx-$LIBVPX.tar.gz
 65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1  opus-$OPUS.tar.gz
 eaae8af0ac742dc7d542c9439ac72f1f385ce838392dc849cae4536af9210094  speex-$SPEEX.tar.gz
-66ba0c0c33329e776e363432cf9bdf22e78f10e3771c3e36a8af5bbef13f3356  SVT-AV1-$SVT_AV1.tar.gz
+d4a77bb13a0a2d75c9a17c60260fc7dd3cb48ee8e9ad3a60071f87a923275e93  SVT-AV1-$SVT_AV1.tar.gz
+c6c21fe1873c37e639a6a9ac72d857ab63a5be6893a589f34e09a6c757174201  glslang-$GLSLANG.tar.gz
 EOF
 
 shasum -a 256 --check SHASUMS
@@ -288,6 +293,16 @@ cmake --build build-ds --parallel
 cmake --install build-ds
 cd ..
 
+echo "Building glslang..."
+rm -fr "glslang-$GLSLANG"
+tar xf "glslang-$GLSLANG.tar.gz"
+cd "glslang-$GLSLANG"
+./update_glslang_sources.py
+cmake -B build-ds -G Ninja -DCMAKE_INSTALL_PREFIX="$DEPSINSTALLDIR" -DCMAKE_PREFIX_PATH="$DEPSINSTALLDIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DGLSLANG_TESTS=OFF
+cmake --build build-ds --parallel
+cmake --install build-ds
+cd ..
+
 echo "Building ffmpeg..."
 rm -fr "ffmpeg-$FFMPEG"
 tar xf "ffmpeg-$FFMPEG.tar.xz"
@@ -301,7 +316,7 @@ cd build
     --extra-ldsoflags="-Wl,-rpath,XORIGIN" \
     --disable-all --disable-autodetect --enable-libmp3lame --enable-libvpx --enable-zlib --enable-libwebp \
     --enable-libfdk-aac --enable-libaom --enable-libvorbis --enable-libtheora --enable-libspeex \
-    --enable-v4l2-m2m --enable-vaapi --enable-amf --enable-libopus --enable-libsvtav1 \
+    --enable-v4l2-m2m --enable-vaapi --enable-amf --enable-libopus --enable-libsvtav1 --enable-vulkan --enable-libglslang \
     --enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale \
     --enable-muxer=avi,matroska,mov,mp3,mp4,wav \
     --enable-protocol=file \
