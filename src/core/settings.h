@@ -42,7 +42,7 @@ struct SettingInfo
   const char* max_value;
   const char* step_value;
   const char* format;
-  const char** options;
+  const char* const* options;
   float multiplier;
 
   const char* StringDefaultValue() const;

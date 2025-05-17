@@ -383,10 +383,10 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const char* s_invert_settings[] = {TRANSLATE_NOOP("AnalogJoystick", "Not Inverted"),
-                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right"),
-                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Up/Down"),
-                                          TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right + Up/Down"), nullptr};
+static constexpr const char* s_invert_settings[] = {
+  TRANSLATE_NOOP("AnalogJoystick", "Not Inverted"), TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right"),
+  TRANSLATE_NOOP("AnalogJoystick", "Invert Up/Down"), TRANSLATE_NOOP("AnalogJoystick", "Invert Left/Right + Up/Down"),
+  nullptr};
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogJoystick", "Analog Deadzone"),

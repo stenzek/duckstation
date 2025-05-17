@@ -122,7 +122,7 @@ private:
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
   void UpdateHostVibration();
-  u8 GetExtraButtonMaskLSB() const;
+  u16 GetExtraButtonMask() const;
   void ResetRumbleConfig();
   void Poll();
 
@@ -132,8 +132,10 @@ private:
   std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
+
   bool m_force_analog_on_reset = false;
   bool m_analog_dpad_in_digital_mode = false;
+  u8 m_analog_shoulder_buttons = 0;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;

@@ -415,23 +415,36 @@ void AnalogController::UpdateHostVibration()
   InputManager::SetPadVibrationIntensity(m_index, hvalues[LargeMotor], hvalues[SmallMotor]);
 }
 
-u8 AnalogController::GetExtraButtonMaskLSB() const
+u16 AnalogController::GetExtraButtonMask() const
 {
-  if (!m_analog_dpad_in_digital_mode || m_analog_mode || m_configuration_mode)
-    return 0xFF;
+  u16 mask = 0xFFFF;
 
   static constexpr u8 NEG_THRESHOLD = static_cast<u8>(128.0f - (127.0 * 0.5f));
   static constexpr u8 POS_THRESHOLD = static_cast<u8>(128.0f + (127.0 * 0.5f));
 
-  const bool left = (m_axis_state[static_cast<u8>(Axis::LeftX)] <= NEG_THRESHOLD);
-  const bool right = (m_axis_state[static_cast<u8>(Axis::LeftX)] >= POS_THRESHOLD);
-  const bool up = (m_axis_state[static_cast<u8>(Axis::LeftY)] <= NEG_THRESHOLD);
-  const bool down = (m_axis_state[static_cast<u8>(Axis::LeftY)] >= POS_THRESHOLD);
+  if (m_analog_dpad_in_digital_mode && !m_analog_mode && !m_configuration_mode)
+  {
+    const bool left = (m_axis_state[static_cast<u8>(Axis::LeftX)] <= NEG_THRESHOLD);
+    const bool right = (m_axis_state[static_cast<u8>(Axis::LeftX)] >= POS_THRESHOLD);
+    const bool up = (m_axis_state[static_cast<u8>(Axis::LeftY)] <= NEG_THRESHOLD);
+    const bool down = (m_axis_state[static_cast<u8>(Axis::LeftY)] >= POS_THRESHOLD);
 
-  return ~((static_cast<u8>(left) << static_cast<u8>(Button::Left)) |
-           (static_cast<u8>(right) << static_cast<u8>(Button::Right)) |
-           (static_cast<u8>(up) << static_cast<u8>(Button::Up)) |
-           (static_cast<u8>(down) << static_cast<u8>(Button::Down)));
+    mask = ~((static_cast<u16>(left) << static_cast<u8>(Button::Left)) |
+             (static_cast<u16>(right) << static_cast<u8>(Button::Right)) |
+             (static_cast<u16>(up) << static_cast<u8>(Button::Up)) |
+             (static_cast<u16>(down) << static_cast<u8>(Button::Down)));
+  }
+
+  if (m_analog_shoulder_buttons == 2 || (m_analog_shoulder_buttons == 1 && !m_analog_mode && !m_configuration_mode))
+  {
+    const bool left = (m_axis_state[static_cast<u8>(Axis::RightX)] <= NEG_THRESHOLD);
+    const bool right = (m_axis_state[static_cast<u8>(Axis::RightX)] >= POS_THRESHOLD);
+
+    mask &= ~((static_cast<u16>(left) << static_cast<u8>(Button::L1)) |
+              (static_cast<u16>(right) << static_cast<u8>(Button::R1)));
+  }
+
+  return mask;
 }
 
 void AnalogController::ResetRumbleConfig()
@@ -470,8 +483,11 @@ void AnalogController::Poll()
   // m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   m_tx_buffer[0] = GetIDByte();
   m_tx_buffer[1] = m_status_byte;
-  m_tx_buffer[2] = Truncate8(m_button_state) & GetExtraButtonMaskLSB();
-  m_tx_buffer[3] = Truncate8(m_button_state >> 8);
+
+  const u16 button_state = m_button_state & GetExtraButtonMask();
+  m_tx_buffer[2] = Truncate8(button_state);
+  m_tx_buffer[3] = Truncate8(button_state >> 8);
+
   if (m_analog_mode || m_configuration_mode)
   {
     m_tx_buffer[4] = m_axis_state[static_cast<u8>(Axis::RightX)];
@@ -802,20 +818,30 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const char* s_invert_settings[] = {TRANSLATE_NOOP("AnalogController", "Not Inverted"),
-                                          TRANSLATE_NOOP("AnalogController", "Invert Left/Right"),
-                                          TRANSLATE_NOOP("AnalogController", "Invert Up/Down"),
-                                          TRANSLATE_NOOP("AnalogController", "Invert Left/Right + Up/Down"), nullptr};
+static constexpr const char* s_invert_settings[] = {
+  TRANSLATE_NOOP("AnalogController", "Not Inverted"), TRANSLATE_NOOP("AnalogController", "Invert Left/Right"),
+  TRANSLATE_NOOP("AnalogController", "Invert Up/Down"),
+  TRANSLATE_NOOP("AnalogController", "Invert Left/Right + Up/Down"), nullptr};
+
+static constexpr const char* s_shoulder_settings[] = {
+  TRANSLATE_NOOP("AnalogController", "Never"), TRANSLATE_NOOP("AnalogController", "Digital Mode Only"),
+  TRANSLATE_NOOP("AnalogController", "Analog and Digital Modes"), nullptr};
 
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Boolean, "ForceAnalogOnReset", TRANSLATE_NOOP("AnalogController", "Force Analog Mode on Reset"),
    TRANSLATE_NOOP("AnalogController", "Forces the controller to analog mode when the console is reset/powered on."),
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "AnalogDPadInDigitalMode",
-   TRANSLATE_NOOP("AnalogController", "Use Analog Sticks for D-Pad in Digital Mode"),
-   TRANSLATE_NOOP("AnalogController",
-                  "Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons."),
+   TRANSLATE_NOOP("AnalogController", "Use Left Analog for D-Pad in Digital Mode"),
+   TRANSLATE_NOOP(
+     "AnalogController",
+     "Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons."),
    "true", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::IntegerList, "AnalogShoulderButtons",
+   TRANSLATE_NOOP("AnalogController", "Use Right Analog for Shoulder Buttons"),
+   TRANSLATE_NOOP("AnalogController",
+                  "Allows you to use the right analog stick to control the shoulder buttons, as well as the buttons."),
+   "0", "0", "2", nullptr, nullptr, s_shoulder_settings, 0.0f},
   {SettingInfo::Type::Float, "AnalogDeadzone", TRANSLATE_NOOP("AnalogController", "Analog Deadzone"),
    TRANSLATE_NOOP("AnalogController",
                   "Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored."),
@@ -862,6 +888,7 @@ void AnalogController::LoadSettings(const SettingsInterface& si, const char* sec
   Controller::LoadSettings(si, section, initial);
   m_force_analog_on_reset = si.GetBoolValue(section, "ForceAnalogOnReset", true);
   m_analog_dpad_in_digital_mode = si.GetBoolValue(section, "AnalogDPadInDigitalMode", true);
+  m_analog_shoulder_buttons = static_cast<u8>(si.GetUIntValue(section, "AnalogShoulderButtons", 0u));
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
@@ -870,6 +897,6 @@ void AnalogController::LoadSettings(const SettingsInterface& si, const char* sec
     std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
   m_vibration_bias[1] = static_cast<s16>(
     std::clamp(si.GetIntValue(section, "SmallMotorVibrationBias", DEFAULT_SMALL_MOTOR_VIBRATION_BIAS), -255, 255));
-  m_invert_left_stick = static_cast<u8>(si.GetIntValue(section, "InvertLeftStick", 0));
-  m_invert_right_stick = static_cast<u8>(si.GetIntValue(section, "InvertRightStick", 0));
+  m_invert_left_stick = static_cast<u8>(si.GetUIntValue(section, "InvertLeftStick", 0u));
+  m_invert_right_stick = static_cast<u8>(si.GetUIntValue(section, "InvertRightStick", 0u));
 }
