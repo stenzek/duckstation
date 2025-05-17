@@ -1917,6 +1917,27 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
   return std::move(ss).str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyDepthFragmentShader(bool msaa) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DefineMacro(ss, "MULTISAMPLED", msaa);
+  DeclareTexture(ss, "samp0", 0, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, msaa, 1, false, false, msaa, msaa, msaa);
+
+  ss << R"(
+{
+#if MULTISAMPLED
+  o_col0 = float4(LOAD_TEXTURE_MS(samp0, int2(v_pos.xy), int(f_sample_index)).r, 0.0, 0.0, 0.0);
+#else
+  o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).r, 0.0, 0.0, 0.0);
+#endif
+}
+)";
+
+  return std::move(ss).str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateVRAMClearDepthFragmentShader(bool write_depth_as_rt) const
 {
   std::stringstream ss;

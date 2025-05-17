@@ -1687,21 +1687,19 @@ bool GPU_HW::CompilePipelines(Error* error)
       return false;
   }
 
-  plconfig.SetTargetFormats(VRAM_RT_FORMAT);
-  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
-
   if (m_pgxp_depth_buffer)
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader(), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMCopyDepthFragmentShader(msaa), error);
     if (!fs)
       return false;
 
     plconfig.fragment_shader = fs.get();
+    plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+    plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+    plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+    plconfig.samples = m_multisamples;
+    plconfig.per_sample_shading = true;
     plconfig.SetTargetFormats(VRAM_DS_COLOR_FORMAT);
     if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
@@ -1714,6 +1712,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     SetScreenQuadInputLayout(plconfig);
     plconfig.vertex_shader = m_screen_quad_vertex_shader.get();
     plconfig.fragment_shader = fs.get();
+    plconfig.per_sample_shading = false;
     if (!m_use_rov_for_shader_blend)
     {
       plconfig.SetTargetFormats(VRAM_RT_FORMAT, depth_buffer_format);
