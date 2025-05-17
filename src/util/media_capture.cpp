@@ -1955,18 +1955,25 @@ bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
   if (s_library_loaded)
     return true;
 
-  static constexpr auto open_dynlib = [](DynamicLibrary& lib, const char* name, int major_version, Error* error) {
-    std::string full_name(DynamicLibrary::GetVersionedFilename(name, major_version));
-    return lib.Open(full_name.c_str(), error);
+  static constexpr auto open_dynlib = [](DynamicLibrary& lib, const char* name, int major_version) {
+    Error error;
+    const std::string full_name = DynamicLibrary::GetVersionedFilename(name, major_version);
+    if (!lib.Open(full_name.c_str(), &error))
+    {
+      ERROR_LOG("Failed to open {}: {}", name, error.GetDescription());
+      return false;
+    }
+
+    return true;
   };
 
   bool result = true;
 
-  result = result && open_dynlib(s_avutil_library, "avutil", LIBAVUTIL_VERSION_MAJOR, error);
-  result = result && open_dynlib(s_avcodec_library, "avcodec", LIBAVCODEC_VERSION_MAJOR, error);
-  result = result && open_dynlib(s_avformat_library, "avformat", LIBAVFORMAT_VERSION_MAJOR, error);
-  result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR, error);
-  result = result && open_dynlib(s_swresample_library, "swresample", LIBSWRESAMPLE_VERSION_MAJOR, error);
+  result = result && open_dynlib(s_avutil_library, "avutil", LIBAVUTIL_VERSION_MAJOR);
+  result = result && open_dynlib(s_avcodec_library, "avcodec", LIBAVCODEC_VERSION_MAJOR);
+  result = result && open_dynlib(s_avformat_library, "avformat", LIBAVFORMAT_VERSION_MAJOR);
+  result = result && open_dynlib(s_swscale_library, "swscale", LIBSWSCALE_VERSION_MAJOR);
+  result = result && open_dynlib(s_swresample_library, "swresample", LIBSWRESAMPLE_VERSION_MAJOR);
 
 #define RESOLVE_IMPORT(X) result = result && s_avcodec_library.GetSymbol(#X, &wrap_##X);
   VISIT_AVCODEC_IMPORTS(RESOLVE_IMPORT);
