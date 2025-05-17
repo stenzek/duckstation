@@ -1222,13 +1222,13 @@ void System::LoadSettings(bool display_osd_messages)
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
 
-  // show safe mode warning if it's toggled on, or on startup
-  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
-    WarnAboutUnsafeSettings();
-
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
     s_state.running_game_entry->ApplySettings(g_settings, display_osd_messages);
+
+  // show safe mode warning if it's toggled on, or on startup
+  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
+    WarnAboutUnsafeSettings();
 
   // patch overrides take precedence over compat settings
   Cheats::ApplySettingOverrides();
