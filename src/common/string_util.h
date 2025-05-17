@@ -461,8 +461,13 @@ size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
 size_t EncodeAndAppendUTF16(void* utf16, size_t pos, size_t size, char32_t codepoint);
 
 /// Decodes UTF-16 to a single unicode codepoint.
-/// Returns the number of bytes the codepoint took in the original string.
+/// Returns the number of 16-bit units the codepoint took in the original string.
 size_t DecodeUTF16(const void* bytes, size_t pos, size_t size, char32_t* codepoint);
+size_t DecodeUTF16BE(const void* bytes, size_t pos, size_t size, char32_t* codepoint);
+
+/// Decodes a UTF-16 string to a UTF-8 string.
+std::string DecodeUTF16String(const void* bytes, size_t size);
+std::string DecodeUTF16BEString(const void* bytes, size_t size);
 
 // Replaces the end of a string with ellipsis if it exceeds the specified length.
 std::string Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis = "...");

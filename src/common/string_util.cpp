@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "string_util.h"
 #include "assert.h"
+#include "bitutils.h"
 
 #include <cctype>
 #include <codecvt>
@@ -19,6 +20,16 @@
 #ifdef _WIN32
 #include "windows_headers.h"
 #endif
+
+namespace StringUtil {
+
+template<bool swap>
+static size_t DecodeUTF16Impl(const void* bytes, size_t pos, size_t size, char32_t* ch);
+
+template<bool swap>
+static std::string DecodeUTF16StringImpl(const void* bytes, size_t size);
+
+} // namespace StringUtil
 
 bool StringUtil::WildcardMatch(const char* subject, const char* mask, bool case_sensitive /*= true*/)
 {
@@ -629,17 +640,20 @@ size_t StringUtil::EncodeAndAppendUTF16(void* utf16, size_t pos, size_t size, ch
   }
 }
 
-size_t StringUtil::DecodeUTF16(const void* bytes, size_t pos, size_t length, char32_t* ch)
+template<bool swap>
+size_t StringUtil::DecodeUTF16Impl(const void* bytes, size_t pos, size_t size, char32_t* ch)
 {
   const u8* const utf16_bytes = std::assume_aligned<sizeof(u16)>(static_cast<const u8*>(bytes)) + pos * sizeof(u16);
 
   u16 high;
   std::memcpy(&high, utf16_bytes, sizeof(high));
+  if constexpr (swap)
+    high = ByteSwap(high);
 
   // High surrogate?
   if (high >= 0xD800 && high <= 0xDBFF) [[unlikely]]
   {
-    if (length < 2) [[unlikely]]
+    if ((size - pos) < 2) [[unlikely]]
     {
       // Missing low surrogate.
       *ch = UNICODE_REPLACEMENT_CHARACTER;
@@ -648,6 +662,9 @@ size_t StringUtil::DecodeUTF16(const void* bytes, size_t pos, size_t length, cha
 
     u16 low;
     std::memcpy(&low, utf16_bytes + sizeof(u16), sizeof(low));
+    if constexpr (swap)
+      low = ByteSwap(low);
+
     if (low >= 0xDC00 && low <= 0xDFFF) [[likely]]
     {
       *ch = static_cast<char32_t>(((static_cast<u32>(high) - 0xD800u) << 10) + ((static_cast<u32>(low) - 0xDC00)) +
@@ -667,6 +684,44 @@ size_t StringUtil::DecodeUTF16(const void* bytes, size_t pos, size_t length, cha
     *ch = static_cast<char32_t>(high);
     return 1;
   }
+}
+
+template<bool swap>
+std::string StringUtil::DecodeUTF16StringImpl(const void* bytes, size_t size)
+{
+  std::string dest;
+  dest.reserve(size);
+
+  const size_t u16_size = size / 2;
+  for (size_t pos = 0; pos < u16_size;)
+  {
+    char32_t codepoint;
+    const size_t byte_len = DecodeUTF16Impl<swap>(bytes, pos, u16_size, &codepoint);
+    StringUtil::EncodeAndAppendUTF8(dest, codepoint);
+    pos += byte_len;
+  }
+
+  return dest;
+}
+
+size_t StringUtil::DecodeUTF16(const void* bytes, size_t pos, size_t size, char32_t* codepoint)
+{
+  return DecodeUTF16Impl<false>(bytes, pos, size, codepoint);
+}
+
+size_t StringUtil::DecodeUTF16BE(const void* bytes, size_t pos, size_t size, char32_t* codepoint)
+{
+  return DecodeUTF16Impl<true>(bytes, pos, size, codepoint);
+}
+
+std::string StringUtil::DecodeUTF16String(const void* bytes, size_t size)
+{
+  return DecodeUTF16StringImpl<false>(bytes, size);
+}
+
+std::string StringUtil::DecodeUTF16BEString(const void* bytes, size_t size)
+{
+  return DecodeUTF16StringImpl<true>(bytes, size);
 }
 
 std::string StringUtil::Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis /*= "..."*/)
