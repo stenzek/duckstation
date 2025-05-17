@@ -85,7 +85,7 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
   if (c == '*')
     return false;
 
-    // macos doesn't allow colons, apparently
+  // macos doesn't allow colons, apparently
 #ifdef __APPLE__
   if (c == U':')
     return false;
@@ -1553,10 +1553,38 @@ std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* er
   ret = std::string();
   ret->resize(static_cast<size_t>(size));
   // NOTE - assumes mode 'rb', for example, this will fail over missing Windows carriage return bytes
-  if (size > 0 && std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
+  if (size > 0)
   {
-    Error::SetErrno(error, "fread() failed: ", errno);
-    ret.reset();
+    if (std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size))
+    {
+      Error::SetErrno(error, "fread() failed: ", errno);
+      ret.reset();
+    }
+    else
+    {
+      static constexpr const u8 UTF16_BE_BOM[] = {0xFE, 0xFF};
+      static constexpr const u8 UTF16_LE_BOM[] = {0xFF, 0xFE};
+      static constexpr const u8 UTF8_BOM[] = {0xEF, 0xBB, 0xBF};
+
+      if (ret->size() >= sizeof(UTF8_BOM) && std::memcmp(ret->data(), UTF8_BOM, sizeof(UTF8_BOM)) == 0)
+      {
+        // Remove UTF-8 BOM.
+        ret->erase(0, sizeof(UTF8_BOM));
+      }
+      else if (ret->size() >= sizeof(UTF16_LE_BOM) && (ret->size() % 2) == 0)
+      {
+        const bool le = (std::memcmp(ret->data(), UTF16_LE_BOM, sizeof(UTF16_LE_BOM)) == 0);
+        const bool be = (std::memcmp(ret->data(), UTF16_BE_BOM, sizeof(UTF16_BE_BOM)) == 0);
+        if (le || be)
+        {
+          const std::string utf16 = std::move(ret.value());
+          const std::string_view no_bom = std::string_view(utf16).substr(sizeof(UTF16_LE_BOM));
+          ret = no_bom.empty() ? std::string() :
+                                 (be ? StringUtil::DecodeUTF16BEString(no_bom.data(), no_bom.size()) :
+                                       StringUtil::DecodeUTF16String(no_bom.data(), no_bom.size()));
+        }
+      }
+    }
   }
 
   return ret;
