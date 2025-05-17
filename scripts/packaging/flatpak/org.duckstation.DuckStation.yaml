@@ -7,12 +7,6 @@ runtime-version: "6.9"
 sdk: "org.kde.Sdk"
 sdk-extensions:
   - "org.freedesktop.Sdk.Extension.llvm19"
-add-extensions:
-  "org.freedesktop.Platform.ffmpeg-full":
-    directory: "lib/ffmpeg"
-    version: "24.08"
-    add-ld-path: "."
-    autodownload: true
 
 command: "duckstation-qt"
 
@@ -95,5 +89,3 @@ modules:
         "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml"
         "${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"
 
-      # Ensure ffmpeg-full mount point exists.
-      - "mkdir -p \"${FLATPAK_DEST}/lib/ffmpeg\""
