@@ -201,7 +201,7 @@ void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTexture
   // JINC2 and xBRZ shaders originally from beetle-psx, modified to support filtering mask channel.
   if (texture_filter == GPUTextureFilter::Bilinear || texture_filter == GPUTextureFilter::BilinearBinAlpha)
   {
-    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::BilinearBinAlpha);
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter != GPUTextureFilter::BilinearBinAlpha);
     ss << R"(
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
@@ -234,7 +234,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   if (ialpha > 0.0)
     texcol.rgb /= float3(ialpha, ialpha, ialpha);
 
-#if BINALPHA
+#if !TEXTURE_ALPHA_BLENDING
   ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
 #endif
 }
@@ -265,7 +265,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
        THE SOFTWARE.
     */
-    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::JINC2BinAlpha);
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter != GPUTextureFilter::JINC2BinAlpha);
     ss << R"(
 CONSTANT float JINC2_WINDOW_SINC = 0.44;
 CONSTANT float JINC2_SINC = 0.82;
@@ -410,7 +410,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     if (ialpha > 0.0)
       texcol.rgb /= float3(ialpha, ialpha, ialpha);
 
-#if BINALPHA
+#if !TEXTURE_ALPHA_BLENDING
   ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
 #endif
 }
@@ -442,7 +442,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
        THE SOFTWARE.
     */
 
-    DefineMacro(ss, "BINALPHA", texture_filter == GPUTextureFilter::xBRBinAlpha);
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter == GPUTextureFilter::xBRBinAlpha);
     ss << R"(
 CONSTANT int BLEND_NONE = 0;
 CONSTANT int BLEND_NORMAL = 1;
@@ -718,7 +718,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   if (ialpha > 0.0)
     texcol.rgb /= float3(ialpha, ialpha, ialpha);
 
-#if BINALPHA
+#if !TEXTURE_ALPHA_BLENDING
   ialpha = (ialpha >= 0.5) ? 1.0 : 0.0;
 #endif
 }
@@ -729,6 +729,8 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPX)
   {
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
+
     ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
           "uv_limits.xy, uv_limits.zw)))\n";
 
@@ -838,6 +840,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   else if (texture_filter == GPUTextureFilter::Scale2x)
   {
     // Based on https://www.scale2x.it/algorithm
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
     ss << R"(
 #define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
 
@@ -870,6 +873,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   else if (texture_filter == GPUTextureFilter::Scale3x)
   {
     // Based on https://www.scale2x.it/algorithm
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
     ss << R"(
 #define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
 
@@ -926,6 +930,10 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 
 #undef src
 )";
+  }
+  else
+  {
+    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
   }
 }
 
@@ -1302,24 +1310,32 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       bg_col.rgb = roundEven(bg_col.rgb * 31.0);
     #endif
 
-    #if TEXTURE_FILTERING
-      #if TRANSPARENCY_MODE == 0 || TRANSPARENCY_MODE == 3
-        bg_col.rgb /= ialpha;
-      #endif
-      fg_col.rgb *= ialpha;
-    #endif
-
     o_col0.a = fg_col.a;
-    #if TRANSPARENCY_MODE == 0 // Half BG + Half FG.
-      o_col0.rgb = (bg_col.rgb * 0.5) + (fg_col.rgb * 0.5);
-    #elif TRANSPARENCY_MODE == 1 // BG + FG
-      o_col0.rgb = bg_col.rgb + fg_col.rgb;
-    #elif TRANSPARENCY_MODE == 2 // BG - FG
-      o_col0.rgb = bg_col.rgb - fg_col.rgb;
-    #elif TRANSPARENCY_MODE == 3 // BG + 1/4 FG.
-      o_col0.rgb = bg_col.rgb + (fg_col.rgb * 0.25);
+
+    #if TEXTURE_FILTERING && TEXTURE_ALPHA_BLENDING
+      #if TRANSPARENCY_MODE == 0 // Half BG + Half FG.
+        o_col0.rgb = (bg_col.rgb * saturate(0.5 / ialpha)) + (fg_col.rgb * (ialpha * 0.5));
+      #elif TRANSPARENCY_MODE == 1 // BG + FG
+        o_col0.rgb = (bg_col.rgb * saturate(1.0 / ialpha)) + (fg_col.rgb * ialpha);
+      #elif TRANSPARENCY_MODE == 2 // BG - FG
+        o_col0.rgb = (bg_col.rgb * saturate(1.0 / ialpha)) - (fg_col.rgb * ialpha);
+      #elif TRANSPARENCY_MODE == 3 // BG + 1/4 FG.
+        o_col0.rgb = (bg_col.rgb * saturate(1.0 / ialpha)) + (fg_col.rgb * (0.25 * ialpha));
+      #else
+        o_col0.rgb = (fg_col.rgb * ialpha) + (bg_col.rgb * (1.0 - ialpha));
+      #endif
     #else
-      o_col0.rgb = fg_col.rgb;
+      #if TRANSPARENCY_MODE == 0 // Half BG + Half FG.
+        o_col0.rgb = (bg_col.rgb * 0.5) + (fg_col.rgb * 0.5);
+      #elif TRANSPARENCY_MODE == 1 // BG + FG
+        o_col0.rgb = bg_col.rgb + fg_col.rgb;
+      #elif TRANSPARENCY_MODE == 2 // BG - FG
+        o_col0.rgb = bg_col.rgb - fg_col.rgb;
+      #elif TRANSPARENCY_MODE == 3 // BG + 1/4 FG.
+        o_col0.rgb = bg_col.rgb + (fg_col.rgb * 0.25);
+      #else
+        o_col0.rgb = fg_col.rgb;
+      #endif
     #endif
 
     // 16-bit truncation.
