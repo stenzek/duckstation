@@ -2654,7 +2654,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
                 TRANSLATE_DISAMBIG("Achievements", "Achievements Unlocked", "Pause Menu"));
     const float unlocked_fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
                                     static_cast<float>(s_state.game_summary.num_core_achievements);
-    buffer.format("{}%", static_cast<u32>(std::ceil(unlocked_fraction * 100.0f)));
+    buffer.format("{}%", static_cast<u32>(std::round(unlocked_fraction * 100.0f)));
     text_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(buffer));
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize,
                 ImVec2(text_pos.x + (box_content_width - text_size.x), text_pos.y), text_color,
@@ -2887,7 +2887,7 @@ void Achievements::DrawAchievementsWindow()
                             ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
         }
 
-        text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+        text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
         text_size =
           UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, IMSTR_START_END(text));
         const ImVec2 text_pos(
