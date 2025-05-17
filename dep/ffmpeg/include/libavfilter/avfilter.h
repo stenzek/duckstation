@@ -99,6 +99,41 @@ const char *avfilter_pad_get_name(const AVFilterPad *pads, int pad_idx);
 enum AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int pad_idx);
 
 /**
+ * Lists of formats / etc. supported by an end of a link.
+ *
+ * This structure is directly part of AVFilterLink, in two copies:
+ * one for the source filter, one for the destination filter.
+
+ * These lists are used for negotiating the format to actually be used,
+ * which will be loaded into the format and channel_layout members of
+ * AVFilterLink, when chosen.
+ */
+typedef struct AVFilterFormatsConfig {
+
+    /**
+     * List of supported formats (pixel or sample).
+     */
+    AVFilterFormats *formats;
+
+    /**
+     * Lists of supported sample rates, only for audio.
+     */
+    AVFilterFormats  *samplerates;
+
+    /**
+     * Lists of supported channel layouts, only for audio.
+     */
+    AVFilterChannelLayouts  *channel_layouts;
+
+    /**
+     * Lists of supported YUV color metadata, only for YUV video.
+     */
+    AVFilterFormats *color_spaces;  ///< AVColorSpace
+    AVFilterFormats *color_ranges;  ///< AVColorRange
+
+} AVFilterFormatsConfig;
+
+/**
  * The number of the filter inputs is not determined just by AVFilter.inputs.
  * The filter might add additional inputs during initialization depending on the
  * options supplied to it.
@@ -324,6 +359,21 @@ typedef struct AVFilter {
          * AVERROR code otherwise
          */
         int (*query_func)(AVFilterContext *);
+
+        /**
+         * Same as query_func(), except this function writes the results into
+         * provided arrays.
+         *
+         * @param cfg_in  array of input format configurations with as many
+         *                members as the filters has inputs (NULL when there are
+         *                no inputs);
+         * @param cfg_out array of output format configurations with as many
+         *                members as the filters has outputs (NULL when there
+         *                are no outputs);
+         */
+        int (*query_func2)(const AVFilterContext *,
+                           struct AVFilterFormatsConfig **cfg_in,
+                           struct AVFilterFormatsConfig **cfg_out);
         /**
          * A pointer to an array of admissible pixel formats delimited
          * by AV_PIX_FMT_NONE. The generic code will use this list
@@ -493,41 +543,6 @@ struct AVFilterContext {
 };
 
 /**
- * Lists of formats / etc. supported by an end of a link.
- *
- * This structure is directly part of AVFilterLink, in two copies:
- * one for the source filter, one for the destination filter.
-
- * These lists are used for negotiating the format to actually be used,
- * which will be loaded into the format and channel_layout members of
- * AVFilterLink, when chosen.
- */
-typedef struct AVFilterFormatsConfig {
-
-    /**
-     * List of supported formats (pixel or sample).
-     */
-    AVFilterFormats *formats;
-
-    /**
-     * Lists of supported sample rates, only for audio.
-     */
-    AVFilterFormats  *samplerates;
-
-    /**
-     * Lists of supported channel layouts, only for audio.
-     */
-    AVFilterChannelLayouts  *channel_layouts;
-
-    /**
-     * Lists of supported YUV color metadata, only for YUV video.
-     */
-    AVFilterFormats *color_spaces;  ///< AVColorSpace
-    AVFilterFormats *color_ranges;  ///< AVColorRange
-
-} AVFilterFormatsConfig;
-
-/**
  * A link between two filters. This contains pointers to the source and
  * destination filters between which this link exists, and the indexes of
  * the pads involved. In addition, this link also contains the parameters
@@ -594,74 +609,6 @@ struct AVFilterLink {
      * Lists of supported formats / etc. supported by the output filter.
      */
     AVFilterFormatsConfig outcfg;
-
-    /**
-     * Graph the filter belongs to.
-     */
-    struct AVFilterGraph *graph;
-
-    /**
-     * Current timestamp of the link, as defined by the most recent
-     * frame(s), in link time_base units.
-     */
-    int64_t current_pts;
-
-    /**
-     * Current timestamp of the link, as defined by the most recent
-     * frame(s), in AV_TIME_BASE units.
-     */
-    int64_t current_pts_us;
-
-    /**
-     * Frame rate of the stream on the link, or 1/0 if unknown or variable;
-     * if left to 0/0, will be automatically copied from the first input
-     * of the source filter if it exists.
-     *
-     * Sources should set it to the best estimation of the real frame rate.
-     * If the source frame rate is unknown or variable, set this to 1/0.
-     * Filters should update it if necessary depending on their function.
-     * Sinks can use it to set a default output frame rate.
-     * It is similar to the r_frame_rate field in AVStream.
-     */
-    AVRational frame_rate;
-
-    /**
-     * Minimum number of samples to filter at once. If filter_frame() is
-     * called with fewer samples, it will accumulate them in fifo.
-     * This field and the related ones must not be changed after filtering
-     * has started.
-     * If 0, all related fields are ignored.
-     */
-    int min_samples;
-
-    /**
-     * Maximum number of samples to filter at once. If filter_frame() is
-     * called with more samples, it will split them.
-     */
-    int max_samples;
-
-    /**
-     * Number of past frames sent through the link.
-     */
-    int64_t frame_count_in, frame_count_out;
-
-    /**
-     * Number of past samples sent through the link.
-     */
-    int64_t sample_count_in, sample_count_out;
-
-    /**
-     * True if a frame is currently wanted on the output of this filter.
-     * Set when ff_request_frame() is called by the output,
-     * cleared when a frame is filtered.
-     */
-    int frame_wanted_out;
-
-    /**
-     * For hwaccel pixel formats, this should be a reference to the
-     * AVHWFramesContext describing the frames.
-     */
-    AVBufferRef *hw_frames_ctx;
 };
 
 /**
