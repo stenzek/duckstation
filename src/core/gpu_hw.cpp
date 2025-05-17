@@ -130,7 +130,7 @@ ALWAYS_INLINE static bool IsBlendedTextureFiltering(GPUTextureFilter filter)
                 ((static_cast<u8>(GPUTextureFilter::JINC2BinAlpha) & 1u) == 0u) &&
                 ((static_cast<u8>(GPUTextureFilter::xBR) & 1u) == 1u) &&
                 ((static_cast<u8>(GPUTextureFilter::xBRBinAlpha) & 1u) == 0u));
-  return ((static_cast<u8>(filter) & 1u) == 1u);
+  return (filter < GPUTextureFilter::Scale2x && ((static_cast<u8>(filter) & 1u) == 1u));
 }
 
 /// Computes the area affected by a VRAM transfer, including wrap-around of X.
@@ -1151,7 +1151,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   m_clear_depth_pipeline.reset();
   m_copy_depth_pipeline.reset();
 
-  ShaderCompileProgressTracker progress("Compiling Pipelines", total_items);
+  ShaderCompileProgressTracker progress(TRANSLATE_STR("GPU_HW", "Compiling Pipelines..."), total_items);
 
   // vertex shaders - [textured/palette/sprite]
   // fragment shaders - [depth_test][render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
