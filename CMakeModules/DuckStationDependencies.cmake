@@ -65,7 +65,7 @@ if(NOT WIN32 AND NOT APPLE)
 endif()
 
 if(NOT ANDROID AND NOT WIN32)
-  find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample swscale)
+  find_package(FFMPEG 7.1.0 COMPONENTS avcodec avformat avutil swresample swscale)
   if(NOT FFMPEG_FOUND)
     message(WARNING "FFmpeg not found, using bundled headers.")
   endif()

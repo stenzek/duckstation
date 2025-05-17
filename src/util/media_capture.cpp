@@ -56,6 +56,7 @@ extern "C" {
 #include "libavformat/version.h"
 #include "libavutil/dict.h"
 #include "libavutil/opt.h"
+#include "libavutil/pixdesc.h"
 #include "libavutil/version.h"
 #include "libswresample/swresample.h"
 #include "libswresample/version.h"
@@ -1796,22 +1797,6 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 
 #ifndef __ANDROID__
 
-// We're using deprecated fields because we're targeting multiple ffmpeg versions.
-#if defined(_MSC_VER)
-#pragma warning(disable : 4996) // warning C4996: 'AVCodecContext::channels': was declared deprecated
-#elif defined(__clang__)
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-// Compatibility with both ffmpeg 4.x and 5.x.
-#if (LIBAVFORMAT_VERSION_MAJOR < 59)
-#define ff_const59
-#else
-#define ff_const59 const
-#endif
-
 #define VISIT_AVCODEC_IMPORTS(X)                                                                                       \
   X(avcodec_find_encoder_by_name)                                                                                      \
   X(avcodec_find_encoder)                                                                                              \
@@ -1822,6 +1807,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(avcodec_receive_packet)                                                                                            \
   X(avcodec_parameters_from_context)                                                                                   \
   X(avcodec_get_hw_config)                                                                                             \
+  X(avcodec_get_supported_config)                                                                                      \
   X(av_codec_iterate)                                                                                                  \
   X(av_packet_alloc)                                                                                                   \
   X(av_packet_free)                                                                                                    \
@@ -1840,17 +1826,10 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(avio_open)                                                                                                         \
   X(avio_closep)
 
-#if LIBAVUTIL_VERSION_MAJOR < 57
-#define AVUTIL_57_IMPORTS(X)
-#else
-#define AVUTIL_57_IMPORTS(X)                                                                                           \
+#define VISIT_AVUTIL_IMPORTS(X)                                                                                        \
   X(av_channel_layout_default)                                                                                         \
   X(av_channel_layout_copy)                                                                                            \
-  X(av_opt_set_chlayout)
-#endif
-
-#define VISIT_AVUTIL_IMPORTS(X)                                                                                        \
-  AVUTIL_57_IMPORTS(X)                                                                                                 \
+  X(av_opt_set_chlayout)                                                                                               \
   X(av_frame_alloc)                                                                                                    \
   X(av_frame_get_buffer)                                                                                               \
   X(av_frame_free)                                                                                                     \
@@ -1863,6 +1842,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(av_opt_set_int)                                                                                                    \
   X(av_opt_set_sample_fmt)                                                                                             \
   X(av_compare_ts)                                                                                                     \
+  X(av_get_pix_fmt)                                                                                                    \
   X(av_get_bytes_per_sample)                                                                                           \
   X(av_sample_fmt_is_planar)                                                                                           \
   X(av_d2q)                                                                                                            \
@@ -2096,7 +2076,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
                                               std::string_view audio_codec, u32 audio_bitrate,
                                               std::string_view audio_codec_args, Error* error)
 {
-  ff_const59 AVOutputFormat* output_format = wrap_av_guess_format(nullptr, m_path.c_str(), nullptr);
+  const AVOutputFormat* output_format = wrap_av_guess_format(nullptr, m_path.c_str(), nullptr);
   if (!output_format)
   {
     Error::SetStringFmt(error, "Failed to get output format for '{}'", Path::GetFileName(m_path));
@@ -2151,6 +2131,8 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     m_video_codec_context->sample_aspect_ratio = wrap_av_d2q(aspect, 100000);
     wrap_av_reduce(&m_video_codec_context->time_base.num, &m_video_codec_context->time_base.den, 10000,
                    static_cast<s64>(static_cast<double>(fps) * 10000.0), std::numeric_limits<s32>::max());
+    wrap_av_reduce(&m_video_codec_context->framerate.num, &m_video_codec_context->framerate.den,
+                   static_cast<s64>(static_cast<double>(fps) * 10000.0), 10000, std::numeric_limits<s32>::max());
 
     // Map input pixel format.
     static constexpr const std::pair<GPUTexture::Format, AVPixelFormat> texture_pf_mapping[] = {
@@ -2171,43 +2153,35 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       return false;
     }
 
-    // Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
-    AVPixelFormat sw_pix_fmt = AV_PIX_FMT_YUV420P;
-    if (vcodec->pix_fmts)
+    if (!video_codec_args.empty())
     {
-      // Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
-      sw_pix_fmt = vcodec->pix_fmts[0];
-      for (u32 i = 0; vcodec->pix_fmts[i] != AV_PIX_FMT_NONE; i++)
+      res = wrap_av_dict_parse_string(&m_video_codec_arguments, SmallString(video_codec_args).c_str(), "=", ":", 0);
+      if (res < 0)
       {
-        if (vcodec->pix_fmts[i] == AV_PIX_FMT_YUV420P)
-        {
-          sw_pix_fmt = vcodec->pix_fmts[i];
-          break;
-        }
+        SetAVError(error, "av_dict_parse_string() for video failed: ", res);
+        return false;
       }
     }
-    m_video_codec_context->pix_fmt = sw_pix_fmt;
+
+    // Select output pixel format.
+    AVPixelFormat request_pix_fmt = AV_PIX_FMT_YUV420P;
+    if (const AVDictionaryEntry* de = wrap_av_dict_get(m_video_codec_arguments, "pixel_format", nullptr, 0))
+    {
+      const AVPixelFormat de_fmt = wrap_av_get_pix_fmt(de->value);
+      request_pix_fmt = (de_fmt != AV_PIX_FMT_NONE) ? de_fmt : request_pix_fmt;
+      if (de_fmt == AV_PIX_FMT_NONE)
+        WARNING_LOG("Invalid pixel format override: {}", de->value);
+    }
 
     // Can we use hardware encoding?
     const AVCodecHWConfig* hwconfig = wrap_avcodec_get_hw_config(vcodec, 0);
-    if (hwconfig && hwconfig->pix_fmt != AV_PIX_FMT_NONE && hwconfig->pix_fmt != sw_pix_fmt)
-    {
-      // First index isn't our preferred pixel format, try the others, but fall back if one doesn't exist.
-      int index = 1;
-      while (const AVCodecHWConfig* next_hwconfig = wrap_avcodec_get_hw_config(vcodec, index++))
-      {
-        if (next_hwconfig->pix_fmt == sw_pix_fmt)
-        {
-          hwconfig = next_hwconfig;
-          break;
-        }
-      }
-    }
-
+    AVPixelFormat sw_pix_fmt;
     if (hwconfig)
     {
-      Error hw_error;
+      // Can't do this test for hardware codecs, because they don't list the software formats as inputs.
+      sw_pix_fmt = request_pix_fmt;
 
+      Error hw_error;
       INFO_LOG("Trying to use {} hardware device for video encoding.",
                wrap_av_hwdevice_get_type_name(hwconfig->device_type));
       res = wrap_av_hwdevice_ctx_create(&m_video_hw_context, hwconfig->device_type, nullptr, nullptr, 0);
@@ -2255,20 +2229,36 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       }
     }
 
-    if (!video_codec_args.empty())
+    if (!hwconfig)
     {
-      res = wrap_av_dict_parse_string(&m_video_codec_arguments, SmallString(video_codec_args).c_str(), "=", ":", 0);
+      // Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
+      const AVPixelFormat* supported_pixel_formats = nullptr;
+      int num_supported_pixel_formats = 0;
+      res = wrap_avcodec_get_supported_config(m_video_codec_context, vcodec, AV_CODEC_CONFIG_PIX_FORMAT, 0,
+                                              reinterpret_cast<const void**>(&supported_pixel_formats),
+                                              &num_supported_pixel_formats);
       if (res < 0)
       {
-        SetAVError(error, "av_dict_parse_string() for video failed: ", res);
+        SetAVError(error, "avcodec_get_supported_config() failed: ", res);
         return false;
       }
+
+      // Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
+      sw_pix_fmt = supported_pixel_formats[0];
+      for (int i = 0; i < num_supported_pixel_formats; i++)
+      {
+        if (supported_pixel_formats[i] == request_pix_fmt)
+        {
+          sw_pix_fmt = supported_pixel_formats[i];
+          break;
+        }
+      }
+
+      m_video_codec_context->pix_fmt = sw_pix_fmt;
     }
 
     if (output_format->flags & AVFMT_GLOBALHEADER)
       m_video_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
-    bool has_pixel_format_override = wrap_av_dict_get(m_video_codec_arguments, "pixel_format", nullptr, 0);
 
     res = wrap_avcodec_open2(m_video_codec_context, vcodec, &m_video_codec_arguments);
     if (res < 0)
@@ -2276,10 +2266,6 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       SetAVError(error, "avcodec_open2() for video failed: ", res);
       return false;
     }
-
-    // If the user overrode the pixel format, get that now
-    if (has_pixel_format_override)
-      sw_pix_fmt = m_video_codec_context->pix_fmt;
 
     m_converted_video_frame = wrap_av_frame_alloc();
     m_hw_video_frame = IsUsingHardwareVideoEncoding() ? wrap_av_frame_alloc() : nullptr;
@@ -2369,17 +2355,23 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     m_audio_codec_context->sample_fmt = AV_SAMPLE_FMT_S16;
     m_audio_codec_context->sample_rate = sample_rate;
     m_audio_codec_context->time_base = {1, static_cast<int>(sample_rate)};
-#if LIBAVUTIL_VERSION_MAJOR < 57
-    m_audio_codec_context->channels = AUDIO_CHANNELS;
-    m_audio_codec_context->channel_layout = AV_CH_LAYOUT_STEREO;
-#else
     wrap_av_channel_layout_default(&m_audio_codec_context->ch_layout, AUDIO_CHANNELS);
-#endif
 
     bool supports_format = false;
-    for (const AVSampleFormat* p = acodec->sample_fmts; *p != AV_SAMPLE_FMT_NONE; p++)
+    const AVSampleFormat* supported_sample_formats = nullptr;
+    int num_supported_sample_formats = 0;
+    res = wrap_avcodec_get_supported_config(m_video_codec_context, acodec, AV_CODEC_CONFIG_SAMPLE_FORMAT, 0,
+                                            reinterpret_cast<const void**>(&supported_sample_formats),
+                                            &num_supported_sample_formats);
+    if (res < 0)
     {
-      if (*p == m_audio_codec_context->sample_fmt)
+      SetAVError(error, "avcodec_get_supported_config() for audio failed: ", res);
+      return false;
+    }
+
+    for (int i = 0; i < num_supported_sample_formats; i++)
+    {
+      if (supported_sample_formats[i] == m_audio_codec_context->sample_fmt)
       {
         supports_format = true;
         break;
@@ -2388,7 +2380,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     if (!supports_format)
     {
       WARNING_LOG("Audio codec '{}' does not support S16 samples, using default.", acodec->name);
-      m_audio_codec_context->sample_fmt = acodec->sample_fmts[0];
+      m_audio_codec_context->sample_fmt = supported_sample_formats[0];
       m_swr_context = wrap_swr_alloc();
       if (!m_swr_context)
       {
@@ -2402,11 +2394,8 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       wrap_av_opt_set_int(m_swr_context, "out_channel_count", AUDIO_CHANNELS, 0);
       wrap_av_opt_set_int(m_swr_context, "out_sample_rate", sample_rate, 0);
       wrap_av_opt_set_sample_fmt(m_swr_context, "out_sample_fmt", m_audio_codec_context->sample_fmt, 0);
-
-#if LIBAVUTIL_VERSION_MAJOR >= 59
       wrap_av_opt_set_chlayout(m_swr_context, "in_chlayout", &m_audio_codec_context->ch_layout, 0);
       wrap_av_opt_set_chlayout(m_swr_context, "out_chlayout", &m_audio_codec_context->ch_layout, 0);
-#endif
 
       res = wrap_swr_init(m_swr_context);
       if (res < 0)
