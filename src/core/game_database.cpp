@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 25,
+  GAME_DATABASE_CACHE_VERSION = 26,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
