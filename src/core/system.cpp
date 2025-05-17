@@ -1222,13 +1222,13 @@ void System::LoadSettings(bool display_osd_messages)
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
 
-  // apply compatibility settings
-  if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
-    s_state.running_game_entry->ApplySettings(g_settings, display_osd_messages);
-
   // show safe mode warning if it's toggled on, or on startup
   if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
     WarnAboutUnsafeSettings();
+
+  // apply compatibility settings
+  if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
+    s_state.running_game_entry->ApplySettings(g_settings, display_osd_messages);
 
   // patch overrides take precedence over compat settings
   Cheats::ApplySettingOverrides();
@@ -4753,6 +4753,10 @@ void System::WarnAboutUnsafeSettings()
     messages.append_vformat(fmt, fmt::make_format_args(args...));
     messages.append('\n');
   };
+  const auto has_trait = [](GameDatabase::Trait trait) {
+    return (g_settings.apply_compatibility_settings && s_state.running_game_entry &&
+            s_state.running_game_entry->HasTrait(trait));
+  };
 
   if (!g_settings.disable_all_enhancements)
   {
@@ -4762,8 +4766,11 @@ void System::WarnAboutUnsafeSettings()
         ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
         g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
     }
-    if (g_settings.cdrom_read_speedup != 1 || g_settings.cdrom_seek_speedup != 1)
+    if ((g_settings.cdrom_read_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMReadSpeedup)) ||
+        (g_settings.cdrom_seek_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMSeekSpeedup)))
+    {
       append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
+    }
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
       append(ICON_FA_TV,
              TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
