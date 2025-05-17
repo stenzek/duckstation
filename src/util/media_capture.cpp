@@ -1797,7 +1797,16 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 
 #ifndef __ANDROID__
 
+// Symbols added in FFmpeg 7.1.
+#if (LIBAVCODEC_VERSION_MAJOR > 61 || LIBAVCODEC_VERSION_MINOR >= 19)
+#define AVCODEC_71_IMPORTS(X) X(avcodec_get_supported_config)
+#define HAS_AVCODEC_GET_SUPPORTED_CONFIG
+#else
+#define AVCODEC_71_IMPORTS(X)
+#endif
+
 #define VISIT_AVCODEC_IMPORTS(X)                                                                                       \
+  AVCODEC_71_IMPORTS(X)                                                                                                \
   X(avcodec_find_encoder_by_name)                                                                                      \
   X(avcodec_find_encoder)                                                                                              \
   X(avcodec_alloc_context3)                                                                                            \
@@ -1807,7 +1816,6 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
   X(avcodec_receive_packet)                                                                                            \
   X(avcodec_parameters_from_context)                                                                                   \
   X(avcodec_get_hw_config)                                                                                             \
-  X(avcodec_get_supported_config)                                                                                      \
   X(av_codec_iterate)                                                                                                  \
   X(av_packet_alloc)                                                                                                   \
   X(av_packet_free)                                                                                                    \
@@ -2175,12 +2183,10 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
 
     // Can we use hardware encoding?
     const AVCodecHWConfig* hwconfig = wrap_avcodec_get_hw_config(vcodec, 0);
-    AVPixelFormat sw_pix_fmt;
+    AVPixelFormat sw_pix_fmt = request_pix_fmt;
     if (hwconfig)
     {
       // Can't do this test for hardware codecs, because they don't list the software formats as inputs.
-      sw_pix_fmt = request_pix_fmt;
-
       Error hw_error;
       INFO_LOG("Trying to use {} hardware device for video encoding.",
                wrap_av_hwdevice_get_type_name(hwconfig->device_type));
@@ -2234,6 +2240,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       // Default to YUV 4:2:0 if the codec doesn't specify a pixel format.
       const AVPixelFormat* supported_pixel_formats = nullptr;
       int num_supported_pixel_formats = 0;
+#ifdef HAS_AVCODEC_GET_SUPPORTED_CONFIG
       res = wrap_avcodec_get_supported_config(m_video_codec_context, vcodec, AV_CODEC_CONFIG_PIX_FORMAT, 0,
                                               reinterpret_cast<const void**>(&supported_pixel_formats),
                                               &num_supported_pixel_formats);
@@ -2242,6 +2249,17 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
         SetAVError(error, "avcodec_get_supported_config() failed: ", res);
         return false;
       }
+#else
+      if (!vcodec->pix_fmts)
+      {
+        Error::SetStringView(error, "Video codec supports no formats.");
+        return false;
+      }
+
+      supported_pixel_formats = vcodec->pix_fmts;
+      while (supported_pixel_formats[num_supported_pixel_formats] != AV_PIX_FMT_NONE)
+        num_supported_pixel_formats++;
+#endif
 
       // Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
       sw_pix_fmt = supported_pixel_formats[0];
@@ -2360,6 +2378,7 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     bool supports_format = false;
     const AVSampleFormat* supported_sample_formats = nullptr;
     int num_supported_sample_formats = 0;
+#ifdef HAS_AVCODEC_GET_SUPPORTED_CONFIG
     res = wrap_avcodec_get_supported_config(m_video_codec_context, acodec, AV_CODEC_CONFIG_SAMPLE_FORMAT, 0,
                                             reinterpret_cast<const void**>(&supported_sample_formats),
                                             &num_supported_sample_formats);
@@ -2368,6 +2387,17 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       SetAVError(error, "avcodec_get_supported_config() for audio failed: ", res);
       return false;
     }
+#else
+    if (!acodec->sample_fmts)
+    {
+      Error::SetStringView(error, "Video codec supports no formats.");
+      return false;
+    }
+
+    supported_sample_formats = acodec->sample_fmts;
+    while (supported_sample_formats[num_supported_sample_formats] != AV_SAMPLE_FMT_NONE)
+      num_supported_sample_formats++;
+#endif
 
     for (int i = 0; i < num_supported_sample_formats; i++)
     {
