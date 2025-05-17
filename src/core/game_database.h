@@ -43,6 +43,8 @@ enum class Trait : u32
   ForceFullBoot,
   DisableAutoAnalogMode,
   DisableMultitap,
+  DisableCDROMReadSpeedup,
+  DisableCDROMSeekSpeedup,
   DisableTrueColor,
   DisableFullTrueColor,
   DisableUpscaling,

@@ -85,6 +85,8 @@ static constexpr const std::array s_trait_names = {
   "ForceFullBoot",
   "DisableAutoAnalogMode",
   "DisableMultitap",
+  "DisableCDROMReadSpeedup",
+  "DisableCDROMSeekSpeedup",
   "DisableTrueColor",
   "DisableFullTrueColor",
   "DisableUpscaling",
@@ -118,6 +120,8 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Multitap", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable CD-ROM Read Speedup", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable CD-ROM Seek Speedup", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Full True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
@@ -474,6 +478,22 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Multitap disabled."));
 
     settings.multitap_mode = MultitapMode::Disabled;
+  }
+
+  if (HasTrait(Trait::DisableCDROMReadSpeedup))
+  {
+    if (settings.cdrom_read_speedup != 1)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "CD-ROM read speedup disabled."));
+
+    settings.cdrom_read_speedup = 1;
+  }
+
+  if (HasTrait(Trait::DisableCDROMSeekSpeedup))
+  {
+    if (settings.cdrom_seek_speedup != 1)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "CD-ROM seek speedup disabled."));
+
+    settings.cdrom_seek_speedup = 1;
   }
 
   if (display_crop_mode.has_value())
