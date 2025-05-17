@@ -2518,8 +2518,6 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
   const u32 num_vertices = cmd->num_vertices;
   DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
 
-  const float depth = GetCurrentNormalizedVertexDepth();
-
   for (u32 i = 0; i < num_vertices; i += 2)
   {
     const GSVector2i start_pos = GSVector2i::load<true>(&cmd->vertices[i].x);
@@ -2539,7 +2537,7 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
     }
 
     AddDrawnRectangle(clamped_rect);
-    DrawLine(cmd, GSVector4(bounds), start_color, end_color, depth);
+    DrawLine(cmd, GSVector4(bounds), start_color, end_color, 1.0f, 1.0f);
   }
 
   if (ShouldDrawWithSoftwareRenderer())
@@ -2562,14 +2560,14 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
   const u32 num_vertices = cmd->num_vertices;
   DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
 
-  const float depth = GetCurrentNormalizedVertexDepth();
-
   for (u32 i = 0; i < num_vertices; i += 2)
   {
     const GSVector2 start_pos = GSVector2::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
+    const float start_depth = use_depth ? cmd->vertices[i].w : 1.0f;
     const GSVector2 end_pos = GSVector2::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
+    const float end_depth = use_depth ? cmd->vertices[i + 1].w : 1.0f;
 
     const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
     const GSVector4i rect =
@@ -2582,7 +2580,7 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
     }
 
     AddDrawnRectangle(clamped_rect);
-    DrawLine(cmd, bounds, start_color, end_color, depth);
+    DrawLine(cmd, bounds, start_color, end_color, start_depth, end_depth);
   }
 
   if (ShouldDrawWithSoftwareRenderer())
@@ -2604,7 +2602,8 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
   }
 }
 
-void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, u32 col0, u32 col1, float depth)
+void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, u32 col0, u32 col1, float depth0,
+                      float depth1)
 {
   DebugAssert(m_batch_vertex_space >= 4 && m_batch_index_space >= 6);
 
@@ -2621,13 +2620,14 @@ void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, 
 
   const float dx = x1 - x0;
   const float dy = y1 - y0;
+  const float mask_depth = GetCurrentNormalizedVertexDepth();
   if (dx == 0.0f && dy == 0.0f)
   {
     // Degenerate, render a point.
-    (m_batch_vertex_ptr++)->Set(x0, y0, depth, 1.0f, col0, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(x0 + 1.0f, y0, depth, 1.0f, col0, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(x1, y1 + 1.0f, depth, 1.0f, col0, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(x1 + 1.0f, y1 + 1.0f, depth, 1.0f, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(x0, y0, mask_depth, depth0, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(x0 + 1.0f, y0, mask_depth, depth0, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(x1, y1 + 1.0f, mask_depth, depth1, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(x1 + 1.0f, y1 + 1.0f, mask_depth, depth1, col0, 0, 0, 0);
   }
   else
   {
@@ -2688,10 +2688,10 @@ void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, 
     const float ox1 = x1 + pad_x1;
     const float oy1 = y1 + pad_y1;
 
-    (m_batch_vertex_ptr++)->Set(ox0, oy0, depth, 1.0f, col0, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(ox0 + fill_dx, oy0 + fill_dy, depth, 1.0f, col0, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(ox1, oy1, depth, 1.0f, col1, 0, 0, 0);
-    (m_batch_vertex_ptr++)->Set(ox1 + fill_dx, oy1 + fill_dy, depth, 1.0f, col1, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(ox0, oy0, mask_depth, depth0, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(ox0 + fill_dx, oy0 + fill_dy, mask_depth, depth0, col0, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(ox1, oy1, mask_depth, depth1, col1, 0, 0, 0);
+    (m_batch_vertex_ptr++)->Set(ox1 + fill_dx, oy1 + fill_dy, mask_depth, depth1, col1, 0, 0, 0);
   }
 
   const u32 start_index = m_batch_vertex_count;
