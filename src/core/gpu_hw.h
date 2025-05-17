@@ -259,7 +259,7 @@ private:
 
   /// Sets the depth test flag for PGXP depth buffering.
   void SetBatchDepthBuffer(const GPUBackendDrawCommand* cmd, bool enabled);
-  void CheckForDepthClear(const GPUBackendDrawCommand* cmd, const BatchVertex* vertices, u32 num_vertices);
+  void CheckForDepthClear(const GPUBackendDrawCommand* cmd, float average_z);
   void SetBatchSpriteMode(const GPUBackendDrawCommand* cmd, bool enabled);
 
   void UpdateDownsamplingLevels();

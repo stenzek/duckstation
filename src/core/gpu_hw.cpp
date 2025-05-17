@@ -169,6 +169,16 @@ ALWAYS_INLINE static u32 Truncate32To16(u32 color)
     .rgba32();
 }
 
+/// Computes the clamped average Z for the given polygon Z values.
+template<typename... Args>
+ALWAYS_INLINE static float ComputePolygonAverageZ(Args... args)
+{
+  static_assert(sizeof...(args) >= 2, "At least two arguments are required");
+  const float sum = (args + ...);
+  constexpr s32 count = static_cast<s32>(sizeof...(args));
+  return std::min(sum / static_cast<float>(count), 1.0f);
+}
+
 namespace {
 class ShaderCompileProgressTracker
 {
@@ -2471,15 +2481,8 @@ void GPU_HW::SetBatchDepthBuffer(const GPUBackendDrawCommand* cmd, bool enabled)
   m_batch.use_depth_buffer = enabled;
 }
 
-void GPU_HW::CheckForDepthClear(const GPUBackendDrawCommand* cmd, const BatchVertex* vertices, u32 num_vertices)
+void GPU_HW::CheckForDepthClear(const GPUBackendDrawCommand* cmd, float average_z)
 {
-  DebugAssert(num_vertices == 3 || num_vertices == 4);
-  float average_z;
-  if (num_vertices == 3)
-    average_z = std::min((vertices[0].w + vertices[1].w + vertices[2].w) / 3.0f, 1.0f);
-  else
-    average_z = std::min((vertices[0].w + vertices[1].w + vertices[2].w + vertices[3].w) / 4.0f, 1.0f);
-
   if ((average_z - m_last_depth_z) >= g_gpu_settings.gpu_pgxp_depth_clear_threshold)
   {
     GL_INS_FMT("Clear depth buffer avg={} last={} threshold={}", average_z * static_cast<float>(GTE::MAX_Z),
@@ -2562,12 +2565,25 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
 
   for (u32 i = 0; i < num_vertices; i += 2)
   {
+    float start_depth, end_depth;
+    if (use_depth)
+    {
+      start_depth = cmd->vertices[i].w;
+      end_depth = cmd->vertices[i + 1].w;
+
+      const float average_z = ComputePolygonAverageZ(start_depth, end_depth);
+      CheckForDepthClear(cmd, average_z);
+    }
+    else
+    {
+      start_depth = 1.0f;
+      end_depth = 1.0f;
+    }
+
     const GSVector2 start_pos = GSVector2::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
-    const float start_depth = use_depth ? cmd->vertices[i].w : 1.0f;
     const GSVector2 end_pos = GSVector2::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
-    const float end_depth = use_depth ? cmd->vertices[i + 1].w : 1.0f;
 
     const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
     const GSVector4i rect =
@@ -2870,7 +2886,12 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
       m_pgxp_depth_buffer && is_3d && (!cmd->transparency_enable || g_gpu_settings.gpu_pgxp_transparent_depth);
     SetBatchDepthBuffer(cmd, use_depth);
     if (use_depth)
-      CheckForDepthClear(cmd, vertices.data(), num_vertices);
+    {
+      const float average_z = (num_vertices == 4) ?
+                                ComputePolygonAverageZ(vertices[0].w, vertices[1].w, vertices[2].w, vertices[3].w) :
+                                ComputePolygonAverageZ(vertices[0].w, vertices[1].w, vertices[2].w);
+      CheckForDepthClear(cmd, average_z);
+    }
 
     FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
   }
