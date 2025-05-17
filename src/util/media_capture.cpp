@@ -2112,10 +2112,12 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
       }
     }
 
-    // FFmpeg decides whether mp4, mkv, etc should use h264 or mpeg4 as their default codec by whether x264 was enabled
-    // But there's a lot of other h264 encoders (e.g. hardware encoders) we may want to use instead
-    if (!vcodec && wrap_avformat_query_codec(output_format, AV_CODEC_ID_H264, FF_COMPLIANCE_NORMAL))
-      vcodec = wrap_avcodec_find_encoder(AV_CODEC_ID_H264);
+    // Default to VP9, because there's no LGPL H.264 encoder.
+    constexpr AVCodecID default_video_codec = AV_CODEC_ID_VP9;
+
+    // Use container default if available.
+    if (!vcodec && wrap_avformat_query_codec(output_format, default_video_codec, FF_COMPLIANCE_NORMAL))
+      vcodec = wrap_avcodec_find_encoder(default_video_codec);
     if (!vcodec)
       vcodec = wrap_avcodec_find_encoder(output_format->video_codec);
 
