@@ -21,7 +21,11 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 {
   m_ui.setupUi(this);
 
+  QFont title_font(m_ui.name->font());
+  title_font.setPointSizeF(title_font.pointSizeF() + 4.0f);
+  title_font.setBold(true);
   m_ui.name->setText(QString::fromStdString(name));
+  m_ui.name->setFont(title_font);
   m_ui.description->setText(
     tr("<strong>Author: </strong>%1%2<br>%3")
       .arg(author.empty() ? tr("Unknown") : QString::fromStdString(author))
@@ -88,11 +92,14 @@ void GamePatchSettingsWidget::reloadList()
   delete m_ui.scrollArea->takeWidget();
 
   QWidget* container = new QWidget(m_ui.scrollArea);
+  m_ui.scrollArea->setWidget(container);
+
   QVBoxLayout* layout = new QVBoxLayout(container);
-  layout->setContentsMargins(0, 0, 0, 0);
 
   if (!patches.empty())
   {
+    layout->setContentsMargins(0, 0, 0, 0);
+
     bool first = true;
 
     for (Cheats::CodeInfo& pi : patches)
@@ -117,9 +124,13 @@ void GamePatchSettingsWidget::reloadList()
   }
   else
   {
-    QLabel* label = new QLabel(tr("There are no patches available for this game."), container);
+    QLabel* label = new QLabel(tr("No patches are available for this game."), container);
+    QFont font(label->font());
+    font.setPointSizeF(font.pointSizeF() + 2.0f);
+    font.setBold(true);
+    label->setFont(font);
     layout->addWidget(label);
   }
 
-  m_ui.scrollArea->setWidget(container);
+  layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
 }
