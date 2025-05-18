@@ -550,7 +550,7 @@ int rc_api_process_fetch_hash_library_server_response(rc_api_fetch_hash_library_
 
   response->num_entries = fields[2].array_size;
   if (response->num_entries > 0) {
-    rc_buffer_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_hash_library_entry_t)));
+    rc_buffer_reserve(&response->response.buffer, response->num_entries * (33 + sizeof(rc_api_hash_library_entry_t)));
 
     response->entries = (rc_api_hash_library_entry_t*)rc_buffer_alloc(
       &response->response.buffer, response->num_entries * sizeof(rc_api_hash_library_entry_t));
@@ -563,7 +563,6 @@ int rc_api_process_fetch_hash_library_server_response(rc_api_fetch_hash_library_
 
     entry = response->entries;
     while (rc_json_get_next_object_field(&iterator, &field)) {
-      /* TODO: This isn't handling escape characters in the key, the RC JSON parsing functions have no method for it. */
       entry->hash = rc_buffer_strncpy(&response->response.buffer, field.name, field.name_len);
 
       field.name = "";
