@@ -621,7 +621,7 @@ void CPU::DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
     {
       const u8 rt = static_cast<u8>(inst.i.rt.GetValue());
       const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
-      const bool link = ConvertToBoolUnchecked((rt >> 4) & u8(1));
+      const bool link = (rt & u8(0x1E)) == u8(0x10);
       if (link)
         FormatInstruction(dest, inst, pc, bgez ? "bgezal $rs, $rel" : "bltzal $rs, $rel");
       else
