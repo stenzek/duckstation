@@ -15,9 +15,8 @@
 #include <algorithm>
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
-                                               const std::string& description, bool enabled,
-                                               bool disallowed_for_achievements, SettingsWindow* dialog,
-                                               QWidget* parent)
+                                               const std::string& description, bool disallowed_for_achievements,
+                                               bool enabled, SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog), m_name(name)
 {
   m_ui.setupUi(this);

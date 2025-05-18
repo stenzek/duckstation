@@ -19,8 +19,8 @@ class GamePatchDetailsWidget : public QWidget
   Q_OBJECT
 
 public:
-  GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description, bool enabled,
-                         bool disallowed_for_achievements, SettingsWindow* dialog, QWidget* parent);
+  GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description,
+                         bool disallowed_for_achievements, bool enabled, SettingsWindow* dialog, QWidget* parent);
   ~GamePatchDetailsWidget();
 
 private Q_SLOTS:
