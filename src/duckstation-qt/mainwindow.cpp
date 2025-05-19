@@ -3001,7 +3001,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   }
 
   // Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
-  QWidget* dialog_parent = s_system_valid ? getDisplayContainer() : this;
+  QWidget* dialog_parent = (s_system_valid && was_fullscreen) ? getDisplayContainer() : this;
 
   return SystemLock(dialog_parent, was_paused, was_fullscreen);
 }
