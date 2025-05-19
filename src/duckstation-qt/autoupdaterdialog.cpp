@@ -275,25 +275,32 @@ void AutoUpdaterDialog::lockAndExec()
 {
   // pause+unfullscreen system. annoyingly, need to reparent if we were fullscreen
   MainWindow::SystemLock lock = g_main_window->pauseAndLockSystem();
-  QWidget* prev_parent = qobject_cast<QWidget*>(parent());
+  const Qt::WindowFlags prev_flags = windowFlags();
+  QWidget* const prev_parent = qobject_cast<QWidget*>(parent());
   const bool needs_parent_change = (prev_parent && lock.getDialogParent() != prev_parent);
   if (needs_parent_change)
   {
     setParent(lock.getDialogParent());
+    setWindowFlags(prev_flags);
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
     // ensure we're at the front
-    QTimer::singleShot(20, Qt::TimerType::CoarseTimer, this, SLOT(raise()));
+    QTimer::singleShot(20, Qt::TimerType::CoarseTimer, parent(), SLOT(raise()));
   }
 
   const int result = exec();
 
   if (needs_parent_change)
+  {
     setParent(prev_parent);
+    setWindowFlags(prev_flags);
+  }
 
   // cancel resume if we're exiting anyway
   if (result)
     lock.cancelResume();
+
+  emit updateCheckCompleted();
 }
 
 void AutoUpdaterDialog::queueUpdateCheck(bool display_errors)
@@ -443,6 +450,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& e
 
       // We have to defer this, because it comes back through the timer/HTTP callback...
       QMetaObject::invokeMethod(this, "lockAndExec", Qt::QueuedConnection);
+      return;
     }
     else
     {
