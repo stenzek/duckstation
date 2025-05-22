@@ -504,7 +504,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.pgxpTransparentDepthTest, tr("Depth Test Transparent Polygons"), tr("Unchecked"),
                              tr("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
                                 "and tend to clip through the ground when depth testing is enabled. Depth writes for "
-                                "semi-transparent polygons are disabled regardless of this setting.."));
+                                "semi-transparent polygons are disabled regardless of this setting."));
 
   // OSD Tab
 
@@ -562,13 +562,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     QString::fromUtf8(MediaCapture::GetBackendDisplayName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND)),
     tr("Selects the framework that is used to encode video/audio."));
   dialog->registerWidgetHelp(m_ui.captureContainer, tr("Container"), tr("MP4"),
-                             tr("Determines the file format used to contain the captured audio/video"));
+                             tr("Determines the file format used to contain the captured audio/video."));
   dialog->registerWidgetHelp(m_ui.enableVideoCapture, tr("Capture Video"), tr("Checked"),
                              tr("Captures video to the chosen file when media capture is started. If unchecked, the "
                                 "file will only contain audio."));
   dialog->registerWidgetHelp(
     m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"),
-    tr("Selects which Video Codec to be used for Video Capture. <b>If unsure, leave it on default.<b>"));
+    tr("Selects which Video Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
   dialog->registerWidgetHelp(m_ui.videoCaptureBitrate, tr("Video Bitrate"), tr("6000 kbps"),
                              tr("Sets the video bitrate to be used. Larger bitrate generally yields better video "
                                 "quality at the cost of larger resulting file size."));
@@ -588,8 +588,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                 "file will only contain video."));
   dialog->registerWidgetHelp(
     m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
-    tr("Selects which Audio Codec to be used for Video Capture. <b>If unsure, leave it on default.<b>"));
-  dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("160 kbps"),
+    tr("Selects which Audio Codec to be used for media capture. <b>If unsure, leave it on default.<b>"));
+  dialog->registerWidgetHelp(m_ui.audioCaptureBitrate, tr("Audio Bitrate"), tr("128 kbps"),
                              tr("Sets the audio bitrate to be used."));
   dialog->registerWidgetHelp(m_ui.enableAudioCaptureArguments, tr("Enable Extra Audio Arguments"), tr("Unchecked"),
                              tr("Allows you to pass arguments to the selected audio codec."));
