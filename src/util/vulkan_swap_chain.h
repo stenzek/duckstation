@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -31,21 +31,18 @@ public:
   ALWAYS_INLINE VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
   ALWAYS_INLINE VkImageView GetCurrentImageView() const { return m_images[m_current_image].view; }
   ALWAYS_INLINE VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
-  ALWAYS_INLINE VkSemaphore GetImageAvailableSemaphore() const
+  ALWAYS_INLINE VkSemaphore GetImageAcquireSemaphore() const
   {
-    return m_semaphores[m_current_semaphore].available_semaphore;
+    return m_image_acquire_semaphores[m_current_image_acquire_semaphore];
   }
-  ALWAYS_INLINE const VkSemaphore* GetImageAvailableSemaphorePtr() const
+  ALWAYS_INLINE const VkSemaphore* GetImageAcquireSemaphorePtr() const
   {
-    return &m_semaphores[m_current_semaphore].available_semaphore;
+    return &m_image_acquire_semaphores[m_current_image_acquire_semaphore];
   }
-  ALWAYS_INLINE VkSemaphore GetRenderingFinishedSemaphore() const
+  ALWAYS_INLINE VkSemaphore GetPresentSemaphore() const { return m_images[m_current_image].present_semaphore; }
+  ALWAYS_INLINE const VkSemaphore* GetPresentSemaphorePtr() const
   {
-    return m_semaphores[m_current_semaphore].rendering_finished_semaphore;
-  }
-  ALWAYS_INLINE const VkSemaphore* GetRenderingFinishedSemaphorePtr() const
-  {
-    return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
+    return &m_images[m_current_image].present_semaphore;
   }
 
   bool CreateSurface(VkInstance instance, VkPhysicalDevice physical_device, Error* error);
@@ -65,7 +62,7 @@ private:
   // We don't actually need +1 semaphores, or, more than one really.
   // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
   // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
+  static constexpr u32 NUM_IMAGE_ACQUIRE_SEMAPHORES = 4; // Should be command buffers + 1
 
   std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkPhysicalDevice physdev, Error* error);
   std::optional<VkPresentModeKHR> SelectPresentMode(VkPhysicalDevice physdev, GPUVSyncMode& vsync_mode, Error* error);
@@ -83,12 +80,7 @@ private:
     VkImage image;
     VkImageView view;
     VkFramebuffer framebuffer;
-  };
-
-  struct ImageSemaphores
-  {
-    VkSemaphore available_semaphore;
-    VkSemaphore rendering_finished_semaphore;
+    VkSemaphore present_semaphore;
   };
 
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
@@ -101,10 +93,10 @@ private:
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
   std::vector<Image> m_images;
-  std::array<ImageSemaphores, NUM_SEMAPHORES> m_semaphores = {};
+  std::array<VkSemaphore, NUM_IMAGE_ACQUIRE_SEMAPHORES> m_image_acquire_semaphores = {};
 
   u32 m_current_image = 0;
-  u32 m_current_semaphore = 0;
+  u32 m_current_image_acquire_semaphore = 0;
 
   VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 

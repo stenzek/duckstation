@@ -1433,11 +1433,11 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
 
   if (present_swap_chain)
   {
-    submit_info.pWaitSemaphores = present_swap_chain->GetImageAvailableSemaphorePtr();
+    submit_info.pWaitSemaphores = present_swap_chain->GetImageAcquireSemaphorePtr();
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitDstStageMask = &wait_bits;
 
-    submit_info.pSignalSemaphores = present_swap_chain->GetRenderingFinishedSemaphorePtr();
+    submit_info.pSignalSemaphores = present_swap_chain->GetPresentSemaphorePtr();
     submit_info.signalSemaphoreCount = 1;
   }
 
@@ -1460,7 +1460,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                                          nullptr,
                                          1,
-                                         present_swap_chain->GetRenderingFinishedSemaphorePtr(),
+                                         present_swap_chain->GetPresentSemaphorePtr(),
                                          1,
                                          present_swap_chain->GetSwapChainPtr(),
                                          present_swap_chain->GetCurrentImageIndexPtr(),

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "vulkan_swap_chain.h"
@@ -75,7 +75,6 @@ VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, 
                                  std::optional<bool> exclusive_fullscreen_control)
   : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
-  static_assert(NUM_SEMAPHORES == (VulkanDevice::NUM_COMMAND_BUFFERS + 1));
 }
 
 VulkanSwapChain::~VulkanSwapChain()
@@ -579,24 +578,31 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
   res = vkGetSwapchainImagesKHR(vkdev, m_swap_chain, &image_count, images.data());
   Assert(res == VK_SUCCESS);
 
-  const VkRenderPass render_pass =
-    dev.GetSwapChainRenderPass(m_window_info.surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
-  if (render_pass == VK_NULL_HANDLE)
+  VkRenderPass render_pass = VK_NULL_HANDLE;
+  if (!dev.GetOptionalExtensions().vk_khr_dynamic_rendering)
   {
-    Error::SetStringFmt(error, "Failed to get render pass for format {}",
-                        GPUTexture::GetFormatName(m_window_info.surface_format));
-    return false;
+    render_pass = dev.GetSwapChainRenderPass(m_window_info.surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
+    if (render_pass == VK_NULL_HANDLE)
+    {
+      Error::SetStringFmt(error, "Failed to get render pass for format {}",
+                          GPUTexture::GetFormatName(m_window_info.surface_format));
+      return false;
+    }
   }
+
+  const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
 
   const u32 fb_width = GetPostRotatedWidth();
   const u32 fb_height = GetPostRotatedHeight();
   m_images.reserve(image_count);
   m_current_image = 0;
+  m_current_image_acquire_semaphore = (NUM_IMAGE_ACQUIRE_SEMAPHORES - 1);
   for (u32 i = 0; i < image_count; i++)
   {
     Image& image = m_images.emplace_back();
     image.image = images[i];
     image.framebuffer = VK_NULL_HANDLE;
+    image.present_semaphore = VK_NULL_HANDLE;
 
     const VkImageViewCreateInfo view_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -630,27 +636,21 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
         return false;
       }
     }
-  }
 
-  m_current_semaphore = 0;
-  for (u32 i = 0; i < NUM_SEMAPHORES; i++)
-  {
-    ImageSemaphores& sema = m_semaphores[i];
-
-    const VkSemaphoreCreateInfo semaphore_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0};
-    res = vkCreateSemaphore(vkdev, &semaphore_info, nullptr, &sema.available_semaphore);
+    res = vkCreateSemaphore(vkdev, &semaphore_info, nullptr, &image.present_semaphore);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateSemaphore failed: ", res);
       return false;
     }
+  }
 
-    res = vkCreateSemaphore(vkdev, &semaphore_info, nullptr, &sema.rendering_finished_semaphore);
+  for (u32 i = 0; i < NUM_IMAGE_ACQUIRE_SEMAPHORES; i++)
+  {
+    res = vkCreateSemaphore(vkdev, &semaphore_info, nullptr, &m_image_acquire_semaphores[i]);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateSemaphore failed: ", res);
-      vkDestroySemaphore(vkdev, sema.available_semaphore, nullptr);
-      sema.available_semaphore = VK_NULL_HANDLE;
       return false;
     }
   }
@@ -681,19 +681,22 @@ void VulkanSwapChain::DestroySwapChainImages()
   for (const auto& it : m_images)
   {
     // don't defer view destruction, images are no longer valid
+    if (it.present_semaphore != VK_NULL_HANDLE)
+      vkDestroySemaphore(vkdev, it.present_semaphore, nullptr);
     if (it.framebuffer != VK_NULL_HANDLE)
       vkDestroyFramebuffer(vkdev, it.framebuffer, nullptr);
     vkDestroyImageView(vkdev, it.view, nullptr);
   }
   m_images.clear();
-  for (const auto& it : m_semaphores)
+
+  for (auto& it : m_image_acquire_semaphores)
   {
-    if (it.rendering_finished_semaphore != VK_NULL_HANDLE)
-      vkDestroySemaphore(vkdev, it.rendering_finished_semaphore, nullptr);
-    if (it.available_semaphore != VK_NULL_HANDLE)
-      vkDestroySemaphore(vkdev, it.available_semaphore, nullptr);
+    if (it != VK_NULL_HANDLE)
+    {
+      vkDestroySemaphore(vkdev, it, nullptr);
+      it = VK_NULL_HANDLE;
+    }
   }
-  m_semaphores = {};
 
   m_image_acquire_result.reset();
 }
@@ -724,16 +727,14 @@ VkResult VulkanSwapChain::AcquireNextImage(bool handle_errors)
     return VK_ERROR_SURFACE_LOST_KHR;
 
   // Use a different semaphore for each image.
-  m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
+  m_current_image_acquire_semaphore = (m_current_image_acquire_semaphore + 1) % NUM_IMAGE_ACQUIRE_SEMAPHORES;
 
-  VkResult res =
-    vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
-                          m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+  VkResult res = vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
+                                       GetImageAcquireSemaphore(), VK_NULL_HANDLE, &m_current_image);
   if (res != VK_SUCCESS && HandleAcquireOrPresentError(res, false))
   {
-    res =
-      vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
-                            m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+    res = vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
+                                GetImageAcquireSemaphore(), VK_NULL_HANDLE, &m_current_image);
   }
 
   if (res != VK_SUCCESS)
