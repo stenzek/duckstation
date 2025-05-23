@@ -51,7 +51,7 @@ jobs:
 
       - name: Create Preview Release
         if: github.ref == 'refs/heads/master'
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "preview"
@@ -76,7 +76,7 @@ jobs:
 
       - name: Create Rolling Release
         if: github.ref == 'refs/heads/dev'
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: marvinpinto/action-automatic-releases@d68defdd11f9dcc7f52f35c1b7c236ee7513bcc1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
