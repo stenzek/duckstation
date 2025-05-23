@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "vulkan_device.h"
@@ -15,6 +15,7 @@
 #include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/heap_array.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
@@ -426,107 +427,185 @@ GPUDevice::AdapterInfoList VulkanDevice::GetAdapterList()
   return ret;
 }
 
-bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface, Error* error)
+bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
+                                                  std::span<const VkExtensionProperties> available_extensions,
+                                                  ExtensionList& enabled_extensions,
+                                                  VkPhysicalDeviceFeatures& enabled_features, bool enable_surface,
+                                                  Error* error)
 {
-  u32 extension_count = 0;
-  VkResult res = vkEnumerateDeviceExtensionProperties(m_physical_device, nullptr, &extension_count, nullptr);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkEnumerateDeviceExtensionProperties failed: ");
-    Vulkan::SetErrorObject(error, "vkEnumerateDeviceExtensionProperties failed: ", res);
-    return false;
-  }
-
-  if (extension_count == 0)
-  {
-    ERROR_LOG("No extensions supported by device.");
-    Error::SetStringView(error, "No extensions supported by device.");
-    return false;
-  }
-
-  std::vector<VkExtensionProperties> available_extension_list(extension_count);
-  res =
-    vkEnumerateDeviceExtensionProperties(m_physical_device, nullptr, &extension_count, available_extension_list.data());
-  DebugAssert(res == VK_SUCCESS);
-
-  auto SupportsExtension = [&](const char* name, bool required) {
-    if (std::find_if(available_extension_list.begin(), available_extension_list.end(),
-                     [&](const VkExtensionProperties& properties) {
-                       return !strcmp(name, properties.extensionName);
-                     }) != available_extension_list.end())
-    {
-      if (std::none_of(extension_list->begin(), extension_list->end(),
-                       [&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
-      {
-        DEV_LOG("Enabling extension: {}", name);
-        extension_list->push_back(name);
-      }
-
-      return true;
-    }
-
-    if (required)
-    {
-      ERROR_LOG("Vulkan: Missing required extension {}.", name);
-      Error::SetStringFmt(error, "Missing required extension {}.", name);
-    }
-
-    return false;
+  const auto SupportsExtension = [&available_extensions](const char* name) {
+    return (std::find_if(available_extensions.begin(), available_extensions.end(),
+                         [&](const VkExtensionProperties& properties) {
+                           return (std::strcmp(name, properties.extensionName) == 0);
+                         }) != available_extensions.end());
   };
 
-  if (enable_surface && !SupportsExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true))
+  const auto AddExtension = [&enabled_extensions](const char* name) {
+    if (std::none_of(enabled_extensions.begin(), enabled_extensions.end(),
+                     [&](const char* existing_name) { return (std::strcmp(existing_name, name) == 0); }))
+    {
+      DEV_LOG("Enabling extension: {}", name);
+      enabled_extensions.push_back(name);
+    }
+
+    return true;
+  };
+  const auto SupportsAndAddExtension = [&](const char* name) {
+    if (!SupportsExtension(name))
+      return false;
+
+    AddExtension(name);
+    return true;
+  };
+
+  if (enable_surface && !SupportsAndAddExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
     return false;
 
+  // get api version, and fixup any bad values from the driver
+  vkGetPhysicalDeviceProperties(physical_device, &m_device_properties);
+  m_device_properties.limits.minUniformBufferOffsetAlignment =
+    std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(16));
+  m_device_properties.limits.minTexelBufferOffsetAlignment =
+    std::max(m_device_properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(1));
+  m_device_properties.limits.optimalBufferCopyOffsetAlignment =
+    std::max(m_device_properties.limits.optimalBufferCopyOffsetAlignment, static_cast<VkDeviceSize>(1));
+  m_device_properties.limits.optimalBufferCopyRowPitchAlignment =
+    std::max(m_device_properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(1));
+  m_device_properties.limits.bufferImageGranularity =
+    std::max(m_device_properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(1));
+
+  // advanced feature checks
+  VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, nullptr, {}};
+  VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE,
+    VK_FALSE};
+  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_FALSE};
+  VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR, nullptr, VK_FALSE};
+  VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_feature = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE, VK_FALSE};
+  VkPhysicalDeviceMaintenance4Features maintenance4_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_FALSE};
+  VkPhysicalDeviceMaintenance5FeaturesKHR maintenance5_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_FALSE};
+
+  // add in optional feature structs
   // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
   // some extensions are supported but not others, and the prerequisite extensions for those extensions.
   if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
   {
-    m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
-    m_optional_extensions.vk_ext_rasterization_order_attachment_access =
-      SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
-      SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_dynamic_rendering =
-      SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false) &&
-      SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false) &&
-      SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_dynamic_rendering_local_read =
-      m_optional_extensions.vk_khr_dynamic_rendering &&
-      SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
-
-    // glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug
-    // info is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging
-    // until this is fixed.
-    if (const char* val = std::getenv("USE_NON_SEMANTIC_DEBUG_INFO");
-        val && StringUtil::FromChars<bool>(val).value_or(false))
+    if (SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME) ||
+        SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME))
     {
-      m_optional_extensions.vk_khr_shader_non_semantic_info =
-        SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
+      m_optional_extensions.vk_ext_rasterization_order_attachment_access = true;
+      Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
     }
+    if (SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME) &&
+        SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME) &&
+        SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME))
+    {
+      m_optional_extensions.vk_khr_dynamic_rendering = true;
+      Vulkan::AddPointerToChain(&features2, &dynamic_rendering_feature);
 
-    m_optional_extensions.vk_ext_external_memory_host =
-      SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
+      if (SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME))
+      {
+        m_optional_extensions.vk_khr_dynamic_rendering_local_read = true;
+        Vulkan::AddPointerToChain(&features2, &dynamic_rendering_local_read_feature);
+      }
 
-    // Dynamic rendering isn't strictly needed for FSI, but we want it with framebufferless rendering.
-    m_optional_extensions.vk_ext_fragment_shader_interlock =
-      m_optional_extensions.vk_khr_dynamic_rendering &&
-      SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
+      if (SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME))
+      {
+        m_optional_extensions.vk_ext_fragment_shader_interlock = true;
+        Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_feature);
+      }
+    }
+    if (SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME))
+    {
+      m_optional_extensions.vk_khr_maintenance4 = true;
+      Vulkan::AddPointerToChain(&features2, &maintenance4_features);
 
-    m_optional_extensions.vk_ext_swapchain_maintenance1 =
-      enable_surface && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_maintenance4 = m_optional_extensions.vk_ext_swapchain_maintenance1 &&
-                                                SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_maintenance5 =
-      m_optional_extensions.vk_khr_maintenance4 && SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, false);
+      if (SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME))
+      {
+        m_optional_extensions.vk_khr_maintenance5 = true;
+        Vulkan::AddPointerToChain(&features2, &maintenance5_features);
+      }
+    }
   }
 
-#ifdef _WIN32
-  m_optional_extensions.vk_ext_full_screen_exclusive =
-    enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
-  INFO_LOG("VK_EXT_full_screen_exclusive is {}",
-           m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
-#endif
+  // we might not have VK_KHR_get_physical_device_properties2...
+  if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
+  {
+    if (!vkGetPhysicalDeviceFeatures2KHR || !vkGetPhysicalDeviceProperties2KHR ||
+        !vkGetPhysicalDeviceMemoryProperties2KHR)
+    {
+      ERROR_LOG("One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
+      m_optional_extensions.vk_khr_get_physical_device_properties2 = false;
+      vkGetPhysicalDeviceFeatures2 = nullptr;
+      vkGetPhysicalDeviceProperties2 = nullptr;
+      vkGetPhysicalDeviceMemoryProperties2 = nullptr;
+    }
+    else
+    {
+      vkGetPhysicalDeviceFeatures2 = vkGetPhysicalDeviceFeatures2KHR;
+      vkGetPhysicalDeviceProperties2 = vkGetPhysicalDeviceProperties2KHR;
+      vkGetPhysicalDeviceMemoryProperties2 = vkGetPhysicalDeviceMemoryProperties2KHR;
+    }
+  }
+
+  // don't bother querying if we're not actually looking at any features
+  if (vkGetPhysicalDeviceFeatures2 && features2.pNext)
+    vkGetPhysicalDeviceFeatures2(physical_device, &features2);
+  else
+    vkGetPhysicalDeviceFeatures(physical_device, &features2.features);
+
+  // confirm we actually support it
+  m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
+    (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+  m_optional_extensions.vk_khr_dynamic_rendering &= (dynamic_rendering_feature.dynamicRendering == VK_TRUE);
+  m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
+    (dynamic_rendering_local_read_feature.dynamicRenderingLocalRead == VK_TRUE);
+  m_optional_extensions.vk_ext_fragment_shader_interlock &=
+    (m_optional_extensions.vk_khr_dynamic_rendering &&
+     fragment_shader_interlock_feature.fragmentShaderPixelInterlock == VK_TRUE);
+  m_optional_extensions.vk_khr_maintenance4 &= (maintenance4_features.maintenance4 == VK_TRUE);
+  m_optional_extensions.vk_khr_maintenance5 &= (maintenance5_features.maintenance5 == VK_TRUE);
+
+  VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
+  VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR, nullptr, 0u};
+  VkPhysicalDeviceExternalMemoryHostPropertiesEXT external_memory_host_properties = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT, nullptr, 0};
+
+  if (SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME))
+  {
+    m_optional_extensions.vk_khr_driver_properties = true;
+    m_device_driver_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+    Vulkan::AddPointerToChain(&properties2, &m_device_driver_properties);
+  }
+
+  if (SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME))
+  {
+    m_optional_extensions.vk_khr_push_descriptor = true;
+    Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
+  }
+
+  if (SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME))
+  {
+    m_optional_extensions.vk_ext_external_memory_host = true;
+    Vulkan::AddPointerToChain(&properties2, &external_memory_host_properties);
+  }
+
+  // don't bother querying if we're not actually looking at any features
+  if (vkGetPhysicalDeviceProperties2 && properties2.pNext)
+    vkGetPhysicalDeviceProperties2(physical_device, &properties2);
+
+  // check we actually support enough
+  m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
+
+  // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
+  m_optional_extensions.vk_ext_external_memory_host &=
+    (external_memory_host_properties.minImportedHostPointerAlignment <= HOST_PAGE_SIZE);
 
   if (IsBrokenMobileDriver())
   {
@@ -557,14 +636,102 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
 #endif
   }
 
+  // Actually enable the extensions. See above for VK1.1 reasoning.
+  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
+  {
+    m_optional_extensions.vk_ext_memory_budget = SupportsAndAddExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+    m_optional_extensions.vk_khr_driver_properties = SupportsAndAddExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME);
+
+    // glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug
+    // info is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging
+    // until this is fixed.
+    if (const char* val = std::getenv("USE_NON_SEMANTIC_DEBUG_INFO");
+        val && StringUtil::FromChars<bool>(val).value_or(false))
+    {
+      m_optional_extensions.vk_khr_shader_non_semantic_info =
+        SupportsAndAddExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);
+    }
+
+    if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
+    {
+      if (!SupportsAndAddExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME))
+        SupportsAndAddExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME);
+    }
+    if (m_optional_extensions.vk_khr_dynamic_rendering)
+    {
+      AddExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
+      AddExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+      AddExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+
+      if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
+        AddExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME);
+    }
+    if (m_optional_extensions.vk_khr_push_descriptor)
+      AddExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+
+    if (m_optional_extensions.vk_ext_external_memory_host)
+      AddExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME);
+
+    // Dynamic rendering isn't strictly needed for FSI, but we want it with framebufferless rendering.
+    if (m_optional_extensions.vk_ext_fragment_shader_interlock)
+      AddExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME);
+
+    if (m_optional_extensions.vk_khr_maintenance4)
+      AddExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+
+    if (m_optional_extensions.vk_khr_maintenance5)
+      AddExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
+
+    m_optional_extensions.vk_ext_swapchain_maintenance1 =
+      enable_surface && SupportsAndAddExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+  }
+
+  // Enable the features we use.
+  enabled_features.dualSrcBlend |= features2.features.dualSrcBlend;
+  enabled_features.largePoints |= features2.features.largePoints;
+  enabled_features.wideLines |= features2.features.wideLines;
+  enabled_features.samplerAnisotropy |= features2.features.samplerAnisotropy;
+  enabled_features.sampleRateShading |= features2.features.sampleRateShading;
+  enabled_features.geometryShader |= features2.features.geometryShader;
+  enabled_features.fragmentStoresAndAtomics |= features2.features.fragmentStoresAndAtomics;
+  enabled_features.textureCompressionBC |= features2.features.textureCompressionBC;
+
+#define LOG_EXT(name, field)                                                                                           \
+  Log::FastWrite(___LogChannel___, Log::Level::Info,                                                                   \
+                 m_optional_extensions.field ? Log::Color::StrongGreen : Log::Color::StrongOrange, name " is {}",      \
+                 m_optional_extensions.field ? "supported" : "NOT supported")
+
+  LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
+  LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
+  LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
+  LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
+  LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
+  LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
+  LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
+  LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
+  LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
+  LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
+  LOG_EXT("VK_KHR_get_surface_capabilities2", vk_khr_get_surface_capabilities2);
+  LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
+  LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
+  LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
+
+#ifdef _WIN32
+  m_optional_extensions.vk_ext_full_screen_exclusive =
+    enable_surface && SupportsAndAddExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
+  LOG_EXT("VK_EXT_full_screen_exclusive", vk_ext_full_screen_exclusive);
+#endif
+
+#undef LOG_EXT
+
   return true;
 }
 
-bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, FeatureMask disabled_features,
-                                Error* error)
+bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
+                                FeatureMask disabled_features, Error* error)
 {
   u32 queue_family_count;
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
+  vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
   if (queue_family_count == 0)
   {
     ERROR_LOG("No queue families found on specified vulkan physical device.");
@@ -572,8 +739,8 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     return false;
   }
 
-  std::vector<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
-  vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
+  DynamicHeapArray<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
+  vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties.data());
   DEV_LOG("{} vulkan queue families", queue_family_count);
 
   // Find graphics and present queues.
@@ -585,17 +752,16 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     if (graphics_supported)
     {
       m_graphics_queue_family_index = i;
+
       // Quit now, no need for a present queue.
       if (!surface)
-      {
         break;
-      }
     }
 
     if (surface)
     {
       VkBool32 present_supported;
-      VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(m_physical_device, i, surface, &present_supported);
+      VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, surface, &present_supported);
       if (res != VK_SUCCESS)
       {
         LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceSupportKHR failed: ");
@@ -604,15 +770,11 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
       }
 
       if (present_supported)
-      {
         m_present_queue_family_index = i;
-      }
 
       // Prefer one queue family index that does both graphics and present.
       if (graphics_supported && present_supported)
-      {
         break;
-      }
     }
   }
   if (m_graphics_queue_family_index == queue_family_count)
@@ -657,29 +819,40 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
 
   device_info.pQueueCreateInfos = queue_infos.data();
 
-  ExtensionList enabled_extensions;
-  if (!SelectDeviceExtensions(&enabled_extensions, surface != VK_NULL_HANDLE, error))
+  u32 extension_count = 0;
+  VkResult res = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, nullptr);
+  if (res != VK_SUCCESS)
+  {
+    LOG_VULKAN_ERROR(res, "vkEnumerateDeviceExtensionProperties failed: ");
+    Vulkan::SetErrorObject(error, "vkEnumerateDeviceExtensionProperties failed: ", res);
     return false;
+  }
+
+  if (extension_count == 0)
+  {
+    ERROR_LOG("No extensions supported by device.");
+    Error::SetStringView(error, "No extensions supported by device.");
+    return false;
+  }
+
+  DynamicHeapArray<VkExtensionProperties> available_extension_list(extension_count);
+  res =
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, available_extension_list.data());
+  DebugAssert(res == VK_SUCCESS);
+
+  VkPhysicalDeviceFeatures enabled_features = {};
+  ExtensionList enabled_extensions;
+  if (!EnableOptionalDeviceExtensions(physical_device, available_extension_list.cspan(), enabled_extensions,
+                                      enabled_features, surface != VK_NULL_HANDLE, error))
+  {
+    return false;
+  }
 
   device_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
   device_info.ppEnabledExtensionNames = enabled_extensions.data();
-
-  // Check for required features before creating.
-  VkPhysicalDeviceFeatures available_features;
-  vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
-
-  // Enable the features we use.
-  VkPhysicalDeviceFeatures enabled_features = {};
-  enabled_features.dualSrcBlend = available_features.dualSrcBlend;
-  enabled_features.largePoints = available_features.largePoints;
-  enabled_features.wideLines = available_features.wideLines;
-  enabled_features.samplerAnisotropy = available_features.samplerAnisotropy;
-  enabled_features.sampleRateShading = available_features.sampleRateShading;
-  enabled_features.geometryShader = available_features.geometryShader;
-  enabled_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
-  enabled_features.textureCompressionBC = available_features.textureCompressionBC;
   device_info.pEnabledFeatures = &enabled_features;
 
+  // Optional feature structs
   VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_TRUE, VK_FALSE,
     VK_FALSE};
@@ -691,6 +864,10 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_TRUE};
   VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT, nullptr, VK_FALSE, VK_TRUE, VK_FALSE};
+  VkPhysicalDeviceMaintenance4Features maintenance4_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_TRUE};
+  VkPhysicalDeviceMaintenance5FeaturesKHR maintenance5_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR, nullptr, VK_TRUE};
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
@@ -704,8 +881,14 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
     if (m_optional_extensions.vk_ext_fragment_shader_interlock)
       Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_feature);
   }
+  if (m_optional_extensions.vk_khr_maintenance4)
+  {
+    Vulkan::AddPointerToChain(&device_info, &maintenance4_features);
+    if (m_optional_extensions.vk_khr_maintenance5)
+      Vulkan::AddPointerToChain(&device_info, &maintenance5_features);
+  }
 
-  VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
+  res = vkCreateDevice(physical_device, &device_info, nullptr, &m_device);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateDevice failed: ");
@@ -714,6 +897,7 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   }
 
   // With the device created, we can fill the remaining entry points.
+  m_physical_device = physical_device;
   if (!Vulkan::LoadVulkanDeviceFunctions(m_device))
     return false;
 
@@ -731,128 +915,8 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
           queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
           m_device_properties.limits.timestampPeriod);
 
-  ProcessDeviceExtensions();
-  SetFeatures(disabled_features, enabled_features);
+  SetFeatures(disabled_features, physical_device, enabled_features);
   return true;
-}
-
-void VulkanDevice::ProcessDeviceExtensions()
-{
-  // advanced feature checks
-  VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, nullptr, {}};
-  VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE,
-    VK_FALSE};
-  VkPhysicalDeviceDynamicRenderingFeatures dynamic_rendering_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_FALSE};
-  VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR, nullptr, VK_FALSE};
-  VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_FALSE};
-  VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_feature = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT, nullptr, VK_FALSE, VK_FALSE, VK_FALSE};
-  VkPhysicalDeviceMaintenance4Features maintenance4_features = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES, nullptr, VK_FALSE};
-
-  // add in optional feature structs
-  if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
-    Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
-  if (m_optional_extensions.vk_ext_swapchain_maintenance1)
-    Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
-  if (m_optional_extensions.vk_khr_dynamic_rendering)
-  {
-    Vulkan::AddPointerToChain(&features2, &dynamic_rendering_feature);
-    if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
-      Vulkan::AddPointerToChain(&features2, &dynamic_rendering_local_read_feature);
-    if (m_optional_extensions.vk_ext_fragment_shader_interlock)
-      Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_feature);
-  }
-  if (m_optional_extensions.vk_khr_maintenance5)
-    Vulkan::AddPointerToChain(&features2, &maintenance4_features);
-
-  // we might not have VK_KHR_get_physical_device_properties2...
-  if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
-  {
-    if (!vkGetPhysicalDeviceFeatures2KHR || !vkGetPhysicalDeviceProperties2KHR ||
-        !vkGetPhysicalDeviceMemoryProperties2KHR)
-    {
-      ERROR_LOG("One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
-      m_optional_extensions.vk_khr_get_physical_device_properties2 = false;
-      vkGetPhysicalDeviceFeatures2 = nullptr;
-      vkGetPhysicalDeviceProperties2 = nullptr;
-      vkGetPhysicalDeviceMemoryProperties2 = nullptr;
-    }
-    else
-    {
-      vkGetPhysicalDeviceFeatures2 = vkGetPhysicalDeviceFeatures2KHR;
-      vkGetPhysicalDeviceProperties2 = vkGetPhysicalDeviceProperties2KHR;
-      vkGetPhysicalDeviceMemoryProperties2 = vkGetPhysicalDeviceMemoryProperties2KHR;
-    }
-  }
-
-  // don't bother querying if we're not actually looking at any features
-  if (vkGetPhysicalDeviceFeatures2 && features2.pNext)
-    vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
-
-  // confirm we actually support it
-  m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
-    (rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
-  m_optional_extensions.vk_ext_swapchain_maintenance1 &=
-    (swapchain_maintenance1_feature.swapchainMaintenance1 == VK_TRUE);
-  m_optional_extensions.vk_khr_dynamic_rendering &= (dynamic_rendering_feature.dynamicRendering == VK_TRUE);
-  m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
-    (dynamic_rendering_local_read_feature.dynamicRenderingLocalRead == VK_TRUE);
-  m_optional_extensions.vk_ext_fragment_shader_interlock &=
-    (m_optional_extensions.vk_khr_dynamic_rendering &&
-     fragment_shader_interlock_feature.fragmentShaderPixelInterlock == VK_TRUE);
-  m_optional_extensions.vk_khr_maintenance4 &= (maintenance4_features.maintenance4 == VK_TRUE);
-  m_optional_extensions.vk_khr_maintenance5 &= m_optional_extensions.vk_khr_maintenance4;
-
-  VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
-  VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR, nullptr, 0u};
-  VkPhysicalDeviceExternalMemoryHostPropertiesEXT external_memory_host_properties = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT, nullptr, 0};
-
-  if (m_optional_extensions.vk_khr_driver_properties)
-  {
-    m_device_driver_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
-    Vulkan::AddPointerToChain(&properties2, &m_device_driver_properties);
-  }
-  if (m_optional_extensions.vk_khr_push_descriptor)
-    Vulkan::AddPointerToChain(&properties2, &push_descriptor_properties);
-
-  if (m_optional_extensions.vk_ext_external_memory_host)
-    Vulkan::AddPointerToChain(&properties2, &external_memory_host_properties);
-
-  // don't bother querying if we're not actually looking at any features
-  if (vkGetPhysicalDeviceProperties2 && properties2.pNext)
-    vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
-
-  m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
-
-  // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
-  m_optional_extensions.vk_ext_external_memory_host &=
-    (external_memory_host_properties.minImportedHostPointerAlignment <= HOST_PAGE_SIZE);
-
-#define LOG_EXT(name, field) INFO_LOG(name " is {}", m_optional_extensions.field ? "supported" : "NOT supported")
-
-  LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
-  LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
-  LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
-  LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
-  LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
-  LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
-  LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
-  LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
-  LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
-  LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
-  LOG_EXT("VK_KHR_get_surface_capabilities2", vk_khr_get_surface_capabilities2);
-  LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
-  LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
-  LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
-
-#undef LOG_EXT
 }
 
 bool VulkanDevice::CreateAllocator()
@@ -1978,6 +2042,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
     return false;
   }
 
+  VkPhysicalDevice physical_device = VK_NULL_HANDLE;
   if (!adapter.empty())
   {
     u32 gpu_index = 0;
@@ -1986,35 +2051,22 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
       INFO_LOG("GPU {}: {}", gpu_index, gpus[gpu_index].second.name);
       if (gpus[gpu_index].second.name == adapter)
       {
-        m_physical_device = gpus[gpu_index].first;
+        physical_device = gpus[gpu_index].first;
         break;
       }
     }
 
-    if (gpu_index == static_cast<u32>(gpus.size()))
+    if (m_physical_device == VK_NULL_HANDLE)
     {
       WARNING_LOG("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second.name);
-      m_physical_device = gpus[0].first;
+      physical_device = gpus[0].first;
     }
   }
   else
   {
     INFO_LOG("No GPU requested, using first ({})", gpus[0].second.name);
-    m_physical_device = gpus[0].first;
+    physical_device = gpus[0].first;
   }
-
-  // Read device physical memory properties, we need it for allocating buffers
-  vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
-  m_device_properties.limits.minUniformBufferOffsetAlignment =
-    std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(16));
-  m_device_properties.limits.minTexelBufferOffsetAlignment =
-    std::max(m_device_properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(1));
-  m_device_properties.limits.optimalBufferCopyOffsetAlignment =
-    std::max(m_device_properties.limits.optimalBufferCopyOffsetAlignment, static_cast<VkDeviceSize>(1));
-  m_device_properties.limits.optimalBufferCopyRowPitchAlignment =
-    std::max(m_device_properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(1));
-  m_device_properties.limits.bufferImageGranularity =
-    std::max(m_device_properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(1));
 
   if (enable_debug_utils)
     EnableDebugUtils();
@@ -2024,7 +2076,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   {
     swap_chain =
       std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
-    if (!swap_chain->CreateSurface(m_instance, m_physical_device, error))
+    if (!swap_chain->CreateSurface(m_instance, physical_device, error))
     {
       swap_chain->Destroy(*this, false);
       return false;
@@ -2032,8 +2084,8 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   }
 
   // Attempt to create the device.
-  if (!CreateDevice(swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, enable_validation_layer, disabled_features,
-                    error))
+  if (!CreateDevice(physical_device, swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, enable_validation_layer,
+                    disabled_features, error))
   {
     return false;
   }
@@ -2436,14 +2488,15 @@ u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkP
     return 1;
 }
 
-void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features)
+void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice physical_device,
+                               const VkPhysicalDeviceFeatures& vk_features)
 {
   const u32 store_api_version = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
   m_render_api_version = (VK_API_VERSION_MAJOR(store_api_version) * 100u) +
                          (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =
     std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
-  m_max_multisamples = GetMaxMultisamples(m_physical_device, m_device_properties);
+  m_max_multisamples = GetMaxMultisamples(physical_device, m_device_properties);
 
   m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && vk_features.dualSrcBlend;
   m_features.framebuffer_fetch =

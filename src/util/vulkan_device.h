@@ -340,10 +340,14 @@ private:
   using ExtensionList = std::vector<const char*>;
   static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                        bool enable_debug_utils);
-  bool SelectDeviceExtensions(ExtensionList* extension_list, bool enable_surface, Error* error);
-  bool CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer, FeatureMask disabled_features, Error* error);
-  void ProcessDeviceExtensions();
-  void SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features);
+  bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
+                    FeatureMask disabled_features, Error* error);
+  bool EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
+                                      std::span<const VkExtensionProperties> available_extensions,
+                                      ExtensionList& enabled_extensions, VkPhysicalDeviceFeatures& enabled_features,
+                                      bool enable_surface, Error* error);
+  void SetFeatures(FeatureMask disabled_features, VkPhysicalDevice physical_device,
+                   const VkPhysicalDeviceFeatures& vk_features);
 
   static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
