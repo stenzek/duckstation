@@ -3504,15 +3504,17 @@ void System::FormatLatencyStats(SmallStringBase& str)
   AudioStream* audio_stream = SPU::GetOutputStream();
   const u32 audio_latency =
     AudioStream::GetMSForBufferSize(audio_stream->GetSampleRate(), audio_stream->GetBufferedFramesRelaxed());
+  const u32 queued_frame_count = GPUBackend::GetQueuedFrameCount();
 
   const double active_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
   const double pre_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time));
   const double input_latency = std::ceil(
-    Timer::ConvertValueToMilliseconds(s_state.frame_period - s_state.pre_frame_sleep_time) -
+    Timer::ConvertValueToMilliseconds((s_state.frame_period - s_state.pre_frame_sleep_time) *
+                                      static_cast<float>(std::max(queued_frame_count, 1u))) -
     Timer::ConvertValueToMilliseconds(static_cast<Timer::Value>(s_state.runahead_frames) * s_state.frame_period));
 
   str.format("AL: {}ms | AF: {:.0f}ms | PF: {:.0f}ms | IL: {:.0f}ms | QF: {}", audio_latency, active_frame_time,
-             pre_frame_time, input_latency, GPUBackend::GetQueuedFrameCount());
+             pre_frame_time, input_latency, queued_frame_count);
 }
 
 void System::UpdateSpeedLimiterState()
