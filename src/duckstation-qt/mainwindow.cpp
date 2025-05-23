@@ -737,8 +737,13 @@ void MainWindow::recreate()
   destroySubWindows();
 
   const bool was_display_created = m_display_created;
+  const bool was_fullscreen = (was_display_created && g_emu_thread->isFullscreen());
   if (was_display_created)
   {
+    // Ensure the main window is visible, otherwise last-window-closed terminates the application.
+    if (!isVisible())
+      show();
+
     g_emu_thread->setSurfaceless(true);
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
                                     [this]() { return (m_display_widget || !g_emu_thread->isSurfaceless()); });
@@ -770,6 +775,8 @@ void MainWindow::recreate()
   if (was_display_created)
   {
     g_emu_thread->setSurfaceless(false);
+    if (was_fullscreen)
+      g_emu_thread->setFullscreen(true, true);
     g_main_window->updateEmulationActions(false, s_system_valid, s_achievements_hardcore_mode);
     g_main_window->onFullscreenUIStartedOrStopped(s_fullscreen_ui_started);
   }
