@@ -586,6 +586,7 @@ void MainWindow::onSystemDestroyed()
   }
 
   updateEmulationActions(false, false, s_achievements_hardcore_mode);
+  updateStatusBarWidgetVisibility();
   if (m_display_widget)
     updateDisplayWidgetCursor();
   else
