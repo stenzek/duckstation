@@ -5,7 +5,6 @@
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
-#include "ui_audioexpansionsettingsdialog.h"
 #include "ui_audiostretchsettingsdialog.h"
 
 #include "core/spu.h"
