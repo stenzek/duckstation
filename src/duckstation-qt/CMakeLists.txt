@@ -16,7 +16,6 @@ set(SRCS
   advancedsettingswidget.cpp
   advancedsettingswidget.h
   advancedsettingswidget.ui
-  audioexpansionsettingsdialog.ui
   audiosettingswidget.cpp
   audiosettingswidget.h
   audiosettingswidget.ui
