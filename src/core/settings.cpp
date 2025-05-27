@@ -362,6 +362,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
+  cdrom_auto_disc_change = si.GetBoolValue("CDROM", "AutoDiscChange", false);
   cdrom_read_speedup =
     Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "ReadSpeedup", 1u), std::numeric_limits<u8>::max()));
   cdrom_seek_speedup =
@@ -679,6 +680,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
+  si.SetBoolValue("CDROM", "AutoDiscChange", cdrom_auto_disc_change);
   si.SetUIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
   si.SetUIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
   si.SetUIntValue("CDROM", "MaxReadSpeedupCycles", cdrom_max_seek_speedup_cycles);

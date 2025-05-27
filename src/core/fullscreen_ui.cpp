@@ -4539,6 +4539,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
     bsi, FSUI_ICONVSTR(ICON_FA_VEST_PATCHES, "Apply Image Patches"),
     FSUI_VSTR("Automatically applies patches to disc images when they are present, currently only PPF is supported."),
     "CDROM", "LoadImagePatches", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Switch to Next Disc on Stop"),
+                    FSUI_VSTR("Automatically switches to the next disc in the game when the game stops the CD-ROM "
+                              "motor. Does not work for all games."),
+                    "CDROM", "AutoDiscChange", false);
 
   EndMenuButtons();
 }
@@ -9166,6 +9170,7 @@ TRANSLATE_NOOP("FullscreenUI", "Automatically applies patches to disc images whe
 TRANSLATE_NOOP("FullscreenUI", "Automatically resizes the window to match the internal resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically switches to the next disc in the game when the game stops the CD-ROM motor. Does not work for all games.");
 TRANSLATE_NOOP("FullscreenUI", "Avoids calls to C++ code, significantly speeding up the recompiler.");
 TRANSLATE_NOOP("FullscreenUI", "BIOS Directory");
 TRANSLATE_NOOP("FullscreenUI", "BIOS Selection");
@@ -9728,6 +9733,7 @@ TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller pres
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
 TRANSLATE_NOOP("FullscreenUI", "Summary");
 TRANSLATE_NOOP("FullscreenUI", "Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.");
+TRANSLATE_NOOP("FullscreenUI", "Switch to Next Disc on Stop");
 TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
 TRANSLATE_NOOP("FullscreenUI", "Sync To Host Refresh Rate");

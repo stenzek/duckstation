@@ -308,6 +308,7 @@ struct Settings : public GPUSettings
   bool cdrom_load_image_to_ram : 1 = false;
   bool cdrom_load_image_patches : 1 = false;
   bool cdrom_mute_cd_audio : 1 = false;
+  bool cdrom_auto_disc_change : 1 = false;
 
   u16 rewind_save_slots = 10;
   u8 runahead_frames = 0;

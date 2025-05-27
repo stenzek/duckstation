@@ -65,6 +65,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, "CPU", "RecompilerICache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImagePatches, "CDROM", "LoadImagePatches", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromAutoDiscChange, "CDROM", "AutoDiscChange", false);
 
   if (!m_dialog->isPerGameSettings())
   {
@@ -73,6 +74,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   }
   else
   {
+
     m_ui.cdromIgnoreDriveSubcode->setEnabled(false);
   }
 
@@ -131,6 +133,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   dialog->registerWidgetHelp(m_ui.cdromLoadImagePatches, tr("Apply Image Patches"), tr("Unchecked"),
                              tr("Automatically applies patches to disc images when they are present in the same "
                                 "directory. Currently only PPF patches are supported with this option."));
+  dialog->registerWidgetHelp(
+    m_ui.cdromAutoDiscChange, tr("Switch to Next Disc on Stop"), tr("Unchecked"),
+    tr("Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur "
+       "if the last disc in the game is already selected. <strong>Does not work for all games.</strong>"));
   dialog->registerWidgetHelp(
     m_ui.cdromIgnoreDriveSubcode, tr("Ignore Drive Subcode"), tr("Unchecked"),
     tr("Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel "

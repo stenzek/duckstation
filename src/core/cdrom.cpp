@@ -2590,9 +2590,17 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
     case Command::ReadTOC:
     case Command::Pause:
     case Command::MotorOn:
-    case Command::Stop:
       DoStatSecondResponse();
       break;
+
+    case Command::Stop:
+    {
+      DoStatSecondResponse();
+
+      if (g_settings.cdrom_auto_disc_change)
+        Host::RunOnCPUThread([]() { System::SwitchToNextDisc(false); });
+    }
+    break;
 
     default:
       break;
