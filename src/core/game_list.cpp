@@ -886,21 +886,37 @@ GameList::Entry* GameList::GetMutableEntryForPath(std::string_view path)
 
 const GameList::Entry* GameList::GetEntryBySerial(std::string_view serial)
 {
+  const Entry* fallback_entry = nullptr;
+
   for (const Entry& entry : s_entries)
   {
-    if (entry.serial == serial)
-      return &entry;
+    if (!entry.IsDiscSet() && entry.serial == serial)
+    {
+      // prefer actual discs
+      if (!entry.IsDisc())
+        fallback_entry = fallback_entry ? fallback_entry : &entry;
+      else
+        return &entry;
+    }
   }
 
-  return nullptr;
+  return fallback_entry;
 }
 
 const GameList::Entry* GameList::GetEntryBySerialAndHash(std::string_view serial, u64 hash)
 {
+  const Entry* fallback_entry = nullptr;
+
   for (const Entry& entry : s_entries)
   {
-    if (entry.serial == serial && entry.hash == hash)
-      return &entry;
+    if (!entry.IsDiscSet() && entry.serial == serial && entry.hash == hash)
+    {
+      // prefer actual discs
+      if (!entry.IsDisc())
+        fallback_entry = fallback_entry ? fallback_entry : &entry;
+      else
+        return &entry;
+    }
   }
 
   return nullptr;

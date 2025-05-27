@@ -192,6 +192,7 @@ static bool UpdateGameSettingsLayer();
 static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock);
 static void UpdateRunningGame(const std::string& path, CDImage* image, bool booting);
 static bool CheckForRequiredSubQ(Error* error);
+static bool SwitchDiscFromSet(s32 direction, bool show_osd_message);
 
 static void UpdateControllers();
 static void ResetControllers();
@@ -3510,7 +3511,7 @@ void System::FormatLatencyStats(SmallStringBase& str)
   const double pre_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time));
   const double input_latency = std::ceil(
     Timer::ConvertValueToMilliseconds((s_state.frame_period - s_state.pre_frame_sleep_time) *
-                                      static_cast<float>(std::max(queued_frame_count, 1u))) -
+                                      (std::max(queued_frame_count, 1u))) -
     Timer::ConvertValueToMilliseconds(static_cast<Timer::Value>(s_state.runahead_frames) * s_state.frame_period));
 
   str.format("AL: {}ms | AF: {:.0f}ms | PF: {:.0f}ms | IL: {:.0f}ms | QF: {}", audio_latency, active_frame_time,
@@ -4335,6 +4336,84 @@ bool System::SwitchMediaSubImage(u32 index)
     fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title, index + 1u, title),
     Host::OSD_INFO_DURATION);
   return true;
+}
+
+bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
+{
+  if (!IsValid() || !s_state.running_game_entry || s_state.running_game_entry->disc_set_serials.empty())
+  {
+    if (display_osd_message)
+    {
+      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Current game does not have multiple discs."),
+                              Host::OSD_WARNING_DURATION);
+    }
+
+    return false;
+  }
+
+  s32 current_index = static_cast<s32>(s_state.running_game_entry->disc_set_serials.size());
+  for (size_t i = 0; i < s_state.running_game_entry->disc_set_serials.size(); i++)
+  {
+    if (s_state.running_game_entry->disc_set_serials[i] == s_state.running_game_serial)
+    {
+      current_index = static_cast<s32>(i);
+      break;
+    }
+  }
+
+  if (current_index == static_cast<s32>(s_state.running_game_entry->disc_set_serials.size()))
+  {
+    if (display_osd_message)
+    {
+      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Could not determine current disc for switching."),
+                              Host::OSD_WARNING_DURATION);
+    }
+
+    return false;
+  }
+
+  current_index += direction;
+  if (current_index < 0 || current_index >= static_cast<s32>(s_state.running_game_entry->disc_set_serials.size()))
+  {
+    if (display_osd_message)
+    {
+      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              (direction < 0) ? TRANSLATE_STR("System", "There is no previous disc to switch to.") :
+                                                TRANSLATE_STR("System", "There is no next disc to switch to."),
+                              Host::OSD_WARNING_DURATION);
+    }
+
+    return false;
+  }
+
+  const std::string_view& next_serial = s_state.running_game_entry->disc_set_serials[current_index];
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryBySerial(next_serial);
+  if (!entry)
+  {
+    if (display_osd_message)
+    {
+      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              fmt::format(TRANSLATE_FS("System", "No disc found for serial {}."), next_serial),
+                              Host::OSD_WARNING_DURATION);
+    }
+
+    return false;
+  }
+
+  return InsertMedia(entry->path.c_str());
+}
+
+bool System::SwitchToPreviousDisc(bool display_osd_message)
+{
+  return SwitchDiscFromSet(-1, display_osd_message);
+}
+
+bool System::SwitchToNextDisc(bool display_osd_message)
+{
+  return SwitchDiscFromSet(1, display_osd_message);
 }
 
 bool System::ShouldStartFullscreen()

@@ -329,6 +329,10 @@ std::string GetMediaSubImageTitle(u32 index);
 /// Switches to the specified media/disc playlist index.
 bool SwitchMediaSubImage(u32 index);
 
+/// Switches to the previous/next disc in the disc set, if any.
+bool SwitchToPreviousDisc(bool display_osd_message);
+bool SwitchToNextDisc(bool display_osd_message);
+
 /// Updates throttler.
 void UpdateSpeedLimiterState();
 

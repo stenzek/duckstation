@@ -250,6 +250,20 @@ DEFINE_NON_ANDROID_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRA
                               FullscreenUI::OpenDiscChangeMenu();
                           })
 
+DEFINE_HOTKEY("SwitchToPreviousDisc", TRANSLATE_NOOP("Hotkeys", "System"),
+              TRANSLATE_NOOP("Hotkeys", "Switch to Previous Disc"), [](s32 pressed) {
+                // Defer because otherwise the hotkey might be invalidated by config change.
+                if (!pressed)
+                  Host::RunOnCPUThread([]() { System::SwitchToPreviousDisc(true); });
+              })
+
+DEFINE_HOTKEY("SwitchToNextDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Next Disc"),
+              [](s32 pressed) {
+                // Defer because otherwise the hotkey might be invalidated by config change.
+                if (!pressed)
+                  Host::RunOnCPUThread([]() { System::SwitchToNextDisc(true); });
+              })
+
 DEFINE_HOTKEY("Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"), [](s32 pressed) {
   if (pressed < 0)
     return;
