@@ -90,6 +90,50 @@
       <string>CPU Emulation</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cpuExecutionMode"/>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="recompilerICache">
+        <property name="text">
+         <string>Enable Recompiler ICache</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="enableCPUClockSpeedControl">
+          <property name="text">
+           <string>Enable Clock Speed Control (Overclocking/Underclocking)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="cpuClockSpeedLabel">
+          <property name="text">
+           <string>100% (effective 33.3mhz)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="cpuExecutionModeLabel">
         <property name="text">
@@ -97,73 +141,25 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cpuExecutionMode"/>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QCheckBox" name="enableCPUClockSpeedControl">
-            <property name="text">
-             <string>Enable Clock Speed Control (Overclocking/Underclocking)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="cpuClockSpeedLabel">
-            <property name="text">
-             <string>100% (effective 33.3mhz)</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QSlider" name="cpuClockSpeed">
-          <property name="minimum">
-           <number>10</number>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBothSides</enum>
-          </property>
-          <property name="tickInterval">
-           <number>50</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QCheckBox" name="recompilerICache">
-        <property name="text">
-         <string>Enable Recompiler ICache</string>
+       <widget class="QSlider" name="cpuClockSpeed">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TickPosition::TicksBothSides</enum>
+        </property>
+        <property name="tickInterval">
+         <number>50</number>
         </property>
        </widget>
       </item>
