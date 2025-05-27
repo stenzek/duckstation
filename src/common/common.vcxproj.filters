@@ -40,6 +40,9 @@
     <ClInclude Include="thirdparty\SmallVector.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
+    <ClInclude Include="thirdparty\FollyFunction.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
     <ClInclude Include="dynamic_library.h" />
     <ClInclude Include="binary_reader_writer.h" />
     <ClInclude Include="gsvector_sse.h" />
@@ -63,6 +66,7 @@
     <ClInclude Include="optional_with_status.h" />
     <ClInclude Include="packed_optional.h" />
     <ClInclude Include="platform_strings.h" />
+    <ClInclude Include="move_only_function.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />

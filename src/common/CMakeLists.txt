@@ -46,6 +46,7 @@ add_library(common
   md5_digest.cpp
   md5_digest.h
   minizip_helpers.h
+  move_only_function.h
   optional_with_status.h
   packed_optional.h
   path.h
@@ -69,6 +70,7 @@ add_library(common
   string_pool.cpp
   string_pool.h
   time_helpers.h
+  thirdparty/FollyFunction.h
   thirdparty/SmallVector.cpp
   thirdparty/SmallVector.h
   thirdparty/aes.cpp

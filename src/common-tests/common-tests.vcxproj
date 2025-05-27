@@ -10,6 +10,7 @@
     <ClCompile Include="heap_array_tests.cpp" />
     <ClCompile Include="lru_cache_tests.cpp" />
     <ClCompile Include="misc_tests.cpp" />
+    <ClCompile Include="move_only_function_tests.cpp" />
     <ClCompile Include="packed_optional_tests.cpp" />
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />

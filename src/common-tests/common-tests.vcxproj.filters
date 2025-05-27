@@ -16,6 +16,7 @@
     <ClCompile Include="lru_cache_tests.cpp" />
     <ClCompile Include="string_pool_tests.cpp" />
     <ClCompile Include="misc_tests.cpp" />
+    <ClCompile Include="move_only_function_tests.cpp" />
     <ClCompile Include="packed_optional_tests.cpp" />
     <ClCompile Include="threading_tests.cpp" />
   </ItemGroup>

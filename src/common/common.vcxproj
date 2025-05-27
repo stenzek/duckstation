@@ -15,6 +15,7 @@
     <ClInclude Include="fastjmp.h" />
     <ClInclude Include="fifo_queue.h" />
     <ClInclude Include="file_system.h" />
+    <ClInclude Include="move_only_function.h" />
     <ClInclude Include="gsvector.h" />
     <ClInclude Include="gsvector_formatter.h" />
     <ClInclude Include="gsvector_neon.h" />
@@ -48,6 +49,7 @@
     <ClInclude Include="binary_reader_writer.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="thirdparty\aes.h" />
+    <ClInclude Include="thirdparty\FollyFunction.h" />
     <ClInclude Include="thirdparty\SmallVector.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
     <ClInclude Include="thirdparty\usb_key_code_data.h" />
