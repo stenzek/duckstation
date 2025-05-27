@@ -145,7 +145,7 @@
      <property name="title">
       <string>Parallel Port</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
+     <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -153,31 +153,34 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="pioDeviceType"/>
+      <item row="0" column="1" colspan="2">
+       <widget class="QComboBox" name="pioDeviceType">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
-      <item row="1" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0">
-        <item>
-         <widget class="QLabel" name="pioImagePathLabel">
-          <property name="text">
-           <string>Image Path:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="pioImagePath"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pioImagePathBrowse">
-          <property name="text">
-           <string>Browse...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+      <item row="1" column="0">
+       <widget class="QLabel" name="pioImagePathLabel">
+        <property name="text">
+         <string>Image Path:</string>
+        </property>
+       </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="pioImagePath"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="pioImagePathBrowse">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
          <widget class="QCheckBox" name="pioSwitchActive">
@@ -218,12 +221,6 @@
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>1</height>
-      </size>
      </property>
     </spacer>
    </item>
