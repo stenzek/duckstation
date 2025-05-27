@@ -2056,7 +2056,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
       }
     }
 
-    if (m_physical_device == VK_NULL_HANDLE)
+    if (physical_device == VK_NULL_HANDLE)
     {
       WARNING_LOG("Requested GPU '{}' not found, using first ({})", adapter, gpus[0].second.name);
       physical_device = gpus[0].first;
