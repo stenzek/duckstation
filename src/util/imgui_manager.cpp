@@ -1186,13 +1186,32 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ++iter;
 
+    const ImVec2 text_size = font->CalcTextSizeA(font->FontSize, max_width, max_width, IMSTR_START_END(msg.text));
+    float box_width = text_size.x + padding + padding;
+    const float box_height = text_size.y + padding + padding;
+
     float opacity;
+    bool clip_box = false;
     if (time_passed < OSD_FADE_IN_TIME)
-      opacity = time_passed / OSD_FADE_IN_TIME;
+    {
+      const float pct = time_passed / OSD_FADE_IN_TIME;
+      const float eased_pct = std::clamp(Easing::OutExpo(pct), 0.0f, 1.0f);
+      box_width = box_width * eased_pct;
+      opacity = pct;
+      clip_box = true;
+    }
     else if (time_passed > (msg.duration - OSD_FADE_OUT_TIME))
-      opacity = std::min((msg.duration - time_passed) / OSD_FADE_OUT_TIME, 1.0f);
+    {
+      const float pct = (msg.duration - time_passed) / OSD_FADE_OUT_TIME;
+      const float eased_pct = std::clamp(Easing::InExpo(pct), 0.0f, 1.0f);
+      box_width = box_width * eased_pct;
+      opacity = eased_pct;
+      clip_box = true;
+    }
     else
+    {
       opacity = 1.0f;
+    }
 
     const float expected_y = position_y;
     float actual_y = msg.last_y;
@@ -1234,18 +1253,26 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     if (actual_y >= ImGui::GetIO().DisplaySize.y || (!show_messages && !msg.is_warning))
       break;
 
-    const ImVec2 pos(position_x, actual_y);
-    const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, max_width, max_width, IMSTR_START_END(msg.text)));
-    const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
-    const ImRect text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
+    const ImVec2 pos = ImVec2(position_x, actual_y);
+    const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
+    const ImRect text_rect =
+      ImRect(pos.x + padding, pos.y + padding, pos.x + box_width - padding, pos.y + box_height - padding);
 
-    ImDrawList* dl = ImGui::GetForegroundDrawList();
-    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y),
-                      ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)), rounding);
+    ImDrawList* const dl = ImGui::GetForegroundDrawList();
+
+    if (clip_box)
+      dl->PushClipRect(pos, pos_max);
+
+    dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
+                      rounding);
     RenderShadowedTextClipped(dl, font, text_rect.Min, text_rect.Max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
                               ImVec2(0.0f, 0.0f), max_width, &text_rect, scale);
-    position_y += size.y + spacing;
+
+    if (clip_box)
+      dl->PopClipRect();
+
+    position_y += box_height + spacing;
   }
 }
 
