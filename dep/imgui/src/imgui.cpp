@@ -11130,8 +11130,6 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
         }
 
         // Based on https://github.com/ocornut/imgui/pull/7348
-        // TODO: Make it not dependent on frame rate, easiest way would be to multiply by delta_time / (1/60).
-        // Smooth scroll.
         // Instead use "Scroll" value in the window, all setters that sets the scroll absolutely now points to
         // "ScrollExpected" Here, we take from ScrollTarget (from some functions like ScrollHere + mouse wheel) to set
         // the ScrollExpected value Also, Scroll var in window is processed to meet ScrollExpected Value
@@ -11157,7 +11155,7 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
         ImGuiStyle& style = g.Style;
         if (scroll[axis] != window->ScrollExpected[axis])
         {
-            const float multiplier = GImGui->IO.DeltaTime / (1.0f / 60.0f);
+            const float multiplier = GImGui->IO.DeltaTime / (1.0f / ImMax(GImGui->IO.Framerate, 1.0f));
             const float diff = window->ScrollExpected[axis] - scroll[axis];
             if (diff > 0)
                 scroll[axis] += ImMin(diff, (diff / (style.ScrollSmooth * multiplier)));
