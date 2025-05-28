@@ -4035,6 +4035,15 @@ void Cheats::GamesharkCheatCode::Apply() const
             value += value_increment;
           }
         }
+        else if (write_type == InstructionCode::ExtConstantWrite32)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            DoMemoryWrite<u32>(address, value);
+            address += address_increment;
+            value += value_increment;
+          }
+        }
         else
         {
           ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
@@ -4097,6 +4106,102 @@ void Cheats::GamesharkCheatCode::Apply() const
           for (u32 i = 0; i < slide_count; i++)
           {
             DoMemoryWrite<u32>(address, value);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitClear8)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u8 newValue = DoMemoryRead<u8>(address) & ~value;
+            DoMemoryWrite<u8>(address, newValue);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitSet8)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u8 newValue = DoMemoryRead<u8>(address) | value;
+            DoMemoryWrite<u8>(address, newValue);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitClear16)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u16 newValue = DoMemoryRead<u16>(address) & ~value;
+            DoMemoryWrite<u16>(address, newValue);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitSet16)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u16 newValue = DoMemoryRead<u16>(address) | value;
+            DoMemoryWrite<u16>(address, newValue);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitClear32)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u32 newValue = DoMemoryRead<u32>(address) & ~value;
+            DoMemoryWrite<u32>(address, newValue);
+            if (address_change_negative)
+              address -= address_change;
+            else
+              address += address_change;
+            if (value_change_negative)
+              value -= value_change;
+            else
+              value += value_change;
+          }
+        }
+        else if (write_type == InstructionCode::ExtConstantBitSet32)
+        {
+          for (u32 i = 0; i < slide_count; i++)
+          {
+            const u32 newValue = DoMemoryRead<u32>(address) | value;
+            DoMemoryWrite<u32>(address, newValue);
             if (address_change_negative)
               address -= address_change;
             else
