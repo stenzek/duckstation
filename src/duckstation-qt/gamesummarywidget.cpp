@@ -594,12 +594,19 @@ void GameSummaryWidget::onComputeHashClicked()
 
     if (found_serial != m_ui.serial->text().toStdString())
     {
-      const QString mismatch_str =
-        tr("Serial Mismatch: %1 vs %2").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text());
-      if (!text.isEmpty())
-        text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
+      if (found_serial.empty())
+      {
+        text = tr("No known dump found that matches this hash.");
+      }
       else
-        text = mismatch_str;
+      {
+        const QString mismatch_str =
+          tr("Serial Mismatch: %1 vs %2").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text());
+        if (!text.isEmpty())
+          text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
+        else
+          text = mismatch_str;
+      }
     }
 
     setRevisionText(text);
