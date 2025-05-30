@@ -358,9 +358,11 @@ private:
         case GPUTextureMode::Palette8Bit:
         {
           // Texture cache reload every 2 pixels, reads in 8 bytes (assuming 4x2). Cache only reloads if the
-          // draw width is greater than 32, otherwise the cache hits between rows.
-          if (drawn_width >= 32)
+          // draw width is greater than 128, otherwise the cache hits between rows.
+          if (drawn_width > 128)
             ticks_per_row += (drawn_width / 4) * 8;
+          else if ((drawn_width * drawn_height) > 2048)
+            ticks_per_row += ((drawn_width / 4) * (4 * (128 / drawn_width)));
           else
             ticks_per_row += drawn_width;
         }
@@ -370,8 +372,10 @@ private:
         case GPUTextureMode::Reserved_Direct16Bit:
         {
           // Same as above, except with 2x2 blocks instead of 4x2.
-          if (drawn_width >= 32)
+          if (drawn_width > 128)
             ticks_per_row += (drawn_width / 2) * 8;
+          else if ((drawn_width * drawn_height) > 1024)
+            ticks_per_row += ((drawn_width / 4) * (8 * (128 / drawn_width)));
           else
             ticks_per_row += drawn_width;
         }
