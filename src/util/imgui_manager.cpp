@@ -1117,7 +1117,7 @@ void ImGuiManager::ClearOSDMessages(bool clear_warnings)
 
 void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 {
-  std::atomic_thread_fence(std::memory_order_consume);
+  std::atomic_thread_fence(std::memory_order_acquire);
   if (s_state.osd_posted_messages.empty())
     return;
 
