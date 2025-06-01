@@ -2357,6 +2357,9 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 
 void Achievements::ClearUIState()
 {
+  if (!FullscreenUI::IsInitialized())
+    return;
+
   CloseLeaderboard();
 
   s_state.achievement_badge_paths = {};
@@ -3339,7 +3342,7 @@ void Achievements::DrawLeaderboardsWindow()
             ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
         {
           s_state.is_showing_all_leaderboard_entries = !s_state.is_showing_all_leaderboard_entries;
-          ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
+          ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
         }
 
         for (const bool show_all : {false, true})
@@ -3350,6 +3353,7 @@ void Achievements::DrawLeaderboardsWindow()
                                       tab_height_unscaled, heading_background))
           {
             s_state.is_showing_all_leaderboard_entries = show_all;
+            ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
           }
         }
 
@@ -3461,14 +3465,8 @@ void Achievements::DrawLeaderboardsWindow()
           "leaderboard", background, 0.0f,
           ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING), 0))
     {
-      // Defer focus reset until loading finishes.
-      if (!s_state.is_showing_all_leaderboard_entries ||
-          (ImGuiFullscreen::IsFocusResetFromWindowChange() && !s_state.leaderboard_entry_lists.empty()))
-      {
-        ImGuiFullscreen::ResetFocusHere();
-      }
-
       ImGuiFullscreen::BeginMenuButtons();
+      ImGuiFullscreen::ResetFocusHere();
 
       if (!s_state.is_showing_all_leaderboard_entries)
       {
@@ -3725,6 +3723,7 @@ void Achievements::LeaderboardFetchNearbyCallback(int result, const char* error_
   if (s_state.leaderboard_nearby_entries)
     rc_client_destroy_leaderboard_entry_list(s_state.leaderboard_nearby_entries);
   s_state.leaderboard_nearby_entries = list;
+  ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
 }
 
 void Achievements::LeaderboardFetchAllCallback(int result, const char* error_message,
@@ -3741,6 +3740,9 @@ void Achievements::LeaderboardFetchAllCallback(int result, const char* error_mes
     CloseLeaderboard();
     return;
   }
+
+  if (s_state.leaderboard_entry_lists.empty())
+    ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
 
   s_state.leaderboard_entry_lists.push_back(list);
 }
@@ -3781,6 +3783,7 @@ void Achievements::CloseLeaderboard()
   }
 
   s_state.open_leaderboard = nullptr;
+  ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
 }
 
 #if defined(_WIN32)
