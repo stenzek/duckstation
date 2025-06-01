@@ -597,10 +597,16 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableUpscaling))
   {
-    if (display_osd_messages && settings.gpu_resolution_scale != 1)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Upscaling disabled."));
+    if (display_osd_messages)
+    {
+      if (settings.gpu_resolution_scale != 1)
+        APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Upscaling disabled."));
+      if (settings.gpu_multisamples != 1)
+        APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "MSAA disabled."));
+    }
 
     settings.gpu_resolution_scale = 1;
+    settings.gpu_multisamples = 1;
   }
 
   if (HasTrait(Trait::DisableTextureFiltering))
