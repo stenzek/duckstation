@@ -833,6 +833,13 @@ void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
   s_state.focus_reset_queued = type;
   s_state.close_button_state =
     (s_state.close_button_state != CloseButtonState::Cancelled) ? CloseButtonState::None : CloseButtonState::Cancelled;
+
+  GImGui->NavMoveSubmitted = false;
+  GImGui->NavMoveDir = ImGuiDir_None;
+  GImGui->NavMoveFlags = ImGuiNavMoveFlags_None;
+  GImGui->NavMoveScrollFlags = ImGuiScrollFlags_None;
+  GImGui->NavMoveClipDir = GImGui->NavMoveDir;
+  GImGui->NavScoringNoClipRect = ImRect(+FLT_MAX, +FLT_MAX, -FLT_MAX, -FLT_MAX);
 }
 
 bool ImGuiFullscreen::ResetFocusHere()
