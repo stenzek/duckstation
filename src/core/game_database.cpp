@@ -597,7 +597,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableUpscaling))
   {
-    if (display_osd_messages && settings.gpu_resolution_scale > 1)
+    if (display_osd_messages && settings.gpu_resolution_scale != 1)
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Upscaling disabled."));
 
     settings.gpu_resolution_scale = 1;
