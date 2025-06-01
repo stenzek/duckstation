@@ -606,6 +606,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_resolution_scale = 1;
+    settings.gpu_automatic_resolution_scale = false;
     settings.gpu_multisamples = 1;
   }
 
