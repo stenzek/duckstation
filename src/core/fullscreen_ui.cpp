@@ -740,7 +740,7 @@ bool FullscreenUI::Initialize()
 
   ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
-  ImGuiFullscreen::SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", true));
+  ImGuiFullscreen::SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false));
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
@@ -4239,9 +4239,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
                         FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
-                        "FullscreenUIMenuBorders", true))
+                        "FullscreenUIMenuBorders", false))
   {
-    ImGuiFullscreen::SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", true));
+    ImGuiFullscreen::SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", false));
   }
 
   MenuHeading(FSUI_VSTR("Behavior"));
