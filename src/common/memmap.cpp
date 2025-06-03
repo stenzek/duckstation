@@ -35,6 +35,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #endif
+#if defined(__linux__) && defined(CPU_ARCH_RISCV64)
+#include <sys/cachectl.h>
+#endif
 
 #if defined(__linux__) && !defined(MAP_FIXED_NOREPLACE)
 // Compatibility with old libc.
@@ -812,7 +815,11 @@ void MemMap::ReleaseJITMemory(void* ptr, size_t size)
 
 void MemMap::FlushInstructionCache(void* address, size_t size)
 {
+#if defined(CPU_ARCH_RISCV64) && defined(__linux__) && defined(__clang__) && (__clang_major__ <= 18)
+  __riscv_flush_icache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size, 0);
+#else
   __builtin___clear_cache(reinterpret_cast<char*>(address), reinterpret_cast<char*>(address) + size);
+#endif
 }
 
 #endif
