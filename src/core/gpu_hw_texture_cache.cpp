@@ -2462,7 +2462,7 @@ size_t GPUTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& k) cons
 
 TinyString GPUTextureCache::VRAMReplacementName::ToString() const
 {
-  return TinyString::from_format("{:08X}{:08X}", high, low);
+  return TinyString::from_format("{:016X}{:016X}", high, low);
 }
 
 bool GPUTextureCache::VRAMReplacementName::Parse(const std::string_view file_title)
