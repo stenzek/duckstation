@@ -290,6 +290,7 @@ static HashType HashRect(const GSVector4i rc);
 static std::pair<u32, u32> ReducePaletteBounds(const GSVector4i rect, GPUTextureMode mode,
                                                GPUTexturePaletteReg palette);
 static void SyncVRAMWritePaletteRecords(VRAMWrite* entry);
+static void MergeAdjacentVRAMWritePaletteRecords(VRAMWrite* entry);
 static void InitializeVRAMWritePaletteRecord(VRAMWrite::PaletteRecord* record, SourceKey source_key,
                                              const GSVector4i rect, PaletteRecordFlags flags);
 static void UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_key, const GSVector4i global_uv_rect,
@@ -1855,6 +1856,43 @@ void GPUTextureCache::SyncVRAMWritePaletteRecords(VRAMWrite* entry)
   }
 }
 
+void GPUTextureCache::MergeAdjacentVRAMWritePaletteRecords(VRAMWrite* entry)
+{
+  if (!IsDumpingVRAMWriteTextures())
+    return;
+
+retry:
+  for (auto it = entry->palette_records.begin(); it != entry->palette_records.end(); ++it)
+  {
+    VRAMWrite::PaletteRecord& rec = *it;
+
+    for (auto oit = entry->palette_records.begin(); oit != entry->palette_records.end(); ++oit)
+    {
+      const VRAMWrite::PaletteRecord& orec = *oit;
+      if (it == oit || rec.flags != orec.flags || rec.palette_hash != orec.palette_hash ||
+          rec.key.mode != orec.key.mode)
+      {
+        continue;
+      }
+
+      if (rec.rect.zzyw().eq(orec.rect.xxyw()))
+      {
+        // horizontal merge, make sure the left side aligns with the page
+        const GSVector4i vpr = VRAMPageRect(rec.key.page);
+        if (vpr.x != rec.rect.x)
+          continue;
+
+        // mergey merge
+        rec.rect.z = orec.rect.z;
+        entry->palette_records.erase(oit);
+        goto retry;
+      }
+
+      // not worrying with vertical merges until we find something that actually needs it
+    }
+  }
+}
+
 void GPUTextureCache::UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_key, const GSVector4i global_uv_rect,
                                              PaletteRecordFlags flags)
 {
@@ -2023,6 +2061,7 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
   DEV_LOG("Remove VRAM write {:016X} at {}", entry->hash, entry->write_rect);
 
   SyncVRAMWritePaletteRecords(entry);
+  MergeAdjacentVRAMWritePaletteRecords(entry);
 
   if (entry->num_splits > 0 && !entry->palette_records.empty())
   {
