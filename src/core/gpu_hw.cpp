@@ -2782,7 +2782,7 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
       if (cmd->texture_enable && ShouldCheckForTexPageOverlap())
       {
         CheckForTexPageOverlap(cmd, GSVector4i(static_cast<s32>(tex_left), static_cast<s32>(tex_top),
-                                               static_cast<s32>(tex_right), static_cast<s32>(tex_bottom)));
+                                               static_cast<s32>(tex_right) - 1, static_cast<s32>(tex_bottom) - 1));
       }
 
       const u32 base_vertex = m_batch_vertex_count;
