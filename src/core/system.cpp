@@ -1960,6 +1960,8 @@ void System::DestroySystem()
 
   FreeMemoryStateStorage(true, true, false);
 
+  GPUThread::DestroyGPUBackend();
+
   Cheats::UnloadAll();
   PCDrv::Shutdown();
   SIO::Shutdown();
@@ -1978,7 +1980,6 @@ void System::DestroySystem()
   TimingEvents::Shutdown();
   Achievements::OnSystemDestroyed();
   ClearRunningGame();
-  GPUThread::DestroyGPUBackend();
 
   s_state.taints = 0;
   s_state.bios_hash = {};
