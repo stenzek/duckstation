@@ -1732,14 +1732,19 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
 {
   DEV_LOG("Showing leaderboard tracker: {}: {}", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
 
-  TinyString width_string;
-  width_string.append(ICON_FA_STOPWATCH);
-  const u32 display_len = static_cast<u32>(std::strlen(event->leaderboard_tracker->display));
-  for (u32 i = 0; i < display_len; i++)
-    width_string.append('0');
+  const u32 id = event->leaderboard_tracker->id;
+  auto it = std::find_if(s_state.active_leaderboard_trackers.begin(), s_state.active_leaderboard_trackers.end(),
+                         [id](const auto& it) { return it.tracker_id == id; });
+  if (it != s_state.active_leaderboard_trackers.end())
+  {
+    WARNING_LOG("Leaderboard tracker {} already active", id);
+    it->text = event->leaderboard_tracker->display;
+    it->active = true;
+    return;
+  }
 
   s_state.active_leaderboard_trackers.push_back(LeaderboardTrackerIndicator{
-    .tracker_id = event->leaderboard_tracker->id,
+    .tracker_id = id,
     .text = event->leaderboard_tracker->display,
     .opacity = 0.0f,
     .active = true,
