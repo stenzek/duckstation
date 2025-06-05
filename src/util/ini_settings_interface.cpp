@@ -206,36 +206,60 @@ bool INISettingsInterface::GetStringValue(const char* section, const char* key, 
 
 void INISettingsInterface::SetIntValue(const char* section, const char* key, s32 value)
 {
+  s32 current_value;
+  if (GetIntValue(key, section, &current_value) && current_value == value)
+    return;
+
   m_dirty = true;
   m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetUIntValue(const char* section, const char* key, u32 value)
 {
+  u32 current_value;
+  if (GetUIntValue(key, section, &current_value) && current_value == value)
+    return;
+
   m_dirty = true;
   m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetFloatValue(const char* section, const char* key, float value)
 {
+  float current_value;
+  if (GetFloatValue(key, section, &current_value) && current_value == value)
+    return;
+
   m_dirty = true;
   m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetDoubleValue(const char* section, const char* key, double value)
 {
+  double current_value;
+  if (GetDoubleValue(key, section, &current_value) && current_value == value)
+    return;
+
   m_dirty = true;
   m_ini.SetValue(section, key, StringUtil::ToChars(value).c_str(), nullptr, true);
 }
 
 void INISettingsInterface::SetBoolValue(const char* section, const char* key, bool value)
 {
+  bool current_value;
+  if (GetBoolValue(key, section, &current_value) && current_value == value)
+    return;
+
   m_dirty = true;
   m_ini.SetBoolValue(section, key, value, nullptr, true);
 }
 
 void INISettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
+  const char* current_value = m_ini.GetValue(section, key);
+  if (current_value && std::strcmp(current_value, value) == 0)
+    return;
+
   m_dirty = true;
   m_ini.SetValue(section, key, value, nullptr, true);
 }
