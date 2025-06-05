@@ -2553,7 +2553,7 @@ void QtHost::SaveSettings()
   {
     Error error;
     auto lock = Host::GetSettingsLock();
-    if (!s_base_settings_interface.Save(&error))
+    if (s_base_settings_interface.IsDirty() && !s_base_settings_interface.Save(&error))
       ERROR_LOG("Failed to save settings: {}", error.GetDescription());
   }
 
