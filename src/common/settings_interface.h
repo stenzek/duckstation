@@ -17,8 +17,6 @@ class SettingsInterface
 public:
   virtual ~SettingsInterface() = default;
 
-  virtual bool Save(Error* error = nullptr) = 0;
-  virtual void Clear() = 0;
   virtual bool IsEmpty() = 0;
 
   virtual bool GetIntValue(const char* section, const char* key, s32* value) const = 0;

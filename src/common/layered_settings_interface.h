@@ -22,10 +22,6 @@ public:
   SettingsInterface* GetLayer(Layer layer) const { return m_layers[layer]; }
   void SetLayer(Layer layer, SettingsInterface* sif) { m_layers[layer] = sif; }
 
-  bool Save(Error* error = nullptr) override;
-
-  void Clear() override;
-
   bool IsEmpty() override;
 
   bool GetIntValue(const char* section, const char* key, s32* value) const override;

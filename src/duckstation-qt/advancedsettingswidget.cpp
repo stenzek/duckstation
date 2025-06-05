@@ -349,7 +349,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   }
 
   // for per-game it's easier to just clear and recreate
-  SettingsInterface* sif = m_dialog->getSettingsInterface();
+  INISettingsInterface* sif = m_dialog->getSettingsInterface();
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
   sif->DeleteValue("Main", "CompressSaveStates");

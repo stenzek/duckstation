@@ -42,7 +42,7 @@ GamePatchDetailsWidget::~GamePatchDetailsWidget() = default;
 
 void GamePatchDetailsWidget::onEnabledStateChanged(int state)
 {
-  SettingsInterface* si = m_dialog->getSettingsInterface();
+  INISettingsInterface* si = m_dialog->getSettingsInterface();
   if (state == Qt::Checked)
     si->AddToStringList("Patches", "Enable", m_name.c_str());
   else

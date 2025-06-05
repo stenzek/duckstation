@@ -27,7 +27,7 @@ class ControllerGlobalSettingsWidget;
 class ControllerBindingWidget;
 class HotkeySettingsWidget;
 
-class SettingsInterface;
+class INISettingsInterface;
 
 class ControllerSettingsWindow final : public QWidget
 {
@@ -42,11 +42,11 @@ public:
     Count
   };
 
-  ControllerSettingsWindow(SettingsInterface* game_sif = nullptr, bool edit_profiles = false,
+  ControllerSettingsWindow(INISettingsInterface* game_sif = nullptr, bool edit_profiles = false,
                            QWidget* parent = nullptr);
   ~ControllerSettingsWindow();
 
-  static void editControllerSettingsForGame(QWidget* parent, SettingsInterface* sif);
+  static void editControllerSettingsForGame(QWidget* parent, INISettingsInterface* sif);
 
   ALWAYS_INLINE HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
@@ -59,7 +59,7 @@ public:
     return (!m_editing_input_profiles && m_editing_settings_interface);
   }
   ALWAYS_INLINE bool isEditingProfile() const { return m_editing_input_profiles; }
-  ALWAYS_INLINE SettingsInterface* getEditingSettingsInterface() { return m_editing_settings_interface; }
+  ALWAYS_INLINE INISettingsInterface* getEditingSettingsInterface() { return m_editing_settings_interface; }
 
   Category getCurrentCategory() const;
 
@@ -106,13 +106,13 @@ private:
 
   Ui::ControllerSettingsWindow m_ui;
 
-  SettingsInterface* m_editing_settings_interface = nullptr;
+  INISettingsInterface* m_editing_settings_interface = nullptr;
 
   ControllerGlobalSettingsWidget* m_global_settings = nullptr;
   std::array<ControllerBindingWidget*, NUM_CONTROLLER_AND_CARD_PORTS> m_port_bindings{};
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
 
   QString m_profile_name;
-  std::unique_ptr<SettingsInterface> m_profile_settings_interface;
+  std::unique_ptr<INISettingsInterface> m_profile_settings_interface;
   bool m_editing_input_profiles = false;
 };

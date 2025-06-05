@@ -12,10 +12,6 @@ public:
   MemorySettingsInterface();
   ~MemorySettingsInterface() override;
 
-  bool Save(Error* error = nullptr) override;
-
-  void Clear() override;
-
   bool IsEmpty() override;
 
   bool GetIntValue(const char* section, const char* key, s32* value) const override;

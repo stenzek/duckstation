@@ -20,9 +20,10 @@ public:
 
   bool Load(Error* error = nullptr);
   bool Load(std::string new_path, Error* error = nullptr);
-  bool Save(Error* error = nullptr) override;
+  bool Save(Error* error = nullptr);
 
-  void Clear() override;
+  void Clear();
+
   bool IsEmpty() override;
 
   bool GetIntValue(const char* section, const char* key, s32* value) const override;

@@ -11,17 +11,6 @@ MemorySettingsInterface::MemorySettingsInterface() = default;
 
 MemorySettingsInterface::~MemorySettingsInterface() = default;
 
-bool MemorySettingsInterface::Save(Error* error /* = nullptr */)
-{
-  Error::SetStringView(error, "Memory settings cannot be saved.");
-  return false;
-}
-
-void MemorySettingsInterface::Clear()
-{
-  m_sections.clear();
-}
-
 bool MemorySettingsInterface::IsEmpty()
 {
   return m_sections.empty();

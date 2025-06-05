@@ -290,7 +290,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   // see above
   const auto lock = Host::GetSettingsLock();
 
-  if (!sif->Save(&error))
+  if (!ini->Save(&error))
   {
     Host::ReportErrorAsync(
       TRANSLATE_SV("QtHost", "Error"),

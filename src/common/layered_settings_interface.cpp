@@ -9,16 +9,6 @@ LayeredSettingsInterface::LayeredSettingsInterface() = default;
 
 LayeredSettingsInterface::~LayeredSettingsInterface() = default;
 
-bool LayeredSettingsInterface::Save(Error* error /* = nullptr */)
-{
-  Panic("Attempting to save layered settings interface");
-}
-
-void LayeredSettingsInterface::Clear()
-{
-  Panic("Attempting to clear layered settings interface");
-}
-
 bool LayeredSettingsInterface::IsEmpty()
 {
   return false;

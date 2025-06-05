@@ -22,7 +22,7 @@
 #include <QtWidgets/QTextEdit>
 #include <array>
 
-ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /* = nullptr */,
+ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_sif /* = nullptr */,
                                                    bool edit_profiles /* = false */, QWidget* parent /* = nullptr */)
   : QWidget(parent), m_editing_settings_interface(game_sif), m_editing_input_profiles(edit_profiles)
 {
@@ -106,7 +106,7 @@ ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
 
-void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, SettingsInterface* sif)
+void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, INISettingsInterface* sif)
 {
   ControllerSettingsWindow* dlg = new ControllerSettingsWindow(sif, false, parent);
   dlg->setWindowFlag(Qt::Window);
