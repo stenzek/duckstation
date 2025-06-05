@@ -449,7 +449,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
     if (show_game_list)
     {
       m_ui.mainContainer->setCurrentIndex(0);
-      m_game_list_widget->resizeTableViewColumnsToFit();
+      m_game_list_widget->resizeListViewColumnsToFit();
     }
   }
 
@@ -1323,13 +1323,13 @@ void MainWindow::onViewSystemDisplayTriggered()
 void MainWindow::onViewGameGridZoomInActionTriggered()
 {
   if (isShowingGameList())
-    m_game_list_widget->gridZoomIn();
+    m_game_list_widget->getGridView()->zoomIn();
 }
 
 void MainWindow::onViewGameGridZoomOutActionTriggered()
 {
   if (isShowingGameList())
-    m_game_list_widget->gridZoomOut();
+    m_game_list_widget->getGridView()->zoomOut();
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -2441,7 +2441,7 @@ void MainWindow::showEvent(QShowEvent* event)
   // gives the incorrect sizes for columns, if you set the style before setting up
   // the rest of the window... so, instead, let's just force it to be resized on show.
   if (isShowingGameList())
-    m_game_list_widget->resizeTableViewColumnsToFit();
+    m_game_list_widget->resizeListViewColumnsToFit();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -2754,7 +2754,7 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
   if (!Host::GetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", false))
   {
     Host::SetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", true);
-    m_game_list_widget->setTableViewColumnHidden(GameListModel::Column_Achievements, false);
+    m_game_list_widget->getListView()->setAndSaveColumnHidden(GameListModel::Column_Achievements, false);
   }
 }
 

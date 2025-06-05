@@ -25,7 +25,6 @@
 
 Q_DECLARE_METATYPE(const GameList::Entry*);
 
-class GameListModel;
 class GameListSortModel;
 class GameListRefreshThread;
 
@@ -60,7 +59,7 @@ public:
   static std::optional<Column> getColumnIdForName(std::string_view name);
   static const char* getColumnName(Column col);
 
-  GameListModel(float cover_scale, bool show_cover_titles, bool show_game_icons, QObject* parent = nullptr);
+  explicit GameListModel(QObject* parent);
   ~GameListModel();
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -100,7 +99,7 @@ public:
   void updateCacheSize(int num_rows, int num_columns);
 
 Q_SIGNALS:
-  void coverScaleChanged();
+  void coverScaleChanged(float scale);
 
 private Q_SLOTS:
   void rowsChanged(const QList<int>& rows);
@@ -111,6 +110,7 @@ private:
   void loadCommonImages();
   void loadThemeSpecificImages();
   void setColumnDisplayNames();
+  void updateCoverScale();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
@@ -151,26 +151,58 @@ private:
   mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
 };
 
-class GameListGridListView final : public QListView
+class GameListListView final : public QTableView
 {
   Q_OBJECT
 
 public:
-  GameListGridListView(GameListModel* model, QWidget* parent);
+  GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
+  ~GameListListView() override;
+
+  void setAndSaveColumnHidden(int column, bool hidden);
+
+  void resizeColumnsToFit();
+
+private Q_SLOTS:
+  void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
+  void onHeaderContextMenuRequested(const QPoint& point);
+
+private:
+  void loadColumnVisibilitySettings();
+  void loadColumnSortSettings();
+  void saveColumnSortSettings();
+
+  GameListModel* m_model = nullptr;
+  GameListSortModel* m_sort_model = nullptr;
+};
+
+class GameListGridView final : public QListView
+{
+  Q_OBJECT
+
+public:
+  GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
+  ~GameListGridView() override;
 
   void updateLayout();
   int horizontalOffset() const override;
   int verticalOffset() const override;
 
-Q_SIGNALS:
+public Q_SLOTS:
   void zoomOut();
   void zoomIn();
+  void setZoomPct(int int_scale);
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
   void resizeEvent(QResizeEvent* e) override;
 
+private Q_SLOTS:
+  void onCoverScaleChanged(float scale);
+
 private:
+  void adjustZoom(float delta);
+
   GameListModel* m_model = nullptr;
   int m_horizontal_offset = 0;
   int m_vertical_offset = 0;
@@ -185,10 +217,11 @@ public:
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }
+  ALWAYS_INLINE GameListListView* getListView() const { return m_list_view; }
+  ALWAYS_INLINE GameListGridView* getGridView() const { return m_grid_view; }
 
   void initialize();
-  void resizeTableViewColumnsToFit();
-  void setTableViewColumnHidden(int column, bool hidden);
+  void resizeListViewColumnsToFit();
 
   void refresh(bool invalidate_cache);
   void refreshModel();
@@ -219,14 +252,13 @@ private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, float time);
   void onRefreshComplete();
 
+  void onCoverScaleChanged(float scale);
+
   void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
-  void onTableViewItemActivated(const QModelIndex& index);
-  void onTableViewContextMenuRequested(const QPoint& point);
-  void onTableViewHeaderContextMenuRequested(const QPoint& point);
-  void onTableViewHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onListViewItemActivated(const QModelIndex& index);
   void onListViewContextMenuRequested(const QPoint& point);
-  void onCoverScaleChanged();
+  void onGridViewItemActivated(const QModelIndex& index);
+  void onGridViewContextMenuRequested(const QPoint& point);
   void onSearchReturnPressed();
 
 public Q_SLOTS:
@@ -235,9 +267,6 @@ public Q_SLOTS:
   void setShowCoverTitles(bool enabled);
   void setMergeDiscSets(bool enabled);
   void setShowGameIcons(bool enabled);
-  void gridZoomIn();
-  void gridZoomOut();
-  void gridIntScale(int int_scale);
   void refreshGridCovers();
   void focusSearchWidget();
 
@@ -245,20 +274,14 @@ protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  void loadTableViewColumnVisibilitySettings();
-  void saveTableViewColumnVisibilitySettings();
-  void saveTableViewColumnVisibilitySettings(int column);
-  void loadTableViewColumnSortSettings();
-  void saveTableViewColumnSortSettings();
-  void listZoom(float delta);
   void updateToolbar();
 
   Ui::GameListWidget m_ui;
 
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
-  QTableView* m_list_view = nullptr;
-  GameListGridListView* m_grid_view = nullptr;
+  GameListListView* m_list_view = nullptr;
+  GameListGridView* m_grid_view = nullptr;
 
   QWidget* m_empty_widget = nullptr;
   Ui::EmptyGameListWidget m_empty_ui;
