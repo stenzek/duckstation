@@ -4120,8 +4120,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            const u8 newValue = DoMemoryRead<u8>(address) & ~value;
-            DoMemoryWrite<u8>(address, newValue);
+            const u8 new_value = DoMemoryRead<u8>(address) & ~Truncate8(value);
+            DoMemoryWrite<u8>(address, new_value);
             if (address_change_negative)
               address -= address_change;
             else
@@ -4136,8 +4136,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            const u8 newValue = DoMemoryRead<u8>(address) | value;
-            DoMemoryWrite<u8>(address, newValue);
+            const u8 new_value = DoMemoryRead<u8>(address) | Truncate8(value);
+            DoMemoryWrite<u8>(address, new_value);
             if (address_change_negative)
               address -= address_change;
             else
@@ -4152,8 +4152,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            const u16 newValue = DoMemoryRead<u16>(address) & ~value;
-            DoMemoryWrite<u16>(address, newValue);
+            const u16 new_value = DoMemoryRead<u16>(address) & ~Truncate16(value);
+            DoMemoryWrite<u16>(address, new_value);
             if (address_change_negative)
               address -= address_change;
             else
@@ -4168,8 +4168,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         {
           for (u32 i = 0; i < slide_count; i++)
           {
-            const u16 newValue = DoMemoryRead<u16>(address) | value;
-            DoMemoryWrite<u16>(address, newValue);
+            const u16 new_value = DoMemoryRead<u16>(address) | Truncate16(value);
+            DoMemoryWrite<u16>(address, new_value);
             if (address_change_negative)
               address -= address_change;
             else
