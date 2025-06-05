@@ -33,9 +33,9 @@ depends=('libjpeg.so' # libjpeg or libjpeg-turbo
 	'libx11'
 	'libxrandr'
 	'libzip'
-	'qt6-base>=6.8.2'
-	'qt6-imageformats>=6.8.2'
-	'qt6-svg>=6.8.2'
+	'qt6-base>=6.9.1'
+	'qt6-imageformats>=6.9.1'
+	'qt6-svg>=6.9.1'
 	'wayland'
 	'zlib'
 	'zstd'
@@ -51,7 +51,7 @@ makedepends=('base-devel'
 	'lld'
 	'llvm'
 	'ninja'
-	'qt6-tools>=6.8.2')
+	'qt6-tools>=6.9.1')
 
 source=(
 	"${pkgname}::git+file://${startdir}/../../.."

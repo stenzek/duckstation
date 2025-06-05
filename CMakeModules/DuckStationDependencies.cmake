@@ -9,11 +9,11 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(SDL3 3.2.14 REQUIRED)
-find_package(zstd 1.5.6 REQUIRED)
+find_package(SDL3 3.2.16 REQUIRED)
+find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
-find_package(PNG 1.6.40 REQUIRED)
+find_package(PNG 1.6.40 REQUIRED) # 1.6.48, but Fedora is out of date.
 find_package(JPEG REQUIRED)
 find_package(Freetype 2.13.2 REQUIRED) # 2.13.3, but flatpak is still on 2.13.2.
 find_package(plutosvg 0.0.6 REQUIRED)
@@ -40,7 +40,7 @@ if(ENABLE_WAYLAND)
 endif()
 
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED) # 6.9.1, but flatpak stuck on 6.9.0.
 endif()
 
 find_package(Shaderc REQUIRED)
