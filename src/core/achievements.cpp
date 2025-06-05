@@ -147,7 +147,7 @@ static void ShowLoginNotification();
 static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
 static void BeginLoadGame();
-static void UpdateGameSummary(bool update_progress_database, bool force_update_progress_database);
+static void UpdateGameSummary(bool update_progress_database);
 static std::string GetImageURL(const char* image_name, u32 type);
 static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
@@ -226,7 +226,7 @@ static bool SortAndSaveHashDatabase(Error* error);
 
 static FileSystem::ManagedCFilePtr OpenProgressDatabase(bool for_write, bool truncate, Error* error);
 static void BuildProgressDatabase(const rc_client_all_user_progress_t* allprog);
-static void UpdateProgressDatabase(bool force);
+static void UpdateProgressDatabase();
 static void ClearProgressDatabase();
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
@@ -1053,12 +1053,12 @@ void Achievements::ClientEventHandler(const rc_client_event_t* event, rc_client_
   }
 }
 
-void Achievements::UpdateGameSummary(bool update_progress_database, bool force_update_progress_database)
+void Achievements::UpdateGameSummary(bool update_progress_database)
 {
   rc_client_get_user_game_summary(s_state.client, &s_state.game_summary);
 
   if (update_progress_database)
-    UpdateProgressDatabase(force_update_progress_database);
+    UpdateProgressDatabase();
 }
 
 void Achievements::UpdateRecentUnlockAndAlmostThere()
@@ -1417,7 +1417,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     DownloadImage(s_state.game_icon_url, s_state.game_icon);
 
   // update progress database on first load, in case it was played on another PC
-  UpdateGameSummary(true, true);
+  UpdateGameSummary(true);
 
   if (display_summary)
     DisplayAchievementSummary();
@@ -1532,7 +1532,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   DebugAssert(cheevo);
 
   INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_state.game_id);
-  UpdateGameSummary(true, false);
+  UpdateGameSummary(true);
 
   if (g_settings.achievements_notifications)
   {
@@ -1562,7 +1562,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
   INFO_LOG("Game {} complete", s_state.game_id);
-  UpdateGameSummary(false, false);
+  UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications)
   {
@@ -1586,7 +1586,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
 {
   INFO_LOG("Subset {} ({}) complete", event->subset->title, event->subset->id);
-  UpdateGameSummary(false, false);
+  UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications && event->subset->badge_name[0] != '\0')
   {
@@ -1922,7 +1922,7 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
 
   if (HasActiveGame() && display_game_summary)
   {
-    UpdateGameSummary(true, true);
+    UpdateGameSummary(true);
     DisplayAchievementSummary();
   }
 
@@ -4430,7 +4430,7 @@ void Achievements::BuildProgressDatabase(const rc_client_all_user_progress_t* al
     ERROR_LOG("Failed to write progress database: {}", error.GetDescription());
 }
 
-void Achievements::UpdateProgressDatabase(bool force)
+void Achievements::UpdateProgressDatabase()
 {
   // don't write updates in spectator mode
   if (rc_client_get_spectator_mode_enabled(s_state.client))
@@ -4468,7 +4468,7 @@ void Achievements::UpdateProgressDatabase(bool force)
   }
 
   // done asynchronously so we don't hitch on disk I/O
-  System::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore, force]() {
+  System::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore]() {
     // no point storing it in memory, just write directly to the file
     Error error;
     FileSystem::ManagedCFilePtr fp = OpenProgressDatabase(true, false, &error);
@@ -4496,12 +4496,8 @@ void Achievements::UpdateProgressDatabase(bool force)
         // do we even need to change it?
         const u16 current_achievements_unlocked = reader.ReadU16();
         const u16 current_achievements_unlocked_hardcore = reader.ReadU16();
-
-        // if we're not forced, then take the greater count
-        if (force ? (current_achievements_unlocked == achievements_unlocked &&
-                     current_achievements_unlocked_hardcore == achievements_unlocked_hardcore) :
-                    (current_achievements_unlocked <= achievements_unlocked &&
-                     current_achievements_unlocked_hardcore <= achievements_unlocked_hardcore))
+        if (current_achievements_unlocked == achievements_unlocked &&
+            current_achievements_unlocked_hardcore == achievements_unlocked_hardcore)
         {
           VERBOSE_LOG("No update to progress database needed for game {}", game_id);
           return;
