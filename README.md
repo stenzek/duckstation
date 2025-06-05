@@ -1,4 +1,5 @@
 # DuckStation - PlayStation 1, aka. PSX Emulator
+
 [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
 **Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage/Flatpak x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
@@ -111,19 +112,19 @@ or, if you have FlatHub set up:
  - Run `flatpak install org.duckstation.DuckStation`.
 
 Use `flatpak run org.duckstation.DuckStation` to start, or select `DuckStation` in the launcher of your desktop environment. Follow the Setup Wizard to get started.
- 
+
 ### macOS
 
-Universal MacOS builds are provided for both x64 and ARM64 (Apple Silicon).
+Universal macOS builds are provided for both x86_64 (Intel) and ARM64 (Apple Silicon).
 
-MacOS Big Sir (11.0) is required, as this is also the minimum requirement for Qt.
+macOS Big Sur (11.0) is required, as this is also the minimum requirement for Qt.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
  - Extract the zip by double-clicking it.
- - Open DuckStation.app, optionally moving it to your desired location first.
+ - Open `DuckStation.app`, optionally moving it to your desired location first.
  - Depending on GateKeeper configuration, you may need to right click -> Open the first time you run it, as code signing certificates are out of the question for a project which brings in zero revenue.
- 
+
 ### Android
 
 You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 (64-bit x86). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
