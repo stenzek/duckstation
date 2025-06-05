@@ -94,11 +94,10 @@ public:
 
   float getCoverScale() const { return m_cover_scale; }
   void setCoverScale(float scale);
-  int getCoverArtWidth() const;
-  int getCoverArtHeight() const;
+  int getCoverArtSize() const;
   int getCoverArtSpacing() const;
   void refreshCovers();
-  void updateCacheSize(int width, int height);
+  void updateCacheSize(int num_rows, int num_columns);
 
 Q_SIGNALS:
   void coverScaleChanged();
@@ -157,10 +156,11 @@ class GameListGridListView final : public QListView
   Q_OBJECT
 
 public:
-  GameListGridListView(QWidget* parent = nullptr);
+  GameListGridListView(GameListModel* model, QWidget* parent);
 
   void updateLayout();
   int horizontalOffset() const override;
+  int verticalOffset() const override;
 
 Q_SIGNALS:
   void zoomOut();
@@ -171,7 +171,9 @@ protected:
   void resizeEvent(QResizeEvent* e) override;
 
 private:
+  GameListModel* m_model = nullptr;
   int m_horizontal_offset = 0;
+  int m_vertical_offset = 0;
 };
 
 class GameListWidget final : public QWidget
@@ -255,8 +257,8 @@ private:
 
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
-  QTableView* m_table_view = nullptr;
-  GameListGridListView* m_list_view = nullptr;
+  QTableView* m_list_view = nullptr;
+  GameListGridListView* m_grid_view = nullptr;
 
   QWidget* m_empty_widget = nullptr;
   Ui::EmptyGameListWidget m_empty_ui;
