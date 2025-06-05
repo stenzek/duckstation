@@ -115,7 +115,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
                                                           std::shared_ptr<SystemBootParameters>& boot_params);
 } // namespace QtHost
 
-static std::unique_ptr<INISettingsInterface> s_base_settings_interface;
+static INISettingsInterface s_base_settings_interface;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
@@ -255,7 +255,7 @@ QString QtHost::GetResourcesBasePath()
 
 INISettingsInterface* QtHost::GetBaseSettingsInterface()
 {
-  return s_base_settings_interface.get();
+  return &s_base_settings_interface;
 }
 
 bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
@@ -482,37 +482,37 @@ bool QtHost::InitializeConfig()
   std::string settings_path = Path::Combine(EmuFolders::DataRoot, "settings.ini");
   const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
   INFO_LOG("Loading config from {}.", settings_path);
-  s_base_settings_interface = std::make_unique<INISettingsInterface>(std::move(settings_path));
-  Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
+  s_base_settings_interface.SetPath(std::move(settings_path));
+  Host::Internal::SetBaseSettingsLayer(&s_base_settings_interface);
 
   uint settings_version;
-  if (!settings_exists || !s_base_settings_interface->Load() ||
-      !s_base_settings_interface->GetUIntValue("Main", "SettingsVersion", &settings_version) ||
+  if (!settings_exists || !s_base_settings_interface.Load() ||
+      !s_base_settings_interface.GetUIntValue("Main", "SettingsVersion", &settings_version) ||
       settings_version != SETTINGS_VERSION)
   {
-    if (s_base_settings_interface->ContainsValue("Main", "SettingsVersion"))
+    if (s_base_settings_interface.ContainsValue("Main", "SettingsVersion"))
     {
       // NOTE: No point translating this, because there's no config loaded, so no language loaded.
       Host::ReportErrorAsync("Error", fmt::format("Settings version {} does not match expected version {}, resetting.",
                                                   settings_version, SETTINGS_VERSION));
     }
 
-    s_base_settings_interface->SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
-    SetDefaultSettings(*s_base_settings_interface, true, true);
+    s_base_settings_interface.SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
+    SetDefaultSettings(s_base_settings_interface, true, true);
 
     // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
-    s_base_settings_interface->SetBoolValue("Main", "SetupWizardIncomplete", true);
+    s_base_settings_interface.SetBoolValue("Main", "SetupWizardIncomplete", true);
 
     // Make sure we can actually save the config, and the user doesn't have some permission issue.
     Error error;
-    if (!s_base_settings_interface->Save(&error))
+    if (!s_base_settings_interface.Save(&error))
     {
       QMessageBox::critical(
         nullptr, QStringLiteral("DuckStation"),
         QStringLiteral(
           "Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
           "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.")
-          .arg(QString::fromStdString(s_base_settings_interface->GetPath()))
+          .arg(QString::fromStdString(s_base_settings_interface.GetPath()))
           .arg(QString::fromStdString(error.GetDescription())));
       return false;
     }
@@ -520,15 +520,15 @@ bool QtHost::InitializeConfig()
 
   // Setup wizard was incomplete last time?
   s_run_setup_wizard =
-    s_run_setup_wizard || s_base_settings_interface->GetBoolValue("Main", "SetupWizardIncomplete", false);
+    s_run_setup_wizard || s_base_settings_interface.GetBoolValue("Main", "SetupWizardIncomplete", false);
 
-  EmuFolders::LoadConfig(*s_base_settings_interface.get());
+  EmuFolders::LoadConfig(s_base_settings_interface);
   EmuFolders::EnsureFoldersExist();
   MigrateSettings();
 
   // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() && s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", false))
-    Log::SetConsoleOutputParams(true, s_base_settings_interface->GetBoolValue("Logging", "LogTimestamps", true));
+  if (!Log::IsConsoleOutputEnabled() && s_base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
+    Log::SetConsoleOutputParams(true, s_base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
 
   UpdateApplicationLanguage(nullptr);
   return true;
@@ -645,7 +645,7 @@ void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* 
 
   {
     auto lock = Host::GetSettingsLock();
-    QtHost::SetDefaultSettings(*s_base_settings_interface, system, controller);
+    QtHost::SetDefaultSettings(s_base_settings_interface, system, controller);
     QtHost::QueueSettingsSave();
   }
 
@@ -675,15 +675,15 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
 void QtHost::MigrateSettings()
 {
   SmallString value;
-  if (s_base_settings_interface->GetStringValue("Display", "SyncMode", &value))
+  if (s_base_settings_interface.GetStringValue("Display", "SyncMode", &value))
   {
-    s_base_settings_interface->SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
-    s_base_settings_interface->SetBoolValue(
+    s_base_settings_interface.SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
+    s_base_settings_interface.SetBoolValue(
       "Display", "OptimalFramePacing",
-      (value == "VRR" || s_base_settings_interface->GetBoolValue("Display", "DisplayAllFrames", false)));
-    s_base_settings_interface->DeleteValue("Display", "SyncMode");
-    s_base_settings_interface->DeleteValue("Display", "DisplayAllFrames");
-    s_base_settings_interface->Save();
+      (value == "VRR" || s_base_settings_interface.GetBoolValue("Display", "DisplayAllFrames", false)));
+    s_base_settings_interface.DeleteValue("Display", "SyncMode");
+    s_base_settings_interface.DeleteValue("Display", "DisplayAllFrames");
+    s_base_settings_interface.Save();
   }
 }
 
@@ -2553,7 +2553,7 @@ void QtHost::SaveSettings()
   {
     Error error;
     auto lock = Host::GetSettingsLock();
-    if (!s_base_settings_interface->Save(&error))
+    if (!s_base_settings_interface.Save(&error))
       ERROR_LOG("Failed to save settings: {}", error.GetDescription());
   }
 

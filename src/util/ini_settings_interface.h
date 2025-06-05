@@ -13,10 +13,13 @@
 class INISettingsInterface final : public SettingsInterface
 {
 public:
+  INISettingsInterface();
   INISettingsInterface(std::string path);
   ~INISettingsInterface() override;
 
-  const std::string& GetPath() const { return m_path; }
+  ALWAYS_INLINE bool IsDirty() const { return m_dirty; }
+  ALWAYS_INLINE const std::string& GetPath() const { return m_path; }
+  void SetPath(std::string path);
 
   bool Load(Error* error = nullptr);
   bool Load(std::string new_path, Error* error = nullptr);

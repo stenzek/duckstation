@@ -70,7 +70,7 @@ static RegTestHostState s_state;
 
 } // namespace RegTestHost
 
-static std::unique_ptr<MemorySettingsInterface> s_base_settings_interface;
+static MemorySettingsInterface s_base_settings_interface;
 static Threading::Thread s_gpu_thread;
 
 static u32 s_frames_to_run = 60 * 60;
@@ -114,11 +114,10 @@ bool RegTestHost::InitializeConfig()
 {
   SetFolders();
 
-  s_base_settings_interface = std::make_unique<MemorySettingsInterface>();
-  Host::Internal::SetBaseSettingsLayer(s_base_settings_interface.get());
+  Host::Internal::SetBaseSettingsLayer(&s_base_settings_interface);
 
   // default settings for runner
-  SettingsInterface& si = *s_base_settings_interface.get();
+  SettingsInterface& si = s_base_settings_interface;
   g_settings.Load(si, si);
   g_settings.Save(si, false);
   si.SetStringValue("GPU", "Renderer", Settings::GetRendererName(GPURenderer::Software));
@@ -140,7 +139,7 @@ bool RegTestHost::InitializeConfig()
   for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
     si.SetBoolValue("InputSources", InputManager::InputSourceToString(static_cast<InputSourceType>(i)), false);
 
-  EmuFolders::LoadConfig(*s_base_settings_interface.get());
+  EmuFolders::LoadConfig(s_base_settings_interface);
   EmuFolders::EnsureFoldersExist();
 
   return true;
@@ -846,13 +845,13 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         Log::SetLogLevel(level.value());
-        s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
+        s_base_settings_interface.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
         continue;
       }
       else if (CHECK_ARG("-console"))
       {
         Log::SetConsoleOutputParams(true);
-        s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", true);
+        s_base_settings_interface.SetBoolValue("Logging", "LogToConsole", true);
         continue;
       }
       else if (CHECK_ARG_PARAM("-renderer"))
@@ -864,7 +863,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
           return false;
         }
 
-        s_base_settings_interface->SetStringValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
+        s_base_settings_interface.SetStringValue("GPU", "Renderer", Settings::GetRendererName(renderer.value()));
         continue;
       }
       else if (CHECK_ARG_PARAM("-upscale"))
@@ -877,7 +876,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting upscale to {}.", upscale);
-        s_base_settings_interface->SetIntValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
+        s_base_settings_interface.SetIntValue("GPU", "ResolutionScale", static_cast<s32>(upscale));
         continue;
       }
       else if (CHECK_ARG_PARAM("-cpu"))
@@ -890,21 +889,21 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         INFO_LOG("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
-        s_base_settings_interface->SetStringValue("CPU", "ExecutionMode",
+        s_base_settings_interface.SetStringValue("CPU", "ExecutionMode",
                                                   Settings::GetCPUExecutionModeName(cpu.value()));
         continue;
       }
       else if (CHECK_ARG("-pgxp"))
       {
         INFO_LOG("Enabling PGXP.");
-        s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
+        s_base_settings_interface.SetBoolValue("GPU", "PGXPEnable", true);
         continue;
       }
       else if (CHECK_ARG("-pgxp-cpu"))
       {
         INFO_LOG("Enabling PGXP CPU mode.");
-        s_base_settings_interface->SetBoolValue("GPU", "PGXPEnable", true);
-        s_base_settings_interface->SetBoolValue("GPU", "PGXPCPU", true);
+        s_base_settings_interface.SetBoolValue("GPU", "PGXPEnable", true);
+        s_base_settings_interface.SetBoolValue("GPU", "PGXPCPU", true);
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -948,9 +947,9 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     // Switch to file logging.
     INFO_LOG("Dumping frames to '{}'...", dump_directory);
     EmuFolders::DataRoot = std::move(dump_directory);
-    s_base_settings_interface->SetBoolValue("Logging", "LogToFile", true);
-    s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
-    Settings::UpdateLogConfig(*s_base_settings_interface);
+    s_base_settings_interface.SetBoolValue("Logging", "LogToFile", true);
+    s_base_settings_interface.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
+    Settings::UpdateLogConfig(s_base_settings_interface);
   }
 
   return true;

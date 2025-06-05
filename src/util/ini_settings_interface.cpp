@@ -19,7 +19,11 @@ LOG_CHANNEL(Settings);
 // we only allow one ini to be parsed at any point in time.
 static std::mutex s_ini_load_save_mutex;
 
-INISettingsInterface::INISettingsInterface(std::string filename) : m_path(std::move(filename)), m_ini(true, true)
+INISettingsInterface::INISettingsInterface() : m_ini(true, true)
+{
+}
+
+INISettingsInterface::INISettingsInterface(std::string path) : m_path(std::move(path)), m_ini(true, true)
 {
 }
 
@@ -27,6 +31,12 @@ INISettingsInterface::~INISettingsInterface()
 {
   if (m_dirty)
     Save();
+}
+
+void INISettingsInterface::SetPath(std::string path)
+{
+  m_dirty |= (path != m_path);
+  m_path = std::move(path);
 }
 
 bool INISettingsInterface::Load(Error* error /* = nullptr */)
@@ -47,6 +57,7 @@ bool INISettingsInterface::Load(Error* error /* = nullptr */)
       Error::SetStringFmt(error, "INI LoadFile() failed: {}", static_cast<int>(err));
   }
 
+  m_dirty = false;
   return (err == SI_OK);
 }
 
