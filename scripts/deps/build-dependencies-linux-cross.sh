@@ -102,14 +102,14 @@ fi
 # TODO: Pull all of this from the main file.
 
 FREETYPE=2.13.3
-HARFBUZZ=10.4.0
+HARFBUZZ=11.2.1
 LIBBACKTRACE=86885d14049fab06ef8a33aac51664230ca09200
 LIBJPEGTURBO=3.1.0
-LIBPNG=1.6.47
+LIBPNG=1.6.48
 LIBWEBP=1.5.0
 LIBZIP=1.11.3
-SDL3=3.2.14
-QT=6.9.0
+SDL3=3.2.16
+QT=6.9.1
 ZLIBNG=2.2.4
 ZSTD=1.5.7
 
@@ -137,7 +137,7 @@ fi
 
 cat > SHASUMS <<EOF
 baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$LIBBACKTRACE.tar.gz
-b7e7dc05011b88c69170fe18935487b2559276955e49113f8c1b6b72c9b79c1f  SDL3-$SDL3.tar.gz
+6340e58879b2d15830c8460d2f589a385c444d1faa2a4828a9626c7322562be8  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
 cc8eed38daf68aaaaa96e904f68f5524c02f10b5d42062b91cdc93f93445f68a  plutosvg-$PLUTOSVG.tar.gz
@@ -158,7 +158,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-0d25a3f74af4e8744700ac19050af5a80ae330378a5802a5cd71e523bb6fda1f  harfbuzz-$HARFBUZZ.tar.gz
+057d5754c3ac0c499bbf4d729d52acf134c7bb4ba8868ba22e84ae96bc272816  harfbuzz-$HARFBUZZ.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
@@ -174,7 +174,7 @@ if [ "$SKIP_LIBPNG" != true ]; then
 		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
-b213cb381fbb1175327bd708a77aab708a05adde7b471bc267bd15ac99893631  libpng-$LIBPNG.tar.xz
+46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03  libpng-$LIBPNG.tar.xz
 EOF
 fi
 if [ "$SKIP_LIBWEBP" != true ]; then
@@ -220,12 +220,12 @@ if [ "$SKIP_QT" != true ]; then
 			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" 
 	fi
 	cat >> SHASUMS <<EOF
-c1800c2ea835801af04a05d4a32321d79a93954ee3ae2172bbeacf13d1f0598c  qtbase-everywhere-src-$QT.tar.xz
-2047c6242a57bf97cf40079fa9f91752c137cd9ae84760faa9a2e5e8a440606f  qtimageformats-everywhere-src-$QT.tar.xz
-ec359d930c95935ea48af58b100c2f5d0d275968ec8ca1e0e76629b7159215fc  qtsvg-everywhere-src-$QT.tar.xz
-fa645589cc3f939022401a926825972a44277dead8ec8607d9f2662e6529c9a4  qttools-everywhere-src-$QT.tar.xz
-1d5581ef5fc7c7bc556f2403017983683993bbebfcdf977ef8f180f604668c3f  qttranslations-everywhere-src-$QT.tar.xz
-503416fcb04db503bd130e6a49c45e3e546f091e83406f774a0c703130c91805  qtwayland-everywhere-src-$QT.tar.xz
+40caedbf83cc9a1959610830563565889878bc95f115868bbf545d1914acf28e  qtbase-everywhere-src-$QT.tar.xz
+ebe9f238daaf9bb752c7233edadf4af33fc4fa30d914936812b6410d3af1577c  qtimageformats-everywhere-src-$QT.tar.xz
+2dfc5de5fd891ff2afd9861e519bf1a26e6deb729b3133f68a28ba763c9abbd5  qtsvg-everywhere-src-$QT.tar.xz
+90c4a562f4ccfd043fd99f34c600853e0b5ba9babc6ec616c0f306f2ce3f4b4c  qttools-everywhere-src-$QT.tar.xz
+9761a1a555f447cdeba79fdec6a705dee8a7882ac10c12e85f49467ddd01a741  qttranslations-everywhere-src-$QT.tar.xz
+7d21ea0e687180ebb19b9a1f86ae9cfa7a25b4f02d5db05ec834164409932e3e  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 fi
 
