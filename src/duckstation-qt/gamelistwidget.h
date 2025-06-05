@@ -163,6 +163,9 @@ public:
 
   void resizeColumnsToFit();
 
+protected:
+  void resizeEvent(QResizeEvent* e) override;
+
 private Q_SLOTS:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);

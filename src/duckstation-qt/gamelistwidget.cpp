@@ -1525,7 +1525,6 @@ void GameListWidget::onCoverScaleChanged(float scale)
 void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QWidget::resizeEvent(event);
-  resizeListViewColumnsToFit();
   updateBackground(false);
 }
 
@@ -1584,7 +1583,7 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 
   verticalHeader()->hide();
 
-  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 
   GameListCenterIconStyleDelegate* center_icon_delegate = new GameListCenterIconStyleDelegate(this);
@@ -1602,6 +1601,12 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 }
 
 GameListListView::~GameListListView() = default;
+
+void GameListListView::resizeEvent(QResizeEvent* e)
+{
+  QTableView::resizeEvent(e);
+  resizeColumnsToFit();
+}
 
 void GameListListView::resizeColumnsToFit()
 {
