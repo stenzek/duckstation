@@ -213,6 +213,7 @@
     <addaction name="actionGridViewZoomIn"/>
     <addaction name="actionGridViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
+    <addaction name="actionViewRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionChangeGameListBackground"/>
     <addaction name="actionClearGameListBackground"/>
@@ -985,6 +986,14 @@
   <action name="actionClearGameListBackground">
    <property name="text">
     <string>Clear List Background</string>
+   </property>
+  </action>
+  <action name="actionViewRefreshAchievementProgress">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Refresh Achievement &amp;Progress</string>
    </property>
   </action>
  </widget>

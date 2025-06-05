@@ -140,6 +140,7 @@ static bool TryLoggingInWithToken();
 static void EnableHardcodeMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
+static bool IsLoggedIn();
 static bool IsLoggedInOrLoggingIn();
 static void FinishInitialize();
 static void FinishLogin(const rc_client_t* client);
@@ -220,6 +221,8 @@ static void FetchHashLibraryCallback(int result, const char* error_message, rc_c
                                      rc_client_t* client, void* callback_userdata);
 static void FetchAllProgressCallback(int result, const char* error_message, rc_client_all_user_progress_t* list,
                                      rc_client_t* client, void* callback_userdata);
+static void RefreshAllProgressCallback(int result, const char* error_message, rc_client_all_user_progress_t* list,
+                                       rc_client_t* client, void* callback_userdata);
 
 static void BuildHashDatabase(const rc_client_hash_library_t* hashlib, const rc_client_all_user_progress_t* allprog);
 static bool SortAndSaveHashDatabase(Error* error);
@@ -296,6 +299,7 @@ struct State
   rc_client_hash_library_t* fetch_hash_library_result = nullptr;
   rc_client_async_handle_t* fetch_all_progress_request = nullptr;
   rc_client_all_user_progress_t* fetch_all_progress_result = nullptr;
+  rc_client_async_handle_t* refresh_all_progress_request = nullptr;
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   rc_client_async_handle_t* load_raintegration_request = nullptr;
@@ -696,6 +700,8 @@ void Achievements::FinishInitialize()
     if (IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
       DisplayHardcoreDeferredMessage();
   }
+
+  Host::OnAchievementsActiveChanged(true);
 }
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
@@ -865,6 +871,7 @@ void Achievements::Shutdown()
 #endif
 
   DestroyClient(&s_state.client, &s_state.http_downloader);
+  Host::OnAchievementsActiveChanged(false);
 }
 
 void Achievements::ClientMessageCallback(const char* message, const rc_client_t* client)
@@ -2085,9 +2092,14 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
   return path;
 }
 
+bool Achievements::IsLoggedIn()
+{
+  return (rc_client_get_user_info(s_state.client) != nullptr);
+}
+
 bool Achievements::IsLoggedInOrLoggingIn()
 {
-  return (rc_client_get_user_info(s_state.client) != nullptr || s_state.login_request);
+  return (IsLoggedIn() || s_state.login_request);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)
@@ -4055,6 +4067,62 @@ void Achievements::FinishRefreshHashDatabase()
 
   // update game list, we might have some new games that weren't in the seed database
   GameList::UpdateAllAchievementData();
+
+  Host::OnAchievementsAllProgressRefreshed();
+}
+
+bool Achievements::RefreshAllProgressDatabase(Error* error)
+{
+  if (!IsLoggedIn())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "User is not logged in."));
+    return false;
+  }
+
+  if (s_state.fetch_hash_library_request || s_state.fetch_all_progress_request || s_state.refresh_all_progress_request)
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "Progress is already being updated."));
+    return false;
+  }
+
+  // refresh in progress
+  s_state.refresh_all_progress_request = rc_client_begin_fetch_all_user_progress(s_state.client, RC_CONSOLE_PLAYSTATION,
+                                                                                 RefreshAllProgressCallback, nullptr);
+
+  return true;
+}
+
+void Achievements::RefreshAllProgressCallback(int result, const char* error_message,
+                                              rc_client_all_user_progress_t* list, rc_client_t* client,
+                                              void* callback_userdata)
+{
+  s_state.refresh_all_progress_request = nullptr;
+
+  if (result != RC_OK)
+  {
+    Host::ReportErrorAsync(TRANSLATE_SV("Achievements", "Error"),
+                           fmt::format("{}: {}\n{}", TRANSLATE_SV("Achievements", "Refresh all progress failed"),
+                                       rc_error_str(result), error_message));
+    return;
+  }
+
+  BuildProgressDatabase(list);
+  rc_client_destroy_all_user_progress(list);
+
+  GameList::UpdateAllAchievementData();
+
+  Host::OnAchievementsAllProgressRefreshed();
+
+  if (FullscreenUI::IsInitialized())
+  {
+    GPUThread::RunOnThread([]() {
+      if (!FullscreenUI::IsInitialized())
+        return;
+
+      ImGuiFullscreen::ShowToast({}, TRANSLATE_STR("Achievements", "Updated achievement progress database."),
+                                 Host::OSD_INFO_DURATION);
+    });
+  }
 }
 
 void Achievements::BuildHashDatabase(const rc_client_hash_library_t* hashlib,

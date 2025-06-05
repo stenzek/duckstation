@@ -151,7 +151,9 @@ private Q_SLOTS:
   void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
+  void onAchievementsActiveChanged(bool active);
   void onAchievementsHardcoreModeChanged(bool enabled);
+  void onAchievementsAllProgressRefreshed();
   bool onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
                                      const QString& title, const QString& icon_name,
                                      Host::AuxiliaryRenderWindowUserData userdata,

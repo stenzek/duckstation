@@ -576,7 +576,17 @@ void Host::OnAchievementsRefreshed()
   // noop
 }
 
+void Host::OnAchievementsActiveChanged(bool active)
+{
+  // noop
+}
+
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
+{
+  // noop
+}
+
+void Host::OnAchievementsAllProgressRefreshed()
 {
   // noop
 }

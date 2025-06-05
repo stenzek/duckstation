@@ -80,6 +80,9 @@ void UpdateSettings(const Settings& old_config);
 /// Shuts down the RetroAchievements client.
 void Shutdown();
 
+/// Call to refresh the all-progress database.
+bool RefreshAllProgressDatabase(Error* error);
+
 /// Called when the system is start. Engages hardcore mode if enabled.
 void OnSystemStarting(CDImage* image, bool disable_hardcore_mode);
 
@@ -217,8 +220,14 @@ void OnAchievementsLoginSuccess(const char* display_name, u32 points, u32 sc_poi
 /// Implementers can assume the lock is held when this is called.
 void OnAchievementsRefreshed();
 
+/// Called when achievements login completes or they are disabled.
+void OnAchievementsActiveChanged(bool active);
+
 /// Called whenever hardcore mode is toggled.
 void OnAchievementsHardcoreModeChanged(bool enabled);
+
+/// Called whenever all progress is manually refreshed and completed.
+void OnAchievementsAllProgressRefreshed();
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 

@@ -6350,10 +6350,19 @@ void FullscreenUI::DrawAchievementsSettingsPage()
         false);
       ImGui::PopStyleColor();
 
-      if (MenuButton(FSUI_ICONVSTR(ICON_FA_KEY, "Logout"), FSUI_VSTR("Logs out of RetroAchievements.")))
+      if (MenuButton(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Update Progress"),
+                     FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
       {
-        Host::RunOnCPUThread(&Achievements::Logout);
+        Host::RunOnCPUThread([]() {
+          Error error;
+          if (!Achievements::RefreshAllProgressDatabase(&error))
+            ImGuiFullscreen::ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(),
+                                       Host::OSD_ERROR_DURATION);
+        });
       }
+
+      if (MenuButton(FSUI_ICONVSTR(ICON_FA_KEY, "Logout"), FSUI_VSTR("Logs out of RetroAchievements.")))
+        Host::RunOnCPUThread(&Achievements::Logout);
     }
     else
     {
@@ -9365,6 +9374,7 @@ TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load shader {}. It may be invalid.\nError was:");
 TRANSLATE_NOOP("FullscreenUI", "Failed to save controller preset '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to update progress database");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Memory Card Access");
@@ -9769,6 +9779,8 @@ TRANSLATE_NOOP("FullscreenUI", "Ungrouped");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
 TRANSLATE_NOOP("FullscreenUI", "Unknown File Size");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
+TRANSLATE_NOOP("FullscreenUI", "Update Progress");
+TRANSLATE_NOOP("FullscreenUI", "Updates the progress database for achievements shown in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Upscales the game's rendering by the specified multiplier.");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");

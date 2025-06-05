@@ -2100,6 +2100,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewZoomOut, &QAction::triggered, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
+  connect(m_ui.actionViewRefreshAchievementProgress, &QAction::triggered, g_emu_thread,
+          &EmuThread::refreshAchievementsAllProgress);
   connect(m_ui.actionChangeGameListBackground, &QAction::triggered, this,
           &MainWindow::onViewChangeGameListBackgroundTriggered);
   connect(m_ui.actionClearGameListBackground, &QAction::triggered, this,
@@ -2128,8 +2130,11 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::fullscreenUIStartedOrStopped, this, &MainWindow::onFullscreenUIStartedOrStopped);
   connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
   connect(g_emu_thread, &EmuThread::achievementsLoginSuccess, this, &MainWindow::onAchievementsLoginSuccess);
+  connect(g_emu_thread, &EmuThread::achievementsActiveChanged, this, &MainWindow::onAchievementsActiveChanged);
   connect(g_emu_thread, &EmuThread::achievementsHardcoreModeChanged, this,
           &MainWindow::onAchievementsHardcoreModeChanged);
+  connect(g_emu_thread, &EmuThread::achievementsAllProgressRefreshed, this,
+          &MainWindow::onAchievementsAllProgressRefreshed);
   connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(g_emu_thread, &EmuThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
@@ -2758,6 +2763,11 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
   }
 }
 
+void MainWindow::onAchievementsActiveChanged(bool active)
+{
+  m_ui.actionViewRefreshAchievementProgress->setEnabled(active);
+}
+
 void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 {
   if (enabled)
@@ -2768,6 +2778,11 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 
   s_achievements_hardcore_mode = enabled;
   updateEmulationActions(s_system_starting, s_system_valid, enabled);
+}
+
+void MainWindow::onAchievementsAllProgressRefreshed()
+{
+  m_ui.statusBar->showMessage(tr("RA: Updated achievement progress database."));
 }
 
 bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,

@@ -745,6 +745,8 @@ void GameList::PopulateEntryAchievements(Entry* entry, const Achievements::Progr
 
   entry->achievements_game_id = hentry->game_id;
   entry->num_achievements = Truncate16(hentry->num_achievements);
+  entry->unlocked_achievements = 0;
+  entry->unlocked_achievements_hc = 0;
   if (entry->num_achievements > 0)
   {
     const Achievements::ProgressDatabase::Entry* apd_entry = achievements_progress.LookupGame(hentry->game_id);

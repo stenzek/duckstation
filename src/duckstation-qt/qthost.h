@@ -155,7 +155,9 @@ Q_SIGNALS:
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
   void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
+  void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
+  void achievementsAllProgressRefreshed();
   void cheatEnabled(quint32 index, bool enabled);
   void mediaCaptureStarted();
   void mediaCaptureStopped();
@@ -183,6 +185,7 @@ public Q_SLOTS:
   void closeInputSources();
   void startFullscreenUI();
   void stopFullscreenUI();
+  void refreshAchievementsAllProgress();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromMostRecentState();
   void shutdownSystem(bool save_state, bool check_memcard_busy);
