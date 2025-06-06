@@ -1,6 +1,7 @@
 Tradução:
 
 # DuckStation - Emulador de PlayStation 1, também conhecido como PSX
+
 [Últimas Notícias](#latest-news) | [Recursos](#features) | [Download e Execução](#downloading-and-running) | [Compilação](#building) | [Avisos Legais](#disclaimers)
 
 **Últimas Versões para Windows 10/11, Linux (AppImage/Flatpak) e macOS:** https://github.com/stenzek/duckstation/releases/tag/latest
@@ -93,19 +94,19 @@ ou, se você tiver o FlatHub configurado:
  - Execute `flatpak install org.duckstation.DuckStation`.
 
 Use `flatpak run org.duckstation.DuckStation` para iniciar, ou selecione `DuckStation` no lançador do seu ambiente de desktop. Siga o Assistente de Configuração para começar.
- 
+
 ### macOS
 
-São fornecidas compilações universais do MacOS para x64 e ARM64 (Apple Silicon).
+São fornecidas compilações universais do macOS para x86_64 (Intel) e ARM64 (Apple Silicon).
 
-MacOS Big Sir (11.0) é necessário, pois também é o requisito mínimo para o Qt.
+macOS Big Sur (11.0) é necessário, pois também é o requisito mínimo para o Qt.
 
 Para baixar:
  - Acesse https://github.com/stenzek/duckstation/releases/tag/latest e baixe `duckstation-mac-release.zip`.
  - Extraia o arquivo ZIP dando um duplo clique nele.
- - Abra o DuckStation.app, opcionalmente movendo-o para a localização desejada antes.
+ - Abra o `DuckStation.app`, opcionalmente movendo-o para a localização desejada antes.
  - Dependendo da configuração do GateKeeper, você pode precisar clicar com o botão direito -> Abrir na primeira vez que executá-lo, já que certificados de assinatura de código estão fora de questão para um projeto que não gera receita alguma.
- 
+
 ### Android
 
 Você precisará de um dispositivo com armv7 (32 bits ARM), AArch64 (64 bits ARM) ou x86_64 (64 bits x86). 64 bits são preferíveis, os requisitos são mais altos para 32 bits, você provavelmente vai querer pelo menos um CPU de 1,5 GHz.
