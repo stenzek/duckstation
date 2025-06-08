@@ -12,7 +12,7 @@ CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/) : QDialo
 {
   m_ui.setupUi(this);
   setWindowIcon(QtHost::GetAppIcon());
-  m_ui.coverIcon->setPixmap(QIcon::fromTheme("artboard-2-line").pixmap(32));
+  m_ui.coverIcon->setPixmap(QIcon::fromTheme(QStringLiteral("artboard-2-line")).pixmap(32));
   updateEnabled();
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);
@@ -61,7 +61,7 @@ void CoverDownloadDialog::onDownloadComplete()
   }
 
   updateEnabled();
-  
+
   m_ui.status->setText(tr("Download complete."));
 }
 

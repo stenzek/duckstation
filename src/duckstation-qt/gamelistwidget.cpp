@@ -881,7 +881,7 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 void GameListModel::loadThemeSpecificImages()
 {
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
-    m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(QSize(24, 24));
+    m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(24);
 }
 
 void GameListModel::loadCommonImages()
