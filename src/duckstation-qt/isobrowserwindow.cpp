@@ -274,7 +274,7 @@ void ISOBrowserWindow::populateDirectories()
   enableExtractButtons(false);
 
   QTreeWidgetItem* root = new QTreeWidgetItem;
-  root->setIcon(0, QIcon::fromTheme("disc-line"));
+  root->setIcon(0, QIcon::fromTheme(QStringLiteral("disc-line")));
   root->setText(0, QtUtils::StringViewToQString(Path::GetFileTitle(m_image->GetPath())));
   root->setData(0, Qt::UserRole, QString());
   m_ui.directoryView->addTopLevelItem(root);

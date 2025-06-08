@@ -1250,7 +1250,7 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
 
   Ui::TextureReplacementSettingsDialog dlgui;
   dlgui.setupUi(&dlg);
-  dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("image-fill")).pixmap(32, 32));
+  dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("image-fill")).pixmap(32));
 
   constexpr Settings::TextureReplacementSettings::Configuration default_replacement_config;
   SettingsInterface* const sif = m_dialog->getSettingsInterface();

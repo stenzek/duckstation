@@ -732,7 +732,7 @@ std::string MemoryCardRenameFileDialog::promptForNewName(QWidget* parent, std::s
 
 void MemoryCardRenameFileDialog::setupAdditionalUi()
 {
-  m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("memcard-line")).pixmap(32, 32));
+  m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("memcard-line")).pixmap(32));
 
   for (const auto& [region, prefix] : MEMORY_CARD_FILE_REGION_PREFIXES)
   {

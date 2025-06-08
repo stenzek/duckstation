@@ -21,12 +21,6 @@
      </property>
      <item>
       <widget class="QLabel" name="coverIcon">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap resource="resources/duckstation-qt.qrc">:/icons/black/svg/artboard-2-line.svg</pixmap>
-       </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
@@ -122,8 +116,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="resources/duckstation-qt.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

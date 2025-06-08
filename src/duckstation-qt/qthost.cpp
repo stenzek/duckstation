@@ -303,7 +303,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 
 const QIcon& QtHost::GetAppIcon()
 {
-  static QIcon icon = QIcon(QStringLiteral(":/icons/duck.png"));
+  static const QIcon icon(QStringLiteral(":/icons/duck.png"));
   return icon;
 }
 
@@ -2201,11 +2201,11 @@ InputDeviceListModel::~InputDeviceListModel() = default;
 QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
 {
   if (key.source_type == InputSourceType::Keyboard)
-    return QIcon::fromTheme("keyboard-line");
+    return QIcon::fromTheme(QStringLiteral("keyboard-line"));
   else if (key.source_type == InputSourceType::Pointer)
-    return QIcon::fromTheme("mouse-line");
+    return QIcon::fromTheme(QStringLiteral("mouse-line"));
   else
-    return QIcon::fromTheme("controller-line");
+    return QIcon::fromTheme(QStringLiteral("controller-line"));
 }
 
 int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
