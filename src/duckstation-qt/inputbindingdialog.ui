@@ -120,7 +120,7 @@
          <string>Reset</string>
         </property>
         <property name="icon">
-         <iconset theme="refresh-line"/>
+         <iconset theme="restart-line"/>
         </property>
        </widget>
       </item>
@@ -130,7 +130,7 @@
          <string>Reset</string>
         </property>
         <property name="icon">
-         <iconset theme="refresh-line"/>
+         <iconset theme="restart-line"/>
         </property>
        </widget>
       </item>
