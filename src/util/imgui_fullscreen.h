@@ -271,7 +271,7 @@ void DrawFullscreenFooter();
 void PrerenderMenuButtonBorder();
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT,
-                      float item_spacing = LAYOUT_MENU_BUTTON_SPACING);
+                      float x_spacing = 0.0f, float y_spacing = LAYOUT_MENU_BUTTON_SPACING);
 void EndMenuButtons();
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 bool MenuButtonFrame(std::string_view str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,

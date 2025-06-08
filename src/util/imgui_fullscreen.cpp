@@ -1264,7 +1264,7 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /*
                                        float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */,
                                        float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */,
                                        float item_height /* = LAYOUT_MENU_BUTTON_HEIGHT */,
-                                       float item_spacing /* = LAYOUT_MENU_BUTTON_SPACING */)
+                                       float x_spacing /* = 0.0f */, float y_spacing /* = LAYOUT_MENU_BUTTON_SPACING */)
 {
   s_state.menu_button_index = 0;
 
@@ -1297,12 +1297,11 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /*
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, LayoutScale(LAYOUT_MENU_BUTTON_SPACING)));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(x_spacing, y_spacing));
 
   if (y_align != 0.0f)
   {
-    const float real_item_height =
-      LayoutScale(item_height) + (LayoutScale(y_padding) * 2.0f) + LayoutScale(item_spacing);
+    const float real_item_height = LayoutScale(item_height) + (LayoutScale(y_padding) * 2.0f) + LayoutScale(y_spacing);
     const float total_size = (static_cast<float>(num_items) * real_item_height) + (LayoutScale(y_padding) * 2.0f);
     const float window_height = ImGui::GetWindowHeight();
     if (window_height > total_size)

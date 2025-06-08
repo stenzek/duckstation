@@ -8183,28 +8183,30 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
   ResetFocusHere();
-  BeginMenuButtons();
+  BeginMenuButtons(0, 0.0f, 15.0f, 15.0f, 0.0f, 20.0f, 20.0f);
 
   const ImGuiStyle& style = ImGui::GetStyle();
 
+  const float avail_width = ImGui::GetContentRegionAvail().x;
   const float title_spacing = LayoutScale(10.0f);
-  const float item_spacing = LayoutScale(20.0f);
-  const float item_width_with_spacing = std::floor(LayoutScale(LAYOUT_SCREEN_WIDTH / 5.0f));
-  const float item_width = item_width_with_spacing - item_spacing;
+  const float item_width_with_spacing = std::floor(avail_width / 5.0f);
+  const float item_width = item_width_with_spacing - style.ItemSpacing.x;
   const float image_width = item_width - (style.FramePadding.x * 2.0f);
   const float image_height = image_width;
   const ImVec2 image_size(image_width, image_height);
   const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + UIStyle.MediumFont->FontSize;
   const ImVec2 item_size(item_width, item_height);
-  const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetContentRegionAvail().x / item_width_with_spacing));
-  const float start_x =
-    (static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
-  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+  const u32 grid_count_x = static_cast<u32>(std::floor(avail_width / item_width_with_spacing));
+
+  // calculate padding to center it, the last item in the row doesn't need spacing
+  const float x_padding = std::floor(
+    (avail_width - ((item_width_with_spacing * static_cast<float>(grid_count_x)) - style.ItemSpacing.x)) * 0.5f);
 
   SmallString draw_title;
+  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
   u32 grid_x = 0;
-  ImGui::SetCursorPosX(start_x);
+  ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
   for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
   {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -8279,12 +8281,11 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     if (grid_x == grid_count_x)
     {
       grid_x = 0;
-      ImGui::SetCursorPosX(start_x);
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
     }
     else
     {
-      ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
+      ImGui::SameLine();
     }
   }
 
