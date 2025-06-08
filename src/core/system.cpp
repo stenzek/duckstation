@@ -1560,6 +1560,8 @@ void System::ResetSystem()
   if (!IsValid())
     return;
 
+  SaveUndoLoadState();
+
   InternalReset();
 
   // Reset boot mode/reload BIOS if needed. Preserve exe/psf boot.
