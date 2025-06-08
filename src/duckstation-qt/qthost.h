@@ -140,6 +140,8 @@ Q_SIGNALS:
   void systemDestroyed();
   void systemPaused();
   void systemResumed();
+  void systemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void systemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void gameListRefreshed();
   void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
@@ -148,7 +150,6 @@ Q_SIGNALS:
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void focusDisplayWidgetRequested();
-  void runningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
   void fullscreenUIStartedOrStopped(bool running);

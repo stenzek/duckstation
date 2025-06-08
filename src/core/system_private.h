@@ -115,8 +115,11 @@ void OnSystemAbnormalShutdown(const std::string_view reason);
 void OnPerformanceCountersUpdated(const GPUBackend* gpu_backend);
 
 /// Provided by the host; called when the running executable changes.
-void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                   GameHash game_hash);
+void OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                         GameHash game_hash);
+
+/// Provided by the host; called when the undo save state availability changes.
+void OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp);
 
 /// Called when media capture starts/stops.
 void OnMediaCaptureStarted();

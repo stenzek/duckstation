@@ -1185,14 +1185,19 @@ void MiniHost::WarnAboutInterface()
   Host::AddIconOSDWarning("MiniWarning", ICON_EMOJI_WARNING, message, Host::OSD_INFO_DURATION);
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                         GameHash game_hash)
+void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
+                               const std::string& game_name, GameHash game_hash)
 {
   using namespace MiniHost;
 
   VERBOSE_LOG("Host::OnGameChanged(\"{}\", \"{}\", \"{}\")", disc_path, game_serial, game_name);
   if (s_state.sdl_window)
     SDL_SetWindowTitle(s_state.sdl_window, GetWindowTitle(game_name).c_str());
+}
+
+void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
+{
+  //
 }
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)

@@ -146,7 +146,8 @@ private Q_SLOTS:
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
-  void onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void onSystemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void onMediaCaptureStarted();
   void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
@@ -214,7 +215,6 @@ private Q_SLOTS:
 
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
-
 
 protected:
   void showEvent(QShowEvent* event) override;
@@ -295,6 +295,8 @@ private:
   void startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot);
   void startFileOrChangeDisc(const QString& path);
   void promptForDiscChange(const QString& path);
+
+  static QString formatTimestampForSaveStateMenu(u64 timestamp);
 
   Ui::MainWindow m_ui;
 

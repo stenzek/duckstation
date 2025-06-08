@@ -2517,11 +2517,16 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
   g_emu_thread->updatePerformanceCounters(gpu_backend);
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                         GameHash hash)
+void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
+                               const std::string& game_name, GameHash hash)
 {
-  emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
-                                        QString::fromStdString(game_name));
+  emit g_emu_thread->systemGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
+                                       QString::fromStdString(game_name));
+}
+
+void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
+{
+  emit g_emu_thread->systemUndoStateAvailabilityChanged(available, timestamp);
 }
 
 void Host::OnMediaCaptureStarted()

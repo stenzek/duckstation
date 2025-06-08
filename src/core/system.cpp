@@ -137,6 +137,11 @@ struct SaveStateBuffer
   size_t state_size;
 };
 
+struct UndoSaveStateBuffer : public SaveStateBuffer
+{
+  time_t timestamp;
+};
+
 } // namespace
 
 static void CheckCacheLineSize();
@@ -318,7 +323,7 @@ struct ALIGN_TO_CACHE_LINE StateVars
   Threading::ThreadHandle cpu_thread_handle;
 
   // temporary save state, created when loading, used to undo load state
-  std::optional<System::SaveStateBuffer> undo_load_state;
+  std::optional<UndoSaveStateBuffer> undo_load_state;
 
   // Used to track play time. We use a monotonic timer here, in case of clock changes.
   u64 session_start_time = 0;
@@ -2024,7 +2029,7 @@ void System::ClearRunningGame()
   s_state.running_game_entry = nullptr;
   s_state.running_game_hash = 0;
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+  Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                       s_state.running_game_hash);
 
   UpdateRichPresence(true);
@@ -4212,7 +4217,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                                      s_state.running_game_hash);
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+  Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                       s_state.running_game_hash);
 }
 
@@ -5282,12 +5287,14 @@ bool System::UndoLoadState()
     Host::ReportErrorAsync("Error",
                            fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
     s_state.undo_load_state.reset();
+    Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     ResetSystem();
     return false;
   }
 
   INFO_LOG("Loaded undo save state.");
   s_state.undo_load_state.reset();
+  Host::OnSystemUndoStateAvailabilityChanged(false, 0);
   return true;
 }
 
@@ -5303,10 +5310,13 @@ bool System::SaveUndoLoadState()
       fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save undo load state:\n{}"), error.GetDescription()),
       Host::OSD_CRITICAL_ERROR_DURATION);
     s_state.undo_load_state.reset();
+    Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     return false;
   }
 
   INFO_LOG("Saved undo load state: {} bytes", s_state.undo_load_state->state_size);
+  s_state.undo_load_state->timestamp = std::time(nullptr);
+  Host::OnSystemUndoStateAvailabilityChanged(true, static_cast<u64>(s_state.undo_load_state->timestamp));
   return true;
 }
 

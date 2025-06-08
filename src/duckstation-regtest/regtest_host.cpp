@@ -316,12 +316,17 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
   //
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
-                         GameHash hash)
+void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
+                               const std::string& game_name, GameHash hash)
 {
   INFO_LOG("Disc Path: {}", disc_path);
   INFO_LOG("Game Serial: {}", game_serial);
   INFO_LOG("Game Name: {}", game_name);
+}
+
+void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
+{
+  //
 }
 
 void Host::OnMediaCaptureStarted()
@@ -890,7 +895,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
 
         INFO_LOG("Setting CPU execution mode to {}.", Settings::GetCPUExecutionModeName(cpu.value()));
         s_base_settings_interface.SetStringValue("CPU", "ExecutionMode",
-                                                  Settings::GetCPUExecutionModeName(cpu.value()));
+                                                 Settings::GetCPUExecutionModeName(cpu.value()));
         continue;
       }
       else if (CHECK_ARG("-pgxp"))

@@ -113,6 +113,7 @@ static QString s_current_game_title;
 static QString s_current_game_serial;
 static QString s_current_game_path;
 static QIcon s_current_game_icon;
+static std::optional<std::time_t> s_undo_state_timestamp;
 
 bool QtHost::IsSystemPaused()
 {
@@ -576,6 +577,7 @@ void MainWindow::onSystemDestroyed()
   s_system_starting = false;
   s_system_valid = false;
   s_system_paused = false;
+  s_undo_state_timestamp.reset();
 
   // If we're closing or in batch mode, quit the whole application now.
   if (m_is_closing || QtHost::InBatchMode())
@@ -593,7 +595,7 @@ void MainWindow::onSystemDestroyed()
     switchToGameListView();
 }
 
-void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
+void MainWindow::onSystemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
 {
   s_current_game_path = filename;
   s_current_game_title = game_title;
@@ -601,6 +603,14 @@ void MainWindow::onRunningGameChanged(const QString& filename, const QString& ga
   s_current_game_icon = m_game_list_widget->getModel()->getIconForGame(filename);
 
   updateWindowTitle();
+}
+
+void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp)
+{
+  if (!available)
+    s_undo_state_timestamp.reset();
+  else
+    s_undo_state_timestamp = timestamp;
 }
 
 void MainWindow::onMediaCaptureStarted()
@@ -891,7 +901,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   }
 }
 
-static QString FormatTimestampForSaveStateMenu(u64 timestamp)
+QString MainWindow::formatTimestampForSaveStateMenu(u64 timestamp)
 {
   const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
   return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
@@ -904,7 +914,7 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
     const QString menu_title =
-      ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
+      ssi.has_value() ? title.arg(slot).arg(formatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
     QAction* load_action = menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
@@ -925,8 +935,11 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
 
     g_emu_thread->loadState(path);
   });
-  QAction* load_from_state = menu->addAction(tr("Undo Load State"));
-  load_from_state->setEnabled(System::CanUndoLoadState());
+  QAction* load_from_state =
+    menu->addAction(s_undo_state_timestamp.has_value() ?
+                      tr("Undo Load State (%1)").arg(formatTimestampForSaveStateMenu(s_undo_state_timestamp.value())) :
+                      tr("Undo Load State"));
+  load_from_state->setEnabled(s_undo_state_timestamp.has_value());
   connect(load_from_state, &QAction::triggered, g_emu_thread, &EmuThread::undoLoadState);
   menu->addSeparator();
 
@@ -949,7 +962,7 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
     const QString menu_title =
-      ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
+      ssi.has_value() ? title.arg(slot).arg(formatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
     QAction* save_action = menu->addAction(menu_title);
     connect(save_action, &QAction::triggered,
@@ -2123,7 +2136,9 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::systemDestroyed, this, &MainWindow::onSystemDestroyed);
   connect(g_emu_thread, &EmuThread::systemPaused, this, &MainWindow::onSystemPaused);
   connect(g_emu_thread, &EmuThread::systemResumed, this, &MainWindow::onSystemResumed);
-  connect(g_emu_thread, &EmuThread::runningGameChanged, this, &MainWindow::onRunningGameChanged);
+  connect(g_emu_thread, &EmuThread::systemGameChanged, this, &MainWindow::onSystemGameChanged);
+  connect(g_emu_thread, &EmuThread::systemUndoStateAvailabilityChanged, this,
+          &MainWindow::onSystemUndoStateAvailabilityChanged);
   connect(g_emu_thread, &EmuThread::mediaCaptureStarted, this, &MainWindow::onMediaCaptureStarted);
   connect(g_emu_thread, &EmuThread::mediaCaptureStopped, this, &MainWindow::onMediaCaptureStopped);
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
