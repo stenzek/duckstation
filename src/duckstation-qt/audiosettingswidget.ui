@@ -258,7 +258,7 @@
          <string>Reset Volume</string>
         </property>
         <property name="icon">
-         <iconset theme="refresh-line"/>
+         <iconset theme="restart-line"/>
         </property>
        </widget>
       </item>
@@ -310,7 +310,7 @@
          <string>Reset Fast Forward Volume</string>
         </property>
         <property name="icon">
-         <iconset theme="refresh-line"/>
+         <iconset theme="restart-line"/>
         </property>
        </widget>
       </item>

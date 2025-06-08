@@ -153,6 +153,9 @@
         <property name="text">
          <string>Reset To Default</string>
         </property>
+        <property name="icon">
+         <iconset theme="restart-line"/>
+        </property>
        </widget>
       </item>
      </layout>
