@@ -345,7 +345,11 @@ bool DisplayWidget::event(QEvent* event)
     case QEvent::Wheel:
     {
       const QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
-      emit windowMouseWheelEvent(wheel_event->angleDelta());
+      const QPoint angle_delta = wheel_event->angleDelta();
+      const float dx = static_cast<float>(angle_delta.x()) / static_cast<float>(QWheelEvent::DefaultDeltasPerStep);
+      const float dy = (static_cast<float>(angle_delta.y()) / static_cast<float>(QWheelEvent::DefaultDeltasPerStep)) *
+                       static_cast<float>(QApplication::wheelScrollLines());
+      emit windowMouseWheelEvent(dx, dy);
       return true;
     }
 

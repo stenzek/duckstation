@@ -223,7 +223,7 @@ public Q_SLOTS:
 private Q_SLOTS:
   void stopInThread();
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
-  void onDisplayWindowMouseWheelEvent(const QPoint& delta_angle);
+  void onDisplayWindowMouseWheelEvent(float dx, float dy);
   void onDisplayWindowResized(int width, int height, float scale);
   void onDisplayWindowKeyEvent(int key, bool pressed);
   void onDisplayWindowTextEntered(const QString& text);

@@ -903,15 +903,13 @@ void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
                              GenericInputBinding::Unknown);
 }
 
-void EmuThread::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle)
+void EmuThread::onDisplayWindowMouseWheelEvent(float dx, float dy)
 {
   DebugAssert(isCurrentThread());
 
-  const float dx = std::clamp(static_cast<float>(delta_angle.x()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
   if (dx != 0.0f)
     InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, dx);
 
-  const float dy = std::clamp(static_cast<float>(delta_angle.y()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
   if (dy != 0.0f)
     InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelY, dy);
 }

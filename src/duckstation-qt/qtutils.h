@@ -45,9 +45,6 @@ enum class EntryType : u8;
 
 namespace QtUtils {
 
-/// Wheel delta is 120 as in winapi.
-static constexpr float MOUSE_WHEEL_DELTA = 120.0f;
-
 /// Creates a horizontal line widget.
 QFrame* CreateHorizontalLine(QWidget* parent);
 

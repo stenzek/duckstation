@@ -808,6 +808,7 @@ void ImGuiFullscreen::PushResetLayout()
   ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, LayoutScale(4.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, UIStyle.SmoothScrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollStepSize, LayoutScale(LAYOUT_LARGE_FONT_SIZE, LAYOUT_MENU_BUTTON_HEIGHT));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.SecondaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.DisabledColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
@@ -825,7 +826,7 @@ void ImGuiFullscreen::PushResetLayout()
 void ImGuiFullscreen::PopResetLayout()
 {
   ImGui::PopStyleColor(12);
-  ImGui::PopStyleVar(13);
+  ImGui::PopStyleVar(14);
 }
 
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)

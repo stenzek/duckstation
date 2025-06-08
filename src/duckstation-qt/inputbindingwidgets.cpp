@@ -124,7 +124,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   else if (event_type == QEvent::Wheel)
   {
     const QPoint delta_angle(static_cast<QWheelEvent*>(event)->angleDelta());
-    const float dx = std::clamp(static_cast<float>(delta_angle.x()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
+    const float dx = std::clamp(
+      static_cast<float>(delta_angle.x()) / static_cast<float>(QWheelEvent::DefaultDeltasPerStep), -1.0f, 1.0f);
     if (dx != 0.0f)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelX));
@@ -132,7 +133,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
       m_new_bindings.push_back(key);
     }
 
-    const float dy = std::clamp(static_cast<float>(delta_angle.y()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
+    const float dy = std::clamp(
+      static_cast<float>(delta_angle.y()) / static_cast<float>(QWheelEvent::DefaultDeltasPerStep), -1.0f, 1.0f);
     if (dy != 0.0f)
     {
       InputBindingKey key(InputManager::MakePointerAxisKey(0, InputPointerAxis::WheelY));
