@@ -43,6 +43,9 @@
        <property name="text">
         <string>Disable All Patches</string>
        </property>
+       <property name="icon">
+        <iconset theme="chat-off-line"/>
+       </property>
       </widget>
      </item>
      <item>
@@ -62,6 +65,9 @@
       <widget class="QPushButton" name="reload">
        <property name="text">
         <string>Reload Patches</string>
+       </property>
+       <property name="icon">
+        <iconset theme="refresh-line"/>
        </property>
       </widget>
      </item>
