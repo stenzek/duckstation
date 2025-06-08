@@ -1726,6 +1726,7 @@ enum ImGuiStyleVar_
     ImGuiStyleVar_SeparatorTextBorderSize,  // float     SeparatorTextBorderSize
     ImGuiStyleVar_SeparatorTextAlign,       // ImVec2    SeparatorTextAlign
     ImGuiStyleVar_SeparatorTextPadding,     // ImVec2    SeparatorTextPadding
+    ImGuiStyleVar_ScrollStepSize,           // ImVec2    ScrollStepSize
     ImGuiStyleVar_ScrollSmooth,             // float     ScrollSmooth
     ImGuiStyleVar_COUNT
 };
@@ -2207,6 +2208,7 @@ struct ImGuiStyle
     ImGuiHoveredFlags HoverFlagsForTooltipMouse;// Default flags when using IsItemHovered(ImGuiHoveredFlags_ForTooltip) or BeginItemTooltip()/SetItemTooltip() while using mouse.
     ImGuiHoveredFlags HoverFlagsForTooltipNav;  // Default flags when using IsItemHovered(ImGuiHoveredFlags_ForTooltip) or BeginItemTooltip()/SetItemTooltip() while using keyboard/gamepad.
 
+    ImVec2            ScrollStepSize;           // Step size for scrolling, 0.0f uses default ImGui behaviour.
     float             ScrollSmooth;             // Smooth scrolling amount: 1.0f no smoothing. Anything above 1.0f will make the scroll delta more smooth.
 
     IMGUI_API ImGuiStyle();

@@ -1381,7 +1381,8 @@ ImGuiStyle::ImGuiStyle()
     HoverDelayNormal            = 0.40f;            // Delay for IsItemHovered(ImGuiHoveredFlags_DelayNormal). "
     HoverFlagsForTooltipMouse   = ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled;    // Default flags when using IsItemHovered(ImGuiHoveredFlags_ForTooltip) or BeginItemTooltip()/SetItemTooltip() while using mouse.
     HoverFlagsForTooltipNav     = ImGuiHoveredFlags_NoSharedDelay | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled;  // Default flags when using IsItemHovered(ImGuiHoveredFlags_ForTooltip) or BeginItemTooltip()/SetItemTooltip() while using keyboard/gamepad.
-    ScrollSmooth = 1.0f;                            // Disabled by default. It's just immediate jump from ScrollExpected to the visual Scroll.
+    ScrollStepSize              = ImVec2(0.0f, 0.0f);// Disabled by default.
+    ScrollSmooth                = 1.0f;              // Disabled by default. It's just immediate jump from ScrollExpected to the visual Scroll.
 
     // Default theme
     ImGui::StyleColorsDark(this);
@@ -3422,6 +3423,7 @@ static const ImGuiStyleVarInfo GStyleVarsInfo[] =
     { 1, ImGuiDataType_Float, (ImU32)offsetof(ImGuiStyle, SeparatorTextBorderSize)},    // ImGuiStyleVar_SeparatorTextBorderSize
     { 2, ImGuiDataType_Float, (ImU32)offsetof(ImGuiStyle, SeparatorTextAlign) },        // ImGuiStyleVar_SeparatorTextAlign
     { 2, ImGuiDataType_Float, (ImU32)offsetof(ImGuiStyle, SeparatorTextPadding) },      // ImGuiStyleVar_SeparatorTextPadding
+    { 2, ImGuiDataType_Float, (ImU32)offsetof(ImGuiStyle, ScrollStepSize) },            // ImGuiStyleVar_ScrollStepSize
     { 1, ImGuiDataType_Float, (ImU32)offsetof(ImGuiStyle, ScrollSmooth) },              // ImGuiStyleVar_ScrollSmooth
 };
 
@@ -7276,6 +7278,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->TitleBarHeight = (flags & ImGuiWindowFlags_NoTitleBar) ? 0.0f : g.FontSize + g.Style.FramePadding.y * 2.0f;
         window->MenuBarHeight = (flags & ImGuiWindowFlags_MenuBar) ? window->DC.MenuBarOffset.y + g.FontSize + g.Style.FramePadding.y * 2.0f : 0.0f;
         window->FontRefSize = g.FontSize; // Lock this to discourage calling window->CalcFontSize() outside of current window.
+        window->ScrollStepSize = style.ScrollStepSize;
 
         // Depending on condition we use previous or current window size to compare against contents size to decide if a scrollbar should be visible.
         // Those flags will be altered further down in the function depending on more conditions.
@@ -9748,7 +9751,7 @@ void ImGui::UpdateMouseWheel()
             {
                 LockWheelingWindow(window, wheel.x);
                 float max_step = window->InnerRect.GetWidth() * 0.67f;
-                float scroll_step = ImTrunc(ImMin(2 * window->FontRefSize, max_step));
+                float scroll_step = (window->ScrollStepSize.x != 0.0f) ? window->ScrollStepSize.x : ImTrunc(ImMin(2 * window->FontRefSize, max_step));
                 SetScrollX(window, window->ScrollExpected.x - wheel.x * scroll_step);
                 g.WheelingWindowScrolledFrame = g.FrameCount;
             }
@@ -9756,7 +9759,7 @@ void ImGui::UpdateMouseWheel()
             {
                 LockWheelingWindow(window, wheel.y);
                 float max_step = window->InnerRect.GetHeight() * 0.67f;
-                float scroll_step = ImTrunc(ImMin(5 * window->FontRefSize, max_step));
+                float scroll_step = (window->ScrollStepSize.y != 0.0f) ? window->ScrollStepSize.y : ImTrunc(ImMin(5 * window->FontRefSize, max_step));
                 SetScrollY(window, window->ScrollExpected.y - wheel.y * scroll_step);
                 g.WheelingWindowScrolledFrame = g.FrameCount;
             }
