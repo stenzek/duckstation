@@ -27,7 +27,10 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,1,0,0,0">
+     <property name="spacing">
+      <number>3</number>
+     </property>
      <property name="leftMargin">
       <number>3</number>
      </property>
@@ -41,184 +44,164 @@
       <number>3</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="spacing">
-        <number>3</number>
+      <widget class="QToolButton" name="viewGameList">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
        </property>
-       <item>
-        <widget class="QToolButton" name="viewGameList">
-         <property name="minimumSize">
-          <size>
-           <width>32</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Game List</string>
-         </property>
-         <property name="icon">
-          <iconset theme="list-check"/>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="viewGameGrid">
-         <property name="minimumSize">
-          <size>
-           <width>32</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Game Grid</string>
-         </property>
-         <property name="icon">
-          <iconset theme="function-line"/>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="viewMergeDiscSets">
-         <property name="minimumSize">
-          <size>
-           <width>32</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Merge Multi-Disc Games</string>
-         </property>
-         <property name="icon">
-          <iconset theme="play-list-2-line"/>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="viewGridTitles">
-         <property name="minimumSize">
-          <size>
-           <width>32</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Show Titles</string>
-         </property>
-         <property name="icon">
-          <iconset theme="price-tag-3-line"/>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="gridScale">
-         <property name="minimumSize">
-          <size>
-           <width>125</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>125</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="minimum">
-          <number>10</number>
-         </property>
-         <property name="maximum">
-          <number>200</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
+       <property name="text">
+        <string>Game List</string>
+       </property>
+       <property name="icon">
+        <iconset theme="list-check"/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="viewGameGrid">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Game Grid</string>
+       </property>
+       <property name="icon">
+        <iconset theme="function-line"/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="viewMergeDiscSets">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Merge Multi-Disc Games</string>
+       </property>
+       <property name="icon">
+        <iconset theme="play-list-2-line"/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="viewGridTitles">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Show Titles</string>
+       </property>
+       <property name="icon">
+        <iconset theme="price-tag-3-line"/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="gridScale">
+       <property name="minimumSize">
+        <size>
+         <width>125</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>125</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="minimum">
+        <number>10</number>
+       </property>
+       <property name="maximum">
+        <number>200</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
       </spacer>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="spacing">
-        <number>6</number>
+      <widget class="QComboBox" name="filterType">
+       <item>
+        <property name="text">
+         <string>All Types</string>
+        </property>
+        <property name="icon">
+         <iconset theme="filter-line"/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="filterRegion">
+       <item>
+        <property name="text">
+         <string>All Regions</string>
+        </property>
+        <property name="icon">
+         <iconset theme="global-line"/>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="searchText">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
        </property>
-       <item>
-        <widget class="QComboBox" name="filterType">
-         <item>
-          <property name="text">
-           <string>All Types</string>
-          </property>
-          <property name="icon">
-           <iconset theme="filter-line"/>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="filterRegion">
-         <item>
-          <property name="text">
-           <string>All Regions</string>
-          </property>
-          <property name="icon">
-           <iconset theme="global-line"/>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="searchText">
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="placeholderText">
-          <string>Search...</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+       <property name="placeholderText">
+        <string>Search...</string>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
