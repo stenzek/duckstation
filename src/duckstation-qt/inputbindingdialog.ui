@@ -117,7 +117,7 @@
       <item row="0" column="3">
        <widget class="QToolButton" name="resetSensitivity">
         <property name="toolTip">
-         <string>Reset</string>
+         <string>Reset Sensitivity</string>
         </property>
         <property name="icon">
          <iconset theme="restart-line"/>
@@ -127,7 +127,7 @@
       <item row="1" column="3">
        <widget class="QToolButton" name="resetDeadzone">
         <property name="toolTip">
-         <string>Reset</string>
+         <string>Reset Deadzone</string>
         </property>
         <property name="icon">
          <iconset theme="restart-line"/>

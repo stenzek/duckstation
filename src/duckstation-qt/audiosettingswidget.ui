@@ -255,7 +255,7 @@
       <item row="0" column="3">
        <widget class="QToolButton" name="resetVolume">
         <property name="toolTip">
-         <string>Reset Volume</string>
+         <string>Reset Output Volume</string>
         </property>
         <property name="icon">
          <iconset theme="restart-line"/>
