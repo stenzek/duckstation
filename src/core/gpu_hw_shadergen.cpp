@@ -742,7 +742,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     ss << R"(
 uint luma(uint C) {
     uint alpha = (C & 0xFF000000u) >> 24;
-    return (((C & 0x00FF0000u) >> 16) + ((C & 0x0000FF00u) >> 8) + (C & 0x000000FFu) + 1u) * (256u - alpha);
+    return (((C & 0x00FF0000u) >> 16) + ((C & 0x0000FF00u) >> 8) + (C & 0x000000FFu)) + (255u - alpha) * 3;
 }
 
 bool all_eq2(uint B, uint A0, uint A1) {
@@ -769,6 +769,113 @@ bool none_eq4(uint B, uint A0, uint A1, uint A2, uint A3) {
     return B != A0 && B != A1 && B != A2 && B != A3;
 }
 
+// Calculate the RGB distance between two ABGR8 colors
+float rgb_distance(uint a, uint b)
+{
+    vec4 ca = unpackUnorm4x8(a);
+    vec4 cb = unpackUnorm4x8(b);
+    return distance(ca.rgb, cb.rgb);
+}
+
+// Calculate the luminance difference between two ABGR8 colors and normalize it
+float luma_distance(uint a, uint b)
+{
+    return abs(luma(a) - luma(b)) * 0.0006535948f;  // Multiplicative replacement for division by 1530
+}
+
+/*=============================================================================
+Helper function for 4-pixel intersection pattern matching: Scores the number of 
+matches for specific morphological positions. Three morphological conditions 
+need to be met with a total score of 6.
+                ┌───┬───┬───┐                ┌───┬───┬───┐
+                │ A │ B │ C │                │ A │ B │ 1 │
+                ├───┼───┼───┤                ├───┼───┼───┤
+                │ D │ E │ F │       =>   L   │ B │ A │ 2 │
+                ├───┼───┼───┤                ├───┼───┼───┤
+                │ G │ H │ I │                │ 5 │ 4 │ 3 │
+                └───┴───┴───┘                └───┴───┴───┘
+=============================================================================*/
+
+bool countPatternMatches(uint LA, uint LB, uint L1, uint L2, uint L3, uint L4, uint L5) {
+
+    int score1 = 0; // Diagonal pattern 1
+    int score2 = 0; // Diagonal pattern 2
+    int score3 = 0; // Horizontal/vertical line pattern
+    int scoreBonus = 0;
+    
+    // Jointly judge the visual difference between two pixels using RGB distance and luminance distance
+    float pixelDist = rgb_distance(LA, LB)*0.356822 + luma_distance(LA, LB)*0.382; // The ratio is the golden ratio
+
+    // Increase details for very similar colors and reduce details for highly contrasting colors (font edges).
+    if (pixelDist < 0.12) { // Colors are quite similar
+        scoreBonus += 1;
+    } else if (pixelDist > 0.9) { // Black and white contrast
+        scoreBonus -= 1;
+    } 
+
+    // Diagonal patterns use a penalty system: intersections deduct points, meeting conditions adds points back
+    // 1. Diagonal pattern ╲ (Condition: B = 2 or 4)
+    if (LB == L2 || LB == L4) {
+        score1 -= int(LB == L2 && LA == L1) * 1;    	// A-1, B-2 form an intersection, deduct points
+        score1 -= int(LB == L4 && LA == L5) * 1;   		// A-5, B-4 form an intersection, deduct points
+
+        // If the following triangular patterns are met, they can offset the intersection penalties
+        score1 += int(LB == L1 && L1 == L2) * 1;   		// B-1-2 form a triangular pattern, add points
+        score1 += int(LB == L4 && L4 == L5) * 1;   		// B-4-5 form a triangular pattern, add points
+        score1 += int(L2 == L3 && L3 == L4) * 1;   		// 2-3-4 form a triangular pattern, add points
+        
+        score1 += scoreBonus + 6;
+    } 
+
+    // 2. Diagonal pattern ╱ (Condition: A = 1 or 5)
+    if (LA == L1 || LA == L5) {
+        score2 -= int(LB == L2 && LA == L1) * 1;    	// A-1, B-2 intersection, deduct points
+        score2 -= int(LB == L4 && LA == L5) * 1;   		// A-5, B-4 intersection, deduct points
+        score2 -= int(LA == L3) * 1;    					// A-3 forms an intersection, deduct points				
+
+        // If the following triangular patterns are met, they can offset the intersection penalties
+        score2 += int(LB == L1 && L1 == L2) * 1;   		// B-1-2 form a triangular pattern, add points
+        score2 += int(LB == L4 && L4 == L5) * 1;   		// B-4-5 form a triangular pattern, add points
+        score2 += int(L2 == L3 && L3 == L4) * 1;   		// 2-3-4 form a triangular pattern, add points
+    
+        score2 += scoreBonus + 6;
+    } 
+
+    // 3. Horizontal/vertical line pattern (Condition: horizontal continuity) uses a reward system, only pass if conditions are met
+    if (LA == L2 || LB == L1 || LA == L4 || LB == L5 || (L1 == L2 && L2 == L3) || (L3 == L4 && L4 == L5)) {
+        score3 += int(LA == L2);    	// A same as 2	+1
+        score3 += int(LB == L1);    	// B same as 1	+1
+        score3 += int(L3 == L4);    	// 3 same as 4	+1
+        score3 += int(L4 == L5);    	// 4 same as 5	+1
+        score3 += int(L3 == L4 && L4 == L5); // 3-4-5 continuous
+
+        score3 += int(LB == L5);    	// B same as 5	+1
+        score3 += int(LA == L4);    	// A same as 4	+1
+        score3 += int(L2 == L3);    	// 2 same as 3	+1
+        score3 += int(L1 == L2);    	// 1 same as 2	+1
+        score3 += int(L1 == L2 && L2 == L3); // 1-2-3 continuous
+
+        // A x 4 square	
+        score3 += int(LA == L2 && L2 == L3 && L3 == L4) * 2;
+
+        // Patch for the previous rule to avoid bubbles in large cross-shaped patterns. 
+        // Some games utilize single-sided patterns, so it's best to extend to bilateral judgment (WIP)
+        score3 -= int(LB == L1 && L1 == L5 && LA == L2 && L2 == L4)*3; 
+
+        score3 -= int(LA == L1 && LA == L5); // Deduct points if L1 and L5 are both A to avoid over-scoring 
+                                             // and the pattern turning into a diagonal pattern.
+        
+        // Bonus score
+        score3 += scoreBonus;	// Experience: Even for very similar colors, don't add too many points here, 
+                              // as some Z-shaped intersections may produce bubbles
+    } 
+
+    // Take the maximum of the four scores
+    int score = max(max(score1, score2), score3);
+    
+    return score < 6; // Need to reach 6 points
+}
+
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
   float2 bcoords = floor(coords);
@@ -783,6 +890,60 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     uint P = src(+0, -2), S = src(+0, +2);
     uint Q = src(-2, +0), R = src(+2, +0);
     uint Bl = luma(B), Dl = luma(D), El = luma(E), Fl = luma(F), Hl = luma(H);
+
+    // Default to use center pixel E
+	uint res = E;
+	
+    // Check for "convex" patterns to avoid single-pixel spurs on long line edges
+    if (A == B && B == C && E == H && A != D && C != F && rgb_distance(D, F) < 0.2 && rgb_distance(B, E) > 0.6) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    if (A == D && D == G && E == F && A != B && G != H && rgb_distance(B, H) < 0.2 && rgb_distance(D, E) > 0.6) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    if (C == F && F == I && E == D && B != C && H != I && rgb_distance(B, H) < 0.2 && rgb_distance(E, F) > 0.6) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    if (G == H && H == I && B == E && D != G && F != I && rgb_distance(D, F) < 0.2 && rgb_distance(E, H) > 0.6) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    // Check each 4-pixel intersection in a "grid" pattern and pass five surrounding pixels for pattern judgment
+    if (A == E && B == D && A != B && countPatternMatches(A, B, C, F, I, H, G)) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+    if (C == E && B == F && C != B && countPatternMatches(C, B, A, D, G, H, I)) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    if (G == E && D == H && G != H && countPatternMatches(G, H, I, F, C, B, A)) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    if (I == E && F == H && I != H && countPatternMatches(I, H, G, D, A, B, C)) {
+      ialpha = float(res != 0u);
+      texcol = unpackUnorm4x8(res);
+      return;
+    }
+
+    // Original MMPX logic
 
     // 1:1 slope rules
     if ((D == B && D != H && D != F) && (El >= Dl || E == A) && any_eq3(E, A, C, G) && ((El < Dl) || A != D || E != P || E != Q)) J = D;
