@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -721,7 +721,7 @@
     <string>Resume</string>
    </property>
    <property name="toolTip">
-    <string>Resumes the last save state created.</string>
+    <string>Resumes the last save state created</string>
    </property>
   </action>
   <action name="actionViewToolbar">
