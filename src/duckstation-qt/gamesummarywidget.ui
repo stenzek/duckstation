@@ -190,12 +190,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="restoreTitle">
+      <widget class="QToolButton" name="restoreTitle">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="text">
-        <string>Restore</string>
+       <property name="toolTip">
+        <string>Restore Title</string>
+       </property>
+       <property name="icon">
+        <iconset theme="restart-line"/>
        </property>
       </widget>
      </item>
@@ -219,9 +222,6 @@
      </item>
      <item>
       <widget class="QToolButton" name="compatibilityComments">
-       <property name="text">
-        <string>Comments</string>
-       </property>
        <property name="icon">
         <iconset theme="information-line"/>
        </property>
@@ -291,12 +291,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="restoreRegion">
+      <widget class="QToolButton" name="restoreRegion">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="text">
-        <string>Restore</string>
+       <property name="toolTip">
+        <string>Restore Region</string>
+       </property>
+       <property name="icon">
+        <iconset theme="restart-line"/>
        </property>
       </widget>
      </item>
