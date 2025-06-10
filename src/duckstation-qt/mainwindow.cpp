@@ -1689,15 +1689,17 @@ void MainWindow::setupAdditionalUi()
   updateDebugMenuVisibility();
 
   m_shortcuts.open_file =
-    new QShortcut(Qt::ControlModifier | Qt::Key_O, this, this, &MainWindow::onStartFileActionTriggered);
-  m_shortcuts.game_list_refresh = new QShortcut(Qt::Key_F5, this, this, &MainWindow::onScanForNewGamesTriggered);
+    new QShortcut(QKeySequence::Open, this, this, &MainWindow::onStartFileActionTriggered);
+  m_shortcuts.game_list_refresh =
+    new QShortcut(QKeySequence::Refresh, this, this, &MainWindow::onScanForNewGamesTriggered);
   m_shortcuts.game_list_search = new QShortcut(this);
-  m_shortcuts.game_list_search->setKeys({Qt::ControlModifier | Qt::Key_F, Qt::Key_F3});
+  m_shortcuts.game_list_search->setKeys(
+    QKeySequence::keyBindings(QKeySequence::Find) + QKeySequence::keyBindings(QKeySequence::FindNext));
   connect(m_shortcuts.game_list_search, &QShortcut::activated, m_game_list_widget, &GameListWidget::focusSearchWidget);
   m_shortcuts.game_grid_zoom_in =
-    new QShortcut(Qt::ControlModifier | Qt::Key_Plus, this, this, &MainWindow::onViewGameGridZoomInActionTriggered);
+    new QShortcut(QKeySequence::ZoomIn, this, this, &MainWindow::onViewGameGridZoomInActionTriggered);
   m_shortcuts.game_grid_zoom_out =
-    new QShortcut(Qt::ControlModifier | Qt::Key_Minus, this, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
+    new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
 
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
