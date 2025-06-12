@@ -18,8 +18,6 @@
 
 class ProgressCallback;
 
-struct SystemBootParameters;
-
 namespace GameList {
 enum class EntryType : u8
 {
@@ -116,7 +114,12 @@ EntryList TakeEntryList();
 
 /// Add played time for the specified serial.
 void AddPlayedTimeForSerial(const std::string& serial, std::time_t last_time, std::time_t add_time);
+
+/// Resets played time for the specified serial to zero.
 void ClearPlayedTimeForSerial(const std::string& serial);
+
+/// Resets played time for the specified entry to zero.
+void ClearPlayedTimeForEntry(const Entry* entry);
 
 /// Returns the total time played for a game. Requires the game to be scanned in the list.
 std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);
@@ -160,7 +163,7 @@ void UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, u32 num_ac
                            u32 num_unlocked_hardcore);
 void UpdateAllAchievementData();
 
-}; // namespace GameList
+} // namespace GameList
 
 namespace Host {
 /// Asynchronously starts refreshing the game list.

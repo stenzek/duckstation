@@ -1487,6 +1487,42 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
   }
 }
 
+void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
+{
+  std::unique_lock lock(s_mutex);
+  std::vector<std::string> serials;
+
+  if (entry->IsDiscSet())
+  {
+    for (const GameList::Entry* member : GetDiscSetMembers(entry->path))
+    {
+      if (!member->serial.empty())
+        serials.push_back(member->serial);
+    }
+  }
+  else
+  {
+    if (!entry->serial.empty())
+      serials.push_back(entry->serial);
+  }
+
+  auto played_time_file = GetPlayedTimeFile();
+  for (const auto& serial : serials)
+  {
+    VERBOSE_LOG("Resetting played time for {}", serial);
+    UpdatePlayedTimeFile(played_time_file, serial, 0, 0);
+  }
+
+  for (GameList::Entry& list_entry : s_entries)
+  {
+    if (std::find(serials.begin(), serials.end(), list_entry.serial) == serials.end())
+      continue;
+
+    list_entry.last_played_time = 0;
+    list_entry.total_played_time = 0;
+  }
+}
+
 std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 {
   if (serial.empty())
