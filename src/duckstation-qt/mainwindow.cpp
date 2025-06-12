@@ -1047,7 +1047,7 @@ void MainWindow::onCheatsMenuAboutToShow()
 const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* entry,
                                                        std::unique_lock<std::recursive_mutex>& lock)
 {
-  if (!entry || entry->type != GameList::EntryType::DiscSet)
+  if (!entry || !entry->IsDiscSet())
     return entry;
 
   // disc set... need to figure out the disc we want
@@ -1523,14 +1523,6 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           switchToEmulationView();
         });
       }
-
-      menu.addSeparator();
-
-      connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
-              [this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
-
-      connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered,
-              [this, entry]() { clearGameListEntryPlayTime(entry); });
     }
     else
     {
@@ -1555,12 +1547,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Select Disc")), &QAction::triggered, this, &MainWindow::onGameListEntryActivated);
-
-      menu.addSeparator();
-
-      connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
-              [this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
     }
+
+    menu.addSeparator();
+
+    connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
+            [this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
+
+    connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered,
+            [this, entry]() { clearGameListEntryPlayTime(entry); });
   }
 
   menu.addSeparator();
@@ -1628,7 +1623,7 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
     return;
   }
 
-  GameList::ClearPlayedTimeForSerial(entry->serial);
+  GameList::ClearPlayedTimeForEntry(entry);
   m_game_list_widget->refresh(false);
 }
 
