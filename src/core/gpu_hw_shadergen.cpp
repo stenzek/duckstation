@@ -727,9 +727,10 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 
 )";
   }
-  else if (texture_filter == GPUTextureFilter::MMPX)
+  else if (texture_filter == GPUTextureFilter::MMPX || texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
     DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
+    DefineMacro(ss, "MMPX_ENHANCED", (texture_filter == GPUTextureFilter::MMPXEnhanced));
 
     ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
           "uv_limits.xy, uv_limits.zw)))\n";
@@ -742,7 +743,11 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     ss << R"(
 uint luma(uint C) {
     uint alpha = (C & 0xFF000000u) >> 24;
+#if MMPX_ENHANCED
     return (((C & 0x00FF0000u) >> 16) + ((C & 0x0000FF00u) >> 8) + (C & 0x000000FFu)) + (255u - alpha) * 3;
+#else
+    return (((C & 0x00FF0000u) >> 16) + ((C & 0x0000FF00u) >> 8) + (C & 0x000000FFu) + 1u) * (256u - alpha);
+#endif
 }
 
 bool all_eq2(uint B, uint A0, uint A1) {
@@ -768,6 +773,8 @@ bool none_eq2(uint B, uint A0, uint A1) {
 bool none_eq4(uint B, uint A0, uint A1, uint A2, uint A3) {
     return B != A0 && B != A1 && B != A2 && B != A3;
 }
+
+#if MMPX_ENHANCED
 
 // Calculate the RGB distance between two ABGR8 colors
 float rgb_distance(uint a, uint b)
@@ -876,6 +883,8 @@ bool countPatternMatches(uint LA, uint LB, uint L1, uint L2, uint L3, uint L4, u
     return score < 6; // Need to reach 6 points
 }
 
+#endif
+
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
   float2 bcoords = floor(coords);
@@ -891,57 +900,44 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     uint Q = src(-2, +0), R = src(+2, +0);
     uint Bl = luma(B), Dl = luma(D), El = luma(E), Fl = luma(F), Hl = luma(H);
 
+#if MMPX_ENHANCED
     // Default to use center pixel E
-	uint res = E;
+    ialpha = float(E != 0u);
+    texcol = unpackUnorm4x8(E);
 	
     // Check for "convex" patterns to avoid single-pixel spurs on long line edges
     if (A == B && B == C && E == H && A != D && C != F && rgb_distance(D, F) < 0.2 && rgb_distance(B, E) > 0.6) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     if (A == D && D == G && E == F && A != B && G != H && rgb_distance(B, H) < 0.2 && rgb_distance(D, E) > 0.6) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     if (C == F && F == I && E == D && B != C && H != I && rgb_distance(B, H) < 0.2 && rgb_distance(E, F) > 0.6) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     if (G == H && H == I && B == E && D != G && F != I && rgb_distance(D, F) < 0.2 && rgb_distance(E, H) > 0.6) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     // Check each 4-pixel intersection in a "grid" pattern and pass five surrounding pixels for pattern judgment
     if (A == E && B == D && A != B && countPatternMatches(A, B, C, F, I, H, G)) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
     if (C == E && B == F && C != B && countPatternMatches(C, B, A, D, G, H, I)) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     if (G == E && D == H && G != H && countPatternMatches(G, H, I, F, C, B, A)) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
 
     if (I == E && F == H && I != H && countPatternMatches(I, H, G, D, A, B, C)) {
-      ialpha = float(res != 0u);
-      texcol = unpackUnorm4x8(res);
       return;
     }
+#endif
 
     // Original MMPX logic
 
