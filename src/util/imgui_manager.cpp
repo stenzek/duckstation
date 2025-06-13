@@ -1064,7 +1064,7 @@ void ImGuiManager::AddOSDMessage(std::string key, std::string message, float dur
   msg.last_y = -1.0f;
   msg.is_warning = is_warning;
 
-  std::unique_lock<std::mutex> lock(s_state.osd_messages_lock);
+  std::unique_lock lock(s_state.osd_messages_lock);
   s_state.osd_posted_messages.push_back(std::move(msg));
 }
 
@@ -1075,14 +1075,14 @@ void ImGuiManager::RemoveKeyedOSDMessage(std::string key, bool is_warning)
   msg.duration = 0.0f;
   msg.is_warning = is_warning;
 
-  std::unique_lock<std::mutex> lock(s_state.osd_messages_lock);
+  std::unique_lock lock(s_state.osd_messages_lock);
   s_state.osd_posted_messages.push_back(std::move(msg));
 }
 
 void ImGuiManager::ClearOSDMessages(bool clear_warnings)
 {
   {
-    std::unique_lock<std::mutex> lock(s_state.osd_messages_lock);
+    std::unique_lock lock(s_state.osd_messages_lock);
     if (clear_warnings)
     {
       s_state.osd_posted_messages.clear();

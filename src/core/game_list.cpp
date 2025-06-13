@@ -761,7 +761,7 @@ void GameList::PopulateEntryAchievements(Entry* entry, const Achievements::Progr
 void GameList::UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, u32 num_achievements, u32 num_unlocked,
                                      u32 num_unlocked_hardcore)
 {
-  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  std::unique_lock lock(s_mutex);
   llvm::SmallVector<u32, 32> changed_indices;
 
   for (size_t i = 0; i < s_entries.size(); i++)
@@ -801,7 +801,7 @@ void GameList::UpdateAllAchievementData()
       WARNING_LOG("Failed to load achievements progress: {}", error.GetDescription());
   }
 
-  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  std::unique_lock lock(s_mutex);
 
   // this is pretty jank, but the frontend should collapse it into a single update
   std::vector<u32> changed_indices;
@@ -856,7 +856,7 @@ void GameList::UpdateAllAchievementData()
 
 std::unique_lock<std::recursive_mutex> GameList::GetLock()
 {
-  return std::unique_lock<std::recursive_mutex>(s_mutex);
+  return std::unique_lock(s_mutex);
 }
 
 const GameList::Entry* GameList::GetEntryByIndex(u32 index)
@@ -1437,7 +1437,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   VERBOSE_LOG("Add {} seconds play time to {} -> now {}", static_cast<unsigned>(add_time), serial.c_str(),
               static_cast<unsigned>(pt.total_played_time));
 
-  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  std::unique_lock lock(s_mutex);
   const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
   llvm::SmallVector<u32, 32> changed_indices;
 
@@ -1476,7 +1476,7 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
 
   UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, 0, 0);
 
-  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  std::unique_lock lock(s_mutex);
   for (GameList::Entry& entry : s_entries)
   {
     if (entry.serial != serial)
@@ -1528,7 +1528,7 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
   if (serial.empty())
     return 0;
 
-  std::unique_lock<std::recursive_mutex> lock(s_mutex);
+  std::unique_lock lock(s_mutex);
   for (GameList::Entry& entry : s_entries)
   {
     if (entry.serial == serial)

@@ -45,7 +45,7 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, 
   req->progress = progress;
   req->start_time = Timer::GetCurrentValue();
 
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  std::unique_lock lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
   {
     if (!StartRequest(req))
@@ -67,7 +67,7 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   req->progress = progress;
   req->start_time = Timer::GetCurrentValue();
 
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  std::unique_lock lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
   {
     if (!StartRequest(req))
@@ -199,13 +199,13 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
 void HTTPDownloader::PollRequests()
 {
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  std::unique_lock lock(m_pending_http_request_lock);
   LockedPollRequests(lock);
 }
 
 void HTTPDownloader::WaitForAllRequests()
 {
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  std::unique_lock lock(m_pending_http_request_lock);
   while (!m_pending_http_requests.empty())
   {
     // Don't burn too much CPU.
@@ -232,7 +232,7 @@ u32 HTTPDownloader::LockedGetActiveRequestCount()
 
 bool HTTPDownloader::HasAnyRequests()
 {
-  std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
+  std::unique_lock lock(m_pending_http_request_lock);
   return !m_pending_http_requests.empty();
 }
 

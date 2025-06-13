@@ -255,7 +255,7 @@ GPUTexture* MediaCaptureBase::GetRenderTexture()
 
 bool MediaCaptureBase::DeliverVideoFrame(GPUTexture* stex)
 {
-  std::unique_lock<std::mutex> lock(m_lock);
+  std::unique_lock lock(m_lock);
 
   // If the encoder thread reported an error, stop the capture.
   if (m_encoding_error.load(std::memory_order_acquire))
@@ -330,7 +330,7 @@ void MediaCaptureBase::EncoderThreadEntryPoint()
   Threading::SetNameOfCurrentThread("Media Capture Encoding");
 
   Error error;
-  std::unique_lock<std::mutex> lock(m_lock);
+  std::unique_lock lock(m_lock);
 
   for (;;)
   {
@@ -417,7 +417,7 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
   if ((audio_buffer_size - m_audio_buffer_size.load(std::memory_order_acquire)) < num_frames)
   {
     // Need to wait for it to drain a bit.
-    std::unique_lock<std::mutex> lock(m_lock);
+    std::unique_lock lock(m_lock);
     m_frame_encoded_cv.wait(lock, [this, &num_frames, &audio_buffer_size]() {
       return (!m_capturing.load(std::memory_order_acquire) ||
               ((audio_buffer_size - m_audio_buffer_size.load(std::memory_order_acquire)) >= num_frames));
@@ -441,7 +441,7 @@ bool MediaCaptureBase::DeliverAudioFrames(const s16* frames, u32 num_frames)
   if (!IsCapturingVideo() && buffer_size >= m_audio_frame_size)
   {
     // If we're not capturing video, push "frames" when we hit the audio packet size.
-    std::unique_lock<std::mutex> lock(m_lock);
+    std::unique_lock lock(m_lock);
     if (!m_capturing.load(std::memory_order_acquire))
       return false;
 
@@ -493,7 +493,7 @@ void MediaCaptureBase::ClearState()
 
 bool MediaCaptureBase::EndCapture(Error* error)
 {
-  std::unique_lock<std::mutex> lock(m_lock);
+  std::unique_lock lock(m_lock);
   if (!InternalEndCapture(lock, error))
   {
     DeleteOutputFile();
@@ -574,7 +574,7 @@ void MediaCaptureBase::UpdateCaptureThreadUsage(double pct_divider, double time_
 
 void MediaCaptureBase::Flush()
 {
-  std::unique_lock<std::mutex> lock(m_lock);
+  std::unique_lock lock(m_lock);
 
   if (m_encoding_error)
     return;
@@ -2063,7 +2063,7 @@ bool MediaCaptureFFmpeg::IsCapturingVideo() const
 
 time_t MediaCaptureFFmpeg::GetElapsedTime() const
 {
-  std::unique_lock<std::mutex> lock(m_lock);
+  std::unique_lock lock(m_lock);
   s64 seconds;
   if (m_video_stream)
   {
