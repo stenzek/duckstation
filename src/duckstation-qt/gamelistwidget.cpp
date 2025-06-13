@@ -1614,7 +1614,11 @@ void GameListListView::resizeColumnsToFit()
 {
   QtUtils::ResizeColumnsForTableView(this, {
                                              45,  // type
-                                             80,  // code
+#ifdef __APPLE__
+                                             95,  // serial
+#else
+                                             80,  // serial
+#endif
                                              -1,  // title
                                              -1,  // file title
                                              200, // developer
@@ -1641,7 +1645,7 @@ void GameListListView::loadColumnVisibilitySettings()
 {
   static constexpr std::array<bool, GameListModel::Column_Count> DEFAULT_VISIBILITY = {{
     true,  // type
-    true,  // code
+    true,  // serial
     true,  // title
     false, // file title
     false, // developer
