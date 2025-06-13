@@ -8255,11 +8255,22 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       }
 
       const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-      const std::string_view title(
-        std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
-      draw_title.format("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
-      RenderShadowedTextClipped(UIStyle.MediumFont, title_bb.Min, title_bb.Max, text_color, draw_title, nullptr,
-                                ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
+      const char* remaining_text;
+      const ImVec2 full_text_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, bb.GetWidth(), 0.0f,
+                                                                      IMSTR_START_END(entry->title), &remaining_text);
+      const u32 unclipped_size = static_cast<u32>(remaining_text - entry->title.data());
+      if (unclipped_size > 0 && unclipped_size != entry->title.size())
+      {
+        // ellipise title, remove one character to make room
+        draw_title.format("{}...", std::string_view(entry->title).substr(0, unclipped_size - 1));
+        RenderShadowedTextClipped(UIStyle.MediumFont, title_bb.Min, title_bb.Max, text_color, draw_title, nullptr,
+                                  ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
+      }
+      else
+      {
+        RenderShadowedTextClipped(UIStyle.MediumFont, title_bb.Min, title_bb.Max, text_color, entry->title, nullptr,
+                                  ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
+      }
 
       if (pressed)
       {
