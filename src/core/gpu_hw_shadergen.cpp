@@ -787,7 +787,7 @@ float rgb_distance(uint a, uint b)
 // Calculate the luminance difference between two ABGR8 colors and normalize it
 float luma_distance(uint a, uint b)
 {
-    return abs(luma(a) - luma(b)) * 0.0006535948f;  // Multiplicative replacement for division by 1530
+    return abs(int(luma(a)) - int(luma(b))) * 0.0006535948f;  // Multiplicative replacement for division by 1530
 }
 
 /*=============================================================================
