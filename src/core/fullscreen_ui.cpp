@@ -8309,7 +8309,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       {
         const ImVec2 trophy_size =
           ImVec2(static_cast<float>(cover_trophy->GetWidth()), static_cast<float>(cover_trophy->GetHeight()));
-        ImGui::GetWindowDrawList()->AddImage(cover_trophy, image_rect.Max - trophy_size, image_rect.Max,
+        ImGui::GetWindowDrawList()->AddImage(cover_trophy, bb.Min + image_size - trophy_size, bb.Min + image_size,
                                              ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       }
 
