@@ -607,6 +607,8 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::unordered_map<std::string, std::string> icon_image_map;
   std::vector<const GameList::Entry*> game_list_sorted_entries;
   GameListView game_list_view = GameListView::Grid;
+  std::string game_list_current_selection_path;
+  float game_list_current_selection_timeout = 0.0f;
   bool game_list_show_trophy_icons = true;
 };
 
@@ -7973,6 +7975,39 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   SetWindowNavWrapping(false, true);
   EndFullscreenColumnWindow();
 
+  // avoid clearing the selection for a couple of seconds when the mouse goes inbetween items
+  static constexpr float ITEM_TIMEOUT = 1.0f;
+  if (!selected_entry)
+  {
+    if (!s_state.game_list_current_selection_path.empty())
+    {
+      // reset countdown if a dialog was open
+      if (AreAnyDialogsOpen())
+      {
+        s_state.game_list_current_selection_timeout = ITEM_TIMEOUT;
+      }
+      else
+      {
+        s_state.game_list_current_selection_timeout -= ImGui::GetIO().DeltaTime;
+        if (s_state.game_list_current_selection_timeout <= 0.0f)
+        {
+          s_state.game_list_current_selection_timeout = 0.0f;
+          s_state.game_list_current_selection_path.clear();
+        }
+      }
+    }
+
+    if (!s_state.game_list_current_selection_path.empty())
+      selected_entry = GameList::GetEntryForPath(s_state.game_list_current_selection_path);
+  }
+  else
+  {
+    // reset countdown on new or current item
+    if (s_state.game_list_current_selection_path != selected_entry->path)
+      s_state.game_list_current_selection_path = selected_entry->path;
+    s_state.game_list_current_selection_timeout = ITEM_TIMEOUT;
+  }
+
   static constexpr float info_window_width = 530.0f;
   if (BeginFullscreenColumnWindow(-info_window_width, 0.0f, "game_list_info",
                                   ModAlpha(UIStyle.PrimaryDarkColor, GetBackgroundAlpha())))
@@ -8594,6 +8629,8 @@ void FullscreenUI::SwitchToGameList()
   s_state.game_list_view =
     static_cast<GameListView>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
   s_state.game_list_show_trophy_icons = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowTrophyIcons", true);
+  s_state.game_list_current_selection_path = {};
+  s_state.game_list_current_selection_timeout = 0.0f;
 
   // Wipe icon map, because a new save might give us an icon.
   for (const auto& it : s_state.icon_image_map)
