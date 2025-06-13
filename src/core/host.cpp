@@ -8,8 +8,6 @@
 
 #include "scmversion/scmversion.h"
 
-#include "util/compress_helpers.h"
-
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -109,16 +107,6 @@ std::unique_lock<std::mutex> Host::GetSettingsLock()
 SettingsInterface* Host::GetSettingsInterface()
 {
   return &s_layered_settings_interface;
-}
-
-std::optional<DynamicHeapArray<u8>> Host::ReadCompressedResourceFile(std::string_view filename, bool allow_override,
-                                                                     Error* error)
-{
-  std::optional<DynamicHeapArray<u8>> ret = Host::ReadResourceFile(filename, allow_override, error);
-  if (ret.has_value())
-    ret = CompressHelpers::DecompressFile(filename, std::move(ret), std::nullopt, error);
-
-  return ret;
 }
 
 std::string Host::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)
