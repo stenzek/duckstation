@@ -4959,7 +4959,10 @@ void FullscreenUI::DrawControllerSettingsPage()
                                Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, ci->GetBindingDisplayName(bi), bi.icon_name, true);
+    {
+      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, ci->GetBindingDisplayName(bi),
+                             bi.icon_name ? std::string_view(bi.icon_name) : std::string_view(), true);
+    }
 
     MenuHeading(
       SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
