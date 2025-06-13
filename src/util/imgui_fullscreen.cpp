@@ -2923,10 +2923,10 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
     // because the callback may open another dialog, and we don't want to close that one.
     if (!m_checkable)
     {
-      const ChoiceDialogOptions options = std::exchange(m_options, ChoiceDialogOptions());
+      const auto selected = m_options[choice];
       const ChoiceDialogCallback callback = std::exchange(m_callback, ChoiceDialogCallback());
       StartClose();
-      callback(choice, options[choice].first, options[choice].second);
+      callback(choice, selected.first, selected.second);
     }
     else
     {
