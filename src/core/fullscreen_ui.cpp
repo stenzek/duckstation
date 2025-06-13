@@ -84,6 +84,7 @@ public:
 using ImGuiFullscreen::ChoiceDialogOptions;
 using ImGuiFullscreen::FocusResetType;
 
+using ImGuiFullscreen::LAYOUT_CENTER_ALIGN_TEXT;
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
@@ -2961,7 +2962,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
   {
     CloseFixedPopupDialog();
   }
@@ -3016,7 +3017,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3136,7 +3137,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
     SetSettingsChanged(bsi);
   }
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3249,7 +3250,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   ImGui::PopStyleVar(2);
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3368,7 +3369,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     SetSettingsChanged(bsi);
   }
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -5106,7 +5107,8 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                                     LAYOUT_CENTER_ALIGN_TEXT))
           CloseFixedPopupDialog();
 
         EndMenuButtons();
@@ -5983,7 +5985,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
             if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                         ImVec2(0.5f, 0.0f)))
+                                         LAYOUT_CENTER_ALIGN_TEXT))
             {
               CloseFixedPopupDialog();
             }
@@ -6052,7 +6054,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
             if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                         ImVec2(0.5f, 0.0f)))
+                                         LAYOUT_CENTER_ALIGN_TEXT))
             {
               CloseFixedPopupDialog();
             }
@@ -6466,7 +6468,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), login_enabled))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), login_enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                               LAYOUT_CENTER_ALIGN_TEXT))
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
                                                   0, 0, 0);
@@ -6490,8 +6493,11 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     });
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TIMES, "Cancel"), !is_logging_in))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TIMES, "Cancel"), !is_logging_in,
+                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  {
     CloseFixedPopupDialog();
+  }
 
   EndMenuButtons();
 
@@ -6740,7 +6746,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           SetSettingsChanged(bsi);
         }
 
-        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImVec2(0.5f, 0.0f)))
+        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                                     LAYOUT_CENTER_ALIGN_TEXT))
           CloseFixedPopupDialog();
 
         EndMenuButtons();
@@ -7557,21 +7564,23 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), LayoutScale(820.0f, 645.0f)))
+  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), ImVec2(LayoutScale(550.0f), 0.0f)))
   {
     ClearSaveStateEntryList();
     return;
   }
 
   SaveStateListEntry& entry = s_state.save_state_selector_slots.front();
-  SmallString time;
-  TimeToPrintableString(&time, entry.timestamp);
-  ImGui::TextWrapped(
-    FSUI_CSTR("A resume save state created at %s was found.\n\nDo you want to load this save and continue?"),
-    time.c_str());
+
+  SmallString sick;
+  sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {:%c}?"),
+              fmt::localtime(entry.timestamp));
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGuiFullscreen::TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
+  ImGui::PopFontWeight();
 
   const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
-  const float image_height = LayoutScale(250.0f);
+  const float image_height = LayoutScale(280.0f);
   const float image_width =
     image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
   const ImVec2 pos(ImGui::GetCursorScreenPos() +
@@ -7587,7 +7596,8 @@ void FullscreenUI::DrawResumeStateSelector()
   ResetFocusHere();
   BeginMenuButtons();
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Load State")))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Load State"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                               LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     std::string state_path = std::move(entry.state_path);
@@ -7596,7 +7606,8 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path), std::move(state_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Clean Boot")))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Clean Boot"), true,
+                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     ClearSaveStateEntryList();
@@ -7604,7 +7615,8 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete State")))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete State"), true,
+                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
   {
     if (FileSystem::DeleteFile(entry.state_path.c_str()))
     {
@@ -7619,10 +7631,13 @@ void FullscreenUI::DrawResumeStateSelector()
     }
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WINDOW_CLOSE, "Cancel")))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WINDOW_CLOSE, "Cancel"), true,
+                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  {
     CloseFixedPopupDialog();
+  }
 
-  EndMenuButtons();
+  ImGuiFullscreen::EndHorizontalMenuButtons();
 
   SetStandardSelectionFooterText(false);
 
@@ -8309,12 +8324,14 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         // ellipise title, remove one character to make room
         draw_title.format("{}...", std::string_view(entry->title).substr(0, unclipped_size - 1));
         RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, title_bb.Min,
-                                  title_bb.Max, text_color, draw_title, nullptr, ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
+                                  title_bb.Max, text_color, draw_title, nullptr, LAYOUT_CENTER_ALIGN_TEXT, 0.0f,
+                                  &title_bb);
       }
       else
       {
         RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, title_bb.Min,
-                                  title_bb.Max, text_color, entry->title, nullptr, ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
+                                  title_bb.Max, text_color, entry->title, nullptr, LAYOUT_CENTER_ALIGN_TEXT, 0.0f,
+                                  &title_bb);
       }
 
       if (pressed)
@@ -9190,7 +9207,6 @@ TRANSLATE_NOOP("FullscreenUI", "9x");
 TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
 TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
 TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you sure that you want to overwrite it?");
-TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
 TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "Account");
@@ -9364,6 +9380,7 @@ TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Dithering");
+TRANSLATE_NOOP("FullscreenUI", "Do you want to continue from the automatic save created at {:%c}?");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
