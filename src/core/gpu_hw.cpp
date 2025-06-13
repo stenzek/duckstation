@@ -1275,6 +1275,9 @@ bool GPU_HW::CompilePipelines(Error* error)
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const BatchTextureMode shader_texmode = static_cast<BatchTextureMode>(
                   texture_mode - (sprite ? static_cast<u8>(BatchTextureMode::SpriteStart) : 0));
+                const GPUTextureFilter texture_filter = sprite ? m_sprite_texture_filtering : m_texture_filtering;
+                const bool texture_filter_is_blended =
+                  (shader_texmode != BatchTextureMode::Disabled && IsBlendedTextureFiltering(texture_filter));
                 const bool use_rov =
                   (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && m_use_rov_for_shader_blend);
                 const bool rov_depth_test = (use_rov && depth_test != 0);
@@ -1282,11 +1285,11 @@ bool GPU_HW::CompilePipelines(Error* error)
                                                                   GPUTransparencyMode::Disabled);
                 const std::string fs = shadergen.GenerateBatchFragmentShader(
                   static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                  shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, upscaled, msaa,
-                  per_sample_shading, uv_limits, !sprite && force_round_texcoords, true_color,
-                  ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
-                  ConvertToBoolUnchecked(interlacing), scaled_interlacing, ConvertToBoolUnchecked(check_mask),
-                  m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
+                  shader_texmode, texture_filter, texture_filter_is_blended, upscaled, msaa, per_sample_shading,
+                  uv_limits, !sprite && force_round_texcoords, true_color, ConvertToBoolUnchecked(dithering),
+                  scaled_dithering, disable_color_perspective, ConvertToBoolUnchecked(interlacing), scaled_interlacing,
+                  ConvertToBoolUnchecked(check_mask), m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test,
+                  rov_depth_write);
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(

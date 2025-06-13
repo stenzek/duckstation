@@ -20,12 +20,12 @@ public:
                                         bool disable_color_perspective) const;
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPU_HW::BatchTextureMode texture_mode, GPUTextureFilter texture_filtering,
-                                          bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
-                                          bool force_round_texcoords, bool true_color, bool dithering,
-                                          bool scaled_dithering, bool disable_color_perspective, bool interlacing,
-                                          bool scaled_interlacing, bool check_mask, bool write_mask_as_depth,
-                                          bool use_rov, bool use_rov_depth, bool rov_depth_test,
-                                          bool rov_depth_write) const;
+                                          bool is_blended_texture_filtering, bool upscaled, bool msaa,
+                                          bool per_sample_shading, bool uv_limits, bool force_round_texcoords,
+                                          bool true_color, bool dithering, bool scaled_dithering,
+                                          bool disable_color_perspective, bool interlacing, bool scaled_interlacing,
+                                          bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
+                                          bool rov_depth_test, bool rov_depth_write) const;
   std::string GenerateWireframeGeometryShader() const;
   std::string GenerateWireframeFragmentShader() const;
   std::string GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const;
