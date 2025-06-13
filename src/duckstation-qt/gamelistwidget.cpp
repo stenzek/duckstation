@@ -582,10 +582,16 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           else
             return {};
         }
-
-        default:
-          return {};
       }
+    }
+
+    case Qt::TextAlignmentRole:
+    {
+      const int column = index.column();
+      if (column == Column_FileSize || column == Column_UncompressedSize)
+        return (Qt::AlignRight | Qt::AlignVCenter).toInt();
+      else
+        return {};
     }
 
     case Qt::InitialSortOrderRole:
@@ -602,20 +608,14 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       switch (index.column())
       {
         case Column_Icon:
-        {
           return getIconPixmapForEntry(ge);
-        }
 
         case Column_Region:
-        {
           return getFlagPixmapForEntry(ge);
-        }
 
         case Column_Compatibility:
-        {
           return m_compatibility_pixmaps[static_cast<u32>(ge->dbentry ? ge->dbentry->compatibility :
                                                                         GameDatabase::CompatibilityRating::Unknown)];
-        }
 
         case Column_Cover:
         {
@@ -628,16 +628,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
           return *m_cover_pixmap_cache.Insert(ge->path, m_loading_pixmap);
         }
-        break;
-
-        default:
-          return {};
       }
-
-      default:
-        return {};
     }
   }
+
+  return {};
 }
 
 QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int role) const
