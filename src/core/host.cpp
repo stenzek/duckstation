@@ -101,7 +101,7 @@ std::string Host::Internal::ComputeDataDirectory()
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()
 {
-  return std::unique_lock<std::mutex>(s_settings_mutex);
+  return std::unique_lock(s_settings_mutex);
 }
 
 SettingsInterface* Host::GetSettingsInterface()

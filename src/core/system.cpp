@@ -1207,7 +1207,7 @@ void System::RecreateGPU(GPURenderer renderer)
 
 void System::LoadSettings(bool display_osd_messages)
 {
-  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+  auto lock = Host::GetSettingsLock();
   const SettingsInterface& si = *Host::GetSettingsInterface();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
@@ -1244,7 +1244,7 @@ void System::LoadSettings(bool display_osd_messages)
 
 void System::ReloadInputSources()
 {
-  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+  auto lock = Host::GetSettingsLock();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   InputManager::ReloadSources(controller_si, lock);
 
@@ -1262,7 +1262,7 @@ void System::ReloadInputBindings()
   if (!IsValid())
     return;
 
-  std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
+  auto lock = Host::GetSettingsLock();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);

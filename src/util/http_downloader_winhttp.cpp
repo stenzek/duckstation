@@ -110,7 +110,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
       DebugAssert(hRequest == req->hRequest);
 
       HTTPDownloaderWinHttp* parent = static_cast<HTTPDownloaderWinHttp*>(req->parent);
-      std::unique_lock<std::mutex> lock(parent->m_pending_http_request_lock);
+      std::unique_lock lock(parent->m_pending_http_request_lock);
       Assert(std::none_of(parent->m_pending_http_requests.begin(), parent->m_pending_http_requests.end(),
                           [req](HTTPDownloader::Request* it) { return it == req; }));
 

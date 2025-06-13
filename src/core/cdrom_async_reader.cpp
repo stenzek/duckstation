@@ -34,7 +34,7 @@ void CDROMAsyncReader::StopThread()
     return;
 
   {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock lock(m_mutex);
     m_shutdown_flag.store(true);
     m_do_read_cv.notify_one();
   }
@@ -133,7 +133,7 @@ void CDROMAsyncReader::QueueReadSector(CDImage::LBA lba)
 
   // we need to toss away our readahead and start fresh
   DEBUG_LOG("Readahead buffer miss, queueing seek to {}", lba);
-  std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   m_next_position_set.store(true);
   m_next_position = lba;
   m_do_read_cv.notify_one();
@@ -190,7 +190,7 @@ bool CDROMAsyncReader::WaitForReadToComplete()
   Timer wait_timer;
   DEBUG_LOG("Sector read pending, waiting");
 
-  std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   m_notify_read_complete_cv.wait(
     lock, [this]() { return (m_buffer_count.load() > 0 || m_seek_error.load()) && !m_next_position_set.load(); });
   if (m_seek_error.load()) [[unlikely]]
@@ -213,7 +213,7 @@ void CDROMAsyncReader::WaitForIdle()
   if (!IsUsingThread())
     return;
 
-  std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock lock(m_mutex);
   m_notify_read_complete_cv.wait(lock, [this]() { return (!m_is_reading.load() && !m_next_position_set.load()); });
 }
 
