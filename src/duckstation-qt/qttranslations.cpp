@@ -195,16 +195,13 @@ SmallString Host::TranslatePluralToSmallString(const char* context, const char* 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
 {
   static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},
-                                                                            {"Deutsch", "de"},
                                                                             {"Español de Latinoamérica", "es"},
                                                                             {"Español de España", "es-ES"},
                                                                             {"Français", "fr"},
-                                                                            {"עברית", "he"},
                                                                             {"Bahasa Indonesia", "id"},
                                                                             {"日本語", "ja"},
                                                                             {"한국어", "ko"},
                                                                             {"Italiano", "it"},
-                                                                            {"Nederlands", "nl"},
                                                                             {"Polski", "pl"},
                                                                             {"Português (Pt)", "pt-PT"},
                                                                             {"Português (Br)", "pt-BR"},
