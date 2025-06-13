@@ -1389,7 +1389,7 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   if (!s_spirv_cross_library.GetSymbol(#F, &F))                                                                        \
   {                                                                                                                    \
     Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
-    CloseShaderc();                                                                                                    \
+    CloseSpirvCross();                                                                                                 \
     return false;                                                                                                      \
   }
 
