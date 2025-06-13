@@ -901,86 +901,68 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     uint Bl = luma(B), Dl = luma(D), El = luma(E), Fl = luma(F), Hl = luma(H);
 
 #if MMPX_ENHANCED
-    // Default to use center pixel E
-    ialpha = float(E != 0u);
-    texcol = unpackUnorm4x8(E);
-	
-    // Check for "convex" patterns to avoid single-pixel spurs on long line edges
-    if (A == B && B == C && E == H && A != D && C != F && rgb_distance(D, F) < 0.2 && rgb_distance(B, E) > 0.6) {
-      return;
-    }
+    if (
+      // Check for "convex" patterns to avoid single-pixel spurs on long line edges
+      (A == B && B == C && E == H && A != D && C != F && rgb_distance(D, F) < 0.2 && rgb_distance(B, E) > 0.6) ||
+      (A == D && D == G && E == F && A != B && G != H && rgb_distance(B, H) < 0.2 && rgb_distance(D, E) > 0.6) ||
+      (C == F && F == I && E == D && B != C && H != I && rgb_distance(B, H) < 0.2 && rgb_distance(E, F) > 0.6) ||
+      (G == H && H == I && B == E && D != G && F != I && rgb_distance(D, F) < 0.2 && rgb_distance(E, H) > 0.6) ||
 
-    if (A == D && D == G && E == F && A != B && G != H && rgb_distance(B, H) < 0.2 && rgb_distance(D, E) > 0.6) {
-      return;
-    }
+      // Check each 4-pixel intersection in a "grid" pattern and pass five surrounding pixels for pattern judgment
+      (A == E && B == D && A != B && countPatternMatches(A, B, C, F, I, H, G)) ||
+      (C == E && B == F && C != B && countPatternMatches(C, B, A, D, G, H, I)) ||
+      (G == E && D == H && G != H && countPatternMatches(G, H, I, F, C, B, A)) ||
+      (I == E && F == H && I != H && countPatternMatches(I, H, G, D, A, B, C))
+    ) {
+      // Default to use center pixel E
+      // Fall through, J/K/L/M are already set to E. Setting the outputs here bugs out fxc.
+    } else {
+#endif
+      // Original MMPX logic
 
-    if (C == F && F == I && E == D && B != C && H != I && rgb_distance(B, H) < 0.2 && rgb_distance(E, F) > 0.6) {
-      return;
-    }
+      // 1:1 slope rules
+      if ((D == B && D != H && D != F) && (El >= Dl || E == A) && any_eq3(E, A, C, G) && ((El < Dl) || A != D || E != P || E != Q)) J = D;
+      if ((B == F && B != D && B != H) && (El >= Bl || E == C) && any_eq3(E, A, C, I) && ((El < Bl) || C != B || E != P || E != R)) K = B;
+      if ((H == D && H != F && H != B) && (El >= Hl || E == G) && any_eq3(E, A, G, I) && ((El < Hl) || G != H || E != S || E != Q)) L = H;
+      if ((F == H && F != B && F != D) && (El >= Fl || E == I) && any_eq3(E, C, G, I) && ((El < Fl) || I != H || E != R || E != S)) M = F;
 
-    if (G == H && H == I && B == E && D != G && F != I && rgb_distance(D, F) < 0.2 && rgb_distance(E, H) > 0.6) {
-      return;
-    }
+      // Intersection rules
+      if ((E != F && all_eq4(E, C, I, D, Q) && all_eq2(F, B, H)) && (F != src(+3, +0))) K = M = F;
+      if ((E != D && all_eq4(E, A, G, F, R) && all_eq2(D, B, H)) && (D != src(-3, +0))) J = L = D;
+      if ((E != H && all_eq4(E, G, I, B, P) && all_eq2(H, D, F)) && (H != src(+0, +3))) L = M = H;
+      if ((E != B && all_eq4(E, A, C, H, S) && all_eq2(B, D, F)) && (B != src(+0, -3))) J = K = B;
+      if (Bl < El && all_eq4(E, G, H, I, S) && none_eq4(E, A, D, C, F)) J = K = B;
+      if (Hl < El && all_eq4(E, A, B, C, P) && none_eq4(E, D, G, I, F)) L = M = H;
+      if (Fl < El && all_eq4(E, A, D, G, Q) && none_eq4(E, B, C, I, H)) K = M = F;
+      if (Dl < El && all_eq4(E, C, F, I, R) && none_eq4(E, B, A, G, H)) J = L = D;
 
-    // Check each 4-pixel intersection in a "grid" pattern and pass five surrounding pixels for pattern judgment
-    if (A == E && B == D && A != B && countPatternMatches(A, B, C, F, I, H, G)) {
-      return;
-    }
-    if (C == E && B == F && C != B && countPatternMatches(C, B, A, D, G, H, I)) {
-      return;
-    }
+      // 2:1 slope rules
+      if (H != B) {
+        if (H != A && H != E && H != C) {
+          if (all_eq3(H, G, F, R) && none_eq2(H, D, src(+2, -1))) L = M;
+          if (all_eq3(H, I, D, Q) && none_eq2(H, F, src(-2, -1))) M = L;
+        }
 
-    if (G == E && D == H && G != H && countPatternMatches(G, H, I, F, C, B, A)) {
-      return;
-    }
+        if (B != I && B != G && B != E) {
+          if (all_eq3(B, A, F, R) && none_eq2(B, D, src(+2, +1))) J = K;
+          if (all_eq3(B, C, D, Q) && none_eq2(B, F, src(-2, +1))) K = J;
+        }
+      } // H !== B
 
-    if (I == E && F == H && I != H && countPatternMatches(I, H, G, D, A, B, C)) {
-      return;
+      if (F != D) {
+        if (D != I && D != E && D != C) {
+          if (all_eq3(D, A, H, S) && none_eq2(D, B, src(+1, +2))) J = L;
+          if (all_eq3(D, G, B, P) && none_eq2(D, H, src(+1, -2))) L = J;
+        }
+
+        if (F != E && F != A && F != G) {
+          if (all_eq3(F, C, H, S) && none_eq2(F, B, src(-1, +2))) K = M;
+          if (all_eq3(F, I, B, P) && none_eq2(F, H, src(-1, -2))) M = K;
+        }
+      } // F !== D
+#if MMPX_ENHANCED
     }
 #endif
-
-    // Original MMPX logic
-
-    // 1:1 slope rules
-    if ((D == B && D != H && D != F) && (El >= Dl || E == A) && any_eq3(E, A, C, G) && ((El < Dl) || A != D || E != P || E != Q)) J = D;
-    if ((B == F && B != D && B != H) && (El >= Bl || E == C) && any_eq3(E, A, C, I) && ((El < Bl) || C != B || E != P || E != R)) K = B;
-    if ((H == D && H != F && H != B) && (El >= Hl || E == G) && any_eq3(E, A, G, I) && ((El < Hl) || G != H || E != S || E != Q)) L = H;
-    if ((F == H && F != B && F != D) && (El >= Fl || E == I) && any_eq3(E, C, G, I) && ((El < Fl) || I != H || E != R || E != S)) M = F;
-
-    // Intersection rules
-    if ((E != F && all_eq4(E, C, I, D, Q) && all_eq2(F, B, H)) && (F != src(+3, +0))) K = M = F;
-    if ((E != D && all_eq4(E, A, G, F, R) && all_eq2(D, B, H)) && (D != src(-3, +0))) J = L = D;
-    if ((E != H && all_eq4(E, G, I, B, P) && all_eq2(H, D, F)) && (H != src(+0, +3))) L = M = H;
-    if ((E != B && all_eq4(E, A, C, H, S) && all_eq2(B, D, F)) && (B != src(+0, -3))) J = K = B;
-    if (Bl < El && all_eq4(E, G, H, I, S) && none_eq4(E, A, D, C, F)) J = K = B;
-    if (Hl < El && all_eq4(E, A, B, C, P) && none_eq4(E, D, G, I, F)) L = M = H;
-    if (Fl < El && all_eq4(E, A, D, G, Q) && none_eq4(E, B, C, I, H)) K = M = F;
-    if (Dl < El && all_eq4(E, C, F, I, R) && none_eq4(E, B, A, G, H)) J = L = D;
-
-    // 2:1 slope rules
-    if (H != B) {
-      if (H != A && H != E && H != C) {
-        if (all_eq3(H, G, F, R) && none_eq2(H, D, src(+2, -1))) L = M;
-        if (all_eq3(H, I, D, Q) && none_eq2(H, F, src(-2, -1))) M = L;
-      }
-
-      if (B != I && B != G && B != E) {
-        if (all_eq3(B, A, F, R) && none_eq2(B, D, src(+2, +1))) J = K;
-        if (all_eq3(B, C, D, Q) && none_eq2(B, F, src(-2, +1))) K = J;
-      }
-    } // H !== B
-
-    if (F != D) {
-      if (D != I && D != E && D != C) {
-        if (all_eq3(D, A, H, S) && none_eq2(D, B, src(+1, +2))) J = L;
-        if (all_eq3(D, G, B, P) && none_eq2(D, H, src(+1, -2))) L = J;
-      }
-
-      if (F != E && F != A && F != G) {
-        if (all_eq3(F, C, H, S) && none_eq2(F, B, src(-1, +2))) K = M;
-        if (all_eq3(F, I, B, P) && none_eq2(F, H, src(-1, -2))) M = K;
-      }
-    } // F !== D
   } // not constant
 
   // select quadrant based on fractional part of texture coordinates
