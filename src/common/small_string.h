@@ -353,12 +353,12 @@ public:
   static SmallStackString from_vformat(fmt::string_view fmt, fmt::format_args args);
 
 private:
-  char m_stack_buffer[L + 1];
+  char m_stack_buffer[L];
 
   ALWAYS_INLINE void init()
   {
     m_buffer = m_stack_buffer;
-    m_buffer_size = L + 1;
+    m_buffer_size = L;
 
 #ifdef _DEBUG
     std::memset(m_stack_buffer, 0, sizeof(m_stack_buffer));
