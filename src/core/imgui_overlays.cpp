@@ -421,6 +421,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 {
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
         g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_cpu_usage ||
+        g_gpu_settings.display_show_frame_times ||
         (g_gpu_settings.display_show_status_indicators &&
          (GPUThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
   {
@@ -600,7 +601,8 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       position_y += spacing;
     }
 
-    DrawFrameTimeOverlay(position_y, scale, margin, spacing);
+    if (g_gpu_settings.display_show_frame_times)
+      DrawFrameTimeOverlay(position_y, scale, margin, spacing);
 
     if (g_gpu_settings.display_show_status_indicators)
     {
@@ -749,9 +751,6 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
 
 void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing)
 {
-  if (!g_gpu_settings.display_show_frame_times || GPUThread::IsSystemPaused())
-    return;
-
   const float shadow_offset = std::ceil(1.0f * scale);
   ImFont* fixed_font = ImGuiManager::GetFixedFont();
   const float fixed_font_size = ImGuiManager::GetFixedFontSize();
