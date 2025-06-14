@@ -460,7 +460,7 @@ void SmallStringBase::assign(SmallStringBase&& move)
   }
   else
   {
-    assign(move.m_buffer, move.m_buffer_size);
+    assign(move.m_buffer, move.m_length);
   }
 }
 
