@@ -110,6 +110,7 @@ using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
 using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginHorizontalMenu;
+using ImGuiFullscreen::BeginHorizontalMenuButtons;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CancelPendingMenuClose;
@@ -122,6 +123,7 @@ using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
+using ImGuiFullscreen::EndHorizontalMenuButtons;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
@@ -130,6 +132,7 @@ using ImGuiFullscreen::ForceKeyNavEnabled;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
 using ImGuiFullscreen::GetPlaceholderTexture;
+using ImGuiFullscreen::HorizontalMenuButton;
 using ImGuiFullscreen::HorizontalMenuItem;
 using ImGuiFullscreen::IsAnyFixedPopupDialogOpen;
 using ImGuiFullscreen::IsFixedPopupDialogOpen;
@@ -170,9 +173,6 @@ using ImGuiFullscreen::ShowToast;
 using ImGuiFullscreen::ThreeWayToggleButton;
 using ImGuiFullscreen::ToggleButton;
 using ImGuiFullscreen::WantsToCloseMenu;
-using ImGuiFullscreen::BeginHorizontalMenuButtons;
-using ImGuiFullscreen::EndHorizontalMenuButtons;
-using ImGuiFullscreen::HorizontalMenuButton;
 
 #ifndef __ANDROID__
 
@@ -266,6 +266,7 @@ static bool LoadBackgroundImage(const std::string& path, Error* error);
 static void DrawBackground();
 static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd);
 static ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);
+static ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = UIStyle.BackgroundColor);
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -2098,6 +2099,15 @@ void FullscreenUI::DrawBackground()
   }
 }
 
+ImVec4 FullscreenUI::GetTransparentBackgroundColor(const ImVec4& no_background_color /* = UIStyle.BackgroundColor */)
+{
+  // use transparent colour if background is visible for things like game list
+  if (!HasBackground())
+    return ModAlpha(no_background_color, GetBackgroundAlpha());
+  else
+    return ImVec4{};
+}
+
 bool FullscreenUI::ShouldOpenToGameList()
 {
   return Host::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
@@ -2189,8 +2199,7 @@ void FullscreenUI::DrawLandingWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("landing_window", menu_pos, menu_size,
-                          ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 4))
+  if (BeginHorizontalMenu("landing_window", menu_pos, menu_size, GetTransparentBackgroundColor(), 4))
   {
     ResetFocusHere();
 
@@ -2266,8 +2275,7 @@ void FullscreenUI::DrawStartGameWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("start_game_window", menu_pos, menu_size,
-                          ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 4))
+  if (BeginHorizontalMenu("start_game_window", menu_pos, menu_size, GetTransparentBackgroundColor(), 4))
   {
     ResetFocusHere();
 
@@ -2331,8 +2339,7 @@ void FullscreenUI::DrawExitWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()),
-                          3))
+  if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, GetTransparentBackgroundColor(), 3))
   {
     ResetFocusHere();
 
@@ -7901,8 +7908,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
-  if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries",
-                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()),
+  if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries", GetTransparentBackgroundColor(),
                                   ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
     const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
@@ -8237,8 +8243,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "game_grid",
-        ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
+        GetTransparentBackgroundColor(), 0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
     EndFullscreenWindow();
     return;
