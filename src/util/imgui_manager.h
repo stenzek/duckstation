@@ -140,6 +140,9 @@ float GetDebugFontSize(float window_scale);
 /// Returns the font size for rendering the OSD.
 float GetOSDFontSize();
 
+/// Multiplies an arbitrary size by the OSD scale.
+float OSDScale(float size);
+
 /// Returns true if imgui wants to intercept text input.
 bool WantsTextInput();
 

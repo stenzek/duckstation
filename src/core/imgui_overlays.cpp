@@ -272,7 +272,6 @@ void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
   const float spacing = ImCeil(5.0f * scale);
   float position_y = ImFloor(f_margin);
   DrawPerformanceOverlay(gpu, position_y, scale, margin, spacing);
-  DrawFrameTimeOverlay(position_y, scale, margin, spacing);
   DrawMediaCaptureOverlay(position_y, scale, margin, spacing);
 
   if (g_gpu_settings.display_show_enhancements && !paused)
@@ -321,11 +320,14 @@ static void DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font,
     const size_t len = sv.length();
     for (; pos < len; pos++)
     {
-      if (sv[pos] <= '\x04')
+      if (sv[pos] > 0 && sv[pos] <= '\x04')
         break;
     }
     return pos;
   };
+
+  if (text.empty())
+    return;
 
   constexpr ImU32 color = IM_COL32(255, 255, 255, 255);
   constexpr float default_weight = 0.0f;
@@ -426,10 +428,10 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   }
 
   const float shadow_offset = std::ceil(1.0f * scale);
+  const float status_size = std::ceil(40.0f * scale);
   ImFont* const fixed_font = ImGuiManager::GetFixedFont();
   const float fixed_font_size = ImGuiManager::GetFixedFontSize();
   ImFont* ui_font = ImGuiManager::GetTextFont();
-  const float ui_font_size = ImGuiManager::GetOSDFontSize();
   const float rbound = ImGui::GetIO().DisplaySize.x - margin;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   SmallString text;
@@ -598,17 +600,18 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       position_y += spacing;
     }
 
+    DrawFrameTimeOverlay(position_y, scale, margin, spacing);
+
     if (g_gpu_settings.display_show_status_indicators)
     {
       SetStatusIndicatorIcons(text, false);
-      if (!text.empty())
-        DRAW_LINE(ui_font, text, IM_COL32(255, 255, 255, 255));
+      DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, shadow_offset, rbound, text);
     }
   }
   else if (g_gpu_settings.display_show_status_indicators && !FullscreenUI::HasActiveWindow())
   {
     SetStatusIndicatorIcons(text, true);
-    DRAW_LINE(ui_font, text, IM_COL32(255, 255, 255, 255));
+    DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, shadow_offset, rbound, text);
   }
 
 #undef DRAW_LINE

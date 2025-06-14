@@ -1264,6 +1264,11 @@ float ImGuiManager::GetOSDFontSize()
   return std::ceil(17.0f * s_state.global_scale);
 }
 
+float ImGuiManager::OSDScale(float size)
+{
+  return std::ceil(size * s_state.global_scale);
+}
+
 bool ImGuiManager::WantsTextInput()
 {
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
