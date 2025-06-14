@@ -170,6 +170,9 @@ using ImGuiFullscreen::ShowToast;
 using ImGuiFullscreen::ThreeWayToggleButton;
 using ImGuiFullscreen::ToggleButton;
 using ImGuiFullscreen::WantsToCloseMenu;
+using ImGuiFullscreen::BeginHorizontalMenuButtons;
+using ImGuiFullscreen::EndHorizontalMenuButtons;
+using ImGuiFullscreen::HorizontalMenuButton;
 
 #ifndef __ANDROID__
 
@@ -8771,7 +8774,7 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 void FullscreenUI::DrawAboutWindow()
 {
   if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
-                             LayoutScale(1020.0f, 600.0f)))
+                             LayoutScale(1100.0f, 0.0f)))
   {
     return;
   }
@@ -8802,20 +8805,20 @@ void FullscreenUI::DrawAboutWindow()
 
   ImGui::NewLine();
 
-  BeginMenuButtons();
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_GLOBE, "GitHub Repository")))
+  BeginHorizontalMenuButtons(4);
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_GLOBE, "GitHub Repository")))
     ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMMENT, "Discord Server")))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_COMMENT, "Discord Server")))
     ExitFullscreenAndOpenURL("https://www.duckstation.org/discord.html");
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PEOPLE_CARRY, "Contributor List")))
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_PEOPLE_CARRY, "Contributor List")))
     ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WINDOW_CLOSE, "Close")) || WantsToCloseMenu())
+  if (HorizontalMenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_CLOSE, "Close")) || WantsToCloseMenu())
     CloseFixedPopupDialog();
   else
     SetStandardSelectionFooterText(true);
 
-  EndMenuButtons();
+  EndHorizontalMenuButtons();
 
   EndFixedPopupDialog();
 }
