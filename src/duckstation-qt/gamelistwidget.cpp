@@ -350,19 +350,6 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
-QString GameListModel::formatTimespan(time_t timespan)
-{
-  // avoid an extra string conversion
-  const u32 hours = static_cast<u32>(timespan / 3600);
-  const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
-  if (hours > 0)
-    return qApp->translate("GameList", "%n hours", "", hours);
-  else if (minutes > 0)
-    return qApp->translate("GameList", "%n minutes", "", minutes);
-  else
-    return qApp->translate("GameList", "%n seconds", "", static_cast<u32>((timespan % 3600) % 60));
-}
-
 const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
@@ -571,7 +558,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           if (ge->total_played_time == 0)
             return {};
           else
-            return formatTimespan(ge->total_played_time);
+            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time, true));
         }
 
         case Column_LastPlayed:

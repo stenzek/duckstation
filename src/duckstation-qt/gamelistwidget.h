@@ -125,8 +125,6 @@ private:
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
   static void fixIconPixmapSize(QPixmap& pm);
 
-  static QString formatTimespan(time_t timespan);
-
   std::optional<GameList::EntryList> m_taken_entries;
 
   float m_cover_scale = 0.0f;
