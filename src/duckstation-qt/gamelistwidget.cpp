@@ -357,8 +357,10 @@ QString GameListModel::formatTimespan(time_t timespan)
   const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
   if (hours > 0)
     return qApp->translate("GameList", "%n hours", "", hours);
-  else
+  else if (minutes > 0)
     return qApp->translate("GameList", "%n minutes", "", minutes);
+  else
+    return qApp->translate("GameList", "%n seconds", "", static_cast<u32>((timespan % 3600) % 60));
 }
 
 const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
