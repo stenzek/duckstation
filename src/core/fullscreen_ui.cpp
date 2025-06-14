@@ -540,6 +540,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   TransitionState transition_state = TransitionState::Inactive;
   MainWindowType current_main_window = MainWindowType::None;
   PauseSubMenu current_pause_submenu = PauseSubMenu::None;
+  MainWindowType previous_main_window = MainWindowType::None;
   bool initialized = false;
   bool tried_to_initialize = false;
   bool pause_menu_was_open = false;
@@ -1169,6 +1170,7 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
   if (s_state.current_main_window == type)
     return;
 
+  s_state.previous_main_window = s_state.current_main_window;
   s_state.current_main_window = type;
   if (!AreAnyDialogsOpen())
   {
@@ -1182,14 +1184,10 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 
 void FullscreenUI::ReturnToPreviousWindow()
 {
-  if (GPUThread::HasGPUBackend() && s_state.pause_menu_was_open)
-  {
-    BeginTransition([]() { SwitchToMainWindow(MainWindowType::PauseMenu); });
-  }
-  else
-  {
+  if (s_state.previous_main_window == MainWindowType::None)
     ReturnToMainWindow();
-  }
+  else
+    BeginTransition([window = s_state.previous_main_window]() { SwitchToMainWindow(window); });
 }
 
 void FullscreenUI::ReturnToMainWindow()
@@ -1199,6 +1197,7 @@ void FullscreenUI::ReturnToMainWindow()
 
   const float transition_time = GPUThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME;
   BeginTransition(transition_time, []() {
+    s_state.previous_main_window = MainWindowType::None;
     s_state.current_pause_submenu = PauseSubMenu::None;
     s_state.pause_menu_was_open = false;
 
