@@ -576,11 +576,20 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
     case Qt::TextAlignmentRole:
     {
-      const int column = index.column();
-      if (column == Column_FileSize || column == Column_UncompressedSize)
-        return (Qt::AlignRight | Qt::AlignVCenter).toInt();
-      else
-        return {};
+      switch (index.column())
+      {
+        case Column_FileSize:
+        case Column_UncompressedSize:
+          return (Qt::AlignRight | Qt::AlignVCenter).toInt();
+
+        case Column_Serial:
+        case Column_Year:
+        case Column_Players:
+          return (Qt::AlignCenter | Qt::AlignVCenter).toInt();
+
+        default:
+          return {};
+      }
     }
 
     case Qt::InitialSortOrderRole:
@@ -1596,11 +1605,7 @@ void GameListListView::resizeColumnsToFit()
 {
   QtUtils::ResizeColumnsForTableView(this, {
                                              45,  // type
-#ifdef __APPLE__
                                              95,  // serial
-#else
-                                             80,  // serial
-#endif
                                              -1,  // title
                                              -1,  // file title
                                              200, // developer
