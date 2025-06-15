@@ -17,7 +17,7 @@ public:
   GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GameListSettingsWidget();
 
-  bool addExcludedPath(const std::string& path);
+  bool addExcludedPath(const QString& path);
   void refreshExclusionList();
 
 public Q_SLOTS:

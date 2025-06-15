@@ -59,13 +59,13 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
 
 GameListSettingsWidget::~GameListSettingsWidget() = default;
 
-bool GameListSettingsWidget::addExcludedPath(const std::string& path)
+bool GameListSettingsWidget::addExcludedPath(const QString& path)
 {
-  if (!Host::AddValueToBaseStringListSetting("GameList", "ExcludedPaths", path.c_str()))
+  if (!Host::AddValueToBaseStringListSetting("GameList", "ExcludedPaths", path.toStdString().c_str()))
     return false;
 
   Host::CommitBaseSettingChanges();
-  m_ui.excludedPaths->addItem(QString::fromStdString(path));
+  m_ui.excludedPaths->addItem(path);
   g_main_window->refreshGameList(false);
   return true;
 }
@@ -238,7 +238,7 @@ void GameListSettingsWidget::onAddExcludedFileButtonClicked()
   if (path.isEmpty())
     return;
 
-  addExcludedPath(path.toStdString());
+  addExcludedPath(path);
 }
 
 void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
@@ -248,7 +248,7 @@ void GameListSettingsWidget::onAddExcludedFolderButtonClicked()
   if (path.isEmpty())
     return;
 
-  addExcludedPath(path.toStdString());
+  addExcludedPath(path);
 }
 
 void GameListSettingsWidget::onRemoveExcludedPathButtonClicked()

@@ -1464,9 +1464,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
       if (!entry->IsDiscSet())
       {
-        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [path = entry->path]() {
+        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [qpath]() {
           const auto lock = GameList::GetLock();
-          const GameList::Entry* entry = GameList::GetEntryForPath(path);
+          const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
           if (!entry)
             return;
 
@@ -1491,9 +1491,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           });
         }
 
-        connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered, [this, path = entry->path]() {
+        connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered, [this, qpath]() {
           const auto lock = GameList::GetLock();
-          const GameList::Entry* entry = GameList::GetEntryForPath(path);
+          const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
           if (entry)
             setGameListEntryCoverImage(entry);
         });
@@ -1505,28 +1505,27 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           populateGameListContextMenu(entry, this, &menu);
           menu.addSeparator();
 
-          connect(menu.addAction(tr("Default Boot")), &QAction::triggered, [this, path = entry->path]() mutable {
-            g_emu_thread->bootSystem(getSystemBootParameters(std::move(path)));
-          });
+          connect(menu.addAction(tr("Default Boot")), &QAction::triggered,
+                  [this, qpath]() mutable { g_emu_thread->bootSystem(getSystemBootParameters(qpath.toStdString())); });
 
-          connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, path = entry->path]() mutable {
-            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(std::move(path));
+          connect(menu.addAction(tr("Fast Boot")), &QAction::triggered, [this, qpath]() mutable {
+            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
             boot_params->override_fast_boot = true;
             g_emu_thread->bootSystem(std::move(boot_params));
           });
 
-          connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, path = entry->path]() mutable {
-            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(std::move(path));
+          connect(menu.addAction(tr("Full Boot")), &QAction::triggered, [this, qpath]() mutable {
+            std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
             boot_params->override_fast_boot = false;
             g_emu_thread->bootSystem(std::move(boot_params));
           });
 
           if (m_ui.menuDebug->menuAction()->isVisible())
           {
-            connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, path = entry->path]() mutable {
+            connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, qpath]() mutable {
               openCPUDebugger();
 
-              std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(std::move(path));
+              std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
               boot_params->override_start_paused = true;
               boot_params->disable_achievements_hardcore_mode = true;
               g_emu_thread->bootSystem(std::move(boot_params));
@@ -1544,10 +1543,10 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       }
       else
       {
-        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [disc_set_name = entry->path]() {
+        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [disc_set_name = qpath]() {
           // resolve path first
           auto lock = GameList::GetLock();
-          const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(disc_set_name);
+          const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(disc_set_name.toStdString());
           if (first_disc)
           {
             SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->title, first_disc->serial,
@@ -1555,9 +1554,9 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           }
         });
 
-        connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered, [this, path = entry->path]() {
+        connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered, [this, qpath]() {
           const auto lock = GameList::GetLock();
-          const GameList::Entry* entry = GameList::GetEntryForPath(path);
+          const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
           if (!entry)
             return;
 
@@ -1575,13 +1574,12 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
       menu.addSeparator();
 
-      connect(menu.addAction(tr("Exclude From List")), &QAction::triggered, [this, path = entry->path]() {
-        getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(path);
-      });
+      connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
+              [this, qpath]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(qpath); });
 
-      connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, path = entry->path]() {
+      connect(menu.addAction(tr("Reset Play Time")), &QAction::triggered, [this, qpath]() {
         const auto lock = GameList::GetLock();
-        const GameList::Entry* entry = GameList::GetEntryForPath(path);
+        const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
         if (!entry)
           return;
 
