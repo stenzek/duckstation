@@ -391,31 +391,6 @@ static void DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font,
   position_y += height;
 }
 
-#if 0
-static void DrawMultiLinePerformanceStat(ImDrawList* dl, float& position_y, ImFont* font, float size, float alt_weight,
-                                         ImU32 alt_color, float shadow_offset, float rbounds, float spacing,
-                                         std::string_view text)
-{
-  std::string_view::size_type pos = 0;
-  for (;;)
-  {
-    const std::string_view::size_type next_line_pos = text.find('\n', pos);
-    const std::string_view line =
-      text.substr(pos, (next_line_pos == std::string_view::npos) ? std::string_view::npos : (next_line_pos - pos));
-    if (!line.empty())
-    {
-      DrawPerformanceStat(dl, position_y, font, size, alt_weight, 0, shadow_offset, rbounds, line);
-      position_y += spacing;
-    }
-
-    if (next_line_pos == std::string_view::npos)
-      break;
-
-    pos = next_line_pos + 1;
-  }
-}
-#endif
-
 void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin,
                                           float spacing)
 {
