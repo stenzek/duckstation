@@ -1579,7 +1579,6 @@ void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, cons
   {
     // Find the end of the current wrapped line
     const char* line_end = text_remaining;
-    float line_width = 0.0f;
 
     // Process text word by word to find natural line breaks
     while (line_end < text_end)
@@ -1603,14 +1602,13 @@ void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, cons
         word_end++;
 
       // Calculate width if we add this word
-      ImVec2 word_size = ImGui::CalcTextSize(text_remaining, word_end, false, -1.0f);
+      const ImVec2 word_size = ImGui::CalcTextSize(text_remaining, word_end, false, -1.0f);
 
       // If adding this word would exceed wrap width, break here
       if (word_size.x > wrap_width && line_end > text_remaining)
         break;
 
       line_end = word_end;
-      line_width = word_size.x;
     }
 
     // If we didn't advance at all, force at least one character to prevent infinite loop
@@ -1618,7 +1616,7 @@ void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, cons
       line_end++;
 
     // Calculate actual line size for the determined line segment
-    ImVec2 line_size = ImGui::CalcTextSize(text_remaining, line_end, false, -1.0f);
+    const ImVec2 line_size = ImGui::CalcTextSize(text_remaining, line_end, false, -1.0f);
 
     // Calculate aligned position for this line
     ImVec2 line_pos = pos;
@@ -1645,8 +1643,8 @@ void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, cons
   }
 
   // Update cursor position to account for the rendered text
-  ImVec2 text_size = ImVec2(wrap_width, pos.y - text_pos.y);
-  ImRect bb(text_pos, text_pos + text_size);
+  const ImVec2 text_size = ImVec2(wrap_width, pos.y - text_pos.y);
+  const ImRect bb(text_pos, text_pos + text_size);
   ImGui::ItemSize(text_size);
   ImGui::ItemAdd(bb, 0);
 }

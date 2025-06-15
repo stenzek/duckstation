@@ -8325,9 +8325,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
       const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
       const char* remaining_text;
-      const ImVec2 full_text_size =
-        UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.GetWidth(), 0.0f,
-                                    IMSTR_START_END(entry->title), &remaining_text);
+      UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.GetWidth(), 0.0f,
+                                  IMSTR_START_END(entry->title), &remaining_text);
       const u32 unclipped_size = static_cast<u32>(remaining_text - entry->title.data());
       if (unclipped_size > 0 && unclipped_size != entry->title.size())
       {
