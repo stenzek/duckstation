@@ -841,6 +841,15 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #undef BIT_FOR
 }
 
+static inline void AppendSettingsHeading(SmallStringBase& str, bool& heading)
+{
+  if (!heading)
+  {
+    heading = true;
+    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
+  }
+}
+
 template<typename T>
 static inline void AppendIntegerSetting(SmallStringBase& str, bool& heading, std::string_view title,
                                         const std::optional<T>& value)
@@ -848,12 +857,7 @@ static inline void AppendIntegerSetting(SmallStringBase& str, bool& heading, std
   if (!value.has_value())
     return;
 
-  if (!heading)
-  {
-    heading = true;
-    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
-  }
-
+  AppendSettingsHeading(str, heading);
   str.append_format(" - {}: {}\n", title, value.value());
 }
 
@@ -863,12 +867,7 @@ static inline void AppendFloatSetting(SmallStringBase& str, bool& heading, std::
   if (!value.has_value())
     return;
 
-  if (!heading)
-  {
-    heading = true;
-    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
-  }
-
+  AppendSettingsHeading(str, heading);
   str.append_format(" - {}: {:.2f}\n", title, value.value());
 }
 
@@ -879,12 +878,7 @@ static inline void AppendEnumSetting(SmallStringBase& str, bool& heading, std::s
   if (!value.has_value())
     return;
 
-  if (!heading)
-  {
-    heading = true;
-    str.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Settings"));
-  }
-
+  AppendSettingsHeading(str, heading);
   str.append_format(" - {}: {}\n", title, get_display_name_func(value.value()));
 }
 
@@ -957,6 +951,9 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                      gpu_pgxp_depth_threshold);
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
                     &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
+
+  if (settings_heading)
+    ret.append("\n");
 
   if (!disc_set_name.empty())
   {
