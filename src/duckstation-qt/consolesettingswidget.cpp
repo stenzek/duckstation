@@ -86,7 +86,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
   dialog->registerWidgetHelp(
-    m_ui.forceVideoTiming, tr("Force Video Timing"), tr("Disabled"),
+    m_ui.forceVideoTiming, tr("Frame Rate"), tr("Auto-Detect"),
     tr("Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games "
        "to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this "
        "will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not "
