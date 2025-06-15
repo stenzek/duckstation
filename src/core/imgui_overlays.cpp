@@ -420,7 +420,8 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
                                           float spacing)
 {
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
-        g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_cpu_usage ||
+        g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_latency_stats ||
+        g_gpu_settings.display_show_cpu_usage || g_gpu_settings.display_show_gpu_usage ||
         g_gpu_settings.display_show_frame_times ||
         (g_gpu_settings.display_show_status_indicators &&
          (GPUThread::IsSystemPaused() || System::IsFastForwardEnabled() || System::IsTurboEnabled()))))
