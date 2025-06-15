@@ -70,7 +70,7 @@ jobs:
         cmake --build . --parallel
         mv bin/DuckStation.app .
         codesign -s - --deep -f -v DuckStation.app
-        zip -r duckstation-mac-release.zip DuckStation.app/
+        zip -9 -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload MacOS .app
       uses: actions/upload-artifact@v4

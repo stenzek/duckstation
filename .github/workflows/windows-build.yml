@@ -83,7 +83,7 @@ jobs:
     - name: Create x64 Symbols Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
 
     - name: Remove Extra Bloat Before Archiving
       shell: cmd
@@ -94,7 +94,7 @@ jobs:
     - name: Create x64 Release Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload x64 Release Artifact
       uses: actions/upload-artifact@v4
@@ -181,7 +181,7 @@ jobs:
     - name: Create x64 Symbols Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-sse2-release-symbols.zip ./bin/x64/*.pdb
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-sse2-release-symbols.zip ./bin/x64/*.pdb
 
     - name: Remove Extra Bloat Before Archiving
       shell: cmd
@@ -192,7 +192,7 @@ jobs:
     - name: Create x64 Release Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-sse2-release.zip ./bin/x64/*
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-sse2-release.zip ./bin/x64/*
 
     - name: Upload x64 Release Artifact
       uses: actions/upload-artifact@v4
@@ -280,7 +280,7 @@ jobs:
     - name: Create ARM64 symbols archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
 
     - name: Remove Extra Bloat Before Archiving
       shell: cmd
@@ -291,7 +291,7 @@ jobs:
     - name: Create ARM64 Release Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
 
     - name: Upload ARM64 Release Artifact
       uses: actions/upload-artifact@v4
