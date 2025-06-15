@@ -437,21 +437,6 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   const float rbound = ImGui::GetIO().DisplaySize.x - margin;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   SmallString text;
-  ImVec2 text_size;
-
-#define DRAW_LINE(font, text, color)                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    text_size =                                                                                                        \
-      font->CalcTextSizeA(font##_size, 0.0f, std::numeric_limits<float>::max(), -1.0f, (text), nullptr, nullptr);      \
-    dl->AddText(                                                                                                       \
-      font, font##_size, 0.0f,                                                                                         \
-      ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x + shadow_offset, position_y + shadow_offset),         \
-      IM_COL32(0, 0, 0, 100), text.c_str(), text.end_ptr());                                                           \
-    dl->AddText(font, font##_size, 0.0f, ImVec2(ImGui::GetIO().DisplaySize.x - margin - text_size.x, position_y),      \
-                color, (text));                                                                                        \
-    position_y += text_size.y + spacing;                                                                               \
-  } while (0)
 
   if (!GPUThread::IsSystemPaused())
   {
@@ -616,8 +601,6 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     SetStatusIndicatorIcons(text, true);
     DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, shadow_offset, rbound, text);
   }
-
-#undef DRAW_LINE
 }
 
 void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
