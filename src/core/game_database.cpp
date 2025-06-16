@@ -424,13 +424,13 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     settings.gpu_pgxp_tolerance = gpu_pgxp_tolerance.value();
     if (display_osd_messages)
-      INFO_LOG("GameDB: GPU PGXP tolerance set to {}.", settings.gpu_pgxp_tolerance);
+      INFO_LOG("GameDB: PGXP tolerance set to {}.", settings.gpu_pgxp_tolerance);
   }
   if (gpu_pgxp_depth_threshold.has_value())
   {
     settings.SetPGXPDepthClearThreshold(gpu_pgxp_depth_threshold.value());
     if (display_osd_messages)
-      INFO_LOG("GameDB: GPU depth clear threshold set to {}.", settings.GetPGXPDepthClearThreshold());
+      INFO_LOG("GameDB: PGXP depth clear threshold set to {}.", settings.GetPGXPDepthClearThreshold());
   }
   if (gpu_line_detect_mode.has_value())
   {
@@ -960,13 +960,13 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                        cdrom_max_read_speedup_cycles);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"), gpu_max_run_ahead);
-  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Tolerance"), gpu_pgxp_tolerance);
-  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Depth Threshold"),
-                     gpu_pgxp_depth_threshold);
-  AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Preserve Projection Precision"),
-                    gpu_pgxp_preserve_proj_fp);
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
                     &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Tolerance"), gpu_pgxp_tolerance);
+  AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Depth Clear Threshold"),
+                     gpu_pgxp_depth_threshold);
+  AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "PGXP Preserve Projection Precision"),
+                    gpu_pgxp_preserve_proj_fp);
 
   if (settings_heading)
     ret.append("\n");
