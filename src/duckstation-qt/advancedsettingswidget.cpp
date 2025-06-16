@@ -263,7 +263,7 @@ void AdvancedSettingsWidget::addTweakOptions()
                          Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
                          Settings::DEFAULT_GPU_FIFO_SIZE, tr(" words"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Run-Ahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Runahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
                          Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
@@ -322,7 +322,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_GPU_FIFO_SIZE)); // GPU FIFO size
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max run-ahead
+                           static_cast<int>(Settings::DEFAULT_GPU_MAX_RUN_AHEAD)); // GPU max runahead
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                      // Recompiler memory exceptions
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);                       // Recompiler block linking
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
