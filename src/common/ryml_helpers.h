@@ -97,7 +97,12 @@ static inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& 
       ret = StringUtil::FromChars<T>(to_stringview(val));
       if (!ret.has_value())
       {
-        if constexpr (std::is_floating_point_v<T>)
+        if constexpr (std::is_same_v<T, bool>)
+        {
+          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                         "Unexpected non-bool value in {}", key);
+        }
+        else if constexpr (std::is_floating_point_v<T>)
         {
           Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
                          "Unexpected non-float value in {}", key);
