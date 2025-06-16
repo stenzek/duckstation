@@ -850,6 +850,16 @@ static inline void AppendSettingsHeading(SmallStringBase& str, bool& heading)
   }
 }
 
+static inline void AppendBoolSetting(SmallStringBase& str, bool& heading, std::string_view title,
+                                     const std::optional<bool>& value)
+{
+  if (!value.has_value())
+    return;
+
+  AppendSettingsHeading(str, heading);
+  str.append_format(" - {}: {}\n", title, value.value() ? "Enabled" : "Disabled");
+}
+
 template<typename T>
 static inline void AppendIntegerSetting(SmallStringBase& str, bool& heading, std::string_view title,
                                         const std::optional<T>& value)
@@ -944,11 +954,17 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                     &Settings::GetDisplayDeinterlacingModeDisplayName, display_deinterlacing_mode);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"), dma_max_slice_ticks);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"), dma_halt_ticks);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Seek Speedup Cycles"),
+                       cdrom_max_seek_speedup_cycles);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Read Speedup Cycles"),
+                       cdrom_max_read_speedup_cycles);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU FIFO Size"), gpu_fifo_size);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Max Runahead"), gpu_max_run_ahead);
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Tolerance"), gpu_pgxp_tolerance);
   AppendFloatSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Depth Threshold"),
                      gpu_pgxp_depth_threshold);
+  AppendBoolSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU PGXP Preserve Projection Precision"),
+                    gpu_pgxp_preserve_proj_fp);
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "GPU Line Detect Mode"),
                     &Settings::GetLineDetectModeDisplayName, gpu_line_detect_mode);
 
