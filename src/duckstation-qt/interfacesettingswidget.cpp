@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "interfacesettingswidget.h"
-#include "autoupdaterdialog.h"
+#include "autoupdaterwindow.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "scmversion/scmversion.h"
@@ -135,12 +135,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   if (!m_dialog->isPerGameSettings())
   {
-    if (AutoUpdaterDialog::isSupported())
+    if (AutoUpdaterWindow::isSupported())
     {
       SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-      m_ui.autoUpdateTag->addItems(AutoUpdaterDialog::getTagList());
+      m_ui.autoUpdateTag->addItems(AutoUpdaterWindow::getTagList());
       SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
-                                                     AutoUpdaterDialog::getDefaultTag());
+                                                     AutoUpdaterWindow::getDefaultTag());
       connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
     }
     else

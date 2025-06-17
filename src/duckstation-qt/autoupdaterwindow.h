@@ -5,7 +5,7 @@
 
 #include "common/types.h"
 
-#include "ui_autoupdaterdialog.h"
+#include "ui_autoupdaterwindow.h"
 
 #include <memory>
 #include <string>
@@ -21,13 +21,13 @@ class HTTPDownloader;
 
 class EmuThread;
 
-class AutoUpdaterDialog final : public QDialog
+class AutoUpdaterWindow final : public QWidget
 {
   Q_OBJECT
 
 public:
-  explicit AutoUpdaterDialog(QWidget* parent = nullptr);
-  ~AutoUpdaterDialog();
+  explicit AutoUpdaterWindow(QWidget* parent = nullptr);
+  ~AutoUpdaterWindow();
 
   static bool isSupported();
   static QStringList getTagList();
@@ -45,11 +45,13 @@ public Q_SLOTS:
 
 private Q_SLOTS:
   void httpPollTimerPoll();
-  void lockAndExec();
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
   void remindMeLaterClicked();
+
+protected:
+  void closeEvent(QCloseEvent* event) override;
 
 private:
   void reportError(const std::string_view msg);
@@ -73,7 +75,7 @@ private:
   bool extractUpdater(const std::string& zip_path, const std::string& destination_path, Error* error);
 #endif
 
-  Ui::AutoUpdaterDialog m_ui;
+  Ui::AutoUpdaterWindow m_ui;
 
   std::unique_ptr<HTTPDownloader> m_http;
   QTimer* m_http_poll_timer = nullptr;

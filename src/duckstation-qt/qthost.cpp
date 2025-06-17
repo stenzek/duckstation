@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qthost.h"
-#include "autoupdaterdialog.h"
+#include "autoupdaterwindow.h"
 #include "displaywidget.h"
 #include "logwindow.h"
 #include "mainwindow.h"
@@ -2808,7 +2808,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (CHECK_ARG("-updatecleanup"))
       {
-        s_cleanup_after_update = AutoUpdaterDialog::isSupported();
+        s_cleanup_after_update = AutoUpdaterWindow::isSupported();
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -2929,13 +2929,13 @@ int main(int argc, char* argv[])
 
   // Remove any previous-version remanants.
   if (s_cleanup_after_update)
-    AutoUpdaterDialog::cleanupAfterUpdate();
+    AutoUpdaterWindow::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
   QtHost::UpdateApplicationTheme();
 
   // Build warning.
-  AutoUpdaterDialog::warnAboutUnofficialBuild();
+  AutoUpdaterWindow::warnAboutUnofficialBuild();
 
   // Start logging early.
   LogWindow::updateSettings();

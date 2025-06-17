@@ -18,7 +18,7 @@
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="memorycardsettingswidget.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
-    <ClCompile Include="autoupdaterdialog.cpp" />
+    <ClCompile Include="autoupdaterwindow.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
@@ -56,7 +56,7 @@
     <ClCompile Include="$(IntDir)moc_audiosettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
-    <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp">
+    <ClCompile Include="$(IntDir)moc_autoupdaterwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp">
@@ -211,7 +211,7 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="inputbindingdialog.h" />
-    <QtMoc Include="autoupdaterdialog.h" />
+    <QtMoc Include="autoupdaterwindow.h" />
     <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
@@ -248,7 +248,7 @@
     <QtUi Include="advancedsettingswidget.ui" />
     <QtUi Include="aboutdialog.ui" />
     <QtUi Include="inputbindingdialog.ui" />
-    <QtUi Include="autoupdaterdialog.ui" />
+    <QtUi Include="autoupdaterwindow.ui" />
     <QtUi Include="biossettingswidget.ui" />
     <QtUi Include="postprocessingchainconfigwidget.ui" />
     <QtUi Include="memorycardeditorwindow.ui" />

@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AutoUpdaterDialog</class>
- <widget class="QDialog" name="AutoUpdaterDialog">
-  <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
-  </property>
+ <class>AutoUpdaterWindow</class>
+ <widget class="QWidget" name="AutoUpdaterWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,9 +12,6 @@
   </property>
   <property name="windowTitle">
    <string>Automatic Updater</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

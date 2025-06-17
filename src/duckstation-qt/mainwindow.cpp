@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
-#include "autoupdaterdialog.h"
+#include "autoupdaterwindow.h"
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
@@ -815,6 +815,7 @@ void MainWindow::destroySubWindows()
   QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   QtUtils::CloseAndDeleteWindow(m_debugger_window);
   QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
+  QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog);
   QtUtils::CloseAndDeleteWindow(m_controller_settings_window);
   QtUtils::CloseAndDeleteWindow(m_input_profile_editor_window);
   QtUtils::CloseAndDeleteWindow(m_settings_window);
@@ -2964,7 +2965,7 @@ void MainWindow::onToolsOpenTextureDirectoryTriggered()
 
 void MainWindow::checkForUpdates(bool display_message)
 {
-  if (!AutoUpdaterDialog::isSupported())
+  if (!AutoUpdaterWindow::isSupported())
   {
     if (display_message)
     {
@@ -2974,7 +2975,7 @@ void MainWindow::checkForUpdates(bool display_message)
       mbox.setTextFormat(Qt::RichText);
 
       QString message;
-      if (!AutoUpdaterDialog::isOfficialBuild())
+      if (!AutoUpdaterWindow::isOfficialBuild())
       {
         message =
           tr("<p>Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To "
@@ -2998,8 +2999,8 @@ void MainWindow::checkForUpdates(bool display_message)
   if (m_auto_updater_dialog)
     return;
 
-  m_auto_updater_dialog = new AutoUpdaterDialog(this);
-  connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
+  m_auto_updater_dialog = new AutoUpdaterWindow();
+  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }
 

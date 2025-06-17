@@ -29,7 +29,7 @@ class QShortcut;
 class MainWindow;
 class GameListWidget;
 class EmuThread;
-class AutoUpdaterDialog;
+class AutoUpdaterWindow;
 class MemoryCardEditorWindow;
 class DebuggerWindow;
 class MemoryScannerWindow;
@@ -100,6 +100,7 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+  ALWAYS_INLINE AutoUpdaterWindow* getAutoUpdaterDialog() const { return m_auto_updater_dialog; }
 
   /// Opens the editor for a specific input profile.
   void openInputProfileEditor(const std::string_view name);
@@ -326,7 +327,7 @@ private:
   ControllerSettingsWindow* m_controller_settings_window = nullptr;
   ControllerSettingsWindow* m_input_profile_editor_window = nullptr;
 
-  AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
+  AutoUpdaterWindow* m_auto_updater_dialog = nullptr;
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
   MemoryScannerWindow* m_memory_scanner_window = nullptr;
