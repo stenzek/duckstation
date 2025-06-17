@@ -19,6 +19,8 @@ finish-args:
   - "--talk-name=org.freedesktop.ScreenSaver"
   - "--socket=wayland"
   - "--socket=fallback-x11"
+  # Required for Gamescope on Steam Deck OLED when using the Vulkan renderer
+  - --filesystem=xdg-run/gamescope-0:ro
 
 modules:
   # Dependencies.
