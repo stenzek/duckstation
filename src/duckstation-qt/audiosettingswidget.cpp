@@ -325,7 +325,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
                                     std::nullopt :
                                     std::optional<bool>(AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER));
 
-    dlg.done(0);
+    dlg.reject();
 
     QMetaObject::invokeMethod(this, &AudioSettingsWidget::onStretchSettingsClicked, Qt::QueuedConnection);
   });

@@ -38,7 +38,7 @@ void SelectDiscDialog::onListItemActivated(const QTreeWidgetItem* item)
     return;
 
   m_selected_path = item->data(0, Qt::UserRole).toString().toStdString();
-  done(1);
+  accept();
 }
 
 void SelectDiscDialog::updateStartEnabled()
@@ -53,12 +53,12 @@ void SelectDiscDialog::updateStartEnabled()
 
 void SelectDiscDialog::onSelectClicked()
 {
-  done(1);
+  accept();
 }
 
 void SelectDiscDialog::onCancelClicked()
 {
-  done(0);
+  reject();
 }
 
 void SelectDiscDialog::populateList(const std::string& disc_set_name)
