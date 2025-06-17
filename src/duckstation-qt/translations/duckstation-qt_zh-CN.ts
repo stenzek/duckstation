@@ -2271,7 +2271,7 @@ Unread messages: {}</source>
     </message>
 </context>
 <context>
-    <name>AutoUpdaterDialog</name>
+    <name>AutoUpdaterWindow</name>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="416"/>
         <source>Current Version: %1 (%2)</source>

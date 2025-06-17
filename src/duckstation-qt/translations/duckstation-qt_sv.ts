@@ -1612,7 +1612,7 @@ Olästa meddelanden: {}</translation>
     </message>
 </context>
 <context>
-    <name>AutoUpdaterDialog</name>
+    <name>AutoUpdaterWindow</name>
     <message>
         <source>Automatic Updater</source>
         <translation>Automatisk uppdatering</translation>
