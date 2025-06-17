@@ -926,12 +926,12 @@ void CheatCodeEditorDialog::saveClicked()
                           tr("Failed to save cheat code:\n%1").arg(QString::fromStdString(error.GetDescription())));
   }
 
-  done(1);
+  accept();
 }
 
 void CheatCodeEditorDialog::cancelClicked()
 {
-  done(0);
+  reject();
 }
 
 void CheatCodeEditorDialog::onOptionTypeChanged(int index)

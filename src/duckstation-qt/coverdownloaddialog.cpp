@@ -78,7 +78,7 @@ void CoverDownloadDialog::onCloseClicked()
   if (m_thread)
     cancelThread();
 
-  done(0);
+  reject();
 }
 
 void CoverDownloadDialog::updateEnabled()

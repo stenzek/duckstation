@@ -30,7 +30,7 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
   connect(m_ui.addBinding, &QPushButton::clicked, this, &InputBindingDialog::onAddBindingButtonClicked);
   connect(m_ui.removeBinding, &QPushButton::clicked, this, &InputBindingDialog::onRemoveBindingButtonClicked);
   connect(m_ui.clearBindings, &QPushButton::clicked, this, &InputBindingDialog::onClearBindingsButtonClicked);
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, [this]() { done(0); });
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, [this]() { reject(); });
   updateList();
 
   // Only show the sensitivity controls for binds where it's applicable.

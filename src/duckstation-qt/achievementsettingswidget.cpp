@@ -221,7 +221,7 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
 
   AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
   int res = login.exec();
-  if (res != 0)
+  if (res == QDialog::Rejected)
     return;
 
   updateLoginState();

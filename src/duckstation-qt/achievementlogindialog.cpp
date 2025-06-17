@@ -65,7 +65,7 @@ void AchievementLoginDialog::cancelClicked()
     });
   }
 
-  done(1);
+  reject();
 }
 
 void AchievementLoginDialog::processLoginResult(bool result, const QString& message)
@@ -119,7 +119,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
     }
   }
 
-  done(0);
+  accept();
 }
 
 void AchievementLoginDialog::connectUi()
