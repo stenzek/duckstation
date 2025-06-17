@@ -186,6 +186,7 @@ public Q_SLOTS:
   void closeInputSources();
   void startFullscreenUI();
   void stopFullscreenUI();
+  void exitFullscreenUI();
   void refreshAchievementsAllProgress();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromMostRecentState();

@@ -739,6 +739,32 @@ void EmuThread::stopFullscreenUI()
   }
 }
 
+void EmuThread::exitFullscreenUI()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::exitFullscreenUI, Qt::QueuedConnection);
+    return;
+  }
+
+  const bool was_in_nogui_mode = std::exchange(s_nogui_mode, false);
+
+  // force a return to main window before exiting, otherwise qt will terminate the application
+  if (!m_is_rendering_to_main)
+  {
+    m_is_fullscreen = false;
+    m_is_rendering_to_main = true;
+    GPUThread::UpdateDisplayWindow(false);
+  }
+
+  // then stop as normal
+  stopFullscreenUI();
+
+  // if we were in nogui mode, the game list won't have been populated yet. do it now.
+  if (was_in_nogui_mode)
+    g_main_window->refreshGameList(false);
+}
+
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
 {
   if (!isCurrentThread())
@@ -2541,7 +2567,7 @@ void Host::RequestExitApplication(bool allow_confirm)
 
 void Host::RequestExitBigPicture()
 {
-  g_emu_thread->stopFullscreenUI();
+  g_emu_thread->exitFullscreenUI();
 }
 
 std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
