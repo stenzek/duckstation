@@ -71,17 +71,17 @@ public:
   // append hex string
   void append_hex(const void* data, size_t len, bool comma_separate = false);
 
-  // append a single character to this string
+  // prepend a single character to this string
   void prepend(char c);
 
-  // append a string to this string
+  // prepend a string to this string
   void prepend(const char* str);
   void prepend(const char* str, u32 length);
   void prepend(const std::string& str);
   void prepend(const std::string_view str);
   void prepend(const SmallStringBase& str);
 
-  // append formatted string to this string
+  // prepend formatted string to this string
   void prepend_sprintf(const char* format, ...) PRINTFLIKE(2, 3);
   void prepend_vsprintf(const char* format, va_list ap);
 

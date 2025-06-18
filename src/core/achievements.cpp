@@ -3709,7 +3709,6 @@ static TinyString GetLoginEncryptionMachineKey()
   TinyString ret;
 
 #ifdef _WIN32
-
   HKEY hKey;
   DWORD error;
   if ((error = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &hKey)) !=
@@ -3741,12 +3740,18 @@ static TinyString GetLoginEncryptionMachineKey()
 
   ret.resize(machine_guid_length);
   RegCloseKey(hKey);
-#elif !defined(__ANDROID__)
-#ifdef __linux__
+#else
+#if defined(__linux__)
   // use /etc/machine-id on Linux
   std::optional<std::string> machine_id = FileSystem::ReadFileToString("/etc/machine-id");
   if (machine_id.has_value())
     ret = std::string_view(machine_id.value());
+#elif defined(__APPLE__)
+  // use gethostuuid(2) on macOS
+  const struct timespec ts{};
+  uuid_t uuid{};
+  if (gethostuuid(uuid, &ts) == 0)
+    ret.append_hex(uuid, sizeof(uuid), false);
 #endif
 
   if (ret.empty())
