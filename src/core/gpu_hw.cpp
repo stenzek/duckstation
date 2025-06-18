@@ -29,7 +29,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
@@ -506,7 +506,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
   if (m_resolution_scale != resolution_scale)
   {
-    Host::AddIconOSDMessage("ResolutionScaleChanged", ICON_FA_PAINT_BRUSH,
+    Host::AddIconOSDMessage("ResolutionScaleChanged", ICON_FA_PAINTBRUSH,
                             fmt::format(TRANSLATE_FS("GPU_HW", "Internal resolution set to {0}x ({1}x{2})."),
                                         resolution_scale, m_presenter.GetDisplayWidth() * resolution_scale,
                                         m_presenter.GetDisplayHeight() * resolution_scale),
@@ -518,14 +518,14 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
     if (g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading)
     {
       Host::AddIconOSDMessage(
-        "MultisamplingChanged", ICON_FA_PAINT_BRUSH,
+        "MultisamplingChanged", ICON_FA_PAINTBRUSH,
         fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x (SSAA)."), multisamples),
         Host::OSD_INFO_DURATION);
     }
     else
     {
       Host::AddIconOSDMessage(
-        "MultisamplingChanged", ICON_FA_PAINT_BRUSH,
+        "MultisamplingChanged", ICON_FA_PAINTBRUSH,
         fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x."), multisamples),
         Host::OSD_INFO_DURATION);
     }
@@ -736,7 +736,7 @@ void GPU_HW::CheckSettings()
       m_downsample_mode = GPUDownsampleMode::Disabled;
 
       Host::AddIconOSDMessage(
-        "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
+        "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
         fmt::format(
           TRANSLATE_FS("GPU_HW",
                        "Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled."),
@@ -746,7 +746,7 @@ void GPU_HW::CheckSettings()
     else if (box_downscale != g_gpu_settings.gpu_downsample_scale)
     {
       Host::AddIconOSDMessage(
-        "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
+        "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
         fmt::format(TRANSLATE_FS(
                       "GPU_HW", "Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead."),
                     resolution_scale, g_gpu_settings.gpu_downsample_scale, box_downscale),
@@ -771,7 +771,7 @@ u32 GPU_HW::CalculateResolutionScale() const
     if (g_gpu_settings.gpu_resolution_scale != 0)
     {
       Host::AddIconOSDMessage(
-        "ResolutionNotPow2", ICON_FA_PAINT_BRUSH,
+        "ResolutionNotPow2", ICON_FA_PAINTBRUSH,
         fmt::format(
           TRANSLATE_FS("GPU_HW", "Resolution scale {0}x not supported for adaptive downsampling, using {1}x."), scale,
           new_scale),

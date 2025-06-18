@@ -1457,7 +1457,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
 
       ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
                                                 fmt::format(ICON_FA_CHECK " {}", yes_text),
-                                                fmt::format(ICON_FA_TIMES " {}", no_text));
+                                                fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
     });
   });

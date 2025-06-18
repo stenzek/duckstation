@@ -15,7 +15,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 LOG_CHANNEL(MemoryCard);

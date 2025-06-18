@@ -26,7 +26,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 #include <cmath>
@@ -116,7 +116,7 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
   {
     Host::AddIconOSDMessage(
-      "SaveState", ICON_FA_EXCLAMATION_TRIANGLE,
+      "SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
       fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"), slot, error.GetDescription()),
       Host::OSD_ERROR_DURATION);
   }
@@ -307,7 +307,7 @@ DEFINE_HOTKEY("ToggleOverclocking", TRANSLATE_NOOP("Hotkeys", "System"),
                     const double clock_speed =
                       ((static_cast<double>(System::MASTER_CLOCK) * static_cast<double>(percent)) / 100.0) / 1000000.0;
                     Host::AddIconOSDMessage(
-                      "ToggleOverclocking", ICON_FA_TACHOMETER_ALT,
+                      "ToggleOverclocking", ICON_FA_GAUGE_SIMPLE_HIGH,
                       fmt::format(TRANSLATE_FS("OSDMessage", "CPU clock speed control enabled ({:.3f} MHz)."),
                                   clock_speed),
                       Host::OSD_QUICK_DURATION);
@@ -315,7 +315,7 @@ DEFINE_HOTKEY("ToggleOverclocking", TRANSLATE_NOOP("Hotkeys", "System"),
                   else
                   {
                     Host::AddIconOSDMessage(
-                      "ToggleOverclocking", ICON_FA_TACHOMETER_ALT,
+                      "ToggleOverclocking", ICON_FA_GAUGE_SIMPLE_HIGH,
                       fmt::format(TRANSLATE_FS("OSDMessage", "CPU clock speed control disabled ({:.3f} MHz)."),
                                   static_cast<double>(System::MASTER_CLOCK) / 1000000.0),
                       Host::OSD_QUICK_DURATION);
@@ -330,7 +330,7 @@ DEFINE_HOTKEY("IncreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                   g_settings.emulation_speed += 0.1f;
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    "EmulationSpeedChange", ICON_FA_TACHOMETER_ALT,
+                    "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))),
                     Host::OSD_QUICK_DURATION);
@@ -345,7 +345,7 @@ DEFINE_HOTKEY("DecreaseEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                     std::max(g_settings.emulation_speed - 0.1f, Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    "EmulationSpeedChange", ICON_FA_TACHOMETER_ALT,
+                    "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))),
                     Host::OSD_QUICK_DURATION);
@@ -360,7 +360,7 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
                                                         Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
-                    "EmulationSpeedChange", ICON_FA_TACHOMETER_ALT,
+                    "EmulationSpeedChange", ICON_FA_GAUGE_SIMPLE_HIGH,
                     fmt::format(TRANSLATE_FS("OSDMessage", "Emulation speed set to {}%."),
                                 static_cast<u32>(std::lround(g_settings.emulation_speed * 100.0f))),
                     Host::OSD_QUICK_DURATION);
@@ -823,7 +823,7 @@ DEFINE_HOTKEY("ToggleVRAMView", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLAT
                   g_settings.gpu_show_vram = !g_settings.gpu_show_vram;
                   GPUThread::UpdateSettings(true, false, false);
 
-                  Host::AddIconOSDMessage("ToggleVRAMView", ICON_FA_FILE_ALT,
+                  Host::AddIconOSDMessage("ToggleVRAMView", ICON_FA_FILE,
                                           g_settings.gpu_show_vram ?
                                             TRANSLATE_STR("OSDMessage", "Now showing VRAM.") :
                                             TRANSLATE_STR("OSDMessage", "Now showing display."),

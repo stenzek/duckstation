@@ -69,7 +69,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "cpuinfo.h"
 #include "fmt/chrono.h"
@@ -2408,7 +2408,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
     WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash),
                 BIOS::ImageInfo::GetHashString(bios_hash));
     Host::AddIconOSDWarning(
-      "StateBIOSMismatch", ICON_FA_EXCLAMATION_TRIANGLE,
+      "StateBIOSMismatch", ICON_FA_TRIANGLE_EXCLAMATION,
       TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
       Host::OSD_WARNING_DURATION);
   }
@@ -2477,7 +2477,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddIconOSDMessage(
-      "StateOverclockDifference", ICON_FA_EXCLAMATION_TRIANGLE,
+      "StateOverclockDifference", ICON_FA_TRIANGLE_EXCLAMATION,
       fmt::format(TRANSLATE_FS("System", "WARNING: CPU overclock ({}%) was different in save state ({}%)."),
                   g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
                   cpu_overclock_active ?
@@ -5528,7 +5528,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
         &error))
   {
     Host::AddIconOSDWarning(
-      "MediaCapture", ICON_FA_EXCLAMATION_TRIANGLE,
+      "MediaCapture", ICON_FA_TRIANGLE_EXCLAMATION,
       fmt::format(TRANSLATE_FS("System", "Failed to create media capture: {0}"), error.GetDescription()),
       Host::OSD_ERROR_DURATION);
     s_state.media_capture.reset();
@@ -5585,7 +5585,7 @@ void System::StopMediaCapture(std::unique_ptr<MediaCapture> cap)
   }
   else
   {
-    Host::AddIconOSDWarning(std::move(osd_key), ICON_FA_EXCLAMATION_TRIANGLE,
+    Host::AddIconOSDWarning(std::move(osd_key), ICON_FA_TRIANGLE_EXCLAMATION,
                             fmt::format(TRANSLATE_FS("System", "Stopped {0}: {1}."),
                                         GetCaptureTypeForMessage(was_capturing_video, was_capturing_audio),
                                         error.GetDescription()),
