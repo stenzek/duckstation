@@ -1477,6 +1477,7 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
       return RenderAPI::D3D12;
 #endif
 #ifdef __APPLE__
+    case GPURenderer::HardwareMetal:
       return RenderAPI::Metal;
 #endif
 #ifdef ENABLE_VULKAN
