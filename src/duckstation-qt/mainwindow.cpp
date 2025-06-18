@@ -2997,7 +2997,10 @@ void MainWindow::checkForUpdates(bool display_message)
   }
 
   if (m_auto_updater_dialog)
+  {
+    QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog);
     return;
+  }
 
   m_auto_updater_dialog = new AutoUpdaterWindow();
   connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
