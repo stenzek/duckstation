@@ -201,7 +201,6 @@ void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTexture
   // JINC2 and xBRZ shaders originally from beetle-psx, modified to support filtering mask channel.
   if (texture_filter == GPUTextureFilter::Bilinear || texture_filter == GPUTextureFilter::BilinearBinAlpha)
   {
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter != GPUTextureFilter::BilinearBinAlpha);
     ss << R"(
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
@@ -265,7 +264,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
        THE SOFTWARE.
     */
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter != GPUTextureFilter::JINC2BinAlpha);
     ss << R"(
 CONSTANT float JINC2_WINDOW_SINC = 0.44;
 CONSTANT float JINC2_SINC = 0.82;
@@ -442,7 +440,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
        THE SOFTWARE.
     */
 
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", texture_filter == GPUTextureFilter::xBRBinAlpha);
     ss << R"(
 CONSTANT int BLEND_NONE = 0;
 CONSTANT int BLEND_NORMAL = 1;
@@ -729,8 +726,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPX)
   {
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
-
     ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
           "uv_limits.xy, uv_limits.zw)))\n";
 
@@ -839,9 +834,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
-    DefineMacro(ss, "MMPX_ENHANCED", (texture_filter == GPUTextureFilter::MMPXEnhanced));
-
     ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
           "uv_limits.xy, uv_limits.zw)))\n";
 
@@ -1095,7 +1087,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   else if (texture_filter == GPUTextureFilter::Scale2x)
   {
     // Based on https://www.scale2x.it/algorithm
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
     ss << R"(
 #define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
 
@@ -1128,7 +1119,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   else if (texture_filter == GPUTextureFilter::Scale3x)
   {
     // Based on https://www.scale2x.it/algorithm
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
     ss << R"(
 #define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
 
@@ -1186,10 +1176,6 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 #undef src
 )";
   }
-  else
-  {
-    DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", false);
-  }
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
@@ -1233,6 +1219,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "INTERLACING_SCALED", interlacing && scaled_interlacing);
   DefineMacro(ss, "TRUE_COLOR", true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
+  DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", is_blended_texture_filtering);
   DefineMacro(ss, "UV_LIMITS", uv_limits);
   DefineMacro(ss, "USE_ROV", use_rov);
   DefineMacro(ss, "USE_ROV_DEPTH", use_rov_depth);
