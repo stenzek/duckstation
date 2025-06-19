@@ -862,19 +862,19 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   icon_cfg.GlyphMinAdvanceX = default_text_size;
   icon_cfg.GlyphMaxAdvanceX = default_text_size;
 
-  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
-                                                  static_cast<int>(s_state.icon_fa_font_data.size()),
-                                                  default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
-  {
-    Error::SetStringView(error, "Failed to add FA icon font");
-    return false;
-  }
-
   if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_pf_font_data.data(),
                                                   static_cast<int>(s_state.icon_pf_font_data.size()),
                                                   default_text_size * 1.2f, 0.0f, &icon_cfg)) [[unlikely]]
   {
     Error::SetStringView(error, "Failed to add PF icon font");
+    return false;
+  }
+
+  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
+                                                  static_cast<int>(s_state.icon_fa_font_data.size()),
+                                                  default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to add FA icon font");
     return false;
   }
 
