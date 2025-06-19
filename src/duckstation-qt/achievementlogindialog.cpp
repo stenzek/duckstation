@@ -14,6 +14,11 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
   : QDialog(parent), m_reason(reason)
 {
   m_ui.setupUi(this);
+  m_ui.iconLabel->setPixmap(QPixmap(QString::fromStdString(QtHost::GetResourcePath("images/ra-icon.webp", true))));
+  QFont title_font(m_ui.titleLabel->font());
+  title_font.setBold(true);
+  title_font.setPixelSize(20);
+  m_ui.titleLabel->setFont(title_font);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   // Adjust text if needed based on reason.
