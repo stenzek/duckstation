@@ -995,7 +995,7 @@
             </size>
            </property>
            <property name="text">
-            <string comment="Header text">RetroAchievements Login</string>
+            <string comment="Header text">RetroAchievements</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
