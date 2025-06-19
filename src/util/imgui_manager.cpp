@@ -24,7 +24,7 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_freetype.h"

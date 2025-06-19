@@ -20,7 +20,7 @@
 #include "common/log.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 #include <array>

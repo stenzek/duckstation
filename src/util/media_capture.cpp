@@ -16,7 +16,7 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 #include <algorithm>

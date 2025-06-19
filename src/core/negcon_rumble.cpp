@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "negcon_rumble.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "common/assert.h"
 #include "common/log.h"
 #include "host.h"
@@ -17,7 +17,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 

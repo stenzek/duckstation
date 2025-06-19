@@ -41,7 +41,7 @@
 #include "util/state_wrapper.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 #include "imgui.h"
@@ -2730,7 +2730,7 @@ void Achievements::DrawAchievementsWindow()
       ImVec2 text_size;
 
       close_window =
-        (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
+        (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
          ImGuiFullscreen::WantsToCloseMenu());
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
@@ -2816,11 +2816,11 @@ void Achievements::DrawAchievementsWindow()
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
     static constexpr std::pair<const char*, const char*> bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
-      {ICON_FA_EXCLAMATION_TRIANGLE, TRANSLATE_NOOP("Achievements", "Unknown")},
+      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unknown")},
       {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
       {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
-      {ICON_FA_EXCLAMATION_TRIANGLE, TRANSLATE_NOOP("Achievements", "Unsupported")},
-      {ICON_FA_QUESTION_CIRCLE, TRANSLATE_NOOP("Achievements", "Unofficial")},
+      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsupported")},
+      {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unofficial")},
       {ICON_EMOJI_UNLOCKED, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
       {ICON_FA_STOPWATCH, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_RULER_HORIZONTAL, TRANSLATE_NOOP("Achievements", "Almost There")},
@@ -3163,7 +3163,7 @@ void Achievements::DrawLeaderboardsWindow()
 
       if (!is_leaderboard_open)
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
+        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
             ImGuiFullscreen::WantsToCloseMenu())
         {
           FullscreenUI::ReturnToPreviousWindow();
@@ -3171,7 +3171,7 @@ void Achievements::DrawLeaderboardsWindow()
       }
       else
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_CARET_SQUARE_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
+        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
             ImGuiFullscreen::WantsToCloseMenu())
         {
           close_leaderboard_on_exit = true;

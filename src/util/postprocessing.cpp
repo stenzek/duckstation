@@ -15,7 +15,7 @@
 #include "core/host.h"
 #include "core/settings.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -394,7 +394,7 @@ void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
   Host::AddIconOSDMessage(
-    "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
+    "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
     fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load post-processing chain: {}"),
                 msg.empty() ? TRANSLATE_SV("PostProcessing", "Unknown Error") : std::string_view(msg)),
     Host::OSD_ERROR_DURATION);
@@ -613,7 +613,7 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
     {
       ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
       Host::AddIconOSDMessage(
-        "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
+        "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
         fmt::format(TRANSLATE_FS("PostProcessing",
                                  "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
                     shader->GetName(), error.GetDescription()),

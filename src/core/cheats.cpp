@@ -23,7 +23,7 @@
 #include "common/zip_helpers.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "fmt/format.h"
 
 LOG_CHANNEL(Cheats);
@@ -1016,7 +1016,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     {
       System::SetTaint(System::Taint::Patches);
       Host::AddIconOSDMessage(
-        "LoadPatches", ICON_FA_BAND_AID,
+        "LoadPatches", ICON_FA_BANDAGE,
         TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", s_active_patch_count),
         Host::OSD_INFO_DURATION);
     }
@@ -1031,7 +1031,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     else if (s_active_patch_count == 0)
     {
       Host::RemoveKeyedOSDMessage("LoadPatches");
-      Host::AddIconOSDMessage("LoadCheats", ICON_FA_BAND_AID,
+      Host::AddIconOSDMessage("LoadCheats", ICON_FA_BANDAGE,
                               TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
                               Host::OSD_INFO_DURATION);
     }
@@ -1090,7 +1090,7 @@ bool Cheats::ApplyManualCode(const std::string_view name)
   {
     if (code->IsManuallyActivated() && code->GetName() == name)
     {
-      Host::AddIconOSDMessage(code->GetName(), ICON_FA_BAND_AID,
+      Host::AddIconOSDMessage(code->GetName(), ICON_FA_BANDAGE,
                               fmt::format(TRANSLATE_FS("Cheats", "Cheat '{}' applied."), code->GetName()),
                               Host::OSD_INFO_DURATION);
       code->Apply();

@@ -24,7 +24,7 @@
 
 #include "fmt/core.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -3091,7 +3091,7 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
       auto& option = m_options[i];
 
       const SmallString title =
-        SmallString::from_format("{0} {1}", option.second ? ICON_FA_CHECK_SQUARE : ICON_FA_SQUARE, option.first);
+        SmallString::from_format("{0} {1}", option.second ? ICON_FA_SQUARE_CHECK : ICON_FA_SQUARE, option.first);
       if (MenuButton(title, std::string_view(), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
       {
         choice = i;
@@ -3269,7 +3269,7 @@ void ImGuiFullscreen::InputStringDialog::Draw()
     cb(std::move(text));
   }
 
-  if (MenuButtonWithoutSummary(ICON_FA_TIMES " Cancel"))
+  if (MenuButtonWithoutSummary(ICON_FA_XMARK " Cancel"))
     StartClose();
 
   EndMenuButtons();
