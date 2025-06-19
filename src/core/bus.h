@@ -170,7 +170,10 @@ ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 }
 
 /// Returns true if the specified page contains code.
-bool IsRAMCodePage(u32 index);
+ALWAYS_INLINE static bool IsRAMCodePage(u32 index)
+{
+  return g_ram_code_bits[index];
+}
 
 /// Flags a RAM region as code, so we know when to invalidate blocks.
 void SetRAMCodePage(u32 index);
@@ -188,7 +191,7 @@ bool IsCodePageAddress(PhysicalMemoryAddress address);
 bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size);
 
 /// Returns the number of cycles stolen by DMA RAM access.
-ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
+ALWAYS_INLINE static TickCount GetDMARAMTickCount(u32 word_count)
 {
   // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around
   // 17 clks per 16 words, due to required row address loading, probably plus some further minimal overload due to

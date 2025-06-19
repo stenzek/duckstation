@@ -4,6 +4,7 @@
 #include "dma.h"
 #include "bus.h"
 #include "cdrom.h"
+#include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "gpu.h"
 #include "gpu_dump.h"
@@ -894,6 +895,15 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
     if (s_state.transfer_buffer.size() < word_count)
       s_state.transfer_buffer.resize(word_count);
     dest_pointer = s_state.transfer_buffer.data();
+  }
+  else if constexpr (channel == Channel::CDROM)
+  {
+    const u32 end_page = (address + (increment * word_count) - 1) >> HOST_PAGE_SHIFT;
+    for (u32 page = address >> HOST_PAGE_SHIFT; page <= end_page; page++)
+    {
+      if (Bus::IsRAMCodePage(page))
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(page);
+    }
   }
 
   // Read from device.

@@ -699,11 +699,6 @@ bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
   }
 }
 
-bool Bus::IsRAMCodePage(u32 index)
-{
-  return g_ram_code_bits[index];
-}
-
 void Bus::SetRAMCodePage(u32 index)
 {
   if (g_ram_code_bits[index])
