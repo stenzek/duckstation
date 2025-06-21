@@ -4172,7 +4172,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINTBRUSH, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
                         "Dark", s_theme_names, s_theme_values, true,
-                        [](std::string_view) { BeginTransition(DEFAULT_TRANSITION_TIME, &FullscreenUI::SetTheme); });
+                        [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::SetTheme); });
 
   if (const TinyString current_value =
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
@@ -4192,7 +4192,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                        SetSettingsChanged(bsi);
 
                        // Have to defer the reload, because we've already drawn the bg for this frame.
-                       BeginTransition(DEFAULT_TRANSITION_TIME, {});
+                       BeginTransition(LONG_TRANSITION_TIME, {});
                        Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
                      });
   }
