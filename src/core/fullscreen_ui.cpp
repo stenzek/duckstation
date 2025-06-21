@@ -2474,21 +2474,9 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   if (type == InputBindingInfo::Type::Pointer || type == InputBindingInfo::Type::RelativePointer)
     return;
 
-  TinyString title;
-  title.format("{}/{}", section, name);
-
+  SmallString title;
   SmallString value = bsi->GetSmallStringValue(section, name);
   const bool oneline = value.count('&') <= 1;
-
-  ImRect bb;
-  bool visible, hovered, clicked;
-  clicked = MenuButtonFrame(title, true,
-                            oneline ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY :
-                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                            &visible, &hovered, &bb.Min, &bb.Max);
-  if (!visible)
-    return;
-
   if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
     InputManager::PrettifyInputBinding(value, &ImGuiFullscreen::GetControllerIconMapping);
 
@@ -2524,38 +2512,24 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
       }
     }
   }
+  else
+  {
+    title = display_name;
+  }
 
-  const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
+  title.append_format("##{}/{}", section, name);
 
+  bool clicked;
   if (oneline)
   {
     if (value.empty())
       value.assign(FSUI_VSTR("-"));
 
-    const ImVec2 value_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
-                                                          bb.Max.x - bb.Min.x, 0.0f, IMSTR_START_END(value));
-    const float text_end = bb.Max.x - value_size.x;
-    const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
-
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                              ImGui::GetColorU32(ImGuiCol_Text), show_type ? title.view() : display_name, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max,
-                              ImGui::GetColorU32(ImGuiCol_Text), value.empty() ? FSUI_VSTR("-") : value.view(),
-                              &value_size, ImVec2(1.0f, 0.5f), 0.0f, &bb);
+    clicked = MenuButtonWithValue(title, {}, value);
   }
   else
   {
-    const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-    const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
-
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                              ImGui::GetColorU32(ImGuiCol_Text), show_type ? title.view() : display_name, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
-                              summary_bb.Max, ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
-                              value.empty() ? FSUI_VSTR("No Binding") : value.view(), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                              &summary_bb);
+    clicked = MenuButton(title, value);
   }
 
   if (clicked)
@@ -3083,9 +3057,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
     ImVec2 button_pos(ImGui::GetCursorPos());
 
     // Align value text in middle.
-    ImGui::SetCursorPosY(
-      button_pos.y +
-      ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
+    ImGui::SetCursorPosY(button_pos.y + padding.y);
     ImGui::TextUnformatted(str_value);
 
     float step = 0;
@@ -3114,7 +3086,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
       dlg_value_changed = true;
     }
 
-    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
   }
 
   if (dlg_value_changed)
@@ -3836,8 +3808,6 @@ void FullscreenUI::DrawSettingsWindow()
         ImVec2(0.0f, 0.0f), heading_size, "settings_category",
         ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, s_state.settings_last_bg_alpha)))
   {
-    static constexpr float ITEM_WIDTH = 25.0f;
-
     static constexpr const SettingsPage global_pages[] = {
       SettingsPage::Interface,  SettingsPage::GameList, SettingsPage::Console,        SettingsPage::Emulation,
       SettingsPage::BIOS,       SettingsPage::Graphics, SettingsPage::PostProcessing, SettingsPage::Audio,
@@ -3910,12 +3880,11 @@ void FullscreenUI::DrawSettingsWindow()
                std::string_view(s_state.game_settings_entry->title) :
                Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
-    RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    RightAlignNavButtons(count);
 
     for (u32 i = 0; i < count; i++)
     {
-      if (NavButton(titles[static_cast<u32>(pages[i])].second, i == index, true, ITEM_WIDTH,
-                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      if (NavButton(titles[static_cast<u32>(pages[i])].second, i == index, true))
       {
         BeginTransition([page = pages[i]]() {
           s_state.settings_page = page;
@@ -7750,7 +7719,6 @@ void FullscreenUI::DrawGameListWindow()
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
                             MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
   {
-    static constexpr float ITEM_WIDTH = 25.0f;
     static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST};
     static constexpr const char* titles[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
     static constexpr u32 count = static_cast<u32>(std::size(titles));
@@ -7761,12 +7729,11 @@ void FullscreenUI::DrawGameListWindow()
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
     NavTitle(Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
-    RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    RightAlignNavButtons(count);
 
     for (u32 i = 0; i < count; i++)
     {
-      if (NavButton(icons[i], static_cast<GameListView>(i) == s_state.game_list_view, true, ITEM_WIDTH,
-                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      if (NavButton(icons[i], static_cast<GameListView>(i) == s_state.game_list_view, true))
       {
         BeginTransition([]() {
           s_state.game_list_view =
@@ -7863,7 +7830,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries", GetTransparentBackgroundColor(),
                                   ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
-    const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
+    const float row_height = 50.0f;
+    const ImVec2 image_size(LayoutScale(row_height, row_height));
 
     ResetFocusHere();
 
@@ -7877,8 +7845,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     {
       ImRect bb;
       bool visible, hovered;
-      bool pressed =
-        MenuButtonFrame(entry->path.c_str(), true, LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max);
+      bool pressed = MenuButtonFrame(entry->path.c_str(), LayoutScale(row_height), true, &bb, &visible, &hovered);
       if (!visible)
         continue;
 

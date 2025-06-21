@@ -2315,8 +2315,7 @@ void Achievements::DrawGameOverlays()
   const float spacing = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   const float rounding = LayoutScale(10.0f);
-  const ImVec2 image_size =
-    LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+  const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
   const ImGuiIO& io = ImGui::GetIO();
   ImVec2 position = ImVec2(io.DisplaySize.x - margin, io.DisplaySize.y - margin);
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -2695,113 +2694,102 @@ void Achievements::DrawAchievementsWindow()
   const float heading_height = LayoutScale(heading_height_unscaled);
   bool close_window = false;
 
-  if (ImGuiFullscreen::BeginFullscreenWindow(
-        ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading", heading_background, 0.0f, ImVec2(),
-        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+  if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading",
+                                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+                                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
+                                               ImGuiWindowFlags_NoScrollWithMouse))
   {
-    ImRect bb;
-    bool visible, hovered;
-    ImGuiFullscreen::MenuButtonFrame("achievements_heading", false, heading_height_unscaled, &visible, &hovered,
-                                     &bb.Min, &bb.Max, 0, heading_alpha);
-    if (visible)
+    const ImVec2 pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
+    const float spacing = LayoutScale(10.0f);
+    const float image_size = LayoutScale(85.0f);
+
+    if (!s_state.game_icon.empty())
     {
-      const float padding = LayoutScale(10.0f);
-      const float spacing = LayoutScale(10.0f);
-      const float image_height = LayoutScale(85.0f);
-
-      const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
-      const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
-
-      if (!s_state.game_icon.empty())
+      GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
+      if (badge)
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
-        if (badge)
-        {
-          ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                                               IM_COL32(255, 255, 255, 255));
-        }
+        ImGui::GetWindowDrawList()->AddImage(badge, pos, pos + ImVec2(image_size, image_size), ImVec2(0.0f, 0.0f),
+                                             ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       }
+    }
 
-      float left = bb.Min.x + padding + image_height + spacing;
-      float right = bb.Max.x - padding;
-      float top = bb.Min.y + padding;
-      ImDrawList* dl = ImGui::GetWindowDrawList();
-      SmallString text;
-      ImVec2 text_size;
+    float left = pos.x + image_size + spacing;
+    float right = pos.x + ImGuiFullscreen::GetMenuButtonAvailableWidth();
+    float top = pos.y;
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    SmallString text;
+    ImVec2 text_size;
 
-      close_window = (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
-                      ImGuiFullscreen::WantsToCloseMenu());
+    close_window = (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
+                    ImGuiFullscreen::WantsToCloseMenu());
 
-      const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
-      text.assign(s_state.game_title);
+    const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
+    text.assign(s_state.game_title);
 
-      if (rc_client_get_hardcore_enabled(s_state.client))
-        text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
+    if (rc_client_get_hardcore_enabled(s_state.client))
+      text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
 
-      top += UIStyle.LargeFontSize + spacing;
+    top += UIStyle.LargeFontSize + spacing;
 
-      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                                ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
+                              ImGui::GetColorU32(ImGuiCol_Text), text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
-      const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
-      if (s_state.game_summary.num_core_achievements > 0)
+    const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
+    if (s_state.game_summary.num_core_achievements > 0)
+    {
+      if (s_state.game_summary.num_unlocked_achievements == s_state.game_summary.num_core_achievements)
       {
-        if (s_state.game_summary.num_unlocked_achievements == s_state.game_summary.num_core_achievements)
-        {
-          text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
-                                       "Point count", s_state.game_summary.points_unlocked);
-        }
-        else
-        {
-          text.format(TRANSLATE_FS("Achievements",
-                                   "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-                      s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements,
-                      s_state.game_summary.points_unlocked, s_state.game_summary.points_core);
-        }
+        text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
+                                     "Point count", s_state.game_summary.points_unlocked);
       }
       else
       {
-        text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
+        text.format(TRANSLATE_FS("Achievements",
+                                 "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
+                    s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements,
+                    s_state.game_summary.points_unlocked, s_state.game_summary.points_core);
       }
+    }
+    else
+    {
+      text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
+    }
 
-      top += UIStyle.MediumFontSize + spacing;
+    top += UIStyle.MediumFontSize + spacing;
 
-      RenderShadowedTextClipped(
-        UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, summary_bb.Min, summary_bb.Max,
-        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
-        ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, summary_bb.Min,
+                              summary_bb.Max,
+                              ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                              text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
-      if (s_state.game_summary.num_core_achievements > 0)
+    if (s_state.game_summary.num_core_achievements > 0)
+    {
+      const float progress_height = LayoutScale(20.0f);
+      const float progress_rounding = LayoutScale(5.0f);
+      const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
+      const float fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
+                             static_cast<float>(s_state.game_summary.num_core_achievements);
+      dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
+                        progress_rounding);
+      if (s_state.game_summary.num_unlocked_achievements > 0)
       {
-        const float progress_height = LayoutScale(20.0f);
-        const float progress_rounding = LayoutScale(5.0f);
-        const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
-        const float fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
-                               static_cast<float>(s_state.game_summary.num_core_achievements);
-        dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                          progress_rounding);
-        if (s_state.game_summary.num_unlocked_achievements > 0)
-        {
-          dl->AddRectFilled(progress_bb.Min,
-                            ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                            ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
-        }
-
-        text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
-        text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
-                                                IMSTR_START_END(text));
-        const ImVec2 text_pos(
-          progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
-          progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
-        dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos,
-                    ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(text));
-        // top += progress_height + spacing;
+        dl->AddRectFilled(progress_bb.Min,
+                          ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
+                          ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
       }
+
+      text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
+      text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
+                                              IMSTR_START_END(text));
+      const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+                            progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) -
+                              (text_size.y / 2.0f));
+      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos,
+                  ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(text));
+      // top += progress_height + spacing;
     }
   }
   ImGuiFullscreen::EndFullscreenWindow();
-
-  ImGui::SetNextWindowBgAlpha(alpha);
 
   // See note in FullscreenUI::DrawSettingsWindow().
   if (ImGuiFullscreen::IsFocusResetFromWindowChange())
@@ -2883,56 +2871,47 @@ void Achievements::DrawAchievementsWindow()
 void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 {
   using ImGuiFullscreen::DarkerColor;
-  using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
   using ImGuiFullscreen::LayoutScale;
   using ImGuiFullscreen::LayoutUnscale;
   using ImGuiFullscreen::RenderShadowedTextClipped;
   using ImGuiFullscreen::UIStyle;
 
-  static constexpr float alpha = 0.8f;
   static constexpr float progress_height_unscaled = 20.0f;
   static constexpr float progress_spacing_unscaled = 5.0f;
   static constexpr float progress_rounding_unscaled = 5.0f;
-  static constexpr float spacing_unscaled = 4.0f;
 
-  const float spacing = ImGuiFullscreen::LayoutScale(spacing_unscaled);
+  const float spacing = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
   const u32 text_color = ImGui::GetColorU32(UIStyle.SecondaryTextColor);
   const u32 summary_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryTextColor));
   const u32 rarity_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.SecondaryTextColor)));
 
+  const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
   const bool is_unlocked = (cheevo->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
   const std::string_view measured_progress(cheevo->measured_progress);
   const bool is_measured = !is_unlocked && !measured_progress.empty();
-  const float unlock_rarity_height = spacing_unscaled + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
+  const float unlock_rarity_height = spacing + UIStyle.MediumFontSize;
   const ImVec2 points_template_size = UIStyle.Font->CalcTextSizeA(
     UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, TRANSLATE("Achievements", "XXX points"));
+  const float avail_width = ImGuiFullscreen::GetMenuButtonAvailableWidth();
   const size_t summary_length = std::strlen(cheevo->description);
-  const float summary_wrap_width =
-    (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - (ImGui::GetStyle().FramePadding.x * 2.0f) -
-     LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + 30.0f) - points_template_size.x);
+  const float summary_wrap_width = (avail_width - (image_size.x + spacing + spacing) - points_template_size.x);
   const ImVec2 summary_text_size =
     UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, summary_wrap_width,
                                 cheevo->description, cheevo->description + summary_length);
 
-  // Messy, but need to undo LayoutScale in MenuButtonFrame()...
-  const float extra_summary_height = std::max(LayoutUnscale(summary_text_size.y) - LAYOUT_MENU_BUTTON_HEIGHT, 0.0f);
-
+  const float content_height = UIStyle.LargeFontSize + spacing + summary_text_size.y + unlock_rarity_height +
+                               LayoutScale(is_measured ? progress_height_unscaled : 0.0f) +
+                               LayoutScale(ImGuiFullscreen::LAYOUT_MENU_ITEM_EXTRA_HEIGHT);
   ImRect bb;
   bool visible, hovered;
-  const bool clicked = ImGuiFullscreen::MenuButtonFrame(
-    TinyString::from_format("chv_{}", cheevo->id), true,
-    !is_measured ? (LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_rarity_height) :
-                   (LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_rarity_height + progress_height_unscaled +
-                    progress_spacing_unscaled),
-    &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
+  const bool clicked = ImGuiFullscreen::MenuButtonFrame(TinyString::from_format("chv_{}", cheevo->id), content_height,
+                                                        true, &bb, &visible, &hovered);
   if (!visible)
     return;
 
   const std::string& badge_path =
     GetCachedAchievementBadgePath(cheevo, cheevo->state != RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
 
-  const ImVec2 image_size(
-    LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT));
   if (!badge_path.empty())
   {
     GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
@@ -2982,8 +2961,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + summary_text_size.y));
   const ImRect unlock_rarity_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x,
-                                summary_bb.Max.y +
-                                  LayoutScale(spacing_unscaled + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
+                                summary_bb.Max.y + unlock_rarity_height);
   const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
   const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y),
                        ImVec2(bb.Max.x, midpoint));
@@ -3096,24 +3074,22 @@ void Achievements::DrawLeaderboardsWindow()
   const bool is_leaderboard_open = (s_state.open_leaderboard != nullptr);
   bool close_leaderboard_on_exit = false;
 
-  ImRect bb;
   SmallString text;
 
   const ImVec4 background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIStyle.BackgroundColor, heading_alpha);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
-  const float padding = LayoutScale(10.0f);
   const float spacing = LayoutScale(10.0f);
-  const float spacing_small = spacing / 2.0f;
+  const float spacing_small = ImFloor(spacing * 0.5f);
   float heading_height = LayoutScale(heading_height_unscaled);
   if (is_leaderboard_open)
   {
     // tabs
-    heading_height += spacing_small + LayoutScale(tab_height_unscaled) + spacing;
+    heading_height += spacing * 2.0f + LayoutScale(tab_height_unscaled) + spacing * 2.0f;
 
     // Add space for a legend - spacing + 1 line of text + spacing + line
-    heading_height += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + spacing;
+    heading_height += UIStyle.LargeFontSize;
   }
 
   const float rank_column_width =
@@ -3130,196 +3106,191 @@ void Achievements::DrawLeaderboardsWindow()
                                     .x;
   const float column_spacing = spacing * 2.0f;
 
-  if (ImGuiFullscreen::BeginFullscreenWindow(
-        ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading", heading_background, 0.0f, ImVec2(),
-        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
+  if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
+                                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+                                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
+                                               ImGuiWindowFlags_NoScrollWithMouse))
   {
-    bool visible, hovered;
-    bool pressed = ImGuiFullscreen::MenuButtonFrame("leaderboards_heading", false, heading_height_unscaled, &visible,
-                                                    &hovered, &bb.Min, &bb.Max, 0, alpha);
-    UNREFERENCED_VARIABLE(pressed);
+    const ImVec2 heading_pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
+    const float image_size = LayoutScale(85.0f);
 
-    if (visible)
+    if (!s_state.game_icon.empty())
     {
-      const float image_height = LayoutScale(85.0f);
-
-      const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
-      const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
-
-      if (!s_state.game_icon.empty())
+      GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
+      if (badge)
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon);
-        if (badge)
-        {
-          ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                                               IM_COL32(255, 255, 255, 255));
-        }
+        ImGui::GetWindowDrawList()->AddImage(badge, heading_pos, heading_pos + ImVec2(image_size, image_size),
+                                             ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       }
+    }
 
-      float left = bb.Min.x + padding + image_height + spacing;
-      float right = bb.Max.x - padding;
-      float top = bb.Min.y + padding;
+    float left = heading_pos.x + image_size + spacing;
+    float right = heading_pos.x + ImGuiFullscreen::GetMenuButtonAvailableWidth();
+    float top = heading_pos.y;
 
-      if (!is_leaderboard_open)
+    if (!is_leaderboard_open)
+    {
+      if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
+          ImGuiFullscreen::WantsToCloseMenu())
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
-            ImGuiFullscreen::WantsToCloseMenu())
-        {
-          FullscreenUI::ReturnToPreviousWindow();
-        }
+        FullscreenUI::ReturnToPreviousWindow();
       }
-      else
+    }
+    else
+    {
+      if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
+          ImGuiFullscreen::WantsToCloseMenu())
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
-            ImGuiFullscreen::WantsToCloseMenu())
-        {
-          close_leaderboard_on_exit = true;
-        }
+        close_leaderboard_on_exit = true;
       }
+    }
 
-      const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
-      text.assign(Achievements::GetGameTitle());
+    const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
+    text.assign(Achievements::GetGameTitle());
+
+    top += UIStyle.LargeFontSize + spacing_small;
+
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
+                              text_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+
+    u32 summary_color;
+    if (is_leaderboard_open)
+    {
+      const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
+      text.assign(s_state.open_leaderboard->title);
 
       top += UIStyle.LargeFontSize + spacing_small;
 
-      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                                text_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, subtitle_bb.Min,
+                                subtitle_bb.Max,
+                                ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
 
-      u32 summary_color;
-      if (is_leaderboard_open)
-      {
-        const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
-        text.assign(s_state.open_leaderboard->title);
+      text.assign(s_state.open_leaderboard->description);
+      summary_color = ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])));
+    }
+    else
+    {
+      u32 count = 0;
+      for (u32 i = 0; i < s_state.leaderboard_list->num_buckets; i++)
+        count += s_state.leaderboard_list->buckets[i].num_leaderboards;
+      text = TRANSLATE_PLURAL_SSTR("Achievements", "This game has %n leaderboards.", "Leaderboard count", count);
+      summary_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
+    }
 
-        top += UIStyle.LargeFontSize + spacing_small;
+    const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
+    top += UIStyle.MediumFontSize + spacing_small;
 
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, subtitle_bb.Min,
-                                  subtitle_bb.Max,
-                                  ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text,
-                                  nullptr, ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, summary_bb.Min,
+                              summary_bb.Max, summary_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
-        text.assign(s_state.open_leaderboard->description);
-        summary_color = ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])));
-      }
-      else
-      {
-        u32 count = 0;
-        for (u32 i = 0; i < s_state.leaderboard_list->num_buckets; i++)
-          count += s_state.leaderboard_list->buckets[i].num_leaderboards;
-        text = TRANSLATE_PLURAL_SSTR("Achievements", "This game has %n leaderboards.", "Leaderboard count", count);
-        summary_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
-      }
-
-      const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
+    if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
+    {
+      const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
       top += UIStyle.MediumFontSize + spacing_small;
 
-      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, summary_bb.Min,
-                                summary_bb.Max, summary_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+      text.format(
+        ICON_EMOJI_WARNING " {}",
+        TRANSLATE_SV("Achievements",
+                     "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."));
 
-      if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, hardcore_warning_bb.Min,
+                                hardcore_warning_bb.Max,
+                                ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]))),
+                                text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &hardcore_warning_bb);
+    }
+
+    if (is_leaderboard_open)
+    {
+      const float avail_width = ImGuiFullscreen::GetMenuButtonAvailableWidth();
+      const float tab_width = avail_width * 0.2f;
+      const float tab_spacing = LayoutScale(20.0f);
+      const float tab_left_padding = (avail_width - ((tab_width * 2.0f) + tab_spacing)) * 0.5f;
+      ImGui::SetCursorScreenPos(ImVec2(heading_pos.x + tab_left_padding, top + spacing * 2.0f));
+      ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING,
+                                                                  ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING));
+
+      if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
+          ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) ||
+          ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
+          ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
       {
-        const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
-        top += UIStyle.MediumFontSize + spacing_small;
-
-        text.format(
-          ICON_EMOJI_WARNING " {}",
-          TRANSLATE_SV("Achievements",
-                       "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."));
-
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, hardcore_warning_bb.Min,
-                                  hardcore_warning_bb.Max,
-                                  ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]))),
-                                  text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &hardcore_warning_bb);
+        s_state.is_showing_all_leaderboard_entries = !s_state.is_showing_all_leaderboard_entries;
+        ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
       }
 
-      if (is_leaderboard_open)
+      for (const bool show_all : {false, true})
       {
-        const float tab_width = (ImGui::GetWindowWidth() / ImGuiFullscreen::UIStyle.LayoutScale) * 0.5f;
-        ImGui::SetCursorPos(ImVec2(0.0f, top + spacing_small));
-
-        if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
-            ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ||
-            ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
-            ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
+        const std::string_view title =
+          show_all ? TRANSLATE_SV("Achievements", "Show Best") : TRANSLATE_SV("Achievements", "Show Nearby");
+        if (ImGuiFullscreen::NavTab(title, s_state.is_showing_all_leaderboard_entries == show_all, true, tab_width))
         {
-          s_state.is_showing_all_leaderboard_entries = !s_state.is_showing_all_leaderboard_entries;
+          s_state.is_showing_all_leaderboard_entries = show_all;
           ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
         }
 
-        for (const bool show_all : {false, true})
-        {
-          const char* title =
-            show_all ? TRANSLATE("Achievements", "Show Best") : TRANSLATE("Achievements", "Show Nearby");
-          if (ImGuiFullscreen::NavTab(title, s_state.is_showing_all_leaderboard_entries == show_all, true, tab_width,
-                                      tab_height_unscaled, heading_background))
-          {
-            s_state.is_showing_all_leaderboard_entries = show_all;
-            ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::ViewChanged);
-          }
-        }
-
-        const ImVec2 bg_pos =
-          ImVec2(0.0f, ImGui::GetCurrentWindow()->DC.CursorPos.y + LayoutScale(tab_height_unscaled));
-        const ImVec2 bg_size =
-          ImVec2(ImGui::GetWindowWidth(),
-                 spacing + LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + spacing);
-        ImGui::GetWindowDrawList()->AddRectFilled(bg_pos, bg_pos + bg_size, ImGui::GetColorU32(heading_background));
-
-        ImGui::SetCursorPos(ImVec2(0.0f, ImGui::GetCursorPosY() + LayoutScale(tab_height_unscaled) + spacing));
-
-        pressed =
-          ImGuiFullscreen::MenuButtonFrame("legend", false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                           &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
-        UNREFERENCED_VARIABLE(pressed);
-
-        // add padding from the window below, don't want the menu items butted up against the edge
-        bb.Min.x += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
-        bb.Max.x -= LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
-
-        const u32 heading_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
-
-        const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
-        float text_start_x = bb.Min.x + LayoutScale(15.0f) + padding;
-
-        const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, rank_bb.Min, rank_bb.Max,
-                                  heading_color, TRANSLATE_SV("Achievements", "Rank"), nullptr, ImVec2(0.0f, 0.0f),
-                                  0.0f, &rank_bb);
-        text_start_x += rank_column_width + column_spacing;
-
-        const ImRect user_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, user_bb.Min, user_bb.Max,
-                                  heading_color, TRANSLATE_SV("Achievements", "Name"), nullptr, ImVec2(0.0f, 0.0f),
-                                  0.0f, &user_bb);
-        text_start_x += name_column_width + column_spacing;
-
-        static const char* value_headings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
-          TRANSLATE_NOOP("Achievements", "Time"),
-          TRANSLATE_NOOP("Achievements", "Score"),
-          TRANSLATE_NOOP("Achievements", "Value"),
-        };
-
-        const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(
-          UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, score_bb.Min, score_bb.Max, heading_color,
-          Host::TranslateToStringView(
-            "Achievements",
-            value_headings[std::min<u8>(s_state.open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
-          nullptr, ImVec2(0.0f, 0.0f), 0.0f, &score_bb);
-        text_start_x += time_column_width + column_spacing;
-
-        const ImRect date_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, date_bb.Min, date_bb.Max,
-                                  heading_color, TRANSLATE_SV("Achievements", "Date Submitted"), nullptr,
-                                  ImVec2(0.0f, 0.0f), 0.0f, &date_bb);
-
-        const float line_thickness = LayoutScale(1.0f);
-        const float line_padding = LayoutScale(5.0f);
-        const ImVec2 line_start(bb.Min.x, bb.Min.y + UIStyle.LargeFontSize + line_padding);
-        const ImVec2 line_end(bb.Max.x, line_start.y);
-        ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
-                                            line_thickness);
+        if (!show_all)
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + tab_spacing);
       }
+
+      ImGui::PopStyleVar();
+
+      ImGui::SetCursorPos(ImVec2(0.0f, ImGui::GetCursorPosY() + LayoutScale(tab_height_unscaled) + spacing * 2.0f));
+
+      ImVec2 column_heading_pos = ImGui::GetCursorScreenPos();
+      float end_x = column_heading_pos.x + ImGui::GetContentRegionAvail().x;
+
+      // add padding from the window below, don't want the menu items butted up against the edge
+      column_heading_pos.x += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
+      end_x -= LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
+
+      // and the padding for the frame itself
+      column_heading_pos.x += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING);
+      end_x -= LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING);
+
+      const u32 heading_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
+
+      const float midpoint = column_heading_pos.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
+      float text_start_x = column_heading_pos.x;
+
+      const ImRect rank_bb(ImVec2(text_start_x, column_heading_pos.y), ImVec2(end_x, midpoint));
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, rank_bb.Min, rank_bb.Max,
+                                heading_color, TRANSLATE_SV("Achievements", "Rank"), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                &rank_bb);
+      text_start_x += rank_column_width + column_spacing;
+
+      const ImRect user_bb(ImVec2(text_start_x, column_heading_pos.y), ImVec2(end_x, midpoint));
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, user_bb.Min, user_bb.Max,
+                                heading_color, TRANSLATE_SV("Achievements", "Name"), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                &user_bb);
+      text_start_x += name_column_width + column_spacing;
+
+      static const char* value_headings[NUM_RC_CLIENT_LEADERBOARD_FORMATS] = {
+        TRANSLATE_NOOP("Achievements", "Time"),
+        TRANSLATE_NOOP("Achievements", "Score"),
+        TRANSLATE_NOOP("Achievements", "Value"),
+      };
+
+      const ImRect score_bb(ImVec2(text_start_x, column_heading_pos.y), ImVec2(end_x, midpoint));
+      RenderShadowedTextClipped(
+        UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, score_bb.Min, score_bb.Max, heading_color,
+        Host::TranslateToStringView(
+          "Achievements",
+          value_headings[std::min<u8>(s_state.open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
+        nullptr, ImVec2(0.0f, 0.0f), 0.0f, &score_bb);
+      text_start_x += time_column_width + column_spacing;
+
+      const ImRect date_bb(ImVec2(text_start_x, column_heading_pos.y), ImVec2(end_x, midpoint));
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, date_bb.Min, date_bb.Max,
+                                heading_color, TRANSLATE_SV("Achievements", "Date Submitted"), nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &date_bb);
+
+      const float line_thickness = LayoutScale(1.0f);
+      const float line_padding = LayoutScale(5.0f);
+      const ImVec2 line_start(column_heading_pos.x, column_heading_pos.y + UIStyle.LargeFontSize + line_padding);
+      const ImVec2 line_end(end_x, line_start.y);
+      ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
+                                          line_thickness);
     }
   }
   ImGuiFullscreen::EndFullscreenWindow();
@@ -3403,22 +3374,11 @@ void Achievements::DrawLeaderboardsWindow()
           }
         }
 
-        // Fetch next chunk if the loading indicator becomes visible (i.e. we scrolled enough).
-        bool visible, hovered;
+        bool visible;
         text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
-        ImGuiFullscreen::MenuButtonFrame(text, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible,
-                                         &hovered, &bb.Min, &bb.Max);
-        if (visible)
-        {
-          const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
-          const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-
-          RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min,
-                                    title_bb.Max, text_color, text, nullptr, ImVec2(0, 0), 0.0f, &title_bb);
-
-          if (!s_state.leaderboard_fetch_handle)
-            FetchNextLeaderboardEntries();
-        }
+        ImGuiFullscreen::MenuButtonWithVisibilityQuery(text, {}, {}, &visible, false);
+        if (visible && !s_state.leaderboard_fetch_handle)
+          FetchNextLeaderboardEntries();
       }
 
       ImGuiFullscreen::EndMenuButtons();
@@ -3451,18 +3411,15 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   using ImGuiFullscreen::RenderShadowedTextClipped;
   using ImGuiFullscreen::UIStyle;
 
-  static constexpr float alpha = 0.8f;
-
   ImRect bb;
   bool visible, hovered;
   bool pressed =
-    ImGuiFullscreen::MenuButtonFrame(entry.user, true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible,
-                                     &hovered, &bb.Min, &bb.Max, 0, alpha);
+    ImGuiFullscreen::MenuButtonFrame(entry.user, UIStyle.LargeFontSize, true, &bb, &visible, &hovered);
   if (!visible)
     return;
 
   const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
-  float text_start_x = bb.Min.x + LayoutScale(15.0f);
+  float text_start_x = bb.Min.x;
   SmallString text;
 
   text.format("{}", entry.rank);
@@ -3530,39 +3487,17 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard)
 {
   using ImGuiFullscreen::LayoutScale;
-  using ImGuiFullscreen::RenderShadowedTextClipped;
+  using ImGuiFullscreen::MenuButton;
   using ImGuiFullscreen::UIStyle;
 
-  static constexpr float alpha = 0.8f;
+  SmallString title;
+  title.format("{}##{}", lboard->title, lboard->id);
 
-  TinyString id_str;
-  id_str.format("{}", lboard->id);
-
-  ImRect bb;
-  bool visible, hovered;
-  bool pressed = ImGuiFullscreen::MenuButtonFrame(id_str, true, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, &visible,
-                                                  &hovered, &bb.Min, &bb.Max, 0, alpha);
-  if (!visible)
-    return;
-
-  const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
-  const float text_start_x = bb.Min.x + LayoutScale(15.0f);
-  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
-
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                            ImGui::GetColorU32(ImGuiCol_Text), lboard->title, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                            &title_bb);
-
+  std::string_view summary;
   if (lboard->description && lboard->description[0] != '\0')
-  {
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
-                              summary_bb.Max,
-                              ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
-                              lboard->description, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
-  }
+    summary = lboard->description;
 
-  if (pressed)
+  if (MenuButton(title, summary))
     FullscreenUI::BeginTransition([id = lboard->id]() { OpenLeaderboardById(id); });
 }
 

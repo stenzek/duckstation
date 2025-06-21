@@ -43,6 +43,8 @@ static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
 static constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
 static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 static constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
+static constexpr float LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING = 6.0f;
+static constexpr float LAYOUT_MENU_ITEM_EXTRA_HEIGHT = 2.0f;
 static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -278,9 +280,11 @@ void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding =
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float x_spacing = 0.0f,
                       float y_spacing = LAYOUT_MENU_BUTTON_SPACING, bool prerender_frame = true);
 void EndMenuButtons();
+float GetMenuButtonAvailableWidth();
+bool IsNextMenuButtonClipped(std::string_view str_id, bool has_summary, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
-bool MenuButtonFrame(std::string_view str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
-                     ImVec2* max, ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
+bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible, bool* hovered,
+                     ImGuiButtonFlags flags = 0, float alpha = 1.0f);
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, float font_size, float font_weight, const ImVec2& pos_min,
@@ -304,6 +308,8 @@ bool MenuButtonWithoutSummary(std::string_view title, bool enabled = true,
                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::string_view value, bool enabled = true,
                          const ImVec2& text_align = ImVec2(0.0f, 0.0f));
+bool MenuButtonWithVisibilityQuery(std::string_view title, std::string_view summary, std::string_view value,
+                                   bool* visible, bool enabled = true, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
                      const ImVec2& image_size, bool enabled = true, const ImVec2& uv0 = ImVec2(0.0f, 0.0f),
                      const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
@@ -345,7 +351,6 @@ ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_v
 void BeginHorizontalMenuButtons(u32 num_items, float max_item_width = 0.0f,
                                 float x_padding = LAYOUT_MENU_BUTTON_Y_PADDING,
                                 float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING,
-                                float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
                                 float x_spacing = LAYOUT_MENU_BUTTON_X_PADDING,
                                 float x_margin = LAYOUT_MENU_WINDOW_X_PADDING);
 void EndHorizontalMenuButtons();
@@ -354,12 +359,10 @@ bool HorizontalMenuButton(std::string_view title, bool enabled = true,
 
 void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void EndNavBar();
-void NavTitle(std::string_view title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                          float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-bool NavButton(std::string_view title, bool is_active, bool enabled = true, float width = -1.0f,
-               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-bool NavTab(std::string_view title, bool is_active, bool enabled, float width, float height, const ImVec4& background);
+void NavTitle(std::string_view title);
+void RightAlignNavButtons(u32 num_items = 0);
+bool NavButton(std::string_view title, bool is_active, bool enabled = true);
+bool NavTab(std::string_view title, bool is_active, bool enabled, float width);
 
 bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, const ImVec4& bg_color,
                          u32 num_items);
