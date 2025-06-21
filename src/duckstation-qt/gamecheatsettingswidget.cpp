@@ -635,7 +635,7 @@ void GameCheatSettingsWidget::newCode()
 {
   Cheats::CodeInfo new_code;
   CheatCodeEditorDialog dlg(this, &new_code, getGroupNames());
-  if (!dlg.exec())
+  if (dlg.exec() == QDialog::Rejected)
   {
     // cancelled
     return;
@@ -653,7 +653,7 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
     return;
 
   CheatCodeEditorDialog dlg(this, code, getGroupNames());
-  if (!dlg.exec())
+  if (dlg.exec() == QDialog::Rejected)
   {
     // no changes
     return;
@@ -949,7 +949,7 @@ void CheatCodeEditorDialog::onRangeMaxChanged(int value)
 void CheatCodeEditorDialog::onEditChoiceClicked()
 {
   GameCheatCodeChoiceEditorDialog dlg(this, m_new_options);
-  if (dlg.exec())
+  if (dlg.exec() == QDialog::Accepted)
     m_new_options = dlg.getNewOptions();
 }
 
