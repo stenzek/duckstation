@@ -471,7 +471,7 @@ void InputVibrationBindingWidget::onClicked()
   input_dialog.setComboBoxEditable(false);
   input_dialog.setComboBoxItems(std::move(input_options));
   input_dialog.setTextValue(current);
-  if (input_dialog.exec() == 0)
+  if (input_dialog.exec() == QDialog::Rejected)
     return;
 
   const QString new_value(input_dialog.textValue());
