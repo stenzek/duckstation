@@ -408,7 +408,7 @@ void GameSummaryWidget::onCompatibilityCommentsClicked()
   layout->addWidget(tb, 1);
 
   QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
-  connect(bb->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+  connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
   layout->addWidget(bb);
 
   dlg.exec();

@@ -133,7 +133,7 @@ ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, Contro
   linkButton(m_ui.SDL2LED, 2);
   linkButton(m_ui.SDL3LED, 3);
 
-  connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
 }
 
 ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;

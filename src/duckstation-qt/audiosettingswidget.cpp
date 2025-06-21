@@ -303,7 +303,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.useAAFilter, "Audio", "StretchUseAAFilter",
                                                AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER);
 
-  connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
+  connect(dlgui.buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
   connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
     m_dialog->setIntSettingValue("Audio", "StretchSequenceLengthMS",
                                  m_dialog->isPerGameSettings() ?
