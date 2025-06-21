@@ -198,6 +198,9 @@
     </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
+    <addaction name="actionViewSmallToolbarIcons"/>
+    <addaction name="actionViewToolbarLabels"/>
+    <addaction name="actionViewToolbarLabelsBesidesText"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
@@ -744,6 +747,30 @@
    </property>
    <property name="text">
     <string>Lock Toolbar</string>
+   </property>
+  </action>
+  <action name="actionViewSmallToolbarIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Small Toolbar Icons</string>
+   </property>
+  </action>
+  <action name="actionViewToolbarLabels">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toolbar Labels</string>
+   </property>
+  </action>
+  <action name="actionViewToolbarLabelsBesidesText">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toolbar Labels Besides Text</string>
    </property>
   </action>
   <action name="actionViewStatusBar">

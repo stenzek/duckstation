@@ -172,6 +172,7 @@ void MainWindow::initialize()
   m_ui.setupUi(this);
   setupAdditionalUi();
   updateToolbarActions();
+  updateToolbarIconStyle();
   updateEmulationActions(false, false, false);
   connectSignals();
 
@@ -1308,11 +1309,48 @@ void MainWindow::onViewToolbarActionToggled(bool checked)
   m_ui.toolBar->setVisible(checked);
 }
 
-void MainWindow::onViewLockToolbarActionToggled(bool checked)
+void MainWindow::onViewToolbarLockActionToggled(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
+  Host::SetBaseBoolSettingValue("UI", "LockToolbar", !checked);
   Host::CommitBaseSettingChanges();
   m_ui.toolBar->setMovable(!checked);
+
+  // ensure synced
+  const QSignalBlocker sb(m_ui.actionViewLockToolbar);
+  m_ui.actionViewLockToolbar->setChecked(checked);
+}
+
+void MainWindow::onViewToolbarSmallIconsActionToggled(bool checked)
+{
+  Host::SetBaseBoolSettingValue("UI", "ToolbarSmallIcons", checked);
+  Host::CommitBaseSettingChanges();
+  updateToolbarIconStyle();
+
+  // ensure synced
+  const QSignalBlocker sb(m_ui.actionViewSmallToolbarIcons);
+  m_ui.actionViewSmallToolbarIcons->setChecked(checked);
+}
+
+void MainWindow::onViewToolbarLabelsActionToggled(bool checked)
+{
+  Host::SetBaseBoolSettingValue("UI", "ToolbarLabels", checked);
+  Host::CommitBaseSettingChanges();
+  updateToolbarIconStyle();
+
+  // ensure synced
+  const QSignalBlocker sb(m_ui.actionViewToolbarLabels);
+  m_ui.actionViewToolbarLabels->setChecked(checked);
+}
+
+void MainWindow::onViewToolbarLabelsBesideIconsActionToggled(bool checked)
+{
+  Host::SetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", checked);
+  Host::CommitBaseSettingChanges();
+  updateToolbarIconStyle();
+
+  // ensure synced
+  const QSignalBlocker sb(m_ui.actionViewToolbarLabelsBesidesText);
+  m_ui.actionViewToolbarLabelsBesidesText->setChecked(checked);
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
@@ -1672,6 +1710,11 @@ void MainWindow::setupAdditionalUi()
   m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
   m_ui.toolBar->setMovable(!toolbars_locked);
 
+  m_ui.actionViewSmallToolbarIcons->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
+  m_ui.actionViewToolbarLabels->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
+  m_ui.actionViewToolbarLabelsBesidesText->setChecked(
+    Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
+
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize();
   m_ui.mainContainer->addWidget(m_game_list_widget);
@@ -1768,6 +1811,27 @@ void MainWindow::updateToolbarActions()
   }
 }
 
+void MainWindow::updateToolbarIconStyle()
+{
+  const bool show_labels = Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
+  const bool small_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false);
+  const bool labels_beside_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false);
+
+  Qt::ToolButtonStyle style;
+  if (!show_labels)
+    style = Qt::ToolButtonIconOnly;
+  else if (labels_beside_icons)
+    style = Qt::ToolButtonTextBesideIcon;
+  else
+    style = Qt::ToolButtonTextUnderIcon;
+  if (m_ui.toolBar->toolButtonStyle() != style)
+    m_ui.toolBar->setToolButtonStyle(style);
+
+  const QSize icon_size = QSize(small_icons ? 16 : 32, small_icons ? 16 : 32);
+  if (m_ui.toolBar->iconSize() != icon_size)
+    m_ui.toolBar->setIconSize(icon_size);
+}
+
 void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 {
   {
@@ -1778,6 +1842,28 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 
     QMenu menu;
 
+    QAction* action = menu.addAction(tr("Lock Toolbar"));
+    action->setCheckable(true);
+    action->setChecked(m_ui.toolBar->isMovable());
+    connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLockActionToggled);
+
+    action = menu.addAction(tr("Small Icons"));
+    action->setCheckable(true);
+    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
+    connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarSmallIconsActionToggled);
+
+    action = menu.addAction(tr("Show Labels"));
+    action->setCheckable(true);
+    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
+    connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsActionToggled);
+
+    action = menu.addAction(tr("Labels Beside Icons"));
+    action->setCheckable(true);
+    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
+    connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
+
+    menu.addSeparator();
+
     for (const auto& [name, action_ptr] : s_toolbar_actions)
     {
       if (!name)
@@ -1786,8 +1872,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
         continue;
       }
 
-      QAction* action = (m_ui.*action_ptr);
-      QAction* menu_action = menu.addAction(action->text());
+      QAction* menu_action = menu.addAction((m_ui.*action_ptr)->text());
       menu_action->setCheckable(true);
       menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
       connect(menu_action, &QAction::toggled, this, [&active_buttons, &active_buttons_changed, name](bool checked) {
@@ -1801,11 +1886,11 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 
     menu.exec(m_ui.toolBar->mapToGlobal(pos));
 
-    if (!active_buttons_changed)
-      return;
-
-    Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
-    Host::CommitBaseSettingChanges();
+    if (active_buttons_changed)
+    {
+      Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
+      Host::CommitBaseSettingChanges();
+    }
   }
 
   updateToolbarActions();
@@ -2107,7 +2192,11 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAdvancedSettings, &QAction::triggered, [this]() { doSettings("Advanced"); });
   connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
-  connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
+  connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarLockActionToggled);
+  connect(m_ui.actionViewSmallToolbarIcons, &QAction::toggled, this, &MainWindow::onViewToolbarSmallIconsActionToggled);
+  connect(m_ui.actionViewToolbarLabels, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsActionToggled);
+  connect(m_ui.actionViewToolbarLabelsBesidesText, &QAction::toggled, this,
+          &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);

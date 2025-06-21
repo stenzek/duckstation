@@ -182,7 +182,10 @@ private Q_SLOTS:
   void onRemoveDiscActionTriggered();
   void onScanForNewGamesTriggered();
   void onViewToolbarActionToggled(bool checked);
-  void onViewLockToolbarActionToggled(bool checked);
+  void onViewToolbarLockActionToggled(bool checked);
+  void onViewToolbarSmallIconsActionToggled(bool checked);
+  void onViewToolbarLabelsActionToggled(bool checked);
+  void onViewToolbarLabelsBesideIconsActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
@@ -238,6 +241,7 @@ private:
   void connectSignals();
 
   void updateToolbarActions();
+  void updateToolbarIconStyle();
   void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
   void updateShortcutActions(bool starting);
   void updateStatusBarWidgetVisibility();
