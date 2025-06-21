@@ -104,12 +104,12 @@ void SettingsWindow::addPages()
                "used.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
     m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
-    QStringLiteral("chip-2-line"),
+    QStringLiteral("emulation-line"),
     tr("<strong>Console Settings</strong><hr>These options determine the configuration of the simulated "
        "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
     m_emulation_settings = new EmulationSettingsWidget(this, m_ui.settingsContainer), tr("Emulation"),
-    QStringLiteral("emulation-line"),
+    QStringLiteral("chip-2-line"),
     tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
        "system.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 

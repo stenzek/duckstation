@@ -370,7 +370,7 @@
   </action>
   <action name="actionConsoleSettings">
    <property name="icon">
-    <iconset theme="chip-2-line"/>
+    <iconset theme="emulation-line"/>
    </property>
    <property name="text">
     <string>C&amp;onsole</string>
@@ -378,7 +378,7 @@
   </action>
   <action name="actionEmulationSettings">
    <property name="icon">
-    <iconset theme="emulation-line"/>
+    <iconset theme="chip-2-line"/>
    </property>
    <property name="text">
     <string>E&amp;mulation</string>
