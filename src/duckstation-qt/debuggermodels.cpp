@@ -455,8 +455,7 @@ void DebuggerStackModel::invalidateView()
 DebuggerAddBreakpointDialog::DebuggerAddBreakpointDialog(QWidget* parent /*= nullptr*/) : QDialog(parent)
 {
   m_ui.setupUi(this);
-  connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QAbstractButton::clicked, this,
-          &DebuggerAddBreakpointDialog::okClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &DebuggerAddBreakpointDialog::okClicked);
 }
 
 DebuggerAddBreakpointDialog::~DebuggerAddBreakpointDialog() = default;

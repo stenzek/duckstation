@@ -821,7 +821,7 @@ CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Ch
   connect(m_ui.rangeMax, &QSpinBox::valueChanged, this, &CheatCodeEditorDialog::onRangeMaxChanged);
   connect(m_ui.editChoice, &QPushButton::clicked, this, &CheatCodeEditorDialog::onEditChoiceClicked);
   connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &CheatCodeEditorDialog::saveClicked);
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &CheatCodeEditorDialog::cancelClicked);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
 CheatCodeEditorDialog::~CheatCodeEditorDialog() = default;
@@ -929,11 +929,6 @@ void CheatCodeEditorDialog::saveClicked()
   accept();
 }
 
-void CheatCodeEditorDialog::cancelClicked()
-{
-  reject();
-}
-
 void CheatCodeEditorDialog::onOptionTypeChanged(int index)
 {
   m_ui.editChoice->setVisible(index == 1);
@@ -1020,7 +1015,7 @@ GameCheatCodeChoiceEditorDialog::GameCheatCodeChoiceEditorDialog(QWidget* parent
   connect(m_ui.add, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onAddClicked);
   connect(m_ui.remove, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onRemoveClicked);
   connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &GameCheatCodeChoiceEditorDialog::onSaveClicked);
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &CheatCodeEditorDialog::reject);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
   m_ui.optionList->setRootIsDecorated(false);
   for (const Cheats::CodeOption& opt : options)

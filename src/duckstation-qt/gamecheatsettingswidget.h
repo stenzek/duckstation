@@ -104,7 +104,6 @@ public:
 private Q_SLOTS:
   void onGroupSelectedIndexChanged(int index);
   void saveClicked();
-  void cancelClicked();
 
   void onOptionTypeChanged(int index);
   void onRangeMinChanged(int value);
