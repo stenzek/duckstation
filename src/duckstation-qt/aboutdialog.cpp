@@ -81,7 +81,7 @@ void AboutDialog::showThirdPartyNotices(QWidget* parent)
   layout->addWidget(tb, 1);
 
   QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
-  connect(bb->button(QDialogButtonBox::Close), &QPushButton::clicked, &dialog, &QDialog::done);
+  connect(bb, &QDialogButtonBox::rejected, &dialog, &QDialog::accept);
   layout->addWidget(bb, 0);
 
   dialog.exec();

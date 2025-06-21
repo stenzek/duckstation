@@ -401,7 +401,7 @@ bool ControllerBindingWidget::doMultipleDeviceAutomaticBinding(QWidget* parent, 
   connect(&bb, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
   layout->addWidget(&bb);
 
-  if (dialog.exec() == 0)
+  if (dialog.exec() == QDialog::Rejected)
     return false;
 
   auto lock = Host::GetSettingsLock();

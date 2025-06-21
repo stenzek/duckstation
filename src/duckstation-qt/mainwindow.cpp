@@ -697,7 +697,7 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
   input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
   input_dialog.setComboBoxEditable(false);
   input_dialog.setComboBoxItems(std::move(input_options));
-  if (input_dialog.exec() == 0)
+  if (input_dialog.exec() == QDialog::Rejected)
     return ret;
 
   const int selected_index = input_dialog.comboBoxItems().indexOf(input_dialog.textValue());
@@ -1065,7 +1065,7 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
   const int res = dlg.exec();
   lock.lock();
 
-  return res ? GameList::GetEntryForPath(dlg.getSelectedDiscPath()) : nullptr;
+  return res == QDialog::Accepted ? GameList::GetEntryForPath(dlg.getSelectedDiscPath()) : nullptr;
 }
 
 std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)

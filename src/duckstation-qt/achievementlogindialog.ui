@@ -139,7 +139,6 @@
  </widget>
  <resources>
   <include location="resources/duckstation-qt.qrc"/>
-  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

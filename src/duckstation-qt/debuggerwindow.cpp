@@ -186,7 +186,7 @@ void DebuggerWindow::onFollowAddressTriggered()
 void DebuggerWindow::onAddBreakpointTriggered()
 {
   DebuggerAddBreakpointDialog dlg(this);
-  if (!dlg.exec())
+  if (dlg.exec() == QDialog::Rejected)
     return;
 
   addBreakpoint(dlg.getType(), dlg.getAddress());

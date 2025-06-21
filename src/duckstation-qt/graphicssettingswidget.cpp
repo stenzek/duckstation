@@ -1331,7 +1331,7 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
     idlg.setLabelText(tr("Texture Replacement Configuration (config.yaml)"));
     idlg.setTextValue(QString::fromStdString(config.ExportToYAML(false)));
     idlg.setOkButtonText(tr("Save"));
-    if (idlg.exec())
+    if (idlg.exec() != QDialog::Rejected)
     {
       const QString path = QFileDialog::getSaveFileName(&dlg, tr("Save Configuration"), QString(),
                                                         tr("Configuration Files (config.yaml)"));

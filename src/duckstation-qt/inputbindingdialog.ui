@@ -151,6 +151,9 @@
        <property name="text">
         <string>Add Binding</string>
        </property>
+       <property name="icon">
+        <iconset theme="add-line"/>
+       </property>
       </widget>
      </item>
      <item>
@@ -158,12 +161,18 @@
        <property name="text">
         <string>Remove Binding</string>
        </property>
+       <property name="icon">
+        <iconset theme="minus-line"/>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="clearBindings">
        <property name="text">
         <string>Clear Bindings</string>
+       </property>
+       <property name="icon">
+        <iconset theme="trash-fill"/>
        </property>
       </widget>
      </item>
