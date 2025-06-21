@@ -214,6 +214,22 @@ void HTTPDownloader::WaitForAllRequests()
   }
 }
 
+void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb,
+                                                 std::function<void()> after_sleep_cb)
+{
+  std::unique_lock lock(m_pending_http_request_lock);
+  while (!m_pending_http_requests.empty())
+  {
+    // Don't burn too much CPU.
+    if (before_sleep_cb)
+      before_sleep_cb();
+    Timer::NanoSleep(1000000);
+    if (after_sleep_cb)
+      after_sleep_cb();
+    LockedPollRequests(lock);
+  }
+}
+
 void HTTPDownloader::LockedAddRequest(Request* request)
 {
   m_pending_http_requests.push_back(request);

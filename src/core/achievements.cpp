@@ -2013,7 +2013,7 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
   }
 
   // Wait until the login request completes.
-  http->WaitForAllRequests();
+  http->WaitForAllRequestsWithYield([&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
   Assert(!params.request);
 
   // Success? Assume the callback set the error message.
@@ -3413,8 +3413,7 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   ImRect bb;
   bool visible, hovered;
-  bool pressed =
-    ImGuiFullscreen::MenuButtonFrame(entry.user, UIStyle.LargeFontSize, true, &bb, &visible, &hovered);
+  bool pressed = ImGuiFullscreen::MenuButtonFrame(entry.user, UIStyle.LargeFontSize, true, &bb, &visible, &hovered);
   if (!visible)
     return;
 

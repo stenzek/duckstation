@@ -78,6 +78,7 @@ public:
                          ProgressCallback* progress = nullptr);
   void PollRequests();
   void WaitForAllRequests();
+  void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
   bool HasAnyRequests();
 
   static const char DEFAULT_USER_AGENT[];
