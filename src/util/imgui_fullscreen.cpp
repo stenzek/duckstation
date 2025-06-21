@@ -1363,26 +1363,6 @@ float ImGuiFullscreen::GetMenuButtonAvailableWidth()
   return MenuButtonBounds::CalcAvailWidth();
 }
 
-bool ImGuiFullscreen::IsNextMenuButtonClipped(std::string_view str_id, bool has_summary,
-                                              float y_padding /*= LAYOUT_MENU_BUTTON_Y_PADDING*/)
-{
-  ImGuiWindow* window = ImGui::GetCurrentWindow();
-  const ImGuiID id = window->GetID(IMSTR_START_END(str_id));
-  const ImGuiStyle& style = ImGui::GetStyle();
-  const ImVec2 guessed_pos = window->DC.CursorPos;
-  const ImRect gussed_bb =
-    ImRect(guessed_pos, guessed_pos + ImVec2(style.FramePadding.x * 2.0f,
-                                             style.FramePadding.y * 2.0f +
-                                               (has_summary ? MenuButtonBounds::GetSummaryLineHeight(y_padding) :
-                                                              MenuButtonBounds::GetSingleLineHeight(y_padding))));
-  if (!ImGui::IsClippedEx(gussed_bb, id))
-    return false;
-
-  // still record it
-  ImGui::ItemSize(gussed_bb.GetSize());
-  return ImGui::ItemAdd(gussed_bb, id);
-}
-
 bool ImGuiFullscreen::MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb,
                                       bool* visible, bool* hovered, ImGuiButtonFlags flags /*= 0*/,
                                       float alpha /*= 1.0f*/)
@@ -1417,13 +1397,6 @@ void ImGuiFullscreen::DrawWindowTitle(std::string_view title)
   const float line_thickness = LayoutScale(1.0f);
   ImDrawList* dl = ImGui::GetWindowDrawList();
   dl->AddLine(line_start, line_end, IM_COL32(255, 255, 255, 255), line_thickness);
-}
-
-void ImGuiFullscreen::GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size)
-{
-  ImGuiWindow* window = ImGui::GetCurrentWindowRead();
-  *pos = window->DC.CursorPos;
-  *size = ImVec2(window->WorkRect.GetWidth(), LayoutScale(height) + ImGui::GetStyle().FramePadding.y * 2.0f);
 }
 
 bool ImGuiFullscreen::MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible,
@@ -1548,9 +1521,10 @@ void ImGuiFullscreen::MenuButtonBounds::SetValueSize(const ImVec2& size)
 
 void ImGuiFullscreen::MenuButtonBounds::CalcTitleSize(const std::string_view& title)
 {
-  title_size = title.empty() ? ImVec2() :
-                               UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
-                                                           available_non_value_width, IMSTR_START_END(title));
+  const std::string_view real_title = ImGuiFullscreen::RemoveHash(title);
+  title_size = real_title.empty() ? ImVec2() :
+                                    UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                                                                available_non_value_width, IMSTR_START_END(real_title));
 }
 
 void ImGuiFullscreen::MenuButtonBounds::CalcSummarySize(const std::string_view& summary)
@@ -1831,7 +1805,7 @@ bool ImGuiFullscreen::MenuHeadingButton(std::string_view title, std::string_view
 
   const MenuButtonBounds bb(title, value, {});
   bool visible, hovered;
-  const bool pressed = MenuButtonFrame(title, false, bb.frame_bb, &visible, &hovered);
+  const bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
   if (!visible)
     return false;
 

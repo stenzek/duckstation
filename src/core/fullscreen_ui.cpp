@@ -90,8 +90,6 @@ using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_LARGE_POPUP_PADDING;
 using ImGuiFullscreen::LAYOUT_LARGE_POPUP_ROUNDING;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
-using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
-using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_SPACING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
@@ -2107,9 +2105,8 @@ bool FullscreenUI::ShouldOpenToGameList()
 void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 {
   const ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size =
-    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+  const ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
   *menu_pos = ImVec2(0.0f, heading_size.y);
   *menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
 
@@ -2127,7 +2124,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     // draw branding
     {
       const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
-      const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      const ImVec2 logo_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
       dl->AddImage(s_state.app_icon_texture.get(), logo_pos, logo_pos + logo_size);
 
       const std::string_view heading_text = "DuckStation";
@@ -2169,8 +2166,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
           s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
         if (!s_state.achievements_user_badge_path.empty()) [[likely]]
         {
-          const ImVec2 badge_size =
-            LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+          const ImVec2 badge_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
           const ImVec2 badge_pos =
             ImVec2(name_pos.x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 
@@ -3283,9 +3279,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     ImVec2 button_pos(ImGui::GetCursorPos());
 
     // Align value text in middle.
-    ImGui::SetCursorPosY(
-      button_pos.y +
-      ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
+    ImGui::SetCursorPosY(button_pos.y + ((UIStyle.LargeFontSize + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
     ImGui::TextUnformatted(str_value);
 
     s32 step = 0;
@@ -3314,7 +3308,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
       dlg_value_changed = true;
     }
 
-    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
   }
 
   if (dlg_value_changed)
@@ -3795,9 +3789,8 @@ void FullscreenUI::DoClearGameSettings()
 void FullscreenUI::DrawSettingsWindow()
 {
   ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size =
-    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+  const ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   const float target_bg_alpha = GetBackgroundAlpha();
   s_state.settings_last_bg_alpha = (target_bg_alpha < s_state.settings_last_bg_alpha) ?
@@ -5845,17 +5838,10 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     {
       if (!opt.help_text.empty())
       {
-        const float width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-        const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                             width, IMSTR_START_END(opt.help_text));
-        ImVec2 pos, size;
-        ImGuiFullscreen::GetMenuButtonFrameBounds(LayoutUnscale(text_size.y), &pos, &size);
-        const ImVec2& frame_padding = ImGui::GetStyle().FramePadding;
-        const ImRect rect = ImRect(pos + frame_padding, pos + size - frame_padding);
-        ImGui::ItemSize(size);
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, rect.Min, rect.Max,
-                                  ImGui::GetColorU32(ImGuiCol_TextDisabled), opt.help_text, &text_size,
-                                  ImVec2(0.0f, 0.0f), width, &rect);
+        str.format("##help_{}{}", stage_index, opt.name);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        MenuButton(str, opt.help_text, false);
+        ImGui::PopStyleColor();
       }
 
       if (opt.ShouldHide())
@@ -6636,9 +6622,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         ImVec2 button_pos(ImGui::GetCursorPos());
 
         // Align value text in middle.
-        ImGui::SetCursorPosY(
-          button_pos.y +
-          ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
+        ImGui::SetCursorPosY(button_pos.y +
+                             ((UIStyle.LargeFontSize + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
         ImGui::TextUnformatted(visible_value.c_str(), visible_value.end_ptr());
 
         s32 step = 0;
@@ -6663,8 +6648,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           range_value_changed = true;
         }
 
-        ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) +
-                             LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+        ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
 
         if (range_value_changed)
         {
@@ -7253,9 +7237,8 @@ void FullscreenUI::DrawSaveStateSelector()
   };
 
   ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size =
-    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+  const ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   bool closed = false;
 
@@ -7712,9 +7695,8 @@ void FullscreenUI::DrawGameListWindow()
   PopulateGameListEntryList();
 
   ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size =
-    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+  const ImVec2 heading_size = ImVec2(
+    io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
                             MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))

@@ -36,8 +36,6 @@ static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
 static constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
 static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
 static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
-static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
-static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
 static constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
@@ -167,7 +165,7 @@ ALWAYS_INLINE static u32 MulAlpha(u32 col32, u32 a)
 
 ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
 {
-  const std::string_view::size_type pos = s.find('#');
+  const std::string_view::size_type pos = s.find("##");
   return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
 }
 
@@ -281,8 +279,6 @@ void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding =
                       float y_spacing = LAYOUT_MENU_BUTTON_SPACING, bool prerender_frame = true);
 void EndMenuButtons();
 float GetMenuButtonAvailableWidth();
-bool IsNextMenuButtonClipped(std::string_view str_id, bool has_summary, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
-void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible, bool* hovered,
                      ImGuiButtonFlags flags = 0, float alpha = 1.0f);
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
