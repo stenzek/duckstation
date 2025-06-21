@@ -6,10 +6,8 @@
 #include "bitutils.h"
 
 #include <cctype>
-#include <codecvt>
 #include <cstdio>
 #include <memory>
-#include <sstream>
 
 #ifndef __APPLE__
 #include <malloc.h> // alloca
