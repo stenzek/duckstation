@@ -1090,7 +1090,8 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
 
   return ImGui::Begin(name, nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                        ImGuiWindowFlags_NoBringToFrontOnFocus | flags);
+                        ImGuiWindowFlags_NoBringToFrontOnFocus |
+                        ((background.w == 0.0f) ? ImGuiWindowFlags_NoBackground : 0) | flags);
 }
 
 void ImGuiFullscreen::EndFullscreenWindow(bool allow_wrap_x, bool allow_wrap_y)
