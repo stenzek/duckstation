@@ -7712,7 +7712,7 @@ void FullscreenUI::DrawResumeStateSelector()
   if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Cancel"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
 
-  ImGuiFullscreen::EndHorizontalMenuButtons();
+  EndMenuButtons();
 
   SetStandardSelectionFooterText(false);
 
