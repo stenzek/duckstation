@@ -35,6 +35,7 @@ static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
 static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
 static constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
 static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
+static constexpr float LAYOUT_MEDIUM_LARGE_FONT_SIZE = 21.0f;
 static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
 static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
@@ -88,6 +89,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   float LayoutPaddingTop;
   float LargeFontSize;
   float MediumFontSize;
+  float MediumLargeFontSize;
 
   static constexpr float NormalFontWeight = 0.0f;
   static constexpr float BoldFontWeight = 500.0f;
@@ -349,9 +351,9 @@ void BeginHorizontalMenuButtons(u32 num_items, float max_item_width = 0.0f,
                                 float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING,
                                 float x_spacing = LAYOUT_MENU_BUTTON_X_PADDING,
                                 float x_margin = LAYOUT_MENU_WINDOW_X_PADDING);
-void EndHorizontalMenuButtons();
+void EndHorizontalMenuButtons(float add_vertical_spacing = -1.0f);
 bool HorizontalMenuButton(std::string_view title, bool enabled = true,
-                          const ImVec2& text_align = LAYOUT_CENTER_ALIGN_TEXT);
+                          const ImVec2& text_align = LAYOUT_CENTER_ALIGN_TEXT, ImGuiButtonFlags flags = 0);
 
 void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void EndNavBar();

@@ -2904,10 +2904,29 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 200.0f)))
+                             LayoutScale(600.0f, 0.0f)))
   {
     return;
   }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, min_value);
+  ImGui::SameLine();
+  ImGui::TextUnformatted(" - ");
+  ImGui::SameLine();
+  ImGui::Text(format, max_value);
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, default_value);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
 
@@ -2952,10 +2971,29 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 200.0f)))
+                             LayoutScale(600.0f, 0.0f)))
   {
     return;
   }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, min_value * multiplier);
+  ImGui::SameLine();
+  ImGui::TextUnformatted(" - ");
+  ImGui::SameLine();
+  ImGui::Text(format, max_value * multiplier);
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, default_value * multiplier);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
 
@@ -3009,10 +3047,29 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 200.0f)))
+                             LayoutScale(650.0f, 0.0f)))
   {
     return;
   }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, min_value * multiplier);
+  ImGui::SameLine();
+  ImGui::TextUnformatted(" - ");
+  ImGui::SameLine();
+  ImGui::Text(format, max_value * multiplier);
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, default_value * multiplier);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
 
@@ -3049,40 +3106,31 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   }
   else
   {
-    const ImVec2& padding(ImGui::GetStyle().FramePadding);
-    ImVec2 button_pos(ImGui::GetCursorPos());
-
-    // Align value text in middle.
-    ImGui::SetCursorPosY(button_pos.y + padding.y);
-    ImGui::TextUnformatted(str_value);
+    BeginHorizontalMenuButtons(5);
+    HorizontalMenuButton(str_value, false);
 
     float step = 0;
-    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
-    {
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_UP))
       step = step_value;
-    }
-    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
-                       true))
-    {
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_DOWN))
       step = -step_value;
-    }
-    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
-    {
+    ImGui::PopItemFlag();
+    if (HorizontalMenuButton(ICON_FA_KEYBOARD))
       manual_input = true;
-    }
-    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
+    if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
     {
       dlg_value = default_value * multiplier;
       dlg_value_changed = true;
     }
+
+    EndHorizontalMenuButtons(10.0f);
 
     if (step != 0)
     {
       dlg_value += step * multiplier;
       dlg_value_changed = true;
     }
-
-    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
   }
 
   if (dlg_value_changed)
@@ -3241,10 +3289,29 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 200.0f)))
+                             LayoutScale(650.0f, 0.0f)))
   {
     return;
   }
+
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, min_value);
+  ImGui::SameLine();
+  ImGui::TextUnformatted(" - ");
+  ImGui::SameLine();
+  ImGui::Text(format, max_value);
+  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
+  ImGui::PopFontWeight();
+  ImGui::SameLine();
+  ImGui::Text(format, default_value);
+  ImGui::PopFont();
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
 
@@ -3275,40 +3342,31 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   }
   else
   {
-    const ImVec2& padding(ImGui::GetStyle().FramePadding);
-    ImVec2 button_pos(ImGui::GetCursorPos());
-
-    // Align value text in middle.
-    ImGui::SetCursorPosY(button_pos.y + ((UIStyle.LargeFontSize + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
-    ImGui::TextUnformatted(str_value);
+    BeginHorizontalMenuButtons(5);
+    HorizontalMenuButton(str_value, false);
 
     s32 step = 0;
-    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
-    {
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_UP))
       step = step_value;
-    }
-    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
-                       true))
-    {
+    if (HorizontalMenuButton(ICON_FA_CHEVRON_DOWN))
       step = -step_value;
-    }
-    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
-    {
+    ImGui::PopItemFlag();
+    if (HorizontalMenuButton(ICON_FA_KEYBOARD))
       manual_input = true;
-    }
-    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
+    if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
     {
       dlg_value = default_value;
       dlg_value_changed = true;
     }
+
+    EndHorizontalMenuButtons(10.0f);
 
     if (step != 0)
     {
       dlg_value += step;
       dlg_value_changed = true;
     }
-
-    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
   }
 
   if (dlg_value_changed)
@@ -6612,43 +6670,35 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
       if (IsFixedPopupDialogOpen(title) &&
           BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                                LayoutScale(500.0f, 200.0f)))
+                                LayoutScale(600.0f, 0.0f)))
       {
         BeginMenuButtons();
 
         bool range_value_changed = false;
 
-        const ImVec2& padding(ImGui::GetStyle().FramePadding);
-        ImVec2 button_pos(ImGui::GetCursorPos());
-
-        // Align value text in middle.
-        ImGui::SetCursorPosY(button_pos.y +
-                             ((UIStyle.LargeFontSize + padding.y * 2.0f) - UIStyle.LargeFontSize) * 0.5f);
-        ImGui::TextUnformatted(visible_value.c_str(), visible_value.end_ptr());
+        BeginHorizontalMenuButtons(4);
+        HorizontalMenuButton(visible_value, false);
 
         s32 step = 0;
-        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
-        {
+        ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+        if (HorizontalMenuButton(ICON_FA_CHEVRON_UP))
           step = step_value;
-        }
-        if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
-                           true))
-        {
+        if (HorizontalMenuButton(ICON_FA_CHEVRON_DOWN))
           step = -step_value;
-        }
-        if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
+        ImGui::PopItemFlag();
+        if (HorizontalMenuButton(ICON_FA_ARROW_ROTATE_LEFT))
         {
           range_value = ci.option_range_start - 1;
           range_value_changed = true;
         }
+
+        EndHorizontalMenuButtons(10.0f);
 
         if (step != 0)
         {
           range_value += step;
           range_value_changed = true;
         }
-
-        ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + UIStyle.LargeFontSize + LayoutScale(10.0f));
 
         if (range_value_changed)
         {
@@ -9247,6 +9297,7 @@ TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
+TRANSLATE_NOOP("FullscreenUI", "Default Value");
 TRANSLATE_NOOP("FullscreenUI", "Default View");
 TRANSLATE_NOOP("FullscreenUI", "Default: Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Default: Enabled");
@@ -9491,7 +9542,6 @@ TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
 TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
-TRANSLATE_NOOP("FullscreenUI", "No Binding");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
 TRANSLATE_NOOP("FullscreenUI", "No Vibration");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
@@ -9791,6 +9841,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for textu
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.");
 TRANSLATE_NOOP("FullscreenUI", "Utilizes the chosen frame rate regardless of the game's setting.");
+TRANSLATE_NOOP("FullscreenUI", "Value Range");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
 TRANSLATE_NOOP("FullscreenUI", "Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");

@@ -631,6 +631,7 @@ bool ImGuiFullscreen::UpdateLayoutScale()
   UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
   UIStyle.LargeFontSize = LayoutScale(LAYOUT_LARGE_FONT_SIZE);
   UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
+  UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
 
   return (UIStyle.LayoutScale != old_scale);
 
@@ -644,6 +645,7 @@ bool ImGuiFullscreen::UpdateLayoutScale()
   UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
   UIStyle.LargeFontSize = LayoutScale(LAYOUT_LARGE_FONT_SIZE);
   UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
+  UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
   return (UIStyle.LayoutScale != old_scale);
 
 #endif
@@ -1573,8 +1575,12 @@ void ImGuiFullscreen::MenuButtonBounds::CalcBB()
 
   frame_bb = ImRect(pos - padding, br_pos + padding);
   title_bb = ImRect(pos, ImVec2(pos.x + title_size.x, pos.y + title_size.y));
+
+  // give the title the full bounding box if there's no value
   if (value_size.x > 0.0f)
     value_bb = ImRect(ImVec2(br_pos.x - value_size.x, pos.y), br_pos);
+  else
+    title_bb.Max.x = br_pos.x;
 
   if (summary_size.x > 0.0f)
   {
@@ -2304,14 +2310,19 @@ void ImGuiFullscreen::BeginHorizontalMenuButtons(u32 num_items, float max_item_w
   PrerenderMenuButtonBorder();
 }
 
-void ImGuiFullscreen::EndHorizontalMenuButtons()
+void ImGuiFullscreen::EndHorizontalMenuButtons(float add_vertical_spacing /*= -1.0f*/)
 {
   ImGui::PopStyleVar(4);
   ImGui::GetCurrentWindow()->DC.LayoutType = ImGuiLayoutType_Vertical;
+
+  const float dummy_height = ImGui::GetCurrentWindowRead()->DC.CurrLineSize.y +
+                             ((add_vertical_spacing > 0.0f) ? LayoutScale(add_vertical_spacing) : 0.0f);
+  ImGui::ItemSize(ImVec2(0.0f, (dummy_height > 0.0f) ? dummy_height : ImGui::GetFontSize()));
 }
 
 bool ImGuiFullscreen::HorizontalMenuButton(std::string_view title, bool enabled /* = true */,
-                                           const ImVec2& text_align /* = LAYOUT_CENTER_ALIGN_TEXT */)
+                                           const ImVec2& text_align /* = LAYOUT_CENTER_ALIGN_TEXT */,
+                                           ImGuiButtonFlags flags /*= 0 */)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
@@ -2340,7 +2351,7 @@ bool ImGuiFullscreen::HorizontalMenuButton(std::string_view title, bool enabled 
   bool pressed;
   if (enabled)
   {
-    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, flags);
     if (hovered)
     {
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
