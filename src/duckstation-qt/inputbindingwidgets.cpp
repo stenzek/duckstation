@@ -19,7 +19,6 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <cmath>
-#include <sstream>
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 {
