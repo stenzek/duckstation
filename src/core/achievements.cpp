@@ -140,8 +140,6 @@ static bool TryLoggingInWithToken();
 static void EnableHardcodeMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
-static bool IsLoggedIn();
-static bool IsLoggedInOrLoggingIn();
 static void FinishInitialize();
 static void FinishLogin(const rc_client_t* client);
 static void ShowLoginNotification();
@@ -2179,6 +2177,19 @@ std::string Achievements::GetLoggedInUserBadgePath()
   }
 
   return badge_path;
+}
+
+SmallString Achievements::GetLoggedInUserPointsSummary()
+{
+  SmallString ret;
+
+  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
+  if (!user) [[unlikely]]
+    return ret;
+
+  //: Score summary, shown in Big Picture mode.
+  ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)"), user->score, user->score_softcore);
+  return ret;
 }
 
 u32 Achievements::GetPauseThrottleFrames()

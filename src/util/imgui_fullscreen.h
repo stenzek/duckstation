@@ -283,6 +283,8 @@ void EndMenuButtons();
 float GetMenuButtonAvailableWidth();
 bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible, bool* hovered,
                      ImGuiButtonFlags flags = 0, float alpha = 1.0f);
+bool MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible, bool* hovered,
+                     ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, float font_size, float font_weight, const ImVec2& pos_min,
@@ -297,6 +299,9 @@ void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, float font_s
                                const ImVec2& pos_min, const ImVec2& pos_max, u32 color, std::string_view text,
                                const ImVec2* text_size_if_known, const ImVec2& align, float wrap_width,
                                const ImRect* clip_rect, float shadow_offset);
+void RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight, float label_weight,
+                         const ImVec2& pos_min, const ImVec2& pos_max, u32 color, std::string_view text,
+                         char separator = ':', float shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET));
 void TextAlignedMultiLine(float align_x, const char* text, const char* text_end = nullptr, float wrap_width = -1.0f);
 void MenuHeading(std::string_view title, bool draw_line = true);
 bool MenuHeadingButton(std::string_view title, std::string_view value = {}, bool enabled = true, bool draw_line = true);

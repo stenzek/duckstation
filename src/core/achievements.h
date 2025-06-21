@@ -166,12 +166,22 @@ const std::string& GetGameTitle();
 /// Returns the path for the game that is current hashed/running.
 const std::string& GetGamePath();
 
+/// Returns true if the user has been successfully logged in.
+bool IsLoggedIn();
+
+/// Returns true if the user has been successfully logged in, or the request is in progress.
+bool IsLoggedInOrLoggingIn();
+
 /// Returns the logged-in user name.
 const char* GetLoggedInUserName();
 
 /// Returns the path to the user's profile avatar.
 /// Should be called with the lock held.
 std::string GetLoggedInUserBadgePath();
+
+/// Returns a summary of the user's points.
+/// Should be called with the lock held.
+SmallString GetLoggedInUserPointsSummary();
 
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();

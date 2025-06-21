@@ -323,7 +323,8 @@ static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
 static void DrawControllerSettingsPage();
 static void DrawHotkeySettingsPage();
-static void DrawAchievementsSettingsPage();
+static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
+static void DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<std::mutex>& settings_lock);
 static void DrawAchievementsLoginWindow();
 static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
@@ -493,6 +494,7 @@ static constexpr std::array s_theme_values = {"",           "Dark",       "Light
 
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
+static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievements_login";
 
 //////////////////////////////////////////////////////////////////////////
 // State
@@ -3962,8 +3964,6 @@ void FullscreenUI::DrawSettingsWindow()
                s_state.settings_last_bg_alpha),
         0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
-    ResetFocusHere();
-
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
       ReturnToPreviousWindow();
 
@@ -4020,7 +4020,7 @@ void FullscreenUI::DrawSettingsWindow()
         break;
 
       case SettingsPage::Achievements:
-        DrawAchievementsSettingsPage();
+        DrawAchievementsSettingsPage(lock);
         break;
 
       case SettingsPage::Advanced:
@@ -4063,6 +4063,7 @@ void FullscreenUI::DrawSettingsWindow()
 void FullscreenUI::DrawSummarySettingsPage()
 {
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("Details"));
 
@@ -4137,6 +4138,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("Appearance"));
 
@@ -4349,6 +4351,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
   const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("BIOS Selection"));
 
@@ -4443,6 +4446,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("Console Settings"));
 
@@ -4574,6 +4578,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("Speed Control"));
   DrawFloatListSetting(
@@ -4807,6 +4812,7 @@ void FullscreenUI::DrawControllerSettingsPage()
   const bool game_settings = IsEditingGameSettings(bsi);
 
   MenuHeading(FSUI_VSTR("Configuration"));
+  ResetFocusHere();
 
   if (IsEditingGameSettings(bsi))
   {
@@ -5186,6 +5192,7 @@ void FullscreenUI::DrawHotkeySettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   const HotkeyInfo* last_category = nullptr;
   for (const HotkeyInfo* hotkey : s_state.hotkey_list_cache)
@@ -5214,6 +5221,8 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   BeginMenuButtons();
 
   MenuHeading(FSUI_VSTR("Settings and Operations"));
+  ResetFocusHere();
+
   DrawFolderSetting(bsi, FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Memory Card Directory"), "MemoryCards", "Directory",
                     EmuFolders::MemoryCards);
 
@@ -5334,6 +5343,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
   MenuHeading(FSUI_VSTR("Device Settings"));
 
+  ResetFocusHere();
   DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_PF_PICTURE, "GPU Renderer"),
                   FSUI_VSTR("Selects the backend to use for rendering the console/game visuals."), "GPU", "Renderer",
                   Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
@@ -5788,6 +5798,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   BeginMenuButtons();
 
   MenuHeading(FSUI_VSTR("Controls"));
+  ResetFocusHere();
 
   reload_pending |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable Post Processing"),
                                       FSUI_VSTR("If not enabled, the current post processing chain will be ignored."),
@@ -6198,6 +6209,7 @@ void FullscreenUI::DrawAudioSettingsPage()
   BeginMenuButtons();
 
   MenuHeading(FSUI_VSTR("Audio Control"));
+  ResetFocusHere();
 
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_HIGH, "Output Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
@@ -6243,13 +6255,145 @@ void FullscreenUI::DrawAudioSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::DrawAchievementsSettingsPage()
+void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<std::mutex>& settings_lock)
+{
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+
+  const float panel_height = LayoutScale(100.0f);
+  const float panel_rounding = LayoutScale(20.0f);
+  const float spacing = LayoutScale(10.0f);
+  const float line_spacing = LayoutScale(5.0f);
+  const float badge_size = LayoutScale(60.0f);
+  const ImGuiStyle& style = ImGui::GetStyle();
+
+  const ImVec2 bg_pos = ImGui::GetCursorScreenPos() + ImVec2(0.0f, spacing * 2.0f);
+  const ImVec2 bg_size = ImVec2(ImGui::GetContentRegionAvail().x, LayoutScale(100.0f));
+  dl->AddRectFilled(bg_pos, bg_pos + bg_size,
+                    ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.BackgroundColor), GetBackgroundAlpha())),
+                    panel_rounding);
+
+  // must be after background rect
+  BeginMenuButtons();
+
+  ImVec2 pos = bg_pos + ImVec2(panel_rounding, panel_rounding);
+  const float max_content_width = bg_size.x - panel_rounding;
+
+  const ImVec2 pos_backup = ImGui::GetCursorPos();
+
+  TinyString username;
+  std::string_view badge_path;
+  SmallString score_summary;
+  const bool logged_in = (bsi->ContainsValue("Cheevos", "Token"));
+  {
+    // avoid locking order issues
+    settings_lock.unlock();
+    {
+      const auto lock = Achievements::GetLock();
+      if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
+        s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
+
+      badge_path = s_state.achievements_user_badge_path;
+      if (badge_path.empty())
+        badge_path = "images/ra-generic-user.png";
+
+      if (Achievements::IsLoggedIn())
+      {
+        const char* username_ptr = Achievements::GetLoggedInUserName();
+        if (username_ptr)
+          username = username_ptr;
+      }
+      else if (Achievements::IsLoggedInOrLoggingIn())
+      {
+        username = FSUI_VSTR("Logging In...");
+      }
+      else if (!logged_in)
+      {
+        username = FSUI_VSTR("Not Logged In");
+      }
+      else
+      {
+        // client not active
+        username = bsi->GetSmallStringValue("Cheevos", "Username");
+      }
+
+      score_summary = Achievements::GetLoggedInUserPointsSummary();
+      if (score_summary.empty())
+      {
+        if (logged_in)
+          score_summary = FSUI_VSTR("Enable Achievements to see your user summary.");
+        else
+          score_summary = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
+      }
+    }
+    settings_lock.lock();
+  }
+
+  if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
+  {
+    const ImRect badge_rect =
+      ImGuiFullscreen::CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
+    dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
+  }
+
+  pos.x += badge_size + LayoutScale(15.0f);
+
+  RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, pos,
+                            pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
+                            ImGui::GetColorU32(ImGuiCol_Text), username);
+
+  pos.y += UIStyle.LargeFontSize + line_spacing;
+
+  ImGuiFullscreen::RenderAutoLabelText(dl, UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight,
+                                       UIStyle.BoldFontWeight, pos,
+                                       pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
+                                       ImGui::GetColorU32(ImGuiCol_Text), score_summary, ':');
+
+  if (!IsEditingGameSettings(bsi))
+  {
+    const auto login_logout_text =
+      logged_in ? FSUI_ICONVSTR(ICON_FA_KEY, "Logout") : FSUI_ICONVSTR(ICON_FA_KEY, "Login");
+    const ImVec2 login_logout_button_size =
+      UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
+                                  IMSTR_START_END(login_logout_text)) +
+      style.FramePadding * 2.0f;
+    const ImVec2 login_logout_button_pos =
+      ImVec2(bg_pos.x + bg_size.x - panel_rounding - login_logout_button_size.x - LayoutScale(10.0f),
+             bg_pos.y + ((panel_height - UIStyle.LargeFontSize - (style.FramePadding.y * 2.0f)) * 0.5f));
+
+    ImGui::SetCursorPos(login_logout_button_pos);
+
+    bool visible, hovered;
+    const bool clicked = MenuButtonFrame(
+      "login_logout", true, ImRect(login_logout_button_pos, login_logout_button_pos + login_logout_button_size),
+      &visible, &hovered);
+    if (visible)
+    {
+      const ImRect text_bb = ImRect(login_logout_button_pos + style.FramePadding,
+                                    login_logout_button_pos + login_logout_button_size - style.FramePadding);
+      RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_bb.Min,
+                                text_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), login_logout_text, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &text_bb);
+    }
+
+    if (clicked)
+    {
+      if (logged_in)
+        Host::RunOnCPUThread(&Achievements::Logout);
+      else
+        OpenFixedPopupDialog(ACHIEVEMENTS_LOGIN_DIALOG_NAME);
+    }
+  }
+
+  ImGui::SetCursorPos(ImVec2(pos_backup.x, pos_backup.y + panel_height + (spacing * 3.0f)));
+}
+
+void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
-  BeginMenuButtons();
+  DrawAchievementsSettingsHeader(bsi, settings_lock);
 
-  MenuHeading(FSUI_VSTR("Settings"));
+  ResetFocusHere();
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TROPHY, "Enable Achievements"),
                     FSUI_VSTR("When enabled and logged in, DuckStation will scan for achievements on startup."),
                     "Cheevos", "Enabled", false);
@@ -6264,6 +6408,8 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   {
     if (GPUThread::HasGPUBackend() && bsi->GetBoolValue("Cheevos", "ChallengeMode", false))
     {
+      // prevent locking order deadlock
+      settings_lock.unlock();
       const auto lock = Achievements::GetLock();
       if (Achievements::HasActiveGame())
       {
@@ -6275,6 +6421,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
               Host::RunOnCPUThread(&System::ResetSystem);
           });
       }
+      settings_lock.lock();
     }
   }
 
@@ -6308,14 +6455,19 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
   if (!IsEditingGameSettings(bsi))
   {
-    MenuHeading(FSUI_VSTR("Account"));
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Update Progress"),
+                   FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
+    {
+      Host::RunOnCPUThread([]() {
+        Error error;
+        if (!Achievements::RefreshAllProgressDatabase(&error))
+          ImGuiFullscreen::ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(),
+                                     Host::OSD_ERROR_DURATION);
+      });
+    }
+
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
-      ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      MenuButtonWithoutSummary(SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER, "Username: {}")),
-                                                        bsi->GetTinyStringValue("Cheevos", "Username")),
-                               false);
-
       TinyString ts_string;
       ts_string.format(
         FSUI_FSTR("{:%Y-%m-%d %H:%M:%S}"),
@@ -6324,60 +6476,13 @@ void FullscreenUI::DrawAchievementsSettingsPage()
       MenuButtonWithoutSummary(
         SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
         false);
-      ImGui::PopStyleColor();
-
-      if (MenuButton(FSUI_ICONVSTR(ICON_FA_LIST_OL, "Update Progress"),
-                     FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
-      {
-        Host::RunOnCPUThread([]() {
-          Error error;
-          if (!Achievements::RefreshAllProgressDatabase(&error))
-            ImGuiFullscreen::ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(),
-                                       Host::OSD_ERROR_DURATION);
-        });
-      }
-
-      if (MenuButton(FSUI_ICONVSTR(ICON_FA_KEY, "Logout"), FSUI_VSTR("Logs out of RetroAchievements.")))
-        Host::RunOnCPUThread(&Achievements::Logout);
-    }
-    else
-    {
-      MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_USER, "Not Logged In"), false);
-
-      static constexpr std::string_view popup_title = "##achievements_login";
-
-      if (MenuButton(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), FSUI_VSTR("Logs in to RetroAchievements.")))
-        OpenFixedPopupDialog(popup_title);
-
-      if (IsFixedPopupDialogOpen(popup_title))
-        DrawAchievementsLoginWindow();
-    }
-
-    MenuHeading(FSUI_VSTR("Current Game"));
-    if (Achievements::HasActiveGame())
-    {
-      const auto lock = Achievements::GetLock();
-
-      ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      MenuButtonWithoutSummary(SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
-                                                        Achievements::GetGameID(), Achievements::GetGameTitle()),
-                               false);
-
-      const std::string& rich_presence_string = Achievements::GetRichPresenceString();
-      if (!rich_presence_string.empty())
-        MenuButtonWithoutSummary(SmallString::from_format(ICON_FA_MAP "{}", rich_presence_string), false);
-      else
-        MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false);
-
-      ImGui::PopStyleColor();
-    }
-    else
-    {
-      MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false);
     }
   }
 
   EndMenuButtons();
+
+  if (IsFixedPopupDialogOpen(ACHIEVEMENTS_LOGIN_DIALOG_NAME))
+    DrawAchievementsLoginWindow();
 }
 
 void FullscreenUI::DrawAchievementsLoginWindow()
@@ -6499,6 +6604,8 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   BeginMenuButtons();
 
   MenuHeading(FSUI_VSTR("Logging Settings"));
+  ResetFocusHere();
+
   DrawEnumSetting(bsi, FSUI_VSTR("Log Level"),
                   FSUI_VSTR("Sets the verbosity of messages logged. Higher levels will log more messages."), "Logging",
                   "LogLevel", Settings::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
@@ -6583,6 +6690,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
   const char* section = cheats ? Cheats::CHEATS_CONFIG_SECTION : Cheats::PATCHES_CONFIG_SECTION;
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   static constexpr auto draw_code = [](SettingsInterface* bsi, const char* section, const Cheats::CodeInfo& ci,
                                        std::vector<std::string>& enable_list, bool cheats) {
@@ -8469,6 +8577,7 @@ void FullscreenUI::DrawGameListSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface(false);
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   MenuHeading(FSUI_VSTR("List Settings"));
   {
@@ -9170,7 +9279,6 @@ TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
 TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you sure that you want to overwrite it?");
 TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
-TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
@@ -9289,7 +9397,6 @@ TRANSLATE_NOOP("FullscreenUI", "Create New...");
 TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
-TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Custom");
 TRANSLATE_NOOP("FullscreenUI", "Dark");
 TRANSLATE_NOOP("FullscreenUI", "Dark Ruby");
@@ -9358,6 +9465,7 @@ TRANSLATE_NOOP("FullscreenUI", "Emulation Settings");
 TRANSLATE_NOOP("FullscreenUI", "Emulation Speed");
 TRANSLATE_NOOP("FullscreenUI", "Enable 8MB RAM");
 TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
+TRANSLATE_NOOP("FullscreenUI", "Enable Achievements to see your user summary.");
 TRANSLATE_NOOP("FullscreenUI", "Enable Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
@@ -9446,7 +9554,6 @@ TRANSLATE_NOOP("FullscreenUI", "Game Properties");
 TRANSLATE_NOOP("FullscreenUI", "Game Quick Save");
 TRANSLATE_NOOP("FullscreenUI", "Game Slot {0}##game_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Game compatibility rating copied to clipboard.");
-TRANSLATE_NOOP("FullscreenUI", "Game not loaded or no RetroAchievements available.");
 TRANSLATE_NOOP("FullscreenUI", "Game path copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game region copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game serial copied to clipboard.");
@@ -9454,7 +9561,6 @@ TRANSLATE_NOOP("FullscreenUI", "Game settings have been cleared for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings for '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
-TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
 TRANSLATE_NOOP("FullscreenUI", "Genre: ");
 TRANSLATE_NOOP("FullscreenUI", "Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
@@ -9506,6 +9612,7 @@ TRANSLATE_NOOP("FullscreenUI", "Log Level");
 TRANSLATE_NOOP("FullscreenUI", "Log To Debug Console");
 TRANSLATE_NOOP("FullscreenUI", "Log To File");
 TRANSLATE_NOOP("FullscreenUI", "Log To System Console");
+TRANSLATE_NOOP("FullscreenUI", "Logging In...");
 TRANSLATE_NOOP("FullscreenUI", "Logging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Logging in to RetroAchievements...");
 TRANSLATE_NOOP("FullscreenUI", "Login");
@@ -9513,11 +9620,9 @@ TRANSLATE_NOOP("FullscreenUI", "Login Failed.\nError: {}\nPlease check your user
 TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
 TRANSLATE_NOOP("FullscreenUI", "Logout");
 TRANSLATE_NOOP("FullscreenUI", "Logs BIOS calls to printf(). Not all games contain debugging messages.");
-TRANSLATE_NOOP("FullscreenUI", "Logs in to RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to duckstation.log in the user directory.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the console window.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where supported.");
-TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
 TRANSLATE_NOOP("FullscreenUI", "Maximum");
@@ -9652,7 +9757,6 @@ TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
 TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.");
 TRANSLATE_NOOP("FullscreenUI", "Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
-TRANSLATE_NOOP("FullscreenUI", "Rich presence inactive or unsupported.");
 TRANSLATE_NOOP("FullscreenUI", "Round Upscaled Texture Coordinates");
 TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
@@ -9803,6 +9907,7 @@ TRANSLATE_NOOP("FullscreenUI", "Time Played");
 TRANSLATE_NOOP("FullscreenUI", "Time Played: ");
 TRANSLATE_NOOP("FullscreenUI", "Timing out in {:.0f} seconds...");
 TRANSLATE_NOOP("FullscreenUI", "Title");
+TRANSLATE_NOOP("FullscreenUI", "To use achievements, please log in with your retroachievements.org account.");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
@@ -9830,7 +9935,6 @@ TRANSLATE_NOOP("FullscreenUI", "Use Separate Disc Settings");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "User Name");
-TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.");

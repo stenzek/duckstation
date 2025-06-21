@@ -52,8 +52,6 @@ static void DrawLoadingScreen(std::string_view image, std::string_view message, 
                               s32 progress_value, bool is_persistent);
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
-static bool MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible, bool* hovered,
-                            ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
 
 namespace {
@@ -1683,6 +1681,36 @@ void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, float font_size, f
                             text_size_if_known, align, wrap_width, clip_rect);
 }
 
+void ImGuiFullscreen::RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight,
+                                          float label_weight, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
+                                          std::string_view text, char separator, float shadow_offset)
+{
+  const std::string_view::size_type label_end = text.find(separator);
+
+  ImVec2 text_pos = pos_min;
+
+  std::string_view remaining;
+  if (label_end != std::string_view::npos)
+  {
+    // include label in bold part
+    const std::string_view label = text.substr(0, label_end + 1);
+    const ImVec2 size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(label));
+    RenderShadowedTextClipped(draw_list, font, font_size, label_weight, text_pos, pos_max, color, label, &size,
+                              ImVec2(0.0f, 0.0f), 0.0f, nullptr, shadow_offset);
+
+    text_pos.x += size.x;
+    remaining = text.substr(label_end + 1);
+  }
+  else
+  {
+    remaining = text;
+  }
+
+  const ImVec2 size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(remaining));
+  RenderShadowedTextClipped(draw_list, font, font_size, font_weight, text_pos, pos_max, color, remaining, &size,
+                            ImVec2(0.0f, 0.0f), 0.0f, nullptr, shadow_offset);
+}
+
 void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, const char* text_end, float wrap_width)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1937,11 +1965,11 @@ bool ImGuiFullscreen::FloatingButton(std::string_view text, float x, float y, fl
 {
   const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
                                                        std::numeric_limits<float>::max(), 0.0f, IMSTR_START_END(text));
-  const ImVec2& padding(ImGui::GetStyle().FramePadding);
+  const ImVec2& padding = ImGui::GetStyle().FramePadding;
   const float width = (padding.x * 2.0f) + text_size.x;
   const float height = (padding.y * 2.0f) + text_size.y;
 
-  const ImVec2 window_size(ImGui::GetWindowSize());
+  const ImVec2 window_size = ImGui::GetWindowSize();
   if (anchor_x == -1.0f)
     x -= width;
   else if (anchor_x == -0.5f)
