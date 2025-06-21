@@ -870,14 +870,6 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
     return false;
   }
 
-  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
-                                                  static_cast<int>(s_state.icon_fa_font_data.size()),
-                                                  default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
-  {
-    Error::SetStringView(error, "Failed to add FA icon font");
-    return false;
-  }
-
   // Only for emoji font.
   icon_cfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LoadColor | ImGuiFreeTypeLoaderFlags_Bitmap;
 
@@ -886,6 +878,14 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
                                                   default_text_size * 0.9f, 0.0f, &icon_cfg)) [[unlikely]]
   {
     Error::SetStringView(error, "Failed to add emoji icon font");
+    return false;
+  }
+
+  if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
+                                                  static_cast<int>(s_state.icon_fa_font_data.size()),
+                                                  default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to add FA icon font");
     return false;
   }
 
