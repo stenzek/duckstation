@@ -818,6 +818,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
       Settings::GetRenderAPIForRenderer(s_state.requested_renderer.value_or(g_gpu_settings.gpu_renderer));
   if (cmd->force_recreate_device || !GPUDevice::IsSameRenderAPI(current_api, expected_api))
   {
+    Timer timer;
     const bool fullscreen = cmd->fullscreen.value_or(Host::IsFullscreen());
     DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(false);
@@ -842,10 +843,14 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
         return;
       }
     }
+
+    INFO_LOG("GPU device recreated in {:.2f}ms", timer.GetTimeMilliseconds());
   }
 
   if (cmd->renderer.has_value())
   {
+    Timer timer;
+
     // Do we want a renderer?
     if (!(*cmd->out_result = CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, cmd->error_ptr)))
     {
@@ -862,6 +867,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
         DestroyGPUPresenterOnThread();
       }
     }
+
+    INFO_LOG("GPU device recreated in {:.2f}ms", timer.GetTimeMilliseconds());
   }
   else if (s_state.requested_fullscreen_ui)
   {

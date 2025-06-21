@@ -1644,6 +1644,8 @@ bool System::SaveResumeState(Error* error)
 
 bool System::BootSystem(SystemBootParameters parameters, Error* error)
 {
+  Timer boot_timer;
+
   if (!parameters.save_state.empty())
   {
     // loading a state, so pull the media path from the save state to avoid a double change
@@ -1852,6 +1854,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     PauseSystem(true);
 
   UpdateSpeedLimiterState();
+
+  INFO_LOG("System booted in {:.2f}ms", boot_timer.GetTimeMilliseconds());
   PerformanceCounters::Reset();
   ResetThrottler();
   return true;
