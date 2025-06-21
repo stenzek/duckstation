@@ -660,16 +660,16 @@ ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_
   if (fit_ar > image_ar)
   {
     // center horizontally
-    const float width = fit_size.y * image_ar;
-    const float offset = (fit_size.x - width) / 2.0f;
+    const float width = ImFloor(fit_size.y * image_ar);
+    const float offset = ImFloor((fit_size.x - width) * 0.5f);
     const float height = fit_size.y;
     ret = ImRect(ImVec2(offset, 0.0f), ImVec2(offset + width, height));
   }
   else
   {
     // center vertically
-    const float height = fit_size.x / image_ar;
-    const float offset = (fit_size.y - height) / 2.0f;
+    const float height = ImFloor(fit_size.x / image_ar);
+    const float offset = ImFloor((fit_size.y - height) * 0.5f);
     const float width = fit_size.x;
     ret = ImRect(ImVec2(0.0f, offset), ImVec2(width, offset + height));
   }
