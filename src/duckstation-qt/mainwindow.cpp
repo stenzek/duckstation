@@ -1844,7 +1844,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 
     QAction* action = menu.addAction(tr("Lock Toolbar"));
     action->setCheckable(true);
-    action->setChecked(m_ui.toolBar->isMovable());
+    action->setChecked(!m_ui.toolBar->isMovable());
     connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLockActionToggled);
 
     action = menu.addAction(tr("Small Icons"));
