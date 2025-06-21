@@ -286,6 +286,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
   Ui::AudioStretchSettingsDialog dlgui;
   dlgui.setupUi(&dlg);
   dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32));
+  dlgui.buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
   SettingsInterface* sif = m_dialog->getSettingsInterface();
   SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.sequenceLength, "Audio", "StretchSequenceLengthMS",
