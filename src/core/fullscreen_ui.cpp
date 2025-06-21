@@ -3885,8 +3885,8 @@ void FullscreenUI::DrawSettingsWindow()
        {FSUI_NSTR("Audio Settings"), ICON_PF_SOUND},
        {FSUI_NSTR("Achievements Settings"), ICON_FA_TROPHY},
        {FSUI_NSTR("Advanced Settings"), ICON_FA_TRIANGLE_EXCLAMATION},
-       {FSUI_NSTR("Patches"), ICON_FA_BANDAGE},
-       {FSUI_NSTR("Cheats"), ICON_FA_FLASK}}};
+       {FSUI_NSTR("Patches"), ICON_PF_SPARKLING},
+       {FSUI_NSTR("Cheats"), ICON_PF_CHEATS}}};
 
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
@@ -6870,7 +6870,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
     MenuHeading(FSUI_VSTR("Settings"));
 
     bool enable_cheats = bsi->GetBoolValue("Cheats", "EnableCheats", false);
-    if (ToggleButton(FSUI_ICONVSTR(ICON_FA_FLASK, "Enable Cheats"),
+    if (ToggleButton(FSUI_ICONVSTR(ICON_PF_CHEATS, "Enable Cheats"),
                      FSUI_VSTR("Enables the cheats that are selected below."), &enable_cheats))
     {
       if (enable_cheats)

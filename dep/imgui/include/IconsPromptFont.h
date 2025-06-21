@@ -353,3 +353,5 @@
 #define ICON_PF_POPN_WR "\xE2\x8B\x87"
 #define ICON_PF_POPN_R "\xE2\x8B\x88"
 #define ICON_PF_NAVIGATION_BACK "\xE2\x8F\x8C"
+#define ICON_PF_CHEATS "\xE2\xAC\xB3"
+#define ICON_PF_SPARKLING "\xE2\xAC\xB4"
