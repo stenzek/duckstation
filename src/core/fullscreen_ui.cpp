@@ -354,45 +354,39 @@ static void DoSaveInputProfile(const std::string& name);
 
 static bool DrawToggleSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                               const char* section, const char* key, bool default_value, bool enabled = true,
-                              bool allow_tristate = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                              bool allow_tristate = true);
 static void DrawIntListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                const char* section, const char* key, int default_value,
                                std::span<const char* const> options, bool translate_options = true,
-                               int option_offset = 0, bool enabled = true,
-                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                               std::string_view tr_context = TR_CONTEXT);
+                               int option_offset = 0, bool enabled = true, std::string_view tr_context = TR_CONTEXT);
 static void DrawIntListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                const char* section, const char* key, int default_value,
                                std::span<const char* const> options, bool translate_options,
                                std::span<const int> values, bool enabled = true,
-                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                std::string_view tr_context = TR_CONTEXT);
 static void DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                 const char* section, const char* key, int default_value, int min_value, int max_value,
-                                const char* format = "%d", bool enabled = true,
-                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                                const char* format = "%d", bool enabled = true);
 static void DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                   const char* section, const char* key, int default_value, int min_value, int max_value,
-                                  int step_value, const char* format = "%d", bool enabled = true,
-                                  float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                                  int step_value, const char* format = "%d", bool enabled = true);
 static void DrawFloatRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                   const char* section, const char* key, float default_value, float min_value,
                                   float max_value, const char* format = "%f", float multiplier = 1.0f,
-                                  bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                                  bool enabled = true);
 static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                     const char* section, const char* key, float default_value, float min_value,
                                     float max_value, float step_value, float multiplier, const char* format = "%f",
-                                    bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                                    bool enabled = true);
 static bool DrawIntRectSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                const char* section, const char* left_key, int default_left, const char* top_key,
                                int default_top, const char* right_key, int default_right, const char* bottom_key,
                                int default_bottom, int min_value, int max_value, const char* format = "%d",
-                               bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                               bool enabled = true);
 static void DrawStringListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                   const char* section, const char* key, const char* default_value,
                                   std::span<const char* const> options, std::span<const char* const> option_values,
-                                  bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                  void (*changed_callback)(std::string_view) = nullptr,
+                                  bool enabled = true, void (*changed_callback)(std::string_view) = nullptr,
                                   std::string_view tr_context = TR_CONTEXT);
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
@@ -400,14 +394,13 @@ static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std:
                             std::optional<DataType> (*from_string_function)(const char* str),
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                            bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                            bool enabled = true);
 static void DrawFloatListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                  const char* section, const char* key, float default_value, const char* const* options,
                                  const float* option_values, size_t option_count, bool translate_options,
-                                 bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                                 bool enabled = true);
 static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section, const char* key,
-                              const std::string& runtime_var,
-                              float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
+                              const std::string& runtime_var);
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
@@ -2776,13 +2769,12 @@ void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindi
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                      const char* section, const char* key, bool default_value,
-                                     bool enabled /* = true */, bool allow_tristate /* = true */,
-                                     float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                     bool enabled /* = true */, bool allow_tristate /* = true */)
 {
   if (!allow_tristate || !IsEditingGameSettings(bsi))
   {
     bool value = bsi->GetBoolValue(section, key, default_value);
-    if (!ToggleButton(title, summary, &value, enabled, height))
+    if (!ToggleButton(title, summary, &value, enabled))
       return false;
 
     bsi->SetBoolValue(section, key, value);
@@ -2792,7 +2784,7 @@ bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, std::string_view ti
     std::optional<bool> value(false);
     if (!bsi->GetBoolValue(section, key, &value.value()))
       value.reset();
-    if (!ThreeWayToggleButton(title, summary, &value, enabled, height))
+    if (!ThreeWayToggleButton(title, summary, &value, enabled))
       return false;
 
     if (value.has_value())
@@ -2809,7 +2801,6 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                                       const char* section, const char* key, int default_value,
                                       std::span<const char* const> options, bool translate_options /* = true */,
                                       int option_offset /* = 0 */, bool enabled /* = true */,
-                                      float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
                                       std::string_view tr_context /* = TR_CONTEXT */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
@@ -2824,7 +2815,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
          (translate_options ? Host::TranslateToStringView(tr_context, options[index]) : options[index])) :
       FSUI_VSTR("Use Global Setting");
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text, enabled))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -2865,7 +2856,6 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                                       const char* section, const char* key, int default_value,
                                       std::span<const char* const> options, bool translate_options,
                                       std::span<const int> values, bool enabled /* = true */,
-                                      float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
                                       std::string_view tr_context /* = TR_CONTEXT */)
 {
   static constexpr auto value_to_index = [](s32 value, const std::span<const int> values) {
@@ -2892,7 +2882,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
          (translate_options ? Host::TranslateToStringView(tr_context, options[index]) : options[index])) :
       FSUI_VSTR("Use Global Setting");
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text, enabled))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -2931,8 +2921,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
 
 void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                        const char* section, const char* key, int default_value, int min_value,
-                                       int max_value, const char* format /* = "%d" */, bool enabled /* = true */,
-                                       float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                       int max_value, const char* format /* = "%d" */, bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
@@ -2940,7 +2929,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   const SmallString value_text =
     value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
     OpenFixedPopupDialog(title);
 
   if (!IsFixedPopupDialogOpen(title) ||
@@ -2970,10 +2959,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
-  {
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
-  }
   EndMenuButtons();
 
   EndFixedPopupDialog();
@@ -2982,8 +2969,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                          const char* section, const char* key, float default_value, float min_value,
                                          float max_value, const char* format /* = "%f" */,
-                                         float multiplier /* = 1.0f */, bool enabled /* = true */,
-                                         float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                         float multiplier /* = 1.0f */, bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
@@ -2991,7 +2977,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   const SmallString value_text = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
                                                      SmallString(FSUI_VSTR("Use Global Setting"));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
     OpenFixedPopupDialog(title);
 
   if (!IsFixedPopupDialogOpen(title) ||
@@ -3025,7 +3011,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   ImGui::PopStyleVar(2);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3035,8 +3021,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                            const char* section, const char* key, float default_value, float min_value,
                                            float max_value, float step_value, float multiplier,
-                                           const char* format /* = "%f" */, bool enabled /* = true */,
-                                           float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                           const char* format /* = "%f" */, bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
@@ -3046,7 +3031,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   static bool manual_input = false;
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
   {
     OpenFixedPopupDialog(title);
     manual_input = false;
@@ -3104,22 +3089,20 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
     ImGui::TextUnformatted(str_value);
 
     float step = 0;
-    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, &button_pos, true))
+    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
     {
       step = step_value;
     }
-    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos, true))
+    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
+                       true))
     {
       step = -step_value;
     }
-    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos))
+    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
     {
       manual_input = true;
     }
-    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos))
+    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
     {
       dlg_value = default_value * multiplier;
       dlg_value_changed = true;
@@ -3145,7 +3128,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
     SetSettingsChanged(bsi);
   }
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3156,8 +3139,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
                                       const char* section, const char* left_key, int default_left, const char* top_key,
                                       int default_top, const char* right_key, int default_right, const char* bottom_key,
                                       int default_bottom, int min_value, int max_value, const char* format /* = "%d" */,
-                                      bool enabled /* = true */,
-                                      float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                      bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> left_value =
@@ -3176,7 +3158,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
     bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) :
                                TinyString(FSUI_VSTR("Default")));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
     OpenFixedPopupDialog(title);
 
   if (!IsFixedPopupDialogOpen(title) ||
@@ -3258,7 +3240,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   ImGui::PopStyleVar(2);
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3270,8 +3252,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                          const char* section, const char* key, int default_value, int min_value,
                                          int max_value, int step_value, const char* format /* = "%d" */,
-                                         bool enabled /* = true */,
-                                         float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                         bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
@@ -3284,7 +3265,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   static bool manual_input = false;
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled, height))
+  if (MenuButtonWithValue(title, summary, value_text, enabled))
   {
     OpenFixedPopupDialog(title);
     manual_input = false;
@@ -3336,22 +3317,20 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     ImGui::TextUnformatted(str_value);
 
     s32 step = 0;
-    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, &button_pos, true))
+    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
     {
       step = step_value;
     }
-    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos, true))
+    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
+                       true))
     {
       step = -step_value;
     }
-    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos))
+    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
     {
       manual_input = true;
     }
-    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                       &button_pos))
+    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
     {
       dlg_value = default_value;
       dlg_value_changed = true;
@@ -3377,7 +3356,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
     SetSettingsChanged(bsi);
   }
 
-  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
   EndMenuButtons();
 
@@ -3387,8 +3366,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 [[maybe_unused]] void FullscreenUI::DrawStringListSetting(
   SettingsInterface* bsi, std::string_view title, std::string_view summary, const char* section, const char* key,
   const char* default_value, std::span<const char* const> options, std::span<const char* const> option_values,
-  bool enabled /* = true */, float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */,
-  void (*changed_callback)(std::string_view) /* = nullptr */, std::string_view tr_context /* = TR_CONTEXT */)
+  bool enabled /* = true */, void (*changed_callback)(std::string_view) /* = nullptr */,
+  std::string_view tr_context /* = TR_CONTEXT */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
@@ -3413,7 +3392,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
                           value.has_value() ? ((index < options.size()) ? TRANSLATE_SV(tr_context, options[index]) :
                                                                           FSUI_VSTR("Unknown")) :
                                               FSUI_VSTR("Use Global Setting"),
-                          enabled, height))
+                          enabled))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
@@ -3461,8 +3440,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                                    std::optional<DataType> (*from_string_function)(const char* str),
                                    const char* (*to_string_function)(DataType value),
                                    const char* (*to_display_string_function)(DataType value), SizeType option_count,
-                                   bool enabled /* = true */,
-                                   float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                   bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
@@ -3473,7 +3451,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
   if (MenuButtonWithValue(title, summary,
                           typed_value.has_value() ? to_display_string_function(typed_value.value()) :
                                                     FSUI_CSTR("Use Global Setting"),
-                          enabled, height))
+                          enabled))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
@@ -3509,8 +3487,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
 void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                         const char* section, const char* key, float default_value,
                                         const char* const* options, const float* option_values, size_t option_count,
-                                        bool translate_options, bool enabled /* = true */,
-                                        float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                        bool translate_options, bool enabled /* = true */)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value(
@@ -3543,7 +3520,7 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
              (translate_options ? Host::TranslateToStringView(TR_CONTEXT, options[index]) : options[index]) :
              FSUI_VSTR("Unknown")) :
           FSUI_VSTR("Use Global Setting"),
-        enabled, height))
+        enabled))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
@@ -3581,10 +3558,9 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
 }
 
 void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view title, const char* section,
-                                     const char* key, const std::string& runtime_var,
-                                     float height /* = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT */)
+                                     const char* key, const std::string& runtime_var)
 {
-  if (MenuButton(title, runtime_var, true, LAYOUT_MENU_BUTTON_HEIGHT))
+  if (MenuButton(title, runtime_var))
   {
     OpenFileSelector(title, true,
                      [game_settings = IsEditingGameSettings(bsi), section = TinyString(section),
@@ -4173,7 +4149,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINTBRUSH, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                        "Dark", s_theme_names, s_theme_values, true, LAYOUT_MENU_BUTTON_HEIGHT,
+                        "Dark", s_theme_names, s_theme_values, true,
                         [](std::string_view) { BeginTransition(DEFAULT_TRANSITION_TIME, &FullscreenUI::SetTheme); });
 
   if (const TinyString current_value =
@@ -5009,8 +4985,7 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
       }
       if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_KEYBOARD, "Buttons"), std::string_view(),
-                              pretty_binds_string.empty() ? FSUI_VSTR("-") : pretty_binds_string.view(), true,
-                              LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+                              pretty_binds_string.empty() ? FSUI_VSTR("-") : pretty_binds_string.view()))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
         ImGuiFullscreen::ChoiceDialogOptions options;
@@ -5118,8 +5093,7 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                     LAYOUT_CENTER_ALIGN_TEXT))
+        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
           CloseFixedPopupDialog();
 
         EndMenuButtons();
@@ -5165,7 +5139,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 
             DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
                                std::span<const char* const>(si.options, option_count), true, si.IntegerMinValue(), true,
-                               LAYOUT_MENU_BUTTON_HEIGHT, ci->name);
+                               ci->name);
           }
           break;
 
@@ -5995,11 +5969,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             }
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                         LAYOUT_CENTER_ALIGN_TEXT))
-            {
+            if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
               CloseFixedPopupDialog();
-            }
 
             EndMenuButtons();
 
@@ -6064,11 +6035,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             }
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                         LAYOUT_CENTER_ALIGN_TEXT))
-            {
+            if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
               CloseFixedPopupDialog();
-            }
             EndMenuButtons();
 
             EndFixedPopupDialog();
@@ -6479,8 +6447,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), login_enabled, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                               LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), login_enabled, LAYOUT_CENTER_ALIGN_TEXT))
   {
     ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
                                                   0, 0, 0);
@@ -6504,11 +6471,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     });
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"), !is_logging_in,
-                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
-  {
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_XMARK, "Cancel"), !is_logging_in, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
-  }
 
   EndMenuButtons();
 
@@ -6709,18 +6673,16 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         ImGui::TextUnformatted(visible_value.c_str(), visible_value.end_ptr());
 
         s32 step = 0;
-        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, &button_pos,
-                           true))
+        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, 1.0f, 0.0f, true, &button_pos, true))
         {
           step = step_value;
         }
-        if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f,
-                           true, &button_pos, true))
+        if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos,
+                           true))
         {
           step = -step_value;
         }
-        if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                           &button_pos))
+        if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, 0.0f, true, &button_pos))
         {
           range_value = ci.option_range_start - 1;
           range_value_changed = true;
@@ -6757,8 +6719,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           SetSettingsChanged(bsi);
         }
 
-        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                                     LAYOUT_CENTER_ALIGN_TEXT))
+        if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
           CloseFixedPopupDialog();
 
         EndMenuButtons();
@@ -6864,8 +6825,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
     if (code_list.empty())
     {
-      MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_STORE_SLASH, "No patches are available for this game."),
-                               false);
+      MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_STORE_SLASH, "No patches are available for this game."), false);
     }
     else
     {
@@ -6991,10 +6951,10 @@ void FullscreenUI::DrawPauseMenu()
       3,  // Achievements
     };
 
+    // reduce spacing to fit all the buttons
     ResetFocusHere();
     BeginMenuButtons(submenu_item_count[static_cast<u32>(s_state.current_pause_submenu)], 1.0f,
-                     ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING,
-                     ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+                     LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING, 0.0f, 4.0f);
 
     switch (s_state.current_pause_submenu)
     {
@@ -7607,8 +7567,7 @@ void FullscreenUI::DrawResumeStateSelector()
   ResetFocusHere();
   BeginMenuButtons();
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Load State"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
-                               LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Load State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     std::string state_path = std::move(entry.state_path);
@@ -7617,8 +7576,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path), std::move(state_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Clean Boot"), true,
-                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Clean Boot"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     ClearSaveStateEntryList();
@@ -7626,8 +7584,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete State"), true,
-                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     if (FileSystem::DeleteFile(entry.state_path.c_str()))
     {
@@ -7642,11 +7599,8 @@ void FullscreenUI::DrawResumeStateSelector()
     }
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Cancel"), true,
-                               LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_CENTER_ALIGN_TEXT))
-  {
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Cancel"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
-  }
 
   ImGuiFullscreen::EndHorizontalMenuButtons();
 
@@ -8251,7 +8205,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
   ResetFocusHere();
-  BeginMenuButtons(0, 0.0f, 15.0f, 15.0f, 0.0f, 20.0f, 20.0f);
+  BeginMenuButtons(0, 0.0f, 15.0f, 15.0f, 20.0f, 20.0f);
 
   const ImGuiStyle& style = ImGui::GetStyle();
 

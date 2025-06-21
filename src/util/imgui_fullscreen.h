@@ -40,7 +40,7 @@ static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
 static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
-static constexpr float LAYOUT_MENU_BUTTON_SPACING = 4.0f;
+static constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
 static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 static constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
 static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
@@ -275,8 +275,8 @@ void DrawFullscreenFooter();
 
 void PrerenderMenuButtonBorder();
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
-                      float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float item_height = LAYOUT_MENU_BUTTON_HEIGHT,
-                      float x_spacing = 0.0f, float y_spacing = LAYOUT_MENU_BUTTON_SPACING);
+                      float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float x_spacing = 0.0f,
+                      float y_spacing = LAYOUT_MENU_BUTTON_SPACING, bool prerender_frame = true);
 void EndMenuButtons();
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 bool MenuButtonFrame(std::string_view str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
@@ -299,36 +299,31 @@ void TextAlignedMultiLine(float align_x, const char* text, const char* text_end 
 void MenuHeading(std::string_view title, bool draw_line = true);
 bool MenuHeadingButton(std::string_view title, std::string_view value = {}, bool enabled = true, bool draw_line = true);
 bool MenuButton(std::string_view title, std::string_view summary, bool enabled = true,
-                float height = LAYOUT_MENU_BUTTON_HEIGHT, const ImVec2& text_align = ImVec2(0.0f, 0.0f));
+                const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithoutSummary(std::string_view title, bool enabled = true,
-                              float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::string_view value, bool enabled = true,
-                         float height = LAYOUT_MENU_BUTTON_HEIGHT);
+                         const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
-                     const ImVec2& image_size, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                     const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
-bool FloatingButton(std::string_view text, float x, float y, float width = -1.0f,
-                    float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, float anchor_x = 0.0f, float anchor_y = 0.0f,
+                     const ImVec2& image_size, bool enabled = true, const ImVec2& uv0 = ImVec2(0.0f, 0.0f),
+                     const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
+bool FloatingButton(std::string_view text, float x, float y, float anchor_x = 0.0f, float anchor_y = 0.0f,
                     bool enabled = true, ImVec2* out_position = nullptr, bool repeat_button = false);
-bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true,
-                  float height = LAYOUT_MENU_BUTTON_HEIGHT);
-bool ThreeWayToggleButton(std::string_view title, std::string_view summary, std::optional<bool>* v, bool enabled = true,
-                          float height = LAYOUT_MENU_BUTTON_HEIGHT);
+bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true);
+bool ThreeWayToggleButton(std::string_view title, std::string_view summary, std::optional<bool>* v,
+                          bool enabled = true);
 bool RangeButton(std::string_view title, std::string_view summary, s32* value, s32 min, s32 max, s32 increment,
-                 const char* format = "%d", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 std::string_view ok_text = "OK");
+                 const char* format = "%d", bool enabled = true, std::string_view ok_text = "OK");
 bool RangeButton(std::string_view title, std::string_view summary, float* value, float min, float max, float increment,
-                 const char* format = "%f", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 std::string_view ok_text = "OK");
+                 const char* format = "%f", bool enabled = true, std::string_view ok_text = "OK");
 bool EnumChoiceButtonImpl(std::string_view title, std::string_view summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
-                          bool enabled, float height);
+                          bool enabled);
 
 template<typename DataType, typename CountType>
 ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_view summary, DataType* value_pointer,
                                            const char* (*to_display_name_function)(DataType value), CountType count,
-                                           bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT)
+                                           bool enabled = true)
 {
   s32 value = static_cast<s32>(*value_pointer);
   auto to_display_name_wrapper = [](s32 value, void* opaque) -> const char* {
@@ -336,7 +331,7 @@ ALWAYS_INLINE static bool EnumChoiceButton(std::string_view title, std::string_v
   };
 
   if (EnumChoiceButtonImpl(title, summary, &value, to_display_name_wrapper, &to_display_name_function,
-                           static_cast<u32>(count), enabled, height))
+                           static_cast<u32>(count), enabled))
   {
     *value_pointer = static_cast<DataType>(value);
     return true;

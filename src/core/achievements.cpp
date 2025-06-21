@@ -2729,9 +2729,8 @@ void Achievements::DrawAchievementsWindow()
       SmallString text;
       ImVec2 text_size;
 
-      close_window =
-        (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
-         ImGuiFullscreen::WantsToCloseMenu());
+      close_window = (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
+                      ImGuiFullscreen::WantsToCloseMenu());
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
       text.assign(s_state.game_title);
@@ -3163,7 +3162,7 @@ void Achievements::DrawLeaderboardsWindow()
 
       if (!is_leaderboard_open)
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
+        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
             ImGuiFullscreen::WantsToCloseMenu())
         {
           FullscreenUI::ReturnToPreviousWindow();
@@ -3171,7 +3170,7 @@ void Achievements::DrawLeaderboardsWindow()
       }
       else
       {
-        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true) ||
+        if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, 1.0f, 0.0f, true) ||
             ImGuiFullscreen::WantsToCloseMenu())
         {
           close_leaderboard_on_exit = true;
