@@ -1311,7 +1311,7 @@ void MainWindow::onViewToolbarActionToggled(bool checked)
 
 void MainWindow::onViewToolbarLockActionToggled(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "LockToolbar", !checked);
+  Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
   Host::CommitBaseSettingChanges();
   m_ui.toolBar->setMovable(!checked);
 
