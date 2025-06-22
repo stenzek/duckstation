@@ -365,5 +365,5 @@ void ISOBrowserWindow::populateFiles(const QString& path)
   }
 
   // this is utter shit, the scrollbar visibility doesn't update in time, so we have to queue it.
-  QTimer::singleShot(20, Qt::TimerType::CoarseTimer, this, SLOT(resizeFileListColumns()));
+  QTimer::singleShot(20, Qt::CoarseTimer, this, &ISOBrowserWindow::resizeFileListColumns);
 }
