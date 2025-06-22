@@ -3,6 +3,7 @@
 
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 #include "core/gpu_presenter.h"

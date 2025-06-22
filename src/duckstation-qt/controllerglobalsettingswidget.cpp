@@ -9,6 +9,7 @@
 
 #include "fmt/format.h"
 
+#include "util/ini_settings_interface.h"
 #include "util/sdl_input_source.h"
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)

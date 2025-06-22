@@ -5,6 +5,7 @@
 #include "controllersettingswindow.h"
 #include "inputbindingwidgets.h"
 #include "qtutils.h"
+#include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
 #include "util/input_manager.h"
