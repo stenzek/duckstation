@@ -4310,10 +4310,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     FSUI_VSTR("Shows information about input and audio latency in the top-right corner of the display."), "Display",
     "ShowLatencyStatistics", false);
   DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
+    bsi, FSUI_ICONVSTR(ICON_PF_CPU_PROCESSOR, "Show CPU Usage"),
     FSUI_VSTR("Shows the host's CPU usage of each system thread in the top-right corner of the display."), "Display",
     "ShowCPU", false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SPINNER, "Show GPU Usage"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "Show GPU Usage"),
                     FSUI_VSTR("Shows the host's GPU usage in the top-right corner of the display."), "Display",
                     "ShowGPU", false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER_HORIZONTAL, "Show Frame Times"),
@@ -4464,12 +4464,12 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Enable Fast Boot"),
                     FSUI_VSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FORWARD_FAST, "Fast Forward Boot"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Fast Forward Boot"),
                     FSUI_VSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
                               "may vary between games."),
                     "BIOS", "FastForwardBoot", false,
                     GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SD_CARD, "Fast Forward Memory Card Access"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Fast Forward Memory Card Access"),
                     FSUI_VSTR("Fast forwards through memory card access, both loading and saving. Can reduce waiting "
                               "times in games that frequently access memory cards."),
                     "MemoryCards", "FastForwardAccess", false);
@@ -5245,7 +5245,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
     const MemoryCardType default_type =
       (i == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
     DrawEnumSetting(
-      bsi, TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_SD_CARD, "Memory Card {} Type")), i + 1),
+      bsi, TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card {} Type")), i + 1),
       SmallString::from_format(FSUI_FSTR("Sets which sort of memory card image will be used for slot {}."), i + 1),
       "MemoryCards", type_keys[i], default_type, &Settings::ParseMemoryCardTypeName, &Settings::GetMemoryCardTypeName,
       &Settings::GetMemoryCardTypeDisplayName, MemoryCardType::Count);
@@ -5804,7 +5804,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                                       FSUI_VSTR("If not enabled, the current post processing chain will be ignored."),
                                       "PostProcessing", "Enabled", false);
 
-  if (MenuButton(FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "Reload Shaders"),
+  if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reload Shaders"),
                  FSUI_VSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("PostProcessing", "Enabled", false)))
   {
@@ -5818,7 +5818,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
   MenuHeading(FSUI_VSTR("Operations"));
 
-  if (MenuButton(FSUI_ICONVSTR(ICON_FA_PLUS, "Add Shader"), FSUI_VSTR("Adds a new shader to the chain.")))
+  if (MenuButton(FSUI_ICONVSTR(ICON_PF_ADD, "Add Shader"), FSUI_VSTR("Adds a new shader to the chain.")))
   {
     std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
     ImGuiFullscreen::ChoiceDialogOptions options;
@@ -5826,7 +5826,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     for (auto& [display_name, name] : shaders)
       options.emplace_back(std::move(display_name), false);
 
-    OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_PLUS, "Add Shader"), false, std::move(options),
+    OpenChoiceDialog(FSUI_ICONVSTR(ICON_PF_ADD, "Add Shader"), false, std::move(options),
                      [shaders = std::move(shaders)](s32 index, const std::string& title, bool checked) {
                        if (index < 0 || static_cast<u32>(index) >= shaders.size())
                          return;
@@ -5851,10 +5851,10 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                      });
   }
 
-  if (MenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Clear Shaders"), FSUI_VSTR("Clears a shader from the chain.")))
+  if (MenuButton(FSUI_ICONVSTR(ICON_PF_TRASH, "Clear Shaders"), FSUI_VSTR("Clears a shader from the chain.")))
   {
     OpenConfirmMessageDialog(
-      FSUI_ICONVSTR(ICON_FA_XMARK, "Clear Shaders"),
+      FSUI_ICONVSTR(ICON_PF_TRASH, "Clear Shaders"),
       FSUI_STR("Are you sure you want to clear the current post-processing chain? All configuration will be lost."),
       [](bool confirmed) {
         if (!confirmed)
@@ -5882,7 +5882,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     str.format(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
     MenuHeading(str);
 
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_XMARK, "Remove From Chain"), FSUI_VSTR("Removes this shader from the chain.")))
+    if (MenuButton(FSUI_ICONVSTR(ICON_PF_REMOVE, "Remove From Chain"),
+                   FSUI_VSTR("Removes this shader from the chain.")))
     {
       postprocessing_action = POSTPROCESSING_ACTION_REMOVE;
       postprocessing_action_index = stage_index;
@@ -6214,7 +6215,7 @@ void FullscreenUI::DrawAudioSettingsPage()
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_HIGH, "Output Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
                       0, 200, "%d%%");
-  DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_FORWARD_FAST, "Fast Forward Volume"),
+  DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Fast Forward Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host when fast forwarding."), "Audio",
                       "FastForwardVolume", 200, 0, 100, "%d%%");
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Mute All Sound"),
@@ -6228,11 +6229,11 @@ void FullscreenUI::DrawAudioSettingsPage()
   MenuHeading(FSUI_VSTR("Backend Settings"));
 
   DrawEnumSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_OFF, "Audio Backend"),
+    bsi, FSUI_ICONVSTR(ICON_PF_SPEAKER, "Audio Backend"),
     FSUI_VSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "Audio",
     "Backend", AudioStream::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioBackend::Count);
-  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Stretch Mode"),
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_PF_SFX_SOUND_EFFECT_NOISE, "Stretch Mode"),
                   FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
                   AudioStreamParameters::DEFAULT_STRETCH_MODE, &AudioStream::ParseStretchMode,
                   &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeDisplayName, AudioStretchMode::Count);
@@ -7078,25 +7079,25 @@ void FullscreenUI::DrawPauseMenu()
           ClosePauseMenu();
         ImGui::SetItemDefaultFocus();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FORWARD_FAST, "Toggle Fast Forward")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Toggle Fast Forward")))
         {
           ClosePauseMenu();
           DoToggleFastForward();
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DOWNLOAD, "Load State"), has_game))
         {
           BeginTransition(
             []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, true); });
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Save State"), has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_FLOPPY_DISK, "Save State"), has_game))
         {
           BeginTransition(
             []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, false); });
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Toggle Analog")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_GAMEPAD_ALT, "Toggle Analog")))
         {
           ClosePauseMenu();
           DoToggleAnalogMode();
@@ -7677,7 +7678,7 @@ void FullscreenUI::DrawResumeStateSelector()
   ResetFocusHere();
   BeginMenuButtons();
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Load State"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     std::string state_path = std::move(entry.state_path);
@@ -7686,7 +7687,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path), std::move(state_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "Clean Boot"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_PLAY, "Clean Boot"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     std::string game_path = std::move(entry.game_path);
     ClearSaveStateEntryList();
@@ -7694,7 +7695,7 @@ void FullscreenUI::DrawResumeStateSelector()
     DoStartPath(std::move(game_path));
   }
 
-  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
+  if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TRASH_CAN, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
     if (FileSystem::DeleteFile(entry.state_path.c_str()))
     {

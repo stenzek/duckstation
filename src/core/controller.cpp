@@ -22,7 +22,7 @@
 #include "fmt/format.h"
 
 static const Controller::ControllerInfo s_none_info = {
-  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), ICON_PF_QUESTION, {}, {}};
+  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), ICON_PF_NO_CONTROLLER, {}, {}};
 
 static constexpr std::array<const Controller::ControllerInfo*, static_cast<size_t>(ControllerType::Count)>
   s_controller_info = {{

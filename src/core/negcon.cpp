@@ -328,7 +328,7 @@ static const SettingInfo s_settings[] = {
 
 const Controller::ControllerInfo NeGcon::INFO = {
   ControllerType::NeGcon, "NeGcon",       TRANSLATE_NOOP("ControllerType", "NeGcon"),
-  ICON_PF_GAMEPAD,        s_binding_info, s_settings};
+  ICON_PF_STEERING_WHEEL, s_binding_info, s_settings};
 
 void NeGcon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

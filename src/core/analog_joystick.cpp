@@ -407,12 +407,9 @@ static const SettingInfo s_settings[] = {
    nullptr, s_invert_settings, 0.0f},
 };
 
-const Controller::ControllerInfo AnalogJoystick::INFO = {ControllerType::AnalogJoystick,
-                                                         "AnalogJoystick",
-                                                         TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
-                                                         ICON_PF_GAMEPAD,
-                                                         s_binding_info,
-                                                         s_settings};
+const Controller::ControllerInfo AnalogJoystick::INFO = {
+  ControllerType::AnalogJoystick, "AnalogJoystick", TRANSLATE_NOOP("ControllerType", "Analog Joystick"),
+  ICON_PF_FLIGHT_STICK,           s_binding_info,   s_settings};
 
 void AnalogJoystick::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

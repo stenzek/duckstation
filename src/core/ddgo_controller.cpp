@@ -355,9 +355,6 @@ static const SettingInfo s_settings[] = {
                                     "transitioning/inbetween state when changing brake level."),
    "10", "0", "255", "1", "%d", nullptr, 1.0f}};
 
-const Controller::ControllerInfo DDGoController::INFO = {ControllerType::DDGoController,
-                                                         "DDGoController",
-                                                         TRANSLATE_NOOP("ControllerType", "Densha de Go! Controller"),
-                                                         ICON_PF_GAMEPAD_ALT,
-                                                         s_binding_info,
-                                                         s_settings};
+const Controller::ControllerInfo DDGoController::INFO = {
+  ControllerType::DDGoController, "DDGoController", TRANSLATE_NOOP("ControllerType", "Densha de Go! Controller"),
+  ICON_PF_FIGHT_STICK_JOYSTICK,   s_binding_info,   s_settings};
