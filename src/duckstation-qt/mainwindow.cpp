@@ -1307,6 +1307,7 @@ void MainWindow::onViewToolbarActionToggled(bool checked)
   Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
   Host::CommitBaseSettingChanges();
   m_ui.toolBar->setVisible(checked);
+  updateToolbarIconStyle();
 }
 
 void MainWindow::onViewToolbarLockActionToggled(bool checked)
@@ -1813,6 +1814,7 @@ void MainWindow::updateToolbarActions()
 
 void MainWindow::updateToolbarIconStyle()
 {
+  const bool show_toolbar = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
   const bool show_labels = Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
   const bool small_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false);
   const bool labels_beside_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false);
@@ -1830,11 +1832,18 @@ void MainWindow::updateToolbarIconStyle()
   const QSize icon_size = QSize(small_icons ? 16 : 32, small_icons ? 16 : 32);
   if (m_ui.toolBar->iconSize() != icon_size)
     m_ui.toolBar->setIconSize(icon_size);
+
+  m_ui.actionViewLockToolbar->setEnabled(show_toolbar);
+  m_ui.actionViewSmallToolbarIcons->setEnabled(show_toolbar);
+  m_ui.actionViewToolbarLabels->setEnabled(show_toolbar);
+  m_ui.actionViewToolbarLabelsBesidesText->setEnabled(show_toolbar && show_labels);
 }
 
 void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 {
   {
+    const bool show_labels = Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
+
     const std::string active_buttons_str =
       Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
     std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
@@ -1860,6 +1869,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     action = menu.addAction(tr("Labels Beside Icons"));
     action->setCheckable(true);
     action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
+    action->setEnabled(show_labels);
     connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
 
     menu.addSeparator();
