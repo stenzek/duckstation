@@ -889,7 +889,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   if (!entry->IsDiscSet())
   {
     const bool has_any_states = resume_action->isEnabled() || load_state_menu->isEnabled();
-    QAction* delete_save_states_action = menu->addAction(tr("Delete Save States..."));
+    QAction* delete_save_states_action = menu->addAction(tr("Delete Save States"));
     delete_save_states_action->setEnabled(has_any_states);
     if (has_any_states)
     {
@@ -1609,7 +1609,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
         menu.addSeparator();
 
-        connect(menu.addAction(tr("Select Disc")), &QAction::triggered, this, &MainWindow::onGameListEntryActivated);
+        connect(menu.addAction(tr("Select Disc...")), &QAction::triggered, this, &MainWindow::onGameListEntryActivated);
       }
 
       menu.addSeparator();
