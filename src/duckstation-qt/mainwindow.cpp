@@ -1350,8 +1350,8 @@ void MainWindow::onViewToolbarLabelsBesideIconsActionToggled(bool checked)
   updateToolbarIconStyle();
 
   // ensure synced
-  const QSignalBlocker sb(m_ui.actionViewToolbarLabelsBesidesText);
-  m_ui.actionViewToolbarLabelsBesidesText->setChecked(checked);
+  const QSignalBlocker sb(m_ui.actionViewToolbarLabelsBesideIcons);
+  m_ui.actionViewToolbarLabelsBesideIcons->setChecked(checked);
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
@@ -1713,7 +1713,7 @@ void MainWindow::setupAdditionalUi()
 
   m_ui.actionViewSmallToolbarIcons->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
   m_ui.actionViewToolbarLabels->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
-  m_ui.actionViewToolbarLabelsBesidesText->setChecked(
+  m_ui.actionViewToolbarLabelsBesideIcons->setChecked(
     Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
 
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
@@ -1836,7 +1836,7 @@ void MainWindow::updateToolbarIconStyle()
   m_ui.actionViewLockToolbar->setEnabled(show_toolbar);
   m_ui.actionViewSmallToolbarIcons->setEnabled(show_toolbar);
   m_ui.actionViewToolbarLabels->setEnabled(show_toolbar);
-  m_ui.actionViewToolbarLabelsBesidesText->setEnabled(show_toolbar && show_labels);
+  m_ui.actionViewToolbarLabelsBesideIcons->setEnabled(show_toolbar && show_labels);
 }
 
 void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
@@ -2205,7 +2205,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarLockActionToggled);
   connect(m_ui.actionViewSmallToolbarIcons, &QAction::toggled, this, &MainWindow::onViewToolbarSmallIconsActionToggled);
   connect(m_ui.actionViewToolbarLabels, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsActionToggled);
-  connect(m_ui.actionViewToolbarLabelsBesidesText, &QAction::toggled, this,
+  connect(m_ui.actionViewToolbarLabelsBesideIcons, &QAction::toggled, this,
           &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);

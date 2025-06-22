@@ -200,7 +200,7 @@
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewSmallToolbarIcons"/>
     <addaction name="actionViewToolbarLabels"/>
-    <addaction name="actionViewToolbarLabelsBesidesText"/>
+    <addaction name="actionViewToolbarLabelsBesideIcons"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="separator"/>
     <addaction name="actionViewGameList"/>
@@ -765,12 +765,12 @@
     <string>Toolbar Labels</string>
    </property>
   </action>
-  <action name="actionViewToolbarLabelsBesidesText">
+  <action name="actionViewToolbarLabelsBesideIcons">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar Labels Besides Text</string>
+    <string>Toolbar Labels Beside Icons</string>
    </property>
   </action>
   <action name="actionViewStatusBar">
