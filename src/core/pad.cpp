@@ -20,7 +20,7 @@
 #include "common/log.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 #include "fmt/format.h"
 
 #include <array>
@@ -250,7 +250,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   if (card_present_in_state && !s_state.memory_cards[i] && g_settings.load_devices_from_save_states)
   {
     Host::AddIconOSDMessage(
-      fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
+      fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
       fmt::format(
         TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Creating temporary card."),
         i + 1u),
@@ -288,7 +288,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       else
       {
         Host::AddIconOSDMessage(
-          fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
+          fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
           fmt::format(
             TRANSLATE_FS("OSDMessage",
                          "Memory card {} from save state does not match current card data. Simulating replugging."),
@@ -302,7 +302,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Ignoring card."), i + 1u),
         Host::OSD_ERROR_DURATION);
@@ -316,7 +316,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     if (g_settings.load_devices_from_save_states)
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Removing card."), i + 1u),
         Host::OSD_ERROR_DURATION);
@@ -325,7 +325,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Replugging card."),
           i + 1u),
