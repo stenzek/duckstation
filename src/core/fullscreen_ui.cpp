@@ -1177,9 +1177,18 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 void FullscreenUI::ReturnToPreviousWindow()
 {
   if (s_state.previous_main_window == MainWindowType::None)
+  {
     ReturnToMainWindow();
+  }
   else
-    BeginTransition([window = s_state.previous_main_window]() { SwitchToMainWindow(window); });
+  {
+    BeginTransition([window = s_state.previous_main_window]() {
+      SwitchToMainWindow(window);
+
+      // return stack is only one deep
+      s_state.previous_main_window = window;
+    });
+  }
 }
 
 void FullscreenUI::ReturnToMainWindow()
@@ -5394,8 +5403,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         bsi->SetStringValue("GPU", "Adapter", value);
       SetSettingsChanged(bsi);
     };
-    OpenChoiceDialog(FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), false,
-                     std::move(options), std::move(callback));
+    OpenChoiceDialog(FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "GPU Adapter"), false, std::move(options),
+                     std::move(callback));
   }
 
   const bool pgxp_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false));
@@ -6431,10 +6440,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     bsi, FSUI_ICONVSTR(ICON_FA_BELL, "Achievement Notifications"),
     FSUI_VSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
     "Notifications", true, enabled);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
-    FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."), "Cheevos",
-    "LeaderboardNotifications", true, enabled);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
+                    FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
+                    "Cheevos", "LeaderboardNotifications", true, enabled);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_MUSIC, "Sound Effects"),
     FSUI_VSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
@@ -7600,7 +7608,6 @@ void FullscreenUI::DrawSaveStateSelector()
       {
         ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
       }
-
     }
 
     EndMenuButtons();
