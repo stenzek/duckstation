@@ -15,7 +15,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 #include "fmt/format.h"
 
 LOG_CHANNEL(MemoryCard);
@@ -309,7 +309,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view path)
   else if (!MemoryCardImage::LoadFromFile(&mc->m_data, mc->m_path.c_str(), &error)) [[unlikely]]
   {
     Host::AddIconOSDMessage(
-      fmt::format("memory_card_{}", path), ICON_FA_SD_CARD,
+      fmt::format("memory_card_{}", path), ICON_PF_MEMORY_CARD,
       fmt::format(TRANSLATE_FS("MemoryCard", "{} could not be read:\n{}\nThe memory card will NOT be saved.\nYou must "
                                              "delete the memory card manually if you want to save."),
                   Path::GetFileName(path), error.GetDescription()),
@@ -355,7 +355,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_SD_CARD,
+      Host::AddIconOSDMessage(std::move(osd_key), ICON_PF_MEMORY_CARD,
                               fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card to '{}': {}"),
                                           Path::GetFileName(display_name), error.GetDescription()),
                               Host::OSD_ERROR_DURATION);
@@ -367,7 +367,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (display_osd_message)
   {
     Host::AddIconOSDMessage(
-      std::move(osd_key), ICON_FA_SD_CARD,
+      std::move(osd_key), ICON_PF_MEMORY_CARD,
       fmt::format(TRANSLATE_FS("MemoryCard", "Saved memory card to '{}'."), Path::GetFileName(display_name)),
       Host::OSD_QUICK_DURATION);
   }
