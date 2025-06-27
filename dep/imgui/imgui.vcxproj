@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui.cpp" />
+    <ClCompile Include="src\imgui_demo.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
     <ClCompile Include="src\imgui_freetype.cpp" />
     <ClCompile Include="src\imgui_stdlib.cpp" />

@@ -17,6 +17,7 @@
     <ClCompile Include="src\imgui_stdlib.cpp" />
     <ClCompile Include="src\imgui_tables.cpp" />
     <ClCompile Include="src\imgui_freetype.cpp" />
+    <ClCompile Include="src\imgui_demo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="imgui.natvis" />

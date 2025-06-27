@@ -2913,18 +2913,18 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, min_value);
   ImGui::SameLine();
   ImGui::TextUnformatted(" - ");
   ImGui::SameLine();
   ImGui::Text(format, max_value);
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, default_value);
   ImGui::PopFont();
@@ -2980,18 +2980,18 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, min_value * multiplier);
   ImGui::SameLine();
   ImGui::TextUnformatted(" - ");
   ImGui::SameLine();
   ImGui::Text(format, max_value * multiplier);
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, default_value * multiplier);
   ImGui::PopFont();
@@ -3056,18 +3056,18 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, min_value * multiplier);
   ImGui::SameLine();
   ImGui::TextUnformatted(" - ");
   ImGui::SameLine();
   ImGui::Text(format, max_value * multiplier);
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, default_value * multiplier);
   ImGui::PopFont();
@@ -3298,18 +3298,18 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, min_value);
   ImGui::SameLine();
   ImGui::TextUnformatted(" - ");
   ImGui::SameLine();
   ImGui::Text(format, max_value);
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Default Value"));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::SameLine();
   ImGui::Text(format, default_value);
   ImGui::PopFont();
@@ -7452,7 +7452,7 @@ void FullscreenUI::DrawSaveStateSelector()
 
     u32 grid_x = 0;
     ImGui::SetCursorPosX(start_x);
-    for (u32 i = 0; i < s_state.save_state_selector_slots.size();)
+    for (u32 i = 0;;)
     {
       SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
 
@@ -7584,6 +7584,11 @@ void FullscreenUI::DrawSaveStateSelector()
         }
       }
 
+      // avoid triggering imgui warning
+      i++;
+      if (i == s_state.save_state_selector_slots.size())
+        break;
+
       grid_x++;
       if (grid_x == grid_count_x)
       {
@@ -7596,7 +7601,6 @@ void FullscreenUI::DrawSaveStateSelector()
         ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
       }
 
-      i++;
     }
 
     EndMenuButtons();
@@ -7659,9 +7663,9 @@ void FullscreenUI::DrawResumeStateSelector()
   SmallString sick;
   sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {:%c}?"),
               fmt::localtime(entry.timestamp));
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
 
   const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
   const float image_height = LayoutScale(280.0f);
@@ -8280,7 +8284,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     {
       // title
       const char* title = FSUI_CSTR("No Game Selected");
-      ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize);
+      ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
       text_width = ImGui::CalcTextSize(title, nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
       ImGui::TextWrapped("%s", title);
@@ -8421,6 +8425,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
     if (entry == s_state.game_list_sorted_entries.front())
       ImGui::SetItemDefaultFocus();
+    else if (entry == s_state.game_list_sorted_entries.back())
+      break;
 
     grid_x++;
     if (grid_x == grid_count_x)
@@ -8851,9 +8857,9 @@ void FullscreenUI::DrawAboutWindow()
   ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(),
                                        ImGui::GetCursorScreenPos() + image_size);
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
-  ImGui::PushFontWeight(UIStyle.BoldFontWeight);
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGui::TextUnformatted("DuckStation");
-  ImGui::PopFontWeight();
+  ImGui::PopFont();
   ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(UIStyle.BackgroundTextColor));
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
   ImGui::TextUnformatted(g_scm_tag_str);

@@ -1008,10 +1008,10 @@ bool ImGuiFullscreen::BeginFullscreenColumns(const char* title, float pos_y, boo
   bool clipped;
   if (title)
   {
-    ImGui::PushFontSize(UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
+    ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
     clipped = ImGui::Begin(title, nullptr,
                            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground);
-    ImGui::PopFontSize();
+    ImGui::PopFont();
   }
   else
   {
@@ -1050,7 +1050,7 @@ bool ImGuiFullscreen::BeginFullscreenColumnWindow(float start, float end, const 
 
   return ImGui::BeginChild(name, size,
                            (padding.x != 0.0f || padding.y != 0.0f) ? ImGuiChildFlags_AlwaysUseWindowPadding : 0,
-                           ImGuiWindowFlags_NavFlattened);
+                           ImGuiChildFlags_NavFlattened);
 }
 
 void ImGuiFullscreen::EndFullscreenColumnWindow()
@@ -1389,7 +1389,7 @@ void ImGuiFullscreen::DrawWindowTitle(std::string_view title)
   if (!ImGui::ItemAdd(rect, window->GetID("window_title")))
     return;
 
-  ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize);
+  ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
   ImGui::RenderTextClipped(rect.Min, rect.Max, IMSTR_START_END(title), nullptr, ImVec2(0.0f, 0.0f), &rect);
   ImGui::PopFont();
 
@@ -3728,7 +3728,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.BackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
-  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize());
+  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize(), UIStyle.BoldFontWeight);
   ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 85.0f : 55.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
                           ImGuiCond_Always, ImVec2(0.5f, 0.0f));
