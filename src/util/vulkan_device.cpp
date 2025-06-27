@@ -1013,11 +1013,9 @@ bool VulkanDevice::CreateCommandBuffers()
 {
   VkResult res;
 
-  uint32_t frame_index = 0;
+  u32 frame_index = 0;
   for (CommandBuffer& resources : m_frame_resources)
   {
-    resources.needs_fence_wait = false;
-
     VkCommandPoolCreateInfo pool_info = {VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, nullptr, 0,
                                          m_graphics_queue_family_index};
     res = vkCreateCommandPool(m_device, &pool_info, nullptr, &resources.command_pool);
@@ -1299,8 +1297,9 @@ VkCommandBuffer VulkanDevice::GetCurrentInitCommandBuffer()
 
 VkDescriptorSet VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout set_layout)
 {
+  CommandBuffer& fres = m_frame_resources[m_current_frame];
   VkDescriptorSetAllocateInfo allocate_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr,
-                                               m_frame_resources[m_current_frame].descriptor_pool, 1, &set_layout};
+                                               fres.descriptor_pool, 1, &set_layout};
 
   VkDescriptorSet descriptor_set;
   VkResult res = vkAllocateDescriptorSets(m_device, &allocate_info, &descriptor_set);
@@ -1311,6 +1310,7 @@ VkDescriptorSet VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout set_la
     return VK_NULL_HANDLE;
   }
 
+  fres.needs_descriptor_pool_reset = true;
   return descriptor_set;
 }
 
@@ -1480,9 +1480,6 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
     Panic("Failed to end command buffer");
   }
 
-  // This command buffer now has commands, so can't be re-used without waiting.
-  resources.needs_fence_wait = true;
-
   uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
                               nullptr,
@@ -1575,8 +1572,9 @@ void VulkanDevice::BeginCommandBuffer(u32 index)
     LOG_VULKAN_ERROR(res, "vkBeginCommandBuffer failed: ");
 
   // Also can do the same for the descriptor pools
-  if (resources.descriptor_pool != VK_NULL_HANDLE)
+  if (resources.needs_descriptor_pool_reset)
   {
+    resources.needs_descriptor_pool_reset = false;
     res = vkResetDescriptorPool(m_device, resources.descriptor_pool, 0);
     if (res != VK_SUCCESS)
       LOG_VULKAN_ERROR(res, "vkResetDescriptorPool failed: ");
