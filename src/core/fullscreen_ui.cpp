@@ -4918,6 +4918,8 @@ void FullscreenUI::DrawControllerSettingsPage()
     MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_PLUG, "Controller Port {}")),
                                         Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
+    ImGui::PushID(TinyString::from_format("port_{}", global_slot));
+
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
     const TinyString type = bsi->GetTinyStringValue(
       section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(global_slot)).name);
@@ -4959,7 +4961,10 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
 
     if (!ci || ci->bindings.empty())
+    {
+      ImGui::PopID();
       continue;
+    }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"),
                    FSUI_VSTR("Attempts to map the selected port to a chosen controller.")))
@@ -4989,12 +4994,17 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
+      ImGui::PushID(TinyString::from_format("macro_{}", macro_index));
+
       bool& expanded = s_state.controller_macro_expanded[global_slot][macro_index];
       expanded ^= MenuHeadingButton(
         SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_PF_EMPTY_KEYCAP, "Macro Button {}")), macro_index + 1),
         s_state.controller_macro_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP : ICON_FA_CHEVRON_DOWN);
       if (!expanded)
+      {
+        ImGui::PopID();
         continue;
+      }
 
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"),
@@ -5135,6 +5145,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 
         EndFixedPopupDialog();
       }
+
+      ImGui::PopID();
     }
 
     if (!ci->settings.empty())
@@ -5191,6 +5203,8 @@ void FullscreenUI::DrawControllerSettingsPage()
         }
       }
     }
+
+    ImGui::PopID();
   }
 
   EndMenuButtons();
