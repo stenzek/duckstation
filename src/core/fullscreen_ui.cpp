@@ -980,9 +980,11 @@ void FullscreenUI::OnSystemStarting()
     if (!IsInitialized())
       return;
 
-    s_state.current_main_window = MainWindowType::None;
-    QueueResetFocus(FocusResetType::ViewChanged);
-    UpdateRunIdleState();
+    BeginTransition(LONG_TRANSITION_TIME, []() {
+      s_state.current_main_window = MainWindowType::None;
+      QueueResetFocus(FocusResetType::ViewChanged);
+      UpdateRunIdleState();
+    });
   });
 }
 
@@ -1031,7 +1033,7 @@ void FullscreenUI::OnSystemDestroyed()
     s_state.pause_menu_was_open = false;
     s_state.was_paused_on_quick_menu_open = false;
     s_state.current_pause_submenu = PauseSubMenu::None;
-    ReturnToMainWindow();
+    ReturnToMainWindow(LONG_TRANSITION_TIME);
   });
 }
 
