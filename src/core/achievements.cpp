@@ -3302,6 +3302,9 @@ void Achievements::DrawLeaderboardsWindow()
       const ImVec2 line_end(end_x, line_start.y);
       ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
                                           line_thickness);
+
+      // keep imgui happy
+      ImGui::Dummy(ImVec2(end_x - column_heading_pos.x, column_heading_pos.y - line_end.y));
     }
   }
   ImGuiFullscreen::EndFullscreenWindow();
