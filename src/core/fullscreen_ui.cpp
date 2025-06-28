@@ -238,6 +238,8 @@ static bool AreAnyDialogsOpen();
 static void ClosePauseMenu();
 static void ClosePauseMenuImmediately();
 static void SwitchToMainWindow(MainWindowType type);
+static void ReturnToMainWindow(float transition_time = GPUThread::HasGPUBackend() ? SHORT_TRANSITION_TIME :
+                                                                                    DEFAULT_TRANSITION_TIME);
 static void DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size);
 static void DrawLandingWindow();
 static void DrawStartGameWindow();
@@ -1191,12 +1193,12 @@ void FullscreenUI::ReturnToPreviousWindow()
   }
 }
 
-void FullscreenUI::ReturnToMainWindow()
+void FullscreenUI::ReturnToMainWindow(
+  float transition_time /* = GPUThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME */)
 {
   if (GPUThread::IsSystemPaused() && !s_state.was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(false); });
 
-  const float transition_time = GPUThread::HasGPUBackend() ? SHORT_TRANSITION_TIME : DEFAULT_TRANSITION_TIME;
   BeginTransition(transition_time, []() {
     s_state.previous_main_window = MainWindowType::None;
     s_state.current_pause_submenu = PauseSubMenu::None;
@@ -7366,7 +7368,7 @@ void FullscreenUI::DrawSaveStateSelector()
 
     if (GPUThread::HasGPUBackend())
     {
-      ReturnToMainWindow();
+      ReturnToMainWindow(LONG_TRANSITION_TIME);
 
       Host::RunOnCPUThread([game_path = std::move(game_path), state_path = std::move(state_path)]() mutable {
         if (System::IsValid())
@@ -7401,7 +7403,7 @@ void FullscreenUI::DrawSaveStateSelector()
 
   static constexpr auto do_save_state = [](s32 slot, bool global) {
     ClearSaveStateEntryList();
-    ReturnToMainWindow();
+    ReturnToMainWindow(LONG_TRANSITION_TIME);
 
     Host::RunOnCPUThread([slot, global]() {
       if (!System::IsValid())
@@ -7422,7 +7424,7 @@ void FullscreenUI::DrawSaveStateSelector()
   ImGuiIO& io = ImGui::GetIO();
   const ImVec2 heading_size = ImVec2(
     io.DisplaySize.x, UIStyle.LargeFontSize + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
-
+  SaveStateListEntry* pressed_entry = nullptr;
   bool closed = false;
 
   // last state deleted?
@@ -7535,12 +7537,8 @@ void FullscreenUI::DrawSaveStateSelector()
 
         if (pressed)
         {
-          if (s_state.save_state_selector_loading)
-            do_load_state(std::move(entry.game_path), std::move(entry.state_path));
-          else
-            do_save_state(entry.slot, entry.global);
-
-          closed = true;
+          // avoid closing while drawing
+          pressed_entry = &entry;
         }
         else if (hovered &&
                  (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
@@ -7652,7 +7650,14 @@ void FullscreenUI::DrawSaveStateSelector()
       GetBackgroundAlpha());
   }
 
-  if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
+  if (pressed_entry)
+  {
+    if (s_state.save_state_selector_loading)
+      do_load_state(std::move(pressed_entry->game_path), std::move(pressed_entry->state_path));
+    else
+      do_save_state(pressed_entry->slot, pressed_entry->global);
+  }
+  else if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {
     ClearSaveStateEntryList();
     ReturnToPreviousWindow();
