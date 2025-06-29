@@ -879,7 +879,8 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
   if (capture_video)
   {
     static constexpr u32 FRAME_RATE_DENOMERATOR = 10 * 1000 * 1000;
-    const u32 frame_rate_numerator = static_cast<double>(fps) * static_cast<double>(FRAME_RATE_DENOMERATOR);
+    const u32 frame_rate_numerator =
+      static_cast<u32>(static_cast<double>(fps) * static_cast<double>(FRAME_RATE_DENOMERATOR));
 
     m_video_sample_duration = ConvertFrequencyToMFDurationUnits(fps);
 
