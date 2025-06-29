@@ -668,10 +668,6 @@ private:
     // Both of these use truncation, not rounding, so that the next sample lines up.
     return static_cast<LONGLONG>(static_cast<double>(pts) * duration);
   }
-  static constexpr LONGLONG ConvertFramesToDuration(u32 frames, double duration)
-  {
-    return static_cast<LONGLONG>(static_cast<double>(frames) * duration);
-  }
   static constexpr time_t ConvertPTSToSeconds(s64 pts, double duration)
   {
     return static_cast<time_t>((static_cast<double>(pts) * duration) / 1e+7);
@@ -1352,13 +1348,17 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
     return false;
   }
 
-  if (FAILED(hr = sample->SetSampleTime(ConvertPTSToTimestamp(pf.pts, m_video_sample_duration)))) [[unlikely]]
+  const LONGLONG sample_time = ConvertPTSToTimestamp(pf.pts, m_video_sample_duration);
+  const LONGLONG next_sample_time = ConvertPTSToTimestamp(pf.pts + 1, m_video_sample_duration);
+  const LONGLONG sample_duration = next_sample_time - sample_time;
+
+  if (FAILED(hr = sample->SetSampleTime(sample_time))) [[unlikely]]
   {
     Error::SetHResult(error, "SetSampleTime() failed: ", hr);
     return false;
   }
 
-  if (FAILED(hr = sample->SetSampleDuration(static_cast<LONGLONG>(m_video_sample_duration)))) [[unlikely]]
+  if (FAILED(hr = sample->SetSampleDuration(sample_duration))) [[unlikely]]
   {
     Error::SetHResult(error, "SetSampleDuration() failed: ", hr);
     return false;
@@ -1776,15 +1776,17 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
       return false;
     }
 
-    if (FAILED(hr = sample->SetSampleTime(ConvertPTSToTimestamp(m_next_audio_pts, m_audio_sample_duration))))
-      [[unlikely]]
+    const LONGLONG sample_time = ConvertPTSToTimestamp(m_next_audio_pts, m_audio_sample_duration);
+    const LONGLONG next_sample_time = ConvertPTSToTimestamp(m_next_audio_pts + contig_frames, m_audio_sample_duration);
+    const LONGLONG sample_duration = next_sample_time - sample_time;
+
+    if (FAILED(hr = sample->SetSampleTime(sample_time))) [[unlikely]]
     {
       Error::SetHResult(error, "Audio SetSampleTime() failed: ", hr);
       return false;
     }
 
-    if (FAILED(hr = sample->SetSampleDuration(ConvertFramesToDuration(contig_frames, m_audio_sample_duration))))
-      [[unlikely]]
+    if (FAILED(hr = sample->SetSampleDuration(sample_duration))) [[unlikely]]
     {
       Error::SetHResult(error, "Audio SetSampleDuration() failed: ", hr);
       return false;
