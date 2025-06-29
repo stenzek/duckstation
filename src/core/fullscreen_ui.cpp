@@ -808,18 +808,25 @@ void FullscreenUI::UpdateRunIdleState()
 
 void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
 {
-  if (s_state.transition_state == TransitionState::Starting)
+  if (s_state.transition_state == TransitionState::Inactive)
   {
-    WARNING_LOG("More than one transition started");
-    if (s_state.transition_start_callback)
-      std::move(s_state.transition_start_callback)();
+    const float real_time = UIStyle.Animations ? time : 0.0f;
+    s_state.transition_state = TransitionState::Starting;
+    s_state.transition_total_time = real_time;
+    s_state.transition_remaining_time = real_time;
   }
 
-  const float real_time = UIStyle.Animations ? time : 0.0f;
-  s_state.transition_state = TransitionState::Starting;
-  s_state.transition_total_time = real_time;
-  s_state.transition_remaining_time = real_time;
+  // run any callback if we queue another transition in the middle of one already active
+  if (s_state.transition_start_callback)
+  {
+    if (s_state.transition_state == TransitionState::Starting)
+      WARNING_LOG("More than one transition started");
+
+    std::move(s_state.transition_start_callback)();
+  }
+
   s_state.transition_start_callback = func;
+
   UpdateRunIdleState();
 }
 
@@ -828,7 +835,7 @@ void FullscreenUI::CancelTransition()
   if (s_state.transition_state != TransitionState::Active)
     return;
 
-  if (s_state.transition_state == TransitionState::Starting && s_state.transition_start_callback)
+  if (s_state.transition_start_callback)
     std::move(s_state.transition_start_callback)();
 
   s_state.transition_state = TransitionState::Inactive;
@@ -950,14 +957,13 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
 void FullscreenUI::UpdateTransitionState()
 {
   if (s_state.transition_state == TransitionState::Inactive)
-  {
     return;
-  }
-  else if (s_state.transition_state == TransitionState::Starting)
+
+  // this callback will exist after starting if a second transition gets queued
+  if (s_state.transition_start_callback)
   {
-    // starting is cleared in render
-    if (s_state.transition_start_callback)
-      std::move(s_state.transition_start_callback)();
+    std::move(s_state.transition_start_callback)();
+    s_state.transition_start_callback = {};
   }
 
   s_state.transition_remaining_time -= ImGui::GetIO().DeltaTime;
@@ -1632,7 +1638,7 @@ void FullscreenUI::RequestReset()
     if (result)
       Host::RunOnCPUThread(System::ResetSystem);
 
-    ClosePauseMenuImmediately();
+    BeginTransition(LONG_TRANSITION_TIME, &ClosePauseMenuImmediately);
   });
 }
 
@@ -7163,7 +7169,7 @@ void FullscreenUI::DrawPauseMenu()
         {
           // skip submenu when we can't save anyway
           if (!has_game)
-            BeginTransition([]() { RequestShutdown(false); });
+            BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(false); });
           else
             BeginTransition([]() { switch_submenu(PauseSubMenu::Exit); });
         }
@@ -7179,13 +7185,13 @@ void FullscreenUI::DrawPauseMenu()
           ImGui::SetItemDefaultFocus();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reset System")))
-          BeginTransition([]() { RequestReset(); });
+          RequestReset();
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Exit And Save State")))
-          BeginTransition([]() { RequestShutdown(true); });
+          BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(true); });
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Exit Without Saving")))
-          BeginTransition([]() { RequestShutdown(false); });
+          BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(false); });
       }
       break;
 
