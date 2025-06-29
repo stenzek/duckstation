@@ -850,12 +850,8 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
 
 #ifdef _WIN32
-  m_ui.blitSwapChain->setEnabled(render_api == RenderAPI::D3D11);
+  m_ui.blitSwapChain->setVisible(render_api == RenderAPI::D3D11);
 #endif
-
-  m_ui.exclusiveFullscreenLabel->setEnabled(render_api == RenderAPI::D3D11 || render_api == RenderAPI::D3D12 ||
-                                            render_api == RenderAPI::Vulkan);
-  m_ui.exclusiveFullscreenControl->setEnabled(render_api == RenderAPI::Vulkan);
 
   populateGPUAdaptersAndResolutions(render_api);
   updatePGXPSettingsEnabled();
@@ -930,15 +926,20 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     }
 
     // if the current mode is not valid (e.g. adapter change), ensure it's in the list so the user isn't confused
-    if (!current_fullscreen_mode_found)
+    if (!current_fullscreen_mode_found && !current_fullscreen_mode.empty())
     {
       const QString qmodename = QtUtils::StringViewToQString(current_fullscreen_mode);
       m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
     }
 
     // disable it if we don't have a choice
-    m_ui.fullscreenMode->setEnabled(m_ui.fullscreenMode->count() > 1);
-    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
+    const bool has_fullscreen_modes = (current_adapter && !current_adapter->fullscreen_modes.empty());
+    const bool has_exclusive_fullscreen_control = (render_api == RenderAPI::Vulkan);
+    m_ui.fullscreenMode->setVisible(has_fullscreen_modes);
+    if (has_fullscreen_modes)
+      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
+    m_ui.exclusiveFullscreenControl->setVisible(has_exclusive_fullscreen_control);
+    m_ui.exclusiveFullscreenLabel->setVisible(has_fullscreen_modes || has_exclusive_fullscreen_control);
   }
 
   if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
