@@ -739,8 +739,6 @@ struct MediaFoundationAudioCodec
 static constexpr const MediaFoundationVideoCodec s_media_foundation_video_codecs[] = {
   {"h264", "H.264 with Software Encoding", MFVideoFormat_H264, false},
   {"h264_hw", "H.264 with Hardware Encoding", MFVideoFormat_H264, true},
-  {"h265", "H.265 with Software Encoding", MFVideoFormat_H265, false},
-  {"h265_hw", "H.265 with Hardware Encoding", MFVideoFormat_H265, true},
   {"hevc", "HEVC with Software Encoding", MFVideoFormat_HEVC, false},
   {"hevc_hw", "HEVC with Hardware Encoding", MFVideoFormat_HEVC, true},
   {"vp9", "VP9 with Software Encoding", MFVideoFormat_VP90, false},
@@ -1122,6 +1120,18 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
     return nullptr;
   }
 
+  {
+    LPWSTR transform_name;
+    UINT32 transform_name_length;
+    if (SUCCEEDED(
+          transforms[0]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &transform_name, &transform_name_length)))
+    {
+      INFO_LOG("Video encoder name: {}",
+               StringUtil::WideStringToUTF8String(std::wstring_view(transform_name, transform_name_length)));
+      CoTaskMemFree(transform_name);
+    }
+  }
+
   *use_async_transform = false;
   if (hardware)
   {
@@ -1151,7 +1161,7 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
   u32 profile = 0;
   if (output_type_info.guidSubtype == MFVideoFormat_H264)
     profile = eAVEncH264VProfile_Main;
-  else if (output_type_info.guidSubtype == MFVideoFormat_H265)
+  else if (output_type_info.guidSubtype == MFVideoFormat_HEVC)
     profile = eAVEncH265VProfile_Main_420_8;
   else if (output_type_info.guidSubtype == MFVideoFormat_VP90)
     profile = eAVEncVP9VProfile_420_8;
