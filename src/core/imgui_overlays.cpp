@@ -113,9 +113,9 @@ static void UpdateInputOverlay(void* buffer);
 static constexpr size_t NUM_DEBUG_WINDOWS = 7;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
-  {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 500, 425},
-  {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 800, 915},
-  {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 800, 540},
+  {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 510, 500},
+  {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 820, 950},
+  {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 820, 555},
   {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu.DrawDebugStateWindow(sc); }, 450, 550},
   {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
   {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
@@ -1216,7 +1216,7 @@ void SaveStateSelectorUI::Draw()
   ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
-  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize());
+  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize(), 0.0f);
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
@@ -1304,7 +1304,7 @@ void SaveStateSelectorUI::Draw()
         if (entry.global)
           ImGui::TextUnformatted(entry.game_details.c_str(), entry.game_details.c_str() + entry.game_details.length());
         ImGui::TextUnformatted(entry.summary.c_str(), entry.summary.c_str() + entry.summary.length());
-        ImGui::PushFont(ImGuiManager::GetFixedFont());
+        ImGui::PushFont(ImGuiManager::GetFixedFont(), 0.0f, 0.0f);
         ImGui::TextUnformatted(entry.filename.data(), entry.filename.data() + entry.filename.length());
         ImGui::PopFont();
 

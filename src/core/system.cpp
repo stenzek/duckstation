@@ -70,6 +70,7 @@
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 
 #include "cpuinfo.h"
 #include "fmt/chrono.h"
@@ -3773,7 +3774,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       if (s_state.running_game_serial.empty())
       {
         Host::AddIconOSDMessage(
-          std::move(message_key), ICON_FA_SD_CARD,
+          std::move(message_key), ICON_PF_MEMORY_CARD,
           fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
                                              "game has no code. Using shared card instead."),
                       slot + 1u),
@@ -3792,7 +3793,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       if (s_state.running_game_title.empty())
       {
         Host::AddIconOSDMessage(
-          std::move(message_key), ICON_FA_SD_CARD,
+          std::move(message_key), ICON_PF_MEMORY_CARD,
           fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
                                              "game has no title. Using shared card instead."),
                       slot + 1u),
@@ -3830,7 +3831,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
             if (g_settings.memory_card_use_playlist_title && !card_path.empty())
             {
               Host::AddIconOSDMessage(
-                fmt::format("DiscSpecificMC{}", slot), ICON_FA_SD_CARD,
+                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
                 fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
                             Path::GetFileName(disc_card_path)),
                 Host::OSD_INFO_DURATION);
@@ -3852,7 +3853,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       if (file_title.empty())
       {
         Host::AddIconOSDMessage(
-          std::move(message_key), ICON_FA_SD_CARD,
+          std::move(message_key), ICON_PF_MEMORY_CARD,
           fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
                                              "game has no path. Using shared card instead."),
                       slot + 1u));
@@ -4091,7 +4092,7 @@ bool System::InsertMedia(const char* path)
 
   if (g_settings.HasAnyPerGameMemoryCards())
   {
-    Host::AddIconOSDMessage("ReloadMemoryCardsFromGameChange", ICON_FA_SD_CARD,
+    Host::AddIconOSDMessage("ReloadMemoryCardsFromGameChange", ICON_PF_MEMORY_CARD,
                             TRANSLATE_STR("System", "Game changed, reloading memory cards."), Host::OSD_INFO_DURATION);
     UpdatePerGameMemoryCards();
   }

@@ -4152,7 +4152,7 @@ void CDROM::DrawDebugWindow(float scale)
       else
       {
         const float end_y = ImGui::GetCursorPosY();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120.0f * scale);
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 140.0f * scale);
         ImGui::SetCursorPosY(start_y);
         if (ImGui::Button("Show Current File"))
           s_state.show_current_file = true;

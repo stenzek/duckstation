@@ -1647,7 +1647,7 @@ void GTE::DrawFreecamWindow(float scale)
 
   if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    const float third_width = 50.0f * scale;
+    const float third_width = 100.0f * scale;
     const float second_width = item_width - third_width;
 
     enabled_changed = ImGui::Checkbox("Enable Freecam", &freecam_enabled);
@@ -1666,7 +1666,7 @@ void GTE::DrawFreecamWindow(float scale)
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
     ImGui::TextUnformatted("Movement Speed:");
     ImGui::NextColumn();
-    ImGui::SetNextItemWidth(second_width);
+    ImGui::SetNextItemWidth(second_width - (style.FramePadding.x * 2.0f));
     ImGui::DragFloat("##MovementSpeed", &s_config.freecam_move_speed, 1.0f, 0.0f, FREECAM_MAX_MOVE_SPEED);
     ImGui::NextColumn();
     if (ImGui::Button("Reset##ResetMovementSpeed"))
@@ -1676,7 +1676,7 @@ void GTE::DrawFreecamWindow(float scale)
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
     ImGui::TextUnformatted("Turning Speed:");
     ImGui::NextColumn();
-    ImGui::SetNextItemWidth(second_width);
+    ImGui::SetNextItemWidth(second_width - (style.FramePadding.x * 2.0f));
     ImGui::DragFloat("##TurnSpeed", &s_config.freecam_turn_speed, 1.0f, 0.0f, FREECAM_MAX_TURN_SPEED);
     ImGui::NextColumn();
     if (ImGui::Button("Reset##ResetTurnSpeed"))
@@ -1691,7 +1691,7 @@ void GTE::DrawFreecamWindow(float scale)
   {
     ImGui::Columns(2, "Rotation", false);
     ImGui::SetColumnWidth(0, label_width);
-    ImGui::SetColumnWidth(1, item_width);
+    ImGui::SetColumnWidth(1, item_width + (style.FramePadding.x * 2.0f));
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
     ImGui::TextUnformatted("X Rotation (Pitch):");
@@ -1729,7 +1729,7 @@ void GTE::DrawFreecamWindow(float scale)
   {
     ImGui::Columns(2, "Translation", false);
     ImGui::SetColumnWidth(0, label_width);
-    ImGui::SetColumnWidth(1, item_width);
+    ImGui::SetColumnWidth(1, item_width + (style.FramePadding.x * 2.0f));
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
     ImGui::TextUnformatted("X Offset:");
@@ -1762,8 +1762,6 @@ void GTE::DrawFreecamWindow(float scale)
       s_config.freecam_translation = GSVector4::zero();
       changed = true;
     }
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
   }
 
   if (enabled_changed || (!freecam_enabled && changed))

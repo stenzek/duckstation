@@ -35,15 +35,11 @@
 #include <cmath>
 #include <deque>
 #include <mutex>
+#include <limits>
 #include <type_traits>
 #include <unordered_map>
 
 LOG_CHANNEL(ImGuiManager);
-
-// TODO: for dynamic fonts
-// max texture size
-// lock/bake osd font
-// gc fonts on scale change
 
 namespace ImGuiManager {
 namespace {
@@ -84,10 +80,10 @@ static bool CreateFontAtlas(Error* error);
 static bool CompilePipelines(Error* error);
 static void RenderDrawLists(u32 window_width, u32 window_height, WindowInfo::PreRotation prerotation);
 static void UpdateTextures();
-static void SetCommonIOOptions(ImGuiIO& io);
+static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
-static const char* GetClipboardTextImpl(void* userdata);
-static void SetClipboardTextImpl(void* userdata, const char* text);
+static const char* GetClipboardTextImpl(ImGuiContext* ctx);
+static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
 static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
 static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
 static void ClearOSDMessages(bool clear_warnings);
@@ -107,6 +103,10 @@ static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)
   "NotoSansJP-VariableFont_wght.ttf",  // Japanese
   "NotoSansKR-VariableFont_wght.ttf",  // Korean
 }};
+static constexpr const char* FIXED_FONT_NAME = "RobotoMono-VariableFont_wght.ttf";
+static constexpr const char* FA_FONT_NAME = "fa-solid-900.ttf";
+static constexpr const char* PF_FONT_NAME = "promptfont.otf";
+static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
 
 namespace {
 
@@ -215,7 +215,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 #else
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 #endif
-  SetCommonIOOptions(io);
+  SetCommonIOOptions(io, s_state.imgui_context->PlatformIO);
 
   s_state.last_render_time = Timer::GetCurrentValue();
   s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8;
@@ -582,6 +582,8 @@ void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
 {
   style = ImGuiStyle();
   style.WindowMinSize = ImVec2(1.0f, 1.0f);
+  style.FrameRounding = 8.0f;
+  style.FramePadding = ImVec2(8.0f, 6.0f);
 
   ImVec4* colors = style.Colors;
   colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
@@ -619,16 +621,16 @@ void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
   colors[ImGuiCol_ResizeGripActive] = ImVec4(0.27f, 0.32f, 0.38f, 1.00f);
   colors[ImGuiCol_Tab] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
   colors[ImGuiCol_TabHovered] = ImVec4(0.33f, 0.38f, 0.46f, 1.00f);
-  colors[ImGuiCol_TabActive] = ImVec4(0.27f, 0.32f, 0.38f, 1.00f);
-  colors[ImGuiCol_TabUnfocused] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
-  colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
+  colors[ImGuiCol_TabSelected] = ImVec4(0.27f, 0.32f, 0.38f, 1.00f);
+  colors[ImGuiCol_TabDimmed] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
+  colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
   colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
   colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
   colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
   colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
   colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
   colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-  colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+  colors[ImGuiCol_NavCursor] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
   colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
   colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
@@ -769,6 +771,10 @@ bool ImGuiManager::LoadFontData(Error* error)
 {
   Timer load_timer;
 
+  static constexpr auto font_resource_name = [](const std::string_view font_name) {
+    return TinyString::from_format("fonts/{}", font_name);
+  };
+
   // only load used text fonts, that way we don't waste memory on mini
   for (const TextFont text_font : s_state.text_font_order)
   {
@@ -777,7 +783,7 @@ bool ImGuiManager::LoadFontData(Error* error)
       continue;
 
     std::optional<DynamicHeapArray<u8>> font_data =
-      Host::ReadResourceFile(TinyString::from_format("fonts/{}", TEXT_FONT_NAMES[index]), true, error);
+      Host::ReadResourceFile(font_resource_name(TEXT_FONT_NAMES[index]), true, error);
     if (!font_data.has_value())
       return false;
 
@@ -787,7 +793,7 @@ bool ImGuiManager::LoadFontData(Error* error)
   if (s_state.fixed_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data =
-      Host::ReadResourceFile("fonts/RobotoMono-VariableFont_wght.ttf", true, error);
+      Host::ReadResourceFile(font_resource_name(FIXED_FONT_NAME), true, error);
     if (!font_data.has_value())
       return false;
 
@@ -796,7 +802,8 @@ bool ImGuiManager::LoadFontData(Error* error)
 
   if (s_state.icon_fa_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf", true, error);
+    std::optional<DynamicHeapArray<u8>> font_data =
+      Host::ReadResourceFile(font_resource_name(FA_FONT_NAME), true, error);
     if (!font_data.has_value())
       return false;
 
@@ -805,7 +812,8 @@ bool ImGuiManager::LoadFontData(Error* error)
 
   if (s_state.icon_pf_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf", true, error);
+    std::optional<DynamicHeapArray<u8>> font_data =
+      Host::ReadResourceFile(font_resource_name(PF_FONT_NAME), true, error);
     if (!font_data.has_value())
       return false;
 
@@ -815,7 +823,7 @@ bool ImGuiManager::LoadFontData(Error* error)
   if (s_state.emoji_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data =
-      Host::ReadResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf", true, error);
+      Host::ReadResourceFile(font_resource_name(EMOJI_FONT_NAME), true, error);
     if (!font_data.has_value())
       return false;
 
@@ -843,6 +851,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   // First text font has to be added before the icon fonts.
   // Remaining fonts are added after the icon font, otherwise the wrong glyphs will be used in the UI.
   const TextFont first_font = s_state.text_font_order.front();
+  StringUtil::Strlcpy(text_cfg.Name, TEXT_FONT_NAMES[static_cast<size_t>(first_font)], std::size(text_cfg.Name));
   auto& first_font_data = s_state.text_fonts_data[static_cast<size_t>(first_font)];
   Assert(!first_font_data.empty());
   s_state.text_font =
@@ -856,6 +865,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
 
   // Add icon fonts.
   ImFontConfig icon_cfg;
+  StringUtil::Strlcpy(icon_cfg.Name, "PromptFont", std::size(icon_cfg.Name));
   icon_cfg.MergeMode = true;
   icon_cfg.FontDataOwnedByAtlas = false;
   icon_cfg.PixelSnapH = true;
@@ -872,6 +882,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
 
   // Only for emoji font.
   icon_cfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LoadColor | ImGuiFreeTypeLoaderFlags_Bitmap;
+  StringUtil::Strlcpy(icon_cfg.Name, "EmojiFont", std::size(icon_cfg.Name));
 
   if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.emoji_font_data.data(),
                                                   static_cast<int>(s_state.emoji_font_data.size()),
@@ -881,6 +892,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
     return false;
   }
 
+  StringUtil::Strlcpy(icon_cfg.Name, "FontAwesomeFont", std::size(icon_cfg.Name));
   if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.icon_fa_font_data.data(),
                                                   static_cast<int>(s_state.icon_fa_font_data.size()),
                                                   default_text_size * 0.75f, 0.0f, &icon_cfg)) [[unlikely]]
@@ -899,6 +911,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
 
     auto& font_data = s_state.text_fonts_data[static_cast<size_t>(text_font_idx)];
     Assert(!font_data.empty());
+    StringUtil::Strlcpy(text_cfg.Name, "TextFont-", std::size(text_cfg.Name));
     if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(font_data.data(), static_cast<int>(font_data.size()),
                                                     default_text_size, default_text_weight, &text_cfg))
     {
@@ -909,6 +922,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
 
   // Add the fixed-width font separately last.
   ImFontConfig fixed_cfg;
+  StringUtil::Strlcpy(fixed_cfg.Name, "FixedFont", std::size(fixed_cfg.Name));
   fixed_cfg.FontDataOwnedByAtlas = false;
   s_state.fixed_font = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.fixed_font_data.data(),
                                                                   static_cast<int>(s_state.fixed_font_data.size()),
@@ -920,12 +934,6 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
   }
 
   ImGuiFullscreen::SetFont(s_state.text_font);
-
-  if (!io.Fonts->Build())
-  {
-    Error::SetStringView(error, "Build() failed");
-    return false;
-  }
 
   DEV_LOG("Creating font atlas took {} ms", load_timer.GetTimeMilliseconds());
   return true;
@@ -1301,11 +1309,11 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
   std::atomic_thread_fence(std::memory_order_release);
 }
 
-void ImGuiManager::SetCommonIOOptions(ImGuiIO& io)
+void ImGuiManager::SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio)
 {
   io.KeyRepeatDelay = 0.5f;
-  io.GetClipboardTextFn = GetClipboardTextImpl;
-  io.SetClipboardTextFn = SetClipboardTextImpl;
+  pio.Platform_GetClipboardTextFn = GetClipboardTextImpl;
+  pio.Platform_SetClipboardTextFn = SetClipboardTextImpl;
 }
 
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
@@ -1448,7 +1456,7 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
-const char* ImGuiManager::GetClipboardTextImpl(void* userdata)
+const char* ImGuiManager::GetClipboardTextImpl(ImGuiContext* ctx)
 {
   const std::string text = Host::GetClipboardText();
   if (text.empty() || text.length() >= std::numeric_limits<int>::max())
@@ -1461,7 +1469,7 @@ const char* ImGuiManager::GetClipboardTextImpl(void* userdata)
   return GImGui->ClipboardHandlerData.Data;
 }
 
-void ImGuiManager::SetClipboardTextImpl(void* userdata, const char* text)
+void ImGuiManager::SetClipboardTextImpl(ImGuiContext* ctx, const char* text)
 {
   const size_t length = std::strlen(text);
   if (length == 0)
@@ -1655,7 +1663,7 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   state->imgui_context->IO.BackendFlags |=
     ImGuiBackendFlags_RendererHasVtxOffset | ImGuiBackendFlags_RendererHasTextures;
   state->imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-  SetCommonIOOptions(state->imgui_context->IO);
+  SetCommonIOOptions(state->imgui_context->IO, state->imgui_context->PlatformIO);
 
   SetStyle(state->imgui_context->Style, state->swap_chain->GetScale());
   state->imgui_context->Style.WindowBorderSize = 0.0f;
@@ -1720,7 +1728,7 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   const float window_scale = state->swap_chain->GetScale();
 
   ImGui::NewFrame();
-  ImGui::PushFont(s_state.text_font, GetDebugFontSize(window_scale));
+  ImGui::PushFont(s_state.text_font, GetDebugFontSize(window_scale), 0.0f);
   ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
   ImGui::SetNextWindowSize(state->imgui_context->IO.DisplaySize, ImGuiCond_Always);
   if (ImGui::Begin("AuxRenderWindowMain", nullptr,

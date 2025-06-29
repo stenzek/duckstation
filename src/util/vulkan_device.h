@@ -308,7 +308,7 @@ private:
     VkFence fence = VK_NULL_HANDLE;
     u64 fence_counter = 0;
     bool init_buffer_used = false;
-    bool needs_fence_wait = false;
+    bool needs_descriptor_pool_reset = false;
     bool timestamp_written = false;
   };
 

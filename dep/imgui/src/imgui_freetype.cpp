@@ -153,7 +153,7 @@ struct ImGui_ImplFreeType_FontSrcData
     FT_Face                         FtFace;
     ImGuiFreeTypeLoaderFlags        UserFlags;          // = ImFontConfig::FontLoaderFlags
     FT_Int32                        LoadFlags;
-    ImFontBaked*                    BakedLastActivated;
+    FT_Size                         LastSize;
     FT_Fixed                        LastWeight;
     FT_Fixed*                       VarDesignCoords;
     FT_UInt                         VarDesignNumAxis;
@@ -373,7 +373,7 @@ static void* FreeType_Realloc(FT_Memory /*memory*/, long cur_size, long new_size
 
 bool ImGui_ImplFreeType_LoaderInit(ImFontAtlas* atlas)
 {
-    IM_ASSERT(atlas->FontLoaderData == NULL);
+    IM_ASSERT(atlas->FontLoaderData == nullptr);
     ImGui_ImplFreeType_Data* bd = IM_NEW(ImGui_ImplFreeType_Data)();
 
     // FreeType memory management: https://www.freetype.org/freetype2/docs/design/design-4.html
@@ -407,23 +407,23 @@ bool ImGui_ImplFreeType_LoaderInit(ImFontAtlas* atlas)
 void ImGui_ImplFreeType_LoaderShutdown(ImFontAtlas* atlas)
 {
     ImGui_ImplFreeType_Data* bd = (ImGui_ImplFreeType_Data*)atlas->FontLoaderData;
-    IM_ASSERT(bd != NULL);
+    IM_ASSERT(bd != nullptr);
     FT_Done_Library(bd->Library);
     IM_DELETE(bd);
-    atlas->FontLoaderData = NULL;
+    atlas->FontLoaderData = nullptr;
 }
 
 bool ImGui_ImplFreeType_FontSrcInit(ImFontAtlas* atlas, ImFontConfig* src)
 {
     ImGui_ImplFreeType_Data* bd = (ImGui_ImplFreeType_Data*)atlas->FontLoaderData;
     ImGui_ImplFreeType_FontSrcData* bd_font_data = IM_NEW(ImGui_ImplFreeType_FontSrcData);
-    IM_ASSERT(src->FontLoaderData == NULL);
+    IM_ASSERT(src->FontLoaderData == nullptr);
     src->FontLoaderData = bd_font_data;
 
     if (!bd_font_data->InitFont(bd->Library, src, (ImGuiFreeTypeLoaderFlags)atlas->FontLoaderFlags))
     {
         IM_DELETE(bd_font_data);
-        src->FontLoaderData = NULL;
+        src->FontLoaderData = nullptr;
         return false;
     }
 
@@ -435,7 +435,7 @@ void ImGui_ImplFreeType_FontSrcDestroy(ImFontAtlas* atlas, ImFontConfig* src)
     IM_UNUSED(atlas);
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
     IM_DELETE(bd_font_data);
-    src->FontLoaderData = NULL;
+    src->FontLoaderData = nullptr;
 }
 
 bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src)
@@ -446,11 +446,10 @@ bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImF
         size *= (src->SizePixels / baked->ContainerFont->Sources[0]->SizePixels);
 
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
-    bd_font_data->BakedLastActivated = baked;
 
     // We use one FT_Size per (source + baked) combination.
     ImGui_ImplFreeType_FontSrcBakedData* bd_baked_data = (ImGui_ImplFreeType_FontSrcBakedData*)loader_data_for_baked_src;
-    IM_ASSERT(bd_baked_data != NULL);
+    IM_ASSERT(bd_baked_data != nullptr);
     IM_PLACEMENT_NEW(bd_baked_data) ImGui_ImplFreeType_FontSrcBakedData();
 
     FT_New_Size(bd_font_data->FtFace, &bd_baked_data->FtSize);
@@ -469,6 +468,10 @@ bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImF
             FT_Set_Var_Design_Coordinates(bd_font_data->FtFace, 0, nullptr);
         }
     }
+
+    // Track last state to ensure the FT_Face and our baked data is synchronized.
+    bd_font_data->LastSize = bd_baked_data->FtSize;
+    bd_font_data->LastWeight = bd_baked_data->FtWeight;
 
     // Vuhdo 2017: "I'm not sure how to deal with font sizes properly. As far as I understand, currently ImGui assumes that the 'pixel_height'
     // is a maximum height of an any given glyph, i.e. it's the sum of font's ascender and descender. Seems strange to me.
@@ -502,9 +505,11 @@ void ImGui_ImplFreeType_FontBakedDestroy(ImFontAtlas* atlas, ImFontConfig* src, 
 {
     IM_UNUSED(atlas);
     IM_UNUSED(baked);
-    IM_UNUSED(src);
+    ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
+    IM_ASSERT(bd_font_data != nullptr);
     ImGui_ImplFreeType_FontSrcBakedData* bd_baked_data = (ImGui_ImplFreeType_FontSrcBakedData*)loader_data_for_baked_src;
-    IM_ASSERT(bd_baked_data != NULL);
+    IM_ASSERT(bd_baked_data != nullptr);
+    bd_font_data->LastSize = (bd_font_data->LastSize == bd_baked_data->FtSize) ? nullptr : bd_font_data->LastSize;
     FT_Done_Size(bd_baked_data->FtSize);
     bd_baked_data->~ImGui_ImplFreeType_FontSrcBakedData(); // ~IM_PLACEMENT_DELETE()
 }
@@ -517,32 +522,34 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
         return false;
 
     FT_Error error;
-    if (bd_font_data->BakedLastActivated != baked) // <-- could use id
-    {
-        // Activate current size
-        ImGui_ImplFreeType_FontSrcBakedData* bd_baked_data = (ImGui_ImplFreeType_FontSrcBakedData*)loader_data_for_baked_src;
-        //if (!bd_font_data->BakedLastActivated || bd_font_data->BakedLastActivated->Size != baked->Size)
-            FT_Activate_Size(bd_baked_data->FtSize);
-        //if (bd_font_data->WeightCoordIndex >= 0 && (!bd_font_data->BakedLastActivated || bd_font_data->LastWeight != bd_baked_data->FtWeight))
-        if (bd_font_data->WeightCoordIndex >= 0)
-        {
-            if (bd_baked_data->FtWeight != 0)
-            {
-              bd_font_data->VarDesignCoords[bd_font_data->WeightCoordIndex] = bd_baked_data->FtWeight;
-              FT_Set_Var_Design_Coordinates(bd_font_data->FtFace, bd_font_data->VarDesignNumAxis, bd_font_data->VarDesignCoords);
-            }
-            else
-            {
-              FT_Set_Var_Design_Coordinates(bd_font_data->FtFace, 0, nullptr);
-            }
-        }
 
-        // Activate current weight
-        bd_font_data->BakedLastActivated = baked;
+    // Activate current size
+    ImGui_ImplFreeType_FontSrcBakedData* bd_baked_data = (ImGui_ImplFreeType_FontSrcBakedData*)loader_data_for_baked_src;
+    if ( bd_font_data->LastSize != bd_baked_data->FtSize)
+    {
+        bd_font_data->LastSize = bd_baked_data->FtSize;
+        FT_Activate_Size(bd_baked_data->FtSize);
+    }
+    if (bd_font_data->WeightCoordIndex >= 0 && bd_font_data->LastWeight != bd_baked_data->FtWeight)
+    {
+        bd_font_data->LastWeight = bd_baked_data->FtWeight;
+        if (bd_baked_data->FtWeight != 0)
+        {
+          bd_font_data->VarDesignCoords[bd_font_data->WeightCoordIndex] = bd_baked_data->FtWeight;
+          FT_Set_Var_Design_Coordinates(bd_font_data->FtFace, bd_font_data->VarDesignNumAxis, bd_font_data->VarDesignCoords);
+        }
+        else
+        {
+          FT_Set_Var_Design_Coordinates(bd_font_data->FtFace, 0, nullptr);
+        }
     }
 
+    // FT_Font state should be synchronized.
+    IM_ASSERT(bd_font_data->FtFace->size == bd_baked_data->FtSize);
+    IM_ASSERT(bd_font_data->WeightCoordIndex < 0 || bd_font_data->LastWeight == bd_baked_data->FtWeight);
+
     const FT_Glyph_Metrics* metrics = ImGui_ImplFreeType_LoadGlyph(bd_font_data, codepoint);
-    if (metrics == NULL)
+    if (metrics == nullptr)
         return false;
 
     // Render glyph into a bitmap (currently held by FreeType)
@@ -552,7 +559,7 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
     error = FT_Render_Glyph(slot, render_mode);
     const FT_Bitmap* ft_bitmap = &slot->bitmap;
     if (error != 0 || ft_bitmap == nullptr)
-        return NULL;
+        return false;
 
     const int w = (int)ft_bitmap->width;
     const int h = (int)ft_bitmap->rows;
@@ -571,7 +578,7 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
         {
             // Pathological out of memory case (TexMaxWidth/TexMaxHeight set too small?)
             IM_ASSERT(pack_id != ImFontAtlasRectId_Invalid && "Out of texture memory.");
-            return NULL;
+            return false;
         }
         ImTextureRect* r = ImFontAtlasPackGetRect(atlas, pack_id);
 

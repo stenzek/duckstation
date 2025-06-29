@@ -2998,11 +2998,12 @@ int main(int argc, char* argv[])
   else
     s_start_fullscreen_ui_fullscreen = false;
 
+  // Always kick off update check. It'll take over if the user is booting a game fullscreen.
+  main_window->startupUpdateCheck();
+
   // Skip the update check if we're booting a game directly.
   if (autoboot)
     g_emu_thread->bootSystem(std::move(autoboot));
-  else if (!s_nogui_mode)
-    main_window->startupUpdateCheck();
 
   // This doesn't return until we exit.
   result = app.exec();

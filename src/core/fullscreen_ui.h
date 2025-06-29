@@ -79,7 +79,6 @@ void OpenCheatsMenu();
 void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
-void ReturnToMainWindow();
 void ReturnToPreviousWindow();
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 
