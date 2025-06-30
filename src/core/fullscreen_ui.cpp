@@ -825,7 +825,7 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
     std::move(s_state.transition_start_callback)();
   }
 
-  s_state.transition_start_callback = func;
+  s_state.transition_start_callback = std::move(func);
 
   UpdateRunIdleState();
 }
