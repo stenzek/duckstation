@@ -1969,7 +1969,7 @@ ChoiceDialogOptions FullscreenUI::GetBackgroundOptions(const TinyString& current
   static constexpr const char* dir = FS_OSPATH_SEPARATOR_STR "fullscreenui" FS_OSPATH_SEPARATOR_STR "backgrounds";
 
   ChoiceDialogOptions options;
-  options.emplace_back(FSUI_STR("None"), current_value.empty());
+  options.emplace_back(FSUI_STR("None"), current_value == "None");
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(Path::Combine(EmuFolders::UserResources, dir).c_str(), "*",
