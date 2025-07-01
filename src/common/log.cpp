@@ -501,6 +501,9 @@ void Log::FileOutputLogCallback(void* pUserParam, MessageCategory cat, const cha
 void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamps /* = true */)
 {
   std::unique_lock lock(s_state.callbacks_mutex);
+
+  s_state.file_output_timestamp = timestamps;
+
   if (s_state.file_output_enabled == enabled)
     return;
 
@@ -523,7 +526,6 @@ void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamp
   }
 
   s_state.file_output_enabled = enabled;
-  s_state.file_output_timestamp = timestamps;
 }
 
 Log::Level Log::GetLogLevel()

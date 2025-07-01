@@ -2314,6 +2314,8 @@ void MainWindow::connectSignals()
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToFile, "Logging", "LogToFile", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToWindow, "Logging", "LogToWindow", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogTimestamps, "Logging", "LogTimestamps", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogFileTimestamps, "Logging", "LogFileTimestamps",
+                                               false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSafeMode, "Main", "DisableAllEnhancements",
                                                false);

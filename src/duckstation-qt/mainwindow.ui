@@ -169,6 +169,7 @@
     <addaction name="actionLogToWindow"/>
     <addaction name="actionLogToFile"/>
     <addaction name="actionLogTimestamps"/>
+    <addaction name="actionLogFileTimestamps"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
     <addaction name="separator"/>
@@ -953,6 +954,14 @@
    </property>
    <property name="text">
     <string>Log Timestamps</string>
+   </property>
+  </action>
+  <action name="actionLogFileTimestamps">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log File Timestamps</string>
    </property>
   </action>
   <action name="actionLogToSystemConsole">

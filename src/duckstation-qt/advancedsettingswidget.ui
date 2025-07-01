@@ -58,10 +58,10 @@
       </item>
       <item row="1" column="0" colspan="3">
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="logToConsole">
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="logToFile">
           <property name="text">
-           <string>Log To System Console</string>
+           <string>Log To File</string>
           </property>
          </widget>
         </item>
@@ -72,6 +72,13 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="logToConsole">
+          <property name="text">
+           <string>Log To System Console</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QCheckBox" name="logToDebug">
           <property name="text">
@@ -79,10 +86,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="logToFile">
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="logTimestamps">
           <property name="text">
-           <string>Log To File</string>
+           <string>Log Timestamps</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="logFileTimestamps">
+          <property name="text">
+           <string>Log File Timestamps</string>
           </property>
          </widget>
         </item>

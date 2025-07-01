@@ -1164,6 +1164,7 @@ void Settings::SetDefaultLogConfig(SettingsInterface& si)
   si.SetBoolValue("Logging", "LogToDebug", false);
   si.SetBoolValue("Logging", "LogToWindow", false);
   si.SetBoolValue("Logging", "LogToFile", false);
+  si.SetBoolValue("Logging", "LogFileTimestamps", false);
 
   for (const char* channel_name : Log::GetChannelNames())
     si.SetBoolValue("Logging", channel_name, true);
@@ -1179,6 +1180,7 @@ void Settings::UpdateLogConfig(const SettingsInterface& si)
   const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
   const bool log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
   const bool log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
+  const bool log_file_timestamps = si.GetBoolValue("Logging", "LogFileTimestamps", false);
 
   const bool any_logs_enabled = (log_to_console || log_to_debug || log_to_window || log_to_file);
   Log::SetLogLevel(any_logs_enabled ? log_level : Log::Level::None);
@@ -1189,7 +1191,7 @@ void Settings::UpdateLogConfig(const SettingsInterface& si)
   if (log_to_file)
   {
     Log::SetFileOutputParams(log_to_file, Path::Combine(EmuFolders::DataRoot, "duckstation.log").c_str(),
-                             log_timestamps);
+                             log_file_timestamps);
   }
   else
   {

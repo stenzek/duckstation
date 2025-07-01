@@ -180,6 +180,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToDebug, "Logging", "LogToDebug", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToWindow, "Logging", "LogToWindow", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToFile, "Logging", "LogToFile", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logTimestamps, "Logging", "LogTimestamps", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logFileTimestamps, "Logging", "LogFileTimestamps", false);
+  connect(m_ui.logToConsole, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
+  connect(m_ui.logToWindow, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
+  connect(m_ui.logToFile, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
 
@@ -205,6 +210,10 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Logs messages to the window."));
   dialog->registerWidgetHelp(m_ui.logToFile, tr("Log To File"), tr("User Preference"),
                              tr("Logs messages to duckstation.log in the user directory."));
+  dialog->registerWidgetHelp(m_ui.logTimestamps, tr("Log Timestamps"), tr("User Preference"),
+                             tr("Includes the elapsed time since the application start in window and console logs."));
+  dialog->registerWidgetHelp(m_ui.logFileTimestamps, tr("Log File Timestamps"), tr("User Preference"),
+                             tr("Includes the elapsed time since the application start in file logs."));
   dialog->registerWidgetHelp(m_ui.showDebugMenu, tr("Show Debug Menu"), tr("Unchecked"),
                              tr("Shows a debug menu bar with additional statistics and quick settings."));
 }
@@ -216,6 +225,16 @@ void AdvancedSettingsWidget::onLogChannelsButtonClicked()
   QMenu menu;
   LogWindow::populateFilterMenu(&menu);
   menu.exec(QCursor::pos());
+}
+
+void AdvancedSettingsWidget::onAnyLogSinksChanged()
+{
+  const bool log_to_console = m_dialog->getEffectiveBoolValue("Logging", "LogToConsole", false);
+  const bool log_to_window = m_dialog->getEffectiveBoolValue("Logging", "LogToWindow", false);
+  const bool log_to_file = m_dialog->getEffectiveBoolValue("Logging", "LogToFile", false);
+
+  m_ui.logTimestamps->setEnabled(log_to_console || log_to_window);
+  m_ui.logFileTimestamps->setEnabled(log_to_file);
 }
 
 void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
