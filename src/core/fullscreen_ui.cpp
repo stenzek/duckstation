@@ -6651,6 +6651,12 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                     FSUI_VSTR("Logs messages to the debug console where supported."), "Logging", "LogToDebug", false);
   DrawToggleSetting(bsi, FSUI_VSTR("Log To File"), FSUI_VSTR("Logs messages to duckstation.log in the user directory."),
                     "Logging", "LogToFile", false);
+  DrawToggleSetting(bsi, FSUI_VSTR("Log Timestamps"),
+                    FSUI_VSTR("Includes the elapsed time since the application start in window and console logs."),
+                    "Logging", "LogTimestamps", true);
+  DrawToggleSetting(bsi, FSUI_VSTR("Log File Timestamps"),
+                    FSUI_VSTR("Includes the elapsed time since the application start in file logs."), "Logging",
+                    "LogFileTimestamps", false);
 
   MenuHeading(FSUI_VSTR("Debugging Settings"));
 
@@ -9624,6 +9630,8 @@ TRANSLATE_NOOP("FullscreenUI", "If enabled, the display will be blended with the
 TRANSLATE_NOOP("FullscreenUI", "If enabled, the transparency of the overlay image will be applied.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
 TRANSLATE_NOOP("FullscreenUI", "Image Path");
+TRANSLATE_NOOP("FullscreenUI", "Includes the elapsed time since the application start in file logs.");
+TRANSLATE_NOOP("FullscreenUI", "Includes the elapsed time since the application start in window and console logs.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
@@ -9651,7 +9659,9 @@ TRANSLATE_NOOP("FullscreenUI", "Load Preset");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
 TRANSLATE_NOOP("FullscreenUI", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.");
+TRANSLATE_NOOP("FullscreenUI", "Log File Timestamps");
 TRANSLATE_NOOP("FullscreenUI", "Log Level");
+TRANSLATE_NOOP("FullscreenUI", "Log Timestamps");
 TRANSLATE_NOOP("FullscreenUI", "Log To Debug Console");
 TRANSLATE_NOOP("FullscreenUI", "Log To File");
 TRANSLATE_NOOP("FullscreenUI", "Log To System Console");
