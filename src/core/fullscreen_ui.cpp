@@ -8017,8 +8017,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries", GetTransparentBackgroundColor(),
                                   ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING)))
   {
-    const float row_height = 50.0f;
-    const ImVec2 image_size(LayoutScale(row_height, row_height));
+    const bool compact_mode = Host::GetBaseBoolSettingValue("Main", "FullscreenUIGameListCompactMode", true);
+    const float image_size = compact_mode ? UIStyle.LargeFontSize : LayoutScale(50.0f);
+    const float row_image_padding = LayoutScale(compact_mode ? 15.0f : 15.0f);
+    const float row_left_margin = image_size + row_image_padding;
 
     ResetFocusHere();
 
@@ -8030,43 +8032,38 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
     for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
     {
-      ImRect bb;
+      if (!compact_mode)
+      {
+        if (entry->serial.empty())
+          summary.format("{} | {} MB", Path::GetFileName(entry->path), to_mb(entry->file_size));
+        else
+          summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
+      }
+
+      const ImGuiFullscreen::MenuButtonBounds mbb(entry->title, {}, summary, row_left_margin);
+
       bool visible, hovered;
-      bool pressed = MenuButtonFrame(entry->path.c_str(), LayoutScale(row_height), true, &bb, &visible, &hovered);
+      bool pressed = MenuButtonFrame(entry->path, true, mbb.frame_bb, &visible, &hovered);
       if (!visible)
         continue;
 
       GPUTexture* cover_texture = GetGameListCover(entry, false, true);
-
-      if (entry->serial.empty())
-      {
-        summary.format("{} | {} MB", Path::GetFileName(entry->path), to_mb(entry->file_size));
-      }
-      else
-      {
-        summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
-      }
-
-      const ImRect image_rect(
-        CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
-                                                                static_cast<float>(cover_texture->GetHeight()))));
+      const ImRect image_rect(CenterImage(
+        ImRect(ImVec2(mbb.title_bb.Min.x - row_left_margin, mbb.title_bb.Min.y),
+               ImVec2(mbb.title_bb.Min.x - row_image_padding, mbb.title_bb.Min.y + image_size)),
+        ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
       ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
-
-      const float midpoint = bb.Min.y + UIStyle.LargeFontSize + LayoutScale(4.0f);
-      const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
-      const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-      const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
-
-      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                                text_color, entry->title, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
+                                mbb.title_bb.Max, text_color, entry->title, &mbb.title_size, ImVec2(0.0f, 0.0f),
+                                mbb.title_size.x, &mbb.title_bb);
 
       if (!summary.empty())
       {
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
-                                  summary_bb.Max, subtitle_text_color, summary, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                                  &summary_bb);
+        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, mbb.summary_bb.Min,
+                                  mbb.summary_bb.Max, subtitle_text_color, summary, &mbb.summary_size,
+                                  ImVec2(0.0f, 0.0f), mbb.summary_size.x, &mbb.summary_bb);
       }
 
       if (pressed)
@@ -8663,6 +8660,10 @@ void FullscreenUI::DrawGameListSettingsPage()
     {
       s_state.game_list_show_trophy_icons = bsi->GetBoolValue("Main", "FullscreenUIShowTrophyIcons", true);
     }
+
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TEXT_SLASH, "List Compact Mode"),
+                      FSUI_VSTR("Displays only the game title in the list, instead of the title and serial/file name."),
+                      "Main", "FullscreenUIGameListCompactMode", true);
   }
 
   MenuHeading(FSUI_VSTR("Search Directories"));
@@ -9495,6 +9496,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disc");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
 TRANSLATE_NOOP("FullscreenUI", "Display Area");
 TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.");
+TRANSLATE_NOOP("FullscreenUI", "Displays only the game title in the list, instead of the title and serial/file name.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Dithering");
@@ -9651,6 +9653,7 @@ TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Light");
 TRANSLATE_NOOP("FullscreenUI", "Line Detection");
+TRANSLATE_NOOP("FullscreenUI", "List Compact Mode");
 TRANSLATE_NOOP("FullscreenUI", "List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Database Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");

@@ -481,6 +481,39 @@ protected:
   State m_state = State::Inactive;
 };
 
+// Wrapper for computing menu button bounds.
+struct MenuButtonBounds
+{
+  ImVec2 title_size;
+  ImVec2 value_size;
+  ImVec2 summary_size;
+
+  ImRect frame_bb;
+  ImRect title_bb;
+  ImRect value_bb;
+  ImRect summary_bb;
+
+  float available_width = CalcAvailWidth();
+  float available_non_value_width;
+
+  MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary);
+  MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary,
+                   float left_margin);
+  MenuButtonBounds(const std::string_view& title, const ImVec2& value_size, const std::string_view& summary);
+  MenuButtonBounds(const ImVec2& title_size, const ImVec2& value_size, const ImVec2& summary_size);
+
+  static float CalcAvailWidth();
+
+  static float GetSingleLineHeight(float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
+  static float GetSummaryLineHeight(float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
+
+  void CalcBB();
+  void CalcTitleSize(const std::string_view& title);
+  void SetValueSize(const ImVec2& value_size);
+  void CalcValueSize(const std::string_view& value);
+  void CalcSummarySize(const std::string_view& summary);
+};
+
 } // namespace ImGuiFullscreen
 
 // Host UI triggers from Big Picture mode.

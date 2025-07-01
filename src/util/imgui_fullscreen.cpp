@@ -88,36 +88,6 @@ struct BackgroundProgressDialogData
   s32 value;
 };
 
-struct MenuButtonBounds
-{
-  ImVec2 title_size;
-  ImVec2 value_size;
-  ImVec2 summary_size;
-
-  ImRect frame_bb;
-  ImRect title_bb;
-  ImRect value_bb;
-  ImRect summary_bb;
-
-  float available_width = CalcAvailWidth();
-  float available_non_value_width;
-
-  MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary);
-  MenuButtonBounds(const std::string_view& title, const ImVec2& value_size, const std::string_view& summary);
-  MenuButtonBounds(const ImVec2& title_size, const ImVec2& value_size, const ImVec2& summary_size);
-
-  static float CalcAvailWidth();
-
-  static float GetSingleLineHeight(float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
-  static float GetSummaryLineHeight(float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
-
-  void CalcBB();
-  void CalcTitleSize(const std::string_view& title);
-  void SetValueSize(const ImVec2& value_size);
-  void CalcValueSize(const std::string_view& value);
-  void CalcSummarySize(const std::string_view& summary);
-};
-
 class MessageDialog : public PopupDialog
 {
 public:
@@ -1545,6 +1515,27 @@ ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& titl
   CalcBB();
 }
 
+ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, const std::string_view& value,
+                                                    const std::string_view& summary, float left_margin)
+{
+  // ugly, but only used for compact game list, whatever
+  const float orig_width = available_width;
+  available_width -= left_margin;
+
+  CalcValueSize(value);
+  CalcTitleSize(title);
+  CalcSummarySize(summary);
+
+  available_width = orig_width;
+
+  CalcBB();
+
+  title_bb.Min.x += left_margin;
+  title_bb.Max.x += left_margin;
+  summary_bb.Min.x += left_margin;
+  summary_bb.Max.x += left_margin;
+}
+
 ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, const ImVec2& value_size,
                                                     const std::string_view& summary)
 {
@@ -1926,34 +1917,37 @@ bool ImGuiFullscreen::MenuButtonWithVisibilityQuery(std::string_view title, std:
 }
 
 bool ImGuiFullscreen::MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
-                                      const ImVec2& image_size, bool enabled /* = true */,
-                                      const ImVec2& uv0 /* = ImVec2(0.0f, 0.0f) */,
-                                      const ImVec2& uv1 /* = ImVec2(1.0f, 1.0f) */)
+                                      const ImVec2& image_size, bool enabled /*= true*/,
+                                      const ImVec2& uv0 /*= ImVec2(0.0f, 0.0f)*/,
+                                      const ImVec2& uv1 /*= ImVec2(1.0f, 1.0f)*/)
 {
-  MenuButtonBounds bb(title, ImVec2(), summary);
+  const float left_margin = image_size.x + LayoutScale(15.0f);
+  const MenuButtonBounds mbb(title, {}, summary, left_margin);
 
   bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
+  bool pressed = MenuButtonFrame(title, enabled, mbb.frame_bb, &visible, &hovered);
   if (!visible)
     return false;
 
-  ImGui::GetWindowDrawList()->AddImage(user_texture_id, bb.title_bb.Min, bb.title_bb.Min + image_size, uv0, uv1,
+  const ImRect image_rect(CenterImage(
+    ImRect(ImVec2(mbb.title_bb.Min.x - left_margin, mbb.title_bb.Min.y),
+           ImVec2(mbb.title_bb.Min.x - left_margin, mbb.title_bb.Min.y + image_size.x)),
+    ImVec2(static_cast<float>(user_texture_id->GetWidth()), static_cast<float>(user_texture_id->GetHeight()))));
+
+  ImGui::GetWindowDrawList()->AddImage(user_texture_id, image_rect.Min, image_rect.Max, uv0, uv1,
                                        enabled ? IM_COL32(255, 255, 255, 255) :
                                                  ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
-  const float text_offset = image_size.x + LayoutScale(15.0f);
-  bb.title_bb.Min.x += text_offset;
-  bb.title_bb.Max.x += text_offset;
   const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
-                            bb.title_bb.Max, ImGui::GetColorU32(color), title, &bb.title_size, ImVec2(0.0f, 0.0f),
-                            bb.title_size.x, &bb.title_bb);
+  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
+                            mbb.title_bb.Max, ImGui::GetColorU32(color), title, &mbb.title_size, ImVec2(0.0f, 0.0f),
+                            mbb.title_size.x, &mbb.title_bb);
 
   if (!summary.empty())
   {
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.summary_bb.Min,
-                              bb.summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)), summary, &bb.summary_size,
-                              ImVec2(0.0f, 0.0f), bb.summary_size.x, &bb.summary_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, mbb.summary_bb.Min,
+                              mbb.summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)), summary, &mbb.summary_size,
+                              ImVec2(0.0f, 0.0f), mbb.summary_size.x, &mbb.summary_bb);
   }
 
   s_state.menu_button_index++;
