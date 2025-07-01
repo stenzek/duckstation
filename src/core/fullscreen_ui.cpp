@@ -4287,10 +4287,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   MenuHeading(FSUI_VSTR("Game Display"));
 
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_FULLSCREEN, "Start Fullscreen"),
                     FSUI_VSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
                     "StartFullscreen", false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_COMPUTER_MOUSE, "Double-Click Toggles Fullscreen"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Double-Click Toggles Fullscreen"),
                     FSUI_VSTR("Switches between full screen and windowed when the window is double-clicked."), "Main",
                     "DoubleClickTogglesFullscreen", true);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_POINTER, "Hide Cursor In Fullscreen"),
@@ -7125,7 +7125,7 @@ void FullscreenUI::DrawPauseMenu()
             []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, true); });
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_FLOPPY_DISK, "Save State"), has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DISKETTE, "Save State"), has_game))
         {
           BeginTransition(
             []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, false); });
