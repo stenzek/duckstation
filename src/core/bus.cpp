@@ -953,7 +953,7 @@ void Bus::AddTTYCharacter(char ch)
     }
     s_tty_line_buffer.clear();
   }
-  else
+  else if (ch != '\0')
   {
     s_tty_line_buffer += ch;
   }

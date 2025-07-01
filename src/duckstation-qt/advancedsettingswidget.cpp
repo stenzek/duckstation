@@ -317,6 +317,7 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), "Hacks", "ExportSharedMemory",
                         false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Redirect SIO to TTY"), "SIO", "RedirectToTTY", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), "PCDrv", "Enabled", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv Writes"), "PCDrv", "EnableWrites", false);
   addDirectoryOption(m_dialog, m_ui.tweakOptionTable, tr("PCDrv Root Directory"), "PCDrv", "Root");
@@ -360,6 +361,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // Enable GDB Server
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_GDB_SERVER_PORT); // GDB Server Port
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Export Shared Memory
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Redirect SIO to TTY
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV Writes
     setDirectoryOption(m_ui.tweakOptionTable, i++, "");                                    // PCDrv Root Directory

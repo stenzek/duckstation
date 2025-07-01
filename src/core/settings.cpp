@@ -510,6 +510,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   pio_flash_image_path = si.GetStringValue("PIO", "FlashImagePath");
   pio_flash_write_enable = si.GetBoolValue("PIO", "FlashImageWriteEnable", false);
   pio_switch_active = si.GetBoolValue("PIO", "SwitchActive", true);
+  sio_redirect_to_tty = si.GetBoolValue("SIO", "RedirectToTTY", false);
 
   pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
   pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
@@ -797,6 +798,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("PIO", "FlashImagePath", pio_flash_image_path.c_str());
   si.SetBoolValue("PIO", "FlashImageWriteEnable", pio_flash_write_enable);
   si.SetBoolValue("PIO", "SwitchActive", pio_switch_active);
+  si.SetBoolValue("SIO", "RedirectToTTY", sio_redirect_to_tty);
 
   si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
   si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);

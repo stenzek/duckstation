@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "sio.h"
+#include "bus.h"
 #include "controller.h"
 
 #include "util/state_wrapper.h"
@@ -137,7 +138,11 @@ void SIO::WriteRegister(u32 offset, u32 value)
   {
     case 0x00: // SIO_DATA
     {
-      WARNING_LOG("SIO_DATA (W) <- 0x{:02X}", value);
+      if (g_settings.sio_redirect_to_tty)
+        Bus::AddTTYCharacter(static_cast<char>(value));
+      else
+        WARNING_LOG("SIO_DATA (W) <- 0x{:02X}", value);
+
       return;
     }
 

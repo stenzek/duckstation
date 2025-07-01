@@ -340,6 +340,7 @@ struct Settings : public GPUSettings
   bool memory_card_fast_forward_access : 1 = false;
   bool pio_switch_active : 1 = true;
   bool pio_flash_write_enable : 1 = false;
+  bool sio_redirect_to_tty : 1 = false;
   bool pcdrv_enable_writes : 1 = false;
 
   // achievements
