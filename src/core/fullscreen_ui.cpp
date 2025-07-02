@@ -8299,15 +8299,15 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->file_size >= 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_OPEN_THE_FOLDER, FSUI_VSTR("File Size: ")));
+        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_OPEN_THE_FOLDER, FSUI_VSTR("Size: ")));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
-        ImGui::Text(FSUI_CSTR("%u MB"), to_mb(selected_entry->file_size));
+        ImGui::Text(FSUI_CSTR("%u MB"), to_mb(selected_entry->uncompressed_size));
         ImGui::PopStyleColor();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(subtitle_text_color));
-        ImGui::Text(FSUI_CSTR(" (%u MB on disk)"), to_mb(selected_entry->uncompressed_size));
+        ImGui::Text(FSUI_CSTR(" (%u MB on disk)"), to_mb(selected_entry->file_size));
         ImGui::PopStyleColor();
       }
       else
@@ -9584,7 +9584,6 @@ TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
 TRANSLATE_NOOP("FullscreenUI", "Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.");
 TRANSLATE_NOOP("FullscreenUI", "Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.");
 TRANSLATE_NOOP("FullscreenUI", "File Size");
-TRANSLATE_NOOP("FullscreenUI", "File Size: ");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
 TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
@@ -9914,6 +9913,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displaye
 TRANSLATE_NOOP("FullscreenUI", "Shows trophy icons in game grid when games have achievements or have been mastered.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Size: ");
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
 TRANSLATE_NOOP("FullscreenUI", "Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
