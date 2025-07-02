@@ -7954,6 +7954,7 @@ void FullscreenUI::DrawGameListWindow()
       BeginTransition([]() {
         s_state.game_list_view =
           (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+        QueueResetFocus(FocusResetType::ViewChanged);
       });
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
