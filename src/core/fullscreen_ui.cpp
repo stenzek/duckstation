@@ -8200,7 +8200,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       {
         const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGui::TextUnformatted(display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: "));
+        ImGuiFullscreen::TextUnformatted(
+          FSUI_ICONVSTR(ICON_EMOJI_GLOBE, display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: ")));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), 23, 16), LayoutScale(23.0f, 16.0f));
@@ -8224,7 +8225,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         if (!selected_entry->dbentry->genre.empty())
         {
           ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-          ImGui::TextUnformatted(FSUI_CSTR("Genre: "));
+          ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_BOOKS, FSUI_VSTR("Genre: ")));
           ImGui::PopFont();
           ImGui::SameLine();
           ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8236,7 +8237,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         if (selected_entry->dbentry->release_date != 0)
         {
           ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-          ImGui::TextUnformatted(FSUI_CSTR("Release Date: "));
+          ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_CALENDAR, FSUI_VSTR("Release Date: ")));
           ImGui::PopFont();
           ImGui::SameLine();
           ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8249,7 +8250,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->num_achievements > 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGui::TextUnformatted(FSUI_CSTR("Achievements: "));
+        ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_TROPHY, "Achievements: "));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8267,7 +8268,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // compatibility
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));
+      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_STAR, FSUI_VSTR("Compatibility: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16), LayoutScale(88.0f, 16.0f));
@@ -8280,14 +8281,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // play time
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGui::TextUnformatted(FSUI_CSTR("Time Played: "));
+      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_HOURGLASS, FSUI_VSTR("Time Played: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
       ImGui::TextUnformatted(GameList::FormatTimespan(selected_entry->total_played_time).c_str());
       ImGui::PopStyleColor();
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGui::TextUnformatted(FSUI_CSTR("Last Played: "));
+      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_CLOCK_FIVE_OCLOCK, FSUI_CSTR("Last Played: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8298,7 +8299,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->file_size >= 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGui::TextUnformatted(FSUI_CSTR("File Size: "));
+        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_OPEN_THE_FOLDER, FSUI_VSTR("File Size: ")));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);

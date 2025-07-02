@@ -1796,6 +1796,11 @@ void ImGuiFullscreen::TextAlignedMultiLine(float align_x, const char* text, cons
   ImGui::ItemAdd(bb, 0);
 }
 
+void ImGuiFullscreen::TextUnformatted(std::string_view text)
+{
+  ImGui::TextUnformatted(IMSTR_START_END(text));
+}
+
 void ImGuiFullscreen::MenuHeading(std::string_view title, bool draw_line /*= true*/)
 {
   const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;

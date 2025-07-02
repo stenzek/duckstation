@@ -303,6 +303,7 @@ void RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, f
                          const ImVec2& pos_min, const ImVec2& pos_max, u32 color, std::string_view text,
                          char separator = ':', float shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET));
 void TextAlignedMultiLine(float align_x, const char* text, const char* text_end = nullptr, float wrap_width = -1.0f);
+void TextUnformatted(std::string_view text);
 void MenuHeading(std::string_view title, bool draw_line = true);
 bool MenuHeadingButton(std::string_view title, std::string_view value = {}, bool enabled = true, bool draw_line = true);
 bool MenuButton(std::string_view title, std::string_view summary, bool enabled = true,
