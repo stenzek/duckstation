@@ -84,6 +84,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   {
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
+    connect(m_ui.refreshProgress, &QPushButton::clicked, g_emu_thread, &EmuThread::refreshAchievementsAllProgress);
     connect(g_emu_thread, &EmuThread::achievementsRefreshed, this, &AchievementSettingsWidget::onAchievementsRefreshed);
     updateLoginState();
 
@@ -142,6 +143,7 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.encoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
+  m_ui.refreshProgress->setEnabled(enabled && m_ui.viewProfile->isEnabled());
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()
@@ -208,6 +210,7 @@ void AchievementSettingsWidget::updateLoginState()
   }
 
   m_ui.viewProfile->setEnabled(logged_in);
+  m_ui.refreshProgress->setEnabled(logged_in && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false));
 }
 
 void AchievementSettingsWidget::onLoginLogoutPressed()

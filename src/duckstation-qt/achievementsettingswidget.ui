@@ -194,7 +194,7 @@
      <property name="title">
       <string>Account</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
       <item>
        <widget class="QLabel" name="loginStatus">
         <property name="text">
@@ -203,6 +203,13 @@ Login token generated at:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refreshProgress">
+        <property name="text">
+         <string>Refresh Progress</string>
         </property>
        </widget>
       </item>
