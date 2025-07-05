@@ -1367,10 +1367,20 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
     current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
   const QString value(QString::fromStdString(current_path));
   Accessor::setStringValue(widget, value);
-  // if we're doing per-game settings, disable the widget, we only allow folder changes in the base config
+
+  if (open_button)
+  {
+    QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
+      QString path(Accessor::getStringValue(widget));
+      if (!path.isEmpty())
+        QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
+    });
+  }
+
+  // if we're doing per-game settings, disable editing, we only allow folder changes in the base config
   if (sif)
   {
-    widget->setEnabled(false);
+    widget->setReadOnly(true);
     if (browse_button)
       browse_button->setEnabled(false);
     if (reset_button)
@@ -1435,14 +1445,6 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
                        widget->setText(path);
                        value_changed();
                      });
-  }
-  if (open_button)
-  {
-    QObject::connect(open_button, &QAbstractButton::clicked, open_button, [widget]() {
-      QString path(Accessor::getStringValue(widget));
-      if (!path.isEmpty())
-        QtUtils::OpenURL(QtUtils::GetRootWidget(widget), QUrl::fromLocalFile(path));
-    });
   }
   if (reset_button)
   {
