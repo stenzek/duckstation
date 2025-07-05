@@ -1129,7 +1129,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
 
     // figure out play time for all discs, and sum it
     // we do this via lookups, rather than the other entries, because of duplicates
-    for (const std::string& set_serial : dbentry->disc_set_serials)
+    for (const std::string_view& set_serial : dbentry->disc_set_serials)
     {
       const auto it = played_time_map.find(set_serial);
       if (it == played_time_map.end())
@@ -1612,13 +1612,13 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   return ret;
 }
 
-std::vector<std::pair<std::string, const GameList::Entry*>>
-GameList::GetMatchingEntriesForSerial(const std::span<const std::string> serials)
+std::vector<std::pair<std::string_view, const GameList::Entry*>>
+GameList::GetMatchingEntriesForSerial(const std::span<const std::string_view> serials)
 {
-  std::vector<std::pair<std::string, const GameList::Entry*>> ret;
+  std::vector<std::pair<std::string_view, const GameList::Entry*>> ret;
   ret.reserve(serials.size());
 
-  for (const std::string& serial : serials)
+  for (const std::string_view& serial : serials)
   {
     const Entry* matching_entry = nullptr;
     bool has_multiple_entries = false;

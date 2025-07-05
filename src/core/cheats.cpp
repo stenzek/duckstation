@@ -429,7 +429,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
         const GameDatabase::Entry* gentry = GameDatabase::GetEntryForSerial(serial);
         if (gentry && gentry->disc_set_serials.size() > 1)
         {
-          for (const std::string& set_serial : gentry->disc_set_serials)
+          for (const std::string_view& set_serial : gentry->disc_set_serials)
           {
             if (set_serial == serial)
               continue;

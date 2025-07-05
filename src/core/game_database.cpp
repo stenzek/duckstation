@@ -974,7 +974,7 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   if (!disc_set_name.empty())
   {
     ret.append_format("**{}:** {}\n", TRANSLATE_SV("GameDatabase", "Disc Set"), disc_set_name);
-    for (const std::string& ds_serial : disc_set_serials)
+    for (const std::string_view& ds_serial : disc_set_serials)
       ret.append_format(" - {}\n", ds_serial);
   }
 
@@ -1172,7 +1172,7 @@ bool GameDatabase::SaveToCache()
 
     writer.WriteSizePrefixedString(entry.disc_set_name);
     writer.WriteU32(static_cast<u32>(entry.disc_set_serials.size()));
-    for (const std::string& serial : entry.disc_set_serials)
+    for (const std::string_view& serial : entry.disc_set_serials)
       writer.WriteSizePrefixedString(serial);
   }
 

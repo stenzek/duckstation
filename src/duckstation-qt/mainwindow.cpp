@@ -1258,7 +1258,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
     auto lock = GameList::GetLock();
     for (const auto& [title, glentry] : GameList::GetMatchingEntriesForSerial(entry->disc_set_serials))
     {
-      QAction* action = m_ui.menuChangeDisc->addAction(QString::fromStdString(title));
+      QAction* action = m_ui.menuChangeDisc->addAction(QtUtils::StringViewToQString(title));
       QString path = QString::fromStdString(glentry->path);
       action->setCheckable(true);
       action->setChecked(path == s_current_game_path);

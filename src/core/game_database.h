@@ -133,8 +133,8 @@ struct Entry
   std::optional<float> gpu_pgxp_depth_threshold;
   std::optional<bool> gpu_pgxp_preserve_proj_fp;
 
-  std::string disc_set_name;
-  std::vector<std::string> disc_set_serials;
+  std::string_view disc_set_name;
+  std::vector<std::string_view> disc_set_serials;
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
   ALWAYS_INLINE bool HasLanguage(Language language) const { return languages.test(static_cast<size_t>(language)); }
