@@ -27,10 +27,9 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
   : QWidget(parent), m_editing_settings_interface(game_sif), m_editing_input_profiles(edit_profiles)
 {
   m_ui.setupUi(this);
+  m_ui.buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
-  m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this,
           &ControllerSettingsWindow::onCategoryCurrentRowChanged);

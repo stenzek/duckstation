@@ -225,7 +225,6 @@ void SettingsWindow::connectUi()
     m_ui.clearGameSettings = nullptr;
   }
 
-  m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);
   m_ui.helpText->setOpenExternalLinks(true);
