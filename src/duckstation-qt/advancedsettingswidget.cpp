@@ -391,12 +391,14 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "FastmemMode");
   sif->DeleteValue("CDROM", "MechaconVersion");
   sif->DeleteValue("CDROM", "ReadaheadSectors");
-  sif->DeleteValue("CDROM", "MaxSpeedupCycles");
+  sif->DeleteValue("CDROM", "MaxSeekSpeedupCycles");
+  sif->DeleteValue("CDROM", "MaxReadSpeedupCycles");
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "SubQSkew");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("Debug", "EnableGDBServer");
   sif->DeleteValue("Debug", "GDBServerPort");
+  sif->DeleteValue("SIO", "RedirectToTTY");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");
   sif->DeleteValue("PCDrv", "Root");
