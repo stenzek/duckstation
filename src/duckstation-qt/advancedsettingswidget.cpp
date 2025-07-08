@@ -185,15 +185,17 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.logToConsole, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   connect(m_ui.logToWindow, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   connect(m_ui.logToFile, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
-
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
+  onAnyLogSinksChanged(); // initialize enabled/disabled state of checkboxes
 
   connect(m_ui.logChannels, &QToolButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
-  connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
+
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,
           Qt::QueuedConnection);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, this,
           &AdvancedSettingsWidget::onShowDebugOptionsStateChanged);
+
+  connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
 
   m_ui.tweakOptionTable->setColumnWidth(0, 380);
   m_ui.tweakOptionTable->setColumnWidth(1, 170);
