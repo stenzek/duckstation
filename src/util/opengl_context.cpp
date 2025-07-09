@@ -133,11 +133,11 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
                                                      {Profile::Core, 4, 0},
                                                      {Profile::Core, 3, 3},
                                                      {Profile::Core, 3, 2},
-                                                     {Profile::Core, 3, 1},
-                                                     {Profile::Core, 3, 0},
                                                      {Profile::ES, 3, 2},
                                                      {Profile::ES, 3, 1},
-                                                     {Profile::ES, 3, 0}}};
+                                                     {Profile::ES, 3, 0},
+                                                     {Profile::Core, 3, 1},
+                                                     {Profile::Core, 3, 0}}};
 
   std::span<const Version> versions_to_try = vlist;
   if (ShouldPreferESContext())
