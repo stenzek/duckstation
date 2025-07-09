@@ -732,7 +732,7 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
     }
     else
     {
-      WARNING_LOG("Invalid language '{}' in custom attributes for '{}'", custom_region_str.value(), path);
+      WARNING_LOG("Invalid language '{}' in custom attributes for '{}'", custom_language_str.value(), path);
     }
   }
 }
@@ -1084,7 +1084,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
 
     // already have a disc set by this name?
     const std::string& disc_set_name = entry.disc_set_name;
-    if (GetEntryForPath(disc_set_name.c_str()))
+    if (GetEntryForPath(disc_set_name))
       continue;
 
     const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(entry.serial);
