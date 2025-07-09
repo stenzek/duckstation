@@ -349,6 +349,8 @@ private:
   void SetFeatures(FeatureMask disabled_features, VkPhysicalDevice physical_device,
                    const VkPhysicalDeviceFeatures& vk_features);
 
+  static GPUDriverType GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
+                                        const VkPhysicalDeviceDriverProperties& driver_properties);
   static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
   bool CreateAllocator();
@@ -432,7 +434,7 @@ private:
   VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
   VkPhysicalDeviceProperties m_device_properties = {};
-  VkPhysicalDeviceDriverPropertiesKHR m_device_driver_properties = {};
+  VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
   OptionalExtensions m_optional_extensions = {};
   std::optional<bool> m_exclusive_fullscreen_control;
 

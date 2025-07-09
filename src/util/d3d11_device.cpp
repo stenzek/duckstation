@@ -122,14 +122,16 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
 #endif
 
   ComPtr<IDXGIDevice> dxgi_device;
+  GPUDriverType driver_type = GPUDriverType::Unknown;
   if (SUCCEEDED(m_device.As(&dxgi_device)) &&
       SUCCEEDED(dxgi_device->GetParent(IID_PPV_ARGS(dxgi_adapter.GetAddressOf()))))
-    INFO_LOG("D3D Adapter: {}", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
+    INFO_LOG("D3D Adapter: {}", D3DCommon::GetAdapterName(dxgi_adapter.Get(), &driver_type));
   else
     ERROR_LOG("Failed to obtain D3D adapter name.");
   INFO_LOG("Max device feature level: {}",
            D3DCommon::GetFeatureLevelString(D3DCommon::GetRenderAPIVersionForFeatureLevel(m_max_feature_level)));
 
+  SetDriverType(driver_type);
   SetFeatures(disabled_features);
 
   if (!wi.IsSurfaceless())
@@ -170,7 +172,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
           m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, multisamples, &num_quality_levels)) &&
         num_quality_levels > 0)
     {
-      m_max_multisamples = multisamples;
+      m_max_multisamples = static_cast<u16>(multisamples);
     }
   }
 

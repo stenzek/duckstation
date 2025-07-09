@@ -139,6 +139,36 @@ enum class GPUShaderLanguage : u8
   Count
 };
 
+enum class GPUDriverType : u16
+{
+  MobileFlag = 0x100,
+  SoftwareFlag = 0x200,
+
+  Unknown = 0,
+  AMDProprietary = 1,
+  AMDMesa = 2,
+  IntelProprietary = 3,
+  IntelMesa = 4,
+  NVIDIAProprietary = 5,
+  NVIDIAMesa = 6,
+  AppleProprietary = 7,
+  AppleMesa = 8,
+  DozenMesa = 9,
+
+  ImaginationProprietary = MobileFlag | 1,
+  ImaginationMesa = MobileFlag | 2,
+  ARMProprietary = MobileFlag | 3,
+  ARMMesa = MobileFlag | 4,
+  QualcommProprietary = MobileFlag | 5,
+  QualcommMesa = MobileFlag | 6,
+  BroadcomProprietary = MobileFlag | 7,
+  BroadcomMesa = MobileFlag | 8,
+
+  LLVMPipe = SoftwareFlag | 1,
+  SwiftShader = SoftwareFlag | 2,
+};
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDriverType);
+
 class GPUShader
 {
 public:
@@ -643,6 +673,7 @@ public:
     std::vector<ExclusiveFullscreenMode> fullscreen_modes;
     u32 max_texture_size;
     u32 max_multisamples;
+    GPUDriverType driver_type;
     bool supports_sample_shading;
   };
   using AdapterInfoList = std::vector<AdapterInfo>;
@@ -720,6 +751,9 @@ public:
     return std::make_tuple((count_x + (local_size_x - 1)) / local_size_x, (count_y + (local_size_y - 1)) / local_size_y,
                            (count_z + (local_size_z - 1)) / local_size_z);
   }
+
+  /// Determines the driver type for a given adapter.
+  static GPUDriverType GuessDriverType(u32 pci_vendor_id, std::string_view vendor_name, std::string_view adapter_name);
 
   ALWAYS_INLINE const Features& GetFeatures() const { return m_features; }
   ALWAYS_INLINE RenderAPI GetRenderAPI() const { return m_render_api; }
@@ -926,11 +960,14 @@ protected:
                                                                 DynamicHeapArray<u8>* out_binary, Error* error);
   static std::optional<DynamicHeapArray<u8>> OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error);
 
+  void SetDriverType(GPUDriverType type);
+
   Features m_features = {};
   RenderAPI m_render_api = RenderAPI::None;
   u32 m_render_api_version = 0;
   u32 m_max_texture_size = 0;
-  u32 m_max_multisamples = 0;
+  GPUDriverType m_driver_type = GPUDriverType::Unknown;
+  u16 m_max_multisamples = 0;
 
   std::unique_ptr<GPUSwapChain> m_main_swap_chain;
   std::unique_ptr<GPUTexture> m_empty_texture;

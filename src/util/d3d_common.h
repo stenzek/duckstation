@@ -19,6 +19,8 @@
 
 class Error;
 
+enum class GPUDriverType : u16;
+
 struct IDXGIFactory5;
 struct IDXGIAdapter;
 struct IDXGIAdapter1;
@@ -57,7 +59,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> GetFirstAdapter(IDXGIFactory5* factory);
 Microsoft::WRL::ComPtr<IDXGIAdapter1> GetChosenOrFirstAdapter(IDXGIFactory5* factory, std::string_view name);
 
 // returns a utf-8 string of the specified adapter's name
-std::string GetAdapterName(IDXGIAdapter1* adapter);
+std::string GetAdapterName(IDXGIAdapter1* adapter, GPUDriverType* out_driver_type = nullptr);
 
 // returns the driver version from the registry as a string
 std::string GetDriverVersionFromLUID(const LUID& luid);

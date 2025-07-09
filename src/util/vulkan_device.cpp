@@ -351,16 +351,29 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
   gpus.reserve(physical_devices.size());
   for (VkPhysicalDevice device : physical_devices)
   {
-    VkPhysicalDeviceProperties props = {};
-    vkGetPhysicalDeviceProperties(device, &props);
+    VkPhysicalDeviceProperties2 props = {};
+    VkPhysicalDeviceDriverProperties driver_props = {};
+
+    if (vkGetPhysicalDeviceProperties2)
+    {
+      driver_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+      Vulkan::AddPointerToChain(&props, &driver_props);
+      vkGetPhysicalDeviceProperties2(device, &props);
+    }
+
+    // just in case the chained version fails
+    props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+    vkGetPhysicalDeviceProperties(device, &props.properties);
 
     VkPhysicalDeviceFeatures available_features = {};
     vkGetPhysicalDeviceFeatures(device, &available_features);
 
     AdapterInfo ai;
-    ai.name = props.deviceName;
-    ai.max_texture_size = std::min(props.limits.maxFramebufferWidth, props.limits.maxImageDimension2D);
-    ai.max_multisamples = GetMaxMultisamples(device, props);
+    ai.name = props.properties.deviceName;
+    ai.max_texture_size =
+      std::min(props.properties.limits.maxFramebufferWidth, props.properties.limits.maxImageDimension2D);
+    ai.max_multisamples = GetMaxMultisamples(device, props.properties);
+    ai.driver_type = GuessDriverType(props.properties, driver_props);
     ai.supports_sample_shading = available_features.sampleRateShading;
 
     // handle duplicate adapter names
@@ -599,6 +612,9 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   // don't bother querying if we're not actually looking at any features
   if (vkGetPhysicalDeviceProperties2 && properties2.pNext)
     vkGetPhysicalDeviceProperties2(physical_device, &properties2);
+
+  // set driver type
+  SetDriverType(GuessDriverType(m_device_properties, m_device_driver_properties));
 
   // check we actually support enough
   m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
@@ -2501,7 +2517,7 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice p
                          (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =
     std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
-  m_max_multisamples = GetMaxMultisamples(physical_device, m_device_properties);
+  m_max_multisamples = static_cast<u16>(GetMaxMultisamples(physical_device, m_device_properties));
 
   m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && vk_features.dualSrcBlend;
   m_features.framebuffer_fetch =
@@ -2550,6 +2566,51 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice p
   // Same feature bit for both.
   m_features.dxt_textures = m_features.bptc_textures =
     (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && vk_features.textureCompressionBC);
+}
+
+GPUDriverType VulkanDevice::GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
+                                            const VkPhysicalDeviceDriverProperties& driver_properties)
+{
+  static constexpr const std::pair<VkDriverId, GPUDriverType> table[] = {
+    {VK_DRIVER_ID_NVIDIA_PROPRIETARY, GPUDriverType::NVIDIAProprietary},
+    {VK_DRIVER_ID_AMD_PROPRIETARY, GPUDriverType::AMDProprietary},
+    {VK_DRIVER_ID_AMD_OPEN_SOURCE, GPUDriverType::AMDProprietary},
+    {VK_DRIVER_ID_MESA_RADV, GPUDriverType::AMDMesa},
+    {VK_DRIVER_ID_NVIDIA_PROPRIETARY, GPUDriverType::NVIDIAProprietary},
+    {VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS, GPUDriverType::IntelProprietary},
+    {VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA, GPUDriverType::IntelMesa},
+    {VK_DRIVER_ID_IMAGINATION_PROPRIETARY, GPUDriverType::ImaginationProprietary},
+    {VK_DRIVER_ID_QUALCOMM_PROPRIETARY, GPUDriverType::QualcommProprietary},
+    {VK_DRIVER_ID_ARM_PROPRIETARY, GPUDriverType::ARMProprietary},
+    {VK_DRIVER_ID_GOOGLE_SWIFTSHADER, GPUDriverType::SwiftShader},
+    {VK_DRIVER_ID_GGP_PROPRIETARY, GPUDriverType::Unknown},
+    {VK_DRIVER_ID_BROADCOM_PROPRIETARY, GPUDriverType::BroadcomProprietary},
+    {VK_DRIVER_ID_MESA_LLVMPIPE, GPUDriverType::LLVMPipe},
+    {VK_DRIVER_ID_MOLTENVK, GPUDriverType::AppleProprietary},
+    {VK_DRIVER_ID_COREAVI_PROPRIETARY, GPUDriverType::Unknown},
+    {VK_DRIVER_ID_JUICE_PROPRIETARY, GPUDriverType::Unknown},
+    {VK_DRIVER_ID_VERISILICON_PROPRIETARY, GPUDriverType::Unknown},
+    {VK_DRIVER_ID_MESA_TURNIP, GPUDriverType::QualcommMesa},
+    {VK_DRIVER_ID_MESA_V3DV, GPUDriverType::BroadcomMesa},
+    {VK_DRIVER_ID_MESA_PANVK, GPUDriverType::ARMMesa},
+    {VK_DRIVER_ID_SAMSUNG_PROPRIETARY, GPUDriverType::AMDProprietary},
+    {VK_DRIVER_ID_MESA_VENUS, GPUDriverType::Unknown},
+    {VK_DRIVER_ID_MESA_DOZEN, GPUDriverType::DozenMesa},
+    {VK_DRIVER_ID_MESA_NVK, GPUDriverType::NVIDIAMesa},
+    {VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA, GPUDriverType::ImaginationMesa},
+    {VK_DRIVER_ID_MESA_AGXV, GPUDriverType::AppleMesa},
+  };
+
+  const auto iter = std::find_if(std::begin(table), std::end(table), [&driver_properties](const auto& it) {
+    return (driver_properties.driverID == it.first);
+  });
+  if (iter != std::end(table))
+    return iter->second;
+
+  return GPUDevice::GuessDriverType(
+    device_properties.vendorID, {},
+    std::string_view(device_properties.deviceName,
+                     StringUtil::Strnlen(device_properties.deviceName, std::size(device_properties.deviceName))));
 }
 
 void VulkanDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,

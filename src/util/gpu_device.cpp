@@ -1203,6 +1203,97 @@ void GPUDevice::ResetStatistics()
   s_stats = {};
 }
 
+
+GPUDriverType GPUDevice::GuessDriverType(u32 pci_vendor_id, std::string_view vendor_name, std::string_view adapter_name)
+{
+#define ACHECK(name) (adapter_name.find(name) != std::string_view::npos)
+#define VCHECK(name) (vendor_name.find(name) != std::string_view::npos)
+#define MESA_CHECK (ACHECK("Mesa") || VCHECK("Mesa"))
+
+  if (pci_vendor_id == 0x1002 || pci_vendor_id == 0x1022 || VCHECK("Advanced Micro Devices") ||
+      VCHECK("ATI Technologies Inc.") || VCHECK("ATI"))
+  {
+    INFO_LOG("AMD GPU detected.");
+    return MESA_CHECK ? GPUDriverType::AMDMesa : GPUDriverType::AMDProprietary;
+  }
+  else if (pci_vendor_id == 0x10DE || VCHECK("NVIDIA Corporation"))
+  {
+    INFO_LOG("NVIDIA GPU detected.");
+    return MESA_CHECK ? GPUDriverType::NVIDIAMesa : GPUDriverType::NVIDIAProprietary;
+  }
+  else if (pci_vendor_id == 0x8086 || VCHECK("Intel"))
+  {
+    INFO_LOG("Intel GPU detected.");
+    return MESA_CHECK ? GPUDriverType::IntelMesa : GPUDriverType::IntelProprietary;
+  }
+  else if (pci_vendor_id == 0x5143 || VCHECK("ARM") || ACHECK("Adreno"))
+  {
+    INFO_LOG("Qualcomm GPU detected.");
+    return MESA_CHECK ? GPUDriverType::QualcommMesa : GPUDriverType::QualcommProprietary;
+  }
+  else if (pci_vendor_id == 0x13B5 || VCHECK("ARM") || ACHECK("Mali"))
+  {
+    INFO_LOG("ARM GPU detected.");
+    return MESA_CHECK ? GPUDriverType::ARMMesa : GPUDriverType::ARMProprietary;
+  }
+  else if (pci_vendor_id == 0x1010 || VCHECK("Imagination Technologies") || ACHECK("PowerVR"))
+  {
+    INFO_LOG("Imagination GPU detected.");
+    return MESA_CHECK ? GPUDriverType::ImaginationMesa : GPUDriverType::ImaginationProprietary;
+  }
+  else if (pci_vendor_id == 0x14E4 || VCHECK("Broadcom") || ACHECK("VideoCore"))
+  {
+    INFO_LOG("Broadcom GPU detected.");
+    return MESA_CHECK ? GPUDriverType::BroadcomMesa : GPUDriverType::BroadcomProprietary;
+  }
+  else
+  {
+    WARNING_LOG("Unknown GPU vendor with PCI ID 0x{:04X}, adapter='{}', vendor='{}'", pci_vendor_id, adapter_name,
+                vendor_name);
+    return GPUDriverType::Unknown;
+  }
+
+#undef MESA_CHECK
+#undef VCHECK
+#undef ACHECK
+}
+
+void GPUDevice::SetDriverType(GPUDriverType type)
+{
+  m_driver_type = type;
+
+#define NTENTRY(n) {GPUDriverType::n, #n}
+  static constexpr const std::pair<GPUDriverType, const char*> name_table[] = {
+    NTENTRY(Unknown),
+    NTENTRY(AMDProprietary),
+    NTENTRY(AMDMesa),
+    NTENTRY(IntelProprietary),
+    NTENTRY(IntelMesa),
+    NTENTRY(NVIDIAProprietary),
+    NTENTRY(NVIDIAMesa),
+    NTENTRY(AppleProprietary),
+    NTENTRY(AppleMesa),
+    NTENTRY(DozenMesa),
+
+    NTENTRY(ImaginationProprietary),
+    NTENTRY(ImaginationMesa),
+    NTENTRY(ARMProprietary),
+    NTENTRY(ARMMesa),
+    NTENTRY(QualcommProprietary),
+    NTENTRY(QualcommMesa),
+    NTENTRY(BroadcomProprietary),
+    NTENTRY(BroadcomMesa),
+
+    NTENTRY(LLVMPipe),
+    NTENTRY(SwiftShader),
+  };
+#undef NTENTRY
+
+  const auto iter =
+    std::find_if(std::begin(name_table), std::end(name_table), [&type](const auto& it) { return it.first == type; });
+  INFO_LOG("Driver type set to {}.", (iter == std::end(name_table)) ? name_table[0].second : iter->second);
+}
+
 std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 {
   switch (api)

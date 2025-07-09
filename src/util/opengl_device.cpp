@@ -356,6 +356,8 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   const char* vendor = (const char*)glGetString(GL_VENDOR);
   const char* renderer = (const char*)glGetString(GL_RENDERER);
+  SetDriverType(GuessDriverType(0, vendor, renderer));
+
   if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
       std::strstr(vendor, "ATI"))
   {
@@ -404,7 +406,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   DEV_LOG("GL_MAX_SAMPLES: {}", max_samples);
   m_max_texture_size = std::max(1024u, static_cast<u32>(max_texture_size));
-  m_max_multisamples = std::max(1u, static_cast<u32>(max_samples));
+  m_max_multisamples = static_cast<u16>(std::max(1u, static_cast<u32>(max_samples)));
 
   GLint max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);

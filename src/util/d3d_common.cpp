@@ -178,7 +178,7 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
     // Unfortunately we can't get any properties such as feature level without creating the device.
     // So just assume a max of the D3D11 max across the board.
     GPUDevice::AdapterInfo ai;
-    ai.name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.Get()));
+    ai.name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.Get(), &ai.driver_type));
     ai.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
     ai.max_multisamples = 8;
     ai.supports_sample_shading = true;
@@ -352,7 +352,7 @@ Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetChosenOrFirstAdapter(IDXGIFa
   return adapter;
 }
 
-std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter)
+std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter, GPUDriverType* out_driver_type)
 {
   std::string ret;
 
@@ -361,10 +361,14 @@ std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter)
   if (SUCCEEDED(hr))
   {
     ret = StringUtil::WideStringToUTF8String(desc.Description);
+    if (out_driver_type)
+      *out_driver_type = GPUDevice::GuessDriverType(desc.VendorId, {}, ret);
   }
   else
   {
     ERROR_LOG("IDXGIAdapter1::GetDesc() returned {:08X}", static_cast<unsigned>(hr));
+    if (out_driver_type)
+      *out_driver_type = GPUDriverType::Unknown;
   }
 
   if (ret.empty())

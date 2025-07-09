@@ -263,6 +263,11 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     }
   }
 
+  GPUDriverType driver_type = GPUDriverType::Unknown;
+  if (std::string adapter_name = D3DCommon::GetAdapterName(m_adapter.Get(), &driver_type); adapter_name.empty())
+    INFO_LOG("D3D Adapter: {}", adapter_name);
+  SetDriverType(driver_type);
+
   const D3D12_COMMAND_QUEUE_DESC queue_desc = {D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
                                                D3D12_COMMAND_QUEUE_FLAG_NONE, 0u};
   hr = m_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&m_command_queue));
@@ -1349,7 +1354,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
     if (SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &fd, sizeof(fd))) &&
         fd.NumQualityLevels > 0)
     {
-      m_max_multisamples = multisamples;
+      m_max_multisamples = static_cast<u16>(multisamples);
     }
   }
 

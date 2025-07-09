@@ -329,8 +329,11 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
 
     m_device = [device retain];
     m_queue = [queue retain];
-    INFO_LOG("Metal Device: {}", [[m_device name] UTF8String]);
 
+    const char* device_name = [[m_device name] UTF8String];
+    INFO_LOG("Metal Device: {}", device_name);
+
+    SetDriverType(GuessDriverType(0, {}, device_name));
     SetFeatures(disabled_features);
     CreateCommandBuffer();
 
@@ -2797,11 +2800,13 @@ GPUDevice::AdapterInfoList GPUDevice::WrapGetMetalAdapterList()
     ret.reserve(count);
     for (u32 i = 0; i < count; i++)
     {
+      const char* device_name = [devices[i].name UTF8String];
       AdapterInfo ai;
-      ai.name = [devices[i].name UTF8String];
+      ai.name = device_name;
       ai.max_texture_size = GetMetalMaxTextureSize(devices[i]);
       ai.max_multisamples = GetMetalMaxMultisamples(devices[i]);
       ai.supports_sample_shading = true;
+      ai.driver_type = GuessDriverType(0, {}, device_name);
       ret.push_back(std::move(ai));
     }
   }
