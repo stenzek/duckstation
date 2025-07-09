@@ -371,7 +371,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
 
   // Pack functions missing from GLSL ES 3.0.
   // We can't rely on __VERSION__ because Adreno is a broken turd and reports 300 even for GLES 3.2.
-  if (!m_glsl || (m_shader_language == GPUShaderLanguage::GLSLES && m_glsl_version < 310))
+  if (!m_glsl || (m_shader_language == GPUShaderLanguage::GLSL && m_glsl_version < 400) ||
+      (m_shader_language == GPUShaderLanguage::GLSLES && m_glsl_version < 310))
   {
     ss << "uint packUnorm4x8(float4 value) {\n"
           "  uint4 packed = uint4(round(saturate(value) * 255.0));\n"
