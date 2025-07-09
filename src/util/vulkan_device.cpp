@@ -623,7 +623,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   m_optional_extensions.vk_ext_external_memory_host &=
     (external_memory_host_properties.minImportedHostPointerAlignment <= HOST_PAGE_SIZE);
 
-  if (IsBrokenMobileDriver())
+  if (m_driver_type == GPUDriverType::QualcommProprietary || m_driver_type == GPUDriverType::ARMProprietary ||
+      m_driver_type == GPUDriverType::ImaginationProprietary)
   {
     // Push descriptor is broken on Adreno v502.. don't want to think about dynamic rendending.
     if (m_optional_extensions.vk_khr_dynamic_rendering)
@@ -639,7 +640,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
       WARNING_LOG("Disabling VK_KHR_push_descriptor on broken mobile driver.");
     }
   }
-  else if (IsDeviceAMD())
+  else if (m_driver_type == GPUDriverType::AMDProprietary)
   {
     // VK_KHR_dynamic_rendering_local_read appears to be broken on RDNA3, like everything else...
     // Just causes GPU resets when you actually use a feedback loop. Assume Mesa is fine.
@@ -1772,41 +1773,6 @@ void VulkanDevice::DisableDebugUtils()
   }
 }
 
-bool VulkanDevice::IsDeviceNVIDIA() const
-{
-  return (m_device_properties.vendorID == 0x10DE);
-}
-
-bool VulkanDevice::IsDeviceAMD() const
-{
-  return (m_device_properties.vendorID == 0x1002);
-}
-
-bool VulkanDevice::IsDeviceAdreno() const
-{
-  // Assume turnip is fine...
-  return ((m_device_properties.vendorID == 0x5143 ||
-           m_device_driver_properties.driverID == VK_DRIVER_ID_QUALCOMM_PROPRIETARY) &&
-          m_device_driver_properties.driverID != VK_DRIVER_ID_MESA_TURNIP);
-}
-
-bool VulkanDevice::IsDeviceMali() const
-{
-  return (m_device_properties.vendorID == 0x13B5 ||
-          m_device_driver_properties.driverID == VK_DRIVER_ID_ARM_PROPRIETARY);
-}
-
-bool VulkanDevice::IsDeviceImgTec() const
-{
-  return (m_device_properties.vendorID == 0x1010 ||
-          m_device_driver_properties.driverID == VK_DRIVER_ID_IMAGINATION_PROPRIETARY);
-}
-
-bool VulkanDevice::IsBrokenMobileDriver() const
-{
-  return (IsDeviceAdreno() || IsDeviceMali() || IsDeviceImgTec());
-}
-
 VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 {
   std::array<VkAttachmentReference, MAX_RENDER_TARGETS> color_references;
@@ -2747,7 +2713,7 @@ void VulkanDevice::ClearRenderTarget(GPUTexture* t, u32 c)
     {
       VulkanTexture* T = static_cast<VulkanTexture*>(t);
 
-      if (IsDeviceNVIDIA())
+      if (m_driver_type == GPUDriverType::NVIDIAProprietary)
       {
         EndRenderPass();
       }
@@ -2775,7 +2741,7 @@ void VulkanDevice::ClearDepth(GPUTexture* t, float d)
     // should be failing. Breaking/restarting the render pass isn't enough to work around the bug,
     // it needs an explicit pipeline barrier.
     VulkanTexture* T = static_cast<VulkanTexture*>(t);
-    if (IsDeviceNVIDIA())
+    if (m_driver_type == GPUDriverType::NVIDIAProprietary)
     {
       EndRenderPass();
       T->TransitionSubresourcesToLayout(GetCurrentCommandBuffer(), 0, 1, 0, 1, T->GetLayout(), T->GetLayout());
@@ -3344,7 +3310,7 @@ void VulkanDevice::BeginRenderPass()
 
   // NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
   // the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
-  if (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop && IsDeviceNVIDIA())
+  if (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop && m_driver_type == GPUDriverType::NVIDIAProprietary)
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {

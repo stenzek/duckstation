@@ -347,53 +347,16 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   glGetIntegerv(GL_MINOR_VERSION, &minor_version);
   m_render_api_version = (static_cast<u32>(major_version) * 100u) + (static_cast<u32>(minor_version) * 10u);
 
-  bool vendor_id_amd = false;
-  // bool vendor_id_nvidia = false;
-  bool vendor_id_intel = false;
-  bool vendor_id_arm = false;
-  bool vendor_id_qualcomm = false;
-  bool vendor_id_powervr = false;
-
   const char* vendor = (const char*)glGetString(GL_VENDOR);
   const char* renderer = (const char*)glGetString(GL_RENDERER);
   SetDriverType(GuessDriverType(0, vendor, renderer));
 
-  if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
-      std::strstr(vendor, "ATI"))
-  {
-    INFO_LOG("AMD GPU detected.");
-    vendor_id_amd = true;
-  }
-  else if (std::strstr(vendor, "NVIDIA Corporation"))
-  {
-    INFO_LOG("NVIDIA GPU detected.");
-    // vendor_id_nvidia = true;
-  }
-  else if (std::strstr(vendor, "Intel"))
-  {
-    INFO_LOG("Intel GPU detected.");
-    vendor_id_intel = true;
-  }
-  else if (std::strstr(vendor, "ARM"))
-  {
-    INFO_LOG("ARM GPU detected.");
-    vendor_id_arm = true;
-  }
-  else if (std::strstr(vendor, "Qualcomm"))
-  {
-    INFO_LOG("Qualcomm GPU detected.");
-    vendor_id_qualcomm = true;
-  }
-  else if (std::strstr(vendor, "Imagination Technologies") || std::strstr(renderer, "PowerVR"))
-  {
-    INFO_LOG("PowerVR GPU detected.");
-    vendor_id_powervr = true;
-  }
-
   // Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
   // using the normal texture update routines and letting the driver take care of it. PBOs are also completely
   // broken on mobile drivers.
-  const bool is_shitty_mobile_driver = (vendor_id_powervr || vendor_id_qualcomm || vendor_id_arm);
+  const bool is_shitty_mobile_driver =
+    (m_driver_type == GPUDriverType::ARMProprietary || m_driver_type == GPUDriverType::QualcommProprietary ||
+     m_driver_type == GPUDriverType::ImaginationProprietary);
   m_disable_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
   if (m_disable_pbo && !is_shitty_mobile_driver)
@@ -472,14 +435,16 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   // Sample rate shading is broken on AMD and Intel.
   // If AMD and Intel can't get it right, I very much doubt broken mobile drivers can.
   m_features.per_sample_shading = (GLAD_GL_VERSION_4_0 || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_ARB_sample_shading) &&
-                                  (!vendor_id_amd && !vendor_id_intel && !is_shitty_mobile_driver);
+                                  (m_driver_type != GPUDriverType::AMDProprietary &&
+                                   m_driver_type != GPUDriverType::IntelProprietary && !is_shitty_mobile_driver);
 
   // noperspective is not supported in GLSL ES.
   m_features.noperspective_interpolation = !is_gles;
 
   // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
   // So, blit from the shadow texture, like in the other renderers.
-  m_features.texture_copy_to_self = !vendor_id_arm && !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
+  m_features.texture_copy_to_self =
+    (m_driver_type != GPUDriverType::ARMProprietary) && !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
 
   m_features.feedback_loops = false;
 
@@ -520,9 +485,10 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   }
 
   // Mobile drivers prefer textures to not be updated mid-frame.
-  m_features.prefer_unused_textures = is_gles || vendor_id_arm || vendor_id_powervr || vendor_id_qualcomm;
+  m_features.prefer_unused_textures =
+    is_gles || ((m_driver_type & GPUDriverType::MobileFlag) == GPUDriverType::MobileFlag);
 
-  if (vendor_id_intel)
+  if (m_driver_type == GPUDriverType::IntelProprietary)
   {
     // Intel drivers corrupt image on readback when syncs are used for downloads.
     WARNING_LOG("Disabling async downloads with PBOs due to it being broken on Intel drivers.");
