@@ -358,42 +358,10 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   const char* renderer = (const char*)glGetString(GL_RENDERER);
   SetDriverType(GuessDriverType(0, vendor, renderer));
 
-  if (std::strstr(vendor, "Advanced Micro Devices") || std::strstr(vendor, "ATI Technologies Inc.") ||
-      std::strstr(vendor, "ATI"))
-  {
-    INFO_LOG("AMD GPU detected.");
-    vendor_id_amd = true;
-  }
-  else if (std::strstr(vendor, "NVIDIA Corporation"))
-  {
-    INFO_LOG("NVIDIA GPU detected.");
-    // vendor_id_nvidia = true;
-  }
-  else if (std::strstr(vendor, "Intel"))
-  {
-    INFO_LOG("Intel GPU detected.");
-    vendor_id_intel = true;
-  }
-  else if (std::strstr(vendor, "ARM"))
-  {
-    INFO_LOG("ARM GPU detected.");
-    vendor_id_arm = true;
-  }
-  else if (std::strstr(vendor, "Qualcomm"))
-  {
-    INFO_LOG("Qualcomm GPU detected.");
-    vendor_id_qualcomm = true;
-  }
-  else if (std::strstr(vendor, "Imagination Technologies") || std::strstr(renderer, "PowerVR"))
-  {
-    INFO_LOG("PowerVR GPU detected.");
-    vendor_id_powervr = true;
-  }
-
   // Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
   // using the normal texture update routines and letting the driver take care of it. PBOs are also completely
   // broken on mobile drivers.
-  const bool is_shitty_mobile_driver = (vendor_id_powervr || vendor_id_qualcomm || vendor_id_arm);
+  const bool is_shitty_mobile_driver = (m_driver_type & GPUDriverType::MobileFlag) == GPUDriverType::MobileFlag;
   m_disable_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
   if (m_disable_pbo && !is_shitty_mobile_driver)

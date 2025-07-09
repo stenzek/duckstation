@@ -325,18 +325,6 @@ private:
   bool EnableDebugUtils();
   void DisableDebugUtils();
 
-  /// Returns true if running on an NVIDIA GPU.
-  bool IsDeviceNVIDIA() const;
-
-  /// Returns true if running on an AMD GPU.
-  bool IsDeviceAMD() const;
-
-  // Vendor queries.
-  bool IsDeviceAdreno() const;
-  bool IsDeviceMali() const;
-  bool IsDeviceImgTec() const;
-  bool IsBrokenMobileDriver() const;
-
   using ExtensionList = std::vector<const char*>;
   static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                        bool enable_debug_utils);
