@@ -559,14 +559,28 @@ void ShaderGen::DeclareVertexEntryPoint(
     {
       const char* qualifier = GetInterpolationQualifier(false, msaa, ssaa, true);
 
+      u32 location = 0;
       for (u32 i = 0; i < num_color_outputs; i++)
+      {
+        if (m_spirv)
+          ss << "layout(location = " << location++ << ") ";
+
         ss << qualifier << (noperspective_color ? "noperspective " : "") << "out float4 v_col" << i << ";\n";
+      }
 
       for (u32 i = 0; i < num_texcoord_outputs; i++)
+      {
+        if (m_spirv)
+          ss << "layout(location = " << location++ << ") ";
+
         ss << qualifier << "out float2 v_tex" << i << ";\n";
+      }
 
       for (const auto& [qualifiers, name] : additional_outputs)
       {
+        if (m_spirv)
+          ss << "layout(location = " << location++ << ") ";
+
         const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
         ss << qualifier_to_use << " out " << name << ";\n";
       }
@@ -656,14 +670,28 @@ void ShaderGen::DeclareFragmentEntryPoint(
       {
         const char* qualifier = GetInterpolationQualifier(false, msaa, ssaa, false);
 
+        u32 location = 0;
         for (u32 i = 0; i < num_color_inputs; i++)
+        {
+          if (m_spirv)
+            ss << "layout(location = " << location++ << ") ";
+
           ss << qualifier << (noperspective_color ? "noperspective " : "") << "in float4 v_col" << i << ";\n";
+        }
 
         for (u32 i = 0; i < num_texcoord_inputs; i++)
+        {
+          if (m_spirv)
+            ss << "layout(location = " << location++ << ") ";
+
           ss << qualifier << "in float2 v_tex" << i << ";\n";
+        }
 
         for (const auto& [qualifiers, name] : additional_inputs)
         {
+          if (m_spirv)
+            ss << "layout(location = " << location++ << ") ";
+
           const char* qualifier_to_use = (std::strlen(qualifiers) > 0) ? qualifiers : qualifier;
           ss << qualifier_to_use << " in " << name << ";\n";
         }
