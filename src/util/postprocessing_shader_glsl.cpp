@@ -185,7 +185,8 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   else
   {
     g_gpu_device->SetRenderTargets(&final_target, 1, nullptr);
-    g_gpu_device->ClearRenderTarget(final_target, GPUDevice::DEFAULT_CLEAR_COLOR); // TODO: Could use an invalidate here too.
+    g_gpu_device->ClearRenderTarget(final_target,
+                                    GPUDevice::DEFAULT_CLEAR_COLOR); // TODO: Could use an invalidate here too.
   }
 
   g_gpu_device->SetPipeline(m_pipeline.get());
@@ -377,11 +378,12 @@ std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(co
   WriteUniformBuffer(ss, shader, false);
   DeclareTexture(ss, "samp0", 0);
 
-  ss << R"(
-layout(location = 0) in VertexData {
-  vec2 v_tex0;
-};
+  if (m_use_glsl_interface_blocks)
+    ss << "layout(location = 0) in VertexData { vec2 v_tex0; }\n";
+  else
+    ss << "layout(location = 0) in vec2 v_tex0;\n";
 
+  ss << R"(
 layout(location = 0) out float4 o_col0;
 
 float4 Sample() { return texture(samp0, v_tex0); }
