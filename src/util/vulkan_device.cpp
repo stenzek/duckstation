@@ -1973,6 +1973,13 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
     return false;
   }
 
+  // V3D is buggy, image copies with larger textures are broken.
+  if (StringUtil::StartsWithNoCase(name, "V3D"))
+  {
+    INFO_LOG("Not using Vulkan for V3D GPU.");
+    return false;
+  }
+
   INFO_LOG("Allowing Vulkan as default renderer.");
   return true;
 #endif
