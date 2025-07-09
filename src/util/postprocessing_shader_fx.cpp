@@ -60,7 +60,8 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
   return true;
 }
 
-static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> CreateRFXCodegen(bool only_config)
+static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> CreateRFXCodegen(bool only_config,
+                                                                                           Error* error)
 {
   constexpr bool uniforms_to_spec_constants = false;
 
@@ -114,6 +115,15 @@ static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> Create
     case RenderAPI::OpenGLES:
     default:
     {
+      // Binding layout is required for reshade.
+      if (g_gpu_device && (!ShaderGen::UseGLSLInterfaceBlocks() || !ShaderGen::UseGLSLBindingLayout()))
+      {
+        Error::SetStringView(
+          error,
+          "ReShade post-processing requires an OpenGL driver that supports interface blocks and binding layout.");
+        return {};
+      }
+
       return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
                                g_gpu_device ? ShaderGen::GetGLSLVersion(rapi) : 460, (rapi == RenderAPI::OpenGLES),
                                false, debug_info, uniforms_to_spec_constants, false, true)),
@@ -334,11 +344,10 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
     code.push_back('\n');
 
   // TODO: This could use spv, it's probably fastest.
-  const auto& [cg, cg_language] = CreateRFXCodegen(only_config);
-
-  if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetMainSwapChain()->GetWidth(),
-                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetMainSwapChain()->GetHeight(), cg.get(),
-                    cg_language, std::move(code), error))
+  const auto& [cg, cg_language] = CreateRFXCodegen(only_config, error);
+  if (!cg || !CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetMainSwapChain()->GetWidth(),
+                           only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetMainSwapChain()->GetHeight(),
+                           cg.get(), cg_language, std::move(code), error))
   {
     return false;
   }
@@ -1449,7 +1458,9 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   if (fxcode.empty() || fxcode.back() != '\n')
     fxcode.push_back('\n');
 
-  const auto& [cg, cg_language] = CreateRFXCodegen(false);
+  const auto& [cg, cg_language] = CreateRFXCodegen(false, error);
+  if (!cg)
+    return false;
 
   if (!CreateModule(width, height, cg.get(), cg_language, std::move(fxcode), error))
   {
