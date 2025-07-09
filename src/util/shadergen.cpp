@@ -32,11 +32,14 @@ ShaderGen::ShaderGen(RenderAPI render_api, GPUShaderLanguage shader_language, bo
     {
       m_glsl_version = GetGLSLVersion(render_api);
       m_glsl_version_string = GetGLSLVersionString(m_render_api, m_glsl_version);
+      m_use_glsl_interface_blocks = UseGLSLInterfaceBlocks();
+      m_use_glsl_binding_layout = UseGLSLBindingLayout();
     }
-
-    m_use_glsl_interface_blocks =
-      (shader_language == GPUShaderLanguage::GLSLVK || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
-    m_use_glsl_binding_layout = (shader_language == GPUShaderLanguage::GLSLVK || UseGLSLBindingLayout());
+    else
+    {
+      m_use_glsl_interface_blocks = (shader_language == GPUShaderLanguage::GLSLVK);
+      m_use_glsl_binding_layout = (shader_language == GPUShaderLanguage::GLSLVK);
+    }
 
 #ifdef _WIN32
     if (m_shader_language == GPUShaderLanguage::GLSL)
@@ -78,6 +81,15 @@ GPUShaderLanguage ShaderGen::GetShaderLanguageForAPI(RenderAPI api)
     default:
       return GPUShaderLanguage::None;
   }
+}
+
+bool ShaderGen::UseGLSLInterfaceBlocks()
+{
+#ifdef ENABLE_OPENGL
+  return (GLAD_GL_ES_VERSION_3_2 || GLAD_GL_VERSION_3_2);
+#else
+  return true;
+#endif
 }
 
 bool ShaderGen::UseGLSLBindingLayout()

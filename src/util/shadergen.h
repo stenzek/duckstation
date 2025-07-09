@@ -18,6 +18,7 @@ public:
   ~ShaderGen();
 
   static GPUShaderLanguage GetShaderLanguageForAPI(RenderAPI api);
+  static bool UseGLSLInterfaceBlocks();
   static bool UseGLSLBindingLayout();
 
   static u32 GetGLSLVersion(RenderAPI render_api);
