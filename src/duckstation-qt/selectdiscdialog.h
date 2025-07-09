@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/timer.h"
-#include "common/types.h"
-#include "qtprogresscallback.h"
+
 #include "ui_selectdiscdialog.h"
+
 #include <QtWidgets/QDialog>
-#include <array>
-#include <memory>
+
 #include <string>
 
 class SelectDiscDialog final : public QDialog
