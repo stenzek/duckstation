@@ -1226,7 +1226,7 @@ GPUDriverType GPUDevice::GuessDriverType(u32 pci_vendor_id, std::string_view ven
     INFO_LOG("Intel GPU detected.");
     return MESA_CHECK ? GPUDriverType::IntelMesa : GPUDriverType::IntelProprietary;
   }
-  else if (pci_vendor_id == 0x5143 || VCHECK("ARM") || ACHECK("Adreno"))
+  else if (pci_vendor_id == 0x5143 || VCHECK("Qualcomm") || ACHECK("Adreno"))
   {
     INFO_LOG("Qualcomm GPU detected.");
     return MESA_CHECK ? GPUDriverType::QualcommMesa : GPUDriverType::QualcommProprietary;
