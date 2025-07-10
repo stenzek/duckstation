@@ -3390,7 +3390,7 @@ void Achievements::DrawLeaderboardsWindow()
 
         bool visible;
         text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
-        ImGuiFullscreen::MenuButtonWithVisibilityQuery(text, {}, {}, &visible, false);
+        ImGuiFullscreen::MenuButtonWithVisibilityQuery(text, text, {}, {}, &visible, false);
         if (visible && !s_state.leaderboard_fetch_handle)
           FetchNextLeaderboardEntries();
       }

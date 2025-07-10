@@ -36,6 +36,8 @@
 #include <utility>
 #include <variant>
 
+using namespace std::string_view_literals;
+
 LOG_CHANNEL(ImGuiFullscreen);
 
 namespace ImGuiFullscreen {
@@ -1870,31 +1872,32 @@ bool ImGuiFullscreen::MenuButton(std::string_view title, std::string_view summar
                                  const ImVec2& text_align /* = ImVec2(0.0f, 0.0f) */)
 {
   bool visible;
-  return MenuButtonWithVisibilityQuery(title, summary, {}, &visible, enabled, text_align);
+  return MenuButtonWithVisibilityQuery(title, title, summary, {}, &visible, enabled, text_align);
 }
 
 bool ImGuiFullscreen::MenuButtonWithoutSummary(std::string_view title, bool enabled /* = true */,
                                                const ImVec2& text_align /* = ImVec2(0.0f, 0.0f) */)
 {
   bool visible;
-  return MenuButtonWithVisibilityQuery(title, {}, {}, &visible, enabled, text_align);
+  return MenuButtonWithVisibilityQuery(title, title, {}, {}, &visible, enabled, text_align);
 }
 
 bool ImGuiFullscreen::MenuButtonWithValue(std::string_view title, std::string_view summary, std::string_view value,
                                           bool enabled /* = true*/, const ImVec2& text_align /* = ImVec2(0.0f, 0.0f)*/)
 {
   bool visible;
-  return MenuButtonWithVisibilityQuery(title, summary, value, &visible, enabled, text_align);
+  return MenuButtonWithVisibilityQuery(title, title, summary, value, &visible, enabled, text_align);
 }
 
-bool ImGuiFullscreen::MenuButtonWithVisibilityQuery(std::string_view title, std::string_view summary,
-                                                    std::string_view value, bool* visible, bool enabled /* = true */,
+bool ImGuiFullscreen::MenuButtonWithVisibilityQuery(std::string_view str_id, std::string_view title,
+                                                    std::string_view summary, std::string_view value, bool* visible,
+                                                    bool enabled /* = true */,
                                                     const ImVec2& text_align /* = ImVec2(0.0f, 0.0f) */)
 {
   const MenuButtonBounds bb(title, value, summary);
 
   bool hovered;
-  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, visible, &hovered);
+  bool pressed = MenuButtonFrame(str_id, enabled, bb.frame_bb, visible, &hovered);
   if (!*visible)
     return false;
 
@@ -3157,7 +3160,8 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
 
       const SmallString title =
         SmallString::from_format("{0} {1}", option.second ? ICON_FA_SQUARE_CHECK : ICON_FA_SQUARE, option.first);
-      if (MenuButtonWithoutSummary(title))
+      bool visible;
+      if (MenuButtonWithVisibilityQuery(TinyString::from_format("item{}", i), title, {}, {}, &visible))
       {
         choice = i;
         option.second = !option.second;
@@ -3201,7 +3205,9 @@ void ImGuiFullscreen::ChoiceDialog::Draw()
     {
       auto& option = m_options[i];
 
-      if (option.second ? MenuButtonWithValue(option.first, {}, ICON_FA_CHECK) : MenuButtonWithoutSummary(option.first))
+      bool visible;
+      if (MenuButtonWithVisibilityQuery(TinyString::from_format("item{}", i), option.first, {},
+                                        option.second ? ICON_FA_CHECK ""sv : std::string_view(), &visible))
       {
         choice = i;
         for (s32 j = 0; j < static_cast<s32>(m_options.size()); j++)
