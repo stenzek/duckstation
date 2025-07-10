@@ -1911,7 +1911,9 @@ void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_displa
 void GPU::ReadVRAM(u16 x, u16 y, u16 width, u16 height)
 {
   // If we're using the software renderer, we only need to sync the thread.
-  if (!GPUBackend::IsUsingHardwareBackend() || g_settings.gpu_use_software_renderer_for_readbacks)
+  // If stats are enabled, still send the packet to update the read counter.
+  if ((!GPUBackend::IsUsingHardwareBackend() || g_settings.gpu_use_software_renderer_for_readbacks) &&
+      !g_settings.display_show_gpu_stats)
   {
     GPUBackend::SyncGPUThread(true);
     return;
