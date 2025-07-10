@@ -393,22 +393,32 @@ QIcon GameListModel::getIconForGame(const QString& path)
 {
   QIcon ret;
 
-  if (m_show_game_icons)
+  if (m_show_game_icons && !path.isEmpty())
   {
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
 
-    // See above.
-    if (entry && !entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
+    if (const QPixmap* pm = m_memcard_pixmap_cache.Lookup(entry->serial))
     {
-      const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
-      if (!icon_path.empty())
+      // If we already have the icon cached, return it.
+      ret = QIcon(*pm);
+      return ret;
+    }
+    else
+    {
+      // See above.
+      if (entry && !entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
       {
-        QPixmap newpm;
-        if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
+        const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+        if (!icon_path.empty())
         {
-          fixIconPixmapSize(newpm);
-          ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
+          QPixmap newpm;
+          if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
+          {
+            fixIconPixmapSize(newpm);
+            ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
+            return ret;
+          }
         }
       }
     }
