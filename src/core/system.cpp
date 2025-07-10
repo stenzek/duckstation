@@ -2192,8 +2192,10 @@ void System::FrameDone()
   {
     Host::PumpMessagesOnCPUThread();
     InputManager::PollSources();
-    CheckForAndExitExecution();
   }
+
+  // Frame step can still trigger exit
+  CheckForAndExitExecution();
 
   // Update input OSD if we're running
   if (g_settings.display_show_inputs)
