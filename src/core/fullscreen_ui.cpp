@@ -2953,6 +2953,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(15.0f));
 
   ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
   s32 dlg_value = static_cast<s32>(value.value_or(default_value));
@@ -2966,7 +2968,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
     SetSettingsChanged(bsi);
   }
 
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(4);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
@@ -3020,6 +3022,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(15.0f));
 
   const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
   ImGui::SetNextItemWidth(end);
@@ -3037,7 +3041,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
     SetSettingsChanged(bsi);
   }
 
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(4);
 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
@@ -3200,7 +3204,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   if (!IsFixedPopupDialogOpen(title) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 370.0f)))
+                             ImVec2(LayoutScale(500.0f), 0.0f)))
   {
     return false;
   }
@@ -3215,28 +3219,30 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(15.0f));
 
   const float midpoint = LayoutScale(150.0f);
   const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
-  ImGui::TextUnformatted("Left: ");
+  ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Left: ")));
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool left_modified =
     ImGui::SliderInt("##left", &dlg_left_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  ImGui::TextUnformatted("Top: ");
+  ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Top: ")));
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool top_modified =
     ImGui::SliderInt("##top", &dlg_top_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  ImGui::TextUnformatted("Right: ");
+  ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Right: ")));
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool right_modified =
     ImGui::SliderInt("##right", &dlg_right_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-  ImGui::TextUnformatted("Bottom: ");
+  ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Bottom: ")));
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool bottom_modified =
@@ -3275,7 +3281,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
   if (changed)
     SetSettingsChanged(bsi);
 
-  ImGui::PopStyleVar(2);
+  ImGui::PopStyleVar(4);
 
   if (MenuButtonWithoutSummary(FSUI_VSTR("OK"), true, LAYOUT_CENTER_ALIGN_TEXT))
     CloseFixedPopupDialog();
@@ -6217,7 +6223,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       reload_pending |= DrawIntRectSetting(
         bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Display Area"),
         FSUI_VSTR("Determines the area of the overlay image that the display will be drawn within."), "BorderOverlay",
-        "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0, 65535, "%dpx");
+        "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0, 16384, "%dpx");
 
       reload_pending |=
         DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BLENDER, "Alpha Blending"),
@@ -9390,6 +9396,7 @@ TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
 TRANSLATE_NOOP("FullscreenUI", "Behavior");
 TRANSLATE_NOOP("FullscreenUI", "Border Overlay");
 TRANSLATE_NOOP("FullscreenUI", "Borderless Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Bottom: ");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Buttons");
 TRANSLATE_NOOP("FullscreenUI", "CD-ROM Emulation");
@@ -9652,6 +9659,7 @@ TRANSLATE_NOOP("FullscreenUI", "Launch a game from a file, disc, or starts the c
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game directories.");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
+TRANSLATE_NOOP("FullscreenUI", "Left: ");
 TRANSLATE_NOOP("FullscreenUI", "Light");
 TRANSLATE_NOOP("FullscreenUI", "Line Detection");
 TRANSLATE_NOOP("FullscreenUI", "List Compact Mode");
@@ -9814,6 +9822,7 @@ TRANSLATE_NOOP("FullscreenUI", "Rewind Save Slots");
 TRANSLATE_NOOP("FullscreenUI", "Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.");
 TRANSLATE_NOOP("FullscreenUI", "Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.");
+TRANSLATE_NOOP("FullscreenUI", "Right: ");
 TRANSLATE_NOOP("FullscreenUI", "Round Upscaled Texture Coordinates");
 TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
@@ -9971,6 +9980,7 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "Toggles the macro when the button is pressed, instead of held.");
+TRANSLATE_NOOP("FullscreenUI", "Top: ");
 TRANSLATE_NOOP("FullscreenUI", "Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");

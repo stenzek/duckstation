@@ -2193,10 +2193,12 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(15.0f));
 
     changed = ImGui::SliderInt("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
 
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar(4);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_CENTER_ALIGN_TEXT))
@@ -2231,10 +2233,12 @@ bool ImGuiFullscreen::RangeButton(std::string_view title, std::string_view summa
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
+    ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(15.0f));
 
     changed = ImGui::SliderFloat("##value", value, min, max, format, ImGuiSliderFlags_NoInput);
 
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar(4);
 
     if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_CENTER_ALIGN_TEXT))
       CloseFixedPopupDialog();
