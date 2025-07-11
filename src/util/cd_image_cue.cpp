@@ -3,6 +3,7 @@
 
 #include "cd_image.h"
 #include "cue_parser.h"
+#include "host.h"
 #include "wav_reader_writer.h"
 
 #include "common/align.h"
@@ -618,7 +619,10 @@ bool CDImageCueSheet::OpenAndParseCueSheet(const char* path, Error* error)
         {
           if (reader.GetNumChannels() != AUDIO_CHANNELS || reader.GetSampleRate() != AUDIO_SAMPLE_RATE)
           {
-            Error::SetStringFmt(error, "WAV files must be stereo and use a sample rate of 44100hz.");
+            Error::SetStringFmt(error,
+                                TRANSLATE_FS("CDImage", "{0} uses a sample rate of {1}hz and has {2} channels.\n"
+                                                        "WAV files must be stereo and use a sample rate of 44100hz."),
+                                Path::GetFileName(track_filename), reader.GetSampleRate(), reader.GetNumChannels());
             return false;
           }
 
