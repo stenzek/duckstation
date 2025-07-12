@@ -24,7 +24,7 @@ public:
   ~GamePatchDetailsWidget();
 
 private Q_SLOTS:
-  void onEnabledStateChanged(int state);
+  void onEnabledStateChanged(Qt::CheckState state);
 
 private:
   Ui::GamePatchDetailsWidget m_ui;
