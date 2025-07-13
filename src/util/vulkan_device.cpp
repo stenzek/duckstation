@@ -1937,30 +1937,36 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
   }
 
   // Check the first GPU, should be enough.
-  const std::string& name = gpus.front().second.name;
-  INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", name);
+  const AdapterInfo& ainfo = gpus.front().second;
+  INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", ainfo.name);
 
   // Any software rendering (LLVMpipe, SwiftShader).
-  if (StringUtil::StartsWithNoCase(name, "llvmpipe") || StringUtil::StartsWithNoCase(name, "SwiftShader"))
+  if ((ainfo.driver_type & GPUDriverType::SoftwareFlag) == GPUDriverType::SoftwareFlag)
   {
     INFO_LOG("Not using Vulkan for software renderer.");
     return false;
   }
 
-  // For Intel, OpenGL usually ends up faster on Linux, because of fbfetch.
-  // Plus, the Ivy Bridge and Haswell drivers are incomplete.
-  if (StringUtil::StartsWithNoCase(name, "Intel"))
+#ifdef __linux__
+  // Intel Ivy Bridge/Haswell/Broadwell drivers are incomplete.
+  if (ainfo.driver_type == GPUDriverType::IntelMesa &&
+      (ainfo.name.find("Ivy Bridge") != std::string::npos || ainfo.name.find("Haswell") != std::string::npos ||
+       ainfo.name.find("Broadwell") != std::string::npos || ainfo.name.find("(IVB") != std::string::npos ||
+       ainfo.name.find("(HSW") != std::string::npos || ainfo.name.find("(BDW") != std::string::npos))
   {
-    INFO_LOG("Not using Vulkan for Intel GPU.");
+    INFO_LOG("Not using Vulkan for Intel GPU with incomplete driver.");
     return false;
   }
+#endif
 
+#if defined(__linux__) || defined(__ANDROID__)
   // V3D is buggy, image copies with larger textures are broken.
-  if (StringUtil::StartsWithNoCase(name, "V3D"))
+  if (ainfo.driver_type == GPUDriverType::BroadcomMesa)
   {
-    INFO_LOG("Not using Vulkan for V3D GPU.");
+    INFO_LOG("Not using Vulkan for V3D GPU with buggy driver.");
     return false;
   }
+#endif
 
   INFO_LOG("Allowing Vulkan as default renderer.");
   return true;
