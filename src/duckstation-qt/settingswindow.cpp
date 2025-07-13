@@ -151,20 +151,15 @@ void SettingsWindow::addPages()
     QStringLiteral("volume-up-line"),
     tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console. Mouse over an option "
        "for additional information."));
-  {
-    QString title(tr("Achievements"));
-    QString icon_text(QStringLiteral("trophy-line"));
-    QString help_text(
-      tr("<strong>Achievement Settings</strong><hr>DuckStation uses RetroAchievements as an achievement database and "
-         "for tracking progress. To use achievements, please sign up for an account at <a href=\"%1\">%1</a>. To view "
-         "the achievement list in-game, press the hotkey for <strong>Open Pause Menu</strong> and select "
-         "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
-         "Shift+Wheel to scroll this panel.")
-        .arg("https://retroachievements.org/"));
-
-    addWidget(m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), std::move(title),
-              std::move(icon_text), std::move(help_text));
-  }
+  addWidget(
+    m_achievement_settings = new AchievementSettingsWidget(this, m_ui.settingsContainer), tr("Achievements"),
+    QStringLiteral("trophy-line"),
+    tr("<strong>Achievement Settings</strong><hr>DuckStation uses RetroAchievements as an achievement database and "
+       "for tracking progress. To use achievements, please sign up for an account at <a href=\"%1\">%1</a>. To view "
+       "the achievement list in-game, press the hotkey for <strong>Open Pause Menu</strong> and select "
+       "<strong>Achievements</strong> from the menu. Mouse over an option for additional information, and "
+       "Shift+Wheel to scroll this panel.")
+      .arg("https://retroachievements.org/"));
 
   if (!isPerGameSettings())
   {
