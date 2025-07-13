@@ -156,14 +156,6 @@ public:
       Control() = default;
 
       Control(u8 bits_) : bits(bits_) {}
-
-      Control(const Control& rhs) : bits(rhs.bits) {}
-
-      Control& operator=(const Control& rhs)
-      {
-        bits = rhs.bits;
-        return *this;
-      }
     };
 
     struct
@@ -189,16 +181,6 @@ public:
     bool IsData() const { return GetControl().data; }
 
     bool IsCRCValid() const;
-
-    SubChannelQ() = default;
-
-    SubChannelQ(const SubChannelQ& q) : data(q.data) {}
-
-    SubChannelQ& operator=(const SubChannelQ& q)
-    {
-      data = q.data;
-      return *this;
-    }
   };
   static_assert(sizeof(SubChannelQ) == SUBCHANNEL_BYTES_PER_FRAME, "SubChannelQ is correct size");
 

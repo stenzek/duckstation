@@ -12,9 +12,6 @@ struct BitField
 {
   static_assert(!std::is_same_v<DataType, bool> || BitCount == 1, "Boolean bitfields should only be 1 bit");
 
-  // We have to delete the copy assignment operator otherwise we can't use this class in anonymous structs/unions.
-  BitField& operator=(const BitField& rhs) = delete;
-
   ALWAYS_INLINE constexpr BackingDataType GetMask() const
   {
     return ((static_cast<BackingDataType>(~0)) >> (8 * sizeof(BackingDataType) - BitCount)) << BitIndex;

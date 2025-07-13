@@ -278,8 +278,8 @@ public:
 
     // clang-format off
     ALWAYS_INLINE VertexAttribute() = default;
-    ALWAYS_INLINE constexpr VertexAttribute(const VertexAttribute& rhs) : key(rhs.key) {}
-    ALWAYS_INLINE VertexAttribute& operator=(const VertexAttribute& rhs) { key = rhs.key; return *this; }
+    ALWAYS_INLINE constexpr VertexAttribute(const VertexAttribute& rhs) = default;
+    ALWAYS_INLINE VertexAttribute& operator=(const VertexAttribute& rhs) = default;
     ALWAYS_INLINE bool operator==(const VertexAttribute& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const VertexAttribute& rhs) const { return key != rhs.key; }
     ALWAYS_INLINE bool operator<(const VertexAttribute& rhs) const { return key < rhs.key; }
@@ -369,13 +369,11 @@ public:
   // TODO: purge this?
   union RasterizationState
   {
-    BitField<u8, CullMode, 0, 2> cull_mode;
     u8 key;
 
+    BitField<u8, CullMode, 0, 2> cull_mode;
+
     // clang-format off
-    ALWAYS_INLINE RasterizationState() = default;
-    ALWAYS_INLINE RasterizationState(const RasterizationState& rhs) : key(rhs.key) {}
-    ALWAYS_INLINE RasterizationState& operator=(const RasterizationState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const RasterizationState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const RasterizationState& rhs) const { return key != rhs.key; }
     ALWAYS_INLINE bool operator<(const RasterizationState& rhs) const { return key < rhs.key; }
@@ -386,14 +384,12 @@ public:
 
   union DepthState
   {
-    BitField<u8, DepthFunc, 0, 3> depth_test;
-    BitField<u8, bool, 4, 1> depth_write;
     u8 key;
 
+    BitField<u8, DepthFunc, 0, 3> depth_test;
+    BitField<u8, bool, 4, 1> depth_write;
+
     // clang-format off
-    ALWAYS_INLINE DepthState() = default;
-    ALWAYS_INLINE DepthState(const DepthState& rhs) : key(rhs.key) {}
-    ALWAYS_INLINE DepthState& operator=(const DepthState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const DepthState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const DepthState& rhs) const { return key != rhs.key; }
     ALWAYS_INLINE bool operator<(const DepthState& rhs) const { return key < rhs.key; }
@@ -405,6 +401,8 @@ public:
 
   union BlendState
   {
+    u64 key;
+
     BitField<u64, bool, 0, 1> enable;
     BitField<u64, BlendFunc, 1, 4> src_blend;
     BitField<u64, BlendFunc, 5, 4> src_alpha_blend;
@@ -422,12 +420,7 @@ public:
     BitField<u64, u16, 1, 16> blend_factors;
     BitField<u64, u8, 17, 6> blend_ops;
 
-    u64 key;
-
     // clang-format off
-    ALWAYS_INLINE BlendState() = default;
-    ALWAYS_INLINE BlendState(const BlendState& rhs) : key(rhs.key) {}
-    ALWAYS_INLINE BlendState& operator=(const BlendState& rhs) { key = rhs.key; return *this; }
     ALWAYS_INLINE bool operator==(const BlendState& rhs) const { return key == rhs.key; }
     ALWAYS_INLINE bool operator!=(const BlendState& rhs) const { return key != rhs.key; }
     ALWAYS_INLINE bool operator<(const BlendState& rhs) const { return key < rhs.key; }
