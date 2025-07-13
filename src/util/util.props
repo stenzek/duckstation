@@ -13,7 +13,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);d3d12.lib;Dwmapi.lib;winhttp.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);Dwmapi.lib;winhttp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 

@@ -21,12 +21,16 @@ class Error;
 
 enum class GPUDriverType : u16;
 
+struct D3D12_ROOT_SIGNATURE_DESC;
+
 struct IDXGIFactory5;
 struct IDXGIAdapter;
 struct IDXGIAdapter1;
 struct IDXGIOutput;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
+struct ID3D12Debug;
+struct ID3D12Device1;
 
 namespace D3DCommon {
 
@@ -48,6 +52,12 @@ bool CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, const D3D_FEATU
                        UINT num_feature_levels, Microsoft::WRL::ComPtr<ID3D11Device>* device,
                        D3D_FEATURE_LEVEL* out_feature_level,
                        Microsoft::WRL::ComPtr<ID3D11DeviceContext>* immediate_context, Error* error);
+
+// D3D12 functions
+bool GetD3D12DebugInterface(Microsoft::WRL::ComPtr<ID3D12Debug>* debug, Error* error);
+bool CreateD3D12Device(IDXGIAdapter* adapter, D3D_FEATURE_LEVEL feature_level,
+                       Microsoft::WRL::ComPtr<ID3D12Device1>* device, Error* error);
+Microsoft::WRL::ComPtr<ID3DBlob> SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
 
 // returns a list of all adapter names
 GPUDevice::AdapterInfoList GetAdapterInfoList();

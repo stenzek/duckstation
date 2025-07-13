@@ -162,7 +162,6 @@ public:
   ID3D12GraphicsCommandList4* GetInitCommandList();
 
   // Root signature access.
-  ComPtr<ID3DBlob> SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
   ComPtr<ID3D12RootSignature> CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
 
   /// Fence value for current command list.

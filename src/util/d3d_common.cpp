@@ -15,6 +15,7 @@
 #include "fmt/format.h"
 
 #include <d3d11.h>
+#include <d3d12.h>
 #include <d3dcompiler.h>
 #include <dxcapi.h>
 #include <dxgi1_5.h>
@@ -39,6 +40,10 @@ struct Libs
   decltype(&CreateDXGIFactory2) CreateDXGIFactory2;
   DynamicLibrary d3d11_library;
   PFN_D3D11_CREATE_DEVICE D3D11CreateDevice;
+  DynamicLibrary d3d12_library;
+  PFN_D3D12_CREATE_DEVICE D3D12CreateDevice;
+  PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterface;
+  PFN_D3D12_SERIALIZE_ROOT_SIGNATURE D3D12SerializeRootSignature;
   DynamicLibrary d3dcompiler_library;
   pD3DCompile D3DCompile;
   DynamicLibrary dxcompiler_library;
@@ -53,6 +58,7 @@ static std::optional<DynamicHeapArray<u8>> CompileShaderWithFXC(u32 shader_model
 static std::optional<DynamicHeapArray<u8>> CompileShaderWithDXC(u32 shader_model, bool debug_device,
                                                                 GPUShaderStage stage, std::string_view source,
                                                                 const char* entry_point, Error* error);
+static bool LoadD3D12Library(Error* error);
 static bool LoadD3DCompilerLibrary(Error* error);
 static bool LoadDXCompilerLibrary(Error* error);
 
@@ -199,6 +205,80 @@ bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, cons
 
   Error::SetHResult(error, "D3D11CreateDevice() failed: ", hr);
   return true;
+}
+
+bool D3DCommon::LoadD3D12Library(Error* error)
+{
+  if (s_libs.d3d12_library.IsOpen())
+    return true;
+
+  // double check, another thread may have opened it
+  const std::unique_lock lock(s_libs.load_mutex);
+  if (s_libs.d3d12_library.IsOpen())
+    return true;
+
+  if (!s_libs.d3d12_library.Open("d3d12.dll", error))
+    return false;
+
+  if (!s_libs.d3d12_library.GetSymbol("D3D12CreateDevice", &s_libs.D3D12CreateDevice) ||
+      !s_libs.d3d12_library.GetSymbol("D3D12GetDebugInterface", &s_libs.D3D12GetDebugInterface) ||
+      !s_libs.d3d12_library.GetSymbol("D3D12SerializeRootSignature", &s_libs.D3D12SerializeRootSignature))
+  {
+    Error::SetStringView(error, "Failed to load one or more required functions from d3d12.dll");
+    s_libs.d3d12_library.Close();
+    return false;
+  }
+
+  return true;
+}
+
+bool D3DCommon::GetD3D12DebugInterface(Microsoft::WRL::ComPtr<ID3D12Debug>* debug, Error* error)
+{
+  if (!LoadD3D12Library(error))
+    return false;
+
+  const HRESULT hr = s_libs.D3D12GetDebugInterface(IID_PPV_ARGS(debug->ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    Error::SetHResult(error, "D3D12GetDebugInterface() failed: ", hr);
+    return false;
+  }
+
+  return true;
+}
+
+bool D3DCommon::CreateD3D12Device(IDXGIAdapter* adapter, D3D_FEATURE_LEVEL feature_level,
+                                  Microsoft::WRL::ComPtr<ID3D12Device1>* device, Error* error)
+{
+  if (!LoadD3D12Library(error))
+    return false;
+
+  const HRESULT hr = s_libs.D3D12CreateDevice(adapter, feature_level, IID_PPV_ARGS(device->ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    Error::SetHResult(error, "D3D12CreateDevice() failed: ", hr);
+    return false;
+  }
+
+  return true;
+}
+
+Microsoft::WRL::ComPtr<ID3DBlob> D3DCommon::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error)
+{
+  Microsoft::WRL::ComPtr<ID3DBlob> blob;
+  Microsoft::WRL::ComPtr<ID3DBlob> error_blob;
+  const HRESULT hr = s_libs.D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.GetAddressOf(),
+                                                        error_blob.GetAddressOf());
+  if (FAILED(hr)) [[unlikely]]
+  {
+    Error::SetHResult(error, "D3D12SerializeRootSignature() failed: ", hr);
+    if (error_blob)
+      ERROR_LOG(static_cast<const char*>(error_blob->GetBufferPointer()));
+
+    return {};
+  }
+
+  return blob;
 }
 
 static std::string FixupDuplicateAdapterNames(const GPUDevice::AdapterInfoList& adapter_names, std::string adapter_name)

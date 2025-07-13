@@ -129,28 +129,10 @@ D3D12Device::~D3D12Device()
   Assert(s_pipeline_cache_data.empty());
 }
 
-D3D12Device::ComPtr<ID3DBlob> D3D12Device::SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error)
-{
-  ComPtr<ID3DBlob> blob;
-  ComPtr<ID3DBlob> error_blob;
-  const HRESULT hr =
-    D3D12SerializeRootSignature(desc, D3D_ROOT_SIGNATURE_VERSION_1, blob.GetAddressOf(), error_blob.GetAddressOf());
-  if (FAILED(hr)) [[unlikely]]
-  {
-    Error::SetHResult(error, "D3D12SerializeRootSignature() failed: ", hr);
-    if (error_blob)
-      ERROR_LOG(static_cast<const char*>(error_blob->GetBufferPointer()));
-
-    return {};
-  }
-
-  return blob;
-}
-
 D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc,
                                                                           Error* error)
 {
-  ComPtr<ID3DBlob> blob = SerializeRootSignature(desc, error);
+  ComPtr<ID3DBlob> blob = D3DCommon::SerializeRootSignature(desc, error);
   if (!blob)
     return {};
 
@@ -186,7 +168,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
   if (m_debug_device)
   {
     ComPtr<ID3D12Debug> debug12;
-    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debug12.GetAddressOf()))))
+    if (D3DCommon::GetD3D12DebugInterface(&debug12, nullptr))
     {
       INFO_LOG("Enabling debug layer.");
       debug12->EnableDebugLayer();
@@ -217,18 +199,14 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
   D3D_FEATURE_LEVEL feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
   for (D3D_FEATURE_LEVEL try_feature_level : {D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_0})
   {
-    hr = D3D12CreateDevice(m_adapter.Get(), try_feature_level, IID_PPV_ARGS(&m_device));
-    if (SUCCEEDED(hr))
+    if (D3DCommon::CreateD3D12Device(m_adapter.Get(), try_feature_level, &m_device, error))
     {
       feature_level = try_feature_level;
       break;
     }
   }
-  if (FAILED(hr))
-  {
-    Error::SetHResult(error, "Failed to create D3D12 device: ", hr);
+  if (!m_device)
     return false;
-  }
 
   if (!m_adapter)
   {
