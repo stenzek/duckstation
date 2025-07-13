@@ -2954,7 +2954,16 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
   if (m_current_directory.empty())
   {
     for (std::string& root_path : FileSystem::GetRootDirectoryList())
-      m_items.emplace_back(fmt::format(ICON_EMOJI_FILE_FOLDER " {}", root_path), std::move(root_path), false);
+    {
+#ifdef _WIN32A
+      // Remove trailing backslash on Windows.
+      while (!root_path.empty() && root_path.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+        root_path.pop_back();
+#endif
+
+      std::string label = fmt::format(ICON_EMOJI_FILE_FOLDER " {}", root_path);
+      m_items.emplace_back(std::move(label), std::move(root_path), false);
+    }
   }
   else
   {
@@ -2964,10 +2973,17 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
                             FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_SORT_BY_NAME,
                           &results);
 
+    // Ensure we only go back to the root list once we've gone up from the root of that drive.
     std::string parent_path;
     std::string::size_type sep_pos = m_current_directory.rfind(FS_OSPATH_SEPARATOR_CHARACTER);
-    if (sep_pos != std::string::npos)
+    if (sep_pos != std::string::npos && sep_pos != (m_current_directory.size() - 1))
+    {
       parent_path = Path::Canonicalize(m_current_directory.substr(0, sep_pos));
+
+      // Ensure that the root directory has a trailing backslash.
+      if (parent_path.find(FS_OSPATH_SEPARATOR_CHARACTER) == std::string::npos)
+        parent_path.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
+    }
 
     m_items.emplace_back(ICON_EMOJI_FILE_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);
     m_first_item_is_parent_directory = true;
@@ -2999,8 +3015,12 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
 
 void ImGuiFullscreen::FileSelectorDialog::SetDirectory(std::string dir)
 {
-  while (!dir.empty() && dir.back() == FS_OSPATH_SEPARATOR_CHARACTER)
+  // Ensure at least one slash always exists.
+  while (!dir.empty() && dir.back() == FS_OSPATH_SEPARATOR_CHARACTER &&
+         dir.find(FS_OSPATH_SEPARATOR_CHARACTER) != (dir.size() - 1))
+  {
     dir.pop_back();
+  }
 
   m_current_directory = std::move(dir);
   m_directory_changed = true;
