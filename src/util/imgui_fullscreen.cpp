@@ -24,8 +24,8 @@
 
 #include "fmt/core.h"
 
-#include "IconsFontAwesome6.h"
 #include "IconsEmoji.h"
+#include "IconsFontAwesome6.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -1481,10 +1481,10 @@ float ImGuiFullscreen::MenuButtonBounds::CalcAvailWidth()
   return ImGui::GetCurrentWindowRead()->WorkRect.GetWidth() - ImGui::GetStyle().FramePadding.x * 2.0f;
 }
 
-void ImGuiFullscreen::MenuButtonBounds::CalcValueSize(const std::string_view& value)
+void ImGuiFullscreen::MenuButtonBounds::CalcValueSize(const std::string_view& value, float font_size)
 {
   SetValueSize(value.empty() ? ImVec2() :
-                               UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                               UIStyle.Font->CalcTextSizeA(font_size, UIStyle.BoldFontWeight, FLT_MAX,
                                                            available_width * 0.5f, IMSTR_START_END(value)));
 }
 
@@ -1494,41 +1494,41 @@ void ImGuiFullscreen::MenuButtonBounds::SetValueSize(const ImVec2& size)
   available_non_value_width = available_width - ((size.x > 0.0f) ? (size.x + LayoutScale(16.0f)) : 0.0f);
 }
 
-void ImGuiFullscreen::MenuButtonBounds::CalcTitleSize(const std::string_view& title)
+void ImGuiFullscreen::MenuButtonBounds::CalcTitleSize(const std::string_view& title, float font_size)
 {
   const std::string_view real_title = ImGuiFullscreen::RemoveHash(title);
   title_size = real_title.empty() ? ImVec2() :
-                                    UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                                    UIStyle.Font->CalcTextSizeA(font_size, UIStyle.BoldFontWeight, FLT_MAX,
                                                                 available_non_value_width, IMSTR_START_END(real_title));
 }
 
-void ImGuiFullscreen::MenuButtonBounds::CalcSummarySize(const std::string_view& summary)
+void ImGuiFullscreen::MenuButtonBounds::CalcSummarySize(const std::string_view& summary, float font_size)
 {
-  summary_size = summary.empty() ?
-                   ImVec2() :
-                   UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                               available_non_value_width, IMSTR_START_END(summary));
+  summary_size = summary.empty() ? ImVec2() :
+                                   UIStyle.Font->CalcTextSizeA(font_size, UIStyle.NormalFontWeight, FLT_MAX,
+                                                               available_non_value_width, IMSTR_START_END(summary));
 }
 
 ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, const std::string_view& value,
                                                     const std::string_view& summary)
 {
-  CalcValueSize(value);
-  CalcTitleSize(title);
-  CalcSummarySize(summary);
+  CalcValueSize(value, UIStyle.LargeFontSize);
+  CalcTitleSize(title, UIStyle.LargeFontSize);
+  CalcSummarySize(summary, UIStyle.MediumFontSize);
   CalcBB();
 }
 
 ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& title, const std::string_view& value,
-                                                    const std::string_view& summary, float left_margin)
+                                                    const std::string_view& summary, float left_margin,
+                                                    float title_value_size, float summary_size)
 {
   // ugly, but only used for compact game list, whatever
   const float orig_width = available_width;
   available_width -= left_margin;
 
-  CalcValueSize(value);
-  CalcTitleSize(title);
-  CalcSummarySize(summary);
+  CalcValueSize(value, title_value_size);
+  CalcTitleSize(title, title_value_size);
+  CalcSummarySize(summary, summary_size);
 
   available_width = orig_width;
 
@@ -1544,8 +1544,8 @@ ImGuiFullscreen::MenuButtonBounds::MenuButtonBounds(const std::string_view& titl
                                                     const std::string_view& summary)
 {
   SetValueSize(value_size);
-  CalcTitleSize(title);
-  CalcSummarySize(summary);
+  CalcTitleSize(title, UIStyle.LargeFontSize);
+  CalcSummarySize(summary, UIStyle.MediumFontSize);
   CalcBB();
 }
 
@@ -1816,9 +1816,10 @@ void ImGuiFullscreen::MenuHeading(std::string_view title, bool draw_line /*= tru
   if (!visible)
     return;
 
+  const u32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
   RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
-                            bb.title_bb.Max, ImGui::GetColorU32(ImGuiCol_TextDisabled), title, &bb.title_size,
-                            ImVec2(0.0f, 0.0f), bb.title_size.x, &bb.title_bb);
+                            bb.title_bb.Max, color, title, &bb.title_size, ImVec2(0.0f, 0.0f), bb.title_size.x,
+                            &bb.title_bb);
 
   if (draw_line)
   {
@@ -1827,37 +1828,34 @@ void ImGuiFullscreen::MenuHeading(std::string_view title, bool draw_line /*= tru
     const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
     ImGui::GetWindowDrawList()->AddLine(line_start + shadow_offset, line_end + shadow_offset, UIStyle.ShadowColor,
                                         line_thickness);
-    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled),
-                                        line_thickness);
+    ImGui::GetWindowDrawList()->AddLine(line_start, line_end, color, line_thickness);
   }
 }
 
 bool ImGuiFullscreen::MenuHeadingButton(std::string_view title, std::string_view value /*= {}*/,
-                                        bool enabled /*= true*/, bool draw_line /*= true*/)
+                                        float font_size /*= UIStyle.LargeFontSize */, bool enabled /*= true*/,
+                                        bool draw_line /*= true*/)
 {
-  const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;
-  const float line_padding = draw_line ? LayoutScale(5.0f) : 0.0f;
-
-  const MenuButtonBounds bb(title, value, {});
+  const MenuButtonBounds bb(title, value, {}, 0.0f, font_size);
   bool visible, hovered;
   const bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
   if (!visible)
     return false;
 
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
-                            bb.title_bb.Max, color, title, &bb.title_size, ImVec2(0.0f, 0.0f), bb.title_size.x,
-                            &bb.title_bb);
+  const u32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+  RenderShadowedTextClipped(UIStyle.Font, font_size, UIStyle.BoldFontWeight, bb.title_bb.Min, bb.title_bb.Max, color,
+                            title, &bb.title_size, ImVec2(0.0f, 0.0f), bb.title_size.x, &bb.title_bb);
 
   if (!value.empty())
   {
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.value_bb.Min,
-                              bb.value_bb.Max, color, value, &bb.value_size, ImVec2(0.0f, 0.0f), bb.value_size.x,
-                              &bb.value_bb);
+    RenderShadowedTextClipped(UIStyle.Font, font_size, UIStyle.BoldFontWeight, bb.value_bb.Min, bb.value_bb.Max, color,
+                              value, &bb.value_size, ImVec2(0.0f, 0.0f), bb.value_size.x, &bb.value_bb);
   }
 
   if (draw_line)
   {
+    const float line_thickness = draw_line ? LayoutScale(1.0f) : 0.0f;
+    const float line_padding = draw_line ? LayoutScale(5.0f) : 0.0f;
     const ImVec2 line_start(bb.title_bb.Min.x, bb.title_bb.Max.y + line_padding);
     const ImVec2 line_end(bb.title_bb.Min.x + bb.available_width, line_start.y);
     const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);

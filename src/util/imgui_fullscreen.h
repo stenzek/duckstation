@@ -305,7 +305,8 @@ void RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, f
 void TextAlignedMultiLine(float align_x, const char* text, const char* text_end = nullptr, float wrap_width = -1.0f);
 void TextUnformatted(std::string_view text);
 void MenuHeading(std::string_view title, bool draw_line = true);
-bool MenuHeadingButton(std::string_view title, std::string_view value = {}, bool enabled = true, bool draw_line = true);
+bool MenuHeadingButton(std::string_view title, std::string_view value = {}, float font_size = UIStyle.LargeFontSize,
+                       bool enabled = true, bool draw_line = true);
 bool MenuButton(std::string_view title, std::string_view summary, bool enabled = true,
                 const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithoutSummary(std::string_view title, bool enabled = true,
@@ -500,7 +501,8 @@ struct MenuButtonBounds
 
   MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary);
   MenuButtonBounds(const std::string_view& title, const std::string_view& value, const std::string_view& summary,
-                   float left_margin);
+                   float left_margin, float title_value_size = UIStyle.LargeFontSize,
+                   float summary_size = UIStyle.MediumFontSize);
   MenuButtonBounds(const std::string_view& title, const ImVec2& value_size, const std::string_view& summary);
   MenuButtonBounds(const ImVec2& title_size, const ImVec2& value_size, const ImVec2& summary_size);
 
@@ -510,10 +512,10 @@ struct MenuButtonBounds
   static float GetSummaryLineHeight(float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 
   void CalcBB();
-  void CalcTitleSize(const std::string_view& title);
+  void CalcTitleSize(const std::string_view& title, float font_size);
   void SetValueSize(const ImVec2& value_size);
-  void CalcValueSize(const std::string_view& value);
-  void CalcSummarySize(const std::string_view& summary);
+  void CalcValueSize(const std::string_view& value, float font_size);
+  void CalcSummarySize(const std::string_view& summary, float font_size);
 };
 
 } // namespace ImGuiFullscreen

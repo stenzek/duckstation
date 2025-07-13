@@ -2822,6 +2822,7 @@ void Achievements::DrawAchievementsWindow()
       {ICON_EMOJI_UNLOCKED, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
       {ICON_FA_STOPWATCH, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_RULER_HORIZONTAL, TRANSLATE_NOOP("Achievements", "Almost There")},
+      {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsynchronized")},
     };
 
     ImGuiFullscreen::ResetFocusHere();
@@ -2845,7 +2846,7 @@ void Achievements::DrawAchievementsWindow()
         bucket_collapsed ^= ImGuiFullscreen::MenuHeadingButton(
           TinyString::from_format("{} {}", bucket_names[bucket.bucket_type].first,
                                   Host::TranslateToStringView("Achievements", bucket_names[bucket.bucket_type].second)),
-          bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+          bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP, UIStyle.MediumLargeFontSize);
         if (!bucket_collapsed)
         {
           for (u32 i = 0; i < bucket.num_achievements; i++)
