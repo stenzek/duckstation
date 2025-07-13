@@ -27,6 +27,7 @@ struct IDXGIAdapter1;
 struct IDXGIOutput;
 
 namespace D3DCommon {
+
 // returns string representation of feature level
 const char* GetFeatureLevelString(u32 render_api_version);
 u32 GetRenderAPIVersionForFeatureLevel(D3D_FEATURE_LEVEL feature_level);
@@ -76,4 +77,5 @@ struct DXGIFormatMapping
 };
 const DXGIFormatMapping& GetFormatMapping(GPUTexture::Format format);
 GPUTexture::Format GetFormatForDXGIFormat(DXGI_FORMAT format);
+
 } // namespace D3DCommon
