@@ -1546,7 +1546,7 @@ void FullscreenUI::DoStartFile()
       DoStartPath(path);
   };
 
-  OpenFileSelector(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
+  OpenFileSelector(FSUI_ICONVSTR(ICON_EMOJI_OPTICAL_DISK, "Select Disc Image"), false, std::move(callback),
                    GetDiscImageFilters());
 }
 
@@ -8305,7 +8305,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->file_size >= 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_OPEN_THE_FOLDER, FSUI_VSTR("Size: ")));
+        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_FILE_FOLDER_OPEN, FSUI_VSTR("Size: ")));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);

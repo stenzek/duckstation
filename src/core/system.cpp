@@ -2875,7 +2875,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state, boo
   INFO_LOG("Loading state from '{}'...", path);
 
   Host::AddIconOSDMessage(
-    "LoadState", ICON_EMOJI_OPEN_THE_FOLDER,
+    "LoadState", ICON_EMOJI_FILE_FOLDER_OPEN,
     fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
     Host::OSD_QUICK_DURATION);
 

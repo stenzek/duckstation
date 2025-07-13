@@ -25,6 +25,7 @@
 #include "fmt/core.h"
 
 #include "IconsFontAwesome6.h"
+#include "IconsEmoji.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -168,6 +169,7 @@ private:
 
   bool m_is_directory = false;
   bool m_directory_changed = false;
+  bool m_first_item_is_parent_directory = false;
 };
 
 class InputStringDialog : public PopupDialog
@@ -2949,11 +2951,12 @@ ImGuiFullscreen::FileSelectorDialog::Item::Item(std::string display_name_, std::
 void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
 {
   m_items.clear();
+  m_first_item_is_parent_directory = false;
 
   if (m_current_directory.empty())
   {
     for (std::string& root_path : FileSystem::GetRootDirectoryList())
-      m_items.emplace_back(fmt::format(ICON_FA_FOLDER " {}", root_path), std::move(root_path), false);
+      m_items.emplace_back(fmt::format(ICON_EMOJI_FILE_FOLDER " {}", root_path), std::move(root_path), false);
   }
   else
   {
@@ -2968,7 +2971,8 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
     if (sep_pos != std::string::npos)
       parent_path = Path::Canonicalize(m_current_directory.substr(0, sep_pos));
 
-    m_items.emplace_back(ICON_FA_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);
+    m_items.emplace_back(ICON_EMOJI_FILE_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);
+    m_first_item_is_parent_directory = true;
 
     for (const FILESYSTEM_FIND_DATA& fd : results)
     {
@@ -2976,7 +2980,7 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
 
       if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
       {
-        std::string title = fmt::format(ICON_FA_FOLDER " {}", fd.FileName);
+        std::string title = fmt::format(ICON_EMOJI_FILE_FOLDER " {}", fd.FileName);
         m_items.emplace_back(std::move(title), std::move(full_path), false);
       }
       else
@@ -2988,7 +2992,7 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
           continue;
         }
 
-        std::string title = fmt::format(ICON_FA_FILE " {}", fd.FileName);
+        std::string title = fmt::format(ICON_EMOJI_PAGE_FACING_UP " {}", fd.FileName);
         m_items.emplace_back(std::move(title), std::move(full_path), true);
       }
     }
@@ -3037,7 +3041,7 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
 
   if (m_is_directory && !m_current_directory.empty())
   {
-    if (MenuButtonWithoutSummary(ICON_FA_FOLDER_PLUS " <Use This Directory>"))
+    if (MenuButtonWithoutSummary(ICON_EMOJI_FILE_FOLDER_OPEN " <Use This Directory>"))
       directory_selected = true;
   }
 
@@ -3078,7 +3082,7 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
   {
     if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
     {
-      if (!m_items.empty() && m_items.front().display_name == ICON_FA_FOLDER_OPEN "  <Parent Directory>")
+      if (!m_items.empty() && m_first_item_is_parent_directory)
         SetDirectory(std::move(m_items.front().full_path));
     }
   }
