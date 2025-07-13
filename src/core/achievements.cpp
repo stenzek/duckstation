@@ -2677,6 +2677,19 @@ bool Achievements::PrepareAchievementsWindow()
     return false;
   }
 
+  // sort unlocked achievements by unlock time
+  for (size_t i = 0; i < s_state.achievement_list->num_buckets; i++)
+  {
+    const rc_client_achievement_bucket_t* bucket = &s_state.achievement_list->buckets[i];
+    if (bucket->bucket_type == RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED)
+    {
+      std::sort(bucket->achievements, bucket->achievements + bucket->num_achievements,
+                [](const rc_client_achievement_t* a, const rc_client_achievement_t* b) {
+                  return a->unlock_time > b->unlock_time;
+                });
+    }
+  }
+
   return true;
 }
 
