@@ -133,10 +133,9 @@ public:
 
 private:
   OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported, GLuint buffer_id,
-                        u8* cpu_buffer, u32 buffer_size, const u8* map_ptr, u32 map_pitch);
+                        u8* cpu_buffer, const u8* map_ptr, u32 map_pitch);
 
   GLuint m_buffer_id = 0;
-  u32 m_buffer_size = 0;
 
   GLsync m_sync = {};
 

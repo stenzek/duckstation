@@ -855,10 +855,8 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
 }
 
 OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported,
-                                             GLuint buffer_id, u8* cpu_buffer, u32 buffer_size, const u8* map_ptr,
-                                             u32 map_pitch)
-  : GPUDownloadTexture(width, height, format, imported), m_buffer_id(buffer_id), m_buffer_size(buffer_size),
-    m_cpu_buffer(cpu_buffer)
+                                             GLuint buffer_id, u8* cpu_buffer, const u8* map_ptr, u32 map_pitch)
+  : GPUDownloadTexture(width, height, format, imported), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
 {
   m_map_pointer = map_ptr;
   m_current_pitch = map_pitch;
@@ -922,8 +920,8 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
       return {};
     }
 
-    return std::unique_ptr<OpenGLDownloadTexture>(new OpenGLDownloadTexture(
-      width, height, format, false, buffer_id, nullptr, buffer_size, buffer_map, buffer_pitch));
+    return std::unique_ptr<OpenGLDownloadTexture>(
+      new OpenGLDownloadTexture(width, height, format, false, buffer_id, nullptr, buffer_map, buffer_pitch));
   }
 
   // Fallback to glReadPixels() + CPU buffer.
@@ -937,7 +935,7 @@ std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, 
   }
 
   return std::unique_ptr<OpenGLDownloadTexture>(
-    new OpenGLDownloadTexture(width, height, format, imported, 0, cpu_buffer, buffer_size, cpu_buffer, buffer_pitch));
+    new OpenGLDownloadTexture(width, height, format, imported, 0, cpu_buffer, cpu_buffer, buffer_pitch));
 }
 
 void OpenGLDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,

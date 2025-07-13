@@ -182,7 +182,7 @@ public:
 
 private:
   VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,
-                        VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset, VkDeviceSize buffer_size,
+                        VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset,
                         const u8* map_ptr, u32 map_pitch);
 
   VmaAllocation m_allocation = VK_NULL_HANDLE;
@@ -191,7 +191,6 @@ private:
 
   u64 m_copy_fence_counter = 0;
   VkDeviceSize m_memory_offset = 0;
-  VkDeviceSize m_buffer_size = 0;
 
   bool m_needs_cache_invalidate = false;
 };

@@ -986,9 +986,9 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
 
 VulkanDownloadTexture::VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,
                                              VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset,
-                                             VkDeviceSize buffer_size, const u8* map_ptr, u32 map_pitch)
+                                             const u8* map_ptr, u32 map_pitch)
   : GPUDownloadTexture(width, height, format, (memory != VK_NULL_HANDLE)), m_allocation(allocation), m_memory(memory),
-    m_buffer(buffer), m_memory_offset(memory_offset), m_buffer_size(buffer_size)
+    m_buffer(buffer), m_memory_offset(memory_offset)
 {
   m_map_pointer = map_ptr;
   m_current_pitch = map_pitch;
@@ -1068,8 +1068,8 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     map_ptr = static_cast<u8*>(memory);
   }
 
-  return std::unique_ptr<VulkanDownloadTexture>(new VulkanDownloadTexture(
-    width, height, format, allocation, dev_memory, buffer, memory_offset, buffer_size, map_ptr, map_pitch));
+  return std::unique_ptr<VulkanDownloadTexture>(new VulkanDownloadTexture(width, height, format, allocation, dev_memory,
+                                                                          buffer, memory_offset, map_ptr, map_pitch));
 }
 
 void VulkanDownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,
