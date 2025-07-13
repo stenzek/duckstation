@@ -35,6 +35,8 @@ struct FeatureLevelTableEntry
 struct Libs
 {
   std::mutex load_mutex;
+  DynamicLibrary dxgi_library;
+  decltype(&CreateDXGIFactory2) CreateDXGIFactory2;
   DynamicLibrary d3d11_library;
   PFN_D3D11_CREATE_DEVICE D3D11CreateDevice;
   DynamicLibrary d3dcompiler_library;
@@ -127,12 +129,30 @@ D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
 
 Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error* error)
 {
+  if (!s_libs.dxgi_library.IsOpen())
+  {
+    // another thread may have opened it
+    const std::unique_lock lock(s_libs.load_mutex);
+    if (!s_libs.d3d11_library.IsOpen())
+    {
+      if (!s_libs.dxgi_library.Open("dxgi.dll", error))
+        return {};
+
+      if (!s_libs.dxgi_library.GetSymbol("CreateDXGIFactory2", &s_libs.CreateDXGIFactory2))
+      {
+        Error::SetStringView(error, "Failed to load CreateDXGIFactory2 from dxgi.dll");
+        s_libs.dxgi_library.Close();
+        return {};
+      }
+    }
+  }
+
   UINT flags = 0;
   if (debug)
     flags |= DXGI_CREATE_FACTORY_DEBUG;
 
   Microsoft::WRL::ComPtr<IDXGIFactory5> factory;
-  const HRESULT hr = CreateDXGIFactory2(flags, IID_PPV_ARGS(factory.GetAddressOf()));
+  const HRESULT hr = s_libs.CreateDXGIFactory2(flags, IID_PPV_ARGS(factory.GetAddressOf()));
   if (FAILED(hr))
     Error::SetHResult(error, "Failed to create DXGI factory: ", hr);
 
