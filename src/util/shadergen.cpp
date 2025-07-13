@@ -364,13 +364,13 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
       (m_shader_language == GPUShaderLanguage::GLSLES && m_glsl_version < 310))
   {
     ss << "uint packUnorm4x8(float4 value) {\n"
-          "  uint4 packed = uint4(round(saturate(value) * 255.0));\n"
-          "  return packed.x | (packed.y << 8) | (packed.z << 16) | (packed.w << 24);\n"
+          "  uint4 ret = uint4(round(saturate(value) * 255.0));\n"
+          "  return ret.x | (ret.y << 8) | (ret.z << 16) | (ret.w << 24);\n"
           "}\n"
           "\n"
           "float4 unpackUnorm4x8(uint value) {\n"
-          "  uint4 packed = uint4(value & 0xffu, (value >> 8) & 0xffu, (value >> 16) & 0xffu, value >> 24);\n"
-          "  return float4(packed) / 255.0;\n"
+          "  uint4 ret = uint4(value & 0xffu, (value >> 8) & 0xffu, (value >> 16) & 0xffu, value >> 24);\n"
+          "  return float4(ret) / 255.0;\n"
           "}\n";
   }
 
