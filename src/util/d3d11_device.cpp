@@ -81,14 +81,11 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
 
   ComPtr<ID3D11Device> temp_device;
   ComPtr<ID3D11DeviceContext> temp_context;
-  HRESULT hr =
-    D3D11CreateDevice(dxgi_adapter.Get(), dxgi_adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr,
-                      create_flags, requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
-                      D3D11_SDK_VERSION, temp_device.GetAddressOf(), nullptr, temp_context.GetAddressOf());
-
-  if (FAILED(hr))
+  HRESULT hr;
+  if (!D3DCommon::CreateD3D11Device(dxgi_adapter.Get(), create_flags, requested_feature_levels.data(),
+                                    static_cast<UINT>(requested_feature_levels.size()), &temp_device, nullptr,
+                                    &temp_context, error))
   {
-    Error::SetHResult(error, "Failed to create D3D device: ", hr);
     return false;
   }
   else if (FAILED(hr = temp_device.As(&m_device)) || FAILED(hr = temp_context.As(&m_context)))

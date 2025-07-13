@@ -35,6 +35,8 @@ struct FeatureLevelTableEntry
 struct Libs
 {
   std::mutex load_mutex;
+  DynamicLibrary d3d11_library;
+  PFN_D3D11_CREATE_DEVICE D3D11CreateDevice;
   DynamicLibrary d3dcompiler_library;
   pD3DCompile D3DCompile;
   DynamicLibrary dxcompiler_library;
@@ -111,12 +113,12 @@ D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
     D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0};
 
   D3D_FEATURE_LEVEL max_supported_level;
-  HRESULT hr = D3D11CreateDevice(adapter, adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
-                                 requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
-                                 D3D11_SDK_VERSION, nullptr, &max_supported_level, nullptr);
-  if (FAILED(hr))
+  Error error;
+  if (!CreateD3D11Device(adapter, 0, requested_feature_levels.data(),
+                         static_cast<UINT>(requested_feature_levels.size()), nullptr, &max_supported_level, nullptr,
+                         &error))
   {
-    WARNING_LOG("D3D11CreateDevice() for getting max feature level failed: 0x{:08X}", static_cast<unsigned>(hr));
+    WARNING_LOG("D3D11CreateDevice() for getting max feature level failed: {}", error.GetDescription());
     max_supported_level = requested_feature_levels.back();
   }
 
@@ -143,6 +145,40 @@ bool D3DCommon::SupportsAllowTearing(IDXGIFactory5* factory)
   HRESULT hr = factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
                                             sizeof(allow_tearing_supported));
   return (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+}
+
+bool D3DCommon::CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, const D3D_FEATURE_LEVEL* feature_levels,
+                                  UINT num_feature_levels, Microsoft::WRL::ComPtr<ID3D11Device>* device,
+                                  D3D_FEATURE_LEVEL* out_feature_level,
+                                  Microsoft::WRL::ComPtr<ID3D11DeviceContext>* immediate_context, Error* error)
+{
+  if (!s_libs.d3d11_library.IsOpen())
+  {
+    // another thread may have opened it
+    const std::unique_lock lock(s_libs.load_mutex);
+    if (!s_libs.d3d11_library.IsOpen())
+    {
+      if (!s_libs.d3d11_library.Open("d3d11.dll", error))
+        return false;
+
+      if (!s_libs.d3d11_library.GetSymbol("D3D11CreateDevice", &s_libs.D3D11CreateDevice))
+      {
+        Error::SetStringView(error, "Failed to load D3D11CreateDevice from d3d11.dll");
+        s_libs.d3dcompiler_library.Close();
+        return false;
+      }
+    }
+  }
+
+  const HRESULT hr = s_libs.D3D11CreateDevice(
+    adapter, adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr, create_flags, feature_levels,
+    num_feature_levels, D3D11_SDK_VERSION, device ? device->ReleaseAndGetAddressOf() : nullptr, out_feature_level,
+    immediate_context ? immediate_context->ReleaseAndGetAddressOf() : nullptr);
+  if (SUCCEEDED(hr))
+    return true;
+
+  Error::SetHResult(error, "D3D11CreateDevice() failed: ", hr);
+  return true;
 }
 
 static std::string FixupDuplicateAdapterNames(const GPUDevice::AdapterInfoList& adapter_names, std::string adapter_name)

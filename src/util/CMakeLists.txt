@@ -241,7 +241,7 @@ if(WIN32)
     xinput_source.h
   )
   target_link_libraries(util PRIVATE d3d12ma)
-  target_link_libraries(util PRIVATE d3d11.lib d3d12.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib)
+  target_link_libraries(util PRIVATE d3d12.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib)
 
   if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)

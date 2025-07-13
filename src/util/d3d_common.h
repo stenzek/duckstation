@@ -25,6 +25,8 @@ struct IDXGIFactory5;
 struct IDXGIAdapter;
 struct IDXGIAdapter1;
 struct IDXGIOutput;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 
 namespace D3DCommon {
 
@@ -40,6 +42,12 @@ D3D_FEATURE_LEVEL GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter);
 // create a dxgi factory
 Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
 bool SupportsAllowTearing(IDXGIFactory5* factory);
+
+// create a D3D device
+bool CreateD3D11Device(IDXGIAdapter* adapter, UINT create_flags, const D3D_FEATURE_LEVEL* feature_levels,
+                       UINT num_feature_levels, Microsoft::WRL::ComPtr<ID3D11Device>* device,
+                       D3D_FEATURE_LEVEL* out_feature_level,
+                       Microsoft::WRL::ComPtr<ID3D11DeviceContext>* immediate_context, Error* error);
 
 // returns a list of all adapter names
 GPUDevice::AdapterInfoList GetAdapterInfoList();
