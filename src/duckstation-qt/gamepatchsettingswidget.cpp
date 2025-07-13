@@ -92,7 +92,6 @@ void GamePatchSettingsWidget::reloadList()
 
   if (!patches.empty())
   {
-    m_ui.scrollArea->setFrameStyle(QFrame::WinPanel | QFrame::Sunken);
     layout->setContentsMargins(0, 0, 0, 0);
 
     bool first = true;
@@ -117,8 +116,6 @@ void GamePatchSettingsWidget::reloadList()
   }
   else
   {
-    m_ui.scrollArea->setFrameStyle(QFrame::NoFrame);
-
     QLabel* label = new QLabel(tr("No patches are available for this game."), container);
     QFont font(label->font());
     font.setPointSizeF(font.pointSizeF() + 2.0f);
