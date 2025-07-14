@@ -1487,8 +1487,8 @@ void GameListWidget::updateView(bool grid_view)
 
 void GameListWidget::updateToolbar(bool grid_view)
 {
-  m_ui.viewGridTitles->setEnabled(grid_view);
-  m_ui.gridScale->setEnabled(grid_view);
+  m_ui.viewGridTitles->setVisible(grid_view);
+  m_ui.gridScale->setVisible(grid_view);
 }
 
 void GameListWidget::onCoverScaleChanged(float scale)
