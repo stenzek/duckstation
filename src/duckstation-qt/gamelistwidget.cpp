@@ -930,7 +930,10 @@ void GameListModel::setColumnDisplayNames()
 class GameListSortModel final : public QSortFilterProxyModel
 {
 public:
-  explicit GameListSortModel(GameListModel* parent) : QSortFilterProxyModel(parent), m_model(parent) {}
+  explicit GameListSortModel(GameListModel* parent) : QSortFilterProxyModel(parent), m_model(parent)
+  {
+    m_merge_disc_sets = Host::GetBaseBoolSettingValue("UI", "GameListMergeDiscSets", true);
+  }
 
   bool isMergingDiscSets() const { return m_merge_disc_sets; }
 
@@ -945,11 +948,13 @@ public:
     m_filter_type = type;
     invalidateRowsFilter();
   }
+
   void setFilterRegion(DiscRegion region)
   {
     m_filter_region = region;
     invalidateRowsFilter();
   }
+
   void setFilterName(std::string name)
   {
     m_filter_name = std::move(name);
@@ -1133,16 +1138,14 @@ GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent
 
 GameListWidget::~GameListWidget() = default;
 
-void GameListWidget::initialize()
+void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
+                                QAction* actionListShowIcons, QAction* actionGridShowTitles)
 {
-  const bool merge_disc_sets = Host::GetBaseBoolSettingValue("UI", "GameListMergeDiscSets", true);
-
   m_model = new GameListModel(this);
   connect(m_model, &GameListModel::coverScaleChanged, this, &GameListWidget::onCoverScaleChanged);
 
   m_sort_model = new GameListSortModel(m_model);
   m_sort_model->setSourceModel(m_model);
-  m_sort_model->setMergeDiscSets(merge_disc_sets);
 
   m_ui.setupUi(this);
   for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::MaxCount); type++)
@@ -1168,11 +1171,12 @@ void GameListWidget::initialize()
   m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
   m_ui.stack->insertWidget(2, m_empty_widget);
 
-  connect(m_ui.viewGameList, &QPushButton::clicked, this, &GameListWidget::showGameList);
-  connect(m_ui.viewGameGrid, &QPushButton::clicked, this, &GameListWidget::showGameGrid);
+  m_ui.viewGameList->setDefaultAction(actionGameList);
+  m_ui.viewGameGrid->setDefaultAction(actionGameGrid);
+  m_ui.viewMergeDiscSets->setDefaultAction(actionMergeDiscSets);
+  m_ui.viewGridTitles->setDefaultAction(actionGridShowTitles);
+
   connect(m_ui.gridScale, &QSlider::valueChanged, m_grid_view, &GameListGridView::setZoomPct);
-  connect(m_ui.viewGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowCoverTitles);
-  connect(m_ui.viewMergeDiscSets, &QPushButton::toggled, this, &GameListWidget::setMergeDiscSets);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
                                                static_cast<GameList::EntryType>(index - 1));
@@ -1199,13 +1203,16 @@ void GameListWidget::initialize()
 
   const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
   if (grid_view)
-    m_ui.stack->setCurrentIndex(1);
+    actionGameGrid->setChecked(true);
   else
-    m_ui.stack->setCurrentIndex(0);
-  setFocusProxy(grid_view ? static_cast<QWidget*>(m_grid_view) : static_cast<QWidget*>(m_list_view));
+    actionGameList->setChecked(true);
+  actionMergeDiscSets->setChecked(m_sort_model->isMergingDiscSets());
+  actionListShowIcons->setChecked(m_model->getShowGameIcons());
+  actionGridShowTitles->setChecked(m_model->getShowCoverTitles());
+  onCoverScaleChanged(m_model->getCoverScale());
 
-  updateToolbar();
-  resizeListViewColumnsToFit();
+  updateView(grid_view);
+  updateToolbar(grid_view);
   updateBackground(true);
 }
 
@@ -1217,21 +1224,6 @@ bool GameListWidget::isShowingGameList() const
 bool GameListWidget::isShowingGameGrid() const
 {
   return m_ui.stack->currentIndex() == 1;
-}
-
-bool GameListWidget::isShowingGridCoverTitles() const
-{
-  return m_model->getShowCoverTitles();
-}
-
-bool GameListWidget::isMergingDiscSets() const
-{
-  return m_sort_model->isMergingDiscSets();
-}
-
-bool GameListWidget::isShowingGameIcons() const
-{
-  return m_model->getShowGameIcons();
 }
 
 void GameListWidget::refresh(bool invalidate_cache)
@@ -1317,8 +1309,8 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
   if (m_ui.stack->currentIndex() == 2)
   {
     const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
-    m_ui.stack->setCurrentIndex(grid_view ? 1 : 0);
-    setFocusProxy(grid_view ? static_cast<QWidget*>(m_grid_view) : static_cast<QWidget*>(m_list_view));
+    updateView(grid_view);
+    updateToolbar(grid_view);
   }
 
   if (!m_model->hasTakenGameList() || time >= SHORT_REFRESH_TIME)
@@ -1417,68 +1409,42 @@ void GameListWidget::onSearchReturnPressed()
 
 void GameListWidget::showGameList()
 {
-  if (m_ui.stack->currentIndex() == 0 || m_model->rowCount() == 0)
-  {
-    updateToolbar();
+  if (isShowingGameList())
     return;
-  }
 
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
   Host::CommitBaseSettingChanges();
-  m_ui.stack->setCurrentIndex(0);
-  setFocusProxy(m_list_view);
-  resizeListViewColumnsToFit();
-  updateToolbar();
-  emit layoutChanged();
+
+  // keep showing the placeholder widget if we have no games
+  if (m_model->rowCount() > 0)
+    updateView(false);
+
+  updateToolbar(false);
 }
 
 void GameListWidget::showGameGrid()
 {
-  if (m_ui.stack->currentIndex() == 1 || m_model->rowCount() == 0)
-  {
-    updateToolbar();
+  if (isShowingGameGrid())
     return;
-  }
 
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
   Host::CommitBaseSettingChanges();
-  m_ui.stack->setCurrentIndex(1);
-  setFocusProxy(m_grid_view);
-  updateToolbar();
-  emit layoutChanged();
-}
 
-void GameListWidget::setShowCoverTitles(bool enabled)
-{
-  if (m_model->getShowCoverTitles() == enabled)
-  {
-    updateToolbar();
-    return;
-  }
+  // keep showing the placeholder widget if we have no games
+  if (m_model->rowCount() > 0)
+    updateView(true);
 
-  Host::SetBaseBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
-  Host::CommitBaseSettingChanges();
-  m_model->setShowCoverTitles(enabled);
-  m_grid_view->updateLayout();
-  if (isShowingGameGrid())
-    m_model->refresh();
-  updateToolbar();
-  emit layoutChanged();
+  updateToolbar(true);
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)
 {
   if (m_sort_model->isMergingDiscSets() == enabled)
-  {
-    updateToolbar();
     return;
-  }
 
   Host::SetBaseBoolSettingValue("UI", "GameListMergeDiscSets", enabled);
   Host::CommitBaseSettingChanges();
   m_sort_model->setMergeDiscSets(enabled);
-  updateToolbar();
-  emit layoutChanged();
 }
 
 void GameListWidget::setShowGameIcons(bool enabled)
@@ -1491,30 +1457,36 @@ void GameListWidget::setShowGameIcons(bool enabled)
   m_model->setShowGameIcons(enabled);
 }
 
-void GameListWidget::updateToolbar()
+void GameListWidget::setShowCoverTitles(bool enabled)
 {
-  const bool grid_view = isShowingGameGrid();
-  {
-    QSignalBlocker sb(m_ui.viewGameGrid);
-    m_ui.viewGameGrid->setChecked(grid_view);
-  }
-  {
-    QSignalBlocker sb(m_ui.viewGameList);
-    m_ui.viewGameList->setChecked(!grid_view);
-  }
-  {
-    QSignalBlocker sb(m_ui.viewGridTitles);
-    m_ui.viewGridTitles->setChecked(m_model->getShowCoverTitles());
-  }
-  {
-    QSignalBlocker sb(m_ui.viewMergeDiscSets);
-    m_ui.viewMergeDiscSets->setChecked(m_sort_model->isMergingDiscSets());
-  }
-  {
-    QSignalBlocker sb(m_ui.gridScale);
-    m_ui.gridScale->setValue(static_cast<int>(m_model->getCoverScale() * 100.0f));
-  }
+  if (m_model->getShowCoverTitles() == enabled)
+    return;
 
+  Host::SetBaseBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
+  Host::CommitBaseSettingChanges();
+  m_model->setShowCoverTitles(enabled);
+  m_grid_view->updateLayout();
+  if (isShowingGameGrid())
+    m_model->refresh();
+}
+
+void GameListWidget::updateView(bool grid_view)
+{
+  if (grid_view)
+  {
+    m_ui.stack->setCurrentIndex(1);
+    setFocusProxy(m_grid_view);
+  }
+  else
+  {
+    m_ui.stack->setCurrentIndex(0);
+    setFocusProxy(m_list_view);
+    resizeListViewColumnsToFit();
+  }
+}
+
+void GameListWidget::updateToolbar(bool grid_view)
+{
   m_ui.viewGridTitles->setEnabled(grid_view);
   m_ui.gridScale->setEnabled(grid_view);
 }
@@ -1538,7 +1510,7 @@ void GameListWidget::resizeListViewColumnsToFit()
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const
 {
-  if (m_ui.stack->currentIndex() == 0)
+  if (isShowingGameList())
   {
     const QItemSelectionModel* selection_model = m_list_view->selectionModel();
     if (!selection_model->hasSelection())
@@ -1727,7 +1699,7 @@ void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
     QAction* action = menu.addAction(m_model->getColumnDisplayName(column));
     action->setCheckable(true);
     action->setChecked(!isColumnHidden(column));
-    connect(action, &QAction::toggled, [this, column](bool enabled) {
+    connect(action, &QAction::triggered, [this, column](bool enabled) {
       setAndSaveColumnHidden(column, !enabled);
       resizeColumnsToFit();
     });
