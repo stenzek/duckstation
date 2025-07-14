@@ -221,7 +221,8 @@ public:
   ALWAYS_INLINE GameListListView* getListView() const { return m_list_view; }
   ALWAYS_INLINE GameListGridView* getGridView() const { return m_grid_view; }
 
-  void initialize();
+  void initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
+                  QAction* actionListShowIcons, QAction* actionGridShowTitles);
   void resizeListViewColumnsToFit();
 
   void refresh(bool invalidate_cache);
@@ -232,9 +233,6 @@ public:
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
-  bool isShowingGridCoverTitles() const;
-  bool isMergingDiscSets() const;
-  bool isShowingGameIcons() const;
 
   const GameList::Entry* getSelectedEntry() const;
 
@@ -247,7 +245,6 @@ Q_SIGNALS:
   void entryContextMenuRequested(const QPoint& point);
 
   void addGameDirectoryRequested();
-  void layoutChanged();
 
 private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, float time);
@@ -265,9 +262,9 @@ private Q_SLOTS:
 public Q_SLOTS:
   void showGameList();
   void showGameGrid();
-  void setShowCoverTitles(bool enabled);
   void setMergeDiscSets(bool enabled);
   void setShowGameIcons(bool enabled);
+  void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
   void focusSearchWidget();
 
@@ -275,7 +272,8 @@ protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  void updateToolbar();
+  void updateView(bool grid_view);
+  void updateToolbar(bool grid_view);
 
   Ui::GameListWidget m_ui;
 

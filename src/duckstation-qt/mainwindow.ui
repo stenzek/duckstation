@@ -743,9 +743,6 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>Lock Toolbar</string>
    </property>
@@ -786,6 +783,9 @@
    </property>
   </action>
   <action name="actionViewGameList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="list-check"/>
    </property>
@@ -794,6 +794,9 @@
    </property>
   </action>
   <action name="actionViewSystemDisplay">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -826,6 +829,9 @@
    </property>
   </action>
   <action name="actionViewGameGrid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset theme="function-line"/>
    </property>
@@ -840,6 +846,9 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="play-list-2-line"/>
+   </property>
    <property name="text">
     <string>Merge Multi-Disc Games</string>
    </property>
@@ -851,8 +860,14 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="price-tag-3-line"/>
+   </property>
    <property name="text">
     <string>Show Titles (Grid View)</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Titles</string>
    </property>
   </action>
   <action name="actionGridViewZoomIn">

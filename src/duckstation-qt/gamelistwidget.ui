@@ -54,9 +54,6 @@
        <property name="text">
         <string>Game List</string>
        </property>
-       <property name="icon">
-        <iconset theme="list-check"/>
-       </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
@@ -75,9 +72,6 @@
        </property>
        <property name="text">
         <string>Game Grid</string>
-       </property>
-       <property name="icon">
-        <iconset theme="function-line"/>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -98,9 +92,6 @@
        <property name="text">
         <string>Merge Multi-Disc Games</string>
        </property>
-       <property name="icon">
-        <iconset theme="play-list-2-line"/>
-       </property>
        <property name="checkable">
         <bool>true</bool>
        </property>
@@ -119,9 +110,6 @@
        </property>
        <property name="text">
         <string>Show Titles</string>
-       </property>
-       <property name="icon">
-        <iconset theme="price-tag-3-line"/>
        </property>
        <property name="checkable">
         <bool>true</bool>
