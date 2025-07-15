@@ -90,6 +90,7 @@ public:
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
+  void refreshIcons();
 
   float getCoverScale() const { return m_cover_scale; }
   void setCoverScale(float scale);
@@ -101,10 +102,8 @@ public:
 Q_SIGNALS:
   void coverScaleChanged(float scale);
 
-private Q_SLOTS:
-  void rowsChanged(const QList<int>& rows);
-
 private:
+  void rowsChanged(const QList<int>& rows);
   QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
 
   void loadCommonImages();
@@ -164,11 +163,10 @@ public:
 protected:
   void resizeEvent(QResizeEvent* e) override;
 
-private Q_SLOTS:
+private:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
 
-private:
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
   void saveColumnSortSettings();
@@ -198,10 +196,8 @@ protected:
   void wheelEvent(QWheelEvent* e) override;
   void resizeEvent(QResizeEvent* e) override;
 
-private Q_SLOTS:
-  void onCoverScaleChanged(float scale);
-
 private:
+  void onCoverScaleChanged(float scale);
   void adjustZoom(float delta);
 
   GameListModel* m_model = nullptr;
@@ -226,7 +222,6 @@ public:
   void resizeListViewColumnsToFit();
 
   void refresh(bool invalidate_cache);
-  void refreshModel();
   void cancelRefresh();
   void reloadThemeSpecificImages();
   void updateBackground(bool reload_image);

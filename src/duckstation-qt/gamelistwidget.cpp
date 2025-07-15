@@ -143,11 +143,15 @@ void GameListModel::setShowGameIcons(bool enabled)
 {
   m_show_game_icons = enabled;
 
-  beginResetModel();
-  m_memcard_pixmap_cache.Clear();
   if (enabled)
     GameList::ReloadMemcardTimestampCache();
-  endResetModel();
+  refreshIcons();
+}
+
+void GameListModel::refreshIcons()
+{
+  m_memcard_pixmap_cache.Clear();
+  emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
 }
 
 void GameListModel::setCoverScale(float scale)
@@ -305,7 +309,7 @@ void GameListModel::rowsChanged(const QList<int>& rows)
     }
     else
     {
-      emit dataChanged(createIndex(rows[start], 0), createIndex(rows[idx], Column_Count - 1), roles_changed);
+      emit dataChanged(index(rows[start], 0), index(rows[idx], Column_Count - 1), roles_changed);
       start = ++idx;
     }
   }
@@ -939,24 +943,28 @@ public:
 
   void setMergeDiscSets(bool enabled)
   {
+    beginFilterChange();
     m_merge_disc_sets = enabled;
     invalidateRowsFilter();
   }
 
   void setFilterType(GameList::EntryType type)
   {
+    beginFilterChange();
     m_filter_type = type;
     invalidateRowsFilter();
   }
 
   void setFilterRegion(DiscRegion region)
   {
+    beginFilterChange();
     m_filter_region = region;
     invalidateRowsFilter();
   }
 
   void setFilterName(std::string name)
   {
+    beginFilterChange();
     m_filter_name = std::move(name);
     std::transform(m_filter_name.begin(), m_filter_name.end(), m_filter_name.begin(), StringUtil::ToLower);
     invalidateRowsFilter();
@@ -1241,11 +1249,6 @@ void GameListWidget::refresh(bool invalidate_cache)
   m_refresh_thread->start();
 }
 
-void GameListWidget::refreshModel()
-{
-  m_model->refresh();
-}
-
 void GameListWidget::cancelRefresh()
 {
   if (!m_refresh_thread)
@@ -1445,6 +1448,7 @@ void GameListWidget::setMergeDiscSets(bool enabled)
   Host::SetBaseBoolSettingValue("UI", "GameListMergeDiscSets", enabled);
   Host::CommitBaseSettingChanges();
   m_sort_model->setMergeDiscSets(enabled);
+  m_model->refreshIcons();
 }
 
 void GameListWidget::setShowGameIcons(bool enabled)
