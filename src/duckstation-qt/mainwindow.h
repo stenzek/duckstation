@@ -271,7 +271,7 @@ private:
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos);
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
-  void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
+  void updateDisplayRelatedActions(bool has_surface, bool fullscreen);
 
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);

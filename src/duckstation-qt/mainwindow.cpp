@@ -401,7 +401,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
     m_ui.actionViewSystemDisplay->setChecked(true);
   }
 
-  updateDisplayRelatedActions(true, render_to_main, fullscreen);
+  updateDisplayRelatedActions(true, fullscreen);
   updateShortcutActions(false);
 
   updateDisplayWidgetCursor();
@@ -483,7 +483,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
   m_exclusive_fullscreen_requested = false;
 
-  updateDisplayRelatedActions(false, false, false);
+  updateDisplayRelatedActions(false, false);
   updateShortcutActions(false);
 }
 
@@ -497,17 +497,13 @@ void MainWindow::updateDisplayWidgetCursor()
   m_display_widget->updateCursor(s_system_valid && !s_system_paused && shouldHideMouseCursor());
 }
 
-void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen)
+void MainWindow::updateDisplayRelatedActions(bool has_surface, bool fullscreen)
 {
   // rendering to main, or switched to gamelist/grid
   m_ui.actionViewSystemDisplay->setEnabled(wantsDisplayWidget() && QtHost::CanRenderToMainWindow());
   m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
   m_ui.actionFullscreen->setEnabled(has_surface);
-
-  {
-    QSignalBlocker blocker(m_ui.actionFullscreen);
-    m_ui.actionFullscreen->setChecked(fullscreen);
-  }
+  m_ui.actionFullscreen->setChecked(fullscreen);
 }
 
 void MainWindow::focusDisplayWidget()
