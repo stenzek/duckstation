@@ -99,6 +99,9 @@ void OnSystemStarting();
 /// Called when the VM is created.
 void OnSystemStarted();
 
+/// Called when the VM is shutting down.
+void OnSystemStopping();
+
 /// Called when the VM is shut down or destroyed.
 void OnSystemDestroyed();
 

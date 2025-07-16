@@ -1069,6 +1069,10 @@ void Host::OnSystemResumed()
 {
 }
 
+void Host::OnSystemStopping()
+{
+}
+
 void Host::OnSystemDestroyed()
 {
 }

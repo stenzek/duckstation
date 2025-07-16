@@ -321,7 +321,7 @@ void ImGuiManager::UpdateScale()
   const float window_scale =
     (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
   const float scale = std::max(window_scale * s_state.global_prescale, 1.0f);
-  const bool scale_changed = (scale == s_state.global_scale);
+  const bool scale_changed = (scale != s_state.global_scale);
 
   if (!ImGuiFullscreen::UpdateLayoutScale() && !scale_changed)
     return;

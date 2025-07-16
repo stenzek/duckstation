@@ -696,16 +696,13 @@ void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
   // Presenter should be gone by this point
   Assert(!s_state.gpu_presenter);
 
-  const bool has_window = g_gpu_device->HasMainSwapChain();
-
   FullscreenUI::Shutdown(clear_fsui_state);
   ImGuiManager::Shutdown();
 
   INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
   g_gpu_device.reset();
-  if (has_window)
-    Host::ReleaseRenderWindow();
+  Host::ReleaseRenderWindow();
 
   UpdateRunIdle();
   s_state.render_window_info = WindowInfo();

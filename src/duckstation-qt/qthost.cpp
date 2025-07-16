@@ -703,15 +703,17 @@ void EmuThread::startFullscreenUI()
   const bool start_fullscreen =
     (s_start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
 
+  m_is_fullscreen_ui_started = true;
+  emit fullscreenUIStartedOrStopped(true);
+
   Error error;
   if (!GPUThread::StartFullscreenUI(start_fullscreen, &error))
   {
     Host::ReportErrorAsync("Error", error.GetDescription());
+    m_is_fullscreen_ui_started = false;
+    emit fullscreenUIStartedOrStopped(false);
     return;
   }
-
-  m_is_fullscreen_ui_started = true;
-  emit fullscreenUIStartedOrStopped(true);
 }
 
 void EmuThread::stopFullscreenUI()
@@ -722,7 +724,7 @@ void EmuThread::stopFullscreenUI()
 
     // wait until the host display is gone
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
-                                    []() { return (!QtHost::IsSystemValid() && g_gpu_device); });
+                                    []() { return QtHost::IsFullscreenUIStarted(); });
     return;
   }
 
@@ -749,14 +751,9 @@ void EmuThread::exitFullscreenUI()
 
   const bool was_in_nogui_mode = std::exchange(s_nogui_mode, false);
 
-  // force a return to main window before exiting, otherwise qt will terminate the application
-  if (!m_is_rendering_to_main)
-  {
-    m_is_fullscreen = false;
-    m_is_rendering_to_main = true;
-    GPUThread::UpdateDisplayWindow(false);
-  }
-
+  // force the main window to be visible, otherwise qt will terminate the application
+  QMetaObject::invokeMethod(g_main_window, &MainWindow::ensureVisible, Qt::QueuedConnection);
+  
   // then stop as normal
   stopFullscreenUI();
 
@@ -974,6 +971,7 @@ void EmuThread::releaseRenderWindow()
 {
   emit onReleaseRenderWindowRequested();
   m_is_fullscreen = false;
+  m_is_surfaceless = false;
 }
 
 void EmuThread::connectDisplaySignals(DisplayWidget* widget)
@@ -1017,6 +1015,11 @@ void Host::OnSystemResumed()
   g_emu_thread->wakeThread();
 
   g_emu_thread->stopBackgroundControllerPollTimer();
+}
+
+void Host::OnSystemStopping()
+{
+  emit g_emu_thread->systemStopping();
 }
 
 void Host::OnSystemDestroyed()
@@ -2757,7 +2760,6 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       {
         INFO_LOG("Command Line: Using NoGUI mode.");
         s_nogui_mode = true;
-        s_batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-bios"))
@@ -2906,6 +2908,9 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   // or disc, we don't want to actually start.
   if (autoboot && autoboot->path.empty() && autoboot->save_state.empty() && !starting_bios)
     autoboot.reset();
+
+  // nogui implies batch mode if autobooting and not running big picture mode
+  s_batch_mode = (s_batch_mode || (autoboot && !s_start_fullscreen_ui));
 
   // if we don't have autoboot, we definitely don't want batch mode (because that'll skip
   // scanning the game list).

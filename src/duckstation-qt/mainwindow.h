@@ -125,6 +125,7 @@ public Q_SLOTS:
 
   void checkForUpdates(bool display_message);
   void recreate();
+  void ensureVisible();
 
   void* getNativeWindowId();
 
@@ -144,6 +145,7 @@ private Q_SLOTS:
   void onSettingsResetToDefault(bool system, bool controller);
   void onSystemStarting();
   void onSystemStarted();
+  void onSystemStopping();
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
@@ -264,6 +266,7 @@ private:
   void restoreStateFromConfig();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
+  bool wantsDisplayWidget() const;
   void createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos);
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
@@ -340,7 +343,6 @@ private:
   bool m_relative_mouse_mode = false;
   bool m_hide_mouse_cursor = false;
 
-  bool m_display_created = false;
   bool m_exclusive_fullscreen_requested = false;
   bool m_save_states_invalidated = false;
   bool m_was_paused_on_surface_loss = false;

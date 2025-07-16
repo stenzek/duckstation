@@ -137,6 +137,7 @@ Q_SIGNALS:
   void settingsResetToDefault(bool system, bool controller);
   void systemStarting();
   void systemStarted();
+  void systemStopping();
   void systemDestroyed();
   void systemPaused();
   void systemResumed();

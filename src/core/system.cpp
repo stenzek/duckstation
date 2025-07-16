@@ -1746,6 +1746,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     {
       Error::SetStringFmt(error, "File '{}' is not a valid executable to boot.",
                           Path::GetFileName(parameters.override_exe));
+      Host::OnSystemStopping();
       DestroySystem();
       return false;
     }
@@ -1786,6 +1787,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       if (cancelled)
       {
         // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+        Host::OnSystemStopping();
         DestroySystem();
         return true;
       }
@@ -1805,6 +1807,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
                   parameters.override_fullscreen.value_or(ShouldStartFullscreen()), error) ||
       !CheckForRequiredSubQ(error))
   {
+    Host::OnSystemStopping();
     DestroySystem();
     return false;
   }
@@ -1829,6 +1832,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
                         Path::GetFileName(parameters.save_state));
+    Host::OnSystemStopping();
     DestroySystem();
     return false;
   }
@@ -2020,6 +2024,7 @@ void System::AbnormalShutdown(const std::string_view reason)
   // Immediately switch to destroying and exit execution to get out of here.
   s_state.state = State::Stopping;
   std::atomic_thread_fence(std::memory_order_release);
+  Host::OnSystemStopping();
   if (s_state.system_executing)
     InterruptExecution();
   else
@@ -5256,6 +5261,7 @@ void System::ShutdownSystem(bool save_resume_state)
     }
   }
 
+  Host::OnSystemStopping();
   s_state.state = State::Stopping;
   std::atomic_thread_fence(std::memory_order_release);
   if (!s_state.system_executing)

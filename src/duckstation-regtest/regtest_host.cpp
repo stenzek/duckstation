@@ -286,6 +286,11 @@ void Host::OnSystemStarted()
   //
 }
 
+void Host::OnSystemStopping()
+{
+  //
+}
+
 void Host::OnSystemDestroyed()
 {
   //
