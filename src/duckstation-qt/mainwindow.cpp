@@ -338,6 +338,11 @@ bool MainWindow::wantsDisplayWidget() const
   return (s_system_starting || s_system_valid || s_fullscreen_ui_started);
 }
 
+bool MainWindow::hasDisplayWidget() const
+{
+  return m_display_widget != nullptr;
+}
+
 void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos)
 {
   // If we're rendering to main and were hidden (e.g. coming back from fullscreen),
@@ -434,6 +439,8 @@ void MainWindow::releaseRenderWindow()
 {
   // Now we can safely destroy the display window.
   destroyDisplayWidget(true);
+  updateWindowTitle();
+  updateWindowState(false);
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
@@ -822,11 +829,6 @@ void MainWindow::recreate()
   }
 
   notifyRAIntegrationOfWindowChange();
-}
-
-void MainWindow::ensureVisible()
-{
-  updateWindowState(true);
 }
 
 void MainWindow::destroySubWindows()
@@ -2051,7 +2053,7 @@ void MainWindow::updateWindowState(bool force_visible)
     return;
 
   const bool hide_window = shouldHideMainWindow();
-  const bool disable_resize = Host::GetBoolSettingValue("Main", "DisableWindowResize", false);
+  const bool disable_resize = (Host::GetBoolSettingValue("Main", "DisableWindowResize", false) && wantsDisplayWidget());
 
   // Need to test both valid and display widget because of startup (vm invalid while window is created).
   const bool visible = force_visible || !hide_window;
@@ -2793,14 +2795,6 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
       lock.cancelResume();
   }
 
-  // This is a little bit annoying. Qt will close everything down if we don't have at least one window visible,
-  // but we might not be visible because the user is using render-to-separate and hide. We don't want to always
-  // reshow the main window during display updates, because otherwise fullscreen transitions and renderer switches
-  // would briefly show and then hide the main window. So instead, we do it on shutdown, here. Except if we're in
-  // batch mode, when we're going to exit anyway.
-  if (!isRenderingToMain() && isHidden() && !QtHost::InBatchMode() && !s_fullscreen_ui_started)
-    updateWindowState(true);
-
   // Now we can actually shut down the VM.
   g_emu_thread->shutdownSystem(save_state, check_memcard_busy);
   return true;
@@ -2814,10 +2808,14 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
 
   // VM stopped signal won't have fired yet, so queue an exit if we still have one.
   // Otherwise, immediately exit, because there's no VM to exit us later.
+  m_is_closing = true;
   if (s_system_valid)
-    m_is_closing = true;
-  else
-    quit();
+    return;
+
+  if (s_fullscreen_ui_started)
+    g_emu_thread->stopFullscreenUI();
+
+  quit();
 }
 
 void MainWindow::checkForSettingChanges()
@@ -3202,7 +3200,6 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   QWidget* dialog_parent = getDisplayContainer();
   if (dialog_parent->parent())
     dialog_parent = this;
-
 
   return SystemLock(dialog_parent, was_paused, was_fullscreen);
 }

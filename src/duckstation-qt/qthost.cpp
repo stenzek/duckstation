@@ -723,21 +723,17 @@ void EmuThread::stopFullscreenUI()
     QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
     // wait until the host display is gone
-    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
-                                    []() { return QtHost::IsFullscreenUIStarted(); });
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() {
+      return QtHost::IsFullscreenUIStarted() || g_main_window->hasDisplayWidget();
+    });
     return;
   }
 
   if (m_is_fullscreen_ui_started)
   {
-    // Need to switch out of fullscreen before stopping the fullscreen UI, otherwise Qt
-    // terminates the applcation because briefly there are no windows remaining.
-    if (m_is_fullscreen)
-      setFullscreen(false, true);
-
-    GPUThread::StopFullscreenUI();
     m_is_fullscreen_ui_started = false;
     emit fullscreenUIStartedOrStopped(false);
+    GPUThread::StopFullscreenUI();
   }
 }
 
@@ -751,10 +747,6 @@ void EmuThread::exitFullscreenUI()
 
   const bool was_in_nogui_mode = std::exchange(s_nogui_mode, false);
 
-  // force the main window to be visible, otherwise qt will terminate the application
-  QMetaObject::invokeMethod(g_main_window, &MainWindow::ensureVisible, Qt::QueuedConnection);
-  
-  // then stop as normal
   stopFullscreenUI();
 
   // if we were in nogui mode, the game list won't have been populated yet. do it now.
@@ -2909,8 +2901,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   if (autoboot && autoboot->path.empty() && autoboot->save_state.empty() && !starting_bios)
     autoboot.reset();
 
-  // nogui implies batch mode if autobooting and not running big picture mode
-  s_batch_mode = (s_batch_mode || (autoboot && !s_start_fullscreen_ui));
+  // nogui implies batch mode if not running big picture mode
+  s_batch_mode = (s_batch_mode || (s_nogui_mode && !s_start_fullscreen_ui));
 
   // if we don't have autoboot, we definitely don't want batch mode (because that'll skip
   // scanning the game list).

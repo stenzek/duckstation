@@ -95,6 +95,9 @@ public:
   /// Force quits the application.
   void quit();
 
+  /// Returns true if there is any display widget, main or otherwise.
+  bool hasDisplayWidget() const;
+
   /// Accessors for the status bar widgets, updated by the emulation thread.
   ALWAYS_INLINE QLabel* getStatusRendererWidget() const { return m_status_renderer_widget; }
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
@@ -125,7 +128,6 @@ public Q_SLOTS:
 
   void checkForUpdates(bool display_message);
   void recreate();
-  void ensureVisible();
 
   void* getNativeWindowId();
 
