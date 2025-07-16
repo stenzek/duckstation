@@ -288,6 +288,10 @@ Inloggningstoken genererades %2.</translation>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
         <translation>När den är aktiverad läser DuckStation in RAIntegration DLL vilket möjliggör utveckling av prestationer.&lt;br&gt;Filen RA_Integration.dll måste placeras i samma katalog som DuckStations-körbara fil.</translation>
     </message>
+    <message>
+        <source>Refresh Progress</source>
+        <translation>Uppdatera framsteg</translation>
+    </message>
 </context>
 <context>
     <name>Achievements</name>
@@ -678,7 +682,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Progress is already being updated.</source>
-        <translation>Förloppet är redan uppdaterat.</translation>
+        <translation>Framstegen är redan uppdaterade.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -686,16 +690,20 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Refresh all progress failed</source>
-        <translation>Uppdatering av alla förlopp misslyckades</translation>
+        <translation>Uppdatering av alla framsteg misslyckades</translation>
     </message>
     <message>
         <source>Updated achievement progress database.</source>
-        <translation>Uppdaterade förloppsdatasbasen för prestationer.</translation>
+        <translation>Uppdaterade framstegsdatasbasen för prestationer.</translation>
     </message>
     <message>
         <source>Score: {} ({} softcore)</source>
         <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>Poäng: {} ({} softcore)</translation>
+    </message>
+    <message>
+        <source>Unsynchronized</source>
+        <translation>Inte synkroniserad</translation>
     </message>
 </context>
 <context>
@@ -931,6 +939,26 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>GPU Max Runahead</source>
         <translation>GPU Max Runahead</translation>
+    </message>
+    <message>
+        <source>Log Timestamps</source>
+        <translation>Logga tidsstämplar</translation>
+    </message>
+    <message>
+        <source>Log File Timestamps</source>
+        <translation>Tidsstämplar för loggfil</translation>
+    </message>
+    <message>
+        <source>Includes the elapsed time since the application start in window and console logs.</source>
+        <translation>Inkluderar den tid som har förflutit sedan applikationen startade i fönster- och konsolloggar.</translation>
+    </message>
+    <message>
+        <source>Includes the elapsed time since the application start in file logs.</source>
+        <translation>Inkluderar den tid som förflutit sedan programmet startades i filloggarna.</translation>
+    </message>
+    <message>
+        <source>Redirect SIO to TTY</source>
+        <translation>Omdirigera SIO till TTY</translation>
     </message>
 </context>
 <context>
@@ -1613,7 +1641,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inställningar för ljudsträckning&lt;/span&gt;&lt;br/&gt;Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när man inte kör  på 100% hastighet.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Inställningar för ljudsträckning&lt;/span&gt;&lt;br/&gt;Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när man inte kör  på 100% hastighet.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Use Quickseek</source>
@@ -1622,6 +1650,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Use Anti-Aliasing Filter</source>
         <translation>Använd antialiasingfilter</translation>
+    </message>
+    <message>
+        <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
+        <translation>Dessa inställningar finjusterar beteendet för SoundTouch-ljudtidssträckare när den inte körs på 100% hastighet.</translation>
     </message>
 </context>
 <context>
@@ -1866,6 +1898,15 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Options</source>
         <translation>Alternativ</translation>
+    </message>
+</context>
+<context>
+    <name>CDImage</name>
+    <message>
+        <source>{0} uses a sample rate of {1}hz and has {2} channels.
+WAV files must be stereo and use a sample rate of 44100hz.</source>
+        <translation>{0} använder en samplingsfrekvens på {1}hz och har {2} kanaler.
+WAV-filer måste vara stereo och använda en samplingsfrekvens på 44100hz.</translation>
     </message>
 </context>
 <context>
@@ -7567,7 +7608,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>File Size: </source>
-        <translation>Filstorlek: </translation>
+        <translation type="vanished">Filstorlek: </translation>
     </message>
     <message>
         <source>Frame Rate</source>
@@ -7659,7 +7700,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Failed to update progress database</source>
-        <translation>Misslyckades med att uppdatera förloppsdatabasen</translation>
+        <translation>Misslyckades med att uppdatera framstegsdatabasen</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -7667,11 +7708,11 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Update Progress</source>
-        <translation>Uppdatera förlopp</translation>
+        <translation>Uppdatera framsteg</translation>
     </message>
     <message>
         <source>Updates the progress database for achievements shown in the game list.</source>
-        <translation>Uppdaterar förloppsdatabasen för prestationer som visas i spellistan.</translation>
+        <translation>Uppdaterar framstegsdatabasen för prestationer som visas i spellistan.</translation>
     </message>
     <message>
         <source>Default Value</source>
@@ -7697,6 +7738,50 @@ Du kan inte ångra den här åtgärden.</translation>
     <message>
         <source>Value Range</source>
         <translation>Värdesintervall</translation>
+    </message>
+    <message>
+        <source>Bottom: </source>
+        <translation>Nederst: </translation>
+    </message>
+    <message>
+        <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
+        <translation>Visar endast spelets titel i listan, istället för titeln och serienummer/filnamn.</translation>
+    </message>
+    <message>
+        <source>Includes the elapsed time since the application start in file logs.</source>
+        <translation>Inkluderar den tid som förflutit sedan programmet startades i filloggarna.</translation>
+    </message>
+    <message>
+        <source>Includes the elapsed time since the application start in window and console logs.</source>
+        <translation>Inkluderar den tid som har förflutit sedan applikationen startade i fönster- och konsolloggar.</translation>
+    </message>
+    <message>
+        <source>Left: </source>
+        <translation>Vänster: </translation>
+    </message>
+    <message>
+        <source>List Compact Mode</source>
+        <translation>Kompakt läge för lista</translation>
+    </message>
+    <message>
+        <source>Log File Timestamps</source>
+        <translation>Tidsstämplar för loggfil</translation>
+    </message>
+    <message>
+        <source>Log Timestamps</source>
+        <translation>Logga tidsstämplar</translation>
+    </message>
+    <message>
+        <source>Right: </source>
+        <translation>Höger: </translation>
+    </message>
+    <message>
+        <source>Size: </source>
+        <translation>Storlek: </translation>
+    </message>
+    <message>
+        <source>Top: </source>
+        <translation>Överst: </translation>
     </message>
 </context>
 <context>
@@ -12382,11 +12467,11 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Refresh Achievement &amp;Progress</source>
-        <translation>Uppdatera prestationsförl&amp;opp</translation>
+        <translation>Uppdatera prestationsfra&amp;msteg</translation>
     </message>
     <message>
         <source>RA: Updated achievement progress database.</source>
-        <translation>RA: Förloppsdatabasen för prestationer uppdaterades.</translation>
+        <translation>RA: Framstegsdatabasen för prestationer uppdaterades.</translation>
     </message>
     <message>
         <source>Resumes the last save state created</source>
@@ -12427,6 +12512,10 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Labels Beside Icons</source>
         <translation>Etiketter bredvid ikoner</translation>
+    </message>
+    <message>
+        <source>Log File Timestamps</source>
+        <translation>Tidsstämplar för loggfil</translation>
     </message>
 </context>
 <context>
@@ -13795,7 +13884,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
     <name>PostProcessingOverlayConfigWidget</name>
     <message>
         <source>Form</source>
-        <translation>Formulär</translation>
+        <translation type="vanished">Formulär</translation>
     </message>
     <message>
         <source>Basic Configuration</source>
@@ -15024,7 +15113,7 @@ Vill du skapa denna katalog?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at retroachievements.org. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;Inställningar för prestationer&lt;/strong&gt;&lt;hr&gt;DuckStation använder RetroAchievements som en prestationsdatabas för att hålla koll på spelandet. Registrera dig ett konto på retroachievements.org för att använda prestationer. För att visa prestationslistan i ett spel, tryck på snabbtangenten för &lt;strong&gt;Öppna pausmenyn&lt;/strong&gt; och välj &lt;strong&gt;Prestationer&lt;/strong&gt; från menyn. Hovra över ett alternativ för ytterligare information samt Skift+Hjul för att rulla i panelen.</translation>
+        <translation type="vanished">&lt;strong&gt;Inställningar för prestationer&lt;/strong&gt;&lt;hr&gt;DuckStation använder RetroAchievements som en prestationsdatabas för att hålla koll på spelandet. Registrera dig ett konto på retroachievements.org för att använda prestationer. För att visa prestationslistan i ett spel, tryck på snabbtangenten för &lt;strong&gt;Öppna pausmenyn&lt;/strong&gt; och välj &lt;strong&gt;Prestationer&lt;/strong&gt; från menyn. Hovra över ett alternativ för ytterligare information samt Skift+Hjul för att rulla i panelen.</translation>
     </message>
     <message>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
@@ -15157,6 +15246,10 @@ You cannot undo this action.</source>
         <translation>Är du säker på att du vill återställa standardinställningarna? Alla inställningar kommer att gå förlorade.
 
 Du kan inte ångra den här åtgärden.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;Inställningar för prestationer&lt;/strong&gt;&lt;hr&gt;DuckStation använder RetroAchievements som prestationsdatabas och för att spåra framsteg. För att använda prestationer, registrera ett konto på &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. För att visa prestationslistan i spelet, tryck på snabbtangenten för &lt;strong&gt;Öppna pausmenyn&lt;/strong&gt; och välj &lt;strong&gt;Prestationer&lt;/strong&gt; från menyn. Håll muspekaren över ett alternativ för ytterligare information och tryck på Skift+hjul för att bläddra i panelen.</translation>
     </message>
 </context>
 <context>
