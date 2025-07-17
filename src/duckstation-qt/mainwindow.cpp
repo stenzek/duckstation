@@ -2120,7 +2120,8 @@ bool MainWindow::shouldHideMainWindow() const
 {
   // CanRenderToMain check is for temporary unfullscreens.
   return !isRenderingToMain() && wantsDisplayWidget() &&
-         (Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false) ||
+         ((Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
+           Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
           (QtHost::CanRenderToMainWindow() &&
            (isRenderingFullscreen() || s_system_locked.load(std::memory_order_relaxed))) ||
           QtHost::InNoGUIMode());
