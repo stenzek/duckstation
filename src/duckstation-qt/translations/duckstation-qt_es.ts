@@ -440,17 +440,17 @@ Token de inicio de sesión generado en %2.</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1543"/>
         <source>Your Time: {} (Best: {})</source>
-        <translation>Tu tiempo: {} (Mejor: {})</translation>
+        <translation>Tu tiempo: {}{} (Mejor: {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1544"/>
         <source>Your Score: {} (Best: {})</source>
-        <translation>Tu puntuación {} (Mejor: {})</translation>
+        <translation>Tu puntuación: {}{} (Mejor: {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1545"/>
         <source>Your Value: {} (Best: {})</source>
-        <translation>Tu valor: {} (Mejor: {})</translation>
+        <translation>Tu valor: {}{} (Mejor: {})</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1550"/>
