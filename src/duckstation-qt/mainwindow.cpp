@@ -2648,7 +2648,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::changeEvent(QEvent* event)
 {
-  if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+  if (event->type() == QEvent::WindowStateChange &&
+      static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
   {
     // TODO: This should check the render-to-main option.
     if (m_display_widget)
