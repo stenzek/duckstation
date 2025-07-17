@@ -61,6 +61,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
+#include <QtCore/QtLogging>
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
@@ -96,6 +97,7 @@ static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
 namespace QtHost {
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
+static void MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 static void RegisterTypes();
 static bool InitializeConfig();
 static void SetAppRoot();
@@ -201,6 +203,9 @@ bool QtHost::EarlyProcessStartup()
   }
 #endif
 
+  // redirect qt errors
+  qInstallMessageHandler(MessageOutputHandler);
+
   Error error;
   if (System::ProcessStartup(&error)) [[likely]]
     return true;
@@ -208,6 +213,33 @@ bool QtHost::EarlyProcessStartup()
   QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
                         QString::fromStdString(error.GetDescription()));
   return false;
+}
+
+void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+  const char* function = context.function ? context.function : "<unknown>";
+  const std::string smsg = msg.toStdString();
+  switch (type)
+  {
+    case QtDebugMsg:
+      DEBUG_LOG("qDebug({}): {}", function, smsg);
+      break;
+    case QtInfoMsg:
+      INFO_LOG("qInfo({}): {}", function, smsg);
+      break;
+    case QtWarningMsg:
+      WARNING_LOG("qWarning({}): {}", function, smsg);
+      break;
+    case QtCriticalMsg:
+      ERROR_LOG("qCritical({}): {}", function, smsg);
+      break;
+    case QtFatalMsg:
+      ERROR_LOG("qFatal({}): {}", function, smsg);
+      Y_OnPanicReached(smsg.c_str(), function, context.file ? context.file : "<unknown>", context.line);
+    default:
+      ERROR_LOG("<unknown>({}): {}", function, smsg);
+      break;
+  }
 }
 
 bool QtHost::InBatchMode()
