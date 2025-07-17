@@ -870,7 +870,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   SettingsInterface* const sif = m_dialog->getSettingsInterface();
 
   {
-    m_ui.adapter->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.adapter);
     m_ui.adapter->clear();
     m_ui.adapter->addItem(tr("Default"), QVariant(QString()));
 
@@ -906,7 +906,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   }
 
   {
-    m_ui.fullscreenMode->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.fullscreenMode);
     m_ui.fullscreenMode->clear();
 
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
@@ -944,7 +944,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
 
   if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
   {
-    m_ui.resolutionScale->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
     m_ui.resolutionScale->clear();
 
     const int max_scale =
@@ -957,7 +957,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   }
 
   {
-    m_ui.msaaMode->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.msaaMode);
     m_ui.msaaMode->clear();
 
     if (m_dialog->isPerGameSettings())
@@ -1115,7 +1115,7 @@ void GraphicsSettingsWidget::onMediaCaptureBackendChanged()
       .value_or(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
 
   {
-    m_ui.captureContainer->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.captureContainer);
     m_ui.captureContainer->clear();
 
     for (const auto& [name, display_name] : MediaCapture::GetContainerList(backend))
@@ -1146,7 +1146,7 @@ void GraphicsSettingsWidget::onMediaCaptureContainerChanged()
   const std::string container = m_dialog->getEffectiveStringValue("MediaCapture", "Container", "mp4");
 
   {
-    m_ui.videoCaptureCodec->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.videoCaptureCodec);
     m_ui.videoCaptureCodec->clear();
     m_ui.videoCaptureCodec->addItem(tr("Default"), QVariant(QString()));
 
@@ -1160,7 +1160,7 @@ void GraphicsSettingsWidget::onMediaCaptureContainerChanged()
   }
 
   {
-    m_ui.audioCaptureCodec->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.audioCaptureCodec);
     m_ui.audioCaptureCodec->clear();
     m_ui.audioCaptureCodec->addItem(tr("Default"), QVariant(QString()));
 

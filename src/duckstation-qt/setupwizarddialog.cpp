@@ -518,7 +518,7 @@ void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* updat
 
 void SetupWizardDialog::setupGraphicsPage(bool initial)
 {
-  m_ui.renderer->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.renderer);
   m_ui.renderer->clear();
 
   for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
@@ -529,14 +529,14 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
                                                &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
 
-  m_ui.resolutionScale->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
   m_ui.resolutionScale->clear();
   GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale, 16);
   SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
 
-  m_ui.textureFiltering->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.textureFiltering);
   m_ui.textureFiltering->clear();
-  m_ui.spriteTextureFiltering->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.spriteTextureFiltering);
   m_ui.spriteTextureFiltering->clear();
 
   for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
@@ -554,7 +554,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
 
-  m_ui.gpuDitheringMode->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.gpuDitheringMode);
   m_ui.gpuDitheringMode->clear();
 
   for (u32 i = 0; i < static_cast<u32>(GPUDitheringMode::MaxCount); i++)
@@ -567,7 +567,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
                                                &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
                                                Settings::DEFAULT_GPU_DITHERING_MODE);
 
-  m_ui.displayAspectRatio->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.displayAspectRatio);
   m_ui.displayAspectRatio->clear();
 
   for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
@@ -587,7 +587,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
           &SetupWizardDialog::onGraphicsAspectRatioChanged);
   onGraphicsAspectRatioChanged();
 
-  m_ui.displayCropMode->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.displayCropMode);
   m_ui.displayCropMode->clear();
 
   for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::MaxCount); i++)
@@ -600,7 +600,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
                                                Settings::DEFAULT_DISPLAY_CROP_MODE);
 
-  m_ui.displayScaling->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.displayScaling);
   m_ui.displayScaling->clear();
 
   for (u32 i = 0; i < static_cast<u32>(DisplayScalingMode::Count); i++)

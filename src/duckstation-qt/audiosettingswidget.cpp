@@ -168,7 +168,7 @@ void AudioSettingsWidget::updateDeviceNames()
   std::vector<AudioStream::DeviceInfo> devices =
     AudioStream::GetOutputDevices(backend, driver_name.c_str(), SPU::SAMPLE_RATE);
 
-  m_ui.outputDevice->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.outputDevice);
   m_ui.outputDevice->clear();
   m_output_device_latency = 0;
 

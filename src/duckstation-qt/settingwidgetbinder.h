@@ -70,6 +70,8 @@ struct SettingAccessor
 
   template<typename F>
   static void connectValueChanged(T* widget, F func);
+
+  static void disconnect(T* widget);
 };
 
 template<>
@@ -121,6 +123,8 @@ struct SettingAccessor<QLineEdit>
   {
     widget->connect(widget, &QLineEdit::textChanged, func);
   }
+
+  static void disconnect(QLineEdit* widget) { QObject::disconnect(widget, &QLineEdit::textChanged, nullptr, nullptr); }
 };
 
 template<>
@@ -210,6 +214,12 @@ struct SettingAccessor<QComboBox>
   {
     widget->connect(widget, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), func);
   }
+
+  static void disconnect(QComboBox* widget)
+  {
+    QObject::disconnect(widget, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), nullptr,
+                        nullptr);
+  }
 };
 
 template<>
@@ -279,6 +289,11 @@ struct SettingAccessor<QCheckBox>
   static void connectValueChanged(QCheckBox* widget, F func)
   {
     widget->connect(widget, &QCheckBox::checkStateChanged, func);
+  }
+
+  static void disconnect(QCheckBox* widget)
+  {
+    QObject::disconnect(widget, &QCheckBox::checkStateChanged, nullptr, nullptr);
   }
 };
 
@@ -388,6 +403,13 @@ struct SettingAccessor<QSlider>
         func();
       });
     }
+  }
+
+  static void disconnect(QSlider* widget)
+  {
+    QObject::disconnect(widget, &QSlider::valueChanged, nullptr, nullptr);
+    if (isNullable(widget))
+      QObject::disconnect(widget, &QSlider::customContextMenuRequested, nullptr, nullptr);
   }
 };
 
@@ -520,6 +542,13 @@ struct SettingAccessor<QSpinBox>
         func();
       });
     }
+  }
+
+  static void disconnect(QSpinBox* widget)
+  {
+    QObject::disconnect(widget, QOverload<int>::of(&QSpinBox::valueChanged), nullptr, nullptr);
+    if (isNullable(widget))
+      QObject::disconnect(widget, &QSpinBox::customContextMenuRequested, nullptr, nullptr);
   }
 };
 
@@ -654,6 +683,13 @@ struct SettingAccessor<QDoubleSpinBox>
                       });
     }
   }
+
+  static void disconnect(QDoubleSpinBox* widget)
+  {
+    QObject::disconnect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), nullptr, nullptr);
+    if (isNullable(widget))
+      QObject::disconnect(widget, &QDoubleSpinBox::customContextMenuRequested, nullptr, nullptr);
+  }
 };
 
 template<>
@@ -702,6 +738,8 @@ struct SettingAccessor<QAction>
   {
     widget->connect(widget, &QAction::toggled, func);
   }
+
+  static void disconnect(QAction* widget) { QObject::disconnect(widget, &QAction::toggled, nullptr, nullptr); }
 };
 
 /// Binds a widget's value to a setting, updating it when the value changes.
@@ -1490,6 +1528,13 @@ static inline void SetAvailability(WidgetType* widget, bool available)
   }
 
   widget->setEnabled(false);
+}
+
+template<typename WidgetType>
+static inline void DisconnectWidget(WidgetType* widget)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+  Accessor::disconnect(widget);
 }
 
 } // namespace SettingWidgetBinder

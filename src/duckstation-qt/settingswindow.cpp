@@ -201,7 +201,7 @@ void SettingsWindow::reloadPages()
   if (isPerGameSettings())
   {
     m_game_summary->reloadGameSettings();
-    m_ui.safeMode->disconnect();
+    SettingWidgetBinder::DisconnectWidget(m_ui.safeMode);
   }
 
   m_widget_help_text_map.clear();
