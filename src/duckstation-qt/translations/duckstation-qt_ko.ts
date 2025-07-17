@@ -78,12 +78,12 @@
     <message>
         <location filename="../achievementlogindialog.ui" line="89"/>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>아래에 retroachievements.org의 사용자 이름과 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
+        <translation>아래에 retroachievements.org의 아이디와 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="99"/>
         <source>User Name:</source>
-        <translation>사용자 이름 :</translation>
+        <translation>아이디 :</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.ui" line="109"/>
@@ -106,30 +106,15 @@
         <translation>로그인(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../achievementlogindialog.cpp" line="45"/>
-        <source>Logging in...</source>
-        <translation>로그 기록중...</translation>
-    </message>
-    <message>
-        <location filename="../achievementlogindialog.cpp" line="76"/>
-        <source>Login Error</source>
-        <translation>로그인 오류</translation>
-    </message>
-    <message>
         <location filename="../achievementlogindialog.cpp" line="77"/>
         <source>Login failed.
 Error: %1
 
 Please check your username and password, and try again.</source>
-        <translation>로그인하지 못했습니다.
+        <translation>로그인에 실패했습니다.
 오류 : %1
 
-사용자 이름과 비밀번호를 확인한 후 다시 시도하세요.</translation>
-    </message>
-    <message>
-        <location filename="../achievementlogindialog.cpp" line="78"/>
-        <source>Login failed.</source>
-        <translation>로그인에 실패했습니다.</translation>
+아이디와 비밀번호를 확인한 후 다시 시도하세요.</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="84"/>
@@ -173,6 +158,21 @@ Do you want to enable hardcore mode?</source>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
     </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="76"/>
+        <source>Login Error</source>
+        <translation>로그인 오류</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="45"/>
+        <source>Logging in...</source>
+        <translation>로그 기록중...</translation>
+    </message>
+    <message>
+        <location filename="../achievementlogindialog.cpp" line="78"/>
+        <source>Login failed.</source>
+        <translation>로그인에 실패했습니다.</translation>
+    </message>
 </context>
 <context>
     <name>AchievementSettingsWidget</name>
@@ -183,38 +183,10 @@ Do you want to enable hardcore mode?</source>
         <translation>도전 과제 활성화</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="63"/>
-        <location filename="../achievementsettingswidget.cpp" line="46"/>
-        <source>Enable Hardcore Mode</source>
-        <translation>하드코어 모드 활성화</translation>
-    </message>
-    <message>
-        <location filename="../achievementsettingswidget.ui" line="49"/>
-        <location filename="../achievementsettingswidget.cpp" line="66"/>
-        <source>Test Unofficial Achievements</source>
-        <translation>비공식 도전 과제 테스트</translation>
-    </message>
-    <message>
         <location filename="../achievementsettingswidget.ui" line="178"/>
         <location filename="../achievementsettingswidget.cpp" line="55"/>
         <source>Enable Sound Effects</source>
         <translation>음향 효과 활성화</translation>
-    </message>
-    <message>
-        <location filename="../achievementsettingswidget.ui" line="195"/>
-        <source>Account</source>
-        <translation>계정</translation>
-    </message>
-    <message>
-        <location filename="../achievementsettingswidget.ui" line="221"/>
-        <location filename="../achievementsettingswidget.cpp" line="207"/>
-        <source>Login...</source>
-        <translation>로그인...</translation>
-    </message>
-    <message>
-        <location filename="../achievementsettingswidget.ui" line="214"/>
-        <source>View Profile...</source>
-        <translation>프로필 표시...</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="29"/>
@@ -228,6 +200,34 @@ Do you want to enable hardcore mode?</source>
         <translation>관중 모드 활성화</translation>
     </message>
     <message>
+        <location filename="../achievementsettingswidget.ui" line="49"/>
+        <location filename="../achievementsettingswidget.cpp" line="66"/>
+        <source>Test Unofficial Achievements</source>
+        <translation>비공식 도전 과제 테스트</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="195"/>
+        <source>Account</source>
+        <translation>계정</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="212"/>
+        <source>Refresh Progress</source>
+        <oldsource>Refresh Achievement &amp;Progress</oldsource>
+        <translation>도전 과제 진행 상황 새로 고침</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="228"/>
+        <location filename="../achievementsettingswidget.cpp" line="209"/>
+        <source>Login...</source>
+        <translation>로그인...</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="221"/>
+        <source>View Profile...</source>
+        <translation>프로필 표시...</translation>
+    </message>
+    <message>
         <location filename="../achievementsettingswidget.ui" line="56"/>
         <location filename="../achievementsettingswidget.cpp" line="60"/>
         <source>Enable Encore Mode</source>
@@ -235,7 +235,7 @@ Do you want to enable hardcore mode?</source>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="70"/>
-        <location filename="../achievementsettingswidget.cpp" line="112"/>
+        <location filename="../achievementsettingswidget.cpp" line="113"/>
         <source>Enable RAIntegration (Development Only)</source>
         <translation>RAIntegration 활성화(개발 전용)</translation>
     </message>
@@ -272,11 +272,17 @@ Do you want to enable hardcore mode?</source>
         <location filename="../achievementsettingswidget.ui" line="201"/>
         <source>Username:
 Login token generated at:</source>
-        <translation>사용자 이름 :
-로그인 토큰이 생성된 위치 :</translation>
+        <translation>아이디 :
+로그인 토큰 생성 위치 :</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.ui" line="239"/>
+        <location filename="../achievementsettingswidget.ui" line="63"/>
+        <location filename="../achievementsettingswidget.cpp" line="46"/>
+        <source>Enable Hardcore Mode</source>
+        <translation>하드코어 모드 활성화</translation>
+    </message>
+    <message>
+        <location filename="../achievementsettingswidget.ui" line="246"/>
         <source>Game Info</source>
         <translation>게임 정보</translation>
     </message>
@@ -286,7 +292,7 @@ Login token generated at:</source>
         <location filename="../achievementsettingswidget.cpp" line="60"/>
         <location filename="../achievementsettingswidget.cpp" line="62"/>
         <location filename="../achievementsettingswidget.cpp" line="66"/>
-        <location filename="../achievementsettingswidget.cpp" line="112"/>
+        <location filename="../achievementsettingswidget.cpp" line="113"/>
         <source>Unchecked</source>
         <translation>선택 안 함</translation>
     </message>
@@ -344,42 +350,42 @@ Login token generated at:</source>
         <translation>도전 과제/프라임 도전 과제가 활성화되어 있으면 화면 오른쪽 하단에 아이콘이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="113"/>
+        <location filename="../achievementsettingswidget.cpp" line="114"/>
         <source>When enabled, DuckStation will load the RAIntegration DLL which allows for achievement development.&lt;br&gt;The RA_Integration.dll file must be placed in the same directory as the DuckStation executable.</source>
         <translation>이 기능을 활성화하면 DuckStation이 RAIntegration DLL을 불러와서 도전 과제를 개발할 수 있습니다.&lt;br&gt;RA_Integration.dll 파일은 DuckStation 실행 파일과 같은 디렉터리에 있어야 합니다.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="165"/>
+        <location filename="../achievementsettingswidget.cpp" line="167"/>
         <source>Reset System</source>
         <translation>시스템 초기화</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="166"/>
+        <location filename="../achievementsettingswidget.cpp" line="168"/>
         <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
         <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../achievementsettingswidget.cpp" line="179"/>
-        <location filename="../achievementsettingswidget.cpp" line="186"/>
+        <location filename="../achievementsettingswidget.cpp" line="181"/>
+        <location filename="../achievementsettingswidget.cpp" line="188"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n초</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="199"/>
+        <location filename="../achievementsettingswidget.cpp" line="201"/>
         <source>Username: %1
 Login token generated on %2.</source>
-        <translation>사용자 이름 : %1
+        <translation>아이디 : %1
 %2에서 생성된 로그인 토큰입니다.</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="202"/>
+        <location filename="../achievementsettingswidget.cpp" line="204"/>
         <source>Logout</source>
         <translation>로그아웃</translation>
     </message>
     <message>
-        <location filename="../achievementsettingswidget.cpp" line="206"/>
+        <location filename="../achievementsettingswidget.cpp" line="208"/>
         <source>Not Logged In.</source>
         <translation>로그인하지 않았습니다.</translation>
     </message>
@@ -401,7 +407,7 @@ Login token generated on %2.</source>
         <translation>실행 파일 재정의</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2854"/>
+        <location filename="../../core/system.cpp" line="2856"/>
         <source>Loading state</source>
         <translation>상태 불러오기</translation>
     </message>
@@ -424,19 +430,12 @@ Login token generated on %2.</source>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="1455"/>
         <location filename="../../core/achievements.cpp" line="1492"/>
-        <location filename="../../core/achievements.cpp" line="2940"/>
+        <location filename="../../core/achievements.cpp" line="2954"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
             <numerusform>%n점</numerusform>
         </translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1489"/>
-        <source>Subset complete.
-{0}, {1}.</source>
-        <translation>하위 집합이 완료되었습니다.
-{0}, {1}.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1512"/>
@@ -447,26 +446,6 @@ Login token generated on %2.</source>
         <location filename="../../core/achievements.cpp" line="1532"/>
         <source>Leaderboard attempt failed.</source>
         <translation>순위표 시도에 실패했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1552"/>
-        <source>Your Time: {}{}</source>
-        <translation>사용 시간 : {}{}</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1553"/>
-        <source>Your Score: {}{}</source>
-        <translation>현재 점수 : {}{}</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1554"/>
-        <source>Your Value: {}{}</source>
-        <translation>현재 가치 : {}{}</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1563"/>
-        <source> (Submitting)</source>
-        <translation> (제출)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1587"/>
@@ -543,118 +522,175 @@ Unread messages: {}</source>
 읽지 않은 메시지: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2191"/>
-        <source>Score: {} ({} softcore)</source>
-        <oldsource>Score: {} ({} softcore)
-Unread messages: {}</oldsource>
-        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
-        <translation>점수 : {}({} 소프트코어)</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="2235"/>
         <location filename="../../core/achievements.cpp" line="2249"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>하드 코어 모드가 활성화되어 있는 동안에는 {0}을(를) 수행할 수 없습니다. 하드코어 모드를 비활성화하시겠습니까? 아니요를 선택하면 {0}이(가) 취소됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2741"/>
+        <location filename="../../core/achievements.cpp" line="2754"/>
         <source> (Hardcore Mode)</source>
         <translation> (하드코어 모드)</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../../core/achievements.cpp" line="2766"/>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <comment>Point count</comment>
+        <translation>
+            <numerusform>모든 도전 과제를 달성하고 %n점을 획득했습니다!</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2817"/>
+        <location filename="../../core/achievements.cpp" line="2771"/>
+        <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
+        <translation>{1}개의 도전 과제 중 {0}개를 잠금 해제하여 {3}점 중 {2}점을 획득했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2830"/>
         <source>Unknown</source>
         <translation>알 수 없음</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2818"/>
-        <location filename="../../core/achievements.cpp" line="2865"/>
+        <location filename="../../core/achievements.cpp" line="2831"/>
+        <location filename="../../core/achievements.cpp" line="2879"/>
         <source>Locked</source>
         <translation>잠김</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2819"/>
-        <location filename="../../core/achievements.cpp" line="2866"/>
+        <location filename="../../core/achievements.cpp" line="2832"/>
+        <location filename="../../core/achievements.cpp" line="2880"/>
         <source>Unlocked</source>
         <translation>잠금 해제</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2820"/>
+        <location filename="../../core/achievements.cpp" line="2833"/>
         <source>Unsupported</source>
         <translation>지원되지 않음</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2821"/>
+        <location filename="../../core/achievements.cpp" line="2834"/>
         <source>Unofficial</source>
         <translation>비공식</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2822"/>
+        <location filename="../../core/achievements.cpp" line="2835"/>
         <source>Recently Unlocked</source>
         <translation>최근 잠금 해제</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2823"/>
+        <location filename="../../core/achievements.cpp" line="2836"/>
         <source>Active Challenges</source>
         <translation>도전 과제 활성화</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2824"/>
+        <location filename="../../core/achievements.cpp" line="2837"/>
         <source>Almost There</source>
         <translation>거의 도착</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2871"/>
-        <location filename="../../core/achievements.cpp" line="3338"/>
-        <location filename="../../core/achievements.cpp" line="3405"/>
+        <location filename="../../core/achievements.cpp" line="2885"/>
+        <location filename="../../core/achievements.cpp" line="3355"/>
+        <location filename="../../core/achievements.cpp" line="3422"/>
         <source>Change Selection</source>
         <translation>선택 사항 변경</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2873"/>
+        <location filename="../../core/achievements.cpp" line="2887"/>
         <source>View Details</source>
         <translation>자세히 보기</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2875"/>
-        <location filename="../../core/achievements.cpp" line="3342"/>
-        <location filename="../../core/achievements.cpp" line="3409"/>
+        <location filename="../../core/achievements.cpp" line="2889"/>
+        <location filename="../../core/achievements.cpp" line="3359"/>
+        <location filename="../../core/achievements.cpp" line="3426"/>
         <source>Back</source>
         <translation>뒤로</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2905"/>
+        <location filename="../../core/achievements.cpp" line="2919"/>
         <source>XXX points</source>
         <translation>XXX점</translation>
     </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3917"/>
-        <source>User is not logged in.</source>
-        <oldsource>Not Logged In.</oldsource>
-        <translation>로그인하지 않았습니다.</translation>
+    <message numerus="yes">
+        <location filename="../../core/achievements.cpp" line="3202"/>
+        <source>This game has %n leaderboards.</source>
+        <comment>Leaderboard count</comment>
+        <translation>
+            <numerusform>이 게임에는 %n개의 순위표가 있습니다.</numerusform>
+        </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3923"/>
-        <source>Progress is already being updated.</source>
-        <oldsource>Cheat &apos;%s&apos; is already enabled.</oldsource>
-        <translation>이미 진행 상황이 업데이트되고 있습니다.</translation>
+        <location filename="../../core/achievements.cpp" line="3357"/>
+        <source>Open Leaderboard</source>
+        <translation>순위표 열기</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3942"/>
-        <source>Error</source>
-        <oldsource>Error</oldsource>
-        <translation>오류</translation>
+        <location filename="../../core/achievements.cpp" line="3406"/>
+        <source>Loading...</source>
+        <translation>불러오는 중...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3943"/>
-        <source>Refresh all progress failed</source>
-        <translation>모든 진행 상황 새로 고침 실패</translation>
+        <location filename="../../core/achievements.cpp" line="3419"/>
+        <source>Change Page</source>
+        <translation>페이지 변경</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3961"/>
-        <source>Updated achievement progress database.</source>
-        <oldsource>Downloading achievements data...</oldsource>
-        <translation>도전 과제 진행 상황 데이터베이스가 업데이트되었습니다.</translation>
+        <location filename="../../core/achievements.cpp" line="3424"/>
+        <source>View Profile</source>
+        <translation>프로필 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3586"/>
+        <location filename="../../core/achievements.cpp" line="3607"/>
+        <source>Leaderboard download failed</source>
+        <translation>순위표 내려받기 실패</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1799"/>
+        <source>Hardcore mode is now enabled.</source>
+        <translation>이제 하드코어 모드가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1367"/>
+        <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
+        <translation>하드코어 모드가 비활성화되었습니다. 순위표에 집계되지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1452"/>
+        <source>Game complete.
+{0}, {1}.</source>
+        <translation>게임이 완료되었습니다.
+{0}, {1}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1552"/>
+        <source>Your Time: {}{}</source>
+        <translation>사용 시간 : {}{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1553"/>
+        <source>Your Score: {}{}</source>
+        <translation>현재 점수 : {}{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1554"/>
+        <source>Your Value: {}{}</source>
+        <translation>현재 가치 : {}{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1563"/>
+        <source> (Submitting)</source>
+        <translation> (제출)</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1800"/>
+        <source>Hardcore mode is now disabled.</source>
+        <translation>하드코어 모드는 시스템 재설정 시, 활성화됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1168"/>
+        <source>Failed to read executable from disc. Achievements disabled.</source>
+        <translation>디스크에서 실행 파일을 읽지 못했습니다. 도전 과제가 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1351"/>
@@ -678,77 +714,13 @@ Unread messages: {}</oldsource>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1367"/>
-        <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation>하드코어 모드가 비활성화되었습니다. 순위표에 집계되지 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1452"/>
-        <source>Game complete.
-{0}, {1}.</source>
-        <translation>게임이 완료되었습니다.
-{0}, {1}.</translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2753"/>
-        <source>You have unlocked all achievements and earned %n points!</source>
-        <comment>Point count</comment>
-        <translation>
-            <numerusform>모든 도전 과제를 달성하고 %n점을 획득했습니다!</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3188"/>
-        <source>This game has %n leaderboards.</source>
-        <comment>Leaderboard count</comment>
-        <translation>
-            <numerusform>이 게임에는 %n개의 순위표가 있습니다.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3389"/>
-        <source>Loading...</source>
-        <translation>불러오는 중...</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3402"/>
-        <source>Change Page</source>
-        <translation>페이지 변경</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3407"/>
-        <source>View Profile</source>
-        <translation>프로필 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3569"/>
-        <location filename="../../core/achievements.cpp" line="3590"/>
-        <source>Leaderboard download failed</source>
-        <translation>순위표 내려받기 실패</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1799"/>
-        <source>Hardcore mode is now enabled.</source>
-        <translation>이제 하드코어 모드가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1800"/>
-        <source>Hardcore mode is now disabled.</source>
-        <translation>하드코어 모드는 시스템 재설정 시, 활성화됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="1168"/>
-        <source>Failed to read executable from disc. Achievements disabled.</source>
-        <translation>디스크에서 실행 파일을 읽지 못했습니다. 도전 과제가 비활성화되었습니다.</translation>
-    </message>
-    <message>
         <location filename="../../core/achievements.cpp" line="1363"/>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
         <translation>하드코어 모드가 활성화되었습니다. 치트와 저장 기능은 사용할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1372"/>
-        <location filename="../../core/achievements.cpp" line="2766"/>
+        <location filename="../../core/achievements.cpp" line="2779"/>
         <source>This game has no achievements.</source>
         <translation>이 게임에는 {} 순위표가 있습니다.</translation>
     </message>
@@ -760,6 +732,19 @@ Unread messages: {}</oldsource>
         <translation>
             <numerusform>%n개의 도전 과제</numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1489"/>
+        <source>Subset complete.
+{0}, {1}.</source>
+        <translation>하위 집합이 완료되었습니다.
+{0}, {1}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="2191"/>
+        <source>Score: {} ({} softcore)</source>
+        <extracomment>Score summary, shown in Big Picture mode.</extracomment>
+        <translation>점수 : {}({} 소프트코어)</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2234"/>
@@ -800,89 +785,109 @@ Unread messages: {}</oldsource>
         <translation>활성 챌린지 도전 과제</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2758"/>
-        <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
-        <translation>{1}개의 도전 과제 중 {0}개를 잠금 해제하여 {3}점 중 {2}점을 획득했습니다.</translation>
+        <location filename="../../core/achievements.cpp" line="2838"/>
+        <source>Unsynchronized</source>
+        <translation>동기화되지 않음</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2862"/>
+        <location filename="../../core/achievements.cpp" line="2876"/>
         <source>Missable</source>
         <translation>누락 가능</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2863"/>
+        <location filename="../../core/achievements.cpp" line="2877"/>
         <source>Progression</source>
         <translation>진행 과정</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2864"/>
+        <location filename="../../core/achievements.cpp" line="2878"/>
         <source>Win Condition</source>
         <translation>승리 조건</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3001"/>
+        <location filename="../../core/achievements.cpp" line="3015"/>
         <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
         <translation>잠금 해제 : {} | {:.1f}%의 플레이어가 이 도전 과제를 달성</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3010"/>
+        <location filename="../../core/achievements.cpp" line="3024"/>
         <source>{:.1f}% of players have this achievement</source>
         <translation>{:.1f}%의 플레이어가 이 도전 과제를 달성</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3205"/>
+        <location filename="../../core/achievements.cpp" line="3219"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>하드코어 모드가 꺼져 있으므로 점수 제출이 불가능합니다. 순위표는 읽기 전용입니다.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3236"/>
+        <location filename="../../core/achievements.cpp" line="3250"/>
         <source>Show Best</source>
         <translation>최고 기록 표시</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3236"/>
+        <location filename="../../core/achievements.cpp" line="3250"/>
         <source>Show Nearby</source>
         <translation>주변 표시</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3269"/>
+        <location filename="../../core/achievements.cpp" line="3283"/>
         <source>Rank</source>
         <translation>순위</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3275"/>
+        <location filename="../../core/achievements.cpp" line="3289"/>
         <source>Name</source>
         <translation>이름</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3280"/>
+        <location filename="../../core/achievements.cpp" line="3294"/>
         <source>Time</source>
         <translation>시간</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3281"/>
+        <location filename="../../core/achievements.cpp" line="3295"/>
         <source>Score</source>
         <translation>점수</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3282"/>
+        <location filename="../../core/achievements.cpp" line="3296"/>
         <source>Value</source>
         <translation>값</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3296"/>
+        <location filename="../../core/achievements.cpp" line="3310"/>
         <source>Date Submitted</source>
         <translation>제출일</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3340"/>
-        <source>Open Leaderboard</source>
-        <translation>순위표 열기</translation>
-    </message>
-    <message>
-        <location filename="../../core/achievements.cpp" line="3373"/>
+        <location filename="../../core/achievements.cpp" line="3390"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>순위표 데이터를 내려받는 중입니다... 잠시만 기다려주세요...</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3934"/>
+        <source>User is not logged in.</source>
+        <translation>로그인하지 않았습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3940"/>
+        <source>Progress is already being updated.</source>
+        <translation>이미 진행 상황이 업데이트되고 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3959"/>
+        <source>Error</source>
+        <translation>오류</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3960"/>
+        <source>Refresh all progress failed</source>
+        <translation>모든 진행 상황 새로 고침 실패</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="3978"/>
+        <source>Updated achievement progress database.</source>
+        <translation>도전 과제 진행 상황 데이터베이스가 업데이트되었습니다.</translation>
     </message>
     <message>
         <source>Mastered {}</source>
@@ -949,73 +954,162 @@ Unread messages: {}</oldsource>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="64"/>
-        <location filename="../advancedsettingswidget.cpp" line="200"/>
+        <location filename="../advancedsettingswidget.cpp" line="207"/>
         <source>Log To System Console</source>
         <translation>시스템 콘솔에 기록</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="71"/>
-        <location filename="../advancedsettingswidget.cpp" line="204"/>
+        <location filename="../advancedsettingswidget.ui" line="78"/>
+        <location filename="../advancedsettingswidget.cpp" line="211"/>
         <source>Log To Window</source>
         <translation>창에 기록</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="78"/>
-        <location filename="../advancedsettingswidget.cpp" line="202"/>
+        <location filename="../advancedsettingswidget.ui" line="71"/>
+        <location filename="../advancedsettingswidget.cpp" line="209"/>
         <source>Log To Debug Console</source>
         <translation>디버그 콘솔에 기록</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="85"/>
-        <location filename="../advancedsettingswidget.cpp" line="206"/>
+        <location filename="../advancedsettingswidget.cpp" line="213"/>
         <source>Log To File</source>
         <translation>파일에 기록</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="103"/>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
-        <source>Show Debug Menu</source>
-        <translation>디버그 메뉴 표시</translation>
+        <location filename="../advancedsettingswidget.ui" line="92"/>
+        <location filename="../advancedsettingswidget.cpp" line="215"/>
+        <source>Log Timestamps</source>
+        <oldsource>Log Timestamps</oldsource>
+        <translation>타임스탬프 기록</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="113"/>
+        <location filename="../advancedsettingswidget.ui" line="99"/>
+        <location filename="../advancedsettingswidget.cpp" line="217"/>
+        <source>Log File Timestamps</source>
+        <oldsource>Log Timestamps</oldsource>
+        <translation>타임스탬프 기록 파일</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.ui" line="127"/>
         <source>Tweaks/Hacks</source>
         <translation>조정/핵</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="141"/>
+        <location filename="../advancedsettingswidget.ui" line="155"/>
         <source>Option</source>
         <translation>옵션</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="146"/>
+        <location filename="../advancedsettingswidget.ui" line="160"/>
         <source>Value</source>
         <translation>값</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="154"/>
-        <source>Reset To Default</source>
-        <translation>기본값으로 초기화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="269"/>
-        <source>Enable Recompiler Memory Exceptions</source>
-        <translation>리컴파일러 메모리 예외 활성화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="271"/>
+        <location filename="../advancedsettingswidget.cpp" line="292"/>
         <source>Enable Recompiler Block Linking</source>
         <translation>리컴파일러 블록 연결 활성화</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="273"/>
+        <location filename="../advancedsettingswidget.cpp" line="294"/>
         <source>Enable Recompiler Fast Memory Access</source>
         <translation>리컴파일러 고속 메모리 액세스 활성화</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="235"/>
+        <location filename="../advancedsettingswidget.cpp" line="281"/>
+        <source>DMA Max Slice Ticks</source>
+        <translation>DMA 최대 슬라이스 틱</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="283"/>
+        <source>DMA Halt Ticks</source>
+        <translation>DMA 중지 틱</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="285"/>
+        <source>GPU FIFO Size</source>
+        <translation>GPU FIFO 크기</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.ui" line="168"/>
+        <source>Reset To Default</source>
+        <translation>기본값으로 초기화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="290"/>
+        <source>Enable Recompiler Memory Exceptions</source>
+        <translation>리컴파일러 메모리 예외 활성화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.ui" line="111"/>
+        <source>System Settings</source>
+        <translation>시스템 설정</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.ui" line="117"/>
+        <location filename="../advancedsettingswidget.cpp" line="219"/>
+        <source>Show Debug Menu</source>
+        <translation>디버그 메뉴 표시</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>Apply Compatibility Settings</source>
         <translation>호환 설정 적용</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="260"/>
+        <source>Save State Compression</source>
+        <translation>상태 압축 저장</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="271"/>
+        <source>Display Active Start Offset</source>
+        <translation>활성 시작 오프셋 표시</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="273"/>
+        <source>Display Active End Offset</source>
+        <translation>활성 종료 오프셋 표시</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="275"/>
+        <source>Display Line Start Offset</source>
+        <translation>라인 시작 오프셋 표시</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="277"/>
+        <source>Display Line End Offset</source>
+        <translation>라인 종료 오프셋 표시</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="303"/>
+        <source>CD-ROM Readahead Sectors</source>
+        <translation>CD-ROM 리드헤드 섹터</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="304"/>
+        <source> sectors</source>
+        <translation> 초</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="308"/>
+        <source>CD-ROM Max Seek Speedup Cycles</source>
+        <translation>CD-ROM 최대 탐색 속도 향상 주기</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="305"/>
+        <source>CD-ROM Max Read Speedup Cycles</source>
+        <translation>CD-ROM 최대 읽기 속도 향상 주기</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="313"/>
+        <source>Allow Booting Without SBI File</source>
+        <translation>SBI 파일 없이 부팅 허용</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <source>Log Level</source>
+        <translation>로그 레벨</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="148"/>
@@ -1023,207 +1117,148 @@ Unread messages: {}</oldsource>
         <translation>%1의 폴더 선택</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="239"/>
-        <source>Save State Compression</source>
-        <translation>상태 압축 저장</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="245"/>
-        <source>Disable Window Rounded Corners</source>
-        <translation>창 모서리 둥글게 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="250"/>
-        <source>Display Active Start Offset</source>
-        <translation>활성 시작 오프셋 표시</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="252"/>
-        <source>Display Active End Offset</source>
-        <translation>활성 종료 오프셋 표시</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="254"/>
-        <source>Display Line Start Offset</source>
-        <translation>라인 시작 오프셋 표시</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="256"/>
-        <source>Display Line End Offset</source>
-        <translation>라인 종료 오프셋 표시</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="260"/>
-        <source>DMA Max Slice Ticks</source>
-        <translation>DMA 최대 슬라이스 틱</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="261"/>
-        <location filename="../advancedsettingswidget.cpp" line="263"/>
-        <location filename="../advancedsettingswidget.cpp" line="267"/>
-        <location filename="../advancedsettingswidget.cpp" line="286"/>
-        <location filename="../advancedsettingswidget.cpp" line="289"/>
-        <source> cycles</source>
-        <translation>주기</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="262"/>
-        <source>DMA Halt Ticks</source>
-        <translation>DMA 중지 틱</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="264"/>
-        <source>GPU FIFO Size</source>
-        <translation>GPU FIFO 크기</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="265"/>
-        <source> words</source>
-        <translation>단어</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="266"/>
-        <source>GPU Max Runahead</source>
-        <oldsource>GPU Max Runahead</oldsource>
-        <translation>GPU 최대 런어헤드</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="278"/>
-        <source>CD-ROM Mechacon Version</source>
-        <translation>CD-ROM 메카콘 버전</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="282"/>
-        <source>CD-ROM Readahead Sectors</source>
-        <translation>CD-ROM 리드헤드 섹터</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="283"/>
-        <source> sectors</source>
-        <translation> 초</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="284"/>
-        <source>CD-ROM Max Seek Speedup Cycles</source>
-        <translation>CD-ROM 최대 탐색 속도 향상 주기</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="287"/>
-        <source>CD-ROM Max Read Speedup Cycles</source>
-        <translation>CD-ROM 최대 읽기 속도 향상 주기</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="290"/>
-        <source>CD-ROM Region Check</source>
-        <translation>CD-ROM 지역 확인</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="291"/>
-        <source>CD-ROM SubQ Skew</source>
-        <translation>CD-ROM SubQ 왜곡</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="292"/>
-        <source>Allow Booting Without SBI File</source>
-        <translation>SBI 파일 없이 부팅 허용</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="295"/>
-        <source>Enable GDB Server</source>
-        <translation>GDB 서버 활성화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="296"/>
-        <source>GDB Server Port</source>
-        <translation>GDB 서버 포트</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="299"/>
-        <source>Export Shared Memory</source>
-        <translation>공유 메모리 내보내기</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="301"/>
-        <source>Enable PCDrv</source>
-        <translation>PCDrv 활성화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="302"/>
-        <source>Enable PCDrv Writes</source>
-        <translation>PCDrv 쓰기 활성화</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="303"/>
-        <source>PCDrv Root Directory</source>
-        <translation>PCDrv 루트 디렉터리</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="198"/>
-        <source>Log Level</source>
-        <translation>로그 레벨</translation>
-    </message>
-    <message>
-        <location filename="../advancedsettingswidget.cpp" line="198"/>
+        <location filename="../advancedsettingswidget.cpp" line="205"/>
         <source>Information</source>
         <translation>정보</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="199"/>
+        <location filename="../advancedsettingswidget.cpp" line="206"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
         <translation>기록되는 메시지의 상세도를 설정합니다. 수준이 높을수록 더 많은 메시지가 기록됩니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="200"/>
-        <location filename="../advancedsettingswidget.cpp" line="202"/>
-        <location filename="../advancedsettingswidget.cpp" line="204"/>
-        <location filename="../advancedsettingswidget.cpp" line="206"/>
+        <location filename="../advancedsettingswidget.cpp" line="207"/>
+        <location filename="../advancedsettingswidget.cpp" line="209"/>
+        <location filename="../advancedsettingswidget.cpp" line="211"/>
+        <location filename="../advancedsettingswidget.cpp" line="213"/>
+        <location filename="../advancedsettingswidget.cpp" line="215"/>
+        <location filename="../advancedsettingswidget.cpp" line="217"/>
         <source>User Preference</source>
         <translation>사용자 설정</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="201"/>
+        <location filename="../advancedsettingswidget.cpp" line="208"/>
         <source>Logs messages to the console window.</source>
         <translation>콘솔 창에 메시지를 기록합니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="203"/>
+        <location filename="../advancedsettingswidget.cpp" line="210"/>
         <source>Logs messages to the debug console where supported.</source>
         <translation>지원되는 경우, 디버그 콘솔에 메시지를 기록합니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="205"/>
+        <location filename="../advancedsettingswidget.cpp" line="212"/>
         <source>Logs messages to the window.</source>
         <translation>창에 메시지를 기록합니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="207"/>
+        <location filename="../advancedsettingswidget.cpp" line="214"/>
         <source>Logs messages to duckstation.log in the user directory.</source>
         <translation>사용자 디렉터리의 duckstation.log에 로그를 기록합니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="208"/>
+        <location filename="../advancedsettingswidget.cpp" line="216"/>
+        <source>Includes the elapsed time since the application start in window and console logs.</source>
+        <translation>창과 콘솔 로그에 앱이 시작된 이후 경과된 시간이 포함됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="218"/>
+        <source>Includes the elapsed time since the application start in file logs.</source>
+        <translation>앱이 파일 로그에 시작된 이후 경과된 시간을 포함합니다.</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="219"/>
         <source>Unchecked</source>
         <translation>사용 안 함</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="209"/>
+        <location filename="../advancedsettingswidget.cpp" line="220"/>
         <source>Shows a debug menu bar with additional statistics and quick settings.</source>
         <translation>추가 통계 및 빠른 설정이 포함된 디버그 메뉴 표시줄을 표시합니다.</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="231"/>
+        <location filename="../advancedsettingswidget.cpp" line="252"/>
         <source>Apply Game Settings</source>
         <translation>게임 설정 적용</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.cpp" line="237"/>
+        <location filename="../advancedsettingswidget.cpp" line="258"/>
         <source>Load Devices From Save States</source>
         <translation>저장 상태에서 장치 불러오기</translation>
     </message>
     <message>
-        <location filename="../advancedsettingswidget.ui" line="97"/>
-        <source>System Settings</source>
-        <translation>시스템 설정</translation>
+        <location filename="../advancedsettingswidget.cpp" line="266"/>
+        <source>Disable Window Rounded Corners</source>
+        <translation>창 모서리 둥글게 비활성화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="282"/>
+        <location filename="../advancedsettingswidget.cpp" line="284"/>
+        <location filename="../advancedsettingswidget.cpp" line="288"/>
+        <location filename="../advancedsettingswidget.cpp" line="307"/>
+        <location filename="../advancedsettingswidget.cpp" line="310"/>
+        <source> cycles</source>
+        <translation>주기</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="286"/>
+        <source> words</source>
+        <translation>단어</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="287"/>
+        <source>GPU Max Runahead</source>
+        <translation>GPU 최대 런어헤드</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="299"/>
+        <source>CD-ROM Mechacon Version</source>
+        <translation>CD-ROM 메카콘 버전</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="322"/>
+        <source>Redirect SIO to TTY</source>
+        <translation>SIO를 TTY로 재지정</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="311"/>
+        <source>CD-ROM Region Check</source>
+        <translation>CD-ROM 지역 확인</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="312"/>
+        <source>CD-ROM SubQ Skew</source>
+        <translation>CD-ROM SubQ 왜곡</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="316"/>
+        <source>Enable GDB Server</source>
+        <translation>GDB 서버 활성화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="317"/>
+        <source>GDB Server Port</source>
+        <translation>GDB 서버 포트</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="320"/>
+        <source>Export Shared Memory</source>
+        <translation>공유 메모리 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="323"/>
+        <source>Enable PCDrv</source>
+        <translation>PCDrv 활성화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="324"/>
+        <source>Enable PCDrv Writes</source>
+        <translation>PCDrv 쓰기 활성화</translation>
+    </message>
+    <message>
+        <location filename="../advancedsettingswidget.cpp" line="325"/>
+        <source>PCDrv Root Directory</source>
+        <translation>PCDrv 루트 디렉터리</translation>
     </message>
     <message>
         <source>GPU Max Run-Ahead</source>
@@ -1353,294 +1388,288 @@ Unread messages: {}</oldsource>
         <translation>컨트롤러{}이(가) 디지털 모드로 전환되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="355"/>
+        <location filename="../../core/analog_controller.cpp" line="356"/>
         <location filename="../../core/negcon_rumble.cpp" line="257"/>
         <source>Controller {} is locked to analog mode by the game.</source>
         <translation>컨트롤러{}가 게임에서 아날로그 모드로 잠겨 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="356"/>
+        <location filename="../../core/analog_controller.cpp" line="357"/>
         <location filename="../../core/negcon_rumble.cpp" line="258"/>
         <source>Controller {} is locked to digital mode by the game.</source>
         <translation>컨트롤러{}가 게임에 의해 디지털 모드로 잠겨 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="785"/>
+        <location filename="../../core/analog_controller.cpp" line="786"/>
         <source>D-Pad Up</source>
         <translation>십자 버튼 ↑</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="786"/>
+        <location filename="../../core/analog_controller.cpp" line="787"/>
         <source>D-Pad Right</source>
         <translation>십자 버튼 →</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="787"/>
+        <location filename="../../core/analog_controller.cpp" line="788"/>
         <source>D-Pad Down</source>
         <translation>십자 버튼 ↓</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="788"/>
+        <location filename="../../core/analog_controller.cpp" line="789"/>
         <source>D-Pad Left</source>
         <translation>십자 버튼 ←</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="789"/>
-        <source>Triangle</source>
-        <translation>△</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="790"/>
-        <source>Circle</source>
-        <translation>○</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="791"/>
-        <source>Cross</source>
-        <translation>Ｘ</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="792"/>
-        <source>Square</source>
-        <translation>□</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="793"/>
-        <source>Select</source>
-        <translation>선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="794"/>
-        <source>Start</source>
-        <translation>시작</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="795"/>
+        <location filename="../../core/analog_controller.cpp" line="796"/>
         <source>Analog Toggle</source>
         <translation>아날로그 전환</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="796"/>
-        <source>L1</source>
-        <translation>L1</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="797"/>
-        <source>R1</source>
-        <translation>R1</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="798"/>
-        <source>L2</source>
-        <translation>L2</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="799"/>
-        <source>R2</source>
-        <translation>R2</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="800"/>
-        <source>L3</source>
-        <translation>L3</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="801"/>
-        <source>R3</source>
-        <translation>R3</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="803"/>
+        <location filename="../../core/analog_controller.cpp" line="804"/>
         <source>Left Stick Left</source>
         <translation>왼쪽 스틱 ←</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="804"/>
+        <location filename="../../core/analog_controller.cpp" line="805"/>
         <source>Left Stick Right</source>
         <translation>왼쪽 스틱 →</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="805"/>
+        <location filename="../../core/analog_controller.cpp" line="806"/>
         <source>Left Stick Down</source>
         <translation>왼쪽 스틱 ↓</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="806"/>
+        <location filename="../../core/analog_controller.cpp" line="807"/>
         <source>Left Stick Up</source>
         <translation>왼쪽 스틱 ↑</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="807"/>
+        <location filename="../../core/analog_controller.cpp" line="808"/>
         <source>Right Stick Left</source>
         <translation>오른쪽 스틱 ←</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="808"/>
+        <location filename="../../core/analog_controller.cpp" line="809"/>
         <source>Right Stick Right</source>
         <translation>오른쪽 스틱 →</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="809"/>
+        <location filename="../../core/analog_controller.cpp" line="810"/>
         <source>Right Stick Down</source>
         <translation>오른쪽 스틱 ↓</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="810"/>
+        <location filename="../../core/analog_controller.cpp" line="811"/>
         <source>Right Stick Up</source>
         <translation>오른쪽 스틱 ↑</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="812"/>
+        <location filename="../../core/analog_controller.cpp" line="813"/>
         <location filename="../../core/negcon_rumble.cpp" line="745"/>
         <source>Large Motor</source>
         <translation>대형 모터</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="813"/>
+        <location filename="../../core/analog_controller.cpp" line="814"/>
         <location filename="../../core/negcon_rumble.cpp" line="746"/>
         <source>Small Motor</source>
         <translation>소형 모터</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="822"/>
+        <location filename="../../core/analog_controller.cpp" line="823"/>
         <source>Not Inverted</source>
         <translation>반전되지 않음</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="822"/>
+        <location filename="../../core/analog_controller.cpp" line="823"/>
         <source>Invert Left/Right</source>
         <translation>좌우 반전</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="823"/>
+        <location filename="../../core/analog_controller.cpp" line="824"/>
         <source>Invert Up/Down</source>
         <translation>상하 반전</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="824"/>
+        <location filename="../../core/analog_controller.cpp" line="825"/>
         <source>Invert Left/Right + Up/Down</source>
         <translation>상하좌우 반전</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="827"/>
+        <location filename="../../core/analog_controller.cpp" line="828"/>
         <source>Never</source>
-        <oldsource>Never</oldsource>
         <translation>미 실행</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="827"/>
+        <location filename="../../core/analog_controller.cpp" line="828"/>
         <source>Digital Mode Only</source>
-        <oldsource>Digital Controller</oldsource>
         <translation>디지털 모드 전용</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="828"/>
+        <location filename="../../core/analog_controller.cpp" line="829"/>
         <source>Analog and Digital Modes</source>
-        <oldsource>Use Analog Sticks for D-Pad in Digital Mode</oldsource>
         <translation>아날로그 및 디지털 모드</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="831"/>
-        <source>Force Analog Mode on Reset</source>
-        <translation>재설정 시 아날로그 모드 강제 적용</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_controller.cpp" line="832"/>
+        <location filename="../../core/analog_controller.cpp" line="833"/>
         <source>Forces the controller to analog mode when the console is reset/powered on.</source>
         <translation>콘솔을 다시 설정하거나 전원을 켤 때, 컨트롤러를 아날로그 모드로 강제 전환합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="835"/>
+        <location filename="../../core/analog_controller.cpp" line="836"/>
         <source>Use Left Analog for D-Pad in Digital Mode</source>
-        <oldsource>Use Analog Sticks for D-Pad in Digital Mode</oldsource>
         <translation>디지털 모드에서 십자 버튼에 좌측 아날로그 스틱 사용</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="836"/>
+        <location filename="../../core/analog_controller.cpp" line="837"/>
         <source>Allows you to use the left analog stick to control the d-pad in digital mode, as well as the buttons.</source>
-        <oldsource>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</oldsource>
         <translation>좌측 아날로그 스틱을 사용하여 디지털 모드에서 십자 버튼을 제어할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="841"/>
+        <location filename="../../core/analog_controller.cpp" line="842"/>
         <source>Use Right Analog for Shoulder Buttons</source>
         <translation>숄더 버튼에 오른쪽 아날로그 사용</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="842"/>
+        <location filename="../../core/analog_controller.cpp" line="843"/>
         <source>Allows you to use the right analog stick to control the shoulder buttons, as well as the buttons.</source>
-        <oldsource>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</oldsource>
         <translation>우측 아날로그 스틱을 사용하여 숄더 버튼과 버튼을 제어할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="845"/>
+        <location filename="../../core/analog_controller.cpp" line="846"/>
         <source>Analog Deadzone</source>
         <translation>아날로그 데드 존</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="846"/>
+        <location filename="../../core/analog_controller.cpp" line="847"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>아날로그 스틱 데드 존, 즉 무시할 스틱 움직임의 비율을 설정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="849"/>
+        <location filename="../../core/analog_controller.cpp" line="850"/>
         <source>Analog Sensitivity</source>
         <translation>아날로그 감도</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="850"/>
+        <location filename="../../core/analog_controller.cpp" line="851"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>아날로그 스틱 축 배율을 설정합니다. 듀얼 쇼크 4, Xbox One 컨트롤러와 같은 최신 컨트롤러를 사용하는 경우 130%에서 140% 사이의 값을 사용하는 것이 좋습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="855"/>
+        <location filename="../../core/analog_controller.cpp" line="856"/>
         <source>Button/Trigger Deadzone</source>
         <translation>버튼/트리거 데드 존</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="856"/>
+        <location filename="../../core/analog_controller.cpp" line="857"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
         <translation>버튼/트리거 활성화 데드 존, 즉 무시할 트리거의 비율을 설정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="860"/>
+        <location filename="../../core/analog_controller.cpp" line="861"/>
         <source>Large Motor Vibration Bias</source>
         <translation>대형 모터 진동 편향</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="861"/>
+        <location filename="../../core/analog_controller.cpp" line="862"/>
         <source>Sets the bias value for the large vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>대형 진동 모터의 편향값을 설정합니다. 일부 게임에서 진동이 너무 약하거나 작동하지 않는 경우 이 값을 늘려보세요. 음수 값은 진동 강도를 감소시킵니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="866"/>
+        <location filename="../../core/analog_controller.cpp" line="867"/>
         <source>Small Motor Vibration Bias</source>
         <translation>소형 모터 진동 편향</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="867"/>
+        <location filename="../../core/analog_controller.cpp" line="868"/>
         <source>Sets the bias value for the small vibration motor. If vibration in some games is too weak or not functioning, try increasing this value. Negative values will decrease the intensity of vibration.</source>
         <translation>소형진동모터의 편향값을 설정합니다. 일부 게임에서 진동이 너무 약하거나 작동하지 않는 경우 이 값을 늘려보세요. 음수 값은 진동 강도를 감소시킵니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="871"/>
+        <location filename="../../core/analog_controller.cpp" line="872"/>
         <source>Invert Left Stick</source>
         <translation>좌측 스틱 반전</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="872"/>
+        <location filename="../../core/analog_controller.cpp" line="873"/>
         <source>Inverts the direction of the left analog stick.</source>
         <translation>좌측 아날로그 스틱의 방향을 반전시킵니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="874"/>
+        <location filename="../../core/analog_controller.cpp" line="875"/>
         <source>Invert Right Stick</source>
         <translation>우측 스틱 반전</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="875"/>
+        <location filename="../../core/analog_controller.cpp" line="876"/>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>우측 아날로그 스틱의 방향을 반전시킵니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="794"/>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="795"/>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="790"/>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="792"/>
+        <source>Cross</source>
+        <translation>Ｘ</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="791"/>
+        <source>Circle</source>
+        <translation>○</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="793"/>
+        <source>Square</source>
+        <translation>□</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="797"/>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="799"/>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="798"/>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="800"/>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="801"/>
+        <source>L3</source>
+        <translation>L3</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="802"/>
+        <source>R3</source>
+        <translation>R3</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_controller.cpp" line="832"/>
+        <source>Force Analog Mode on Reset</source>
+        <translation>재설정 시 아날로그 모드 강제 적용</translation>
     </message>
     <message>
         <source>Sets the rumble bias value. If rumble in some games is too weak or not functioning, try increasing this value.</source>
@@ -1670,69 +1699,9 @@ Unread messages: {}</oldsource>
         <translation>십자 버튼 ←</translation>
     </message>
     <message>
-        <location filename="../../core/analog_joystick.cpp" line="358"/>
-        <source>Triangle</source>
-        <translation>△</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="359"/>
-        <source>Circle</source>
-        <translation>○</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="360"/>
-        <source>Cross</source>
-        <translation>Ｘ</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="361"/>
-        <source>Square</source>
-        <translation>□</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="362"/>
-        <source>Select</source>
-        <translation>선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="363"/>
-        <source>Start</source>
-        <translation>시작</translation>
-    </message>
-    <message>
         <location filename="../../core/analog_joystick.cpp" line="364"/>
         <source>Mode Toggle</source>
         <translation>모드 전환</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="365"/>
-        <source>L1</source>
-        <translation>L1</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="366"/>
-        <source>R1</source>
-        <translation>R1</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="367"/>
-        <source>L2</source>
-        <translation>L2</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="368"/>
-        <source>R2</source>
-        <translation>R2</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="369"/>
-        <source>L3</source>
-        <translation>L3</translation>
-    </message>
-    <message>
-        <location filename="../../core/analog_joystick.cpp" line="370"/>
-        <source>R3</source>
-        <translation>R3</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="372"/>
@@ -1835,6 +1804,66 @@ Unread messages: {}</oldsource>
         <translation>우측 아날로그 스틱의 방향을 반전시킵니다.</translation>
     </message>
     <message>
+        <location filename="../../core/analog_joystick.cpp" line="362"/>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="363"/>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="358"/>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="360"/>
+        <source>Cross</source>
+        <translation>Ｘ</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="359"/>
+        <source>Circle</source>
+        <translation>○</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="361"/>
+        <source>Square</source>
+        <translation>□</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="365"/>
+        <source>L1</source>
+        <translation>L1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="367"/>
+        <source>L2</source>
+        <translation>L2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="366"/>
+        <source>R1</source>
+        <translation>R1</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="368"/>
+        <source>R2</source>
+        <translation>R2</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="369"/>
+        <source>L3</source>
+        <translation>L3</translation>
+    </message>
+    <message>
+        <location filename="../../core/analog_joystick.cpp" line="370"/>
+        <source>R3</source>
+        <translation>R3</translation>
+    </message>
+    <message>
         <source>Controller %u switched to analog mode.</source>
         <translation type="vanished">컨트롤러 %u가 아날로그 모드로 전환되었습니다.</translation>
     </message>
@@ -1864,12 +1893,6 @@ Unread messages: {}</oldsource>
         <location filename="../audiosettingswidget.ui" line="197"/>
         <source>Maximum latency: 0 frames (0.00ms)</source>
         <translation>최대 대기 시간 : 0프레임(0.00ms)</translation>
-    </message>
-    <message>
-        <location filename="../audiosettingswidget.ui" line="258"/>
-        <source>Reset Output Volume</source>
-        <oldsource>Output Volume</oldsource>
-        <translation>출력 음량 초기화</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="188"/>
@@ -1919,20 +1942,14 @@ Unread messages: {}</oldsource>
         <translation>출력 음량 :</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="106"/>
-        <source>Reset Volume</source>
-        <translation>음량 초기화</translation>
+        <location filename="../audiosettingswidget.ui" line="258"/>
+        <source>Reset Output Volume</source>
+        <translation>출력 음량 초기화</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="268"/>
         <source>Fast Forward Volume:</source>
         <translation>빨리 감기 음량 :</translation>
-    </message>
-    <message>
-        <location filename="../audiosettingswidget.ui" line="310"/>
-        <location filename="../audiosettingswidget.cpp" line="109"/>
-        <source>Reset Fast Forward Volume</source>
-        <translation>빨리 감기 음량 다시 설정</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="322"/>
@@ -1963,28 +1980,14 @@ Unread messages: {}</oldsource>
         <translation>후단부 음향은 에뮬레이터에서 생성된 프레임이 호스트에 전송되는 방식을 결정합니다. Cubeb은 가장 낮은 대기 시간을 제공하므로 문제가 발생하면 SDL 후단부를 사용해 보세요. 후단부 없음은 모든 호스트 음향 출력을 비활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="86"/>
-        <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
-        <translation>버퍼 크기는 호스트가 가져올 음향 청크의 크기를 결정합니다. 값이 작을수록 출력 대기 시간이 줄어들지만 에뮬레이션 속도가 일정하지 않을 경우 버벅거림이 발생할 수 있습니다. Cubeb 후단부는 이 값에 관계없이 더 작은 청크를 사용하므로 여기에 낮은 값을 사용해도 대기 시간이 크게 달라지지 않을 수 있습니다.</translation>
-    </message>
-    <message>
         <location filename="../audiosettingswidget.cpp" line="85"/>
         <source>Output Latency</source>
         <translation>출력 대기 시간</translation>
     </message>
     <message>
-        <location filename="../audiosettingswidget.cpp" line="70"/>
-        <location filename="../audiosettingswidget.cpp" line="73"/>
-        <location filename="../audiosettingswidget.cpp" line="350"/>
-        <source>%</source>
-        <translation>%</translation>
-    </message>
-    <message>
-        <location filename="../audiosettingswidget.cpp" line="85"/>
-        <location filename="../audiosettingswidget.cpp" line="218"/>
-        <location filename="../audiosettingswidget.cpp" line="219"/>
-        <source>%1 ms</source>
-        <translation>%1밀리초</translation>
+        <location filename="../audiosettingswidget.cpp" line="86"/>
+        <source>The buffer size determines the size of the chunks of audio which will be pulled by the host. Smaller values reduce the output latency, but may cause hitches if the emulation speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of this value, so using a low value here may not significantly change latency.</source>
+        <translation>버퍼 크기는 호스트가 가져올 음향 청크의 크기를 결정합니다. 값이 작을수록 출력 대기 시간이 줄어들지만 에뮬레이션 속도가 일정하지 않을 경우 버벅거림이 발생할 수 있습니다. Cubeb 후단부는 이 값에 관계없이 더 작은 청크를 사용하므로 여기에 낮은 값을 사용해도 대기 시간이 크게 달라지지 않을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="90"/>
@@ -1995,11 +1998,6 @@ Unread messages: {}</oldsource>
         <location filename="../audiosettingswidget.cpp" line="91"/>
         <source>Controls the volume of the audio played on the host.</source>
         <translation>호스트에서 재생되는 음향의 볼륨을 제어합니다.</translation>
-    </message>
-    <message>
-        <location filename="../audiosettingswidget.cpp" line="92"/>
-        <source>Fast Forward Volume</source>
-        <translation>빨리 감기 음량</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="93"/>
@@ -2036,6 +2034,11 @@ Unread messages: {}</oldsource>
         <translation>이 설정은 100% 속도를 벗어나 실행될 때 SoundTouch 오디오 시간 연장기의 동작을 세부적으로 조정합니다.</translation>
     </message>
     <message>
+        <location filename="../audiosettingswidget.cpp" line="106"/>
+        <source>Reset Volume</source>
+        <translation>음량 초기화</translation>
+    </message>
+    <message>
         <location filename="../audiosettingswidget.cpp" line="107"/>
         <location filename="../audiosettingswidget.cpp" line="110"/>
         <source>Resets volume back to the global/inherited setting.</source>
@@ -2048,6 +2051,12 @@ Unread messages: {}</oldsource>
         <translation>음량을 기본값(예 : 전체)으로 다시 설정합니다.</translation>
     </message>
     <message>
+        <location filename="../audiosettingswidget.ui" line="310"/>
+        <location filename="../audiosettingswidget.cpp" line="109"/>
+        <source>Reset Fast Forward Volume</source>
+        <translation>빨리 감기 음량 다시 설정</translation>
+    </message>
+    <message>
         <location filename="../audiosettingswidget.cpp" line="146"/>
         <location filename="../audiosettingswidget.cpp" line="177"/>
         <source>Default</source>
@@ -2058,6 +2067,25 @@ Unread messages: {}</oldsource>
         <location filename="../audiosettingswidget.cpp" line="96"/>
         <source>Unchecked</source>
         <translation>선택 안 함</translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="92"/>
+        <source>Fast Forward Volume</source>
+        <translation>빨리 감기 음량</translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="70"/>
+        <location filename="../audiosettingswidget.cpp" line="73"/>
+        <location filename="../audiosettingswidget.cpp" line="350"/>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <location filename="../audiosettingswidget.cpp" line="85"/>
+        <location filename="../audiosettingswidget.cpp" line="218"/>
+        <location filename="../audiosettingswidget.cpp" line="219"/>
+        <source>%1 ms</source>
+        <translation>%1밀리초</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="95"/>
@@ -2217,53 +2245,59 @@ Unread messages: {}</oldsource>
     <name>AudioStretchSettingsDialog</name>
     <message>
         <location filename="../audiostretchsettingsdialog.ui" line="14"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="193"/>
         <source>Audio Stretch Settings</source>
         <translation>음향 늘리기 설정</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="68"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="105"/>
         <source>Sequence Length:</source>
         <translation>시퀀스 길이 :</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="97"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="98"/>
         <source>30</source>
         <translation>30</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="104"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="91"/>
         <source>Seekwindow Size:</source>
         <translation>탐색 창 크기 :</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="133"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="33"/>
         <source>20</source>
         <translation>20</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="140"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="40"/>
         <source>Overlap:</source>
         <translation>오버랩 :</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="169"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="148"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="50"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;음향 늘리기 설정&lt;/span&gt;&lt;br/&gt;이 설정은 SoundTouch 오디오 타임 스트레처가 100% 속도를 벗어나 실행될 때의 동작을 미세 조정합니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <location filename="../audiostretchsettingsdialog.ui" line="209"/>
+        <source>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</source>
+        <oldsource>These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.</oldsource>
+        <translation>이러한 설정은 SoundTouch 음향 시간 늘리기가 100% 속도를 벗어나서 실행될 때의 동작을 미세하게 조정합니다.</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="176"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="141"/>
         <source>Use Quickseek</source>
         <translation>빠른 탐색 사용</translation>
     </message>
     <message>
-        <location filename="../audiostretchsettingsdialog.ui" line="183"/>
+        <location filename="../audiostretchsettingsdialog.ui" line="155"/>
         <source>Use Anti-Aliasing Filter</source>
         <translation>앤티 앨리어싱 필터 사용</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Audio Stretch Settings&lt;/span&gt;&lt;br/&gt;These settings fine-tune the behavior of the SoundTouch audio time stretcher when running outside of 100% speed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;음향 늘리기 설정&lt;/span&gt;&lt;br/&gt;이 설정은 SoundTouch 오디오 타임 스트레처가 100% 속도를 벗어나 실행될 때의 동작을 미세 조정합니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -2564,6 +2598,16 @@ Unread messages: {}</oldsource>
     </message>
 </context>
 <context>
+    <name>CDImage</name>
+    <message>
+        <location filename="../../util/cd_image_cue.cpp" line="623"/>
+        <source>{0} uses a sample rate of {1}hz and has {2} channels.
+WAV files must be stereo and use a sample rate of 44100hz.</source>
+        <translation>{0}은 {1}Hz의 샘플링 속도를 사용하고 {2}개의 채널을 갖습니다.
+WAV 파일은 스테레오 형식이어야 하며 44100Hz의 샘플링 속도를 사용해야 합니다.</translation>
+    </message>
+</context>
+<context>
     <name>CDImageHasher</name>
     <message>
         <location filename="../../util/cd_image_hasher.cpp" line="28"/>
@@ -2761,15 +2805,25 @@ Unread messages: {}</oldsource>
         <translation>메모리 카드 액세스 빨리 감기</translation>
     </message>
     <message>
+        <location filename="../consolesettingswidget.ui" line="45"/>
+        <source>Frame Rate:</source>
+        <translation>프레임 속도 :</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="90"/>
+        <source>CPU Emulation</source>
+        <translation>CPU 에뮬레이션</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="140"/>
+        <source>Execution Mode:</source>
+        <translation>실행 모드 :</translation>
+    </message>
+    <message>
         <location filename="../consolesettingswidget.ui" line="78"/>
         <location filename="../consolesettingswidget.cpp" line="100"/>
         <source>Enable 8MB RAM (Dev Console)</source>
         <translation>8MB 램 활성화(개발자 콘솔)</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="45"/>
-        <source>Frame Rate:</source>
-        <translation>프레임 속도 :</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="108"/>
@@ -2856,6 +2910,18 @@ Unread messages: {}</oldsource>
         <translation>최대</translation>
     </message>
     <message>
+        <location filename="../consolesettingswidget.ui" line="322"/>
+        <location filename="../consolesettingswidget.cpp" line="133"/>
+        <source>Apply Image Patches</source>
+        <translation>이미지 패치 적용</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.ui" line="336"/>
+        <location filename="../consolesettingswidget.cpp" line="137"/>
+        <source>Switch to Next Disc on Stop</source>
+        <translation>중지 시, 다음 디스크로 전환</translation>
+    </message>
+    <message>
         <location filename="../consolesettingswidget.ui" line="244"/>
         <source>Seek Speedup:</source>
         <translation>탐색 속도 향상 :</translation>
@@ -2913,32 +2979,10 @@ Unread messages: {}</oldsource>
         <translation>10배</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.ui" line="322"/>
-        <location filename="../consolesettingswidget.cpp" line="133"/>
-        <source>Apply Image Patches</source>
-        <translation>이미지 패치 적용</translation>
-    </message>
-    <message>
         <location filename="../consolesettingswidget.ui" line="329"/>
         <location filename="../consolesettingswidget.cpp" line="141"/>
         <source>Ignore Drive Subcode</source>
         <translation>드라이브 하위 코드 무시</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="336"/>
-        <location filename="../consolesettingswidget.cpp" line="137"/>
-        <source>Switch to Next Disc on Stop</source>
-        <translation>중지 시, 다음 디스크로 전환</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="90"/>
-        <source>CPU Emulation</source>
-        <translation>CPU 에뮬레이션</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.ui" line="140"/>
-        <source>Execution Mode:</source>
-        <translation>실행 모드 :</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="315"/>
@@ -2960,14 +3004,19 @@ Unread messages: {}</oldsource>
         <translation>선택 안 함</translation>
     </message>
     <message>
-        <location filename="../consolesettingswidget.cpp" line="101"/>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
-        <translation>일반적으로 개발 콘솔에 있는 총 2+6=8MB를 얻기 위해 6MB의 램을 추가로 사용할 수 있습니다. 이 추가 램을 사용하려면 게임에서 더 큰 힙 크기를 사용해야 합니다. 메모리 미러를 사용하는 타이틀은 깨질 수 있으므로 호환되는 모드에서만 사용해야 합니다.</translation>
+        <location filename="../consolesettingswidget.cpp" line="130"/>
+        <source>Preload Image to RAM</source>
+        <translation>램에 이미지 미리 불러오기</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="131"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
         <translation>게임 이미지를 램에 불러옵니다. 게임 플레이 중에 불안정해질 수 있는 네트워크 경로에 유용합니다. 경우에 따라 게임에서 오디오 트랙 재생을 시작할 때 끊김 현상을 제거하기도 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../consolesettingswidget.cpp" line="123"/>
+        <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
+        <translation>CD-ROM 읽기 속도를 지정된 계수만큼 높입니다. 2배속 읽기에만 적용되며 음향 재생 중일 때는 무시됩니다. 일부 게임에서는 로딩 속도가 향상될 수 있지만 다른 게임은 손상될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="86"/>
@@ -3046,14 +3095,14 @@ Unread messages: {}</oldsource>
         <translation>에뮬레이트된 CPU가 캐시로 명령을 가져와야 할 때 리컴파일러에서 멈추는 현상을 시뮬레이션합니다. 성능 저하를 최소화하면서 게임을 콘솔 프레임 속도에 가깝게 실행할 수 있습니다. 인터프리터 모드는 항상 명령어 캐시를 시뮬레이션합니다.</translation>
     </message>
     <message>
+        <location filename="../consolesettingswidget.cpp" line="101"/>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have to use a larger heap size for this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used with compatible mods.</source>
+        <translation>일반적으로 개발 콘솔에 있는 총 2+6=8MB를 얻기 위해 6MB의 램을 추가로 사용할 수 있습니다. 이 추가 램을 사용하려면 게임에서 더 큰 힙 크기를 사용해야 합니다. 메모리 미러를 사용하는 타이틀은 깨질 수 있으므로 호환되는 모드에서만 사용해야 합니다.</translation>
+    </message>
+    <message>
         <location filename="../consolesettingswidget.cpp" line="122"/>
         <source>CD-ROM Read Speedup</source>
         <translation>CD-ROM 읽기 속도 향상</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.cpp" line="123"/>
-        <source>Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio is playing. May improve loading speeds in some games, at the cost of breaking others.</source>
-        <translation>CD-ROM 읽기 속도를 지정된 계수만큼 높입니다. 2배속 읽기에만 적용되며 음향 재생 중일 때는 무시됩니다. 일부 게임에서는 로딩 속도가 향상될 수 있지만 다른 게임은 손상될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="126"/>
@@ -3111,18 +3160,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="89"/>
         <source>Frame Rate</source>
-        <oldsource>Frame Rate</oldsource>
         <translation>프레임 속도</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="237"/>
         <source>%1% (%2MHz)</source>
         <translation>%1%(%2MHz)</translation>
-    </message>
-    <message>
-        <location filename="../consolesettingswidget.cpp" line="130"/>
-        <source>Preload Image to RAM</source>
-        <translation>램에 이미지 미리 불러오기</translation>
     </message>
     <message>
         <source>Force Video Timing</source>
@@ -3190,7 +3233,7 @@ This warning will only be shown once.</source>
 <context>
     <name>Controller</name>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="341"/>
+        <location filename="../../core/analog_controller.cpp" line="343"/>
         <location filename="../../core/analog_joystick.cpp" line="71"/>
         <location filename="../../core/analog_joystick.cpp" line="246"/>
         <location filename="../../core/negcon_rumble.cpp" line="243"/>
@@ -3198,7 +3241,7 @@ This warning will only be shown once.</source>
         <translation>{} 컨트롤러가 아날로그 모드로 전환되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="342"/>
+        <location filename="../../core/analog_controller.cpp" line="344"/>
         <location filename="../../core/analog_joystick.cpp" line="72"/>
         <location filename="../../core/analog_joystick.cpp" line="247"/>
         <location filename="../../core/negcon_rumble.cpp" line="244"/>
@@ -4480,7 +4523,7 @@ This warning will only be shown once.</source>
     <name>ControllerSettingsWindow</name>
     <message>
         <location filename="../controllersettingswindow.ui" line="20"/>
-        <location filename="../controllersettingswindow.cpp" line="320"/>
+        <location filename="../controllersettingswindow.cpp" line="319"/>
         <source>DuckStation Controller Settings</source>
         <translation>DuckStation 컨트롤러 설정</translation>
     </message>
@@ -4510,77 +4553,77 @@ This warning will only be shown once.</source>
         <translation>전역 설정 복사</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="291"/>
+        <location filename="../controllersettingswindow.cpp" line="290"/>
         <source>Restore Defaults</source>
         <translation>기본값으로 되돌리기</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="179"/>
-        <location filename="../controllersettingswindow.cpp" line="233"/>
-        <location filename="../controllersettingswindow.cpp" line="280"/>
-        <location filename="../controllersettingswindow.cpp" line="583"/>
+        <location filename="../controllersettingswindow.cpp" line="178"/>
+        <location filename="../controllersettingswindow.cpp" line="232"/>
+        <location filename="../controllersettingswindow.cpp" line="279"/>
+        <location filename="../controllersettingswindow.cpp" line="582"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="280"/>
+        <location filename="../controllersettingswindow.cpp" line="279"/>
         <source>Failed to delete &apos;%1&apos;.</source>
         <translation>&apos;%1&apos;을(를) 삭제하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="321"/>
+        <location filename="../controllersettingswindow.cpp" line="320"/>
         <source>Per-game controller configuration reset to global settings.</source>
         <translation>게임별 컨트롤러 구성이 전역 설정으로 다시 설정됩니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="440"/>
+        <location filename="../controllersettingswindow.cpp" line="439"/>
         <source>Global Settings</source>
         <translation>전체 설정</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="74"/>
+        <location filename="../controllersettingswindow.cpp" line="73"/>
         <source>DuckStation Controller Presets</source>
         <translation>DuckStation 컨트롤러 사전 설정</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="171"/>
-        <location filename="../controllersettingswindow.cpp" line="184"/>
-        <location filename="../controllersettingswindow.cpp" line="198"/>
+        <location filename="../controllersettingswindow.cpp" line="170"/>
+        <location filename="../controllersettingswindow.cpp" line="183"/>
+        <location filename="../controllersettingswindow.cpp" line="197"/>
         <source>Create Controller Preset</source>
         <translation>컨트롤러 사전 설정 생성</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="171"/>
+        <location filename="../controllersettingswindow.cpp" line="170"/>
         <source>Enter the name for the new controller preset:</source>
         <translation>새 컨트롤러 사전 설정의 이름을 입력 :</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="180"/>
+        <location filename="../controllersettingswindow.cpp" line="179"/>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
         <translation>&apos;%1&apos;(이)라는 이름의 사전 설정이 이미 존재합니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="185"/>
+        <location filename="../controllersettingswindow.cpp" line="184"/>
         <source>Do you want to copy all bindings from the currently-selected preset to the new preset? Selecting No will create a completely empty preset.</source>
         <translation>현재 선택된 사전 설정의 모든 연결을 새 사전 설정으로 복사하시겠습니까? &quot;아니요&quot;를 선택하면 완전히 빈 사전 설정이 생성됩니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="199"/>
+        <location filename="../controllersettingswindow.cpp" line="198"/>
         <source>Do you want to copy the current hotkey bindings from global settings to the new controller preset?</source>
         <translation>현재 단축키 할당을 글로벌 설정에서 새 컨트롤러 사전 설정으로 복사하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="234"/>
+        <location filename="../controllersettingswindow.cpp" line="233"/>
         <source>Failed to save the new preset to &apos;%1&apos;.</source>
         <translation>새 사전 설정을 &apos;%1&apos;에 저장하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="244"/>
+        <location filename="../controllersettingswindow.cpp" line="243"/>
         <source>Load Controller Preset</source>
         <translation>컨트롤러 사전 설정 불러오기</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="245"/>
+        <location filename="../controllersettingswindow.cpp" line="244"/>
         <source>Are you sure you want to apply the controller preset named &apos;%1&apos;?
 
 All current global bindings will be removed, and the preset bindings loaded.
@@ -4593,12 +4636,12 @@ You cannot undo this action.</source>
 이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="269"/>
+        <location filename="../controllersettingswindow.cpp" line="268"/>
         <source>Delete Controller Preset</source>
         <translation>컨트롤러 사전 설정 삭제</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="270"/>
+        <location filename="../controllersettingswindow.cpp" line="269"/>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
@@ -4607,7 +4650,7 @@ You cannot undo this action.</source>
 이 작업은 실행 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="292"/>
+        <location filename="../controllersettingswindow.cpp" line="291"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All bindings and configuration will be lost. You cannot undo this action.</source>
@@ -4616,25 +4659,25 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
 모든 결합 및 구성이 손실됩니다. 이 작업을 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="322"/>
+        <location filename="../controllersettingswindow.cpp" line="321"/>
         <source>Controller preset reset to global settings.</source>
         <translation>컨트롤러 사전 설정이 전역 설정으로 다시 설정되었습니다.</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="466"/>
-        <location filename="../controllersettingswindow.cpp" line="515"/>
+        <location filename="../controllersettingswindow.cpp" line="465"/>
+        <location filename="../controllersettingswindow.cpp" line="514"/>
         <source>Controller Port %1
 %2</source>
         <translation>컨트롤러 포트 %1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="479"/>
+        <location filename="../controllersettingswindow.cpp" line="478"/>
         <source>Hotkeys</source>
         <translation>단축키</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="583"/>
+        <location filename="../controllersettingswindow.cpp" line="582"/>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
         <translation>이름이 &apos;%1&apos;인 컨트롤러 사전 설정을 찾을 수 없습니다.</translation>
     </message>
@@ -4701,7 +4744,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation>네지콘</translation>
     </message>
     <message>
-        <location filename="../../core/analog_controller.cpp" line="881"/>
+        <location filename="../../core/analog_controller.cpp" line="882"/>
         <source>Analog Controller</source>
         <translation>아날로그 컨트롤러</translation>
     </message>
@@ -5362,21 +5405,6 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>제거(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="328"/>
-        <source>&amp;Follow Load/Store</source>
-        <translation>불러오기/저장하기 따라하기(&amp;F)</translation>
-    </message>
-    <message>
-        <location filename="../debuggerwindow.cpp" line="750"/>
-        <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
-        <translation>중단점을 추가하지 못했습니다. 이 주소에 중단점이 이미 있을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../debuggerwindow.cpp" line="769"/>
-        <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
-        <translation>중단점을 제거하지 못했습니다. 이 중단점은 존재하지 않을 수 있습니다.</translation>
-    </message>
-    <message>
         <location filename="../debuggerwindow.cpp" line="268"/>
         <source>Debugger</source>
         <translation>디버거</translation>
@@ -5390,6 +5418,11 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../debuggerwindow.cpp" line="325"/>
         <source>View in &amp;Dump</source>
         <translation>덤프에 표시(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="328"/>
+        <source>&amp;Follow Load/Store</source>
+        <translation>불러오기/저장하기 따라하기(&amp;F)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="380"/>
@@ -5411,6 +5444,16 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../debuggerwindow.cpp" line="441"/>
         <source>Pattern found at 0x%1.</source>
         <translation>0x%1에서 패턴을 찾았습니다.</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="750"/>
+        <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
+        <translation>중단점을 추가하지 못했습니다. 이 주소에 중단점이 이미 있을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../debuggerwindow.cpp" line="769"/>
+        <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
+        <translation>중단점을 제거하지 못했습니다. 이 중단점은 존재하지 않을 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../debuggermodels.cpp" line="479"/>
@@ -5439,6 +5482,31 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DigitalController</name>
     <message>
+        <location filename="../../core/digital_controller.cpp" line="172"/>
+        <source>Select</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="173"/>
+        <source>Start</source>
+        <translation>시작</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="168"/>
+        <source>Triangle</source>
+        <translation>△</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="170"/>
+        <source>Cross</source>
+        <translation>Ｘ</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="169"/>
+        <source>Circle</source>
+        <translation>○</translation>
+    </message>
+    <message>
         <location filename="../../core/digital_controller.cpp" line="164"/>
         <source>D-Pad Up</source>
         <translation>십자 버튼 ↑</translation>
@@ -5459,34 +5527,9 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>십자 버튼 ←</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="168"/>
-        <source>Triangle</source>
-        <translation>△</translation>
-    </message>
-    <message>
-        <location filename="../../core/digital_controller.cpp" line="169"/>
-        <source>Circle</source>
-        <translation>○</translation>
-    </message>
-    <message>
-        <location filename="../../core/digital_controller.cpp" line="170"/>
-        <source>Cross</source>
-        <translation>Ｘ</translation>
-    </message>
-    <message>
         <location filename="../../core/digital_controller.cpp" line="171"/>
         <source>Square</source>
         <translation>□</translation>
-    </message>
-    <message>
-        <location filename="../../core/digital_controller.cpp" line="172"/>
-        <source>Select</source>
-        <translation>선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/digital_controller.cpp" line="173"/>
-        <source>Start</source>
-        <translation>시작</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="174"/>
@@ -5494,14 +5537,14 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="175"/>
-        <source>R1</source>
-        <translation>R1</translation>
-    </message>
-    <message>
         <location filename="../../core/digital_controller.cpp" line="176"/>
         <source>L2</source>
         <translation>L2</translation>
+    </message>
+    <message>
+        <location filename="../../core/digital_controller.cpp" line="175"/>
+        <source>R1</source>
+        <translation>R1</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="177"/>
@@ -5769,10 +5812,10 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>대기 시간 제어</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="74"/>
-        <location filename="../emulationsettingswidget.cpp" line="120"/>
-        <source>Reduce Input Latency</source>
-        <translation>입력 지연 시간 단축</translation>
+        <location filename="../emulationsettingswidget.ui" line="88"/>
+        <location filename="../emulationsettingswidget.cpp" line="103"/>
+        <source>Vertical Sync (VSync)</source>
+        <translation>수직 동기화(VSync)</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="81"/>
@@ -5781,16 +5824,16 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>호스트 새로고침 속도에 동기화</translation>
     </message>
     <message>
-        <location filename="../emulationsettingswidget.ui" line="88"/>
-        <location filename="../emulationsettingswidget.cpp" line="103"/>
-        <source>Vertical Sync (VSync)</source>
-        <translation>수직 동기화(VSync)</translation>
-    </message>
-    <message>
         <location filename="../emulationsettingswidget.ui" line="95"/>
         <location filename="../emulationsettingswidget.cpp" line="115"/>
         <source>Optimal Frame Pacing</source>
         <translation>최적의 프레임 속도</translation>
+    </message>
+    <message>
+        <location filename="../emulationsettingswidget.ui" line="74"/>
+        <location filename="../emulationsettingswidget.cpp" line="120"/>
+        <source>Reduce Input Latency</source>
+        <translation>입력 지연 시간 단축</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="102"/>
@@ -5905,6 +5948,11 @@ This file is approximately 206KB, do you want to download it now?</source>
         <translation>텍스트 라벨</translation>
     </message>
     <message>
+        <location filename="../emulationsettingswidget.cpp" line="141"/>
+        <source>Runahead</source>
+        <translation>선행 실행</translation>
+    </message>
+    <message>
         <location filename="../emulationsettingswidget.cpp" line="92"/>
         <source>Emulation Speed</source>
         <translation>에뮬레이션 속도</translation>
@@ -5999,11 +6047,6 @@ This file is approximately 206KB, do you want to download it now?</source>
         <location filename="../emulationsettingswidget.cpp" line="135"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
         <translation>&lt;b&gt;되감기 활성화 :&lt;/b&gt; 주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.&lt;br&gt;&lt;b&gt;되감기 저장 빈도 :&lt;/b&gt; 되감기 상태가 생성되는 빈도입니다. 빈도가 높을수록 시스템 요구 사항이 커집니다.&lt;br&gt;&lt;b&gt;되감기 버퍼 크기 :&lt;/b&gt; 되감기를 위해 보관할 저장 횟수입니다. 값이 클수록 메모리 요구량이 커집니다.</translation>
-    </message>
-    <message>
-        <location filename="../emulationsettingswidget.cpp" line="141"/>
-        <source>Runahead</source>
-        <translation>선행 실행</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="142"/>
@@ -6172,472 +6215,463 @@ This file is approximately 206KB, do you want to download it now?</source>
 <context>
     <name>FullscreenUI</name>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9232"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9273"/>
+        <source>-</source>
+        <translation>-</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9274"/>
         <source>1 Frame</source>
         <translation>1프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9233"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9275"/>
         <source>10 Frames</source>
         <translation>10프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9234"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9276"/>
         <source>100% [60 FPS (NTSC) / 50 FPS (PAL)]</source>
         <translation>100% [60fps(NTSC)/50fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9235"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9277"/>
         <source>1000% [600 FPS (NTSC) / 500 FPS (PAL)]</source>
         <translation>1000% [600fps(NTSC)/500fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9236"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9278"/>
         <source>10x</source>
         <translation>10배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9237"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9279"/>
         <source>10x (20x Speed)</source>
         <translatorcomment>(x velocidade)</translatorcomment>
         <translation>10배(20배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9238"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9280"/>
         <source>11x</source>
         <translation>11배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9239"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9281"/>
         <source>125% [75 FPS (NTSC) / 62 FPS (PAL)]</source>
         <translation>125% [75fps(NTSC)/62fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9240"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9282"/>
         <source>12x</source>
         <translation>12배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9241"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9283"/>
         <source>13x</source>
         <translation>13배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9242"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9284"/>
         <source>14x</source>
         <translation>14배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9243"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9285"/>
         <source>150% [90 FPS (NTSC) / 75 FPS (PAL)]</source>
         <translation>150% [90fps(NTSC)/75fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9244"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9286"/>
         <source>15x</source>
         <translation>15배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9245"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9287"/>
         <source>16x</source>
         <translation>16배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9246"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9288"/>
         <source>175% [105 FPS (NTSC) / 87 FPS (PAL)]</source>
         <translation>175% [105fps(NTSC)/87fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9247"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9289"/>
         <source>1x</source>
         <translation>1배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9248"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9290"/>
         <source>2 Frames</source>
         <translation>2프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9249"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9291"/>
         <source>20% [12 FPS (NTSC) / 10 FPS (PAL)]</source>
         <translation>20% [12fps(NTSC)/10fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9250"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9292"/>
         <source>200% [120 FPS (NTSC) / 100 FPS (PAL)]</source>
         <translation>200% [120fps(NTSC)/100fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9251"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9293"/>
         <source>250% [150 FPS (NTSC) / 125 FPS (PAL)]</source>
         <translation>250% [150fps(NTSC)/125fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9252"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9294"/>
         <source>2x</source>
         <translation>2배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9253"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9295"/>
         <source>2x (Quad Speed)</source>
         <translation>2배(4배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9254"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9296"/>
         <source>3 Frames</source>
         <translation>3프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9255"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9297"/>
         <source>30% [18 FPS (NTSC) / 15 FPS (PAL)]</source>
         <translation>30% [18fps(NTSC)/15fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9256"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9298"/>
         <source>300% [180 FPS (NTSC) / 150 FPS (PAL)]</source>
         <translation>300% [180fps(NTSC)/150fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9257"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9299"/>
         <source>350% [210 FPS (NTSC) / 175 FPS (PAL)]</source>
         <translation>350% [210fps(NTSC)/175fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9258"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9300"/>
         <source>3x</source>
         <translation>3배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9259"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9301"/>
         <source>3x (6x Speed)</source>
         <translation>3배(6배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9260"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9302"/>
         <source>3x (for 720p)</source>
         <translation>3배(720p용)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9261"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9303"/>
         <source>4 Frames</source>
         <translation>4프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9262"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9304"/>
         <source>40% [24 FPS (NTSC) / 20 FPS (PAL)]</source>
         <translation>40% [24fps(NTSC)/20fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9263"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9305"/>
         <source>400% [240 FPS (NTSC) / 200 FPS (PAL)]</source>
         <translation>400% [240fps(NTSC)/200fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9264"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9306"/>
         <source>450% [270 FPS (NTSC) / 225 FPS (PAL)]</source>
         <translation>450% [270fps(NTSC)/225fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9265"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9307"/>
         <source>4x</source>
         <translation>4배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9266"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9308"/>
         <source>4x (8x Speed)</source>
         <translation>4배(8배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9267"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9309"/>
         <source>5 Frames</source>
         <translation>5프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9268"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9310"/>
         <source>50% [30 FPS (NTSC) / 25 FPS (PAL)]</source>
         <translation>50% [30fps(NTSC)/25fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9269"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9311"/>
         <source>500% [300 FPS (NTSC) / 250 FPS (PAL)]</source>
         <translation>500% [300fps(NTSC)/250fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9270"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9312"/>
         <source>5x</source>
         <translation>5배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9271"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9313"/>
         <source>5x (10x Speed)</source>
         <translation>5배(10배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9272"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9314"/>
         <source>5x (for 1080p)</source>
         <translation>5배(1080p용)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9273"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9315"/>
         <source>6 Frames</source>
         <translation>6프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9274"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9316"/>
         <source>60% [36 FPS (NTSC) / 30 FPS (PAL)]</source>
         <translation>60% [36fps(NTSC)/30fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9275"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9317"/>
         <source>600% [360 FPS (NTSC) / 300 FPS (PAL)]</source>
         <translation>600% [360fps(NTSC)/300fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9276"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9318"/>
         <source>6x</source>
         <translation>6배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9277"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9319"/>
         <source>6x (12x Speed)</source>
         <translation>6배(12배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9278"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9320"/>
         <source>6x (for 1440p)</source>
         <translation>6배(1440p용)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9279"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9321"/>
         <source>7 Frames</source>
         <translation>7프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9280"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9322"/>
         <source>70% [42 FPS (NTSC) / 35 FPS (PAL)]</source>
         <translation>70% [42fps(NTSC)/35fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9281"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9323"/>
         <source>700% [420 FPS (NTSC) / 350 FPS (PAL)]</source>
         <translation>700% [420fps(NTSC)/350fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9282"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9324"/>
         <source>7x</source>
         <translation>7배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9283"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9325"/>
         <source>7x (14x Speed)</source>
         <translation>7배(14배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9284"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9326"/>
         <source>8 Frames</source>
         <translation>8프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9285"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9327"/>
         <source>80% [48 FPS (NTSC) / 40 FPS (PAL)]</source>
         <translation>80% [48fps(NTSC)/40fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9286"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9328"/>
         <source>800% [480 FPS (NTSC) / 400 FPS (PAL)]</source>
         <translation>800% [480fps(NTSC)/400fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9287"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9329"/>
         <source>8x</source>
         <translation>8배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9288"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9330"/>
         <source>8x (16x Speed)</source>
         <translation>8배(16배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9289"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9331"/>
         <source>9 Frames</source>
         <translation>9프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9290"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9332"/>
         <source>90% [54 FPS (NTSC) / 45 FPS (PAL)]</source>
         <translation>90% [54fps(NTSC)/45fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9291"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9333"/>
         <source>900% [540 FPS (NTSC) / 450 FPS (PAL)]</source>
         <translation>900% [540fps(NTSC)/450fps(PAL)]</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9292"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9334"/>
         <source>9x</source>
         <translation>9배</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9293"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9335"/>
         <source>9x (18x Speed)</source>
         <translation>9배(18배속)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9294"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9336"/>
         <source>9x (for 4K)</source>
         <translation>9배(4K용)</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9295"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9337"/>
         <source>A cover already exists for this game. Are you sure that you want to overwrite it?</source>
         <translation>이 게임의 커버가 이미 존재합니다. 덮어쓰시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9297"/>
-        <source>About</source>
-        <translation>정보</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9298"/>
-        <source>Achievement Notifications</source>
-        <translation>도전 과제 알림</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9299"/>
-        <source>Achievement Unlock/Count</source>
-        <translation>도전 과제 잠금 해제/횟수</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9300"/>
-        <source>Achievements</source>
-        <translation>도전 과제</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9301"/>
-        <source>Achievements Settings</source>
-        <translation>도전 과제 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9304"/>
-        <source>Add Search Directory</source>
-        <translation>검색 디렉터리 추가</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9305"/>
-        <source>Add Shader</source>
-        <translation>셰이더 추가</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9306"/>
-        <source>Adds a new directory to the game search list.</source>
-        <translation>게임 검색 목록에 새 디렉터리를 추가합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9307"/>
-        <source>Adds a new shader to the chain.</source>
-        <translation>체인에 새 셰이더를 추가합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9308"/>
-        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation>PGXP 데이터 포스트 프로젝션에 정밀도를 더합니다. 일부 게임에서 비주얼을 개선할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9623"/>
-        <source>Load Preset</source>
-        <translation>사전 설정 불러오기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9302"/>
-        <source>Achievements are not enabled.</source>
-        <translation>도전 과제가 활성화되어 있지 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9225"/>
-        <source>%.2f Seconds</source>
-        <translation>%.2f초</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9226"/>
-        <source>%d Frames</source>
-        <translation>%d프레임</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9228"/>
-        <source>%d ms</source>
-        <translation>%d밀리초</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9229"/>
-        <source>%d sectors</source>
-        <translation>%d초</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9231"/>
-        <source>-</source>
-        <translation>-</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9296"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9338"/>
         <source>AMOLED</source>
         <translation>AMOLED</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9310"/>
-        <source>Advanced</source>
-        <translation>고급 설정</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9386"/>
+        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. Does not work for all games.</source>
+        <translation>게임이 CD-ROM 모터를 멈췄을 때 자동으로 다음 디스크로 전환합니다. 모든 게임에서 작동하지는 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9311"/>
-        <source>Advanced Settings</source>
-        <translation>고급 설정</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9504"/>
+        <source>Disc</source>
+        <translation>디스크</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9312"/>
-        <source>All Time: {}</source>
-        <translation>총 시간 : {}</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9519"/>
+        <source>Draws a border around the currently-selected item for readability.</source>
+        <translation>가독성을 위해 현재 선택된 항목 주위에 외곽선을 그립니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9313"/>
-        <source>Allow Booting Without SBI File</source>
-        <translation>SBI 파일 없이 부팅 허용</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9561"/>
+        <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
+        <translation>빅피처 UI에서 메뉴를 부드럽게 스크롤할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9315"/>
-        <source>Alpha Blending</source>
-        <translation>불투명도</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9585"/>
+        <source>Failed to update progress database</source>
+        <translation>진행률 데이터베이스 업데이트 실패</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9316"/>
-        <source>Always Track Uploads</source>
-        <translation>항상 올리기 추적</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9623"/>
+        <source>Genre: </source>
+        <translation>장르 : </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9317"/>
-        <source>An error occurred while deleting empty game settings:
-{}</source>
-        <translation>빈 게임 설정을 삭제하는 중 오류 발생 :
-{}</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9340"/>
+        <source>Achievement Notifications</source>
+        <translation>도전 과제 알림</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9318"/>
-        <source>An error occurred while saving game settings:
-{}</source>
-        <translation>게임 설정을 저장하는 중 오류 발생 :
-{}</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9341"/>
+        <source>Achievement Unlock/Count</source>
+        <translation>도전 과제 잠금 해제/횟수</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9320"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9342"/>
+        <source>Achievements</source>
+        <translation>도전 과제</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9343"/>
+        <source>Achievements Settings</source>
+        <translation>도전 과제 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9346"/>
+        <source>Add Search Directory</source>
+        <translation>검색 디렉터리 추가</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9347"/>
+        <source>Add Shader</source>
+        <translation>셰이더 추가</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9348"/>
+        <source>Adds a new directory to the game search list.</source>
+        <translation>게임 검색 목록에 새 디렉터리를 추가합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9349"/>
+        <source>Adds a new shader to the chain.</source>
+        <translation>체인에 새 셰이더를 추가합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9350"/>
+        <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
+        <translation>PGXP 데이터 포스트 프로젝션에 정밀도를 더합니다. 일부 게임에서 비주얼을 개선할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9361"/>
+        <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
+        <translation>빅피처 UI에서 창을 열거나 닫고 뷰 간 변경하는 동작을 애니메이션으로 표현합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9362"/>
         <source>Appearance</source>
         <translation>모양</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9321"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9344"/>
+        <source>Achievements are not enabled.</source>
+        <translation>도전 과제가 활성화되어 있지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9265"/>
+        <source> (%u MB on disk)</source>
+        <translation>(디스크 공간 %uMB)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9339"/>
+        <source>About</source>
+        <translation>정보</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9352"/>
+        <source>Advanced</source>
+        <translation>고급 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9353"/>
+        <source>Advanced Settings</source>
+        <translation>고급 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9354"/>
+        <source>All Time: {}</source>
+        <translation>총 시간 : {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9355"/>
+        <source>Allow Booting Without SBI File</source>
+        <translation>SBI 파일 없이 부팅 허용</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9363"/>
         <source>Apply Image Patches</source>
         <translation>이미지 패치 적용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9322"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9364"/>
         <source>Are you sure you want to clear all mappings for this controller?
 
 You cannot undo this action.</source>
@@ -6646,12 +6680,12 @@ You cannot undo this action.</source>
 이 작업을 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9323"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9365"/>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
         <translation>현재 후처리 체인을 지우시겠습니까? 모든 구성이 손실됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9324"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9366"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All bindings and configuration will be lost. You cannot undo this action.</source>
@@ -6660,1533 +6694,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
 모든 결합 및 구성이 손실됩니다. 이 작업을 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9326"/>
-        <source>Aspect Ratio</source>
-        <translation>종횡비</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9327"/>
-        <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation>업스케일링으로 인해 발생한 틈을 채우면서 업스케일링되지 않은 래스터화 동작에 의존하여 한 픽셀 높이/너비의 선을 감지하려는 시도입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9328"/>
-        <source>Attempts to map the selected port to a chosen controller.</source>
-        <translation>선택한 포트를 선택한 컨트롤러에 매핑하려고 시도합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9329"/>
-        <source>Audio Backend</source>
-        <translation>음향 후단부</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9330"/>
-        <source>Audio Control</source>
-        <translation>음향 제어</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9331"/>
-        <source>Audio Settings</source>
-        <translation>음향 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9332"/>
-        <source>Auto-Detect</source>
-        <translation>자동 감지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9334"/>
-        <source>Automatic Mapping</source>
-        <translation>자동 매핑</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9335"/>
-        <source>Automatic based on window size</source>
-        <translation>창 크기에 따라 자동 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9336"/>
-        <source>Automatic mapping completed for {}.</source>
-        <translation>{}에 대한 자동 매핑이 완료되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9337"/>
-        <source>Automatic mapping failed for {}.</source>
-        <translation>{}에 대한 자동 매핑에 실패했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9338"/>
-        <source>Automatic mapping failed, no devices are available.</source>
-        <translation>자동 매핑에 실패하여, 사용할 수 있는 장치가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9339"/>
-        <source>Automatically Resize Window</source>
-        <translation>창 크기 자동 조정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9340"/>
-        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
-        <translation>디스크 이미지에 패치가 있을 때 자동으로 패치를 적용하며, 현재는 PPF만 지원됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9341"/>
-        <source>Automatically resizes the window to match the internal resolution.</source>
-        <translation>내부 해상도에 맞게 창 크기를 자동으로 조정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9342"/>
-        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
-        <translation>전원을 끄거나 종료할 때 에뮬레이터 상태를 자동으로 저장합니다. 그러면 다음 번에 중단한 지점부터 바로 다시 시작할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9343"/>
-        <source>Automatically switches to fullscreen mode when the program is started.</source>
-        <translation>프로그램이 시작되면 자동으로 전체 화면 모드로 전환됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9344"/>
-        <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. Does not work for all games.</source>
-        <translation>게임이 CD-ROM 모터를 멈췄을 때 자동으로 다음 디스크로 전환합니다. 모든 게임에서 작동하지는 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9345"/>
-        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
-        <translation>C++ 코드 호출을 방지하여 리컴파일러의 속도가 크게 향상됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9346"/>
-        <source>BIOS Directory</source>
-        <translation>바이오스 디렉터리</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9347"/>
-        <source>BIOS Selection</source>
-        <translation>바이오스 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9348"/>
-        <source>BIOS Settings</source>
-        <translation>바이오스 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9349"/>
-        <source>BIOS for {}</source>
-        <translation>{}용 바이오스</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9350"/>
-        <source>BIOS to use when emulating {} consoles.</source>
-        <translation>콘솔을 에뮬레이트할 때 사용할 바이오스입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9351"/>
-        <source>Back</source>
-        <translation>뒤로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9352"/>
-        <source>Back To Pause Menu</source>
-        <translation>일시 정지 메뉴로 돌아가기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9353"/>
-        <source>Backend Settings</source>
-        <translation>후단부 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9354"/>
-        <source>Behavior</source>
-        <translation>동작</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9355"/>
-        <source>Border Overlay</source>
-        <translation>외곽선 오버레이</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9356"/>
-        <source>Borderless Fullscreen</source>
-        <translation>전체 창 화면</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9357"/>
-        <source>Buffer Size</source>
-        <translation>버퍼 크기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9358"/>
-        <source>Buttons</source>
-        <translation>버튼</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9359"/>
-        <source>CD-ROM Emulation</source>
-        <translation>CD-ROM 에뮬레이션</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9360"/>
-        <source>CPU Emulation</source>
-        <translation>CPU 에뮬레이션</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9361"/>
-        <source>CPU Mode</source>
-        <translation>CPU 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9362"/>
-        <source>Cancel</source>
-        <translation>취소</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9363"/>
-        <source>Capture</source>
-        <translation>캡처</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9364"/>
-        <source>Change Disc</source>
-        <translation>디스크 교체</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9369"/>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
-        <translation>콘솔의 출력을 화면에 표시하는 데 사용되는 종횡비를 변경합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9371"/>
-        <source>Chooses the language used for UI elements.</source>
-        <translation>사용자 인터페이스 요소에 사용할 언어를 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9372"/>
-        <source>Clean Boot</source>
-        <translation>클린 부팅</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9374"/>
-        <source>Clear Settings</source>
-        <translation>설정 지우기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9375"/>
-        <source>Clear Shaders</source>
-        <translation>셰이더 지우기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9376"/>
-        <source>Clears a shader from the chain.</source>
-        <translation>체인에서 셰이더를 지웁니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9377"/>
-        <source>Clears all settings set for this game.</source>
-        <translation>이 게임의 모든 설정을 지웁니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9378"/>
-        <source>Close</source>
-        <translation>닫기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9379"/>
-        <source>Close Game</source>
-        <translation>게임 닫기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9380"/>
-        <source>Close Menu</source>
-        <translation>메뉴 닫기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9381"/>
-        <source>Cobalt Sky</source>
-        <translation>코발트 스카이</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9382"/>
-        <source>Compatibility Rating</source>
-        <translation>호환성 평가</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9383"/>
-        <source>Compatibility: </source>
-        <translation>호환성 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9384"/>
-        <source>Completely exits the application, returning you to your desktop.</source>
-        <translation>앱을 완전히 종료하고 데스크톱으로 돌아갑니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9385"/>
-        <source>Configuration</source>
-        <translation>설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9386"/>
-        <source>Confirm Power Off</source>
-        <translation>전원 끔 확인</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9387"/>
-        <source>Console Settings</source>
-        <translation>콘솔 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9389"/>
-        <source>Controller Port {}</source>
-        <translation>컨트롤러 포트 {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9391"/>
-        <source>Controller Port {} Macros</source>
-        <translation>컨트롤러 포트 {} 매크로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9392"/>
-        <source>Controller Port {} Settings</source>
-        <translation>컨트롤러 포트 {} 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9393"/>
-        <source>Controller Settings</source>
-        <translation>컨트롤러 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9394"/>
-        <source>Controller Type</source>
-        <translation>컨트롤러 유형</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9395"/>
-        <source>Controller mapping cleared.</source>
-        <translation>컨트롤러 매핑이 제거되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9396"/>
-        <source>Controller preset &apos;{}&apos; loaded.</source>
-        <translation>컨트롤러 사전 설정 &apos;{}&apos;을(를) 불러왔습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9397"/>
-        <source>Controller preset &apos;{}&apos; saved.</source>
-        <translation>컨트롤러 사전 설정 &apos;{}&apos;이(가) 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9398"/>
-        <source>Controller settings reset to default.</source>
-        <translation>컨트롤러 설정이 기본값으로 초기화됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9399"/>
-        <source>Controls</source>
-        <translation>컨트롤러</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9400"/>
-        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
-        <translation>에뮬레이트된 GPU에 디더링이 적용되는 방식을 제어합니다. 트루컬러는 디더링을 비활성화하고 가장 보기 좋은 그라데이션을 생성합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9401"/>
-        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation>빨리 감기 시, 호스트에서 재생되는 음향의 음량을 제어합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9402"/>
-        <source>Controls the volume of the audio played on the host.</source>
-        <translation>호스트에서 재생되는 음향의 볼륨을 제어합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9403"/>
-        <source>Copies the current global settings to this game.</source>
-        <translation>현재 전역 설정을 이 게임에 복사합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9404"/>
-        <source>Copies the global controller configuration to this game.</source>
-        <translation>전역 컨트롤러 구성을 이 게임에 복사합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9405"/>
-        <source>Copy Global Settings</source>
-        <translation>전역 설정 복사</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9406"/>
-        <source>Copy Settings</source>
-        <translation>설정 복사</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9407"/>
-        <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
-        <translation>CD/DVD-ROM 장치를 찾을 수 없습니다. 드라이브가 연결되어 있고 접근할 수 있는 권한이 충분한지 확인하세요.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9408"/>
-        <source>Cover Settings</source>
-        <translation>커버 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9409"/>
-        <source>Cover set.</source>
-        <translation>커버 설정.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9410"/>
-        <source>Covers Directory</source>
-        <translation>커버 디렉터리</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9411"/>
-        <source>Create</source>
-        <translation>생성</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9413"/>
-        <source>Create Save State Backups</source>
-        <translation>상태 저장 백업 생성</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9414"/>
-        <source>Crop Mode</source>
-        <translation>자르기 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9415"/>
-        <source>Culling Correction</source>
-        <translation>컬링 보정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9416"/>
-        <source>Custom</source>
-        <translation>사용자 정의</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9417"/>
-        <source>Dark</source>
-        <translation>다크</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9418"/>
-        <source>Dark Ruby</source>
-        <translation>다크 루비</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9419"/>
-        <source>Deadzone</source>
-        <translation>데드존</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9420"/>
-        <source>Debugging Settings</source>
-        <translation>디버그 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9421"/>
-        <source>Default</source>
-        <translation>기본값</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9422"/>
-        <source>Default Boot</source>
-        <translation>기본 부팅</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9423"/>
-        <source>Default Value</source>
-        <oldsource>Default View</oldsource>
-        <translation>기본값</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9424"/>
-        <source>Default View</source>
-        <translation>기본값 : 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9425"/>
-        <source>Default: Disabled</source>
-        <translation>기본값 : 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9426"/>
-        <source>Default: Enabled</source>
-        <translation>기본값 : 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9427"/>
-        <source>Deinterlacing Mode</source>
-        <translation>인터레이스 제거 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9428"/>
-        <source>Delete Save</source>
-        <translation>저장 삭제</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9429"/>
-        <source>Delete State</source>
-        <translation>상태 삭제</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9431"/>
-        <source>Depth Test Transparent Polygons</source>
-        <translation>투명 다각형 깊이 테스트</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9432"/>
-        <source>Desktop Mode</source>
-        <translation>데스크톱 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9433"/>
-        <source>Destination Alpha Blending</source>
-        <translation>대상 알파 블렌딩</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9434"/>
-        <source>Details</source>
-        <translation>상세 정보</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9435"/>
-        <source>Details unavailable for game not scanned in game list.</source>
-        <translation>게임 목록에서 검색되지 않은 게임의 세부 정보를 확인할 수 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9436"/>
-        <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation>화면 메시지와 모니터의 크기를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9438"/>
-        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
-        <translation>호스트 API가 수신하는 음향과 스피커를 통해 재생되는 음향 사이에 얼마나 많은 지연 시간이 있는지 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9439"/>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
-        <translation>일반적으로 소비자 TV 세트에서 보이지 않는 영역을 얼마나 잘라내거나 숨길지 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9441"/>
-        <source>Determines how the emulated CPU executes instructions.</source>
-        <translation>에뮬레이트된 CPU가 명령을 실행하는 방식을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9442"/>
-        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>에뮬레이트된 콘솔의 출력을 모니터 해상도에 맞게 업스케일링 또는 다운스케일링하는 방법을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9443"/>
-        <source>Determines quality of audio when not running at 100% speed.</source>
-        <translation>100% 속도로 실행되지 않을 때의 음향 품질을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9444"/>
-        <source>Determines that field that the game list will be sorted by.</source>
-        <translation>게임 목록이 정렬될 필드를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9445"/>
-        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
-        <translation>호스트 API가 가져오기 전에 버퍼링되는 오디오의 양을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9447"/>
-        <source>Determines the emulated hardware type.</source>
-        <translation>에뮬레이트된 하드웨어 유형을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9448"/>
-        <source>Determines the format that screenshots will be saved/compressed with.</source>
-        <translation>스크린샷을 저장/압축할 형식을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9451"/>
-        <source>Determines the position on the screen when black borders must be added.</source>
-        <translation>화면에 검은색 외곽선을 추가할 때 표시 위치를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9452"/>
-        <source>Determines the rotation of the simulated TV screen.</source>
-        <translation>시뮬레이션된 TV 화면의 회전을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9453"/>
-        <source>Determines the size of screenshots created by DuckStation.</source>
-        <translation>DuckStation에서 생성되는 스크린샷의 크기를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9454"/>
-        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation>단축키를 눌렀을 때 에뮬레이터/게임 종료를 확인하는 메시지를 표시할지 여부를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9455"/>
-        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
-        <translation>시스템에 표시하기 위해 인터레이스 프레임을 프로그레시브 프레임으로 변환하는 데 사용되는 알고리즘을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9456"/>
-        <source>Device Settings</source>
-        <translation>장치 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9457"/>
-        <source>Disable Mailbox Presentation</source>
-        <translation>사서함 표시 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9458"/>
-        <source>Disable Subdirectory Scanning</source>
-        <translation>하위 디렉터리 검색 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9459"/>
-        <source>Disable on 2D Polygons</source>
-        <translation>2D 폴리곤에서 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9460"/>
-        <source>Disabled</source>
-        <translation>비활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9462"/>
-        <source>Discord Server</source>
-        <translation>디스코드 서버</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9465"/>
-        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>도전 과제 봉인 해제 및 순위표 제출과 같은 이벤트에 대한 팝업 메시지를 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9466"/>
-        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>순위표 도전을 시작, 제출 또는 실패할 때 팝업 메시지를 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9468"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>{:%c}에 생성된 자동 저장을 계속 진행하시겠습니까?</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9469"/>
-        <source>Double-Click Toggles Fullscreen</source>
-        <translation>두 번 클릭하면 전체 화면 전환</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9470"/>
-        <source>Download Covers</source>
-        <translation>커버 내려받기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9471"/>
-        <source>Downloads covers from a user-specified URL template.</source>
-        <translation>사용자 지정 URL 템플릿에서 커버를 내려받습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9472"/>
-        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
-        <translation>렌더링된 이미지를 표시하기 전에 다운샘플링합니다. 2D/3D 혼합 게임에서 전반적인 이미지 품질을 개선할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9473"/>
-        <source>Downsampling</source>
-        <translation>하향 표본화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9474"/>
-        <source>Downsampling Display Scale</source>
-        <translation>하향 표본화 화면 표시 크기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9475"/>
-        <source>Draws a border around the currently-selected item for readability.</source>
-        <translation>가독성을 위해 현재 선택된 항목 주위에 외곽선을 그립니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9476"/>
-        <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
-        <translation>Duck 아이콘 : icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9480"/>
-        <source>Emulation Settings</source>
-        <translation>에뮬레이션 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9481"/>
-        <source>Emulation Speed</source>
-        <translation>에뮬레이션 속도</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9482"/>
-        <source>Enable 8MB RAM</source>
-        <translation>8MB 램 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9483"/>
-        <source>Enable Achievements</source>
-        <translation>도전 과제 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9484"/>
-        <source>Enable Achievements to see your user summary.</source>
-        <translation>도전 과제를 활성화하면 사용자 요약을 볼 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9485"/>
-        <source>Enable Cheats</source>
-        <translation>치트 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9486"/>
-        <source>Enable Discord Presence</source>
-        <translation>디스코드 참석 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9487"/>
-        <source>Enable Fast Boot</source>
-        <translation>고속 부팅 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9490"/>
-        <source>Enable In-Game Overlays</source>
-        <translation>게임 내 오버레이 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9491"/>
-        <source>Enable Overclocking</source>
-        <translation>오버클럭 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9492"/>
-        <source>Enable Post Processing</source>
-        <translation>후처리 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9493"/>
-        <source>Enable Recompiler Block Linking</source>
-        <translation>리컴파일러 블록 연결 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9494"/>
-        <source>Enable Recompiler ICache</source>
-        <translation>리컴파일러 명령어 캐시 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9495"/>
-        <source>Enable Recompiler Memory Exceptions</source>
-        <translation>리컴파일러 메모리 예외 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9496"/>
-        <source>Enable Region Check</source>
-        <translation>지역 코드 검사 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9497"/>
-        <source>Enable Rewinding</source>
-        <translation>되감기 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9498"/>
-        <source>Enable SDL Input Source</source>
-        <translation>SDL 입력 소스 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9500"/>
-        <source>Enable TTY Logging</source>
-        <translation>TTY 로그 기록 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9501"/>
-        <source>Enable Texture Cache</source>
-        <translation>텍스처 캐시 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9502"/>
-        <source>Enable Texture Dumping</source>
-        <translation>텍스처 덤핑 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9503"/>
-        <source>Enable Texture Replacements</source>
-        <translation>텍스처 교체 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9504"/>
-        <source>Enable VRAM Write Dumping</source>
-        <translation>비디오램 쓰기 덤핑 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9505"/>
-        <source>Enable VRAM Write Replacement</source>
-        <translation>비디오램 쓰기 교체 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9508"/>
-        <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation>듀얼센스 컨트롤러의 플레이어 LED를 활성화/비활성화합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
-        <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation>텍스처 교체에 필요한 게스트 텍스처 캐싱을 활성화합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9513"/>
-        <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
-        <translation>반투명 폴리곤에 대한 깊이 테스트를 활성화합니다. 일반적으로 이러한 폴리곤에는 그림자가 포함되며, 깊이 테스트가 활성화되면 지면을 통과하는 경향이 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9514"/>
-        <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation>대체할 수 있는 이미지 파일에 텍스처를 덤프할 수 있습니다. 모든 게임과 호환되지는 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9515"/>
-        <source>Enables loading of cheats for this game from DuckStation&apos;s database.</source>
-        <translation>DuckStation 데이터베이스에서 이 게임의 치트를 불러올 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9516"/>
-        <source>Enables loading of replacement textures. Not compatible with all games.</source>
-        <translation>대체 텍스처 불러오기를 활성화합니다. 모든 게임과 호환되지는 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9518"/>
-        <source>Enables the cheats that are selected below.</source>
-        <translation>아래에 선택된 치트를 활성화합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9519"/>
-        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation>이전의 덜 정확한 MDEC 디코딩 루틴을 활성화합니다. 이전 대체 배경이 일치하거나 불러오는 데 필요할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9521"/>
-        <source>Encore Mode</source>
-        <translation>앙코르 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9522"/>
-        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
-        <translation>최적의 속도를 위해 생성된 모든 프레임이 표시되도록 합니다. GSync/FreeSync와 같은 가변 새로 고침 화면을 사용하도록 설정합니다. 속도나 사운드 문제가 있으면 비활성화하세요.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9523"/>
-        <source>Enter Value</source>
-        <translation>값 입력</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9524"/>
-        <source>Enter the name of the controller preset you wish to create.</source>
-        <translation>생성하려는 컨트롤러 사전 설정의 이름을 입력하세요.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9525"/>
-        <source>Error</source>
-        <translation>오류</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9529"/>
-        <source>Exit DuckStation</source>
-        <translation>DuckStation 종료</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9531"/>
-        <source>Exits Big Picture mode, returning to the desktop interface.</source>
-        <translation>빅픽처 모드를 종료하고 데스크톱 인터페이스로 돌아갑니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9532"/>
-        <source>FMV Chroma Smoothing</source>
-        <translation>FMV 채도 평활화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9533"/>
-        <source>Failed to copy cover: {}</source>
-        <translation>표지 복사 실패 : {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9535"/>
-        <source>Failed to delete existing cover: {}</source>
-        <translation>기존 표지 삭제 실패 : {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9539"/>
-        <source>Failed to load shader {}. It may be invalid.
-Error was:</source>
-        <translation>셰이더 {}을(를) 불러오지 못했습니다. 유효하지 않을 수 있습니다.
-오류 발생 :</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9540"/>
-        <source>Failed to save controller preset &apos;{}&apos;.</source>
-        <translation>컨트롤러 사전 설정 &apos;{}&apos;을(를) 저장하지 못했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9541"/>
-        <source>Failed to update progress database</source>
-        <oldsource>Failed to save resume state: {}</oldsource>
-        <translation>진행률 데이터베이스 업데이트 실패</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9543"/>
-        <source>Fast Forward Boot</source>
-        <translation>빨리 감기 부팅</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9544"/>
-        <source>Fast Forward Memory Card Access</source>
-        <translation>메모리 카드 액세스 빨리 감기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9547"/>
-        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
-        <translation>메모리 카드에 접근하여 로딩과 저장을 빠르게 진행합니다. 메모리 카드를 자주 사용하는 게임에서 대기 시간을 줄일 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9548"/>
-        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
-        <translation>빠른 부팅 시 초기 로딩 과정을 빨리 진행하여 시간을 절약합니다. 게임마다 결과가 다를 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9552"/>
-        <source>Force 4:3 For FMVs</source>
-        <translation>FMV에 4:3 강제 적용</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9554"/>
-        <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation>필요 여부에 관계없이 텍스처 업로드 추적을 강제로 활성화합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9564"/>
-        <source>Game Display</source>
-        <translation>게임 화면</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9587"/>
-        <source>Grey Matter</source>
-        <translation>회백질</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9589"/>
-        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
-        <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9596"/>
-        <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
-        <translation>이 기능을 활성화하면 화면 표시 장치가 오버레이 이미지의 투명도에 따라 혼합됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9597"/>
-        <source>If enabled, the transparency of the overlay image will be applied.</source>
-        <translation>이 기능을 활성화하면 오버레이 이미지의 투명도가 적용됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9599"/>
-        <source>Image Path</source>
-        <translation>이미지 경로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9605"/>
-        <source>Internal Resolution</source>
-        <translation>내부 해상도</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9606"/>
-        <source>Language</source>
-        <translation>언어</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9609"/>
-        <source>Last Played: </source>
-        <translation>마지막 플레이 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9610"/>
-        <source>Latency Control</source>
-        <translation>대기 시간 제어</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9611"/>
-        <source>Launch Options</source>
-        <translation>실행 옵션</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9613"/>
-        <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
-        <translation>파일, 디스크에서 게임을 시작하거나 디스크를 삽입하지 않고 콘솔을 시작합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9617"/>
-        <source>Light</source>
-        <translation>→</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9618"/>
-        <source>Line Detection</source>
-        <translation>라인 감지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9619"/>
-        <source>List Settings</source>
-        <translation>목록 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9622"/>
-        <source>Load Global State</source>
-        <translation>전역 상태 불러오기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9631"/>
-        <source>Logging In...</source>
-        <oldsource>Logging in...</oldsource>
-        <translation>로그인 중...</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9647"/>
-        <source>Memory Card Busy</source>
-        <translation>메모리 카드 사용 중</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9652"/>
-        <source>Menu Background</source>
-        <translation>메뉴 배경</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9653"/>
-        <source>Menu Borders</source>
-        <translation>메뉴 외곽선</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9654"/>
-        <source>Merge Multi-Disc Games</source>
-        <translation>다중 디스크 게임 병합</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9655"/>
-        <source>Merges multi-disc games into one item in the game list.</source>
-        <translation>여러 개의 디스크로 된 게임을 게임 목록에서 하나의 항목으로 병합합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9661"/>
-        <source>Multitap</source>
-        <translation>멀티탭</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9667"/>
-        <source>No Vibration</source>
-        <translation>진동 없음</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9668"/>
-        <source>No cheats are available for this game.</source>
-        <translation>이 게임에 사용할 수 있는 치트가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9669"/>
-        <source>No devices with vibration motors were detected.</source>
-        <translation>진동 모터가 장착된 장치가 감지되지 않았습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9671"/>
-        <source>No patches are available for this game.</source>
-        <translation>이 게임에 사용할 수 있는 패치가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9676"/>
-        <source>None</source>
-        <translation>없음</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9695"/>
-        <source>PGXP Depth Buffer</source>
-        <translation>PGXP 심도 버퍼</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9698"/>
-        <source>Password</source>
-        <translation>비밀번호</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9713"/>
-        <source>Pinky Pals</source>
-        <translation>핑키 팔스</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9715"/>
-        <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
-        <translation>아래에 Retroachievements.org의 사용자 이름과 비밀번호를 입력하십시오. 귀하의 비밀번호는 DuckStation에 저장되지 않으며 대신 액세스 토큰이 생성되어 사용됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9728"/>
-        <source>Purple Rain</source>
-        <translation>퍼플 레인</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9748"/>
-        <source>Removes all bindings for this controller port.</source>
-        <translation>이 컨트롤러 포트에 대한 모든 연결을 제거합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9752"/>
-        <source>Replaces these settings with a previously saved controller preset.</source>
-        <translation>이 설정을 이전에 저장된 컨트롤러 사전 설정으로 대체합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9754"/>
-        <source>Reset Controller Settings</source>
-        <translation>컨트롤러 설정 초기화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9766"/>
-        <source>Resume Last Session</source>
-        <translation>마지막 세션 재개</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9767"/>
-        <source>Return To Game</source>
-        <translation>개임을 재개</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9768"/>
-        <source>Return to desktop mode, or exit the application.</source>
-        <translation>데스크톱 모드로 돌아가거나 앱을 종료하세요.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9769"/>
-        <source>Return to the previous menu.</source>
-        <translation>이전 메뉴로 돌아갑니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9770"/>
-        <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation>게임 목록 정렬 순서를 기본값(보통 오름차순에서 내림차순)에서 반전시킵니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9773"/>
-        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>{0}프레임을 되감고 {1:.2f}초 동안 지속하려면 최대 {2}MB의 램과 {3}MB의 비디오램이 필요합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9774"/>
-        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
-        <translation>선행 실행이 활성화되어 되감기가 비활성화되었습니다. 선행 실행을 사용하면 시스템 요구 사항이 크게 증가합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9775"/>
-        <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
-        <translation>되감기가 활성화되어 있지 않습니다. 되감기를 활성화하면 시스템 요구 사항이 크게 증가할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9776"/>
-        <source>Round Upscaled Texture Coordinates</source>
-        <translation>라운드 업스케일 텍스처 좌표</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9780"/>
-        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation>비디오램 다시 읽어오기를 위해 소프트웨어 렌더러를 병렬로 실행합니다. 일부 시스템에서는 하드웨어 렌더러와 함께 그래픽 향상 기능을 사용할 때 성능이 향상될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9781"/>
-        <source>SDL DualSense Player LED</source>
-        <translation>SDL 듀얼센스 플레이어 LED</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9784"/>
-        <source>Save Controller Preset</source>
-        <translation>컨트롤러 사전 설정 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9785"/>
-        <source>Save Preset</source>
-        <translation>사전 설정 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9789"/>
-        <source>Save State On Shutdown</source>
-        <translation>종료 시, 상태 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9798"/>
-        <source>Screen Position</source>
-        <translation>화면 위치</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9799"/>
-        <source>Screen Rotation</source>
-        <translation>화면 회전</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9800"/>
-        <source>Screenshot Format</source>
-        <translation>스크린샷 형식</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9801"/>
-        <source>Screenshot Quality</source>
-        <translation>스크린샷 품질</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9802"/>
-        <source>Screenshot Size</source>
-        <translation>스크린샷 크기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9805"/>
-        <source>Select</source>
-        <translation>선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9807"/>
-        <source>Select Disc</source>
-        <translation>디스크 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9808"/>
-        <source>Select Disc Drive</source>
-        <translation>디스크 드라이브 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9811"/>
-        <source>Select Game</source>
-        <translation>게임 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9813"/>
-        <source>Select State</source>
-        <translation>상태 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9814"/>
-        <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
-        <translation>사전 설정된 외곽선 목록에서 선택하거나 사용자 정의 구성을 수동으로 지정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9815"/>
-        <source>Selected Preset</source>
-        <translation>선택된 사전 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9818"/>
-        <source>Selects the color style to be used for Big Picture UI.</source>
-        <translation>빅피처 UI에 사용할 색상 스타일을 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9820"/>
-        <source>Selects the quality at which screenshots will be compressed.</source>
-        <translation>스크린샷을 압축할 품질을 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9823"/>
-        <source>Selects the type of emulated controller for this port.</source>
-        <translation>이 포트에 대한 에뮬레이션된 컨트롤러 유형을 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9824"/>
-        <source>Selects the view that the game list will open to.</source>
-        <translation>게임 목록이 열릴 보기를 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9827"/>
-        <source>Set Cover Image</source>
-        <translation>커버 이미지 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9844"/>
-        <source>Show Achievement Trophy Icons</source>
-        <translation>도전 과제 트로피 아이콘 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9852"/>
-        <source>Show Latency Statistics</source>
-        <translation>대기 시간 통계 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9857"/>
-        <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
-        <translation>게임이 실행되고 있지 않을 때, 배경 이미지 또는 셰이더를 표시합니다. 배경은 데이터 디렉터리의 resources/fullscreenui/backgrounds에 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9861"/>
-        <source>Shows information about input and audio latency in the top-right corner of the display.</source>
-        <translation>화면 우측 상단에 입력 및 음향 지연 시간에 대한 정보가 표시됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9868"/>
-        <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation>현재 디스코드에서 프로필의 일부로 플레이 중인 게임을 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9869"/>
-        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
-        <translation>화면 우측 상단에 각 시스템 스레드의 호스트 CPU 사용량이 표시됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9872"/>
-        <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation>게임에 도전 과제가 있거나 마스터했을 때 게임 그리드에 트로피 아이콘을 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9875"/>
-        <source>Skip Duplicate Frame Display</source>
-        <translation>중복 프레임 표시 건너뛰기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9876"/>
-        <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
-        <translation>고유하지 않은 프레임의 프레젠테이션/디스플레이를 건너뜁니다. 프레임 페이싱이 더 나빠질 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9878"/>
-        <source>Smooth Scrolling</source>
-        <translation>부드러운 스크롤링</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9879"/>
-        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation>일반적으로 FMV인 24비트 콘텐츠에서 색상 전환 시 블록 현상을 부드럽게 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9882"/>
-        <source>Sort Alphabetically</source>
-        <translation>알파벳순으로 정렬</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9885"/>
-        <source>Sorts the cheat list alphabetically by the name of the code.</source>
-        <translation>코드 이름에 따라 치트 목록을 알파벳순으로 정렬합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9887"/>
-        <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced.</source>
-        <translation>추가된 추가 절전 시간을 줄이는 버퍼 시간의 양을 지정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9895"/>
-        <source>Start Disc</source>
-        <translation>디스크 가동</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9898"/>
-        <source>Start Game</source>
-        <translation>게임 시작</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9899"/>
-        <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
-        <translation>PC의 DVD 드라이브에 있는 디스크에서 게임을 시작합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9901"/>
-        <source>Stores the current settings to a controller preset.</source>
-        <translation>현재 설정을 컨트롤러 사전 설정에 저장합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9904"/>
-        <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
-        <translation>XInput 프로토콜을 사용하는 컨트롤러를 지원합니다. XInput은 XInput 래퍼 라이브러리를 사용하는 경우에만 사용해야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9905"/>
-        <source>Switch to Next Disc on Stop</source>
-        <translation>중지 시, 다음 디스크로 전환</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9909"/>
-        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation>콘솔 프레임의 표시를 호스트에 동기화합니다. GSync/FreeSync 사용자는 대신 최적 프레임 속도를 활성화해야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9914"/>
-        <source>Textures Directory</source>
-        <translation>텍스처 디렉터리</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9918"/>
-        <source>Theme</source>
-        <translation>테마</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9919"/>
-        <source>This game has no achievements.</source>
-        <translation>이 게임에는 {} 순위표가 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9920"/>
-        <source>This game has no leaderboards.</source>
-        <translation>이 게임에는 순위표가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9924"/>
-        <source>Timing out in {:.0f} seconds...</source>
-        <translation>{:.0f}초 후 시간 초과...</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9926"/>
-        <source>To use achievements, please log in with your retroachievements.org account.</source>
-        <translation>도전 과제를 사용하려면 retroachievements.org 계정으로 로그인하세요.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9929"/>
-        <source>Toggle Fullscreen</source>
-        <translation>전체 화면 전환</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9931"/>
-        <source>Toggles the macro when the button is pressed, instead of held.</source>
-        <translation>버튼을 누르고 있는 대신, 누르면 매크로가 전환됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9932"/>
-        <source>Trigger</source>
-        <translation>트리거</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9935"/>
-        <source>UI Language</source>
-        <translation>사용자 인터페이스 언어</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9936"/>
-        <source>Uncompressed Size</source>
-        <translation>압축되지 않은 크기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9938"/>
-        <source>Ungrouped</source>
-        <translation>그룹 해제됨</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9940"/>
-        <source>Unknown File Size</source>
-        <translation>알 수 없는 파일 크기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9942"/>
-        <source>Update Progress</source>
-        <oldsource>Updater Error</oldsource>
-        <translation>업데이트 진행 상황</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9943"/>
-        <source>Updates the progress database for achievements shown in the game list.</source>
-        <translation>게임 목록에 표시되는 도전 과제 진행률 데이터베이스를 업데이트합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9949"/>
-        <source>Use Old MDEC Routines</source>
-        <translation>기존 MDEC 루틴 사용</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9951"/>
-        <source>Use Single Card For Multi-Disc Games</source>
-        <translation>멀티 디스크 게임에 단일 카드 사용</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9958"/>
-        <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
-        <translation>정확한 좌표 대신 2D 폴리곤에 기본 해상도 좌표를 사용합니다. 일부 게임에서 정렬되지 않은 UI를 수정할 수 있지만, 그렇지 않으면 비활성화 상태로 두어야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9964"/>
-        <source>Value Range</source>
-        <oldsource>Value</oldsource>
-        <translation>값 범위</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9966"/>
-        <source>Vertex Cache</source>
-        <translation>버텍스 캐시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9967"/>
-        <source>Vertical Sync (VSync)</source>
-        <translation>수직 동기화(VSync)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9968"/>
-        <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>경고 : 치트를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9969"/>
-        <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation>경고 : 게임 패치를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9970"/>
-        <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
-
-Do you want to {0} anyway?</source>
-        <translation>경고: 게임이 여전히 메모리 카드에 저장되고 있습니다. {0}을(를) 계속하면 메모리 카드가 영구적으로 손상될 수 있습니다. 게임을 재개하고 저장이 완료될 때까지 5초 동안 기다리는 것이 좋습니다.
-
-그래도 {0}을(를) 하시겠습니까?</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9982"/>
-        <source>Wireframe Rendering</source>
-        <translation>와이어프레임 렌더링</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9499"/>
-        <source>Enable Subdirectory Scanning</source>
-        <translation>하위 디렉터리 검색 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9223"/>
-        <source> (%u MB on disk)</source>
-        <translation>(디스크 공간 %uMB)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9224"/>
-        <source>%.1f ms</source>
-        <translation>%.1f밀리초</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9227"/>
-        <source>%d cycles</source>
-        <translation>%d주기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9230"/>
-        <source>%u MB</source>
-        <translation>%uMB</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9303"/>
-        <source>Achievements: </source>
-        <translation>도전 과제 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9309"/>
-        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation>수직 동기화가 활성화되어 있을 때, 콘솔의 재생 빈도가 호스트와 일치하도록 에뮬레이션 속도를 조정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9314"/>
-        <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
-        <translation>필수 SBI 파일 없이도 부팅을 계속할 수 있습니다. 이러한 게임은 제대로 실행되지 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9319"/>
-        <source>Animates windows opening/closing and changes between views in the Big Picture UI.</source>
-        <translation>빅피처 UI에서 창을 열거나 닫고 뷰 간 변경하는 동작을 애니메이션으로 표현합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9325"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9367"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.
 
 You cannot undo this action.</source>
@@ -8195,1878 +6703,3468 @@ You cannot undo this action.</source>
 이 작업을 취소할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9333"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9368"/>
+        <source>Aspect Ratio</source>
+        <translation>종횡비</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9369"/>
+        <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
+        <translation>업스케일링으로 인해 발생한 틈을 채우면서 업스케일링되지 않은 래스터화 동작에 의존하여 한 픽셀 높이/너비의 선을 감지하려는 시도입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9370"/>
+        <source>Attempts to map the selected port to a chosen controller.</source>
+        <translation>선택한 포트를 선택한 컨트롤러에 매핑하려고 시도합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9371"/>
+        <source>Audio Backend</source>
+        <translation>음향 후단부</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9372"/>
+        <source>Audio Control</source>
+        <translation>음향 제어</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9373"/>
+        <source>Audio Settings</source>
+        <translation>음향 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9374"/>
+        <source>Auto-Detect</source>
+        <translation>자동 감지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9375"/>
         <source>Automatic</source>
         <translation>자동</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9365"/>
-        <source>Change Page</source>
-        <translation>페이지 변경</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9376"/>
+        <source>Automatic Mapping</source>
+        <translation>자동 매핑</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9366"/>
-        <source>Change Selection</source>
-        <translation>선택 사항 변경</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9377"/>
+        <source>Automatic based on window size</source>
+        <translation>창 크기에 따라 자동 설정</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9367"/>
-        <source>Change View</source>
-        <translation>표시 변경</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9378"/>
+        <source>Automatic mapping completed for {}.</source>
+        <translation>{}에 대한 자동 매핑이 완료되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9368"/>
-        <source>Changes settings for the application.</source>
-        <translation>앱의 설정을 변경합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9379"/>
+        <source>Automatic mapping failed for {}.</source>
+        <translation>{}에 대한 자동 매핑에 실패했습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9370"/>
-        <source>Cheats</source>
-        <translation>치트</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9380"/>
+        <source>Automatic mapping failed, no devices are available.</source>
+        <translation>자동 매핑에 실패하여, 사용할 수 있는 장치가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9373"/>
-        <source>Clear Mappings</source>
-        <translation>매핑 지우기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9381"/>
+        <source>Automatically Resize Window</source>
+        <translation>창 크기 자동 조정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9382"/>
+        <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
+        <translation>디스크 이미지에 패치가 있을 때 자동으로 패치를 적용하며, 현재는 PPF만 지원됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9383"/>
+        <source>Automatically resizes the window to match the internal resolution.</source>
+        <translation>내부 해상도에 맞게 창 크기를 자동으로 조정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9384"/>
+        <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
+        <translation>전원을 끄거나 종료할 때 에뮬레이터 상태를 자동으로 저장합니다. 그러면 다음 번에 중단한 지점부터 바로 다시 시작할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9385"/>
+        <source>Automatically switches to fullscreen mode when the program is started.</source>
+        <translation>프로그램이 시작되면 자동으로 전체 화면 모드로 전환됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9387"/>
+        <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
+        <translation>C++ 코드 호출을 방지하여 리컴파일러의 속도가 크게 향상됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9388"/>
-        <source>Contributor List</source>
-        <translation>공헌자 목록</translation>
+        <source>BIOS Directory</source>
+        <translation>바이오스 디렉터리</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9389"/>
+        <source>BIOS Selection</source>
+        <translation>바이오스 선택</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9390"/>
-        <source>Controller Port {} Bindings</source>
-        <translation>컨트롤러 포트 {} 할당</translation>
+        <source>BIOS Settings</source>
+        <translation>바이오스 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9391"/>
+        <source>BIOS for {}</source>
+        <translation>{}용 바이오스</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9392"/>
+        <source>BIOS to use when emulating {} consoles.</source>
+        <translation>콘솔을 에뮬레이트할 때 사용할 바이오스입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9393"/>
+        <source>Back</source>
+        <translation>뒤로</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9394"/>
+        <source>Back To Pause Menu</source>
+        <translation>일시 정지 메뉴로 돌아가기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9395"/>
+        <source>Backend Settings</source>
+        <translation>후단부 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9396"/>
+        <source>Behavior</source>
+        <translation>동작</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9397"/>
+        <source>Border Overlay</source>
+        <translation>외곽선 오버레이</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9398"/>
+        <source>Borderless Fullscreen</source>
+        <translation>전체 창 화면</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9399"/>
+        <source>Bottom: </source>
+        <translation>하단 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9400"/>
+        <source>Buffer Size</source>
+        <translation>버퍼 크기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9401"/>
+        <source>Buttons</source>
+        <translation>버튼</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9402"/>
+        <source>CD-ROM Emulation</source>
+        <translation>CD-ROM 에뮬레이션</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9403"/>
+        <source>CPU Emulation</source>
+        <translation>CPU 에뮬레이션</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9404"/>
+        <source>CPU Mode</source>
+        <translation>CPU 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9405"/>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9406"/>
+        <source>Capture</source>
+        <translation>캡처</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9407"/>
+        <source>Change Disc</source>
+        <translation>디스크 교체</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9412"/>
-        <source>Create New...</source>
-        <translation>새로 만들기...</translation>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
+        <translation>콘솔의 출력을 화면에 표시하는 데 사용되는 종횡비를 변경합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9414"/>
+        <source>Chooses the language used for UI elements.</source>
+        <translation>사용자 인터페이스 요소에 사용할 언어를 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9415"/>
+        <source>Clean Boot</source>
+        <translation>클린 부팅</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9417"/>
+        <source>Clear Settings</source>
+        <translation>설정 지우기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9418"/>
+        <source>Clear Shaders</source>
+        <translation>셰이더 지우기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9419"/>
+        <source>Clears a shader from the chain.</source>
+        <translation>체인에서 셰이더를 지웁니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9420"/>
+        <source>Clears all settings set for this game.</source>
+        <translation>이 게임의 모든 설정을 지웁니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9421"/>
+        <source>Close</source>
+        <translation>닫기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9422"/>
+        <source>Close Game</source>
+        <translation>게임 닫기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9423"/>
+        <source>Close Menu</source>
+        <translation>메뉴 닫기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9425"/>
+        <source>Compatibility Rating</source>
+        <translation>호환성 평가</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9426"/>
+        <source>Compatibility: </source>
+        <translation>호환성 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9428"/>
+        <source>Configuration</source>
+        <translation>설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9429"/>
+        <source>Confirm Power Off</source>
+        <translation>전원 끔 확인</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9430"/>
-        <source>Depth Clear Threshold</source>
-        <translation>심도 지우기 임계값</translation>
+        <source>Console Settings</source>
+        <translation>콘솔 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9432"/>
+        <source>Controller Port {}</source>
+        <translation>컨트롤러 포트 {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9434"/>
+        <source>Controller Port {} Macros</source>
+        <translation>컨트롤러 포트 {} 매크로</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9435"/>
+        <source>Controller Port {} Settings</source>
+        <translation>컨트롤러 포트 {} 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9436"/>
+        <source>Controller Settings</source>
+        <translation>컨트롤러 설정</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9437"/>
+        <source>Controller Type</source>
+        <translation>컨트롤러 유형</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9438"/>
+        <source>Controller mapping cleared.</source>
+        <translation>컨트롤러 매핑이 제거되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9439"/>
+        <source>Controller preset &apos;{}&apos; loaded.</source>
+        <translation>컨트롤러 사전 설정 &apos;{}&apos;을(를) 불러왔습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9440"/>
+        <source>Controller preset &apos;{}&apos; saved.</source>
+        <translation>컨트롤러 사전 설정 &apos;{}&apos;이(가) 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9441"/>
+        <source>Controller settings reset to default.</source>
+        <translation>컨트롤러 설정이 기본값으로 초기화됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9442"/>
+        <source>Controls</source>
+        <translation>컨트롤러</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9443"/>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.</source>
+        <translation>에뮬레이트된 GPU에 디더링이 적용되는 방식을 제어합니다. 트루컬러는 디더링을 비활성화하고 가장 보기 좋은 그라데이션을 생성합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9444"/>
+        <source>Controls the volume of the audio played on the host when fast forwarding.</source>
+        <translation>빨리 감기 시, 호스트에서 재생되는 음향의 음량을 제어합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9445"/>
+        <source>Controls the volume of the audio played on the host.</source>
+        <translation>호스트에서 재생되는 음향의 볼륨을 제어합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9446"/>
+        <source>Copies the current global settings to this game.</source>
+        <translation>현재 전역 설정을 이 게임에 복사합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9447"/>
+        <source>Copies the global controller configuration to this game.</source>
+        <translation>전역 컨트롤러 구성을 이 게임에 복사합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9448"/>
+        <source>Copy Global Settings</source>
+        <translation>전역 설정 복사</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9449"/>
+        <source>Copy Settings</source>
+        <translation>설정 복사</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9451"/>
+        <source>Cover Settings</source>
+        <translation>커버 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9452"/>
+        <source>Cover set.</source>
+        <translation>커버 설정.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9453"/>
+        <source>Covers Directory</source>
+        <translation>커버 디렉터리</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9454"/>
+        <source>Create</source>
+        <translation>생성</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9456"/>
+        <source>Create Save State Backups</source>
+        <translation>상태 저장 백업 생성</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9457"/>
+        <source>Crop Mode</source>
+        <translation>자르기 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9458"/>
+        <source>Culling Correction</source>
+        <translation>컬링 보정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9459"/>
+        <source>Custom</source>
+        <translation>사용자 정의</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9460"/>
+        <source>Dark</source>
+        <translation>다크</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9461"/>
+        <source>Dark Ruby</source>
+        <translation>다크 루비</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9462"/>
+        <source>Deadzone</source>
+        <translation>데드존</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9463"/>
+        <source>Debugging Settings</source>
+        <translation>디버그 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9464"/>
+        <source>Default</source>
+        <translation>기본값</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9465"/>
+        <source>Default Boot</source>
+        <translation>기본 부팅</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9466"/>
+        <source>Default Value</source>
+        <translation>기본값</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9467"/>
+        <source>Default View</source>
+        <translation>기본값 : 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9468"/>
+        <source>Default: Disabled</source>
+        <translation>기본값 : 비활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9469"/>
+        <source>Default: Enabled</source>
+        <translation>기본값 : 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9471"/>
+        <source>Delete Save</source>
+        <translation>저장 삭제</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9472"/>
+        <source>Delete State</source>
+        <translation>상태 삭제</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9474"/>
+        <source>Depth Test Transparent Polygons</source>
+        <translation>투명 다각형 깊이 테스트</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9475"/>
+        <source>Desktop Mode</source>
+        <translation>데스크톱 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9476"/>
+        <source>Destination Alpha Blending</source>
+        <translation>대상 알파 블렌딩</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9477"/>
+        <source>Details</source>
+        <translation>상세 정보</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9478"/>
+        <source>Details unavailable for game not scanned in game list.</source>
+        <translation>게임 목록에서 검색되지 않은 게임의 세부 정보를 확인할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9479"/>
+        <source>Determines how large the on-screen messages and monitor are.</source>
+        <translation>화면 메시지와 모니터의 크기를 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9480"/>
         <source>Determines how much button pressure is ignored before activating the macro.</source>
         <translation>매크로를 활성화하기 전에 얼마나 많은 버튼 압력을 무시할지 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9440"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9481"/>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <translation>호스트 API가 수신하는 음향과 스피커를 통해 재생되는 음향 사이에 얼마나 많은 지연 시간이 있는지 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9482"/>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide.</source>
+        <translation>일반적으로 소비자 TV 세트에서 보이지 않는 영역을 얼마나 잘라내거나 숨길지 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9483"/>
         <source>Determines how much pressure is simulated when macro is active.</source>
         <translation>매크로가 활성화될 때 얼마나 많은 압력을 시뮬레이션할지 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9446"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9484"/>
+        <source>Determines how the emulated CPU executes instructions.</source>
+        <translation>에뮬레이트된 CPU가 명령을 실행하는 방식을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9485"/>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <translation>에뮬레이트된 콘솔의 출력을 모니터 해상도에 맞게 업스케일링 또는 다운스케일링하는 방법을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9486"/>
+        <source>Determines quality of audio when not running at 100% speed.</source>
+        <translation>100% 속도로 실행되지 않을 때의 음향 품질을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9487"/>
+        <source>Determines that field that the game list will be sorted by.</source>
+        <translation>게임 목록이 정렬될 필드를 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9488"/>
+        <source>Determines the amount of audio buffered before being pulled by the host API.</source>
+        <translation>호스트 API가 가져오기 전에 버퍼링되는 오디오의 양을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9489"/>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
         <translation>화면 표시 장치가 그려질 오버레이 이미지의 영역을 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9449"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9490"/>
+        <source>Determines the emulated hardware type.</source>
+        <translation>에뮬레이트된 하드웨어 유형을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9491"/>
+        <source>Determines the format that screenshots will be saved/compressed with.</source>
+        <translation>스크린샷을 저장/압축할 형식을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9492"/>
         <source>Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).</source>
         <translation>매크로가 버튼을 켜고 끄는 빈도를 결정합니다(자동 실행이라고도 함).</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9450"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9493"/>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
         <translation>화면 가장자리와 화면 메시지 사이의 여백을 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9461"/>
-        <source>Disc</source>
-        <translation>디스크</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9494"/>
+        <source>Determines the position on the screen when black borders must be added.</source>
+        <translation>화면에 검은색 외곽선을 추가할 때 표시 위치를 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9463"/>
-        <source>Display Area</source>
-        <translation>화면 영역</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9496"/>
+        <source>Determines the size of screenshots created by DuckStation.</source>
+        <translation>DuckStation에서 생성되는 스크린샷의 크기를 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9464"/>
-        <source>Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.</source>
-        <translation>Xbox 버튼 대신, 바닥글과 입력 할당에 DualShock/DualSense 버튼 아이콘이 표시됩니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9497"/>
+        <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
+        <translation>단축키를 눌렀을 때 에뮬레이터/게임 종료를 확인하는 메시지를 표시할지 여부를 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9467"/>
-        <source>Dithering</source>
-        <translation>디더링</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9499"/>
+        <source>Device Settings</source>
+        <translation>장치 설정</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9477"/>
-        <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation>DuckStation은 플레이 가능성, 속도, 장기적인 유지 관리에 초점을 맞춘 Sony PlayStation™ 콘솔의 무료 시뮬레이터/에뮬레이터입니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9500"/>
+        <source>Disable Mailbox Presentation</source>
+        <translation>사서함 표시 비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9478"/>
-        <source>Dump Replaced Textures</source>
-        <translation>대체된 텍스처 덤프</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9501"/>
+        <source>Disable Subdirectory Scanning</source>
+        <translation>하위 디렉터리 검색 비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9479"/>
-        <source>Dumps textures that have replacements already loaded.</source>
-        <translation>대체 항목이 이미 불러온 텍스처를 덤프합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9502"/>
+        <source>Disable on 2D Polygons</source>
+        <translation>2D 폴리곤에서 비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9488"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9503"/>
+        <source>Disabled</source>
+        <translation>비활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9505"/>
+        <source>Discord Server</source>
+        <translation>디스코드 서버</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9509"/>
+        <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
+        <translation>도전 과제 봉인 해제 및 순위표 제출과 같은 이벤트에 대한 팝업 메시지를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9510"/>
+        <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
+        <translation>순위표 도전을 시작, 제출 또는 실패할 때 팝업 메시지를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9513"/>
+        <source>Double-Click Toggles Fullscreen</source>
+        <translation>두 번 클릭하면 전체 화면 전환</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9514"/>
+        <source>Download Covers</source>
+        <translation>커버 내려받기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9515"/>
+        <source>Downloads covers from a user-specified URL template.</source>
+        <translation>사용자 지정 URL 템플릿에서 커버를 내려받습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9516"/>
+        <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
+        <translation>렌더링된 이미지를 표시하기 전에 다운샘플링합니다. 2D/3D 혼합 게임에서 전반적인 이미지 품질을 개선할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9517"/>
+        <source>Downsampling</source>
+        <translation>하향 표본화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9518"/>
+        <source>Downsampling Display Scale</source>
+        <translation>하향 표본화 화면 표시 크기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9520"/>
+        <source>Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</source>
+        <translation>Duck 아이콘 : icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9524"/>
+        <source>Emulation Settings</source>
+        <translation>에뮬레이션 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9525"/>
+        <source>Emulation Speed</source>
+        <translation>에뮬레이션 속도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9526"/>
+        <source>Enable 8MB RAM</source>
+        <translation>8MB 램 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9527"/>
+        <source>Enable Achievements</source>
+        <translation>도전 과제 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9528"/>
+        <source>Enable Achievements to see your user summary.</source>
+        <translation>도전 과제를 활성화하면 사용자 요약을 볼 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9530"/>
+        <source>Enable Discord Presence</source>
+        <translation>디스코드 참석 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9531"/>
+        <source>Enable Fast Boot</source>
+        <translation>고속 부팅 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9532"/>
         <source>Enable GPU-Based Validation</source>
         <translation>GPU 기반 유효성 검사 활성화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9489"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9533"/>
         <source>Enable GPU-based validation when supported by the host&apos;s renderer API. Only for developer use.</source>
         <translation>호스트의 렌더러 API에서 지원하는 경우, GPU 기반 유효성 검사를 활성화합니다. 개발자 전용입니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9506"/>
-        <source>Enable XInput Input Source</source>
-        <translation>XInput 입력 소스 활성화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9507"/>
-        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
-        <translation>호스트의 렌더러 API에서 지원하는 경우 디버깅을 활성화합니다. 개발자 전용입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9509"/>
-        <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
-        <translation>정렬 및 버스 예외를 활성화합니다. 알려진 게임에는 필요하지 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9510"/>
-        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
-        <translation>6MB의 램을 추가로 확보하여 총 2+6=8MB를 확보할 수 있으며, 이는 일반적으로 개발 콘솔에 존재합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9511"/>
-        <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
-        <translation>각 포트에 3개의 컨트롤러 슬롯을 추가로 사용할 수 있습니다. 모든 게임에서 지원되지는 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9517"/>
-        <source>Enables smooth scrolling of menus in the Big Picture UI.</source>
-        <translation>빅피처 UI에서 메뉴를 부드럽게 스크롤할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9520"/>
-        <source>Enables the replacement of background textures in supported games.</source>
-        <translation>지원되는 게임에서 배경 텍스처를 교체할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9526"/>
-        <source>Execution Mode</source>
-        <translation>실행 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9527"/>
-        <source>Exit</source>
-        <translation>종료</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9528"/>
-        <source>Exit And Save State</source>
-        <translation>상태 저장 및 종료</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9530"/>
-        <source>Exit Without Saving</source>
-        <translation>저장하지 않고 종료</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9534"/>
-        <source>Failed to copy text to clipboard.</source>
-        <translation>텍스트를 클립보드에 저장하지 못했습니다.</translation>
+        <source>Enable In-Game Overlays</source>
+        <translation>게임 내 오버레이 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9535"/>
+        <source>Enable Overclocking</source>
+        <translation>오버클럭 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9536"/>
-        <source>Failed to delete save state.</source>
-        <translation>상태 저장을 삭제하지 못했습니다.</translation>
+        <source>Enable Post Processing</source>
+        <translation>후처리 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9537"/>
-        <source>Failed to delete {}.</source>
-        <translation>{}을(를) 삭제하지 못했습니다.</translation>
+        <source>Enable Recompiler Block Linking</source>
+        <translation>리컴파일러 블록 연결 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9538"/>
-        <source>Failed to load &apos;{}&apos;.</source>
-        <translation>&apos;{}&apos;을(를) 불러오지 못했습니다.</translation>
+        <source>Enable Recompiler ICache</source>
+        <translation>리컴파일러 명령어 캐시 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9539"/>
+        <source>Enable Recompiler Memory Exceptions</source>
+        <translation>리컴파일러 메모리 예외 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9540"/>
+        <source>Enable Region Check</source>
+        <translation>지역 코드 검사 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9541"/>
+        <source>Enable Rewinding</source>
+        <translation>되감기 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9542"/>
-        <source>Fast Boot</source>
-        <translation>고속 부팅</translation>
+        <source>Enable SDL Input Source</source>
+        <translation>SDL 입력 소스 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9543"/>
+        <source>Enable Subdirectory Scanning</source>
+        <translation>하위 디렉터리 검색 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9544"/>
+        <source>Enable TTY Logging</source>
+        <translation>TTY 로그 기록 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9545"/>
-        <source>Fast Forward Speed</source>
-        <translation>빨리 감기 속도</translation>
+        <source>Enable Texture Cache</source>
+        <translation>텍스처 캐시 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9546"/>
-        <source>Fast Forward Volume</source>
-        <translation>빨리 감기 음량</translation>
+        <source>Enable Texture Dumping</source>
+        <translation>텍스처 덤핑 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9547"/>
+        <source>Enable Texture Replacements</source>
+        <translation>텍스처 교체 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9548"/>
+        <source>Enable VRAM Write Dumping</source>
+        <translation>비디오램 쓰기 덤핑 활성화</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9549"/>
+        <source>Enable VRAM Write Replacement</source>
+        <translation>비디오램 쓰기 교체 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9552"/>
+        <source>Enable/Disable the Player LED on DualSense controllers.</source>
+        <translation>듀얼센스 컨트롤러의 플레이어 LED를 활성화/비활성화합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9556"/>
+        <source>Enables caching of guest textures, required for texture replacement.</source>
+        <translation>텍스처 교체에 필요한 게스트 텍스처 캐싱을 활성화합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9557"/>
+        <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
+        <translation>반투명 폴리곤에 대한 깊이 테스트를 활성화합니다. 일반적으로 이러한 폴리곤에는 그림자가 포함되며, 깊이 테스트가 활성화되면 지면을 통과하는 경향이 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9558"/>
+        <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
+        <translation>대체할 수 있는 이미지 파일에 텍스처를 덤프할 수 있습니다. 모든 게임과 호환되지는 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9559"/>
+        <source>Enables loading of cheats for this game from DuckStation&apos;s database.</source>
+        <translation>DuckStation 데이터베이스에서 이 게임의 치트를 불러올 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9560"/>
+        <source>Enables loading of replacement textures. Not compatible with all games.</source>
+        <translation>대체 텍스처 불러오기를 활성화합니다. 모든 게임과 호환되지는 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9562"/>
+        <source>Enables the cheats that are selected below.</source>
+        <translation>아래에 선택된 치트를 활성화합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9563"/>
+        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <translation>이전의 덜 정확한 MDEC 디코딩 루틴을 활성화합니다. 이전 대체 배경이 일치하거나 불러오는 데 필요할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9565"/>
+        <source>Encore Mode</source>
+        <translation>앙코르 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9566"/>
+        <source>Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.</source>
+        <translation>최적의 속도를 위해 생성된 모든 프레임이 표시되도록 합니다. GSync/FreeSync와 같은 가변 새로 고침 화면을 사용하도록 설정합니다. 속도나 사운드 문제가 있으면 비활성화하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9567"/>
+        <source>Enter Value</source>
+        <translation>값 입력</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9568"/>
+        <source>Enter the name of the controller preset you wish to create.</source>
+        <translation>생성하려는 컨트롤러 사전 설정의 이름을 입력하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9573"/>
+        <source>Exit DuckStation</source>
+        <translation>DuckStation 종료</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9575"/>
+        <source>Exits Big Picture mode, returning to the desktop interface.</source>
+        <translation>빅픽처 모드를 종료하고 데스크톱 인터페이스로 돌아갑니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9576"/>
+        <source>FMV Chroma Smoothing</source>
+        <translation>FMV 채도 평활화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9577"/>
+        <source>Failed to copy cover: {}</source>
+        <translation>표지 복사 실패 : {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9579"/>
+        <source>Failed to delete existing cover: {}</source>
+        <translation>기존 표지 삭제 실패 : {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9583"/>
+        <source>Failed to load shader {}. It may be invalid.
+Error was:</source>
+        <translation>셰이더 {}을(를) 불러오지 못했습니다. 유효하지 않을 수 있습니다.
+오류 발생 :</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9584"/>
+        <source>Failed to save controller preset &apos;{}&apos;.</source>
+        <translation>컨트롤러 사전 설정 &apos;{}&apos;을(를) 저장하지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9587"/>
+        <source>Fast Forward Boot</source>
+        <translation>빨리 감기 부팅</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9588"/>
+        <source>Fast Forward Memory Card Access</source>
+        <translation>메모리 카드 액세스 빨리 감기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9591"/>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <translation>메모리 카드에 접근하여 로딩과 저장을 빠르게 진행합니다. 메모리 카드를 자주 사용하는 게임에서 대기 시간을 줄일 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9592"/>
+        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
+        <translation>빠른 부팅 시 초기 로딩 과정을 빨리 진행하여 시간을 절약합니다. 게임마다 결과가 다를 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9593"/>
         <source>File Size</source>
         <translation>파일 크기</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9550"/>
-        <source>File Size: </source>
-        <translation>파일 크기 : </translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9595"/>
+        <source>Force 4:3 For FMVs</source>
+        <translation>FMV에 4:3 강제 적용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9551"/>
-        <source>File Title</source>
-        <translation>파일 이름</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9597"/>
+        <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
+        <translation>필요 여부에 관계없이 텍스처 업로드 추적을 강제로 활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9553"/>
-        <source>Forces a full rescan of all games previously identified.</source>
-        <translation>이전에 식별된 모든 게임을 강제로 다시 검색합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9555"/>
-        <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>사서함 프리젠테이션에 대해 FIFO를 강제로 사용합니다. 즉, 삼중 버퍼링 대신 이중 버퍼링을 사용합니다. 일반적으로 프레임 속도가 저하됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9556"/>
-        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation>CD-ROM에서 CD-DA 및 XA 음향을 모두 강제 음소거합니다. 일부 게임에서 배경 음악을 비활성화하는데 사용할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9557"/>
-        <source>Frame Rate</source>
-        <translation>프레임 속도</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9558"/>
-        <source>Frame Time Buffer</source>
-        <translation>프레임 시간 버퍼</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9559"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9602"/>
         <source>Frequency</source>
         <translation>주사율</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9560"/>
-        <source>From File...</source>
-        <translation>파일에서...</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9607"/>
+        <source>Game Display</source>
+        <translation>게임 화면</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9561"/>
-        <source>Fullscreen Resolution</source>
-        <translation>전체 화면 해상도</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9562"/>
-        <source>GPU Adapter</source>
-        <translation>GPU 어댑터</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9563"/>
-        <source>GPU Renderer</source>
-        <translation>GPU 렌더러</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9565"/>
-        <source>Game Grid</source>
-        <translation>게임 그리드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9566"/>
-        <source>Game List</source>
-        <translation>게임 목록</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9567"/>
-        <source>Game List Settings</source>
-        <translation>게임 목록 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9568"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9611"/>
         <source>Game Patches</source>
         <translation>게임 패치</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9569"/>
-        <source>Game Properties</source>
-        <translation>게임 속성</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9570"/>
-        <source>Game Quick Save</source>
-        <translation>게임 빠른 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9571"/>
-        <source>Game Slot {0}##game_slot_{0}</source>
-        <translation>게임 슬롯 {0}##game_slot_{0}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9572"/>
-        <source>Game compatibility rating copied to clipboard.</source>
-        <translation>게임 호환성 등급이 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9573"/>
-        <source>Game path copied to clipboard.</source>
-        <translation>게임 경로가 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9574"/>
-        <source>Game region copied to clipboard.</source>
-        <translation>게임 지역이 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9575"/>
-        <source>Game serial copied to clipboard.</source>
-        <translation>게임 시리얼이 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9576"/>
-        <source>Game settings have been cleared for &apos;{}&apos;.</source>
-        <translation>&apos;{}&apos;에 대한 게임 설정이 지워졌습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9577"/>
-        <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-        <translation>게임 설정이 &apos;{}&apos;에 대한 전역 설정으로 초기화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9578"/>
-        <source>Game title copied to clipboard.</source>
-        <translation>게임 제목이 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9579"/>
-        <source>Game type copied to clipboard.</source>
-        <translation>게임 유형이 클립보드에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9580"/>
-        <source>Genre: </source>
-        <translation>장르 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9581"/>
-        <source>Geometry Tolerance</source>
-        <translation>기하 공차</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9582"/>
-        <source>GitHub Repository</source>
-        <translation>GitHub 저장소</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9583"/>
-        <source>Global Slot {0} - {1}##global_slot_{0}</source>
-        <translation>전역 슬롯 {0} - {1}##global_slot_{0}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9584"/>
-        <source>Global Slot {0}##global_slot_{0}</source>
-        <translation>전역 슬롯 {0}##global_slot_{0}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9585"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9628"/>
         <source>Graphics Settings</source>
         <translation>그래픽 설정</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9586"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9629"/>
         <source>Green Giant</source>
         <translation>초록 거인</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9588"/>
-        <source>Hardcore Mode</source>
-        <translation>하드코어 모드</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9630"/>
+        <source>Grey Matter</source>
+        <translation>회백질</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9590"/>
-        <source>Hide Cursor In Fullscreen</source>
-        <translation>전체 화면에서 커서 숨기기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9632"/>
+        <source>Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?</source>
+        <translation>하드코어 모드는 시스템을 초기화할 때까지 활성화되지 않습니다. 지금 시스템을 초기화하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9591"/>
-        <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-        <translation>에뮬레이터가 전체 화면 모드일 때, 마우스 포인터/커서를 숨깁니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9639"/>
+        <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
+        <translation>이 기능을 활성화하면 화면 표시 장치가 오버레이 이미지의 투명도에 따라 혼합됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9592"/>
-        <source>Hotkey Settings</source>
-        <translation>단축키 설정</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9640"/>
+        <source>If enabled, the transparency of the overlay image will be applied.</source>
+        <translation>이 기능을 활성화하면 오버레이 이미지의 투명도가 적용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9593"/>
-        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>되감기를 위해 얼마나 많은 저장을 보관할지 설정합니다. 값이 클수록 메모리 요구량이 커집니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9642"/>
+        <source>Image Path</source>
+        <translation>이미지 경로</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9594"/>
-        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <translation>되감기 상태가 생성되는 빈도입니다. 주파수가 높을수록 시스템 요구 사항이 커집니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9643"/>
+        <source>Includes the elapsed time since the application start in file logs.</source>
+        <translation>앱이 파일 로그에 시작된 이후 경과된 시간을 포함합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9595"/>
-        <source>Identifies any new files added to the game directories.</source>
-        <translation>게임 디렉터리에 추가된 새 파일을 식별합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9644"/>
+        <source>Includes the elapsed time since the application start in window and console logs.</source>
+        <translation>창과 콘솔 로그에 앱이 시작된 이후 경과된 시간이 포함됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9598"/>
-        <source>If not enabled, the current post processing chain will be ignored.</source>
-        <translation>활성화하지 않으면 현재 후처리 체인이 무시됩니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9650"/>
+        <source>Internal Resolution</source>
+        <translation>내부 해상도</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9600"/>
-        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
-        <translation>3D 게임에서 시야각을 4:3에서 선택한 디스플레이 종횡비로 늘립니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9651"/>
+        <source>Language</source>
+        <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9601"/>
-        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
-        <translation>폴리곤 컬링의 정밀도를 높여 기하학적 구조의 구멍 수를 줄입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9602"/>
-        <source>Inhibit Screensaver</source>
-        <translation>화면 보호기 실행 금지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9603"/>
-        <source>Input Sources</source>
-        <translation>입력 소스</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9604"/>
-        <source>Interface Settings</source>
-        <translation>인터페이스 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9607"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9652"/>
         <source>Language: </source>
         <translation>언어 : </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9608"/>
-        <source>Last Played</source>
-        <translation>마지막 플레이</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9654"/>
+        <source>Last Played: </source>
+        <translation>마지막 플레이 : </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9612"/>
-        <source>Launch a game by selecting a file/disc image.</source>
-        <translation>파일/디스크 이미지를 선택하여 게임을 실행합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9656"/>
+        <source>Launch Options</source>
+        <translation>실행 옵션</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9614"/>
-        <source>Launch a game from images scanned from your game directories.</source>
-        <translation>게임 디렉터리에서 검색한 이미지로 게임을 실행합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9658"/>
+        <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
+        <translation>파일, 디스크에서 게임을 시작하거나 디스크를 삽입하지 않고 콘솔을 시작합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9615"/>
-        <source>Leaderboard Notifications</source>
-        <translation>순위표 알림</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9662"/>
+        <source>Left: </source>
+        <oldsource>Left</oldsource>
+        <translation>← : </translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9616"/>
-        <source>Leaderboards</source>
-        <translation>순위표</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9663"/>
+        <source>Light</source>
+        <translation>→</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9620"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9664"/>
+        <source>Line Detection</source>
+        <translation>라인 감지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9665"/>
+        <source>List Compact Mode</source>
+        <oldsource>Switch Crop Mode</oldsource>
+        <translation>목록 압축 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9667"/>
         <source>Load Database Cheats</source>
         <translation>데이터베이스 치트 불러오기</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9621"/>
-        <source>Load Devices From Save States</source>
-        <translation>상태 저장에서 장치 불러오기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9669"/>
+        <source>Load Global State</source>
+        <translation>전역 상태 불러오기</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9624"/>
-        <source>Load State</source>
-        <translation>상태 불러오기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9670"/>
+        <source>Load Preset</source>
+        <translation>사전 설정 불러오기</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9625"/>
-        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation>모든 대체 텍스처를 램에 불러와 런타임 시, 끊김 현상을 줄입니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9674"/>
+        <source>Log File Timestamps</source>
+        <oldsource>Log Timestamps</oldsource>
+        <translation>타임스탬프 기록 파일</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9626"/>
-        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
-        <translation>게임 이미지를 램에 불러옵니다. 게임 플레이 중 네트워크 경로가 불안정한 경우에 유용합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9676"/>
+        <source>Log Timestamps</source>
+        <oldsource>Log Timestamps</oldsource>
+        <translation>타임스탬프 기록</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9627"/>
-        <source>Log Level</source>
-        <translation>로그 레벨</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9680"/>
+        <source>Logging In...</source>
+        <translation>로그인 중...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9628"/>
-        <source>Log To Debug Console</source>
-        <translation>디버그 콘솔에 기록</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9629"/>
-        <source>Log To File</source>
-        <translation>파일에 기록</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9630"/>
-        <source>Log To System Console</source>
-        <translation>시스템 콘솔에 기록</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9632"/>
-        <source>Logging Settings</source>
-        <translation>로그 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9633"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9682"/>
         <source>Logging in to RetroAchievements...</source>
         <translation>레트로어치브먼트에 로그인 중...</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9634"/>
-        <source>Login</source>
-        <translation>로그인</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9635"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9684"/>
         <source>Login Failed.
 Error: {}
 Please check your username and password, and try again.</source>
         <translation>로그인에 실패했습니다.
 오류 : {}
-사용자 이름과 비밀번호를 확인하고 다시 시도하세요.</translation>
+아이디와 비밀번호를 확인하고 다시 시도하세요.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9636"/>
-        <source>Login token generated on {}</source>
-        <translation>{}에 로그인 토큰이 생성되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9637"/>
-        <source>Logout</source>
-        <translation>로그아웃</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9638"/>
-        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
-        <translation>printf()에 대한 바이오스 호출을 기록합니다. 모든 게임에 디버깅 메시지가 포함되는 것은 아닙니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9639"/>
-        <source>Logs messages to duckstation.log in the user directory.</source>
-        <translation>사용자 디렉터리의 duckstation.log에 로그를 기록합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9640"/>
-        <source>Logs messages to the console window.</source>
-        <translation>콘솔 창에 메시지를 기록합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9641"/>
-        <source>Logs messages to the debug console where supported.</source>
-        <translation>지원되는 경우, 디버그 콘솔에 메시지를 기록합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9642"/>
-        <source>Macro Button {}</source>
-        <translation>매크로 버튼 {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9643"/>
-        <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
-        <translation>성능 저하 없이 게임을 콘솔 프레임 속도에 가깝게 실행할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9644"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9693"/>
         <source>Maximum</source>
         <translation>최대</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9645"/>
-        <source>Maximum Read Speedup Cycles</source>
-        <translation>최대 읽기 속도 향상 주기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9701"/>
+        <source>Menu Background</source>
+        <translation>메뉴 배경</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9646"/>
-        <source>Maximum Seek Speedup Cycles</source>
-        <translation>최대 탐색 속도 향상 주기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9648"/>
-        <source>Memory Card Directory</source>
-        <translation>메모리 카드 디렉터리</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9649"/>
-        <source>Memory Card Port {}</source>
-        <translation>메모리 카드 포트 {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9650"/>
-        <source>Memory Card Settings</source>
-        <translation>메모리 카드 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9651"/>
-        <source>Memory Card {} Type</source>
-        <translation>메모리 카드 {} 유형</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9656"/>
-        <source>Minimal Output Latency</source>
-        <translation>출력 지연 시간 최소화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9657"/>
-        <source>Move Down</source>
-        <translation>아래로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9658"/>
-        <source>Move Up</source>
-        <translation>위로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9659"/>
-        <source>Moves this shader higher in the chain, applying it earlier.</source>
-        <translation>이 셰이더를 체인에서 더 위로 이동하여 더 일찍 적용합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9660"/>
-        <source>Moves this shader lower in the chain, applying it later.</source>
-        <translation>이 셰이더를 체인에서 아래로 이동하여 나중에 적용합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9662"/>
-        <source>Multitap Mode</source>
-        <translation>멀티탭 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9663"/>
-        <source>Mute All Sound</source>
-        <translation>모두 음소거</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9664"/>
-        <source>Mute CD Audio</source>
-        <translation>CD 음소거</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9665"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9714"/>
         <source>Navigate</source>
         <translation>탐색</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9666"/>
-        <source>No Game Selected</source>
-        <translation>선택한 게임 없음</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9716"/>
+        <source>No Vibration</source>
+        <translation>진동 없음</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9670"/>
-        <source>No input profiles available.</source>
-        <translation>사용 가능한 입력 프로필이 없습니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9717"/>
+        <source>No cheats are available for this game.</source>
+        <translation>이 게임에 사용할 수 있는 치트가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9672"/>
-        <source>No resume save state found.</source>
-        <translation>상태 저장을 찾을 수 없어 재개할 수 없습니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9718"/>
+        <source>No devices with vibration motors were detected.</source>
+        <translation>진동 모터가 장착된 장치가 감지되지 않았습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9673"/>
-        <source>No save present in this slot.</source>
-        <translation>이 슬롯에는 저장된 것이 없습니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9720"/>
+        <source>No patches are available for this game.</source>
+        <translation>이 게임에 사용할 수 있는 패치가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9674"/>
-        <source>No save states found.</source>
-        <translation>상태 저장을 찾을 수 없습니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9725"/>
+        <source>None</source>
+        <translation>없음</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9675"/>
-        <source>No, resume the game.</source>
-        <translation>아니요, 게임을 재개하세요.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9744"/>
+        <source>PGXP Depth Buffer</source>
+        <translation>PGXP 심도 버퍼</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9677"/>
-        <source>None (Double Speed)</source>
-        <translation>없음(2배속)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9678"/>
-        <source>None (Normal Speed)</source>
-        <translation>없음(정상 속도)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9679"/>
-        <source>Not Logged In</source>
-        <translation>로그인하지 않음</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9680"/>
-        <source>Not Scanning Subdirectories</source>
-        <translation>하위 디렉터리 검색 안 함</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9681"/>
-        <source>OK</source>
-        <translation>확인</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9682"/>
-        <source>OSD Scale</source>
-        <translation>OSD 스케일</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9683"/>
-        <source>On-Screen Display</source>
-        <translation>화면 표시(OSD)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9684"/>
-        <source>Open Containing Directory</source>
-        <translation>포함된 디렉터리 열기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9685"/>
-        <source>Open To Game List</source>
-        <translation>게임 목록 열기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9686"/>
-        <source>Open in File Browser</source>
-        <translation>파일 탐색기에서 열기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9687"/>
-        <source>Operations</source>
-        <translation>작업</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9688"/>
-        <source>Optimal Frame Pacing</source>
-        <translation>최적의 프레임 속도</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9689"/>
-        <source>Options</source>
-        <translation>옵션</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9690"/>
-        <source>Output Latency</source>
-        <translation>출력 대기 시간</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9691"/>
-        <source>Output Volume</source>
-        <translation>출력 음량</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9692"/>
-        <source>Overclocking Percentage</source>
-        <translation>오버클럭 비율</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9693"/>
-        <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
-        <translation>일반 삼각형 도면을 와이어프레임/선 보기로 오버레이하거나 대체합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9694"/>
-        <source>PGXP (Precision Geometry Transform Pipeline)</source>
-        <translation>PGXP(정밀 기하학 트랜스폼 파이프라인)</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9696"/>
-        <source>PGXP Geometry Correction</source>
-        <translation>PGXP 기하학 보정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9697"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9746"/>
         <source>Parent Directory</source>
         <translation>상위 디렉터리</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9699"/>
-        <source>Patches</source>
-        <translation>패치</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9764"/>
+        <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
+        <translation>아래에 retroachievements.org의 아이디와 비밀번호를 입력하세요. 비밀번호는 DuckStation에 저장되지 않으며, 액세스 토큰이 생성되어 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9700"/>
-        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
-        <translation>부팅 애니메이션을 건너뛰도록 BIOS를 패치합니다. 활성화해도 안전합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9701"/>
-        <source>Path</source>
-        <translation>경로</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9702"/>
-        <source>Pause On Controller Disconnection</source>
-        <translation>컨트롤러 연결이 끊어지면 일시 중지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9703"/>
-        <source>Pause On Focus Loss</source>
-        <translation>초점 손실 시, 일시 중지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9704"/>
-        <source>Pause On Start</source>
-        <translation>시작 시, 일시 중지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9705"/>
-        <source>Pauses the emulator when a controller with bindings is disconnected.</source>
-        <translation>할당된 컨트롤러의 연결이 끊어지면 에뮬레이터를 일시 중지합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9706"/>
-        <source>Pauses the emulator when a game is started.</source>
-        <translation>게임이 시작되면 에뮬레이터를 일시 중지합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9707"/>
-        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation>창을 최소화하거나 다른 앱으로 전환하면 에뮬레이터가 일시 중지되고 다시 전환하면 일시 중지가 해제됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9708"/>
-        <source>Per-Game Configuration</source>
-        <translation>게임별 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9709"/>
-        <source>Per-game controller configuration initialized with global settings.</source>
-        <translation>글로벌 설정으로 초기화된 게임별 컨트롤러 구성.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9710"/>
-        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
-        <translation>성능 향상 - 디스패처로 돌아가지 않고 블록 사이를 직접 이동합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9711"/>
-        <source>Perspective Correct Colors</source>
-        <translation>원근감 보정 색상</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9712"/>
-        <source>Perspective Correct Textures</source>
-        <translation>원근감 보정 텍스처</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9714"/>
-        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>도전 과제 봉인 해제 및 순위표 제출과 같은 이벤트에서 음향 효과를 재생합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9716"/>
-        <source>Port {} Controller Type</source>
-        <translation>포트 {} 컨트롤러 유형</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9717"/>
-        <source>Post-Processing Settings</source>
-        <translation>후처리 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9718"/>
-        <source>Post-processing chain cleared.</source>
-        <translation>후처리 체인이 지워졌습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9719"/>
-        <source>Post-processing shaders reloaded.</source>
-        <translation>후처리 셰이더를 다시 불러왔습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9720"/>
-        <source>Preload Images to RAM</source>
-        <translation>램에 이미지 미리 불러오기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9721"/>
-        <source>Preload Replacement Textures</source>
-        <translation>미리 불러오기 대체 텍스처</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9742"/>
-        <source>Release Date: </source>
-        <translation>공개일 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9760"/>
-        <source>Resets all settings to the defaults.</source>
-        <translation>모든 설정을 기본값으로 초기화합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9763"/>
-        <source>Restore Defaults</source>
-        <translation>기본값으로 되돌리기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9792"/>
-        <source>Scaled Interlacing</source>
-        <translation>인터레이스 배율</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9793"/>
-        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation>인터레이스 렌더링에서 줄 건너뛰기를 내부 해상도에 맞게 조정하여 눈에 띄지 않게 만듭니다. 일반적으로 활성화하는 것이 안전합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9810"/>
-        <source>Select Disc for {}</source>
-        <translation>{}의 디스크 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9817"/>
-        <source>Selects the backend to use for rendering the console/game visuals.</source>
-        <translation>콘솔/게임 시각적 렌더링에 사용할 후단부를 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9832"/>
-        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
-        <translation>&apos;최대&apos; 읽기 속도 향상 수준에 대한 최소 지연 시간을 설정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9833"/>
-        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
-        <translation>&apos;최대&apos; 탐색 속도 향상 레벨에 대한 최소 지연 시간을 설정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9841"/>
-        <source>Settings reset to default.</source>
-        <translation>설정이 기본값으로 초기화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9923"/>
-        <source>Time Played: </source>
-        <translation>플레이 시간 : </translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9944"/>
-        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
-        <translation>지정된 승수로 게임의 렌더링을 확장합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9947"/>
-        <source>Use DualShock/DualSense Button Icons</source>
-        <translation>DualShock/DualSense 버튼 아이콘 사용</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9950"/>
-        <source>Use Separate Disc Settings</source>
-        <translation>별도의 디스크 설정 사용</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9953"/>
-        <source>User Name</source>
-        <translation>사용자 이름</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9956"/>
-        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation>그래픽을 그리기 위해 2번째 스레드를 사용합니다. 특히 소프트웨어 렌더러를 사용할 때, 속도가 크게 향상되며 안전하게 사용할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9962"/>
-        <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
-        <translation>여러 디스크로 구성된 게임의 경우 각 디스크에 별도의 게임 설정을 사용합니다. 1번째/메인 디스크에만 설정할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9963"/>
-        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
-        <translation>게임의 설정에 관계없이 선택한 프레임 속도를 사용합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9971"/>
-        <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
-        <translation>빅픽처 모드가 시작되면 메인 메뉴 대신 게임 목록이 표시됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9981"/>
-        <source>Window Animations</source>
-        <translation>창 애니메이션</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9983"/>
-        <source>Writes backgrounds that can be replaced to the dump directory.</source>
-        <translation>덤프 디렉터리에 교체할 수 있는 배경을 씁니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9722"/>
-        <source>Preserve Projection Precision</source>
-        <translation>투영 정밀도 유지</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9723"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9772"/>
         <source>Press To Toggle</source>
         <translation>전환하려면 누르기</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9724"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9773"/>
         <source>Pressure</source>
         <translation>압력</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9725"/>
-        <source>Prevents the emulator from producing any audible sound.</source>
-        <translation>에뮬레이터에서 가청음을 생성하지 않도록 합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9797"/>
+        <source>Removes all bindings for this controller port.</source>
+        <translation>이 컨트롤러 포트에 대한 모든 연결을 제거합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9726"/>
-        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation>에뮬레이션이 실행되는 동안 화면 보호기가 활성화되지 않고 호스트가 절전 모드로 전환되지 않도록 합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9801"/>
+        <source>Replaces these settings with a previously saved controller preset.</source>
+        <translation>이 설정을 이전에 저장된 컨트롤러 사전 설정으로 대체합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9727"/>
-        <source>Provides vibration and LED control support over Bluetooth.</source>
-        <translation>블루투스를 통해 진동 및 LED 제어를 지원합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9803"/>
+        <source>Reset Controller Settings</source>
+        <translation>컨트롤러 설정 초기화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9729"/>
-        <source>Push a controller button or axis now.</source>
-        <translation>컨트롤러 버튼이나 축을 누릅니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9815"/>
+        <source>Resume Last Session</source>
+        <translation>마지막 세션 재개</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9730"/>
-        <source>Quick Save</source>
-        <translation>빠른 저장</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9816"/>
+        <source>Return To Game</source>
+        <translation>개임을 재개</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9731"/>
-        <source>Read Speedup</source>
-        <translation>읽기 속도 향상</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9817"/>
+        <source>Return to desktop mode, or exit the application.</source>
+        <translation>데스크톱 모드로 돌아가거나 앱을 종료하세요.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9732"/>
-        <source>Readahead Sectors</source>
-        <translation>리드헤드 섹터</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9818"/>
+        <source>Return to the previous menu.</source>
+        <translation>이전 메뉴로 돌아갑니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9733"/>
-        <source>Recompiler Fast Memory Access</source>
-        <translation>고속 메모리 액세스 리컴파일러</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9822"/>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
+        <translation>{0}프레임을 되감고 {1:.2f}초 동안 지속하려면 최대 {2}MB의 램과 {3}MB의 비디오램이 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9734"/>
-        <source>Reduce Input Latency</source>
-        <translation>입력 지연 시간 단축</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9823"/>
+        <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
+        <translation>선행 실행이 활성화되어 되감기가 비활성화되었습니다. 선행 실행을 사용하면 시스템 요구 사항이 크게 증가합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9735"/>
-        <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
-        <translation>메모리 전송을 통해 분수 구성 요소를 보존하려고 시도하여 &quot;흔들리는&quot; 폴리곤을 줄입니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9824"/>
+        <source>Rewind is not enabled. Please note that enabling rewind may significantly increase system requirements.</source>
+        <translation>되감기가 활성화되어 있지 않습니다. 되감기를 활성화하면 시스템 요구 사항이 크게 증가할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9736"/>
-        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
-        <translation>작업자 스레드에서 CD 데이터를 비동기적으로 읽거나 압축을 풀어 에뮬레이션의 중단을 줄입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9737"/>
-        <source>Reduces input latency by delaying the start of frame until closer to the presentation time.</source>
-        <translation>프레임 시작을 프레젠테이션 시간에 가까워질 때까지 지연시켜 입력 지연 시간을 줄입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9738"/>
-        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
-        <translation>깊이 테스트를 통해 폴리곤 Z-파이팅을 줄입니다. 게임 호환성이 떨어집니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9739"/>
-        <source>Reduces the size of save states by compressing the data before saving.</source>
-        <translation>저장 전에 데이터를 압축하여 저장 상태의 크기를 줄입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9740"/>
-        <source>Region</source>
-        <translation>지역 코드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9741"/>
-        <source>Region: </source>
-        <translation>지역 코드 :</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9743"/>
-        <source>Reload Shaders</source>
-        <translation>셰이더 다시 불러오기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9744"/>
-        <source>Reloads the shaders from disk, applying any changes.</source>
-        <translation>디스크에서 셰이더를 불러와 변경 사항을 적용합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9745"/>
-        <source>Remove From Chain</source>
-        <translation>체인에서 제거</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9746"/>
-        <source>Remove From List</source>
-        <translation>목록에서 제거</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9747"/>
-        <source>Removed stage {} ({}).</source>
-        <translation>스테이지 {}({})을 제거했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9749"/>
-        <source>Removes this shader from the chain.</source>
-        <translation>체인에서 이 셰이더를 제거합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9750"/>
-        <source>Renames existing save states when saving to a backup file.</source>
-        <translation>백업 파일에 저장할 때 기존 저장 상태의 이름을 변경합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9751"/>
-        <source>Rendering</source>
-        <translation>렌더링</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9753"/>
-        <source>Rescan All Games</source>
-        <translation>모든 게임 다시 검색</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9755"/>
-        <source>Reset Memory Card Directory</source>
-        <translation>메모리 카드 디렉터리 초기화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9756"/>
-        <source>Reset Play Time</source>
-        <translation>플레이 시간 초기화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9757"/>
-        <source>Reset Settings</source>
-        <translation>설정 초기화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9758"/>
-        <source>Reset System</source>
-        <translation>시스템 초기화</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9759"/>
-        <source>Resets all configuration to defaults (including bindings).</source>
-        <translation>모든 구성을 기본값으로 다시 설정합니다(할당 포함).</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9761"/>
-        <source>Resets memory card directory to default (user directory).</source>
-        <translation>메모리 카드 디렉터리를 기본값(사용자 디렉터리)으로 다시 설정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9762"/>
-        <source>Resolution change will be applied after restarting.</source>
-        <translation>해상도 변경은 다시 시작 후 적용됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9764"/>
-        <source>Restores the state of the system prior to the last state loaded.</source>
-        <translation>마지막으로 불러온 상태 이전의 시스템 상태를 복원합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9765"/>
-        <source>Resume Game</source>
-        <translation>게임 재개</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9771"/>
-        <source>Rewind Save Frequency</source>
-        <translation>저장 빈도 되감기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9772"/>
-        <source>Rewind Save Slots</source>
-        <translation>저장 슬롯 되감기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9777"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9827"/>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
         <translation>업스케일링 시 바닥 대신 라운드 텍스처 좌표를 사용합니다. 일부 게임에서 정렬되지 않은 텍스처를 수정할 수 있지만 다른 게임에서는 깨지며 텍스처 필터링과 호환되지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9778"/>
-        <source>Runahead</source>
-        <translation>빨리 감기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9830"/>
+        <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
+        <translation>비디오램 다시 읽어오기를 위해 소프트웨어 렌더러를 병렬로 실행합니다. 일부 시스템에서는 하드웨어 렌더러와 함께 그래픽 향상 기능을 사용할 때 성능이 향상될 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9779"/>
-        <source>Runahead/Rewind</source>
-        <translation>빨리 감기/되감기</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9834"/>
+        <source>Save Controller Preset</source>
+        <translation>컨트롤러 사전 설정 저장</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9782"/>
-        <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
-        <translation>SDL 듀얼쇼크 4 / 듀얼센스 강화 모드</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9835"/>
+        <source>Save Preset</source>
+        <translation>사전 설정 저장</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9783"/>
-        <source>Safe Mode</source>
-        <translation>안전 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9786"/>
-        <source>Save Screenshot</source>
-        <translation>스크린샷 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9787"/>
-        <source>Save State</source>
-        <translation>상태 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9788"/>
-        <source>Save State Compression</source>
-        <translation>상태 압축 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9790"/>
-        <source>Saved {:%c}</source>
-        <translation>{:%c} 저장</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9791"/>
-        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation>주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9794"/>
-        <source>Scaling</source>
-        <translation>크기 조정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9795"/>
-        <source>Scan For New Games</source>
-        <translation>새로운 게임 찾기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9796"/>
-        <source>Scanning Subdirectories</source>
-        <translation>하위 디렉터리 검색</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9797"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9847"/>
         <source>Screen Margins</source>
         <translation>화면 여백</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9803"/>
-        <source>Search Directories</source>
-        <translation>디렉터리 찾기</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9804"/>
-        <source>Seek Speedup</source>
-        <translation>속도 향상</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9806"/>
-        <source>Select Device</source>
-        <translation>장치 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9809"/>
-        <source>Select Disc Image</source>
-        <translation>디스크 이미지 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9812"/>
-        <source>Select Macro {} Binds</source>
-        <translation>매크로 {} 할당 선택</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9816"/>
-        <source>Selects the GPU to use for rendering.</source>
-        <translation>렌더링에 사용할 GPU를 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9819"/>
-        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
-        <translation>에뮬레이트된 하드웨어가 실행될 정상 클럭 속도의 배율을 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9821"/>
-        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9822"/>
-        <source>Selects the resolution to use in fullscreen modes.</source>
-        <translation>전체 화면 모드에서 사용할 해상도를 선택합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9825"/>
-        <source>Serial</source>
-        <translation>일련번호</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9826"/>
-        <source>Session: {}</source>
-        <translation>세션 : {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9828"/>
-        <source>Set Input Binding</source>
-        <translation>입력 할당 설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9829"/>
-        <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
-        <translation>임계값을 초과하면 정확한 값을 삭제하는 임계값을 설정합니다. 일부 게임에서 글리치를 해결하는 데 도움이 될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9830"/>
-        <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
-        <translation>에뮬레이트된 뎁스 버퍼를 폐기하는 임계값을 설정합니다. 일부 게임에서 도움이 될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9831"/>
-        <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation>빨리 감기 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9834"/>
-        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation>목표 에뮬레이션 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9835"/>
-        <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation>터보 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9836"/>
-        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
-        <translation>기록되는 메시지의 상세도를 설정합니다. 수준이 높을수록 더 많은 메시지가 기록됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9837"/>
-        <source>Sets which sort of memory card image will be used for slot {}.</source>
-        <translation>슬롯 {}에 사용할 메모리 카드 이미지 종류를 설정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9838"/>
-        <source>Setting {} binding {}.</source>
-        <translation>할당 {} 설정 {}.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9839"/>
-        <source>Settings</source>
-        <translation>설정</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9840"/>
-        <source>Settings and Operations</source>
-        <translation>설정 및 조작</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9842"/>
-        <source>Shader {} added as stage {}.</source>
-        <translation>셰이더 {}을(를) 스테이지 {}(으)로 추가했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9843"/>
-        <source>Shared Card Name</source>
-        <translation>공유 카드 이름</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9845"/>
-        <source>Show CPU Usage</source>
-        <translation>CPU 사용량 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9846"/>
-        <source>Show Controller Input</source>
-        <translation>컨트롤러 입력 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9847"/>
-        <source>Show Enhancement Settings</source>
-        <translation>향상 설정 표시</translation>
-    </message>
-    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9848"/>
-        <source>Show FPS</source>
-        <translation>FPS 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9849"/>
-        <source>Show Frame Times</source>
-        <translation>프레임 시간 표시</translation>
+        <source>Screen Position</source>
+        <translation>화면 위치</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9850"/>
-        <source>Show GPU Statistics</source>
-        <translation>GPU 통계 표시</translation>
+        <source>Screenshot Format</source>
+        <translation>스크린샷 형식</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9851"/>
-        <source>Show GPU Usage</source>
-        <translation>GPU 사용량 표시</translation>
+        <source>Screenshot Quality</source>
+        <translation>스크린샷 품질</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9853"/>
-        <source>Show OSD Messages</source>
-        <translation>OSD 메시지 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9854"/>
-        <source>Show Resolution</source>
-        <translation>해상도 표시</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9852"/>
+        <source>Screenshot Size</source>
+        <translation>스크린샷 크기</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9855"/>
-        <source>Show Speed</source>
-        <translation>속도 표시</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9856"/>
-        <source>Show Status Indicators</source>
-        <translation>상태 표시기 표시</translation>
+        <source>Select</source>
+        <translation>선택</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9858"/>
-        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
-        <translation>디스플레이의 왼쪽 상단 모서리에 프레임 시간의 시각적 기록을 표시합니다.</translation>
+        <source>Select Disc Drive</source>
+        <translation>디스크 드라이브 선택</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9859"/>
-        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
-        <translation>화면 오른쪽 하단에 향상 설정을 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9860"/>
-        <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation>도전 과제/프라임 도전 과제가 활성화되어 있으면 화면 오른쪽 하단에 아이콘이 표시됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9862"/>
-        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
-        <translation>화면 우측 상단에 에뮬레이트된 GPU에 대한 정보가 표시됩니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9861"/>
+        <source>Select Game</source>
+        <translation>게임 선택</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9863"/>
-        <source>Shows on-screen-display messages when events occur.</source>
-        <translation>이벤트가 발생하면 화면 표시기에 메시지를 표시합니다.</translation>
+        <source>Select State</source>
+        <translation>상태 선택</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9864"/>
-        <source>Shows persistent icons when turbo is active or when paused.</source>
-        <translation>터보가 활성화되어 있거나 일시 중지되었을 때 영구 아이콘을 표시합니다.</translation>
+        <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
+        <translation>사전 설정된 외곽선 목록에서 선택하거나 사용자 정의 구성을 수동으로 지정합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9865"/>
-        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation>디스플레이 왼쪽 하단에 시스템의 현재 컨트롤러 상태를 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9866"/>
-        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation>디스플레이의 오른쪽 상단에 시스템의 현재 에뮬레이션 속도를 백분율로 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9867"/>
-        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
-        <translation>디스플레이 오른쪽 상단에 시스템의 현재 렌더링 해상도를 표시합니다.</translation>
+        <source>Selected Preset</source>
+        <translation>선택된 사전 설정</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9870"/>
-        <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation>디스플레이 오른쪽 상단에 호스트의 GPU 사용량을 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9871"/>
-        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation>디스플레이 오른쪽 상단에 시스템이 초당 표시하는 프레임 수(혹은 수직 동기화)를 표시합니다.</translation>
+        <source>Selects the quality at which screenshots will be compressed.</source>
+        <translation>스크린샷을 압축할 품질을 선택합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9873"/>
-        <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation>수정되지 않은 원본 콘솔에 존재하는 지역 검사를 시뮬레이션합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9874"/>
-        <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation>시스템을 미리 시뮬레이션하고 롤백/재생하여 입력 지연을 줄입니다. 시스템 요구 사항이 매우 높습니다.</translation>
+        <source>Selects the type of emulated controller for this port.</source>
+        <translation>이 포트에 대한 에뮬레이션된 컨트롤러 유형을 선택합니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9877"/>
-        <source>Slow Boot</source>
-        <translation>저속 부팅</translation>
+        <source>Set Cover Image</source>
+        <translation>커버 이미지 설정</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9880"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9907"/>
+        <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
+        <translation>게임이 실행되고 있지 않을 때, 배경 이미지 또는 셰이더를 표시합니다. 배경은 데이터 디렉터리의 resources/fullscreenui/backgrounds에 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9919"/>
+        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <translation>화면 우측 상단에 각 시스템 스레드의 호스트 CPU 사용량이 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9930"/>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
+        <translation>일반적으로 FMV인 24비트 콘텐츠에서 색상 전환 시 블록 현상을 부드럽게 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9931"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
         <translation>2D 객체의 확대된 텍스처의 블록성을 부드럽게 합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9881"/>
-        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
-        <translation>3D 오브젝트에서 확대된 텍스처의 뭉개짐을 부드럽게 처리합니다.</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9933"/>
+        <source>Sort Alphabetically</source>
+        <translation>알파벳순으로 정렬</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9883"/>
-        <source>Sort By</source>
-        <translation>정렬 기준</translation>
+        <location filename="../../core/fullscreen_ui.cpp" line="9936"/>
+        <source>Sorts the cheat list alphabetically by the name of the code.</source>
+        <translation>코드 이름에 따라 치트 목록을 알파벳순으로 정렬합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9884"/>
-        <source>Sort Reversed</source>
-        <translation>역순 정렬</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9886"/>
-        <source>Sound Effects</source>
-        <translation>음향 효과</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9888"/>
-        <source>Spectator Mode</source>
-        <translation>관중 모드</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9889"/>
-        <source>Speed Control</source>
-        <translation>속도 조절</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9890"/>
-        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation>CD-ROM 읽기 속도를 지정된 비율만큼 높입니다. 일부 게임에서는 로딩 속도가 향상되고 다른 게임에서는 속도가 저하될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9891"/>
-        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation>CD-ROM 검색 속도를 지정된 비율만큼 높입니다. 일부 게임에서는 로딩 속도가 향상되고 다른 게임에서는 속도가 저하될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9892"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9943"/>
         <source>Sprite Texture Filtering</source>
         <translation>스프라이트 텍스처 필터링</translation>
     </message>
     <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9946"/>
+        <source>Start Disc</source>
+        <translation>디스크 가동</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9949"/>
+        <source>Start Game</source>
+        <translation>게임 시작</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9950"/>
+        <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
+        <translation>PC의 DVD 드라이브에 있는 디스크에서 게임을 시작합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9952"/>
+        <source>Stores the current settings to a controller preset.</source>
+        <translation>현재 설정을 컨트롤러 사전 설정에 저장합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9960"/>
+        <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
+        <translation>콘솔 프레임의 표시를 호스트에 동기화합니다. GSync/FreeSync 사용자는 대신 최적 프레임 속도를 활성화해야 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9965"/>
+        <source>Textures Directory</source>
+        <translation>텍스처 디렉터리</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9970"/>
+        <source>This game has no achievements.</source>
+        <translation>이 게임에는 {} 순위표가 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9971"/>
+        <source>This game has no leaderboards.</source>
+        <translation>이 게임에는 순위표가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9975"/>
+        <source>Timing out in {:.0f} seconds...</source>
+        <translation>{:.0f}초 후 시간 초과...</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9980"/>
+        <source>Toggle Fullscreen</source>
+        <translation>전체 화면 전환</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9982"/>
+        <source>Toggles the macro when the button is pressed, instead of held.</source>
+        <translation>버튼을 누르고 있는 대신, 누르면 매크로가 전환됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9984"/>
+        <source>Trigger</source>
+        <translation>트리거</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9987"/>
+        <source>UI Language</source>
+        <translation>사용자 인터페이스 언어</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9988"/>
+        <source>Uncompressed Size</source>
+        <translation>압축되지 않은 크기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9990"/>
+        <source>Ungrouped</source>
+        <translation>그룹 해제됨</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9992"/>
+        <source>Unknown File Size</source>
+        <translation>알 수 없는 파일 크기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10001"/>
+        <source>Use Old MDEC Routines</source>
+        <translation>기존 MDEC 루틴 사용</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10002"/>
+        <source>Use Separate Disc Settings</source>
+        <translation>별도의 디스크 설정 사용</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10003"/>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <translation>멀티 디스크 게임에 단일 카드 사용</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10014"/>
+        <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
+        <translation>여러 디스크로 구성된 게임의 경우 각 디스크에 별도의 게임 설정을 사용합니다. 1번째/메인 디스크에만 설정할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10018"/>
+        <source>Vertex Cache</source>
+        <translation>버텍스 캐시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10019"/>
+        <source>Vertical Sync (VSync)</source>
+        <translation>수직 동기화(VSync)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10020"/>
+        <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
+        <translation>경고 : 치트를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10021"/>
+        <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
+        <translation>경고 : 게임 패치를 활성화하면 예기치 않은 동작, 충돌, 소프트 잠금 또는 저장된 게임 손상이 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10034"/>
+        <source>Wireframe Rendering</source>
+        <translation>와이어프레임 렌더링</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9266"/>
+        <source>%.1f ms</source>
+        <translation>%.1f밀리초</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9267"/>
+        <source>%.2f Seconds</source>
+        <translation>%.2f초</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9268"/>
+        <source>%d Frames</source>
+        <translation>%d프레임</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9269"/>
+        <source>%d cycles</source>
+        <translation>%d주기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9271"/>
+        <source>%d sectors</source>
+        <translation>%d초</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9272"/>
+        <source>%u MB</source>
+        <translation>%uMB</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9345"/>
+        <source>Achievements: </source>
+        <translation>도전 과제 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9351"/>
+        <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
+        <translation>수직 동기화가 활성화되어 있을 때, 콘솔의 재생 빈도가 호스트와 일치하도록 에뮬레이션 속도를 조정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9356"/>
+        <source>Allows booting to continue even without a required SBI file. These games will not run correctly.</source>
+        <translation>필수 SBI 파일 없이도 부팅을 계속할 수 있습니다. 이러한 게임은 제대로 실행되지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9357"/>
+        <source>Alpha Blending</source>
+        <translation>불투명도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9358"/>
+        <source>Always Track Uploads</source>
+        <translation>항상 올리기 추적</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9359"/>
+        <source>An error occurred while deleting empty game settings:
+{}</source>
+        <translation>빈 게임 설정을 삭제하는 중 오류 발생 :
+{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9360"/>
+        <source>An error occurred while saving game settings:
+{}</source>
+        <translation>게임 설정을 저장하는 중 오류 발생 :
+{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9408"/>
+        <source>Change Page</source>
+        <translation>페이지 변경</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9409"/>
+        <source>Change Selection</source>
+        <translation>선택 사항 변경</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9410"/>
+        <source>Change View</source>
+        <translation>표시 변경</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9411"/>
+        <source>Changes settings for the application.</source>
+        <translation>앱의 설정을 변경합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9413"/>
+        <source>Cheats</source>
+        <translation>치트</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9416"/>
+        <source>Clear Mappings</source>
+        <translation>매핑 지우기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9424"/>
+        <source>Cobalt Sky</source>
+        <translation>코발트 스카이</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9427"/>
+        <source>Completely exits the application, returning you to your desktop.</source>
+        <translation>앱을 완전히 종료하고 데스크톱으로 돌아갑니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9431"/>
+        <source>Contributor List</source>
+        <translation>공헌자 목록</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9433"/>
+        <source>Controller Port {} Bindings</source>
+        <translation>컨트롤러 포트 {} 할당</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9450"/>
+        <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
+        <translation>CD/DVD-ROM 장치를 찾을 수 없습니다. 드라이브가 연결되어 있고 접근할 수 있는 권한이 충분한지 확인하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9455"/>
+        <source>Create New...</source>
+        <translation>새로 만들기...</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9470"/>
+        <source>Deinterlacing Mode</source>
+        <translation>인터레이스 제거 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9473"/>
+        <source>Depth Clear Threshold</source>
+        <translation>심도 지우기 임계값</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9495"/>
+        <source>Determines the rotation of the simulated TV screen.</source>
+        <translation>시뮬레이션된 TV 화면의 회전을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9498"/>
+        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system.</source>
+        <translation>시스템에 표시하기 위해 인터레이스 프레임을 프로그레시브 프레임으로 변환하는 데 사용되는 알고리즘을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9506"/>
+        <source>Display Area</source>
+        <translation>화면 영역</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9507"/>
+        <source>Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.</source>
+        <translation>Xbox 버튼 대신, 바닥글과 입력 할당에 DualShock/DualSense 버튼 아이콘이 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9508"/>
+        <source>Displays only the game title in the list, instead of the title and serial/file name.</source>
+        <translation>제목과 일련번호/파일 이름 대신 게임 타이틀만 목록에 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9511"/>
+        <source>Dithering</source>
+        <translation>디더링</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
+        <source>Do you want to continue from the automatic save created at {:%c}?</source>
+        <translation>{:%c}에 생성된 자동 저장을 계속 진행하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9521"/>
+        <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
+        <translation>DuckStation은 플레이 가능성, 속도, 장기적인 유지 관리에 초점을 맞춘 Sony PlayStation™ 콘솔의 무료 시뮬레이터/에뮬레이터입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9522"/>
+        <source>Dump Replaced Textures</source>
+        <translation>대체된 텍스처 덤프</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9523"/>
+        <source>Dumps textures that have replacements already loaded.</source>
+        <translation>대체 항목이 이미 불러온 텍스처를 덤프합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9529"/>
+        <source>Enable Cheats</source>
+        <translation>치트 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9550"/>
+        <source>Enable XInput Input Source</source>
+        <translation>XInput 입력 소스 활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9551"/>
+        <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
+        <translation>호스트의 렌더러 API에서 지원하는 경우 디버깅을 활성화합니다. 개발자 전용입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9553"/>
+        <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
+        <translation>정렬 및 버스 예외를 활성화합니다. 알려진 게임에는 필요하지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9554"/>
+        <source>Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.</source>
+        <translation>6MB의 램을 추가로 확보하여 총 2+6=8MB를 확보할 수 있으며, 이는 일반적으로 개발 콘솔에 존재합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9555"/>
+        <source>Enables an additional three controller slots on each port. Not supported in all games.</source>
+        <translation>각 포트에 3개의 컨트롤러 슬롯을 추가로 사용할 수 있습니다. 모든 게임에서 지원되지는 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9564"/>
+        <source>Enables the replacement of background textures in supported games.</source>
+        <translation>지원되는 게임에서 배경 텍스처를 교체할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9569"/>
+        <source>Error</source>
+        <translation>오류</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9570"/>
+        <source>Execution Mode</source>
+        <translation>실행 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9571"/>
+        <source>Exit</source>
+        <translation>종료</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9572"/>
+        <source>Exit And Save State</source>
+        <translation>상태 저장 및 종료</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9574"/>
+        <source>Exit Without Saving</source>
+        <translation>저장하지 않고 종료</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9578"/>
+        <source>Failed to copy text to clipboard.</source>
+        <translation>텍스트를 클립보드에 저장하지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9580"/>
+        <source>Failed to delete save state.</source>
+        <translation>상태 저장을 삭제하지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9581"/>
+        <source>Failed to delete {}.</source>
+        <translation>{}을(를) 삭제하지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9582"/>
+        <source>Failed to load &apos;{}&apos;.</source>
+        <translation>&apos;{}&apos;을(를) 불러오지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9586"/>
+        <source>Fast Boot</source>
+        <translation>고속 부팅</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9589"/>
+        <source>Fast Forward Speed</source>
+        <translation>빨리 감기 속도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9590"/>
+        <source>Fast Forward Volume</source>
+        <translation>빨리 감기 음량</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9594"/>
+        <source>File Title</source>
+        <translation>파일 이름</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9596"/>
+        <source>Forces a full rescan of all games previously identified.</source>
+        <translation>이전에 식별된 모든 게임을 강제로 다시 검색합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9598"/>
+        <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
+        <translation>사서함 프리젠테이션에 대해 FIFO를 강제로 사용합니다. 즉, 삼중 버퍼링 대신 이중 버퍼링을 사용합니다. 일반적으로 프레임 속도가 저하됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9599"/>
+        <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
+        <translation>CD-ROM에서 CD-DA 및 XA 음향을 모두 강제 음소거합니다. 일부 게임에서 배경 음악을 비활성화하는데 사용할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9600"/>
+        <source>Frame Rate</source>
+        <translation>프레임 속도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9601"/>
+        <source>Frame Time Buffer</source>
+        <translation>프레임 시간 버퍼</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9603"/>
+        <source>From File...</source>
+        <translation>파일에서...</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9604"/>
+        <source>Fullscreen Resolution</source>
+        <translation>전체 화면 해상도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9605"/>
+        <source>GPU Adapter</source>
+        <translation>GPU 어댑터</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9606"/>
+        <source>GPU Renderer</source>
+        <translation>GPU 렌더러</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9608"/>
+        <source>Game Grid</source>
+        <translation>게임 그리드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9609"/>
+        <source>Game List</source>
+        <translation>게임 목록</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9610"/>
+        <source>Game List Settings</source>
+        <translation>게임 목록 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9612"/>
+        <source>Game Properties</source>
+        <translation>게임 속성</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9613"/>
+        <source>Game Quick Save</source>
+        <translation>게임 빠른 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9614"/>
+        <source>Game Slot {0}##game_slot_{0}</source>
+        <translation>게임 슬롯 {0}##game_slot_{0}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9615"/>
+        <source>Game compatibility rating copied to clipboard.</source>
+        <translation>게임 호환성 등급이 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9616"/>
+        <source>Game path copied to clipboard.</source>
+        <translation>게임 경로가 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9617"/>
+        <source>Game region copied to clipboard.</source>
+        <translation>게임 지역이 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9618"/>
+        <source>Game serial copied to clipboard.</source>
+        <translation>게임 시리얼이 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9619"/>
+        <source>Game settings have been cleared for &apos;{}&apos;.</source>
+        <translation>&apos;{}&apos;에 대한 게임 설정이 지워졌습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9620"/>
+        <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
+        <translation>게임 설정이 &apos;{}&apos;에 대한 전역 설정으로 초기화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9621"/>
+        <source>Game title copied to clipboard.</source>
+        <translation>게임 제목이 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9622"/>
+        <source>Game type copied to clipboard.</source>
+        <translation>게임 유형이 클립보드에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9624"/>
+        <source>Geometry Tolerance</source>
+        <translation>기하 공차</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9625"/>
+        <source>GitHub Repository</source>
+        <translation>GitHub 저장소</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9626"/>
+        <source>Global Slot {0} - {1}##global_slot_{0}</source>
+        <translation>전역 슬롯 {0} - {1}##global_slot_{0}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9627"/>
+        <source>Global Slot {0}##global_slot_{0}</source>
+        <translation>전역 슬롯 {0}##global_slot_{0}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9631"/>
+        <source>Hardcore Mode</source>
+        <translation>하드코어 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9633"/>
+        <source>Hide Cursor In Fullscreen</source>
+        <translation>전체 화면에서 커서 숨기기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9634"/>
+        <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
+        <translation>에뮬레이터가 전체 화면 모드일 때, 마우스 포인터/커서를 숨깁니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9635"/>
+        <source>Hotkey Settings</source>
+        <translation>단축키 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9636"/>
+        <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
+        <translation>되감기를 위해 얼마나 많은 저장을 보관할지 설정합니다. 값이 클수록 메모리 요구량이 커집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9637"/>
+        <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
+        <translation>되감기 상태가 생성되는 빈도입니다. 주파수가 높을수록 시스템 요구 사항이 커집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9638"/>
+        <source>Identifies any new files added to the game directories.</source>
+        <translation>게임 디렉터리에 추가된 새 파일을 식별합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9641"/>
+        <source>If not enabled, the current post processing chain will be ignored.</source>
+        <translation>활성화하지 않으면 현재 후처리 체인이 무시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9645"/>
+        <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
+        <translation>3D 게임에서 시야각을 4:3에서 선택한 디스플레이 종횡비로 늘립니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9646"/>
+        <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
+        <translation>폴리곤 컬링의 정밀도를 높여 기하학적 구조의 구멍 수를 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9647"/>
+        <source>Inhibit Screensaver</source>
+        <translation>화면 보호기 실행 금지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9648"/>
+        <source>Input Sources</source>
+        <translation>입력 소스</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9649"/>
+        <source>Interface Settings</source>
+        <translation>인터페이스 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9653"/>
+        <source>Last Played</source>
+        <translation>마지막 플레이</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9655"/>
+        <source>Latency Control</source>
+        <translation>대기 시간 제어</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9657"/>
+        <source>Launch a game by selecting a file/disc image.</source>
+        <translation>파일/디스크 이미지를 선택하여 게임을 실행합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9659"/>
+        <source>Launch a game from images scanned from your game directories.</source>
+        <translation>게임 디렉터리에서 검색한 이미지로 게임을 실행합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9660"/>
+        <source>Leaderboard Notifications</source>
+        <translation>순위표 알림</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9661"/>
+        <source>Leaderboards</source>
+        <translation>순위표</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9666"/>
+        <source>List Settings</source>
+        <translation>목록 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9668"/>
+        <source>Load Devices From Save States</source>
+        <translation>상태 저장에서 장치 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9671"/>
+        <source>Load State</source>
+        <translation>상태 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9672"/>
+        <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
+        <translation>모든 대체 텍스처를 램에 불러와 런타임 시, 끊김 현상을 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9673"/>
+        <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
+        <translation>게임 이미지를 램에 불러옵니다. 게임 플레이 중 네트워크 경로가 불안정한 경우에 유용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9675"/>
+        <source>Log Level</source>
+        <translation>로그 레벨</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9677"/>
+        <source>Log To Debug Console</source>
+        <translation>디버그 콘솔에 기록</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9678"/>
+        <source>Log To File</source>
+        <translation>파일에 기록</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9679"/>
+        <source>Log To System Console</source>
+        <translation>시스템 콘솔에 기록</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9681"/>
+        <source>Logging Settings</source>
+        <translation>로그 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9683"/>
+        <source>Login</source>
+        <translation>로그인</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9685"/>
+        <source>Login token generated on {}</source>
+        <translation>{}에 로그인 토큰이 생성되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9686"/>
+        <source>Logout</source>
+        <translation>로그아웃</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9687"/>
+        <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
+        <translation>printf()에 대한 바이오스 호출을 기록합니다. 모든 게임에 디버깅 메시지가 포함되는 것은 아닙니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9688"/>
+        <source>Logs messages to duckstation.log in the user directory.</source>
+        <translation>사용자 디렉터리의 duckstation.log에 로그를 기록합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9689"/>
+        <source>Logs messages to the console window.</source>
+        <translation>콘솔 창에 메시지를 기록합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9690"/>
+        <source>Logs messages to the debug console where supported.</source>
+        <translation>지원되는 경우, 디버그 콘솔에 메시지를 기록합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9691"/>
+        <source>Macro Button {}</source>
+        <translation>매크로 버튼 {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9692"/>
+        <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
+        <translation>성능 저하 없이 게임을 콘솔 프레임 속도에 가깝게 실행할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9694"/>
+        <source>Maximum Read Speedup Cycles</source>
+        <translation>최대 읽기 속도 향상 주기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9695"/>
+        <source>Maximum Seek Speedup Cycles</source>
+        <translation>최대 탐색 속도 향상 주기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9696"/>
+        <source>Memory Card Busy</source>
+        <translation>메모리 카드 사용 중</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9697"/>
+        <source>Memory Card Directory</source>
+        <translation>메모리 카드 디렉터리</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9698"/>
+        <source>Memory Card Port {}</source>
+        <translation>메모리 카드 포트 {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9699"/>
+        <source>Memory Card Settings</source>
+        <translation>메모리 카드 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9700"/>
+        <source>Memory Card {} Type</source>
+        <translation>메모리 카드 {} 유형</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9702"/>
+        <source>Menu Borders</source>
+        <translation>메뉴 외곽선</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9703"/>
+        <source>Merge Multi-Disc Games</source>
+        <translation>다중 디스크 게임 병합</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9704"/>
+        <source>Merges multi-disc games into one item in the game list.</source>
+        <translation>여러 개의 디스크로 된 게임을 게임 목록에서 하나의 항목으로 병합합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9705"/>
+        <source>Minimal Output Latency</source>
+        <translation>출력 지연 시간 최소화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9706"/>
+        <source>Move Down</source>
+        <translation>아래로</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9707"/>
+        <source>Move Up</source>
+        <translation>위로</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9708"/>
+        <source>Moves this shader higher in the chain, applying it earlier.</source>
+        <translation>이 셰이더를 체인에서 더 위로 이동하여 더 일찍 적용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9709"/>
+        <source>Moves this shader lower in the chain, applying it later.</source>
+        <translation>이 셰이더를 체인에서 아래로 이동하여 나중에 적용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9710"/>
+        <source>Multitap</source>
+        <translation>멀티탭</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9711"/>
+        <source>Multitap Mode</source>
+        <translation>멀티탭 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9712"/>
+        <source>Mute All Sound</source>
+        <translation>모두 음소거</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9713"/>
+        <source>Mute CD Audio</source>
+        <translation>CD 음소거</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9715"/>
+        <source>No Game Selected</source>
+        <translation>선택한 게임 없음</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9719"/>
+        <source>No input profiles available.</source>
+        <translation>사용 가능한 입력 프로필이 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9721"/>
+        <source>No resume save state found.</source>
+        <translation>상태 저장을 찾을 수 없어 재개할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9722"/>
+        <source>No save present in this slot.</source>
+        <translation>이 슬롯에는 저장된 것이 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9723"/>
+        <source>No save states found.</source>
+        <translation>상태 저장을 찾을 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9724"/>
+        <source>No, resume the game.</source>
+        <translation>아니요, 게임을 재개하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9726"/>
+        <source>None (Double Speed)</source>
+        <translation>없음(2배속)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9727"/>
+        <source>None (Normal Speed)</source>
+        <translation>없음(정상 속도)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9728"/>
+        <source>Not Logged In</source>
+        <translation>로그인하지 않음</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9729"/>
+        <source>Not Scanning Subdirectories</source>
+        <translation>하위 디렉터리 검색 안 함</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9730"/>
+        <source>OK</source>
+        <translation>확인</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9731"/>
+        <source>OSD Scale</source>
+        <translation>OSD 스케일</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9732"/>
+        <source>On-Screen Display</source>
+        <translation>화면 표시(OSD)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9733"/>
+        <source>Open Containing Directory</source>
+        <translation>포함된 디렉터리 열기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9734"/>
+        <source>Open To Game List</source>
+        <translation>게임 목록 열기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9735"/>
+        <source>Open in File Browser</source>
+        <translation>파일 탐색기에서 열기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9736"/>
+        <source>Operations</source>
+        <translation>작업</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9737"/>
+        <source>Optimal Frame Pacing</source>
+        <translation>최적의 프레임 속도</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9738"/>
+        <source>Options</source>
+        <translation>옵션</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9739"/>
+        <source>Output Latency</source>
+        <translation>출력 대기 시간</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9740"/>
+        <source>Output Volume</source>
+        <translation>출력 음량</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9741"/>
+        <source>Overclocking Percentage</source>
+        <translation>오버클럭 비율</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9742"/>
+        <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
+        <translation>일반 삼각형 도면을 와이어프레임/선 보기로 오버레이하거나 대체합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9743"/>
+        <source>PGXP (Precision Geometry Transform Pipeline)</source>
+        <translation>PGXP(정밀 기하학 트랜스폼 파이프라인)</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9745"/>
+        <source>PGXP Geometry Correction</source>
+        <translation>PGXP 기하학 보정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9747"/>
+        <source>Password</source>
+        <translation>비밀번호</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9748"/>
+        <source>Patches</source>
+        <translation>패치</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9749"/>
+        <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
+        <translation>부팅 애니메이션을 건너뛰도록 BIOS를 패치합니다. 활성화해도 안전합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9750"/>
+        <source>Path</source>
+        <translation>경로</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9751"/>
+        <source>Pause On Controller Disconnection</source>
+        <translation>컨트롤러 연결이 끊어지면 일시 중지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9752"/>
+        <source>Pause On Focus Loss</source>
+        <translation>초점 손실 시, 일시 중지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9753"/>
+        <source>Pause On Start</source>
+        <translation>시작 시, 일시 중지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9754"/>
+        <source>Pauses the emulator when a controller with bindings is disconnected.</source>
+        <translation>할당된 컨트롤러의 연결이 끊어지면 에뮬레이터를 일시 중지합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9755"/>
+        <source>Pauses the emulator when a game is started.</source>
+        <translation>게임이 시작되면 에뮬레이터를 일시 중지합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9756"/>
+        <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
+        <translation>창을 최소화하거나 다른 앱으로 전환하면 에뮬레이터가 일시 중지되고 다시 전환하면 일시 중지가 해제됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9757"/>
+        <source>Per-Game Configuration</source>
+        <translation>게임별 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9758"/>
+        <source>Per-game controller configuration initialized with global settings.</source>
+        <translation>글로벌 설정으로 초기화된 게임별 컨트롤러 구성.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9759"/>
+        <source>Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.</source>
+        <translation>성능 향상 - 디스패처로 돌아가지 않고 블록 사이를 직접 이동합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9760"/>
+        <source>Perspective Correct Colors</source>
+        <translation>원근감 보정 색상</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9761"/>
+        <source>Perspective Correct Textures</source>
+        <translation>원근감 보정 텍스처</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9762"/>
+        <source>Pinky Pals</source>
+        <translation>핑키 팔스</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9763"/>
+        <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
+        <translation>도전 과제 봉인 해제 및 순위표 제출과 같은 이벤트에서 음향 효과를 재생합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9765"/>
+        <source>Port {} Controller Type</source>
+        <translation>포트 {} 컨트롤러 유형</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9766"/>
+        <source>Post-Processing Settings</source>
+        <translation>후처리 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9767"/>
+        <source>Post-processing chain cleared.</source>
+        <translation>후처리 체인이 지워졌습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9768"/>
+        <source>Post-processing shaders reloaded.</source>
+        <translation>후처리 셰이더를 다시 불러왔습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9769"/>
+        <source>Preload Images to RAM</source>
+        <translation>램에 이미지 미리 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9770"/>
+        <source>Preload Replacement Textures</source>
+        <translation>미리 불러오기 대체 텍스처</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9777"/>
+        <source>Purple Rain</source>
+        <translation>퍼플 레인</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9791"/>
+        <source>Release Date: </source>
+        <translation>공개일 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9809"/>
+        <source>Resets all settings to the defaults.</source>
+        <translation>모든 설정을 기본값으로 초기화합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9812"/>
+        <source>Restore Defaults</source>
+        <translation>기본값으로 되돌리기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9825"/>
+        <source>Right: </source>
+        <oldsource>Right</oldsource>
+        <translation>→ : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9839"/>
+        <source>Save State On Shutdown</source>
+        <translation>종료 시, 상태 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9842"/>
+        <source>Scaled Interlacing</source>
+        <translation>인터레이스 배율</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9843"/>
+        <source>Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.</source>
+        <translation>인터레이스 렌더링에서 줄 건너뛰기를 내부 해상도에 맞게 조정하여 눈에 띄지 않게 만듭니다. 일반적으로 활성화하는 것이 안전합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9860"/>
+        <source>Select Disc for {}</source>
+        <translation>{}의 디스크 선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9867"/>
+        <source>Selects the backend to use for rendering the console/game visuals.</source>
+        <translation>콘솔/게임 시각적 렌더링에 사용할 후단부를 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9868"/>
+        <source>Selects the color style to be used for Big Picture UI.</source>
+        <translation>빅피처 UI에 사용할 색상 스타일을 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9882"/>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; read speedup level.</source>
+        <translation>&apos;최대&apos; 읽기 속도 향상 수준에 대한 최소 지연 시간을 설정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9883"/>
+        <source>Sets the minimum delay for the &apos;Maximum&apos; seek speedup level.</source>
+        <translation>&apos;최대&apos; 탐색 속도 향상 레벨에 대한 최소 지연 시간을 설정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9891"/>
+        <source>Settings reset to default.</source>
+        <translation>설정이 기본값으로 초기화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9894"/>
+        <source>Show Achievement Trophy Icons</source>
+        <translation>도전 과제 트로피 아이콘 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9922"/>
+        <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
+        <translation>게임에 도전 과제가 있거나 마스터했을 때 게임 그리드에 트로피 아이콘을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9925"/>
+        <source>Size: </source>
+        <oldsource>Size</oldsource>
+        <translation>크기 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9955"/>
+        <source>Support for controllers that use the XInput protocol. XInput should only be used if you are using a XInput wrapper library.</source>
+        <translation>XInput 프로토콜을 사용하는 컨트롤러를 지원합니다. XInput은 XInput 래퍼 라이브러리를 사용하는 경우에만 사용해야 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9956"/>
+        <source>Switch to Next Disc on Stop</source>
+        <translation>중지 시, 다음 디스크로 전환</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9969"/>
+        <source>Theme</source>
+        <translation>테마</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9974"/>
+        <source>Time Played: </source>
+        <translation>플레이 시간 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9977"/>
+        <source>To use achievements, please log in with your retroachievements.org account.</source>
+        <translation>도전 과제를 사용하려면 retroachievements.org 계정으로 로그인하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9983"/>
+        <source>Top: </source>
+        <translation>상단 : </translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9994"/>
+        <source>Update Progress</source>
+        <translation>업데이트 진행 상황</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9995"/>
+        <source>Updates the progress database for achievements shown in the game list.</source>
+        <translation>게임 목록에 표시되는 도전 과제 진행률 데이터베이스를 업데이트합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9996"/>
+        <source>Upscales the game&apos;s rendering by the specified multiplier.</source>
+        <translation>지정된 승수로 게임의 렌더링을 확장합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9999"/>
+        <source>Use DualShock/DualSense Button Icons</source>
+        <translation>DualShock/DualSense 버튼 아이콘 사용</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10005"/>
+        <source>User Name</source>
+        <translation>아이디</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10008"/>
+        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
+        <translation>그래픽을 그리기 위해 2번째 스레드를 사용합니다. 특히 소프트웨어 렌더러를 사용할 때, 속도가 크게 향상되며 안전하게 사용할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10015"/>
+        <source>Utilizes the chosen frame rate regardless of the game&apos;s setting.</source>
+        <translation>게임의 설정에 관계없이 선택한 프레임 속도를 사용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10016"/>
+        <source>Value Range</source>
+        <translation>값 범위</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10023"/>
+        <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
+        <translation>빅픽처 모드가 시작되면 메인 메뉴 대신 게임 목록이 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10033"/>
+        <source>Window Animations</source>
+        <translation>창 애니메이션</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10035"/>
+        <source>Writes backgrounds that can be replaced to the dump directory.</source>
+        <translation>덤프 디렉터리에 교체할 수 있는 배경을 씁니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9771"/>
+        <source>Preserve Projection Precision</source>
+        <translation>투영 정밀도 유지</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9774"/>
+        <source>Prevents the emulator from producing any audible sound.</source>
+        <translation>에뮬레이터에서 가청음을 생성하지 않도록 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9775"/>
+        <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
+        <translation>에뮬레이션이 실행되는 동안 화면 보호기가 활성화되지 않고 호스트가 절전 모드로 전환되지 않도록 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9776"/>
+        <source>Provides vibration and LED control support over Bluetooth.</source>
+        <translation>블루투스를 통해 진동 및 LED 제어를 지원합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9778"/>
+        <source>Push a controller button or axis now.</source>
+        <translation>컨트롤러 버튼이나 축을 누릅니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9779"/>
+        <source>Quick Save</source>
+        <translation>빠른 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9780"/>
+        <source>Read Speedup</source>
+        <translation>읽기 속도 향상</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9781"/>
+        <source>Readahead Sectors</source>
+        <translation>리드헤드 섹터</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9782"/>
+        <source>Recompiler Fast Memory Access</source>
+        <translation>고속 메모리 액세스 리컴파일러</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9783"/>
+        <source>Reduce Input Latency</source>
+        <translation>입력 지연 시간 단축</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9784"/>
+        <source>Reduces &quot;wobbly&quot; polygons by attempting to preserve the fractional component through memory transfers.</source>
+        <translation>메모리 전송을 통해 분수 구성 요소를 보존하려고 시도하여 &quot;흔들리는&quot; 폴리곤을 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9785"/>
+        <source>Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread.</source>
+        <translation>작업자 스레드에서 CD 데이터를 비동기적으로 읽거나 압축을 풀어 에뮬레이션의 중단을 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9786"/>
+        <source>Reduces input latency by delaying the start of frame until closer to the presentation time.</source>
+        <translation>프레임 시작을 프레젠테이션 시간에 가까워질 때까지 지연시켜 입력 지연 시간을 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9787"/>
+        <source>Reduces polygon Z-fighting through depth testing. Low compatibility with games.</source>
+        <translation>깊이 테스트를 통해 폴리곤 Z-파이팅을 줄입니다. 게임 호환성이 떨어집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9788"/>
+        <source>Reduces the size of save states by compressing the data before saving.</source>
+        <translation>저장 전에 데이터를 압축하여 저장 상태의 크기를 줄입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9789"/>
+        <source>Region</source>
+        <translation>지역 코드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9790"/>
+        <source>Region: </source>
+        <translation>지역 코드 :</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9792"/>
+        <source>Reload Shaders</source>
+        <translation>셰이더 다시 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9793"/>
+        <source>Reloads the shaders from disk, applying any changes.</source>
+        <translation>디스크에서 셰이더를 불러와 변경 사항을 적용합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9794"/>
+        <source>Remove From Chain</source>
+        <translation>체인에서 제거</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9795"/>
+        <source>Remove From List</source>
+        <translation>목록에서 제거</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9796"/>
+        <source>Removed stage {} ({}).</source>
+        <translation>스테이지 {}({})을 제거했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9798"/>
+        <source>Removes this shader from the chain.</source>
+        <translation>체인에서 이 셰이더를 제거합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9799"/>
+        <source>Renames existing save states when saving to a backup file.</source>
+        <translation>백업 파일에 저장할 때 기존 저장 상태의 이름을 변경합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9800"/>
+        <source>Rendering</source>
+        <translation>렌더링</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9802"/>
+        <source>Rescan All Games</source>
+        <translation>모든 게임 다시 검색</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9804"/>
+        <source>Reset Memory Card Directory</source>
+        <translation>메모리 카드 디렉터리 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9805"/>
+        <source>Reset Play Time</source>
+        <translation>플레이 시간 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9806"/>
+        <source>Reset Settings</source>
+        <translation>설정 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9807"/>
+        <source>Reset System</source>
+        <translation>시스템 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9808"/>
+        <source>Resets all configuration to defaults (including bindings).</source>
+        <translation>모든 구성을 기본값으로 다시 설정합니다(할당 포함).</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9810"/>
+        <source>Resets memory card directory to default (user directory).</source>
+        <translation>메모리 카드 디렉터리를 기본값(사용자 디렉터리)으로 다시 설정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9811"/>
+        <source>Resolution change will be applied after restarting.</source>
+        <translation>해상도 변경은 다시 시작 후 적용됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9813"/>
+        <source>Restores the state of the system prior to the last state loaded.</source>
+        <translation>마지막으로 불러온 상태 이전의 시스템 상태를 복원합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9814"/>
+        <source>Resume Game</source>
+        <translation>게임 재개</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9819"/>
+        <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
+        <translation>게임 목록 정렬 순서를 기본값(보통 오름차순에서 내림차순)에서 반전시킵니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9820"/>
+        <source>Rewind Save Frequency</source>
+        <translation>저장 빈도 되감기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9821"/>
+        <source>Rewind Save Slots</source>
+        <translation>저장 슬롯 되감기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9826"/>
+        <source>Round Upscaled Texture Coordinates</source>
+        <translation>라운드 업스케일 텍스처 좌표</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9828"/>
+        <source>Runahead</source>
+        <translation>빨리 감기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9829"/>
+        <source>Runahead/Rewind</source>
+        <translation>빨리 감기/되감기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9831"/>
+        <source>SDL DualSense Player LED</source>
+        <translation>SDL 듀얼센스 플레이어 LED</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9832"/>
+        <source>SDL DualShock 4 / DualSense Enhanced Mode</source>
+        <translation>SDL 듀얼쇼크 4 / 듀얼센스 강화 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9833"/>
+        <source>Safe Mode</source>
+        <translation>안전 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9836"/>
+        <source>Save Screenshot</source>
+        <translation>스크린샷 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9837"/>
+        <source>Save State</source>
+        <translation>상태 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9838"/>
+        <source>Save State Compression</source>
+        <translation>상태 압축 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9840"/>
+        <source>Saved {:%c}</source>
+        <translation>{:%c} 저장</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9841"/>
+        <source>Saves state periodically so you can rewind any mistakes while playing.</source>
+        <translation>주기적으로 상태를 저장하여 플레이 중 실수한 부분을 되돌릴 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9844"/>
+        <source>Scaling</source>
+        <translation>크기 조정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9845"/>
+        <source>Scan For New Games</source>
+        <translation>새로운 게임 찾기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9846"/>
+        <source>Scanning Subdirectories</source>
+        <translation>하위 디렉터리 검색</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9849"/>
+        <source>Screen Rotation</source>
+        <translation>화면 회전</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9853"/>
+        <source>Search Directories</source>
+        <translation>디렉터리 찾기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9854"/>
+        <source>Seek Speedup</source>
+        <translation>속도 향상</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9856"/>
+        <source>Select Device</source>
+        <translation>장치 선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9857"/>
+        <source>Select Disc</source>
+        <translation>디스크 선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9859"/>
+        <source>Select Disc Image</source>
+        <translation>디스크 이미지 선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9862"/>
+        <source>Select Macro {} Binds</source>
+        <translation>매크로 {} 할당 선택</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9866"/>
+        <source>Selects the GPU to use for rendering.</source>
+        <translation>렌더링에 사용할 GPU를 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9869"/>
+        <source>Selects the percentage of the normal clock speed the emulated hardware will run at.</source>
+        <translation>에뮬레이트된 하드웨어가 실행될 정상 클럭 속도의 배율을 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9871"/>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9872"/>
+        <source>Selects the resolution to use in fullscreen modes.</source>
+        <translation>전체 화면 모드에서 사용할 해상도를 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9874"/>
+        <source>Selects the view that the game list will open to.</source>
+        <translation>게임 목록이 열릴 보기를 선택합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9875"/>
+        <source>Serial</source>
+        <translation>일련번호</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9876"/>
+        <source>Session: {}</source>
+        <translation>세션 : {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9878"/>
+        <source>Set Input Binding</source>
+        <translation>입력 할당 설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9879"/>
+        <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
+        <translation>임계값을 초과하면 정확한 값을 삭제하는 임계값을 설정합니다. 일부 게임에서 글리치를 해결하는 데 도움이 될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9880"/>
+        <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
+        <translation>에뮬레이트된 뎁스 버퍼를 폐기하는 임계값을 설정합니다. 일부 게임에서 도움이 될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9881"/>
+        <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation>빨리 감기 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9884"/>
+        <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation>목표 에뮬레이션 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9885"/>
+        <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
+        <translation>터보 속도를 설정합니다. 모든 시스템에서 이 속도에 도달할 수 있다는 보장은 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9886"/>
+        <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
+        <translation>기록되는 메시지의 상세도를 설정합니다. 수준이 높을수록 더 많은 메시지가 기록됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9887"/>
+        <source>Sets which sort of memory card image will be used for slot {}.</source>
+        <translation>슬롯 {}에 사용할 메모리 카드 이미지 종류를 설정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9888"/>
+        <source>Setting {} binding {}.</source>
+        <translation>할당 {} 설정 {}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9889"/>
+        <source>Settings</source>
+        <translation>설정</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9890"/>
+        <source>Settings and Operations</source>
+        <translation>설정 및 조작</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9892"/>
+        <source>Shader {} added as stage {}.</source>
+        <translation>셰이더 {}을(를) 스테이지 {}(으)로 추가했습니다.</translation>
+    </message>
+    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9893"/>
+        <source>Shared Card Name</source>
+        <translation>공유 카드 이름</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9895"/>
+        <source>Show CPU Usage</source>
+        <translation>CPU 사용량 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9896"/>
+        <source>Show Controller Input</source>
+        <translation>컨트롤러 입력 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9897"/>
+        <source>Show Enhancement Settings</source>
+        <translation>향상 설정 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9898"/>
+        <source>Show FPS</source>
+        <translation>FPS 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9899"/>
+        <source>Show Frame Times</source>
+        <translation>프레임 시간 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9900"/>
+        <source>Show GPU Statistics</source>
+        <translation>GPU 통계 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9901"/>
+        <source>Show GPU Usage</source>
+        <translation>GPU 사용량 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9902"/>
+        <source>Show Latency Statistics</source>
+        <translation>대기 시간 통계 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9903"/>
+        <source>Show OSD Messages</source>
+        <translation>OSD 메시지 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9904"/>
+        <source>Show Resolution</source>
+        <translation>해상도 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9905"/>
+        <source>Show Speed</source>
+        <translation>속도 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9906"/>
+        <source>Show Status Indicators</source>
+        <translation>상태 표시기 표시</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9908"/>
+        <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
+        <translation>디스플레이의 왼쪽 상단 모서리에 프레임 시간의 시각적 기록을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9909"/>
+        <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
+        <translation>화면 오른쪽 하단에 향상 설정을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9910"/>
+        <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
+        <translation>도전 과제/프라임 도전 과제가 활성화되어 있으면 화면 오른쪽 하단에 아이콘이 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9911"/>
+        <source>Shows information about input and audio latency in the top-right corner of the display.</source>
+        <translation>화면 우측 상단에 입력 및 음향 지연 시간에 대한 정보가 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9912"/>
+        <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
+        <translation>화면 우측 상단에 에뮬레이트된 GPU에 대한 정보가 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9913"/>
+        <source>Shows on-screen-display messages when events occur.</source>
+        <translation>이벤트가 발생하면 화면 표시기에 메시지를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9914"/>
+        <source>Shows persistent icons when turbo is active or when paused.</source>
+        <translation>터보가 활성화되어 있거나 일시 중지되었을 때 영구 아이콘을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9915"/>
+        <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
+        <translation>디스플레이 왼쪽 하단에 시스템의 현재 컨트롤러 상태를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9916"/>
+        <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
+        <translation>디스플레이의 오른쪽 상단에 시스템의 현재 에뮬레이션 속도를 백분율로 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9917"/>
+        <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
+        <translation>디스플레이 오른쪽 상단에 시스템의 현재 렌더링 해상도를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9918"/>
+        <source>Shows the game you are currently playing as part of your profile in Discord.</source>
+        <translation>현재 디스코드에서 프로필의 일부로 플레이 중인 게임을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9920"/>
+        <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
+        <translation>디스플레이 오른쪽 상단에 호스트의 GPU 사용량을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9921"/>
+        <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
+        <translation>디스플레이 오른쪽 상단에 시스템이 초당 표시하는 프레임 수(혹은 수직 동기화)를 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9923"/>
+        <source>Simulates the region check present in original, unmodified consoles.</source>
+        <translation>수정되지 않은 원본 콘솔에 존재하는 지역 검사를 시뮬레이션합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9924"/>
+        <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
+        <translation>시스템을 미리 시뮬레이션하고 롤백/재생하여 입력 지연을 줄입니다. 시스템 요구 사항이 매우 높습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9926"/>
+        <source>Skip Duplicate Frame Display</source>
+        <translation>중복 프레임 표시 건너뛰기</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9927"/>
+        <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
+        <translation>고유하지 않은 프레임의 프레젠테이션/디스플레이를 건너뜁니다. 프레임 페이싱이 더 나빠질 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9928"/>
+        <source>Slow Boot</source>
+        <translation>저속 부팅</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9929"/>
+        <source>Smooth Scrolling</source>
+        <translation>부드러운 스크롤링</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9932"/>
+        <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
+        <translation>3D 오브젝트에서 확대된 텍스처의 뭉개짐을 부드럽게 처리합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9934"/>
+        <source>Sort By</source>
+        <translation>정렬 기준</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9935"/>
+        <source>Sort Reversed</source>
+        <translation>역순 정렬</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9937"/>
+        <source>Sound Effects</source>
+        <translation>음향 효과</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9938"/>
+        <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced.</source>
+        <translation>추가된 추가 절전 시간을 줄이는 버퍼 시간의 양을 지정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9939"/>
+        <source>Spectator Mode</source>
+        <translation>관중 모드</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9940"/>
+        <source>Speed Control</source>
+        <translation>속도 조절</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9941"/>
+        <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <translation>CD-ROM 읽기 속도를 지정된 비율만큼 높입니다. 일부 게임에서는 로딩 속도가 향상되고 다른 게임에서는 속도가 저하될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9942"/>
+        <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
+        <translation>CD-ROM 검색 속도를 지정된 비율만큼 높입니다. 일부 게임에서는 로딩 속도가 향상되고 다른 게임에서는 속도가 저하될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9944"/>
         <source>Stage {}: {}</source>
         <translation>스테이지 {} : {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9894"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9945"/>
         <source>Start BIOS</source>
         <translation>바이오스 시작</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9896"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9947"/>
         <source>Start File</source>
         <translation>파일 시작</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9897"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9948"/>
         <source>Start Fullscreen</source>
         <translation>전체 화면 시작</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9900"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9951"/>
         <source>Start the console without any disc inserted.</source>
         <translation>디스크를 삽입하지 않은 상태에서 콘솔을 시작합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9902"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9953"/>
         <source>Stretch Mode</source>
         <translation>스트레치 모드</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9903"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9954"/>
         <source>Summary</source>
         <translation>개요</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9906"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9957"/>
         <source>Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.</source>
         <translation>24비트 콘텐츠(일반적으로 FMV)를 표시할 때 4:3 디스플레이 화면비로 다시 전환합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9907"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9958"/>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
         <translation>창을 두 번 클릭하면 전체 화면과 창 사이를 전환합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9908"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9959"/>
         <source>Sync To Host Refresh Rate</source>
         <translation>호스트 새로고침 속도에 동기화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9910"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9961"/>
         <source>Temporarily disables all enhancements, useful when testing.</source>
         <translation>테스트 시, 유용한 모든 개선 사항을 일시적으로 비활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9911"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9962"/>
         <source>Test Unofficial Achievements</source>
         <translation>비공식 도전 과제 테스트</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9912"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9963"/>
         <source>Texture Filtering</source>
         <translation>택스처 필터링</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9913"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9964"/>
         <source>Texture Replacements</source>
         <translation>텍스처 대체</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9915"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9966"/>
         <source>The SDL input source supports most controllers.</source>
         <translation>SDL 입력 소스는 대부분의 컨트롤러를 지원합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9916"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9967"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
         <translation>음향 후단부는 에뮬레이터에서 생성된 프레임이 호스트에 전송되는 방식을 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9917"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9968"/>
         <source>The selected memory card image will be used in shared mode for this slot.</source>
         <translation>선택한 메모리 카드 이미지는 이 슬롯의 공유 모드에서 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9921"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9972"/>
         <source>Threaded Rendering</source>
         <translation>스레드 렌더링</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9922"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9973"/>
         <source>Time Played</source>
         <translation>플레이 시간</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9925"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9976"/>
         <source>Title</source>
         <translation>타이틀</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9927"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9978"/>
         <source>Toggle Analog</source>
         <translation>아날로그 전환</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9928"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9979"/>
         <source>Toggle Fast Forward</source>
         <translation>빨리 감기 전환</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9930"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9981"/>
         <source>Toggle every %d frames</source>
         <translation>%d 프레임마다 전환</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9933"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9985"/>
         <source>Turbo Speed</source>
         <translation>터보 속도</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9934"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9986"/>
         <source>Type</source>
         <translation>유형</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9937"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9989"/>
         <source>Undo Load State</source>
         <translation>상태 불러오기 취소</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9939"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9991"/>
         <source>Unknown</source>
         <translation>알 수 없음</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9941"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9993"/>
         <source>Unlimited</source>
         <translation>무제한</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9945"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9997"/>
         <source>Use Blit Swap Chain</source>
         <translation>블리트 스왑 체인 사용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9946"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="9998"/>
         <source>Use Debug GPU Device</source>
         <translation>디버그 GPU 장치 사용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9948"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10000"/>
         <source>Use Global Setting</source>
         <translation>전체 설정 사용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9952"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10004"/>
         <source>Use Software Renderer For Readbacks</source>
         <translation>리드백에 소프트웨어 렌더러 사용</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9954"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10006"/>
         <source>Uses PGXP for all instructions, not just memory operations.</source>
         <translation>메모리 연산뿐만 아니라 모든 명령에 PGXP를 사용합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9955"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10007"/>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
         <translation>뒤집기 대신 블리트 프레젠테이션 모델을 사용합니다. 일부 시스템에서는 이 모델이 필요할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9957"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10009"/>
         <source>Uses game-specific settings for controllers for this game.</source>
         <translation>이 게임의 컨트롤러에 게임별 설정을 사용합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9959"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10010"/>
+        <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
+        <translation>정확한 좌표 대신 2D 폴리곤에 기본 해상도 좌표를 사용합니다. 일부 게임에서 정렬되지 않은 UI를 수정할 수 있지만, 그렇지 않으면 비활성화 상태로 두어야 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10011"/>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
         <translation>색상에 원근 보간 보간을 사용하여 일부 게임에서 시각적 효과를 개선할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9960"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10012"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
         <translation>텍스처 좌표에 원근 보간 보간을 사용하여 뒤틀린 텍스처를 바로잡습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9961"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10013"/>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
         <translation>화면 위치를 사용하여 PGXP 데이터를 해결합니다. 일부 게임에서 비주얼을 개선할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9965"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10017"/>
         <source>Value: {} | Default: {} | Minimum: {} | Maximum: {}</source>
         <translation>값 : {} | 기본값 : {} | 최소값 : {} | 최대값 : {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9972"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10022"/>
+        <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
+
+Do you want to {0} anyway?</source>
+        <translation>경고: 게임이 여전히 메모리 카드에 저장되고 있습니다. {0}을(를) 계속하면 메모리 카드가 영구적으로 손상될 수 있습니다. 게임을 재개하고 저장이 완료될 때까지 5초 동안 기다리는 것이 좋습니다.
+
+그래도 {0}을(를) 하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="10024"/>
         <source>When enabled and logged in, DuckStation will scan for achievements on startup.</source>
         <translation>이 기능을 활성화하고 로그인하면 DuckStation이 시작 시, 도전 과제를 검색합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9973"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10025"/>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
         <translation>활성화하면 DuckStation은 모든 도전 과제가 잠긴 것으로 간주하고 봉인 해제 알림을 서버로 보내지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9974"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10026"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
         <translation>이 옵션을 활성화하면 DuckStation은 비공식 세트의 도전 과제를 나열합니다. 이러한 도전 과제는 레트로어치브먼트에서 추적되지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9975"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10027"/>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
         <translation>활성화하면 각 세션은 잠금 해제된 도전 과제가 없는 것처럼 작동합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9976"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10028"/>
         <source>When enabled, memory cards and controllers will be overwritten when save states are loaded.</source>
         <translation>이 기능을 활성화하면 저장 상태를 불러올 때 메모리 카드와 컨트롤러를 덮어씁니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9977"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10029"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>활성화하면 호스트 API에 지원되는 최소 출력 지연 시간이 적용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9978"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10030"/>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
         <translation>멀티 디스크 게임을 플레이하고 게임 타이틀별 메모리 카드를 사용하는 경우 모든 디스크에 단일 메모리 카드를 사용하십시오.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9979"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10031"/>
         <source>When this option is chosen, the clock speed set below will be used.</source>
         <translation>이 옵션을 선택하면 아래에 설정된 클럭 속도가 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9980"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10032"/>
         <source>Widescreen Rendering</source>
         <translation>와이드스크린 렌더링</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9984"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10036"/>
         <source>Yes, {} now and risk memory card corruption.</source>
         <translation>예, 이제 {}하면 메모리 카드가 손상될 위험이 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9985"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10037"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
         <translation>순위표 추적을 포함한 도전 과제를 위한 &quot;도전&quot; 모드. 저장 상태, 치트, 속도 저하 기능 비활성화.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9986"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10038"/>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
         <translation>&quot;PlayStation&quot; 및 &quot;PSX&quot;는 Sony Interactive Entertainment Europe Limited의 등록 상표입니다. 이 소프트웨어는 Sony Interactive Entertainment와 어떠한 방식으로도 제휴 관계가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9987"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10039"/>
         <source>change disc</source>
         <translation>디스크 교체</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9988"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10040"/>
         <source>reset</source>
         <translation>초기화</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9989"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10041"/>
         <source>shut down</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9990"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10042"/>
         <source>{:%H:%M}</source>
         <translation>{:%H:%M}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9991"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10043"/>
         <source>{:%Y-%m-%d %H:%M:%S}</source>
         <translation>{:%Y-%m-%d %H:%M:%S}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9992"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10044"/>
         <source>{} Frames</source>
         <translation>{}프레임</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9993"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10045"/>
         <source>{} deleted.</source>
         <translation>{}이(가) 삭제되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9994"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10046"/>
         <source>{} does not exist.</source>
         <translation>{}이(가) 존재하지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9995"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="10047"/>
         <source>{} is not a valid disc image.</source>
         <translation>{}은(는) 올바른 디스크 이미지가 아닙니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9270"/>
+        <source>%d ms</source>
+        <translation>%d밀리초</translation>
+    </message>
+    <message>
+        <source>File Size: </source>
+        <translation type="vanished">파일 크기 : </translation>
     </message>
     <message>
         <source>A resume save state created at %s was found.
@@ -10114,7 +10212,7 @@ Do you want to load this save and continue?</source>
     </message>
     <message>
         <source>Username: {}</source>
-        <translation type="vanished">사용자 이름 : {}</translation>
+        <translation type="vanished">아이디 : {}</translation>
     </message>
     <message>
         <source>${title}: Title of the game.
@@ -10559,38 +10657,38 @@ ${serial} : 게임 일련번호.</translation>
         <translation>스크린샷을 &apos;{}&apos;에 저장하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2156"/>
+        <location filename="../../core/gpu.cpp" line="2158"/>
         <source>Failed to start GPU trace:</source>
         <translation>GPU 추적 시작 실패 :</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2164"/>
+        <location filename="../../core/gpu.cpp" line="2166"/>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
         <translation>{0} 프레임 GPU 추적을 &apos;{1}&apos;에 저장합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2165"/>
+        <location filename="../../core/gpu.cpp" line="2167"/>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
         <translation>다중 프레임 GPU 추적을 &apos;{1}&apos;에 저장 중입니다.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2185"/>
+        <location filename="../../core/gpu.cpp" line="2187"/>
         <source>Failed to close GPU trace:</source>
         <translation>GPU 추적 닫기 실패 :</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2199"/>
-        <location filename="../../core/gpu.cpp" line="2218"/>
+        <location filename="../../core/gpu.cpp" line="2201"/>
+        <location filename="../../core/gpu.cpp" line="2220"/>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
         <translation>&apos;{}&apos;에 GPU 추적을 저장했습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2211"/>
+        <location filename="../../core/gpu.cpp" line="2213"/>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
         <translation>GPU 추적 &apos;{}&apos; 압축 중...</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2226"/>
+        <location filename="../../core/gpu.cpp" line="2228"/>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
         <translation>GPU 추적을 &apos;{}&apos;에 저장 실패 :</translation>
     </message>
@@ -10672,6 +10770,11 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
         <translation>셰이더 블렌딩을 사용하는 경우 멀티샘플 앤티 앨리어싱이 지원되지 않습니다.</translation>
     </message>
     <message>
+        <location filename="../../core/gpu_hw.cpp" line="1164"/>
+        <source>Compiling Pipelines...</source>
+        <translation>파이프라인 컴파일 중...</translation>
+    </message>
+    <message>
         <location filename="../../core/gpu_hw.cpp" line="712"/>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.
 It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
@@ -10697,11 +10800,6 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
         <location filename="../../core/gpu_hw.cpp" line="776"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>적응형 하향 표본화에는 해상도 배율 {0}배가 지원되지 않으며, {1}배를 사용합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/gpu_hw.cpp" line="1164"/>
-        <source>Compiling Pipelines...</source>
-        <translation>파이프라인 컴파일 중...</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw_texture_cache.cpp" line="1444"/>
@@ -11073,6 +11171,48 @@ Are you sure you want to continue?</source>
         <translation>CPU 리컴파일러가 비활성화되었습니다.</translation>
     </message>
     <message>
+        <location filename="../../core/game_database.cpp" line="119"/>
+        <source>Force Deinterlacing</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>인터레이스 제거 강제 적용</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="120"/>
+        <source>Force Full Boot</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>전체 부팅 강제 적용</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="513"/>
+        <source>Hardware rendering disabled.</source>
+        <translation>하드웨어 렌더링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="521"/>
+        <source>Software renderer readbacks enabled.</source>
+        <translation>소프트웨어 렌더러 리드백이 활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="603"/>
+        <source>Upscaling disabled.</source>
+        <translation>업스케일링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="618"/>
+        <source>Texture filtering disabled.</source>
+        <translation>텍스처 필터링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="629"/>
+        <source>Sprite texture filtering disabled.</source>
+        <translation>스프라이트 텍스처 필터링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="649"/>
+        <source>Widescreen rendering disabled.</source>
+        <translation>와이드스크린 렌더링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
         <location filename="../../core/game_database.cpp" line="69"/>
         <source>Unknown</source>
         <comment>CompatibilityRating</comment>
@@ -11133,18 +11273,6 @@ Are you sure you want to continue?</source>
         <translation>라운드 텍스처 좌표 강제 적용</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="119"/>
-        <source>Force Deinterlacing</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>인터레이스 제거 강제 적용</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="120"/>
-        <source>Force Full Boot</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>전체 부팅 강제 적용</translation>
-    </message>
-    <message>
         <location filename="../../core/game_database.cpp" line="121"/>
         <source>Disable Automatic Analog Mode</source>
         <comment>GameDatabase::Trait</comment>
@@ -11159,14 +11287,12 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="123"/>
         <source>Disable CD-ROM Read Speedup</source>
-        <oldsource>CD-ROM Read Speedup</oldsource>
         <comment>GameDatabase::Trait</comment>
         <translation>CD-ROM 읽기 속도 향상 비활성화</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="124"/>
         <source>Disable CD-ROM Seek Speedup</source>
-        <oldsource>CD-ROM Seek Speedup</oldsource>
         <comment>GameDatabase::Trait</comment>
         <translation>CD-ROM 검색 속도 향상 비활성화</translation>
     </message>
@@ -11175,6 +11301,12 @@ Are you sure you want to continue?</source>
         <source>Disable True Color</source>
         <comment>GameDatabase::Trait</comment>
         <translation>트루 컬러 비활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="126"/>
+        <source>Disable Full True Color</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>전체 트루 컬러 비활성화</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="127"/>
@@ -11199,6 +11331,12 @@ Are you sure you want to continue?</source>
         <source>Disable Scaled Dithering</source>
         <comment>GameDatabase::Trait</comment>
         <translation>스케일링된 디더링 비활성화</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="131"/>
+        <source>Disable Scaled Interlacing</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>인터레이스 배율 비활성화</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="132"/>
@@ -11273,78 +11411,14 @@ Are you sure you want to continue?</source>
         <translation>LibCrypt는 보호되나요?</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="478"/>
-        <source>Multitap disabled.</source>
-        <translation>멀티탭이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="486"/>
-        <source>CD-ROM read speedup disabled.</source>
-        <oldsource>CD-ROM read speedup disabled.</oldsource>
-        <translation>CD-ROM 읽기 속도 향상이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="494"/>
-        <source>CD-ROM seek speedup disabled.</source>
-        <oldsource>CD-ROM seek speedup disabled.</oldsource>
-        <translation>CD-ROM 탐색 속도 향상이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="513"/>
-        <source>Hardware rendering disabled.</source>
-        <translation>하드웨어 렌더링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="521"/>
-        <source>Software renderer readbacks enabled.</source>
-        <translation>소프트웨어 렌더러 리드백이 활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="605"/>
-        <source>MSAA disabled.</source>
-        <oldsource>8MB RAM disabled.</oldsource>
-        <translation>MSAA가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="823"/>
-        <source>Controller in Port {0} ({1}) is not supported for this game.
-Supported controllers: {2}
-Please configure a supported controller from the list above.</source>
-        <translation>포트 {0}({1})의 컨트롤러는 이 게임에서 지원되지 않습니다.
-지원 컨트롤러 : {2}
-위의 목록에서 지원되는 컨트롤러를 구성하십시오.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="834"/>
-        <source>This game does not support multitap, but multitap is enabled.
-       This may result in dropped controller inputs.</source>
-        <translation>이 게임은 멀티탭을 지원하지 않지만, 멀티탭은 활성화되어 있습니다.
-       이로 인해 컨트롤러 입력이 중단될 수 있습니다.</translation>
-    </message>
-    <message>
         <location filename="../../core/game_database.cpp" line="470"/>
         <source>Fast boot disabled.</source>
         <translation>빠른 부팅이 비활성화되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="603"/>
-        <source>Upscaling disabled.</source>
-        <translation>업스케일링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="618"/>
-        <source>Texture filtering disabled.</source>
-        <translation>텍스처 필터링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="629"/>
-        <source>Sprite texture filtering disabled.</source>
-        <translation>스프라이트 텍스처 필터링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/game_database.cpp" line="649"/>
-        <source>Widescreen rendering disabled.</source>
-        <translation>와이드스크린 렌더링이 비활성화되었습니다.</translation>
+        <location filename="../../core/game_database.cpp" line="478"/>
+        <source>Multitap disabled.</source>
+        <translation>멀티탭이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="657"/>
@@ -11389,21 +11463,24 @@ Please configure a supported controller from the list above.</source>
         <translation>전체 트루 컬러 강제 적용</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="126"/>
-        <source>Disable Full True Color</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>전체 트루 컬러 비활성화</translation>
+        <location filename="../../core/game_database.cpp" line="486"/>
+        <source>CD-ROM read speedup disabled.</source>
+        <translation>CD-ROM 읽기 속도 향상이 비활성화되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="131"/>
-        <source>Disable Scaled Interlacing</source>
-        <comment>GameDatabase::Trait</comment>
-        <translation>인터레이스 배율 비활성화</translation>
+        <location filename="../../core/game_database.cpp" line="494"/>
+        <source>CD-ROM seek speedup disabled.</source>
+        <translation>CD-ROM 탐색 속도 향상이 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="593"/>
         <source>Dithering set to {}.</source>
         <translation>디더링을 {}(으)로 설정했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="605"/>
+        <source>MSAA disabled.</source>
+        <translation>MSAA가 비활성화되었습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="640"/>
@@ -11439,6 +11516,22 @@ Please configure a supported controller from the list above.</source>
         <location filename="../../core/game_database.cpp" line="777"/>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>이 게임의 호환성 설정이 적용되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="823"/>
+        <source>Controller in Port {0} ({1}) is not supported for this game.
+Supported controllers: {2}
+Please configure a supported controller from the list above.</source>
+        <translation>포트 {0}({1})의 컨트롤러는 이 게임에서 지원되지 않습니다.
+지원 컨트롤러 : {2}
+위의 목록에서 지원되는 컨트롤러를 구성하십시오.</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="834"/>
+        <source>This game does not support multitap, but multitap is enabled.
+       This may result in dropped controller inputs.</source>
+        <translation>이 게임은 멀티탭을 지원하지 않지만, 멀티탭은 활성화되어 있습니다.
+       이로 인해 컨트롤러 입력이 중단될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="849"/>
@@ -11528,13 +11621,11 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="957"/>
         <source>CD-ROM Max Seek Speedup Cycles</source>
-        <oldsource>CD-ROM Max Seek Speedup Cycles</oldsource>
         <translation>CD-ROM 최대 탐색 속도 향상 주기</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="959"/>
         <source>CD-ROM Max Read Speedup Cycles</source>
-        <oldsource>CD-ROM Max Read Speedup Cycles</oldsource>
         <translation>CD-ROM 최대 읽기 속도 향상 주기</translation>
     </message>
     <message>
@@ -11555,19 +11646,16 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../../core/game_database.cpp" line="965"/>
         <source>PGXP Tolerance</source>
-        <oldsource>GPU PGXP Tolerance</oldsource>
         <translation>PGXP 허용 오차</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="966"/>
         <source>PGXP Depth Clear Threshold</source>
-        <oldsource>PGXP Depth Clear Threshold</oldsource>
         <translation>PGXP 깊이 클리어 임계값</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="968"/>
         <source>PGXP Preserve Projection Precision</source>
-        <oldsource>Preserve Projection Precision</oldsource>
         <translation>PGXP 투영 정밀도 유지</translation>
     </message>
     <message>
@@ -11852,7 +11940,6 @@ Please configure a supported controller from the list above.</source>
     <message numerus="yes">
         <location filename="../../core/game_list.cpp" line="1609"/>
         <source>%n seconds</source>
-        <oldsource>%n seconds</oldsource>
         <translation>
             <numerusform>%n초</numerusform>
         </translation>
@@ -11889,87 +11976,87 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="548"/>
+        <location filename="../gamelistwidget.cpp" line="558"/>
         <source>Unknown</source>
         <translation>알 수 없음</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="902"/>
+        <location filename="../gamelistwidget.cpp" line="912"/>
         <source>Icon</source>
         <translation>아이콘</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="903"/>
+        <location filename="../gamelistwidget.cpp" line="913"/>
         <source>Serial</source>
         <translation>일련번호</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="904"/>
+        <location filename="../gamelistwidget.cpp" line="914"/>
         <source>Title</source>
         <translation>게임명</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="905"/>
+        <location filename="../gamelistwidget.cpp" line="915"/>
         <source>File Title</source>
         <translation>파일 이름</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="906"/>
+        <location filename="../gamelistwidget.cpp" line="916"/>
         <source>Developer</source>
         <translation>개발자</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="907"/>
+        <location filename="../gamelistwidget.cpp" line="917"/>
         <source>Publisher</source>
         <translation>배급사</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="908"/>
+        <location filename="../gamelistwidget.cpp" line="918"/>
         <source>Genre</source>
         <translation>장르</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="909"/>
+        <location filename="../gamelistwidget.cpp" line="919"/>
         <source>Year</source>
         <translation>발매 연도</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="910"/>
+        <location filename="../gamelistwidget.cpp" line="920"/>
         <source>Players</source>
         <translation>플레이어</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="911"/>
+        <location filename="../gamelistwidget.cpp" line="921"/>
         <source>Achievements</source>
         <translation>도전 과제</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="912"/>
+        <location filename="../gamelistwidget.cpp" line="922"/>
         <source>Time Played</source>
         <translation>플레이 시간</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="913"/>
+        <location filename="../gamelistwidget.cpp" line="923"/>
         <source>Last Played</source>
         <translation>마지막 플레이</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="914"/>
+        <location filename="../gamelistwidget.cpp" line="924"/>
         <source>Size</source>
         <translation>크기</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="915"/>
+        <location filename="../gamelistwidget.cpp" line="925"/>
         <source>Raw Size</source>
         <translation>원본 크기</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="916"/>
+        <location filename="../gamelistwidget.cpp" line="926"/>
         <source>Region</source>
         <translation>지역 코드</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="917"/>
+        <location filename="../gamelistwidget.cpp" line="927"/>
         <source>Compatibility</source>
         <translation>호환성</translation>
     </message>
@@ -12132,23 +12219,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;작성자: &lt;/span&gt;패치 작성자&lt;/p&gt;&lt;p&gt;설명은 여기에&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="30"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="29"/>
         <source>&lt;strong&gt;Author: &lt;/strong&gt;%1%2&lt;br&gt;%3</source>
-        <oldsource>&lt;strong&gt;Author: &lt;/strong&gt;%1&lt;br&gt;%2</oldsource>
         <translation>&lt;strong&gt;작성자 : &lt;/strong&gt;%1%2&lt;br&gt;%3</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="31"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="30"/>
         <source>Unknown</source>
         <translation>알 수 없음</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="32"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="31"/>
         <source>&lt;br&gt;&lt;strong&gt;Not permitted in RetroAchievements hardcore mode.&lt;/strong&gt;</source>
         <translation>&lt;br&gt;&lt;strong&gt;레트로어치브먼트 하드코어 모드에서는 허용되지 않습니다.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="34"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="33"/>
         <source>No description provided.</source>
         <translation>제공되는 설명이 없습니다.</translation>
     </message>
@@ -12156,19 +12242,18 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>GamePatchSettingsWidget</name>
     <message>
-        <location filename="../gamepatchsettingswidget.ui" line="44"/>
+        <location filename="../gamepatchsettingswidget.ui" line="47"/>
         <source>Disable All Patches</source>
         <translation>모든 패치 비활성화</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.ui" line="67"/>
+        <location filename="../gamepatchsettingswidget.ui" line="70"/>
         <source>Reload Patches</source>
         <translation>패치 다시 불러오기</translation>
     </message>
     <message>
-        <location filename="../gamepatchsettingswidget.cpp" line="127"/>
+        <location filename="../gamepatchsettingswidget.cpp" line="119"/>
         <source>No patches are available for this game.</source>
-        <oldsource>No patches are available for this game.</oldsource>
         <translation>이 게임에 사용할 수 있는 패치가 없습니다.</translation>
     </message>
     <message>
@@ -12196,7 +12281,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.ui" line="67"/>
         <source>Restore Title</source>
-        <oldsource>Restore</oldsource>
         <translation>타이틀 복원</translation>
     </message>
     <message>
@@ -12207,7 +12291,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.ui" line="139"/>
         <source>Restore Region</source>
-        <oldsource>Restore</oldsource>
         <translation>지역 복원</translation>
     </message>
     <message>
@@ -12483,57 +12566,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>렌더링</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="95"/>
-        <source>Internal Resolution:</source>
-        <translation>내부 해결책 :</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1008"/>
-        <source>Automatic (Based on Window Size)</source>
-        <translation>자동(창 크기 기준)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1009"/>
-        <source>1x Native (Default)</source>
-        <translation>기본 1배(기본값)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1010"/>
-        <source>3x Native (for 720p)</source>
-        <translation>기본 3배(720p용)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1011"/>
-        <source>5x Native (for 1080p)</source>
-        <translation>기본 5배(1080p용)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1012"/>
-        <source>6x Native (for 1440p)</source>
-        <translation>기본 6배(1440p용)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="1013"/>
-        <source>9x Native (for 4K)</source>
-        <translation>기본 9배(4K용)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="105"/>
-        <source>Down-Sampling:</source>
-        <translation>하향 표본화 :</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="117"/>
-        <location filename="../graphicssettingswidget.ui" line="1049"/>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="132"/>
-        <source>Texture Filtering:</source>
-        <translation>텍스처 필터링 :</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.ui" line="172"/>
         <source>Aspect Ratio:</source>
         <translation>종횡비 :</translation>
@@ -12549,11 +12581,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>인터레이스 제거 :</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="162"/>
-        <source>Deinterlacing:</source>
-        <translation>인터레이스 제거 :</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.ui" line="213"/>
         <source>Crop:</source>
         <translation>잘라내기 :</translation>
@@ -12562,6 +12589,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="223"/>
         <source>Scaling:</source>
         <translation>크기 조정 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="95"/>
+        <source>Internal Resolution:</source>
+        <translation>내부 해결책 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="362"/>
+        <source>1x</source>
+        <translation>1배</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="388"/>
+        <source>Multi-Sampling:</source>
+        <translation>다중 표본화 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="132"/>
+        <source>Texture Filtering:</source>
+        <translation>텍스처 필터링 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="256"/>
+        <location filename="../graphicssettingswidget.cpp" line="406"/>
+        <source>PGXP Geometry Correction</source>
+        <translation>PGXP 기하학 보정</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="242"/>
@@ -12587,15 +12640,15 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>와이드스크린 렌더링</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="256"/>
-        <location filename="../graphicssettingswidget.cpp" line="406"/>
-        <source>PGXP Geometry Correction</source>
-        <translation>PGXP 기하학 보정</translation>
+        <location filename="../graphicssettingswidget.ui" line="105"/>
+        <source>Down-Sampling:</source>
+        <translation>하향 표본화 :</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="142"/>
-        <source>Sprite Texture Filtering:</source>
-        <translation>스프라이트 텍스처 필터링 :</translation>
+        <location filename="../graphicssettingswidget.ui" line="117"/>
+        <location filename="../graphicssettingswidget.ui" line="1049"/>
+        <source>x</source>
+        <translation>x</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="289"/>
@@ -12618,26 +12671,10 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>화면 위치 :</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="363"/>
-        <location filename="../graphicssettingswidget.cpp" line="437"/>
-        <source>Use Blit Swap Chain</source>
-        <translation>블리트 스왑 체인 사용</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="356"/>
-        <location filename="../graphicssettingswidget.cpp" line="430"/>
-        <source>Disable Mailbox Presentation</source>
-        <translation>사서함 표시 비활성화</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="382"/>
-        <source>Rendering Options</source>
-        <translation>렌더링 옵션</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="398"/>
-        <source>Line Detection:</source>
-        <translation>라인 감지 :</translation>
+        <location filename="../graphicssettingswidget.ui" line="420"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <source>Scaled Interlacing</source>
+        <translation>인터레이스 배율</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1120"/>
@@ -12667,12 +12704,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="619"/>
         <source>Dump Replaced Textures</source>
         <translation>대체된 텍스처 덤프</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="1192"/>
-        <location filename="../graphicssettingswidget.cpp" line="612"/>
-        <source>Always Track Uploads</source>
-        <translation>항상 올리기 추적</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1209"/>
@@ -12711,32 +12742,93 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>스레드 렌더링</translation>
     </message>
     <message>
+        <location filename="../graphicssettingswidget.ui" line="363"/>
+        <location filename="../graphicssettingswidget.cpp" line="437"/>
+        <source>Use Blit Swap Chain</source>
+        <translation>블리트 스왑 체인 사용</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="382"/>
+        <source>Rendering Options</source>
+        <translation>렌더링 옵션</translation>
+    </message>
+    <message>
         <location filename="../graphicssettingswidget.ui" line="370"/>
         <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Software Renderer Readbacks</source>
         <translation>소프트웨어 렌더러 리드백</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="427"/>
-        <location filename="../graphicssettingswidget.cpp" line="466"/>
-        <source>Round Upscaled Texture Coordinates</source>
-        <translation>라운드 업스케일 텍스처 좌표</translation>
+        <location filename="../graphicssettingswidget.ui" line="398"/>
+        <source>Line Detection:</source>
+        <translation>라인 감지 :</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="388"/>
-        <source>Multi-Sampling:</source>
-        <translation>다중 표본화 :</translation>
+        <location filename="../graphicssettingswidget.ui" line="1167"/>
+        <source>Enable Texture Replacement</source>
+        <translation>텍스처 교체 활성화</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.ui" line="420"/>
-        <location filename="../graphicssettingswidget.cpp" line="458"/>
-        <source>Scaled Interlacing</source>
-        <translation>인터레이스 배율</translation>
+        <location filename="../graphicssettingswidget.ui" line="408"/>
+        <source>Wireframe Mode:</source>
+        <translation>와이어프레임 모드 :</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="478"/>
         <source>PGXP</source>
         <translation>PGXP</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1009"/>
+        <source>Automatic (Based on Window Size)</source>
+        <translation>자동(창 크기 기준)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1010"/>
+        <source>1x Native (Default)</source>
+        <translation>기본 1배(기본값)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1011"/>
+        <source>3x Native (for 720p)</source>
+        <translation>기본 3배(720p용)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1012"/>
+        <source>5x Native (for 1080p)</source>
+        <translation>기본 5배(1080p용)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1013"/>
+        <source>6x Native (for 1440p)</source>
+        <translation>기본 6배(1440p용)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="1014"/>
+        <source>9x Native (for 4K)</source>
+        <translation>기본 9배(4K용)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="162"/>
+        <source>Deinterlacing:</source>
+        <translation>인터레이스 제거 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="142"/>
+        <source>Sprite Texture Filtering:</source>
+        <translation>스프라이트 텍스처 필터링 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="356"/>
+        <location filename="../graphicssettingswidget.cpp" line="430"/>
+        <source>Disable Mailbox Presentation</source>
+        <translation>사서함 표시 비활성화</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="427"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <source>Round Upscaled Texture Coordinates</source>
+        <translation>라운드 업스케일 텍스처 좌표</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="505"/>
@@ -12791,6 +12883,88 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>버텍스 캐시</translation>
     </message>
     <message>
+        <location filename="../graphicssettingswidget.ui" line="625"/>
+        <source>OSD</source>
+        <translation>OSD</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="652"/>
+        <source>OSD Scale:</source>
+        <translation>OSD 크기 :</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="659"/>
+        <location filename="../graphicssettingswidget.ui" line="850"/>
+        <source>%</source>
+        <translation>%</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="757"/>
+        <location filename="../graphicssettingswidget.cpp" line="540"/>
+        <source>Show Controller Input</source>
+        <translation>컨트롤러 입력 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="750"/>
+        <location filename="../graphicssettingswidget.cpp" line="544"/>
+        <source>Show Status Indicators</source>
+        <translation>상태 표시기 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="701"/>
+        <location filename="../graphicssettingswidget.cpp" line="524"/>
+        <source>Show FPS</source>
+        <translation>FPS 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="708"/>
+        <location filename="../graphicssettingswidget.cpp" line="516"/>
+        <source>Show OSD Messages</source>
+        <translation>OSD 메시지 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="771"/>
+        <location filename="../graphicssettingswidget.cpp" line="519"/>
+        <source>Show Resolution</source>
+        <translation>해상도 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="743"/>
+        <location filename="../graphicssettingswidget.cpp" line="542"/>
+        <source>Show Settings</source>
+        <translation>설정 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="715"/>
+        <location filename="../graphicssettingswidget.cpp" line="527"/>
+        <source>Show CPU Usage</source>
+        <translation>CPU 사용량 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="722"/>
+        <location filename="../graphicssettingswidget.cpp" line="531"/>
+        <source>Show GPU Statistics</source>
+        <translation>GPU 통계 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="729"/>
+        <location filename="../graphicssettingswidget.cpp" line="522"/>
+        <source>Show Emulation Speed</source>
+        <translation>에뮬레이션 속도 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="764"/>
+        <location filename="../graphicssettingswidget.cpp" line="537"/>
+        <source>Show Frame Times</source>
+        <translation>프레임 시간 표시</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.ui" line="736"/>
+        <location filename="../graphicssettingswidget.cpp" line="529"/>
+        <source>Show GPU Usage</source>
+        <translation>GPU 사용량 표시</translation>
+    </message>
+    <message>
         <location filename="../graphicssettingswidget.ui" line="349"/>
         <location filename="../graphicssettingswidget.cpp" line="433"/>
         <source>Automatically Resize Window</source>
@@ -12812,88 +12986,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="504"/>
         <source>Depth Test Transparent Polygons</source>
         <translation>투명 다각형 깊이 테스트</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="625"/>
-        <source>OSD</source>
-        <translation>OSD</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="652"/>
-        <source>OSD Scale:</source>
-        <translation>OSD 크기 :</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="659"/>
-        <location filename="../graphicssettingswidget.ui" line="850"/>
-        <source>%</source>
-        <translation>%</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="701"/>
-        <location filename="../graphicssettingswidget.cpp" line="524"/>
-        <source>Show FPS</source>
-        <translation>FPS 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="708"/>
-        <location filename="../graphicssettingswidget.cpp" line="516"/>
-        <source>Show OSD Messages</source>
-        <translation>OSD 메시지 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="715"/>
-        <location filename="../graphicssettingswidget.cpp" line="527"/>
-        <source>Show CPU Usage</source>
-        <translation>CPU 사용량 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="722"/>
-        <location filename="../graphicssettingswidget.cpp" line="531"/>
-        <source>Show GPU Statistics</source>
-        <translation>GPU 통계 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="729"/>
-        <location filename="../graphicssettingswidget.cpp" line="522"/>
-        <source>Show Emulation Speed</source>
-        <translation>에뮬레이션 속도 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="736"/>
-        <location filename="../graphicssettingswidget.cpp" line="529"/>
-        <source>Show GPU Usage</source>
-        <translation>GPU 사용량 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="743"/>
-        <location filename="../graphicssettingswidget.cpp" line="542"/>
-        <source>Show Settings</source>
-        <translation>설정 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="750"/>
-        <location filename="../graphicssettingswidget.cpp" line="544"/>
-        <source>Show Status Indicators</source>
-        <translation>상태 표시기 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="757"/>
-        <location filename="../graphicssettingswidget.cpp" line="540"/>
-        <source>Show Controller Input</source>
-        <translation>컨트롤러 입력 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="764"/>
-        <location filename="../graphicssettingswidget.cpp" line="537"/>
-        <source>Show Frame Times</source>
-        <translation>프레임 시간 표시</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="771"/>
-        <location filename="../graphicssettingswidget.cpp" line="519"/>
-        <source>Show Resolution</source>
-        <translation>해상도 표시</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="778"/>
@@ -12994,6 +13086,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>영상 캡처</translation>
     </message>
     <message>
+        <location filename="../graphicssettingswidget.ui" line="1192"/>
+        <location filename="../graphicssettingswidget.cpp" line="612"/>
+        <source>Always Track Uploads</source>
+        <translation>항상 올리기 추적</translation>
+    </message>
+    <message>
         <location filename="../graphicssettingswidget.ui" line="1413"/>
         <location filename="../graphicssettingswidget.cpp" line="660"/>
         <source>Disable Compute Shaders</source>
@@ -13015,11 +13113,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1138"/>
         <source>General Settings</source>
         <translation>일반 설정</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="1167"/>
-        <source>Enable Texture Replacement</source>
-        <translation>텍스처 교체 활성화</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1215"/>
@@ -13049,11 +13142,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1293"/>
         <source>Debugging</source>
         <translation>디버깅</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.ui" line="408"/>
-        <source>Wireframe Mode:</source>
-        <translation>와이어프레임 모드 :</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1311"/>
@@ -13143,82 +13231,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>시스템에 여러 개의 GPU 또는 어댑터가 있는 경우 하드웨어 렌더러에 사용할 GPU를 선택할 수 있습니다. &lt;br&gt;이 옵션은 Direct3D와 Vulkan에서만 지원됩니다. OpenGL은 항상 기본 장치를 사용합니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="354"/>
-        <source>Internal Resolution</source>
-        <translation>내부 해상도</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="355"/>
-        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation>이 값을 1배 이상으로 설정하면 렌더링된 3D 폴리곤과 선의 해상도가 향상됩니다. 하드웨어 후단부에만 적용됩니다. &lt;/br&gt;이 옵션은 일반적으로 안전하며, 대부분의 게임은 더 높은 해상도에서 정상적으로 보입니다. 해상도가 높을수록 더 강력한 GPU가 필요합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="359"/>
-        <source>Down-Sampling</source>
-        <translation>하향 표본화</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="359"/>
-        <location filename="../graphicssettingswidget.cpp" line="449"/>
-        <location filename="../graphicssettingswidget.cpp" line="452"/>
-        <location filename="../graphicssettingswidget.cpp" line="966"/>
-        <source>Disabled</source>
-        <translation>비활성화</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.cpp" line="360"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
         <translation>렌더링된 이미지를 표시하기 전에 다운샘플링합니다. 혼합된 2D/3D 게임에서 전반적인 이미지 품질을 개선할 수 있지만 순수 3D 게임에서는 비활성화해야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="362"/>
-        <source>Down-Sampling Display Scale</source>
-        <translation>하향 표본화 화면 표시 크기</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="362"/>
-        <source>1x</source>
-        <translation>1배</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="363"/>
-        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
-        <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="366"/>
-        <source>Texture Filtering</source>
-        <translation>택스처 필터링</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="371"/>
-        <source>Sprite Texture Filtering</source>
-        <translation>스프라이트 텍스처 필터링</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="373"/>
-        <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation>필터링을 사용하여 2D 객체의 확대된 텍스처의 블록성을 부드럽게 합니다. 이 필터는 스프라이트 및 HUD와 같은 기타 2D 요소에만 적용됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="376"/>
-        <source>Dithering</source>
-        <translation>디더링</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="378"/>
-        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
-        <translation>에뮬레이션된 GPU에서 디더링이 적용되는 방식을 제어합니다. 트루컬러는 디더링을 비활성화하고 가장 보기 좋은 그라데이션을 생성합니다. 확장된 옵션을 사용하면 더 높은 해상도에서 디더링 패턴이 덜 눈에 띄게 됩니다. 셰이더 블렌딩 옵션은 소프트웨어에서 블렌딩을 수행하며 정확도는 높지만 성능이 &lt;strong&gt;상당히&lt;/strong&gt; 저하됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="383"/>
-        <source>Aspect Ratio</source>
-        <translation>종횡비</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="385"/>
-        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation>콘솔의 출력을 화면에 표시하는데 사용되는 화면 비율을 변경합니다. 기본값은 자동(게임 원본)으로, 게임이 당시의 일반적인 TV에 표시되는 방식에 맞게 화면비를 자동으로 조정합니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="388"/>
@@ -13229,38 +13244,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="393"/>
         <source>Crop</source>
         <translation>잘라내기</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="395"/>
-        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation>소비자용 TV 세트에서 일반적으로 보이지 않는 영역의 얼마나 많은 부분을 자르거나 숨길지 결정합니다. 일부 게임은 오버스캔 영역에 콘텐츠를 표시하거나 화면 효과에 사용합니다. &quot;모든 외곽선&quot; 설정에서는 올바르게 표시되지 않을 수 있습니다. &quot;오버스캔만&quot;은 안정성과 검은색 외곽선 숨기기 사이에서 좋은 절충안을 제공합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="399"/>
-        <source>Scaling</source>
-        <translation>크기 조정</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="399"/>
-        <source>Bilinear (Smooth)</source>
-        <translation>쌍선형(부드럽게)</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="400"/>
-        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation>에뮬레이트된 콘솔의 출력을 모니터 해상도에 맞게 업스케일링 또는 다운스케일링하는 방법을 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="455"/>
-        <location filename="../graphicssettingswidget.cpp" line="458"/>
-        <location filename="../graphicssettingswidget.cpp" line="480"/>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
-        <location filename="../graphicssettingswidget.cpp" line="516"/>
-        <location filename="../graphicssettingswidget.cpp" line="544"/>
-        <location filename="../graphicssettingswidget.cpp" line="566"/>
-        <location filename="../graphicssettingswidget.cpp" line="586"/>
-        <source>Checked</source>
-        <translation>선택</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="402"/>
@@ -13316,14 +13299,134 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>선택 안 함</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="403"/>
-        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation>화면 공간의 꼭지점 위치를 와이드스크린 종횡비로 조정하여 기본적으로 시야를 4:3에서 3D 게임에서 선택한 디스플레이 종횡비로 늘립니다. &lt;b&gt;&lt;u&gt;모든 게임과 호환되지 않을 수 있습니다.&lt;/u&gt;&lt;/b&gt;</translation>
+        <location filename="../graphicssettingswidget.cpp" line="383"/>
+        <source>Aspect Ratio</source>
+        <translation>종횡비</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="385"/>
+        <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
+        <translation>콘솔의 출력을 화면에 표시하는데 사용되는 화면 비율을 변경합니다. 기본값은 자동(게임 원본)으로, 게임이 당시의 일반적인 TV에 표시되는 방식에 맞게 화면비를 자동으로 조정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="395"/>
+        <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
+        <translation>소비자용 TV 세트에서 일반적으로 보이지 않는 영역의 얼마나 많은 부분을 자르거나 숨길지 결정합니다. 일부 게임은 오버스캔 영역에 콘텐츠를 표시하거나 화면 효과에 사용합니다. &quot;모든 외곽선&quot; 설정에서는 올바르게 표시되지 않을 수 있습니다. &quot;오버스캔만&quot;은 안정성과 검은색 외곽선 숨기기 사이에서 좋은 절충안을 제공합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="399"/>
+        <source>Scaling</source>
+        <translation>크기 조정</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="399"/>
+        <source>Bilinear (Smooth)</source>
+        <translation>쌍선형(부드럽게)</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="400"/>
+        <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
+        <translation>에뮬레이트된 콘솔의 출력을 모니터 해상도에 맞게 업스케일링 또는 다운스케일링하는 방법을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="354"/>
+        <source>Internal Resolution</source>
+        <translation>내부 해상도</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="355"/>
+        <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
+        <translation>이 값을 1배 이상으로 설정하면 렌더링된 3D 폴리곤과 선의 해상도가 향상됩니다. 하드웨어 후단부에만 적용됩니다. &lt;/br&gt;이 옵션은 일반적으로 안전하며, 대부분의 게임은 더 높은 해상도에서 정상적으로 보입니다. 해상도가 높을수록 더 강력한 GPU가 필요합니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="407"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
         <translation>PS1 게임에서 흔히 볼 수 있는 &quot;흔들리는&quot; 폴리곤과 &quot;뒤틀리는&quot; 텍스처를 줄입니다. &lt;strong&gt;모든 게임과 호환되지 않을 수 있습니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="417"/>
+        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
+        <translation>일반적으로 FMV인 24비트 콘텐츠에서 색상 전환 시 블록 현상을 부드럽게 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="449"/>
+        <source>Multi-Sampling</source>
+        <translation>다중 표본화</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="359"/>
+        <location filename="../graphicssettingswidget.cpp" line="449"/>
+        <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <location filename="../graphicssettingswidget.cpp" line="967"/>
+        <source>Disabled</source>
+        <translation>비활성화</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="450"/>
+        <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
+        <translation>3D 폴리곤을 렌더링할 때 멀티 샘플링 앤티 앨리어싱을 사용합니다. 업스케일링에 비해 낮은 성능 요구 사항으로 비주얼을 개선할 수 있지만 &lt;strong&gt;종종 렌더링 오류가 발생합니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="359"/>
+        <source>Down-Sampling</source>
+        <translation>하향 표본화</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="275"/>
+        <source>Select Textures Directory</source>
+        <translation>텍스처 디렉터리 선택</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="345"/>
+        <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
+        <translation>콘솔/게임 비주얼 렌더링에 사용할 후단부를 선택합니다. &lt;br&gt;시스템 및 하드웨어에 따라 Direct3D 11 및 OpenGL 하드웨어 후단부를 사용할 수 있습니다. &lt;br&gt;소프트웨어 렌더러는 호환성이 가장 좋지만 가장 느리고 향상된 기능을 제공하지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="362"/>
+        <source>Down-Sampling Display Scale</source>
+        <translation>하향 표본화 화면 표시 크기</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="363"/>
+        <source>Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.</source>
+        <translation>최종 이미지에 적용할 해상도 배율을 선택합니다. 1배를 선택하면 원래 콘솔 해상도로 다운샘플링됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="366"/>
+        <source>Texture Filtering</source>
+        <translation>택스처 필터링</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="368"/>
+        <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
+        <translation>필터링을 사용하여 3D 객체의 확대된 텍스처의 블록성을 부드럽게 합니다. &lt;br&gt;해상도가 높을수록 효과적입니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="376"/>
+        <source>Dithering</source>
+        <translation>디더링</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="378"/>
+        <source>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</source>
+        <translation>에뮬레이션된 GPU에서 디더링이 적용되는 방식을 제어합니다. 트루컬러는 디더링을 비활성화하고 가장 보기 좋은 그라데이션을 생성합니다. 확장된 옵션을 사용하면 더 높은 해상도에서 디더링 패턴이 덜 눈에 띄게 됩니다. 셰이더 블렌딩 옵션은 소프트웨어에서 블렌딩을 수행하며 정확도는 높지만 성능이 &lt;strong&gt;상당히&lt;/strong&gt; 저하됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="487"/>
+        <location filename="../graphicssettingswidget.cpp" line="516"/>
+        <location filename="../graphicssettingswidget.cpp" line="544"/>
+        <location filename="../graphicssettingswidget.cpp" line="566"/>
+        <location filename="../graphicssettingswidget.cpp" line="586"/>
+        <source>Checked</source>
+        <translation>선택</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="403"/>
+        <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
+        <translation>화면 공간의 꼭지점 위치를 와이드스크린 종횡비로 조정하여 기본적으로 시야를 4:3에서 3D 게임에서 선택한 디스플레이 종횡비로 늘립니다. &lt;b&gt;&lt;u&gt;모든 게임과 호환되지 않을 수 있습니다.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="410"/>
@@ -13341,18 +13444,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>24비트 콘텐츠(일반적으로 FMV)를 표시할 때 4:3 디스플레이 화면비로 다시 전환합니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="417"/>
-        <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation>일반적으로 FMV인 24비트 콘텐츠에서 색상 전환 시 블록 현상을 부드럽게 합니다.</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.cpp" line="421"/>
         <source>Fullscreen Mode</source>
         <translation>전체 화면 모드</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="421"/>
-        <location filename="../graphicssettingswidget.cpp" line="916"/>
+        <location filename="../graphicssettingswidget.cpp" line="912"/>
         <source>Borderless Fullscreen</source>
         <translation>전체 창 화면</translation>
     </message>
@@ -13388,28 +13486,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>화면에 검은색 외곽선을 추가할 때 표시 위치를 결정합니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="565"/>
-        <source>Determines the file format used to contain the captured audio/video.</source>
-        <oldsource>Determines the file format used to contain the captured audio/video</oldsource>
-        <translation>캡처된 영상/음향을 담는 데 사용될 파일 형식을 결정합니다.</translation>
+        <location filename="../graphicssettingswidget.cpp" line="459"/>
+        <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
+        <translation>인터레이스 렌더링 시, 줄바꿈을 내부 해상도로 조정합니다. 이렇게 하면 고해상도에서 코밍 현상이 덜 눈에 띄게 됩니다. 일반적으로 활성화하는 것이 안전합니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="571"/>
-        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <oldsource>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</oldsource>
-        <translation>미디어 캡처에 사용할 비디오 코덱을 선택하세요. &lt;b&gt;모르면 기본값으로 두세요.&lt;b&gt;</translation>
+        <location filename="../graphicssettingswidget.cpp" line="505"/>
+        <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
+        <translation>반투명 폴리곤에 대한 깊이 테스트를 활성화합니다. 일반적으로 여기에는 그림자가 포함되며 깊이 테스트가 활성화되면 지면을 통과하는 경향이 있습니다. 이 설정과 관계없이 반투명 폴리곤에 대한 깊이 쓰기는 비활성화됩니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="591"/>
-        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
-        <oldsource>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</oldsource>
-        <translation>미디어 캡처에 사용할 오디오 코덱을 선택하세요. &lt;b&gt;모르면 기본값으로 두세요.&lt;b&gt;</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="592"/>
-        <source>128 kbps</source>
-        <oldsource> kbps</oldsource>
-        <translation>128kbps</translation>
+        <location filename="../graphicssettingswidget.cpp" line="528"/>
+        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <translation>화면 우측 상단에 각 시스템 스레드의 호스트 CPU 사용량이 표시됩니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="610"/>
@@ -13432,11 +13521,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>지원되는 게임에서 배경 텍스처를 교체할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="431"/>
-        <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation>사서함 프리젠테이션에 대해 FIFO를 강제로 사용합니다. 즉, 삼중 버퍼링 대신 이중 버퍼링을 사용합니다. 일반적으로 프레임 속도가 저하됩니다.</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.cpp" line="438"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
         <translation>Direct3D 11 렌더러를 사용할 때 플립 대신 블릿 프레젠테이션 모델을 사용합니다. 일반적으로 성능이 느려지지만 일부 스트리밍 앱이나 일부 시스템에서 프레임 속도를 제한 해제하는데 필요할 수 있습니다.</translation>
@@ -13452,14 +13536,44 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>업스케일링으로 인해 발생한 틈을 채우면서 업스케일링되지 않은 래스터화 동작에 의존하여 한 픽셀 높이/너비의 선을 감지하려는 시도입니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="449"/>
-        <source>Multi-Sampling</source>
-        <translation>다중 표본화</translation>
+        <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <source>Wireframe Mode</source>
+        <translation>와이어프레임 모드</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="450"/>
-        <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
-        <translation>3D 폴리곤을 렌더링할 때 멀티 샘플링 앤티 앨리어싱을 사용합니다. 업스케일링에 비해 낮은 성능 요구 사항으로 비주얼을 개선할 수 있지만 &lt;strong&gt;종종 렌더링 오류가 발생합니다.&lt;/strong&gt;</translation>
+        <location filename="../graphicssettingswidget.cpp" line="453"/>
+        <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
+        <translation>콘솔의 GPU에서 렌더링된 삼각형의 와이어프레임 윤곽선을 그립니다. 대체 또는 오버레이로 사용할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="371"/>
+        <source>Sprite Texture Filtering</source>
+        <translation>스프라이트 텍스처 필터링</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="373"/>
+        <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
+        <translation>필터링을 사용하여 2D 객체의 확대된 텍스처의 블록성을 부드럽게 합니다. 이 필터는 스프라이트 및 HUD와 같은 기타 2D 요소에만 적용됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="390"/>
+        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
+        <translation>인터레이스 프레임을 프로그레시브로 변환하여 시스템에 표시하는 데 사용되는 알고리즘을 결정합니다. 프로그레시브 렌더링을 사용하면 최상의 품질 출력이 제공되지만 일부 게임은 인터레이스 렌더링이 필요합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="431"/>
+        <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
+        <translation>사서함 프리젠테이션에 대해 FIFO를 강제로 사용합니다. 즉, 삼중 버퍼링 대신 이중 버퍼링을 사용합니다. 일반적으로 프레임 속도가 저하됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="434"/>
+        <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
+        <translation>내부 해상도에 맞게 창 크기를 자동으로 조절합니다. &lt;strong&gt;내부 해상도가 높은 경우 매우 큰 창이 생성됩니다.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="456"/>
+        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
+        <translation>그래픽 그리기에 2번째 스레드를 사용합니다. 현재 소프트웨어 렌더러에서만 사용할 수 있지만 속도를 크게 향상시킬 수 있으며 사용하기에 안전합니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="463"/>
@@ -13532,12 +13646,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>정확한 좌표 대신 2D 폴리곤에 기본 해상도 좌표를 사용합니다. 일부 게임에서 정렬되지 않은 UI를 수정할 수 있지만, 그렇지 않으면 비활성화 상태로 두어야 합니다. 게임 데이터베이스는 필요할 때 자동으로 이를 활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="505"/>
-        <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting.</source>
-        <oldsource>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting..</oldsource>
-        <translation>반투명 폴리곤에 대한 깊이 테스트를 활성화합니다. 일반적으로 여기에는 그림자가 포함되며 깊이 테스트가 활성화되면 지면을 통과하는 경향이 있습니다. 이 설정과 관계없이 반투명 폴리곤에 대한 깊이 쓰기는 비활성화됩니다.</translation>
-    </message>
-    <message>
         <location filename="../graphicssettingswidget.cpp" line="512"/>
         <source>OSD Scale</source>
         <translation>OSD 스케일</translation>
@@ -13551,6 +13659,16 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="513"/>
         <source>Changes the size at which on-screen elements, including status and messages are displayed.</source>
         <translation>상태, 메시지 등 화면 요소가 표시되는 크기를 변경합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="514"/>
+        <source>Theme</source>
+        <translation>테마</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="515"/>
+        <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
+        <translation>화면 표시 요소와 빅피처 UI에 사용할 테마를 결정합니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="517"/>
@@ -13571,51 +13689,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="525"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>화면 우측 상단에 게임의 내부 프레임 속도를 표시합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="275"/>
-        <source>Select Textures Directory</source>
-        <translation>텍스처 디렉터리 선택</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="368"/>
-        <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
-        <translation>필터링을 사용하여 3D 객체의 확대된 텍스처의 블록성을 부드럽게 합니다. &lt;br&gt;해상도가 높을수록 효과적입니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="390"/>
-        <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation>인터레이스 프레임을 프로그레시브로 변환하여 시스템에 표시하는 데 사용되는 알고리즘을 결정합니다. 프로그레시브 렌더링을 사용하면 최상의 품질 출력이 제공되지만 일부 게임은 인터레이스 렌더링이 필요합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="434"/>
-        <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
-        <translation>내부 해상도에 맞게 창 크기를 자동으로 조절합니다. &lt;strong&gt;내부 해상도가 높은 경우 매우 큰 창이 생성됩니다.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="456"/>
-        <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation>그래픽 그리기에 2번째 스레드를 사용합니다. 현재 소프트웨어 렌더러에서만 사용할 수 있지만 속도를 크게 향상시킬 수 있으며 사용하기에 안전합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="459"/>
-        <source>Scales line skipping in interlaced rendering to the internal resolution. This makes the combing less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation>인터레이스 렌더링 시, 줄바꿈을 내부 해상도로 조정합니다. 이렇게 하면 고해상도에서 코밍 현상이 덜 눈에 띄게 됩니다. 일반적으로 활성화하는 것이 안전합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="514"/>
-        <source>Theme</source>
-        <translation>테마</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="515"/>
-        <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
-        <translation>화면 표시 요소와 빅피처 UI에 사용할 테마를 결정합니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="528"/>
-        <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
-        <translation>화면 우측 상단에 각 시스템 스레드의 호스트 CPU 사용량이 표시됩니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="530"/>
@@ -13725,9 +13798,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="570"/>
         <location filename="../graphicssettingswidget.cpp" line="590"/>
-        <location filename="../graphicssettingswidget.cpp" line="879"/>
-        <location filename="../graphicssettingswidget.cpp" line="1150"/>
-        <location filename="../graphicssettingswidget.cpp" line="1164"/>
+        <location filename="../graphicssettingswidget.cpp" line="875"/>
+        <location filename="../graphicssettingswidget.cpp" line="1151"/>
+        <location filename="../graphicssettingswidget.cpp" line="1165"/>
         <source>Default</source>
         <translation>기본값</translation>
     </message>
@@ -13848,32 +13921,32 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>압축 텍스처 사용을 비활성화합니다. 손상된 그래픽 드라이버를 테스트하는 데 유용합니다. &lt;strong&gt;개발자 전용입니다.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1328"/>
+        <location filename="../graphicssettingswidget.cpp" line="1329"/>
         <source>Texture Replacement Configuration</source>
         <translation>텍스처 교체 구성</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1331"/>
+        <location filename="../graphicssettingswidget.cpp" line="1332"/>
         <source>Texture Replacement Configuration (config.yaml)</source>
         <translation>텍스처 교체 구성(config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1333"/>
+        <location filename="../graphicssettingswidget.cpp" line="1334"/>
         <source>Save</source>
         <translation>저장</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1336"/>
+        <location filename="../graphicssettingswidget.cpp" line="1337"/>
         <source>Save Configuration</source>
         <translation>설정 저장</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1337"/>
+        <location filename="../graphicssettingswidget.cpp" line="1338"/>
         <source>Configuration Files (config.yaml)</source>
         <translation>구성 파일(config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1345"/>
+        <location filename="../graphicssettingswidget.cpp" line="1346"/>
         <source>Write Failed</source>
         <translation>작성 실패</translation>
     </message>
@@ -13891,21 +13964,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="625"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
         <translation>덤프 디렉터리에 교체할 수 있는 배경을 씁니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="345"/>
-        <source>Selects the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation>콘솔/게임 비주얼 렌더링에 사용할 후단부를 선택합니다. &lt;br&gt;시스템 및 하드웨어에 따라 Direct3D 11 및 OpenGL 하드웨어 후단부를 사용할 수 있습니다. &lt;br&gt;소프트웨어 렌더러는 호환성이 가장 좋지만 가장 느리고 향상된 기능을 제공하지 않습니다.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="452"/>
-        <source>Wireframe Mode</source>
-        <translation>와이어프레임 모드</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="453"/>
-        <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
-        <translation>콘솔의 GPU에서 렌더링된 삼각형의 와이어프레임 윤곽선을 그립니다. 대체 또는 오버레이로 사용할 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="634"/>
@@ -13953,29 +14011,49 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>래스터라이저 주문 보기 사용을 비활성화합니다. 손상된 그래픽 드라이버를 테스트할 때 유용합니다. &lt;strong&gt;개발자 전용입니다.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1020"/>
+        <location filename="../graphicssettingswidget.cpp" line="1021"/>
         <source>%1x Native</source>
         <translation>기본 %1배</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="963"/>
+        <location filename="../graphicssettingswidget.cpp" line="964"/>
         <source>Use Global Setting</source>
         <translation>전체 설정 사용</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="968"/>
+        <location filename="../graphicssettingswidget.cpp" line="565"/>
+        <source>Determines the file format used to contain the captured audio/video.</source>
+        <translation>캡처된 영상/음향을 담는 데 사용될 파일 형식을 결정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="571"/>
+        <source>Selects which Video Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
+        <translation>미디어 캡처에 사용할 비디오 코덱을 선택하세요. &lt;b&gt;모르면 기본값으로 두세요.&lt;b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="591"/>
+        <source>Selects which Audio Codec to be used for media capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
+        <translation>미디어 캡처에 사용할 오디오 코덱을 선택하세요. &lt;b&gt;모르면 기본값으로 두세요.&lt;b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="592"/>
+        <source>128 kbps</source>
+        <translation>128kbps</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="969"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="970"/>
+        <location filename="../graphicssettingswidget.cpp" line="971"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1123"/>
-        <location filename="../graphicssettingswidget.cpp" line="1155"/>
-        <location filename="../graphicssettingswidget.cpp" line="1169"/>
+        <location filename="../graphicssettingswidget.cpp" line="1124"/>
+        <location filename="../graphicssettingswidget.cpp" line="1156"/>
+        <location filename="../graphicssettingswidget.cpp" line="1170"/>
         <source>%1 (%2)</source>
         <translation>%1(%2)</translation>
     </message>
@@ -14275,26 +14353,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>일시 중지 메뉴 열기</translation>
     </message>
     <message>
-        <location filename="../../core/hotkeys.cpp" line="176"/>
-        <source>Open Cheat Settings</source>
-        <translation>치트 설정 열기</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="497"/>
-        <source>Record Single Frame GPU Trace</source>
-        <translation>단일 프레임 GPU 추적 기록</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="503"/>
-        <source>Record Multi-Frame GPU Trace</source>
-        <translation>다중 프레임 GPU 추적 기록</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="286"/>
-        <source>Toggle Media Capture</source>
-        <translation>미디어 캡처 전환</translation>
-    </message>
-    <message>
         <location filename="../../core/hotkeys.cpp" line="182"/>
         <source>Open Achievement List</source>
         <translation>도전 과제 목록 열기</translation>
@@ -14344,6 +14402,26 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../core/hotkeys.cpp" line="356"/>
         <source>Reset Emulation Speed</source>
         <translation>에뮬레이션 속도 초기화</translation>
+    </message>
+    <message>
+        <location filename="../../core/hotkeys.cpp" line="286"/>
+        <source>Toggle Media Capture</source>
+        <translation>미디어 캡처 전환</translation>
+    </message>
+    <message>
+        <location filename="../../core/hotkeys.cpp" line="176"/>
+        <source>Open Cheat Settings</source>
+        <translation>치트 설정 열기</translation>
+    </message>
+    <message>
+        <location filename="../../core/hotkeys.cpp" line="497"/>
+        <source>Record Single Frame GPU Trace</source>
+        <translation>단일 프레임 GPU 추적 기록</translation>
+    </message>
+    <message>
+        <location filename="../../core/hotkeys.cpp" line="503"/>
+        <source>Record Multi-Frame GPU Trace</source>
+        <translation>다중 프레임 GPU 추적 기록</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="491"/>
@@ -14421,7 +14499,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="254"/>
         <source>Switch to Previous Disc</source>
-        <oldsource>Select Previous</oldsource>
         <translation>이전 디스크로 전환</translation>
     </message>
     <message>
@@ -14997,13 +15074,11 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../inputbindingdialog.ui" line="120"/>
         <source>Reset Sensitivity</source>
-        <oldsource>Sensitivity:</oldsource>
         <translation>감도 초기화</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="130"/>
         <source>Reset Deadzone</source>
-        <oldsource>Deadzone</oldsource>
         <translation>데드존 초기화</translation>
     </message>
     <message>
@@ -15138,10 +15213,40 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>동작</translation>
     </message>
     <message>
+        <location filename="../interfacesettingswidget.ui" line="56"/>
+        <location filename="../interfacesettingswidget.cpp" line="98"/>
+        <source>Confirm Power Off</source>
+        <translation>전원 끔 확인</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.ui" line="70"/>
+        <location filename="../interfacesettingswidget.cpp" line="101"/>
+        <source>Save State On Shutdown</source>
+        <translation>종료 시, 상태 저장</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.ui" line="84"/>
+        <location filename="../interfacesettingswidget.cpp" line="117"/>
+        <source>Pause On Focus Loss</source>
+        <translation>초점 손실 시, 일시 중지</translation>
+    </message>
+    <message>
         <location filename="../interfacesettingswidget.ui" line="35"/>
         <location filename="../interfacesettingswidget.cpp" line="124"/>
         <source>Create Save State Backups</source>
         <translation>상태 저장 백업 생성</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.ui" line="63"/>
+        <location filename="../interfacesettingswidget.cpp" line="109"/>
+        <source>Inhibit Screensaver</source>
+        <translation>화면 보호기 실행 금지</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.ui" line="77"/>
+        <location filename="../interfacesettingswidget.cpp" line="115"/>
+        <source>Pause On Start</source>
+        <translation>시작 시, 일시 중지</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="42"/>
@@ -15154,36 +15259,6 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <location filename="../interfacesettingswidget.cpp" line="120"/>
         <source>Pause On Controller Disconnection</source>
         <translation>컨트롤러 연결이 끊어지면 일시 중지</translation>
-    </message>
-    <message>
-        <location filename="../interfacesettingswidget.ui" line="56"/>
-        <location filename="../interfacesettingswidget.cpp" line="98"/>
-        <source>Confirm Power Off</source>
-        <translation>전원 끔 확인</translation>
-    </message>
-    <message>
-        <location filename="../interfacesettingswidget.ui" line="63"/>
-        <location filename="../interfacesettingswidget.cpp" line="109"/>
-        <source>Inhibit Screensaver</source>
-        <translation>화면 보호기 실행 금지</translation>
-    </message>
-    <message>
-        <location filename="../interfacesettingswidget.ui" line="70"/>
-        <location filename="../interfacesettingswidget.cpp" line="101"/>
-        <source>Save State On Shutdown</source>
-        <translation>종료 시, 상태 저장</translation>
-    </message>
-    <message>
-        <location filename="../interfacesettingswidget.ui" line="77"/>
-        <location filename="../interfacesettingswidget.cpp" line="115"/>
-        <source>Pause On Start</source>
-        <translation>시작 시, 일시 중지</translation>
-    </message>
-    <message>
-        <location filename="../interfacesettingswidget.ui" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="117"/>
-        <source>Pause On Focus Loss</source>
-        <translation>초점 손실 시, 일시 중지</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="94"/>
@@ -15807,6 +15882,12 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>디스크 교체</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="50"/>
+        <location filename="../mainwindow.ui" line="498"/>
+        <source>Cheats</source>
+        <translation>치트</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="58"/>
         <location filename="../mainwindow.cpp" line="839"/>
         <location filename="../mainwindow.cpp" line="1094"/>
@@ -15854,102 +15935,271 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>채널 기록</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="288"/>
+        <location filename="../mainwindow.ui" line="193"/>
+        <source>&amp;View</source>
+        <translation>보기(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="227"/>
+        <source>&amp;Tools</source>
+        <translation>도구(&amp;T)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="289"/>
         <source>Start &amp;Disc...</source>
         <translation>디스크 가동(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="296"/>
+        <location filename="../mainwindow.ui" line="297"/>
         <source>Start &amp;BIOS</source>
         <translation>바이오스 실행(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="304"/>
+        <location filename="../mainwindow.ui" line="305"/>
         <source>&amp;Scan For New Games</source>
         <translation>새로운 게임 찾기(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="312"/>
+        <location filename="../mainwindow.ui" line="313"/>
         <source>&amp;Rescan All Games</source>
         <translation>모든 개임 다시 검색(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="320"/>
+        <location filename="../mainwindow.ui" line="321"/>
         <source>Power &amp;Off</source>
         <translation>전원 끔(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="328"/>
+        <location filename="../mainwindow.ui" line="329"/>
         <source>&amp;Reset</source>
         <translation>초기화(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="339"/>
+        <location filename="../mainwindow.ui" line="340"/>
         <source>&amp;Pause</source>
         <translation>일시 중지(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="347"/>
+        <location filename="../mainwindow.ui" line="348"/>
         <source>&amp;Load State</source>
         <translation>상태 불러오기(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="355"/>
+        <location filename="../mainwindow.ui" line="356"/>
         <source>&amp;Save State</source>
         <translation>상태 저장하기(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="363"/>
+        <location filename="../mainwindow.ui" line="364"/>
         <source>E&amp;xit</source>
         <translation>종료(&amp;X)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="411"/>
-        <source>&amp;Graphics</source>
-        <translation>그래픽(&amp;G)</translation>
+        <location filename="../mainwindow.ui" line="372"/>
+        <source>B&amp;IOS</source>
+        <translation>바이오스(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="427"/>
-        <source>Fullscreen</source>
-        <translation>전체 화면</translation>
+        <location filename="../mainwindow.ui" line="380"/>
+        <source>C&amp;onsole</source>
+        <translation>콘솔(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="432"/>
-        <source>Resolution Scale</source>
-        <translation>해상도 배율</translation>
+        <location filename="../mainwindow.ui" line="388"/>
+        <source>E&amp;mulation</source>
+        <translation>에뮬레이션(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="441"/>
-        <source>&amp;GitHub Repository...</source>
-        <translation>GitHub 저장소(&amp;G)...</translation>
+        <location filename="../mainwindow.ui" line="396"/>
+        <source>&amp;Controllers</source>
+        <translation>컨트롤러(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="637"/>
+        <location filename="../mainwindow.ui" line="404"/>
+        <source>&amp;Hotkeys</source>
+        <translation>단축키(&amp;H)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="420"/>
+        <source>&amp;Post-Processing</source>
+        <translation>후처리(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="464"/>
+        <source>View Third-Party Notices...</source>
+        <translation>써드파티 공지 보기...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="506"/>
+        <source>Audio</source>
+        <translation>음향</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="514"/>
+        <source>Achievements</source>
+        <translation>도전 과제</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="522"/>
+        <source>Folders</source>
+        <translation>폴더</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="530"/>
+        <source>Game List</source>
+        <translation>게임 목록</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="546"/>
+        <source>Advanced</source>
+        <translation>고급 설정</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="562"/>
+        <location filename="../mainwindow.ui" line="573"/>
+        <source>&amp;Settings</source>
+        <translation>설정(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="638"/>
         <source>Enable Safe Mode</source>
         <translation>하드코어 모드 활성화</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="937"/>
-        <source>Open Texture Directory...</source>
-        <translation>텍스처 디렉터리 열기...</translation>
+        <location filename="../mainwindow.ui" line="717"/>
+        <source>&amp;Memory Cards</source>
+        <translation>메모리 카드(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="942"/>
-        <source>Reload Texture Replacements</source>
-        <translation>텍스처 대체 미리 불러오기</translation>
+        <location filename="../mainwindow.ui" line="728"/>
+        <source>Resumes the last save state created</source>
+        <translation>마지막으로 생성된 저장 상태로 다시 시작</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="947"/>
+        <location filename="../mainwindow.ui" line="758"/>
+        <source>Small Toolbar Icons</source>
+        <translation>작은 도구 모음 아이콘</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="766"/>
+        <source>Toolbar Labels</source>
+        <translation>도구 모음 레이블</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="774"/>
+        <source>Toolbar Labels Beside Icons</source>
+        <translation>아이콘 옆의 도구 모음 레이블</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="896"/>
+        <location filename="../mainwindow.cpp" line="1291"/>
+        <source>Start Big Picture Mode</source>
+        <translation>빅피처 모드 시작</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="904"/>
+        <location filename="../mainwindow.cpp" line="1292"/>
+        <source>Big Picture</source>
+        <translation>빅피처</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="909"/>
+        <source>Cover Downloader</source>
+        <translation>커버 내려받기</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="933"/>
+        <source>Media Ca&amp;pture</source>
+        <translation>미디어 캡처(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="948"/>
         <source>Capture GPU Frame</source>
         <translation>GPU 프레임 캡처</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="450"/>
+        <location filename="../mainwindow.ui" line="956"/>
+        <source>Log Timestamps</source>
+        <translation>타임스탬프 기록</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="964"/>
+        <source>Log File Timestamps</source>
+        <oldsource>Log Timestamps</oldsource>
+        <translation>타임스탬프 기록 파일</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="972"/>
+        <source>Log To System Console</source>
+        <translation>시스템 콘솔에 기록</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="980"/>
+        <source>Log To Window</source>
+        <translation>창에 기록</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="988"/>
+        <source>Log To File</source>
+        <translation>파일에 기록</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="993"/>
+        <source>ISO Browser</source>
+        <translation>ISO 브라우저</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1001"/>
+        <source>Free Camera</source>
+        <translation>프리 카메라</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1006"/>
+        <source>Controller Test</source>
+        <translation>컨트롤러 테스트</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1014"/>
+        <source>Controller Presets</source>
+        <translation>컨트롤러 사전 설정</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1019"/>
+        <source>Change List Background...</source>
+        <translation>목록 배경 변경...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1024"/>
+        <source>Clear List Background</source>
+        <translation>목록 배경 지우기</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1032"/>
+        <source>Refresh Achievement &amp;Progress</source>
+        <translation>도전 과제 진행 상황 새로 고침</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="428"/>
+        <source>Fullscreen</source>
+        <translation>전체 화면</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="433"/>
+        <source>Resolution Scale</source>
+        <translation>해상도 배율</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="442"/>
+        <source>&amp;GitHub Repository...</source>
+        <translation>GitHub 저장소(&amp;G)...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="451"/>
         <source>&amp;Discord Server...</source>
         <translation>디스코드 서버(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="458"/>
+        <location filename="../mainwindow.ui" line="459"/>
         <source>Check for &amp;Updates...</source>
         <translation>업데이트 확인(&amp;U)...</translation>
     </message>
@@ -15959,429 +16209,261 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>시스템(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="50"/>
-        <location filename="../mainwindow.ui" line="497"/>
-        <source>Cheats</source>
-        <translation>치트</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="148"/>
         <source>Switch Crop Mode</source>
         <translation>자르기 모드 전환</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="192"/>
-        <source>&amp;View</source>
-        <translation>보기(&amp;V)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="196"/>
+        <location filename="../mainwindow.ui" line="197"/>
         <source>&amp;Window Size</source>
         <translation>창 크기(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="226"/>
-        <source>&amp;Tools</source>
-        <translation>도구(&amp;T)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="280"/>
+        <location filename="../mainwindow.ui" line="281"/>
         <source>Start &amp;File...</source>
         <translation>파일 실행(&amp;F)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="472"/>
+        <location filename="../mainwindow.ui" line="412"/>
+        <source>&amp;Graphics</source>
+        <translation>그래픽(&amp;G)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="473"/>
         <source>About &amp;Qt...</source>
         <translation>Qt 정보(&amp;Q)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="481"/>
+        <location filename="../mainwindow.ui" line="482"/>
         <source>&amp;About DuckStation...</source>
         <translation>DuckStation 정보(&amp;A)...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="489"/>
+        <location filename="../mainwindow.ui" line="490"/>
         <source>Change Disc...</source>
         <translation>디스크 교체...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="371"/>
-        <source>B&amp;IOS</source>
-        <translation>바이오스(&amp;I)</translation>
+        <location filename="../mainwindow.ui" line="538"/>
+        <source>&amp;Interface</source>
+        <translation>인터페이스(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="379"/>
-        <source>C&amp;onsole</source>
-        <translation>콘솔(&amp;O)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="387"/>
-        <source>E&amp;mulation</source>
-        <translation>에뮬레이션(&amp;M)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="395"/>
-        <source>&amp;Controllers</source>
-        <translation>컨트롤러(&amp;C)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="403"/>
-        <source>&amp;Hotkeys</source>
-        <translation>단축키(&amp;H)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="419"/>
-        <source>&amp;Post-Processing</source>
-        <translation>후처리(&amp;P)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="463"/>
-        <source>View Third-Party Notices...</source>
-        <translation>써드파티 공지 보기...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="505"/>
-        <source>Audio</source>
-        <translation>음향</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="513"/>
-        <source>Achievements</source>
-        <translation>도전 과제</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="521"/>
-        <source>Folders</source>
-        <translation>폴더</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="529"/>
-        <source>Game List</source>
-        <translation>게임 목록</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="545"/>
-        <source>Advanced</source>
-        <translation>고급 설정</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="553"/>
+        <location filename="../mainwindow.ui" line="554"/>
         <source>Add Game Directory...</source>
         <translation>게임 디렉터리 추가...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="580"/>
+        <location filename="../mainwindow.ui" line="581"/>
         <source>From File...</source>
         <translation>파일로부터...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="585"/>
+        <location filename="../mainwindow.ui" line="586"/>
         <source>From Device...</source>
         <translation>장치로부터...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="590"/>
+        <location filename="../mainwindow.ui" line="591"/>
         <source>From Game List...</source>
         <translation>게임 목록에서...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="595"/>
+        <location filename="../mainwindow.ui" line="596"/>
         <source>Remove Disc</source>
         <translation>디스크 꺼내기</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="600"/>
+        <location filename="../mainwindow.ui" line="601"/>
         <source>Resume State</source>
         <translation>상태 재개</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="605"/>
+        <location filename="../mainwindow.ui" line="606"/>
         <source>Global State</source>
         <translation>전역 상태</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="613"/>
+        <location filename="../mainwindow.ui" line="614"/>
         <source>Show VRAM</source>
         <translation>비디오램 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="621"/>
+        <location filename="../mainwindow.ui" line="622"/>
         <source>Dump CPU to VRAM Copies</source>
         <translation>CPU에서 비디오램으로 복사본을 덤프</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="629"/>
+        <location filename="../mainwindow.ui" line="630"/>
         <source>Dump VRAM to CPU Copies</source>
         <translation>비디오램에서 CPU로 복사본 덤프</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="727"/>
-        <source>Resumes the last save state created</source>
-        <oldsource>Resumes the last save state created.</oldsource>
-        <translation>마지막으로 생성된 저장 상태로 다시 시작</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="757"/>
-        <source>Small Toolbar Icons</source>
-        <translation>작은 도구 모음 아이콘</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="765"/>
-        <source>Toolbar Labels</source>
-        <oldsource>&amp;Toolbar</oldsource>
-        <translation>도구 모음 레이블</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="773"/>
-        <source>Toolbar Labels Beside Icons</source>
-        <translation>아이콘 옆의 도구 모음 레이블</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="955"/>
-        <source>Log Timestamps</source>
-        <translation>타임스탬프 기록</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="963"/>
-        <source>Log To System Console</source>
-        <translation>시스템 콘솔에 기록</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="971"/>
-        <source>Log To Window</source>
-        <translation>창에 기록</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="979"/>
-        <source>Log To File</source>
-        <translation>파일에 기록</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="984"/>
-        <source>ISO Browser</source>
-        <translation>ISO 브라우저</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="992"/>
-        <source>Free Camera</source>
-        <translation>프리 카메라</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="997"/>
-        <source>Controller Test</source>
-        <translation>컨트롤러 테스트</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1005"/>
-        <source>Controller Presets</source>
-        <translation>컨트롤러 사전 설정</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1010"/>
-        <source>Change List Background...</source>
-        <translation>목록 배경 변경...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1015"/>
-        <source>Clear List Background</source>
-        <translation>목록 배경 지우기</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1023"/>
-        <source>Refresh Achievement &amp;Progress</source>
-        <oldsource>RetroAchievements Login</oldsource>
-        <oldcomment>Window title</oldcomment>
-        <translation>도전 과제 진행 상황 새로 고침</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="932"/>
-        <source>Media Ca&amp;pture</source>
-        <translation>미디어 캡처(&amp;P)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="642"/>
+        <location filename="../mainwindow.ui" line="643"/>
         <source>Dump RAM...</source>
         <translation>램 덤프...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="647"/>
+        <location filename="../mainwindow.ui" line="648"/>
         <source>Dump VRAM...</source>
         <translation>비디오램 덤프...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="652"/>
+        <location filename="../mainwindow.ui" line="653"/>
         <source>Dump SPU RAM...</source>
         <translation>SPU 램 덤프...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="660"/>
+        <location filename="../mainwindow.ui" line="661"/>
         <source>Show GPU State</source>
         <translation>GPU 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="668"/>
+        <location filename="../mainwindow.ui" line="669"/>
         <source>Show CD-ROM State</source>
         <translation>CD-ROM 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="676"/>
+        <location filename="../mainwindow.ui" line="677"/>
         <source>Show SPU State</source>
         <translation>SPU 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="684"/>
+        <location filename="../mainwindow.ui" line="685"/>
         <source>Show Timers State</source>
         <translation>타이머 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="692"/>
+        <location filename="../mainwindow.ui" line="693"/>
         <source>Show MDEC State</source>
         <translation>MDEC 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="700"/>
+        <location filename="../mainwindow.ui" line="701"/>
         <source>Show DMA State</source>
         <translation>DMA 상태 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="708"/>
+        <location filename="../mainwindow.ui" line="709"/>
         <source>&amp;Screenshot</source>
         <translation>스크린샷(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="716"/>
-        <source>&amp;Memory Cards</source>
-        <translation>메모리 카드(&amp;M)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="843"/>
-        <source>Merge Multi-Disc Games</source>
-        <translation>다중 디스크 게임 병합</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="895"/>
-        <location filename="../mainwindow.cpp" line="1291"/>
-        <source>Start Big Picture Mode</source>
-        <translation>빅피처 모드 시작</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="903"/>
-        <location filename="../mainwindow.cpp" line="1292"/>
-        <source>Big Picture</source>
-        <translation>빅피처</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="908"/>
-        <source>Cover Downloader</source>
-        <translation>커버 내려받기</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="913"/>
-        <source>Memory &amp;Scanner</source>
-        <translation>메모리 스캐너(&amp;S)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="924"/>
-        <source>Show Game Icons (List View)</source>
-        <translation>게임 아이콘 표시(목록 보기)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="724"/>
+        <location filename="../mainwindow.ui" line="725"/>
         <location filename="../mainwindow.cpp" line="836"/>
         <source>Resume</source>
         <translation>재개</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="537"/>
-        <source>&amp;Interface</source>
-        <translation>인터페이스(&amp;I)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="561"/>
-        <location filename="../mainwindow.ui" line="572"/>
-        <source>&amp;Settings</source>
-        <translation>설정(&amp;S)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="738"/>
+        <location filename="../mainwindow.ui" line="739"/>
         <source>&amp;Toolbar</source>
         <translation>도구 모음(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="749"/>
+        <location filename="../mainwindow.ui" line="750"/>
         <location filename="../mainwindow.cpp" line="1854"/>
         <source>Lock Toolbar</source>
         <translation>도구 모음 고정</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="784"/>
+        <location filename="../mainwindow.ui" line="785"/>
         <source>&amp;Status Bar</source>
         <translation>상태 표시줄(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="792"/>
+        <location filename="../mainwindow.ui" line="793"/>
         <source>Game &amp;List</source>
         <translation>게임 목록(&amp;L)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="803"/>
-        <source>System &amp;Display</source>
-        <translation>시스템 표시(&amp;D)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="814"/>
+        <location filename="../mainwindow.ui" line="815"/>
         <source>Game &amp;Properties</source>
         <translation>게임 속성(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="819"/>
-        <source>Memory &amp;Card Editor</source>
-        <translation>메모리 카드 편집기(&amp;C)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="824"/>
+        <location filename="../mainwindow.ui" line="825"/>
         <source>CPU D&amp;ebugger</source>
         <translation>CPU 디버거(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="832"/>
+        <location filename="../mainwindow.ui" line="833"/>
         <source>Game &amp;Grid</source>
         <translation>게임 그리드(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="854"/>
+        <location filename="../mainwindow.ui" line="844"/>
+        <source>Merge Multi-Disc Games</source>
+        <translation>다중 디스크 게임 병합</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="855"/>
         <source>Show Titles (Grid View)</source>
         <translation>그리드뷰 | 게임명 표시</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="859"/>
+        <location filename="../mainwindow.ui" line="860"/>
         <source>Zoom &amp;In (Grid View)</source>
         <translation>그리드뷰 | 확대(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="864"/>
+        <location filename="../mainwindow.ui" line="865"/>
         <source>Zoom &amp;Out (Grid View)</source>
         <translation>그리드뷰 | 축소(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="869"/>
+        <location filename="../mainwindow.ui" line="870"/>
         <source>Refresh &amp;Covers (Grid View)</source>
         <translation>그리드뷰 | 커버 새로 고침(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="874"/>
+        <location filename="../mainwindow.ui" line="875"/>
         <source>Open Memory Card Directory...</source>
         <translation>메모리 카드 디렉터리 열기...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="879"/>
+        <location filename="../mainwindow.ui" line="880"/>
         <source>Open Data Directory...</source>
         <translation>데이터 디렉터리 열기...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="887"/>
+        <location filename="../mainwindow.ui" line="888"/>
         <source>Power Off &amp;Without Saving</source>
         <translation>저장하지 않고 종료(&amp;W)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="914"/>
+        <source>Memory &amp;Scanner</source>
+        <translation>메모리 스캐너(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="925"/>
+        <source>Show Game Icons (List View)</source>
+        <translation>게임 아이콘 표시(목록 보기)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="938"/>
+        <source>Open Texture Directory...</source>
+        <translation>텍스처 디렉터리 열기...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="943"/>
+        <source>Reload Texture Replacements</source>
+        <translation>텍스처 대체 미리 불러오기</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="804"/>
+        <source>System &amp;Display</source>
+        <translation>시스템 표시(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="820"/>
+        <source>Memory &amp;Card Editor</source>
+        <translation>메모리 카드 편집기(&amp;C)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="318"/>
+        <source>Failed to get window info from widget</source>
+        <translation>위젯에서 창 정보를 가져오는데 실패함</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="662"/>
@@ -16390,24 +16472,8 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>디스크 이미지 선택</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="677"/>
-        <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
-        <translation>CD-ROM 장치를 찾을 수 없습니다. CD-ROM 드라이브가 연결되어 있고 액세스할 수 있는 권한이 있는지 확인하세요.</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="691"/>
-        <source>%1 (%2)</source>
-        <translation>%1(%2)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="695"/>
-        <source>Select disc drive:</source>
-        <translation>디스크 드라이브 선택 :</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="892"/>
         <source>Delete Save States</source>
-        <oldsource>Delete Save States...</oldsource>
         <translation>저장 상태 삭제</translation>
     </message>
     <message>
@@ -16416,84 +16482,9 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>디스크 가동</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1507"/>
-        <location filename="../mainwindow.cpp" line="1586"/>
-        <source>Properties...</source>
-        <translation>속성...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1517"/>
-        <source>Open Containing Directory...</source>
-        <translation>포함된 디렉터리 열기...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1534"/>
-        <location filename="../mainwindow.cpp" line="1597"/>
-        <source>Set Cover Image...</source>
-        <translation>커버 이미지 설정...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1548"/>
-        <source>Default Boot</source>
-        <translation>기본 부팅</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1551"/>
-        <source>Fast Boot</source>
-        <translation>고속 부팅</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1557"/>
-        <source>Full Boot</source>
-        <translation>전체 부팅</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1565"/>
-        <source>Boot and Debug</source>
-        <translation>부팅 및 디버그</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1617"/>
-        <source>Exclude From List</source>
-        <translation>목록에서 제외</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1632"/>
-        <source>Add Search Directory...</source>
-        <translation>검색 디렉터리 추가...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1642"/>
-        <source>Select Cover Image</source>
-        <translation>커버 이미지 선택</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1660"/>
-        <source>Cover Already Exists</source>
-        <translation>이미 존재하는 커버</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1661"/>
-        <source>A cover image for this game already exists, do you wish to replace it?</source>
-        <translation>이 게임의 커버 이미지가 이미 존재합니다, 교체하시겠습니까?</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1656"/>
-        <location filename="../mainwindow.cpp" line="1670"/>
-        <location filename="../mainwindow.cpp" line="1675"/>
-        <location filename="../mainwindow.cpp" line="1680"/>
-        <source>Copy Error</source>
-        <translation>복사 오류</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1670"/>
-        <source>Failed to remove existing cover &apos;%1&apos;</source>
-        <translation>기존 커버 &apos;%1&apos; 제거 실패</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1675"/>
-        <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>&apos;%1&apos;을(를) &apos;%2&apos;에 복사 실패</translation>
+        <location filename="../mainwindow.cpp" line="677"/>
+        <source>Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and sufficient permissions to access it.</source>
+        <translation>CD-ROM 장치를 찾을 수 없습니다. CD-ROM 드라이브가 연결되어 있고 액세스할 수 있는 권한이 있는지 확인하세요.</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="92"/>
@@ -16513,14 +16504,19 @@ Shift 키를 누른 채 클릭하면 여러 결합을 설정할 수 있습니다
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="318"/>
-        <source>Failed to get window info from widget</source>
-        <translation>위젯에서 창 정보를 가져오는데 실패함</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.cpp" line="546"/>
         <source>Paused</source>
         <translation>일시 중지</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="691"/>
+        <source>%1 (%2)</source>
+        <translation>%1(%2)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="695"/>
+        <source>Select disc drive:</source>
+        <translation>디스크 드라이브 선택 :</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="858"/>
@@ -16573,7 +16569,6 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../mainwindow.cpp" line="948"/>
         <source>Undo Load State (%1)</source>
-        <oldsource>Undo Load State</oldsource>
         <translation>상태 불러오기 취소(%1)</translation>
     </message>
     <message>
@@ -16660,19 +16655,16 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1612"/>
         <source>Select Disc...</source>
-        <oldsource>Select Disc</oldsource>
         <translation>디스크 선택...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1859"/>
         <source>Small Icons</source>
-        <oldsource>Small Motor</oldsource>
         <translation>작은 아이콘</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1864"/>
         <source>Show Labels</source>
-        <oldsource>Show Best</oldsource>
         <translation>라벨 표시</translation>
     </message>
     <message>
@@ -16681,22 +16673,27 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>아이콘 옆의 레이블</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2540"/>
+        <location filename="../mainwindow.cpp" line="2543"/>
         <source>Select Background Image</source>
         <translation>배경 이미지 선택</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2892"/>
+        <location filename="../mainwindow.cpp" line="2895"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA : %1(%2, %3 소프트코어)로 로그인했습니다. 읽지 않은 메시지가 %4개 있습니다.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2926"/>
+        <location filename="../mainwindow.cpp" line="2929"/>
         <source>RA: Updated achievement progress database.</source>
         <translation>RA : 도전 과제 진행 상황 데이터베이스가 업데이트되었습니다.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3080"/>
+        <location filename="../mainwindow.cpp" line="3001"/>
+        <source>Media Capture</source>
+        <translation>미디어 캡처</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3083"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;Please download an official release from from &lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;.&lt;/p&gt;</source>
         <translation>&lt;p&gt;죄송합니다. 공식 GitHub 출시가 아닌 DuckStation 버전을 업데이트하려고 합니다. 호환성을 문제를 방지하기 위해 자동 업데이터는 공식 빌드에서만 활성화됩니다.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;에서 공식 출시 버전을 내려받으세요.&lt;/p&gt;</translation>
     </message>
@@ -16704,21 +16701,6 @@ Do you want to load this state, or start from a fresh boot?</source>
         <location filename="../mainwindow.cpp" line="1176"/>
         <source>Cancel</source>
         <translation>취소</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1016"/>
-        <source>Select Cheats...</source>
-        <translation>치트 선택...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1035"/>
-        <source>Cheats are not enabled.</source>
-        <translation>치트가 활성화되지 않았습니다.</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1040"/>
-        <source>&amp;Apply Cheat</source>
-        <translation>치트 적용(&amp;A)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1291"/>
@@ -16734,16 +16716,6 @@ Do you want to load this state, or start from a fresh boot?</source>
         <location filename="../mainwindow.cpp" line="1468"/>
         <source>You must select a disc to change discs.</source>
         <translation>교체할 디스크를 선택하세요.</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1524"/>
-        <source>Browse ISO...</source>
-        <translation>ISO 찾아보기...</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="1620"/>
-        <source>Reset Play Time</source>
-        <translation>플레이 시간 초기화</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1656"/>
@@ -16770,25 +16742,130 @@ This action cannot be undone.</source>
 이 작업은 되돌릴 수 없습니다.</translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="1507"/>
+        <location filename="../mainwindow.cpp" line="1586"/>
+        <source>Properties...</source>
+        <translation>속성...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1016"/>
+        <source>Select Cheats...</source>
+        <translation>치트 선택...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1035"/>
+        <source>Cheats are not enabled.</source>
+        <translation>치트가 활성화되지 않았습니다.</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1040"/>
+        <source>&amp;Apply Cheat</source>
+        <translation>치트 적용(&amp;A)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1517"/>
+        <source>Open Containing Directory...</source>
+        <translation>포함된 디렉터리 열기...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1524"/>
+        <source>Browse ISO...</source>
+        <translation>ISO 찾아보기...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1534"/>
+        <location filename="../mainwindow.cpp" line="1597"/>
+        <source>Set Cover Image...</source>
+        <translation>커버 이미지 설정...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1548"/>
+        <source>Default Boot</source>
+        <translation>기본 부팅</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1551"/>
+        <source>Fast Boot</source>
+        <translation>고속 부팅</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1557"/>
+        <source>Full Boot</source>
+        <translation>전체 부팅</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1565"/>
+        <source>Boot and Debug</source>
+        <translation>부팅 및 디버그</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1617"/>
+        <source>Exclude From List</source>
+        <translation>목록에서 제외</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1620"/>
+        <source>Reset Play Time</source>
+        <translation>플레이 시간 초기화</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1632"/>
+        <source>Add Search Directory...</source>
+        <translation>검색 디렉터리 추가...</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1642"/>
+        <source>Select Cover Image</source>
+        <translation>커버 이미지 선택</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1660"/>
+        <source>Cover Already Exists</source>
+        <translation>이미 존재하는 커버</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1661"/>
+        <source>A cover image for this game already exists, do you wish to replace it?</source>
+        <translation>이 게임의 커버 이미지가 이미 존재합니다, 교체하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1656"/>
+        <location filename="../mainwindow.cpp" line="1670"/>
+        <location filename="../mainwindow.cpp" line="1675"/>
+        <location filename="../mainwindow.cpp" line="1680"/>
+        <source>Copy Error</source>
+        <translation>복사 오류</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1670"/>
+        <source>Failed to remove existing cover &apos;%1&apos;</source>
+        <translation>기존 커버 &apos;%1&apos; 제거 실패</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1675"/>
+        <source>Failed to copy &apos;%1&apos; to &apos;%2&apos;</source>
+        <translation>&apos;%1&apos;을(를) &apos;%2&apos;에 복사 실패</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="1754"/>
         <source>%1x Scale</source>
         <translation>%1배 배율</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2325"/>
-        <location filename="../mainwindow.cpp" line="2333"/>
-        <location filename="../mainwindow.cpp" line="2341"/>
+        <location filename="../mainwindow.cpp" line="2328"/>
+        <location filename="../mainwindow.cpp" line="2336"/>
+        <location filename="../mainwindow.cpp" line="2344"/>
         <source>Destination File</source>
         <translation>대상 파일</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2325"/>
-        <location filename="../mainwindow.cpp" line="2341"/>
+        <location filename="../mainwindow.cpp" line="2328"/>
+        <location filename="../mainwindow.cpp" line="2344"/>
         <source>Binary Files (*.bin)</source>
         <translation>바이너리 파일(*.bin)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2333"/>
+        <location filename="../mainwindow.cpp" line="2336"/>
         <source>Binary Files (*.bin);;PNG Images (*.png)</source>
         <translation>바이너리 파일(*.bin);;PNG 이미지(*.png)</translation>
     </message>
@@ -16858,61 +16935,56 @@ This action cannot be undone.</source>
         <translation>Q다크스타일</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2747"/>
+        <location filename="../mainwindow.cpp" line="2750"/>
         <source>Confirm Shutdown</source>
         <translation>시스템 종료 확인</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2749"/>
+        <location filename="../mainwindow.cpp" line="2752"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
         <translation>가상 머신을 종료하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2751"/>
+        <location filename="../mainwindow.cpp" line="2754"/>
         <source>Save State For Resume</source>
         <translation>재개할 상태 저장</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2840"/>
-        <location filename="../mainwindow.cpp" line="2847"/>
-        <location filename="../mainwindow.cpp" line="2866"/>
-        <location filename="../mainwindow.cpp" line="2875"/>
+        <location filename="../mainwindow.cpp" line="2843"/>
+        <location filename="../mainwindow.cpp" line="2850"/>
+        <location filename="../mainwindow.cpp" line="2869"/>
+        <location filename="../mainwindow.cpp" line="2878"/>
         <source>Memory Card Not Found</source>
         <translation>메모리 카드 없음</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2841"/>
+        <location filename="../mainwindow.cpp" line="2844"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>메모리 카드 &apos;%1&apos;이(가) 없습니다. 빈 메모리 카드를 생성하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2867"/>
-        <location filename="../mainwindow.cpp" line="2876"/>
+        <location filename="../mainwindow.cpp" line="2870"/>
+        <location filename="../mainwindow.cpp" line="2879"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>메모리 카드 &apos;%1&apos;을(를) 찾을 수 없습니다. 게임을 시작하고 저장하여 만들어 보세요.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2848"/>
+        <location filename="../mainwindow.cpp" line="2851"/>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>메모리 카드 &apos;%1&apos; 생성 실패 : %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2994"/>
+        <location filename="../mainwindow.cpp" line="2997"/>
         <source>%1 Files (*.%2)</source>
         <translation>%1파일(*.%2)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2998"/>
-        <source>Media Capture</source>
-        <translation>미디어 캡처</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="3072"/>
+        <location filename="../mainwindow.cpp" line="3075"/>
         <source>Updater Error</source>
         <translation>업데이트 에러</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3087"/>
+        <location filename="../mainwindow.cpp" line="3090"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>해당 플랫폼에서는 자동 업데이트가 지원되지 않습니다.</translation>
     </message>
@@ -17040,12 +17112,12 @@ Are you sure you want to continue?</source>
 <context>
     <name>MediaCapture</name>
     <message>
-        <location filename="../../util/media_capture.cpp" line="795"/>
+        <location filename="../../util/media_capture.cpp" line="790"/>
         <source>Failed to load Media Foundation libraries: </source>
         <translation>미디어 파운데이션 라이브러리 불러오기 실패 : </translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="2009"/>
+        <location filename="../../util/media_capture.cpp" line="2027"/>
         <source>You may be missing one or more files, or are using the incorrect version. This build of DuckStation requires:
   libavcodec: {}
   libavformat: {}
@@ -17541,30 +17613,19 @@ You must delete the memory card manually if you want to save.</source>
 <context>
     <name>MemoryCardSettingsWidget</name>
     <message>
+        <location filename="../memorycardsettingswidget.cpp" line="31"/>
+        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
+        <translation>모든 메모리 카드 유형(*.mcd *.mcr *.mc)</translation>
+    </message>
+    <message>
         <location filename="../memorycardsettingswidget.cpp" line="57"/>
         <source>Open...</source>
         <translation>열기...</translation>
     </message>
     <message>
-        <location filename="../memorycardsettingswidget.cpp" line="75"/>
-        <location filename="../memorycardsettingswidget.cpp" line="80"/>
-        <source>Use Single Card For Multi-Disc Games</source>
-        <translation>멀티 디스크 게임에 단일 카드 사용</translation>
-    </message>
-    <message>
         <location filename="../memorycardsettingswidget.cpp" line="80"/>
         <source>Checked</source>
         <translation>선택</translation>
-    </message>
-    <message>
-        <location filename="../memorycardsettingswidget.cpp" line="81"/>
-        <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
-        <translation>멀티 디스크 게임을 플레이하고 게임별(타이틀별) 메모리 카드를 사용하는 경우 모든 디스크에 단일 메모리 카드가 사용됩니다. 이 옵션을 선택하지 않으면 각 디스크마다 별도의 카드가 사용됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../memorycardsettingswidget.cpp" line="103"/>
-        <source>Select Memory Card Directory</source>
-        <translation>메모리 카드 디렉터리 선택</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="114"/>
@@ -17599,6 +17660,17 @@ You must delete the memory card manually if you want to save.</source>
         <translation>게임별 카드 설정</translation>
     </message>
     <message>
+        <location filename="../memorycardsettingswidget.cpp" line="75"/>
+        <location filename="../memorycardsettingswidget.cpp" line="80"/>
+        <source>Use Single Card For Multi-Disc Games</source>
+        <translation>멀티 디스크 게임에 단일 카드 사용</translation>
+    </message>
+    <message>
+        <location filename="../memorycardsettingswidget.cpp" line="81"/>
+        <source>When playing a multi-disc game and using per-game (title) memory cards, a single memory card will be used for all discs. If unchecked, a separate card will be used for each disc.</source>
+        <translation>멀티 디스크 게임을 플레이하고 게임별(타이틀별) 메모리 카드를 사용하는 경우 모든 디스크에 단일 메모리 카드가 사용됩니다. 이 옵션을 선택하지 않으면 각 디스크마다 별도의 카드가 사용됩니다.</translation>
+    </message>
+    <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
         <source>The memory card editor enables you to move saves between cards, as well as import cards of other formats.</source>
         <translation>메모리 카드 편집기를 사용하면 카드 간에 저장된 내용을 이동할 수 있을 뿐만 아니라 다른 형식의 카드를 가져올 수도 있습니다.</translation>
@@ -17609,6 +17681,11 @@ You must delete the memory card manually if you want to save.</source>
         <translation>메모리 카드 편집기...</translation>
     </message>
     <message>
+        <location filename="../memorycardsettingswidget.cpp" line="103"/>
+        <source>Select Memory Card Directory</source>
+        <translation>메모리 카드 디렉터리 선택</translation>
+    </message>
+    <message>
         <location filename="../memorycardsettingswidget.cpp" line="154"/>
         <source>Shared Memory Card Path:</source>
         <translation>공유 메모리 카드 경로 :</translation>
@@ -17617,11 +17694,6 @@ You must delete the memory card manually if you want to save.</source>
         <location filename="../memorycardsettingswidget.cpp" line="181"/>
         <source>Select path to memory card image</source>
         <translation>메모리 카드 이미지 경로 선택</translation>
-    </message>
-    <message>
-        <location filename="../memorycardsettingswidget.cpp" line="31"/>
-        <source>All Memory Card Types (*.mcd *.mcr *.mc)</source>
-        <translation>모든 메모리 카드 유형(*.mcd *.mcr *.mc)</translation>
     </message>
     <message>
         <source>Shared Settings</source>
@@ -17716,56 +17788,6 @@ You must delete the memory card manually if you want to save.</source>
         <translation>운영자 :</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="155"/>
-        <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
-        <translation>모든 값(&apos;새 검색&apos; 또는 &apos;결과 값 재설정&apos;)</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="160"/>
-        <source>Less Than Previous Result</source>
-        <translation>이전보다 작음</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="165"/>
-        <source>Less or Equal to Previous Result</source>
-        <translation>이전보다 작거나 같음</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="170"/>
-        <source>Greater Than Previous Result</source>
-        <translation>이전보다 큼</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="175"/>
-        <source>Greater or Equal to Previous Result</source>
-        <translation>이전보다 크거나 같음</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="180"/>
-        <source>Not Equal to Previous Result (Changed Value)</source>
-        <translation>이전과 같지 않음(변경된 값)</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="185"/>
-        <source>Equal to Previous Result (Unchanged Value)</source>
-        <translation>이전과 같음(변경되지 않음)</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="190"/>
-        <source>Decreased By Value</source>
-        <translation>가치 감소</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="195"/>
-        <source>Increased By Value</source>
-        <translation>가치 증가</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="200"/>
-        <source>Changed By Value</source>
-        <translation>가치 변경</translation>
-    </message>
-    <message>
         <location filename="../memoryscannerwindow.ui" line="205"/>
         <source>Equal to Value</source>
         <translation>값과 같음</translation>
@@ -17774,6 +17796,26 @@ You must delete the memory card manually if you want to save.</source>
         <location filename="../memoryscannerwindow.ui" line="210"/>
         <source>Not Equal to Value</source>
         <translation>값과 다름</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="225"/>
+        <source>Greater Than Value</source>
+        <translation>값보다 큼</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="230"/>
+        <source>Greater or Equal to Value</source>
+        <translation>값보다 크거나 같음</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="445"/>
+        <source>Freeze Selected Entries</source>
+        <translation>선택한 항목을 동결</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="455"/>
+        <source>Remove Selected Entries</source>
+        <translation>선택한 항목 제거</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.ui" line="215"/>
@@ -17786,14 +17828,54 @@ You must delete the memory card manually if you want to save.</source>
         <translation>값보다 작거나 같음</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="225"/>
-        <source>Greater Than Value</source>
-        <translation>값보다 큼</translation>
+        <location filename="../memoryscannerwindow.ui" line="195"/>
+        <source>Increased By Value</source>
+        <translation>가치 증가</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.ui" line="230"/>
-        <source>Greater or Equal to Value</source>
-        <translation>값보다 크거나 같음</translation>
+        <location filename="../memoryscannerwindow.ui" line="190"/>
+        <source>Decreased By Value</source>
+        <translation>가치 감소</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="200"/>
+        <source>Changed By Value</source>
+        <translation>가치 변경</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="185"/>
+        <source>Equal to Previous Result (Unchanged Value)</source>
+        <translation>이전과 같음(변경되지 않음)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="180"/>
+        <source>Not Equal to Previous Result (Changed Value)</source>
+        <translation>이전과 같지 않음(변경된 값)</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="170"/>
+        <source>Greater Than Previous Result</source>
+        <translation>이전보다 큼</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="175"/>
+        <source>Greater or Equal to Previous Result</source>
+        <translation>이전보다 크거나 같음</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="160"/>
+        <source>Less Than Previous Result</source>
+        <translation>이전보다 작음</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="165"/>
+        <source>Less or Equal to Previous Result</source>
+        <translation>이전보다 작거나 같음</translation>
+    </message>
+    <message>
+        <location filename="../memoryscannerwindow.ui" line="155"/>
+        <source>Any Value (&apos;New Search&apos; or &apos;Reset Result Value&apos;)</source>
+        <translation>모든 값(&apos;새 검색&apos; 또는 &apos;결과 값 재설정&apos;)</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.ui" line="238"/>
@@ -17884,16 +17966,6 @@ You must delete the memory card manually if you want to save.</source>
         <location filename="../memoryscannerwindow.ui" line="435"/>
         <source>Add Manual Address</source>
         <translation>수동으로 주소 추가</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="445"/>
-        <source>Freeze Selected Entries</source>
-        <translation>선택한 항목을 동결</translation>
-    </message>
-    <message>
-        <location filename="../memoryscannerwindow.ui" line="455"/>
-        <source>Remove Selected Entries</source>
-        <translation>선택한 항목 제거</translation>
     </message>
     <message>
         <location filename="../memoryscannerwindow.cpp" line="29"/>
@@ -18307,46 +18379,49 @@ You must delete the memory card manually if you want to save.</source>
         <translation>시스템을 초기화합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1036"/>
+        <location filename="../../core/settings.cpp" line="1038"/>
         <source>Disabling PCDrv because no root directory is specified.</source>
         <translation>루트 디렉터리가 지정되지 않아 PCDrv를 비활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1047"/>
+        <location filename="../../core/settings.cpp" line="1049"/>
         <source>PGXP is incompatible with the software renderer, disabling PGXP.</source>
         <translation>PGXP는 소프트웨어 렌더러와 호환되지 않으므로 PGXP를 비활성화합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1093"/>
+        <location filename="../../core/settings.cpp" line="1095"/>
         <source>Rewind is disabled because runahead is enabled.</source>
         <translation>선행 실행이 활성화되어 되감기가 비활성화되었습니다. 선행 실행을 사용하면 시스템 요구 사항이 크게 증가합니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4502"/>
+        <location filename="../../core/system.cpp" line="4504"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>리컴파일러 옵션이 변경되어 모든 블록이 플러시되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="1013"/>
-        <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
-        <translation>다중 디스크 이미지 &apos;{}&apos;에 대해 CD 이미지 사전 불러오기를 사용할 수 없습니다.</translation>
+        <location filename="../../core/hotkeys.cpp" line="423"/>
+        <source>PGXP is now enabled.</source>
+        <translation>이제 PGXP가 활성화되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="1022"/>
-        <source>Precaching CD image failed, it may be unreliable.</source>
-        <translation>CD 이미지 프리캐싱에 실패하여 불안정할 수 있습니다.</translation>
+        <location filename="../../core/hotkeys.cpp" line="424"/>
+        <source>PGXP is now disabled.</source>
+        <translation>이제 PGXP가 비활성화되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/cdrom.cpp" line="3275"/>
-        <source>Failed to read sector from disc image. The game will probably crash now.
-Your dump may be corrupted, or the physical disc is scratched.</source>
-        <translation>디스크 이미지에서 섹터를 읽지 못했습니다. 게임이 충돌할 수 있습니다.
-덤프가 손상되었거나 실제 디스크가 긁혔을 수 있습니다.</translation>
+        <location filename="../../core/hotkeys.cpp" line="454"/>
+        <source>PGXP Depth Buffer is now enabled.</source>
+        <translation>이제 PGXP 깊이 버퍼가 활성화되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4487"/>
-        <source>Switching to {} CPU execution mode.</source>
-        <translation>{} CPU 실행 모드로 전환 중입니다.</translation>
+        <location filename="../../core/hotkeys.cpp" line="455"/>
+        <source>PGXP Depth Buffer is now disabled.</source>
+        <translation>PGXP 깊이 버퍼가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3679"/>
+        <source>Rewinding is not enabled.</source>
+        <translation>되감기가 활성화되지 않았습니다.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="76"/>
@@ -18397,31 +18472,14 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>에뮬레이션 속도가 {}%로 설정되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/hotkeys.cpp" line="423"/>
-        <source>PGXP is now enabled.</source>
-        <translation>이제 PGXP가 활성화되었습니다.</translation>
+        <location filename="../../core/hotkeys.cpp" line="784"/>
+        <source>PGXP CPU mode is now enabled.</source>
+        <translation>이제 PGXP CPU 모드가 활성화됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/hotkeys.cpp" line="424"/>
-        <source>PGXP is now disabled.</source>
-        <translation>이제 PGXP가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="454"/>
-        <source>PGXP Depth Buffer is now enabled.</source>
-        <translation>이제 PGXP 깊이 버퍼가 활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="455"/>
-        <source>PGXP Depth Buffer is now disabled.</source>
-        <translation>PGXP 깊이 버퍼가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="625"/>
-        <location filename="../../core/hotkeys.cpp" line="654"/>
-        <location filename="../../core/hotkeys.cpp" line="668"/>
-        <source>Volume: {}%</source>
-        <translation>음량 : {}%</translation>
+        <location filename="../../core/hotkeys.cpp" line="785"/>
+        <source>PGXP CPU mode is now disabled.</source>
+        <translation>이제 PGXP CPU 모드가 비활성화됩니다.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="811"/>
@@ -18444,24 +18502,16 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>이제 화면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3677"/>
-        <source>Rewinding is not enabled.</source>
-        <translation>되감기가 활성화되지 않았습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="784"/>
-        <source>PGXP CPU mode is now enabled.</source>
-        <translation>이제 PGXP CPU 모드가 활성화됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/hotkeys.cpp" line="785"/>
-        <source>PGXP CPU mode is now disabled.</source>
-        <translation>이제 PGXP CPU 모드가 비활성화됩니다.</translation>
-    </message>
-    <message>
         <location filename="../../core/hotkeys.cpp" line="620"/>
         <source>Volume: Muted</source>
         <translation>음량 : 음소거</translation>
+    </message>
+    <message>
+        <location filename="../../core/hotkeys.cpp" line="625"/>
+        <location filename="../../core/hotkeys.cpp" line="654"/>
+        <location filename="../../core/hotkeys.cpp" line="668"/>
+        <source>Volume: {}%</source>
+        <translation>음량 : {}%</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="637"/>
@@ -18474,78 +18524,31 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>CD 음향 소거가 해제되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3967"/>
+        <location filename="../../core/system.cpp" line="3969"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>메모리 카드 포트 교체. 두 포트 모두 메모리 카드가 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3973"/>
+        <location filename="../../core/system.cpp" line="3975"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>메모리 카드 포트를 교체했습니다. 포트 2에는 메모리 카드가 있고 포트 1은 비어 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3978"/>
+        <location filename="../../core/system.cpp" line="3980"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>메모리 카드 포트를 교체했습니다. 포트1에는 메모리 카드가 있고 포트2는 비어 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3982"/>
+        <location filename="../../core/system.cpp" line="3984"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>메모리 카드 포트를 교체했습니다. 두 포트 모두 메모리 카드가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5317"/>
-        <source>Failed to save undo load state:
-{}</source>
-        <translation>불러오기 상태 저장 실패 :
-{}</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2877"/>
-        <source>Loading state from &apos;{}&apos;...</source>
-        <translation>&apos;{}&apos;에서 상태 불러오는 중...</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2928"/>
+        <location filename="../../core/system.cpp" line="2930"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>저장 상태 &apos;{}&apos;: {}에서 CD 이미지를 열지 못했습니다.
 기존 이미지 &apos;{}&apos;을 사용하면 불안정해질 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4078"/>
-        <source>Failed to open disc image &apos;{}&apos;: {}.</source>
-        <translation>디스크 이미지 &apos;{}&apos;: {}을(를) 열지 못했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4089"/>
-        <source>Inserted disc &apos;{}&apos; ({}).</source>
-        <translation>디스크 &apos;{}&apos;({})을 삽입했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4540"/>
-        <source>Switching to {}{} GPU renderer.</source>
-        <translation>GPU 렌더러 {}{}로 전환 중입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4466"/>
-        <source>Switching to {} audio backend.</source>
-        <translation>{} 음향 후처리로 전환 중입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5848"/>
-        <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
-        <translation>이제 와이드스크린 렌더링이 활성화되었으며, 종횡비가 {}(으)로 설정되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5856"/>
-        <source>Widescreen rendering is now disabled, and aspect ratio is set to {}.</source>
-        <translation>와이드스크린 렌더링이 비활성화되었으며, 종횡비는 {}(으)로 설정되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5873"/>
-        <source>Switching to {} renderer...</source>
-        <translation>{} 렌더러로 전환 중...</translation>
     </message>
     <message>
         <location filename="../../util/postprocessing.cpp" line="398"/>
@@ -18603,6 +18606,75 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <location filename="../../core/pad.cpp" line="330"/>
         <source>Memory card {} present in system but not in save state. Replugging card.</source>
         <translation>시스템에 메모리 카드 {}이(가) 있지만 저장 상태는 아닙니다. 카드를 다시 연결합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cdrom.cpp" line="1013"/>
+        <source>CD image preloading not available for multi-disc image &apos;{}&apos;</source>
+        <translation>다중 디스크 이미지 &apos;{}&apos;에 대해 CD 이미지 사전 불러오기를 사용할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cdrom.cpp" line="1022"/>
+        <source>Precaching CD image failed, it may be unreliable.</source>
+        <translation>CD 이미지 프리캐싱에 실패하여 불안정할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cdrom.cpp" line="3275"/>
+        <source>Failed to read sector from disc image. The game will probably crash now.
+Your dump may be corrupted, or the physical disc is scratched.</source>
+        <translation>디스크 이미지에서 섹터를 읽지 못했습니다. 게임이 충돌할 수 있습니다.
+덤프가 손상되었거나 실제 디스크가 긁혔을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2879"/>
+        <source>Loading state from &apos;{}&apos;...</source>
+        <translation>&apos;{}&apos;에서 상태 불러오는 중...</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4080"/>
+        <source>Failed to open disc image &apos;{}&apos;: {}.</source>
+        <translation>디스크 이미지 &apos;{}&apos;: {}을(를) 열지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4091"/>
+        <source>Inserted disc &apos;{}&apos; ({}).</source>
+        <translation>디스크 &apos;{}&apos;({})을 삽입했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5319"/>
+        <source>Failed to save undo load state:
+{}</source>
+        <translation>불러오기 상태 저장 실패 :
+{}</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5850"/>
+        <source>Widescreen rendering is now enabled, and aspect ratio is set to {}.</source>
+        <translation>이제 와이드스크린 렌더링이 활성화되었으며, 종횡비가 {}(으)로 설정되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5858"/>
+        <source>Widescreen rendering is now disabled, and aspect ratio is set to {}.</source>
+        <translation>와이드스크린 렌더링이 비활성화되었으며, 종횡비는 {}(으)로 설정되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5875"/>
+        <source>Switching to {} renderer...</source>
+        <translation>{} 렌더러로 전환 중...</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4542"/>
+        <source>Switching to {}{} GPU renderer.</source>
+        <translation>GPU 렌더러 {}{}로 전환 중입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4468"/>
+        <source>Switching to {} audio backend.</source>
+        <translation>{} 음향 후처리로 전환 중입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4489"/>
+        <source>Switching to {} CPU execution mode.</source>
+        <translation>{} CPU 실행 모드로 전환 중입니다.</translation>
     </message>
     <message>
         <location filename="../../core/gpu_thread.cpp" line="750"/>
@@ -19011,42 +19083,42 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>PostProcessingChainConfigWidget</name>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="19"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="31"/>
         <source>Enable Post Processing</source>
         <translation>후처리 활성화</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="39"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="51"/>
         <source>&amp;Reload Shaders</source>
         <translation>셰이더 다시 불러오기(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="51"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="63"/>
         <source>Post Processing Chain</source>
         <translation>후처리 체인</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="81"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="91"/>
         <source>Add</source>
         <translation>추가</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="100"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="110"/>
         <source>Remove</source>
         <translation>제거</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="119"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="129"/>
         <source>Clear</source>
         <translation>지우기</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="138"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="148"/>
         <source>Move Up</source>
         <translation>위로</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="157"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="167"/>
         <source>Move Down</source>
         <translation>아래로</translation>
     </message>
@@ -19079,84 +19151,79 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>PostProcessingOverlayConfigWidget</name>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="14"/>
-        <source>Form</source>
-        <translation>양식</translation>
-    </message>
-    <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="20"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="29"/>
         <source>Basic Configuration</source>
         <translation>기본 구성</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="36"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="45"/>
         <source>Selected Preset:</source>
         <translation>선택된 사전 설정 :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="26"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="35"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;외곽선 오버레이는 시스템 화면 주위에 그려지는 이미지입니다. 외곽선 오버레이는 후처리 후에 적용됩니다. 아래 외곽선 목록에서 선택하거나 사용자 지정 외곽선을 직접 설정할 수 있습니다.&lt;/p&gt;&lt;p&gt;데이터 디렉터리의 &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; 폴더에 미리 설정된 외곽선을 추가할 수 있습니다.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="49"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="58"/>
         <source>Custom Configuration</source>
         <translation>사용자 정의 설정</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="55"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="64"/>
         <source>Image Path:</source>
         <translation>이미지 경로 :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="67"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="76"/>
         <source>Browse...</source>
         <translation>찾아보기...</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="76"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="85"/>
         <source>Display Start:</source>
         <translation>시작 표시 :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="85"/>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="130"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="94"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="139"/>
         <source>X:</source>
         <translation>X :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="92"/>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="109"/>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="137"/>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="154"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="101"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="118"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="146"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="163"/>
         <source> pixels</source>
         <translation>필셀</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="102"/>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="147"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="111"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="156"/>
         <source>Y:</source>
         <translation>Y :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="121"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="130"/>
         <source>Display End:</source>
         <translation>끝 표시 :</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="168"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="177"/>
         <location filename="../postprocessingsettingswidget.cpp" line="573"/>
         <source>Destination Alpha Blending</source>
         <translation>대상 알파 블렌딩</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="175"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="184"/>
         <location filename="../postprocessingsettingswidget.cpp" line="570"/>
         <source>Alpha Blending</source>
         <translation>알파 블랜딩</translation>
     </message>
     <message>
-        <location filename="../postprocessingoverlayconfigwidget.ui" line="197"/>
+        <location filename="../postprocessingoverlayconfigwidget.ui" line="206"/>
         <source>Export</source>
         <translation>내보내기</translation>
     </message>
@@ -19241,6 +19308,10 @@ Please configure a supported controller from the list above.</source>
         <location filename="../postprocessingsettingswidget.cpp" line="631"/>
         <source>Failed to save file: %1</source>
         <translation>파일 저장 실패 : %1</translation>
+    </message>
+    <message>
+        <source>Form</source>
+        <translation type="vanished">양식</translation>
     </message>
 </context>
 <context>
@@ -19603,21 +19674,6 @@ URL : %1</translation>
         <translation>{} ({})</translation>
     </message>
     <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1193"/>
-        <source>No save present in this slot.</source>
-        <translation>이 슬롯에는 저장된 것이 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1300"/>
-        <source>Global Slot {}</source>
-        <translation>게임 슬롯 {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/imgui_overlays.cpp" line="1301"/>
-        <source>Game Slot {}</source>
-        <translation>게임 슬롯 {}</translation>
-    </message>
-    <message>
         <location filename="../../core/imgui_overlays.cpp" line="1412"/>
         <source>No save state found in Global Slot {}.</source>
         <translation>글로벌 슬롯 {}에 저장 상태를 찾을 수 없습니다.</translation>
@@ -19641,6 +19697,21 @@ URL : %1</translation>
         <location filename="../../core/imgui_overlays.cpp" line="1454"/>
         <source>Save Slot {0} selected ({1}).</source>
         <translation>저장 슬롯 {0}이(가) 선택되었습니다({1}).</translation>
+    </message>
+    <message>
+        <location filename="../../core/imgui_overlays.cpp" line="1300"/>
+        <source>Global Slot {}</source>
+        <translation>게임 슬롯 {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/imgui_overlays.cpp" line="1301"/>
+        <source>Game Slot {}</source>
+        <translation>게임 슬롯 {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/imgui_overlays.cpp" line="1193"/>
+        <source>No save present in this slot.</source>
+        <translation>이 슬롯에는 저장된 것이 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -19702,12 +19773,12 @@ URL : %1</translation>
         <translation>초기화</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1387"/>
+        <location filename="../settingwidgetbinder.h" line="1397"/>
         <source>Confirm Folder</source>
         <translation>폴더 확인</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1389"/>
+        <location filename="../settingwidgetbinder.h" line="1399"/>
         <source>The chosen directory does not currently exist:
 
 %1
@@ -19720,23 +19791,23 @@ Do you want to create this directory?</source>
 이 디렉터리를 생성하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1412"/>
+        <location filename="../settingwidgetbinder.h" line="1422"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1413"/>
+        <location filename="../settingwidgetbinder.h" line="1423"/>
         <source>Folder path cannot be empty.</source>
         <translation>폴더 경로는 비워둘 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1470"/>
-        <location filename="../settingwidgetbinder.h" line="1474"/>
+        <location filename="../settingwidgetbinder.h" line="1472"/>
+        <location filename="../settingwidgetbinder.h" line="1476"/>
         <source>Incompatible with this game.</source>
         <translation>이 게임과 호환되지 않습니다.</translation>
     </message>
     <message>
-        <location filename="../settingwidgetbinder.h" line="1478"/>
+        <location filename="../settingwidgetbinder.h" line="1480"/>
         <source> [incompatible]</source>
         <translation> [비호환]</translation>
     </message>
@@ -19748,729 +19819,727 @@ Do you want to create this directory?</source>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../core/settings.cpp" line="1231"/>
+        <location filename="../../core/settings.cpp" line="1235"/>
         <source>None</source>
         <comment>LogLevel</comment>
         <translation>없음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1232"/>
+        <location filename="../../core/settings.cpp" line="1236"/>
         <source>Error</source>
         <comment>LogLevel</comment>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1233"/>
+        <location filename="../../core/settings.cpp" line="1237"/>
         <source>Warning</source>
         <comment>LogLevel</comment>
         <translation>경고</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1234"/>
+        <location filename="../../core/settings.cpp" line="1238"/>
         <source>Information</source>
         <comment>LogLevel</comment>
         <translation>정보</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1235"/>
+        <location filename="../../core/settings.cpp" line="1239"/>
         <source>Verbose</source>
         <comment>LogLevel</comment>
         <translation>상세 정보</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1236"/>
+        <location filename="../../core/settings.cpp" line="1240"/>
         <source>Developer</source>
         <comment>LogLevel</comment>
         <translation>개발자</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1237"/>
+        <location filename="../../core/settings.cpp" line="1241"/>
         <source>Debug</source>
         <comment>LogLevel</comment>
         <translation>디버그</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1238"/>
+        <location filename="../../core/settings.cpp" line="1242"/>
         <source>Trace</source>
         <comment>LogLevel</comment>
         <translation>추적</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1272"/>
+        <location filename="../../core/settings.cpp" line="1276"/>
         <source>Auto-Detect</source>
         <comment>ConsoleRegion</comment>
         <translation>자동 감지</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1273"/>
+        <location filename="../../core/settings.cpp" line="1277"/>
         <source>NTSC-J (Japan)</source>
         <comment>ConsoleRegion</comment>
         <translation>NTSC-J(한국/일본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1274"/>
+        <location filename="../../core/settings.cpp" line="1278"/>
         <source>NTSC-U/C (US, Canada)</source>
         <comment>ConsoleRegion</comment>
         <translation>NTSC-U/C(미국/캐나다)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1275"/>
+        <location filename="../../core/settings.cpp" line="1279"/>
         <source>PAL (Europe, Australia)</source>
         <comment>ConsoleRegion</comment>
         <translation>PAL(유럽/호주)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1307"/>
+        <location filename="../../core/settings.cpp" line="1311"/>
         <source>NTSC-J (Japan)</source>
         <comment>DiscRegion</comment>
         <translation>NTSC-J(한국/일본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1308"/>
+        <location filename="../../core/settings.cpp" line="1312"/>
         <source>NTSC-U/C (US, Canada)</source>
         <comment>DiscRegion</comment>
         <translation>NTSC-U/C(미국/캐나다)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1309"/>
+        <location filename="../../core/settings.cpp" line="1313"/>
         <source>PAL (Europe, Australia)</source>
         <comment>DiscRegion</comment>
         <translation>PAL(유럽/호주)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1310"/>
+        <location filename="../../core/settings.cpp" line="1314"/>
         <source>Other</source>
         <comment>DiscRegion</comment>
         <translation>기타</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1311"/>
+        <location filename="../../core/settings.cpp" line="1315"/>
         <source>Non-PS1</source>
         <comment>DiscRegion</comment>
         <translation>PS1 아님</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1344"/>
+        <location filename="../../core/settings.cpp" line="1348"/>
         <source>Interpreter (Slowest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>인터프리터(가장 느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1345"/>
+        <location filename="../../core/settings.cpp" line="1349"/>
         <source>Cached Interpreter (Faster)</source>
         <comment>CPUExecutionMode</comment>
         <translation>캐시된 인터프리터(빠름)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1346"/>
+        <location filename="../../core/settings.cpp" line="1350"/>
         <source>Recompiler (Fastest)</source>
         <comment>CPUExecutionMode</comment>
         <translation>리컴파일러(가장 빠름)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1380"/>
+        <location filename="../../core/settings.cpp" line="1384"/>
         <source>Disabled (Slowest)</source>
         <comment>CPUFastmemMode</comment>
         <translation>비활성화(가장 느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1381"/>
+        <location filename="../../core/settings.cpp" line="1385"/>
         <source>MMap (Hardware, Fastest, 64-Bit Only)</source>
         <comment>CPUFastmemMode</comment>
         <translation>MMap(하드웨어, 가장 빠름, 64비트 전용)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1382"/>
+        <location filename="../../core/settings.cpp" line="1386"/>
         <source>LUT (Faster)</source>
         <comment>CPUFastmemMode</comment>
         <translation>LUT(빠름)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1427"/>
+        <location filename="../../core/settings.cpp" line="1431"/>
         <source>Automatic</source>
         <comment>GPURenderer</comment>
         <translation>자동</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1429"/>
+        <location filename="../../core/settings.cpp" line="1433"/>
         <source>Direct3D 11</source>
         <comment>GPURenderer</comment>
         <translation>Direct3D 11</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1430"/>
+        <location filename="../../core/settings.cpp" line="1434"/>
         <source>Direct3D 12</source>
         <comment>GPURenderer</comment>
         <translation>Direct3D 12</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1433"/>
+        <location filename="../../core/settings.cpp" line="1437"/>
         <source>Metal</source>
         <comment>GPURenderer</comment>
         <translation>Metal</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1436"/>
+        <location filename="../../core/settings.cpp" line="1440"/>
         <source>Vulkan</source>
         <comment>GPURenderer</comment>
         <translation>Vulkan</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1439"/>
+        <location filename="../../core/settings.cpp" line="1443"/>
         <source>OpenGL</source>
         <comment>GPURenderer</comment>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1441"/>
+        <location filename="../../core/settings.cpp" line="1445"/>
         <source>Software</source>
         <comment>GPURenderer</comment>
         <translation>소프트웨어</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1541"/>
+        <location filename="../../core/settings.cpp" line="1545"/>
         <source>Nearest-Neighbor</source>
         <comment>GPUTextureFilter</comment>
         <translation>최근린</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1542"/>
+        <location filename="../../core/settings.cpp" line="1546"/>
         <source>Bilinear</source>
         <comment>GPUTextureFilter</comment>
         <translation>쌍선형</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1543"/>
+        <location filename="../../core/settings.cpp" line="1547"/>
         <source>Bilinear (No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>쌍선형(에지 블렌딩 없음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1544"/>
+        <location filename="../../core/settings.cpp" line="1548"/>
         <source>JINC2 (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>JINC2(느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1545"/>
+        <location filename="../../core/settings.cpp" line="1549"/>
         <source>JINC2 (Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>JINC2(느림, 에지 블렌딩 없음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1546"/>
+        <location filename="../../core/settings.cpp" line="1550"/>
         <source>xBR (Very Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR(매우 느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1547"/>
+        <location filename="../../core/settings.cpp" line="1551"/>
         <source>xBR (Very Slow, No Edge Blending)</source>
         <comment>GPUTextureFilter</comment>
         <translation>xBR(매우 느림, 에지 블렌딩 없음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1548"/>
+        <location filename="../../core/settings.cpp" line="1552"/>
         <source>Scale2x (EPX)</source>
         <comment>GPUTextureFilter</comment>
         <translation>2배율(EPX)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1549"/>
+        <location filename="../../core/settings.cpp" line="1553"/>
         <source>Scale3x (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>3배율(느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1550"/>
+        <location filename="../../core/settings.cpp" line="1554"/>
         <source>MMPX (Slow)</source>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX(느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1551"/>
+        <location filename="../../core/settings.cpp" line="1555"/>
         <source>MMPX Enhanced (Slow)</source>
-        <oldsource>MMPX (Slow)</oldsource>
         <comment>GPUTextureFilter</comment>
-        <oldcomment>GPUTextureFilter</oldcomment>
         <translation>MMPX 향상(느림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1585"/>
+        <location filename="../../core/settings.cpp" line="1589"/>
         <source>Unscaled</source>
         <comment>GPUDitheringMode</comment>
         <translation>크기 조정되지 않음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1586"/>
+        <location filename="../../core/settings.cpp" line="1590"/>
         <source>Unscaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
         <translation>크기 조정되지 않음(셰이더 블렌딩)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1587"/>
+        <location filename="../../core/settings.cpp" line="1591"/>
         <source>Scaled</source>
         <comment>GPUDitheringMode</comment>
         <translation>크기 조정</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1588"/>
+        <location filename="../../core/settings.cpp" line="1592"/>
         <source>Scaled (Shader Blending)</source>
         <comment>GPUDitheringMode</comment>
         <translation>크기 조절(셰이더 블렌딩)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1589"/>
+        <location filename="../../core/settings.cpp" line="1593"/>
         <source>True Color</source>
         <comment>GPUDitheringMode</comment>
         <translation>트루 컬러</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1590"/>
+        <location filename="../../core/settings.cpp" line="1594"/>
         <source>True Color (Full)</source>
         <comment>GPUDitheringMode</comment>
         <translation>트루 컬러(전체)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1627"/>
+        <location filename="../../core/settings.cpp" line="1631"/>
         <source>Disabled</source>
         <comment>GPULineDetectMode</comment>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1628"/>
+        <location filename="../../core/settings.cpp" line="1632"/>
         <source>Quads</source>
         <comment>GPULineDetectMode</comment>
         <translation>쿼드</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1629"/>
+        <location filename="../../core/settings.cpp" line="1633"/>
         <source>Triangles (Basic)</source>
         <comment>GPULineDetectMode</comment>
         <translation>트라이앵글(기본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1630"/>
+        <location filename="../../core/settings.cpp" line="1634"/>
         <source>Triangles (Aggressive)</source>
         <comment>GPULineDetectMode</comment>
         <translation>트라이앵글(공격적)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1660"/>
+        <location filename="../../core/settings.cpp" line="1664"/>
         <source>Disabled</source>
         <comment>GPUDownsampleMode</comment>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1661"/>
+        <location filename="../../core/settings.cpp" line="1665"/>
         <source>Box (Downsample 3D/Smooth All)</source>
         <comment>GPUDownsampleMode</comment>
         <translation>박스(3D 다운샘플링/모두 부드럽게)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1662"/>
+        <location filename="../../core/settings.cpp" line="1666"/>
         <source>Adaptive (Preserve 3D/Smooth 2D)</source>
         <comment>GPUDownsampleMode</comment>
         <translation>적응형(3D 유지/2D 부드럽게)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1691"/>
+        <location filename="../../core/settings.cpp" line="1695"/>
         <source>Disabled</source>
         <comment>GPUWireframeMode</comment>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1692"/>
+        <location filename="../../core/settings.cpp" line="1696"/>
         <source>Overlay Wireframe</source>
         <comment>GPUWireframeMode</comment>
         <translation>와이어프레임 오버레이</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1693"/>
+        <location filename="../../core/settings.cpp" line="1697"/>
         <source>Only Wireframe</source>
         <comment>GPUWireframeMode</comment>
         <translation>와이어프레임 전용</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1723"/>
+        <location filename="../../core/settings.cpp" line="1727"/>
         <source>Disabled</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1724"/>
+        <location filename="../../core/settings.cpp" line="1728"/>
         <source>Zstandard (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Z표준(낮음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1725"/>
+        <location filename="../../core/settings.cpp" line="1729"/>
         <source>Zstandard (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Z표준(기본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1726"/>
+        <location filename="../../core/settings.cpp" line="1730"/>
         <source>Zstandard (High)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>Z표준(높음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1727"/>
+        <location filename="../../core/settings.cpp" line="1731"/>
         <source>XZ (Low)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ(낮음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1728"/>
+        <location filename="../../core/settings.cpp" line="1732"/>
         <source>XZ (Default)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ(기본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1729"/>
+        <location filename="../../core/settings.cpp" line="1733"/>
         <source>XZ (High)</source>
         <comment>GPUDumpCompressionMode</comment>
         <translation>XZ(높음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1764"/>
+        <location filename="../../core/settings.cpp" line="1768"/>
         <source>Disabled (Flickering)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>비활성화(깜박임)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1765"/>
+        <location filename="../../core/settings.cpp" line="1769"/>
         <source>Weave (Combing)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>위브(빗질)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1766"/>
+        <location filename="../../core/settings.cpp" line="1770"/>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>혼합(흐림)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1767"/>
+        <location filename="../../core/settings.cpp" line="1771"/>
         <source>Adaptive (FastMAD)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>적응형(FastMAD)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1768"/>
+        <location filename="../../core/settings.cpp" line="1772"/>
         <source>Progressive (Optimal)</source>
         <comment>DisplayDeinterlacingMode</comment>
         <translation>프로그레시브(최적)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1800"/>
+        <location filename="../../core/settings.cpp" line="1804"/>
         <source>None</source>
         <comment>DisplayCropMode</comment>
         <translation>없음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1801"/>
+        <location filename="../../core/settings.cpp" line="1805"/>
         <source>Only Overscan Area</source>
         <comment>DisplayCropMode</comment>
         <translation>오버스캔 영역만</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1802"/>
+        <location filename="../../core/settings.cpp" line="1806"/>
         <source>Only Overscan Area (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
         <translation>오버스캔 영역만(종횡비 비보정)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1803"/>
+        <location filename="../../core/settings.cpp" line="1807"/>
         <source>All Borders</source>
         <comment>DisplayCropMode</comment>
         <translation>모든 외곽선</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1804"/>
+        <location filename="../../core/settings.cpp" line="1808"/>
         <source>All Borders (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
         <translation>모든 외곽선(측면 비보정)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1834"/>
+        <location filename="../../core/settings.cpp" line="1838"/>
         <source>Auto (Game Native)</source>
         <comment>DisplayAspectRatio</comment>
         <translation>자동(게임 원본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1835"/>
+        <location filename="../../core/settings.cpp" line="1839"/>
         <source>Stretch To Fill</source>
         <comment>DisplayAspectRatio</comment>
         <translation>늘려서 채우기</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1836"/>
+        <location filename="../../core/settings.cpp" line="1840"/>
         <source>Custom</source>
         <comment>DisplayAspectRatio</comment>
         <translation>사용자 정의</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1882"/>
+        <location filename="../../core/settings.cpp" line="1886"/>
         <source>Left / Top</source>
         <comment>DisplayAlignment</comment>
         <translation>←/↑</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1883"/>
+        <location filename="../../core/settings.cpp" line="1887"/>
         <source>Center</source>
         <comment>DisplayAlignment</comment>
         <translation>중앙</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1884"/>
+        <location filename="../../core/settings.cpp" line="1888"/>
         <source>Right / Bottom</source>
         <comment>DisplayAlignment</comment>
         <translation>→/↓</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1914"/>
+        <location filename="../../core/settings.cpp" line="1918"/>
         <source>No Rotation</source>
         <comment>DisplayRotation</comment>
         <translation>회전 안 함</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1915"/>
+        <location filename="../../core/settings.cpp" line="1919"/>
         <source>Rotate 90° (Clockwise)</source>
         <comment>DisplayRotation</comment>
         <translation>90° 회전(시계 방향)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1916"/>
+        <location filename="../../core/settings.cpp" line="1920"/>
         <source>Rotate 180° (Vertical Flip)</source>
         <comment>DisplayRotation</comment>
         <translation>180° 회전(수직 반전)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1917"/>
+        <location filename="../../core/settings.cpp" line="1921"/>
         <source>Rotate 270° (Clockwise)</source>
         <comment>DisplayRotation</comment>
         <translation>270° 회전(시계 방향)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1952"/>
+        <location filename="../../core/settings.cpp" line="1956"/>
         <source>Auto-Detect</source>
         <comment>ForceVideoTiming</comment>
         <translation>자동 감지</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1953"/>
+        <location filename="../../core/settings.cpp" line="1957"/>
         <source>NTSC (60hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>NTSC(60Hz)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1954"/>
+        <location filename="../../core/settings.cpp" line="1958"/>
         <source>PAL (50hz)</source>
         <comment>ForceVideoTiming</comment>
         <translation>PAL(50Hz)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1986"/>
+        <location filename="../../core/settings.cpp" line="1990"/>
         <source>Nearest-Neighbor</source>
         <comment>DisplayScalingMode</comment>
         <translation>최근린</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1987"/>
+        <location filename="../../core/settings.cpp" line="1991"/>
         <source>Nearest-Neighbor (Integer)</source>
         <comment>DisplayScalingMode</comment>
         <translation>최근린(정수)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1988"/>
+        <location filename="../../core/settings.cpp" line="1992"/>
         <source>Bilinear (Smooth)</source>
         <comment>DisplayScalingMode</comment>
         <translation>쌍선형(부드럽게)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1989"/>
+        <location filename="../../core/settings.cpp" line="1993"/>
         <source>Bilinear (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>쌍선형(선명하게)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1990"/>
+        <location filename="../../core/settings.cpp" line="1994"/>
         <source>Bilinear (Integer)</source>
         <comment>DisplayScalingMode</comment>
         <translation>쌍선형(정수)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="1991"/>
+        <location filename="../../core/settings.cpp" line="1995"/>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
         <translation>란초스(샤프)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2025"/>
+        <location filename="../../core/settings.cpp" line="2029"/>
         <source>Automatic</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>자동</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2026"/>
+        <location filename="../../core/settings.cpp" line="2030"/>
         <source>Disallowed</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>허용 안 됨</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2027"/>
+        <location filename="../../core/settings.cpp" line="2031"/>
         <source>Allowed</source>
         <comment>DisplayExclusiveFullscreenControl</comment>
         <translation>허용됨</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2062"/>
+        <location filename="../../core/settings.cpp" line="2066"/>
         <source>Screen Resolution</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>화면 해상도</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2063"/>
+        <location filename="../../core/settings.cpp" line="2067"/>
         <source>Internal Resolution</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>내부 해상도</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2064"/>
+        <location filename="../../core/settings.cpp" line="2068"/>
         <source>Internal Resolution (Aspect Uncorrected)</source>
         <comment>DisplayScreenshotMode</comment>
         <translation>내부 해상도(화면 보정 안 됨)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2098"/>
+        <location filename="../../core/settings.cpp" line="2102"/>
         <source>PNG</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation>PNG</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2099"/>
+        <location filename="../../core/settings.cpp" line="2103"/>
         <source>JPEG</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation>JPEG</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2100"/>
+        <location filename="../../core/settings.cpp" line="2104"/>
         <source>WebP</source>
         <comment>DisplayScreenshotFormat</comment>
         <translation>WebP</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2157"/>
+        <location filename="../../core/settings.cpp" line="2161"/>
         <source>No Memory Card</source>
         <comment>MemoryCardType</comment>
         <translation>메모리 카드 없음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2158"/>
+        <location filename="../../core/settings.cpp" line="2162"/>
         <source>Shared Between All Games</source>
         <comment>MemoryCardType</comment>
         <translation>모든 게임 간 공유</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2159"/>
+        <location filename="../../core/settings.cpp" line="2163"/>
         <source>Separate Card Per Game (Serial)</source>
         <comment>MemoryCardType</comment>
         <translation>게임당 별도의 카드(일련번호)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2160"/>
+        <location filename="../../core/settings.cpp" line="2164"/>
         <source>Separate Card Per Game (Title)</source>
         <comment>MemoryCardType</comment>
         <translation>게임당 별도의 카드(제목)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2161"/>
+        <location filename="../../core/settings.cpp" line="2165"/>
         <source>Separate Card Per Game (File Title)</source>
         <comment>MemoryCardType</comment>
         <translation>게임당 별도의 카드(파일 제목)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2162"/>
+        <location filename="../../core/settings.cpp" line="2166"/>
         <source>Non-Persistent Card (Do Not Save)</source>
         <comment>MemoryCardType</comment>
         <translation>비영구 카드(저장 안 함)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2221"/>
+        <location filename="../../core/settings.cpp" line="2225"/>
         <source>Disabled</source>
         <comment>MultitapMode</comment>
         <translation>비활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2222"/>
+        <location filename="../../core/settings.cpp" line="2226"/>
         <source>Enable on Port 1 Only</source>
         <comment>MultitapMode</comment>
         <translation>포트1만 활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2223"/>
+        <location filename="../../core/settings.cpp" line="2227"/>
         <source>Enable on Port 2 Only</source>
         <comment>MultitapMode</comment>
         <translation>포트2만 활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2224"/>
+        <location filename="../../core/settings.cpp" line="2228"/>
         <source>Enable on Ports 1 and 2</source>
         <comment>MultitapMode</comment>
         <translation>포트1/2 활성화</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2287"/>
+        <location filename="../../core/settings.cpp" line="2291"/>
         <source>Uncompressed</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>압축되지 않음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2288"/>
+        <location filename="../../core/settings.cpp" line="2292"/>
         <source>Deflate (Low)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>수축(낮음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2289"/>
+        <location filename="../../core/settings.cpp" line="2293"/>
         <source>Deflate (Default)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>수축(기본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2290"/>
+        <location filename="../../core/settings.cpp" line="2294"/>
         <source>Deflate (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>수축(높음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2291"/>
+        <location filename="../../core/settings.cpp" line="2295"/>
         <source>Zstandard (Low)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Z표준(낮음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2292"/>
+        <location filename="../../core/settings.cpp" line="2296"/>
         <source>Zstandard (Default)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Z표준(기본)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2293"/>
+        <location filename="../../core/settings.cpp" line="2297"/>
         <source>Zstandard (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>Z표준(높음)</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2329"/>
+        <location filename="../../core/settings.cpp" line="2333"/>
         <source>None</source>
         <comment>PIODeviceType</comment>
         <translation>없음</translation>
     </message>
     <message>
-        <location filename="../../core/settings.cpp" line="2330"/>
+        <location filename="../../core/settings.cpp" line="2334"/>
         <source>Xplorer/Xploder Cartridge</source>
         <comment>PIODeviceType</comment>
         <translation>Xplorer/Xploder 카트리지</translation>
@@ -20512,13 +20581,13 @@ Do you want to create this directory?</source>
         <translation>타임 스트레치(템포 변경, 최상의 음질)</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="2917"/>
+        <location filename="../../util/media_capture.cpp" line="2935"/>
         <source>Media Foundation</source>
         <comment>MediaCaptureBackend</comment>
         <translation>미디어 파운데이션</translation>
     </message>
     <message>
-        <location filename="../../util/media_capture.cpp" line="2920"/>
+        <location filename="../../util/media_capture.cpp" line="2938"/>
         <source>FFmpeg</source>
         <comment>MediaCaptureBackend</comment>
         <translation>FFmpeg</translation>
@@ -20649,16 +20718,16 @@ Do you want to create this directory?</source>
     <name>SettingsWindow</name>
     <message>
         <location filename="../settingswindow.ui" line="20"/>
-        <location filename="../settingswindow.cpp" line="313"/>
-        <location filename="../settingswindow.cpp" line="331"/>
-        <location filename="../settingswindow.cpp" line="339"/>
-        <location filename="../settingswindow.cpp" line="352"/>
+        <location filename="../settingswindow.cpp" line="310"/>
+        <location filename="../settingswindow.cpp" line="328"/>
+        <location filename="../settingswindow.cpp" line="336"/>
+        <location filename="../settingswindow.cpp" line="349"/>
         <source>DuckStation Settings</source>
         <translation>DuckStation 설정</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="73"/>
-        <location filename="../settingswindow.cpp" line="242"/>
+        <location filename="../settingswindow.cpp" line="182"/>
         <source>Safe Mode</source>
         <translation>안전 모드</translation>
     </message>
@@ -20706,6 +20775,11 @@ Do you want to create this directory?</source>
         <location filename="../settingswindow.cpp" line="101"/>
         <source>BIOS</source>
         <translation>바이오스</translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.cpp" line="103"/>
+        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;바이오스 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 사용할 바이오스 및 확장 포트를 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓고, 이 패널을 스크롤하려면 Shift+휠을 누르세요.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="106"/>
@@ -20763,9 +20837,24 @@ Do you want to create this directory?</source>
         <translation>&lt;strong&gt;후처리 설정&lt;/strong&gt;&lt;hr&gt;후처리를 사용하면 다양한 필터를 사용하여 화면에 표시되는 이미지의 모양을 변경할 수 있습니다. 셰이더는 순차적으로 실행됩니다. 추가 셰이더는 &lt;a href=“%1”&gt;%1&lt;/a&gt;에서 내려받을 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="178"/>
+        <location filename="../settingswindow.cpp" line="157"/>
+        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <oldsource>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at retroachievements.org. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</oldsource>
+        <translation>&lt;strong&gt;도전 과제 설정&lt;/strong&gt;&lt;hr&gt;DuckStation은 레트로어치브먼트를 도전 과제 데이터베이스로 사용하고 진행 상황을 추적합니다. 도전 과제를 사용하려면 &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;에서 계정을 만드세요. 게임 내에서 업적 목록을 보려면 &lt;strong&gt;일시 정지 메뉴 열기&lt;/strong&gt; 단축키를 누르고 메뉴에서 &lt;strong&gt;도전 과제&lt;/strong&gt;을 선택하세요. 추가 정보를 보려면 해당 옵션 위에 마우스를 올리고, Shift+휠을 사용하여 이 패널을 스크롤하세요.</translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.cpp" line="174"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;고급 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 로깅 및 내부 동작을 제어합니다. 추가 정보를 보려면 옵션 위에 마우스를 올리고, Shift+휠을 눌러 이 패널을 스크롤합니다.</translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.cpp" line="294"/>
+        <source>Are you sure you want to restore the default settings? Any preferences will be lost.
+
+You cannot undo this action.</source>
+        <translation>기본 설정을 복원하시겠습니까? 모든 기본 설정이 삭제됩니다.
+
+이 작업을 취소할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="143"/>
@@ -20781,11 +20870,6 @@ Do you want to create this directory?</source>
         <location filename="../settingswindow.cpp" line="88"/>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;인터페이스 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 에뮬레이터의 모양과 동작을 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올리고, 이 패널을 스크롤하려면 Shift+휠을 누르세요.</translation>
-    </message>
-    <message>
-        <location filename="../settingswindow.cpp" line="103"/>
-        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;바이오스 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 사용할 바이오스 및 확장 포트를 제어합니다.&lt;br&gt;&lt;br&gt;추가 정보를 보려면 옵션 위에 마우스를 올려놓고, 이 패널을 스크롤하려면 Shift+휠을 누르세요.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="137"/>
@@ -20813,51 +20897,37 @@ Do you want to create this directory?</source>
         <translation>도전 과제</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="158"/>
-        <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at retroachievements.org. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;도전 과제 설정&lt;/strong&gt;&lt;hr&gt;DuckStation은 레트로어치브먼트를 도전 과제 데이터베이스로 사용하고 진행 상황을 추적합니다. 도전 과제를 사용하려면 retroachievements.org에서 계정을 만드세요. 게임에서 도전 과제 목록을 보려면 &lt;strong&gt;일시 중지 메뉴 열기&lt;/strong&gt; 단축키를 누르고 메뉴에서 &lt;strong&gt;도전 과제&lt;/strong&gt;을 선택하세요. 추가 정보를 보려면 옵션 위에 마우스를 올리고 Shift+Wheel을 눌러 이 패널을 스크롤하세요.</translation>
-    </message>
-    <message>
-        <location filename="../settingswindow.cpp" line="171"/>
+        <location filename="../settingswindow.cpp" line="167"/>
         <source>Folders</source>
         <translation>폴더</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="173"/>
+        <location filename="../settingswindow.cpp" line="169"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
         <translation>&lt;strong&gt;폴더 설정&lt;/strong&gt;&lt;hr&gt;이 옵션은 DuckStation이 런타임 데이터 파일을 저장할 위치를 제어합니다.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="176"/>
+        <location filename="../settingswindow.cpp" line="172"/>
         <source>Advanced</source>
         <translation>고급 설정</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="242"/>
+        <location filename="../settingswindow.cpp" line="182"/>
         <source>Unchecked</source>
         <translation>선택 안 함</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="243"/>
+        <location filename="../settingswindow.cpp" line="183"/>
         <source>Disables all enhancement options, simulating the system as accurately as possible. Use to quickly determine whether an enhancement is responsible for game bugs.</source>
         <translation>모든 향상 옵션을 비활성화하여 시스템을 최대한 정확하게 시뮬레이션합니다. 강화가 게임 버그의 원인인지 빠르게 판단하는 데 사용합니다.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="296"/>
+        <location filename="../settingswindow.cpp" line="293"/>
         <source>Confirm Restore Defaults</source>
         <translation>기본값 복원 확인</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="297"/>
-        <source>Are you sure you want to restore the default settings? Any preferences will be lost.
-
-You cannot undo this action.</source>
-        <translation>기본 설정을 복원하시겠습니까? 모든 기본 설정이 삭제됩니다.
-
-이 작업을 취소할 수 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../settingswindow.cpp" line="314"/>
+        <location filename="../settingswindow.cpp" line="311"/>
         <source>The configuration for this game will be replaced by the current global settings.
 
 Any current setting values will be overwritten.
@@ -20870,12 +20940,12 @@ Do you want to continue?</source>
 계속하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="331"/>
+        <location filename="../settingswindow.cpp" line="328"/>
         <source>Per-game configuration copied from global settings.</source>
         <translation>전역 설정에서 게임별 구성이 복사되었습니다.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="340"/>
+        <location filename="../settingswindow.cpp" line="337"/>
         <source>The configuration for this game will be cleared.
 
 Any current setting values will be lost.
@@ -20888,17 +20958,17 @@ Do you want to continue?</source>
 계속하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="352"/>
+        <location filename="../settingswindow.cpp" line="349"/>
         <source>Per-game configuration cleared.</source>
         <translation>게임별 구성이 지워졌습니다.</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="362"/>
+        <location filename="../settingswindow.cpp" line="359"/>
         <source>Recommended Value</source>
         <translation>추천 사항</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="654"/>
+        <location filename="../settingswindow.cpp" line="651"/>
         <source>%1 [%2]</source>
         <translation>%1[%2]</translation>
     </message>
@@ -21216,7 +21286,6 @@ Do you want to continue?</source>
     <message>
         <location filename="../setupwizarddialog.ui" line="998"/>
         <source>RetroAchievements</source>
-        <oldsource>RetroAchievements</oldsource>
         <comment>Header text</comment>
         <translation>레트로어치브먼트</translation>
     </message>
@@ -21249,8 +21318,8 @@ Do you want to continue?</source>
         <location filename="../setupwizarddialog.ui" line="1049"/>
         <source>Username:
 Login token generated at:</source>
-        <translation>사용자 이름 :
-로그인 토큰이 생성된 위치 :</translation>
+        <translation>아이디 :
+로그인 토큰 생성 위치 :</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="1062"/>
@@ -21387,6 +21456,23 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>여러 장치...</translation>
     </message>
     <message>
+        <location filename="../setupwizarddialog.cpp" line="676"/>
+        <source>Username: %1
+Login token generated on %2.</source>
+        <translation>아이디 : %1
+%2에 로그인 토큰이 생성되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="679"/>
+        <source>Logout</source>
+        <translation>로그아웃</translation>
+    </message>
+    <message>
+        <location filename="../setupwizarddialog.cpp" line="683"/>
+        <source>Not Logged In.</source>
+        <translation>로그인되지 않았습니다.</translation>
+    </message>
+    <message>
         <location filename="../setupwizarddialog.cpp" line="477"/>
         <source>No devices available</source>
         <translation>사용 가능한 장치 없음</translation>
@@ -21400,23 +21486,6 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../setupwizarddialog.cpp" line="492"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation>장치 &apos;%1&apos;에 대한 통상 할당이 생성되지 않았습니다. 컨트롤러/소스가 자동 매핑을 지원하지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../setupwizarddialog.cpp" line="676"/>
-        <source>Username: %1
-Login token generated on %2.</source>
-        <translation>사용자 이름 : %1
-%2에 로그인 토큰이 생성되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../setupwizarddialog.cpp" line="679"/>
-        <source>Logout</source>
-        <translation>로그아웃</translation>
-    </message>
-    <message>
-        <location filename="../setupwizarddialog.cpp" line="683"/>
-        <source>Not Logged In.</source>
-        <translation>로그인되지 않았습니다.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation requires a PS1 BIOS in order to run.&lt;/p&gt;&lt;p&gt;For legal reasons, you must obtain a BIOS &lt;span style=&quot; font-weight:700;&quot;&gt;from an actual PS1 unit that you own&lt;/span&gt; (borrowing doesn&apos;t count). You should use Caetla or another utility to create an image from your console&apos;s BIOS ROM on your PC.&lt;/p&gt;&lt;p&gt;Once dumped, this BIOS image should be placed in the bios folder within the data directory shown below, or you can instruct DuckStation to scan an alternative directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -21434,35 +21503,369 @@ Login token generated on %2.</source>
 <context>
     <name>System</name>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="1506"/>
-        <location filename="../../core/system.cpp" line="5252"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="1516"/>
+        <location filename="../../core/system.cpp" line="5254"/>
         <source>Error</source>
         <translation>오류</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="1507"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="1517"/>
         <source>Failed to boot system: {}</source>
         <translation>시스템 부팅 실패 : {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7366"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7402"/>
         <source>Failed to undo load state.</source>
         <translation>상태 불러오기를 취소하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7375"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7411"/>
         <source>Failed to load state: {}</source>
         <translation>상태 불러오기 실패 : {}</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="7402"/>
+        <location filename="../../core/fullscreen_ui.cpp" line="7438"/>
         <source>Failed to save state: {}</source>
         <translation>상태 저장하기 실패 : {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3171"/>
+        <location filename="../../core/system.cpp" line="4978"/>
+        <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
+        <translation>호환성 설정이 활성화되지 않았습니다. 일부 게임은 올바르게 작동하지 않을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3173"/>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>메모리 카드를 저장하는 동안에는 상태를 저장할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2419"/>
+        <source>This save state was created with a different BIOS. This may cause stability issues.</source>
+        <translation>이 저장 상태는 다른 바이오스로 생성되었습니다. 이로 인해 안정성 문제가 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2488"/>
+        <source>WARNING: CPU overclock ({}%) was different in save state ({}%).</source>
+        <translation>경고 : 상태 저장({}%)에서 CPU 오버클럭({}%)이 다릅니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4249"/>
+        <source>You are attempting to run a libcrypt protected game without an SBI file:
+
+{0}: {1}
+
+The game will likely not run properly.
+
+Please check the README for instructions on how to add an SBI file.
+
+Do you wish to continue?</source>
+        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
+
+{0} : {1}
+
+게임이 제대로 실행되지 않을 수 있습니다.
+
+SBI 파일을 추가하는 방법에 대한 지침은 사용 설명서를 확인하세요.
+
+계속하시겠습니까?</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4260"/>
+        <source>You are attempting to run a libcrypt protected game without an SBI file:
+
+{0}: {1}
+
+Your dump is incomplete, you must add the SBI file to run this game. 
+
+The name of the SBI file must match the name of the disc image.</source>
+        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
+
+{0} : {1}
+
+덤프가 불완전하므로 이 게임을 실행하려면 SBI 파일을 추가해야 합니다. 
+
+SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4336"/>
+        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
+        <translation>&apos;{}&apos;의 하위 이미지 {}로 전환하는데 실패 : {}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4351"/>
+        <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
+        <translation>&apos;{}&apos;의 하위 이미지 {}({})로 전환되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4363"/>
+        <source>Current game does not have multiple discs.</source>
+        <translation>현재 게임에는 멀티 디스크가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4385"/>
+        <source>Could not determine current disc for switching.</source>
+        <translation>전환할 현재 디스크를 확인할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4398"/>
+        <source>There is no previous disc to switch to.</source>
+        <translation>전환할 이전 디스크가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4399"/>
+        <source>There is no next disc to switch to.</source>
+        <translation>전환할 다음 디스크가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4414"/>
+        <source>No disc found for serial {}.</source>
+        <translation>일련 번호 {}에 대한 디스크를 찾을 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4862"/>
+        <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
+        <translation>CPU 클럭 속도는 {}%({} / {})로 설정됩니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4878"/>
+        <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
+        <translation>다중 표본 앤티 앨리어싱이 활성화되어 있으면 일부 게임이 올바르게 렌더링되지 않을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4884"/>
+        <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
+        <translation>라운드 업스케일 텍스처 좌표가 활성화되었습니다. 이로 인해 렌더링 오류가 발생할 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4890"/>
+        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
+        <translation>8MB 램이 활성화되어 있으며 일부 게임에서는 호환되지 않을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/gpu_hw.cpp" line="205"/>
+        <location filename="../../core/system.cpp" line="1923"/>
+        <source>Startup was cancelled.</source>
+        <translation>시작이 취소되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3187"/>
+        <source>Saving state to &apos;{}&apos;.</source>
+        <translation>&apos;{}&apos;에 상태를 저장합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3235"/>
+        <source>State saved to &apos;{}&apos;.</source>
+        <translation>상태가 &apos;{}&apos;에 저장되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3241"/>
+        <source>Failed to save state to &apos;{0}&apos;:
+{1}</source>
+        <translation>&apos;{0}&apos;에 상태 저장 실패 :
+{1}</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4829"/>
+        <source>This save state was created with the following tainted options, and may
+       be unstable. You will need to reset the system to clear any effects.</source>
+        <translation>이 저장 상태는 다음과 같은 오염된 옵션으로 생성되었으며 불안정할 수 있습니다.
+       모든 효과를 지우려면 시스템을 다시 설정해야 합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4903"/>
+        <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
+        <translation>텍스처 캐시가 활성화되었습니다. 이 기능은 실험적이므로 일부 게임은 올바르게 렌더링되지 않을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4911"/>
+        <source>Fastmem mode is set to {}, this will reduce performance.</source>
+        <translation>Fastmem 모드가 {}로 설정되어 있어 성능이 저하됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4918"/>
+        <source>Safe mode is enabled.</source>
+        <translation>안전 모드가 활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4929"/>
+        <source>Overclock disabled.</source>
+        <translation>오버클럭이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4931"/>
+        <source>8MB RAM disabled.</source>
+        <translation>8MB 램이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4933"/>
+        <source>Resolution scale set to 1x.</source>
+        <translation>해상도 크기가 1배로 설정되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4935"/>
+        <source>Multisample anti-aliasing disabled.</source>
+        <translation>다중 샘플 앤티 앨리어싱이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4868"/>
+        <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
+        <translation>CD-ROM 읽기/탐색 속도 향상 기능이 활성화되어 있습니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4872"/>
+        <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
+        <translation>프레임 속도가 자동으로 설정되어 있지 않습니다. 게임이 잘못된 속도로 실행될 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4895"/>
+        <source>Cached interpreter is being used, this may be incompatible with some games.</source>
+        <translation>캐시된 인터프리터가 사용 중이므로 일부 게임과 호환되지 않을 수 있습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4937"/>
+        <source>Dithering set to unscaled.</source>
+        <translation>디더링이 크기 조정되지 않은 상태로 설정되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4941"/>
+        <source>Texture filtering disabled.</source>
+        <translation>텍스처 필터링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4944"/>
+        <source>Interlaced rendering enabled.</source>
+        <translation>인터레이스 렌더링이 활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4946"/>
+        <source>Video timings set to default.</source>
+        <translation>비디오 타이밍이 기본값으로 설정되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4948"/>
+        <source>Widescreen rendering disabled.</source>
+        <translation>와이드스크린 렌더링이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4950"/>
+        <source>PGXP disabled.</source>
+        <translation>PGXP가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4952"/>
+        <source>GPU texture cache disabled.</source>
+        <translation>GPU 텍스처 캐시가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4954"/>
+        <source>FMV chroma smoothing disabled.</source>
+        <translation>FMV 크로마 평활화가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4956"/>
+        <source>CD-ROM read speedup disabled.</source>
+        <translation>CD-ROM 읽기 속도 향상이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4958"/>
+        <source>CD-ROM seek speedup disabled.</source>
+        <translation>CD-ROM 탐색 속도 향상이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4960"/>
+        <source>Mute CD-ROM audio disabled.</source>
+        <translation>CD-ROM 오디오 음소거가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4962"/>
+        <source>VRAM write texture replacements disabled.</source>
+        <translation>비디오램 쓰기 텍스처 교체가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4964"/>
+        <source>Use old MDEC routines disabled.</source>
+        <translation>이전 MDEC 루틴을 비활성화했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4966"/>
+        <source>PIO device removed.</source>
+        <translation>PIO 장치가 제거되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4968"/>
+        <source>PCDrv disabled.</source>
+        <translation>PCDrv가 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4970"/>
+        <source>Fast boot disabled.</source>
+        <translation>빠른 부팅이 비활성화되었습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="4982"/>
+        <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
+        <translation>CD-ROM SubQ 왜곡이 활성화되었습니다. 게임이 중단됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5255"/>
+        <source>Failed to save resume state: {}</source>
+        <translation>재개 상태 저장 실패 : {}</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5424"/>
+        <source>capturing audio and video</source>
+        <translation>음향 및 영상 캡처</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5425"/>
+        <source>capturing video</source>
+        <translation>영상 캡처</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5426"/>
+        <source>capturing audio</source>
+        <translation>음향 캡처</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5539"/>
+        <source>Failed to create media capture: {0}</source>
+        <translation>미디어 캡처 생성 실패 : {0}</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5547"/>
+        <source>Starting {0} to &apos;{1}&apos;.</source>
+        <translation>{0}에서 &apos;{1}&apos;(으)로 시작합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5588"/>
+        <source>Stopped {0} to &apos;{1}&apos;.</source>
+        <translation>{0}을(를) &apos;{1}&apos;(으)로 중지했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="5596"/>
+        <source>Stopped {0}: {1}.</source>
+        <translation>중지된 {0} : {1}.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3780"/>
+        <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
+        <translation>실행 중인 게임에 코드가 없으므로 게임별 메모리 카드를 {} 슬롯에 사용할 수 없습니다. 대신 공유 카드를 사용하십시오.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3012"/>
+        <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
+        <translation>상태 저장이 호환되지 않음 : 최소 버전은 {0}이지만 현재 버전 {1}입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="3020"/>
+        <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
+        <translation>상태 저장이 호환되지 않음 : 최대 버전은 {0}이지만 현재 버전 {1}입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../core/system.cpp" line="2938"/>
+        <source>Failed to open CD image &apos;{}&apos; used by save state:
+</source>
+        <translation>상태 저장에 사용된 CD 이미지 &apos;{}&apos;을(를) 열기 실패 :</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="687"/>
@@ -21507,365 +21910,30 @@ Login token generated on %2.</source>
         <translation>게임 패치</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="205"/>
-        <location filename="../../core/system.cpp" line="1923"/>
-        <source>Startup was cancelled.</source>
-        <translation>시작이 취소되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2417"/>
-        <source>This save state was created with a different BIOS. This may cause stability issues.</source>
-        <translation>이 저장 상태는 다른 바이오스로 생성되었습니다. 이로 인해 안정성 문제가 발생할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2486"/>
-        <source>WARNING: CPU overclock ({}%) was different in save state ({}%).</source>
-        <translation>경고 : 상태 저장({}%)에서 CPU 오버클럭({}%)이 다릅니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2847"/>
-        <location filename="../../core/system.cpp" line="3166"/>
+        <location filename="../../core/system.cpp" line="2849"/>
+        <location filename="../../core/system.cpp" line="3168"/>
         <source>System is not in correct state.</source>
         <translation>시스템이 올바른 상태가 아닙니다.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3010"/>
-        <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
-        <translation>상태 저장이 호환되지 않음 : 최소 버전은 {0}이지만 현재 버전 {1}입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3018"/>
-        <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
-        <translation>상태 저장이 호환되지 않음 : 최대 버전은 {0}이지만 현재 버전 {1}입니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3185"/>
-        <source>Saving state to &apos;{}&apos;.</source>
-        <translation>&apos;{}&apos;에 상태를 저장합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3233"/>
-        <source>State saved to &apos;{}&apos;.</source>
-        <translation>상태가 &apos;{}&apos;에 저장되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3239"/>
-        <source>Failed to save state to &apos;{0}&apos;:
-{1}</source>
-        <translation>&apos;{0}&apos;에 상태 저장 실패 :
-{1}</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4361"/>
-        <source>Current game does not have multiple discs.</source>
-        <translation>현재 게임에는 멀티 디스크가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4383"/>
-        <source>Could not determine current disc for switching.</source>
-        <translation>전환할 현재 디스크를 확인할 수 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4396"/>
-        <source>There is no previous disc to switch to.</source>
-        <translation>전환할 이전 디스크가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4397"/>
-        <source>There is no next disc to switch to.</source>
-        <translation>전환할 다음 디스크가 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4412"/>
-        <source>No disc found for serial {}.</source>
-        <oldsource>No cheats found for {}.</oldsource>
-        <translation>일련 번호 {}에 대한 디스크를 찾을 수 없습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4827"/>
-        <source>This save state was created with the following tainted options, and may
-       be unstable. You will need to reset the system to clear any effects.</source>
-        <translation>이 저장 상태는 다음과 같은 오염된 옵션으로 생성되었으며 불안정할 수 있습니다.
-       모든 효과를 지우려면 시스템을 다시 설정해야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4866"/>
-        <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
-        <translation>CD-ROM 읽기/탐색 속도 향상 기능이 활성화되어 있습니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4893"/>
-        <source>Cached interpreter is being used, this may be incompatible with some games.</source>
-        <translation>캐시된 인터프리터가 사용 중이므로 일부 게임과 호환되지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4901"/>
-        <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
-        <translation>텍스처 캐시가 활성화되었습니다. 이 기능은 실험적이므로 일부 게임은 올바르게 렌더링되지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4909"/>
-        <source>Fastmem mode is set to {}, this will reduce performance.</source>
-        <translation>Fastmem 모드가 {}로 설정되어 있어 성능이 저하됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4916"/>
-        <source>Safe mode is enabled.</source>
-        <translation>안전 모드가 활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4927"/>
-        <source>Overclock disabled.</source>
-        <translation>오버클럭이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4929"/>
-        <source>8MB RAM disabled.</source>
-        <translation>8MB 램이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4931"/>
-        <source>Resolution scale set to 1x.</source>
-        <translation>해상도 크기가 1배로 설정되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4933"/>
-        <source>Multisample anti-aliasing disabled.</source>
-        <translation>다중 샘플 앤티 앨리어싱이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4939"/>
-        <source>Texture filtering disabled.</source>
-        <translation>텍스처 필터링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4942"/>
-        <source>Interlaced rendering enabled.</source>
-        <translation>인터레이스 렌더링이 활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4944"/>
-        <source>Video timings set to default.</source>
-        <translation>비디오 타이밍이 기본값으로 설정되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4946"/>
-        <source>Widescreen rendering disabled.</source>
-        <translation>와이드스크린 렌더링이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4948"/>
-        <source>PGXP disabled.</source>
-        <translation>PGXP가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4950"/>
-        <source>GPU texture cache disabled.</source>
-        <translation>GPU 텍스처 캐시가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4952"/>
-        <source>FMV chroma smoothing disabled.</source>
-        <translation>FMV 크로마 평활화가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4954"/>
-        <source>CD-ROM read speedup disabled.</source>
-        <translation>CD-ROM 읽기 속도 향상이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4956"/>
-        <source>CD-ROM seek speedup disabled.</source>
-        <translation>CD-ROM 탐색 속도 향상이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4958"/>
-        <source>Mute CD-ROM audio disabled.</source>
-        <translation>CD-ROM 오디오 음소거가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4960"/>
-        <source>VRAM write texture replacements disabled.</source>
-        <translation>비디오램 쓰기 텍스처 교체가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4962"/>
-        <source>Use old MDEC routines disabled.</source>
-        <translation>이전 MDEC 루틴을 비활성화했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4964"/>
-        <source>PIO device removed.</source>
-        <translation>PIO 장치가 제거되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4966"/>
-        <source>PCDrv disabled.</source>
-        <translation>PCDrv가 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4968"/>
-        <source>Fast boot disabled.</source>
-        <translation>빠른 부팅이 비활성화되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="2936"/>
-        <source>Failed to open CD image &apos;{}&apos; used by save state:
-</source>
-        <translation>상태 저장에 사용된 CD 이미지 &apos;{}&apos;을(를) 열기 실패 :</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3778"/>
-        <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
-        <translation>실행 중인 게임에 코드가 없으므로 게임별 메모리 카드를 {} 슬롯에 사용할 수 없습니다. 대신 공유 카드를 사용하십시오.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="3797"/>
+        <location filename="../../core/system.cpp" line="3799"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>실행 중인 게임에 타이틀이 없으므로 게임별 메모리 카드를 {} 슬롯에 사용할 수 없습니다. 대신 공유 카드를 사용하십시오.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3835"/>
+        <location filename="../../core/system.cpp" line="3837"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>게임별 카드 대신 디스크별 메모리 카드 &apos;{}&apos; 사용.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3857"/>
+        <location filename="../../core/system.cpp" line="3859"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>실행 중인 게임에 경로가 없으므로 게임별 메모리 카드를 {} 슬롯에 사용할 수 없습니다. 대신 공유 카드를 사용하십시오.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4096"/>
+        <location filename="../../core/system.cpp" line="4098"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>게임이 변경되어 메모리 카드를 다시 불러옵니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4247"/>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-{0}: {1}
-
-The game will likely not run properly.
-
-Please check the README for instructions on how to add an SBI file.
-
-Do you wish to continue?</source>
-        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
-
-{0} : {1}
-
-게임이 제대로 실행되지 않을 수 있습니다.
-
-SBI 파일을 추가하는 방법에 대한 지침은 사용 설명서를 확인하세요.
-
-계속하시겠습니까?</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4258"/>
-        <source>You are attempting to run a libcrypt protected game without an SBI file:
-
-{0}: {1}
-
-Your dump is incomplete, you must add the SBI file to run this game. 
-
-The name of the SBI file must match the name of the disc image.</source>
-        <translation>SBI 파일 없이 libcrypt로 보호된 게임을 실행하려고 합니다:
-
-{0} : {1}
-
-덤프가 불완전하므로 이 게임을 실행하려면 SBI 파일을 추가해야 합니다. 
-
-SBI 파일 이름은 디스크 이미지의 이름과 일치해야 합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4334"/>
-        <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation>&apos;{}&apos;의 하위 이미지 {}로 전환하는데 실패 : {}.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4349"/>
-        <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation>&apos;{}&apos;의 하위 이미지 {}({})로 전환되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4860"/>
-        <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
-        <translation>CPU 클럭 속도는 {}%({} / {})로 설정됩니다. 이로 인해 게임이 중단될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4870"/>
-        <source>Frame rate is not set to automatic. Games may run at incorrect speeds.</source>
-        <translation>프레임 속도가 자동으로 설정되어 있지 않습니다. 게임이 잘못된 속도로 실행될 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4876"/>
-        <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
-        <translation>다중 표본 앤티 앨리어싱이 활성화되어 있으면 일부 게임이 올바르게 렌더링되지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4882"/>
-        <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
-        <translation>라운드 업스케일 텍스처 좌표가 활성화되었습니다. 이로 인해 렌더링 오류가 발생할 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4888"/>
-        <source>8MB RAM is enabled, this may be incompatible with some games.</source>
-        <translation>8MB 램이 활성화되어 있으며 일부 게임에서는 호환되지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4935"/>
-        <source>Dithering set to unscaled.</source>
-        <translation>디더링이 크기 조정되지 않은 상태로 설정되었습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4976"/>
-        <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
-        <translation>호환성 설정이 활성화되지 않았습니다. 일부 게임은 올바르게 작동하지 않을 수 있습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="4980"/>
-        <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
-        <translation>CD-ROM SubQ 왜곡이 활성화되었습니다. 게임이 중단됩니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5253"/>
-        <source>Failed to save resume state: {}</source>
-        <translation>재개 상태 저장 실패 : {}</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5422"/>
-        <source>capturing audio and video</source>
-        <translation>음향 및 영상 캡처</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5423"/>
-        <source>capturing video</source>
-        <translation>영상 캡처</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5424"/>
-        <source>capturing audio</source>
-        <translation>음향 캡처</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5537"/>
-        <source>Failed to create media capture: {0}</source>
-        <translation>미디어 캡처 생성 실패 : {0}</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5545"/>
-        <source>Starting {0} to &apos;{1}&apos;.</source>
-        <translation>{0}에서 &apos;{1}&apos;(으)로 시작합니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5586"/>
-        <source>Stopped {0} to &apos;{1}&apos;.</source>
-        <translation>{0}을(를) &apos;{1}&apos;(으)로 중지했습니다.</translation>
-    </message>
-    <message>
-        <location filename="../../core/system.cpp" line="5594"/>
-        <source>Stopped {0}: {1}.</source>
-        <translation>중지된 {0} : {1}.</translation>
     </message>
     <message>
         <location filename="../../core/bios.cpp" line="436"/>
