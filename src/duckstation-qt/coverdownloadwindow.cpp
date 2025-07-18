@@ -8,6 +8,8 @@
 
 #include "common/assert.h"
 
+#include "moc_coverdownloadwindow.cpp"
+
 CoverDownloadWindow::CoverDownloadWindow() : QWidget()
 {
   m_ui.setupUi(this);

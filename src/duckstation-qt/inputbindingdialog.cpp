@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "inputbindingdialog.h"
@@ -15,6 +15,8 @@
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
+
+#include "moc_inputbindingdialog.cpp"
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,

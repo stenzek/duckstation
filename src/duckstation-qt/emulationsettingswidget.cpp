@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "emulationsettingswidget.h"
@@ -6,8 +6,11 @@
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
 #include <QtWidgets/QMessageBox>
 #include <limits>
+
+#include "moc_emulationsettingswidget.cpp"
 
 EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)

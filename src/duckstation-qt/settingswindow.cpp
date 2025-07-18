@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settingswindow.h"
@@ -35,6 +35,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
+
+#include "moc_settingswindow.cpp"
 
 LOG_CHANNEL(SettingsWindow);
 

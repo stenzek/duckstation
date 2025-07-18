@@ -11,6 +11,8 @@
 #include <QtWidgets/QMessageBox>
 #include <array>
 
+#include "moc_qtprogresscallback.cpp"
+
 QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float show_delay)
   : QObject(parent_widget), m_dialog(QString(), QString(), 0, 1, parent_widget), m_show_delay(show_delay)
 {

@@ -33,6 +33,8 @@
 #include <QtWidgets/QStyledItemDelegate>
 #include <algorithm>
 
+#include "moc_gamelistwidget.cpp"
+
 LOG_CHANNEL(GameList);
 
 static constexpr float MIN_SCALE = 0.1f;

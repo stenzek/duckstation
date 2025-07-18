@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamesummarywidget.h"
@@ -24,6 +24,8 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextBrowser>
+
+#include "moc_gamesummarywidget.cpp"
 
 GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
                                      const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent)

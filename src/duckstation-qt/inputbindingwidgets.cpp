@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "inputbindingwidgets.h"
@@ -19,6 +19,8 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 #include <cmath>
+
+#include "moc_inputbindingwidgets.cpp"
 
 InputBindingWidget::InputBindingWidget(QWidget* parent) : QPushButton(parent)
 {

@@ -6,6 +6,8 @@
 #include <QtWidgets/QScrollBar>
 #include <cstring>
 
+#include "moc_memoryviewwidget.cpp"
+
 MemoryViewWidget::MemoryViewWidget(QWidget* parent /* = nullptr */, size_t address_offset /* = 0 */,
                                    void* data_ptr /* = nullptr */, size_t data_size /* = 0 */,
                                    bool data_editable /* = false */, EditCallback edit_callback /* = nullptr */)

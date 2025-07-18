@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "aboutdialog.h"
@@ -16,6 +16,8 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTextBrowser>
+
+#include "moc_aboutdialog.cpp"
 
 AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
 {

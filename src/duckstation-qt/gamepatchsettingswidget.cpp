@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamepatchsettingswidget.h"
@@ -12,6 +12,8 @@
 #include "common/assert.h"
 
 #include <algorithm>
+
+#include "moc_gamepatchsettingswidget.cpp"
 
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
                                                const std::string& description, bool disallowed_for_achievements,

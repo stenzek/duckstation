@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include <QtWidgets/QMessageBox>
@@ -7,6 +7,8 @@
 #include "foldersettingswidget.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include "moc_foldersettingswidget.cpp"
 
 FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {

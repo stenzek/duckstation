@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "advancedsettingswidget.h"
@@ -12,6 +12,8 @@
 
 #include <QtGui/QCursor>
 #include <QtWidgets/QMenu>
+
+#include "moc_advancedsettingswidget.cpp"
 
 static QCheckBox* addBooleanTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                         std::string key, bool default_value)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "mainwindow.h"
@@ -53,6 +53,8 @@
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
+
+#include "moc_mainwindow.cpp"
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

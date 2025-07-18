@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "displaywidget.h"
@@ -21,6 +21,8 @@
 #include <QtGui/QWindow>
 #include <QtGui/QWindowStateChangeEvent>
 #include <cmath>
+
+#include "moc_displaywidget.cpp"
 
 #if !defined(_WIN32) && !defined(APPLE)
 #include <qpa/qplatformnativeinterface.h>

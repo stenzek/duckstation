@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "postprocessingsettingswidget.h"
@@ -21,6 +21,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
+
+#include "moc_postprocessingsettingswidget.cpp"
 
 PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QTabWidget(parent)
 {

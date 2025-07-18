@@ -74,6 +74,8 @@
 #include <cstdlib>
 #include <memory>
 
+#include "moc_qthost.cpp"
+
 LOG_CHANNEL(Host);
 
 static constexpr u32 SETTINGS_VERSION = 3;

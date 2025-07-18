@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamecheatsettingswidget.h"
@@ -22,6 +22,8 @@
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QStyledItemDelegate>
+
+#include "moc_gamecheatsettingswidget.cpp"
 
 LOG_CHANNEL(Cheats);
 

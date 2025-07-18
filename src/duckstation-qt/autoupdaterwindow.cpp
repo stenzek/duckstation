@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "autoupdaterwindow.h"
@@ -35,6 +35,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QPushButton>
+
+#include "moc_autoupdaterwindow.cpp"
 
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;

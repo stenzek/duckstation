@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memorycardeditorwindow.h"
@@ -17,6 +17,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
+
+#include "moc_memorycardeditorwindow.cpp"
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "DuckStation Memory Card (*.mcd)");

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memoryscannerwindow.h"
@@ -24,6 +24,8 @@
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
 #include <utility>
+
+#include "moc_memoryscannerwindow.cpp"
 
 static constexpr std::array<const char*, 6> s_size_strings = {
   {TRANSLATE_NOOP("MemoryScannerWindow", "Byte"), TRANSLATE_NOOP("MemoryScannerWindow", "Halfword"),

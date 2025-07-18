@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievementlogindialog.h"
@@ -9,6 +9,8 @@
 #include "common/error.h"
 
 #include <QtWidgets/QMessageBox>
+
+#include "moc_achievementlogindialog.cpp"
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
   : QDialog(parent), m_reason(reason)

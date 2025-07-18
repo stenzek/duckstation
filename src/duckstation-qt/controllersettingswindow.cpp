@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controllersettingswindow.h"
@@ -21,6 +21,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
 #include <array>
+
+#include "moc_controllersettingswindow.cpp"
 
 ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_sif /* = nullptr */,
                                                    bool edit_profiles /* = false */, QWidget* parent /* = nullptr */)

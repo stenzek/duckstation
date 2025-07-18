@@ -24,6 +24,8 @@
 #include <QtWidgets/QInputDialog>
 #include <algorithm>
 
+#include "moc_graphicssettingswidget.cpp"
+
 static QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
 {
   const uint userdata = (multisamples & 0x7FFFFFFFu) | (static_cast<uint>(ssaa) << 31);

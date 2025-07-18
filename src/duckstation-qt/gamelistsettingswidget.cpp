@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamelistsettingswidget.h"
@@ -21,6 +21,8 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
+
+#include "moc_gamelistsettingswidget.cpp"
 
 GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
