@@ -1917,7 +1917,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
       QAction* position_action = position_menu->addAction(tr(name));
       position_action->setCheckable(true);
       position_action->setChecked(toolBarArea(m_ui.toolBar) == area);
-      connect(position_action, &QAction::triggered, this, [this, area, name]() {
+      connect(position_action, &QAction::triggered, this, [this, name]() {
         Host::SetBaseStringSettingValue("UI", "ToolbarArea", name);
         Host::CommitBaseSettingChanges();
         updateToolbarArea();
