@@ -568,27 +568,11 @@ void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex
 {
 }
 
-void EmuThread::checkForSettingsChanges(const Settings& old_settings)
-{
-  if (g_main_window)
-    QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
-
-  // don't mess with fullscreen while locked
-  if (!QtHost::IsSystemLocked())
-  {
-    const bool render_to_main = QtHost::CanRenderToMainWindow();
-    if (m_is_rendering_to_main != render_to_main && !m_is_fullscreen)
-    {
-      m_is_rendering_to_main = render_to_main;
-      if (g_gpu_device)
-        GPUThread::UpdateDisplayWindow(m_is_fullscreen);
-    }
-  }
-}
-
 void Host::CheckForSettingsChanges(const Settings& old_settings)
 {
-  g_emu_thread->checkForSettingsChanges(old_settings);
+  // NOTE: emu thread, push to UI thread
+  if (g_main_window)
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
 }
 
 void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* = true */)
@@ -647,6 +631,12 @@ void QtHost::MigrateSettings()
 bool QtHost::CanRenderToMainWindow()
 {
   return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !InNoGUIMode();
+}
+
+bool QtHost::UseMainWindowGeometryForDisplayWindow()
+{
+  // nogui _or_ main window mode, since we want to use it for temporary unfullscreens
+  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || InNoGUIMode();
 }
 
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
@@ -729,7 +719,6 @@ void EmuThread::startFullscreenUI()
   // we want settings loaded so we choose the correct renderer
   // this also sorts out input sources.
   System::LoadSettings(false);
-  m_is_rendering_to_main = QtHost::CanRenderToMainWindow();
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
@@ -798,8 +787,6 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
   // Just in case of rapid clicking games before it gets the chance to start.
   if (System::IsValidOrInitializing())
     return;
-
-  m_is_rendering_to_main = QtHost::CanRenderToMainWindow();
 
   Error error;
   if (!System::BootSystem(std::move(*params), &error))
@@ -913,15 +900,14 @@ void EmuThread::toggleFullscreen()
     return;
   }
 
-  setFullscreen(!m_is_fullscreen, true);
+  setFullscreen(!m_is_fullscreen);
 }
 
-void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
+void EmuThread::setFullscreen(bool fullscreen)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen),
-                              Q_ARG(bool, allow_render_to_main));
+    QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen));
     return;
   }
 
@@ -929,7 +915,6 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
     return;
 
   m_is_fullscreen = fullscreen;
-  m_is_rendering_to_main = allow_render_to_main && QtHost::CanRenderToMainWindow();
   GPUThread::UpdateDisplayWindow(fullscreen);
 }
 
@@ -944,7 +929,7 @@ void Host::SetFullscreen(bool enabled)
   if (QtHost::IsSystemLocked())
     return;
 
-  g_emu_thread->setFullscreen(enabled, true);
+  g_emu_thread->setFullscreen(enabled);
 }
 
 void EmuThread::setSurfaceless(bool surfaceless)
@@ -960,6 +945,17 @@ void EmuThread::setSurfaceless(bool surfaceless)
 
   m_is_surfaceless = surfaceless;
   GPUThread::UpdateDisplayWindow(false);
+}
+
+void EmuThread::updateDisplayWindow()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateDisplayWindow, Qt::QueuedConnection);
+    return;
+  }
+
+  GPUThread::UpdateDisplayWindow(m_is_fullscreen);
 }
 
 void EmuThread::requestDisplaySize(float scale)
@@ -983,12 +979,8 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, b
 
   m_is_fullscreen = fullscreen;
 
-  const bool window_fullscreen = m_is_fullscreen && !exclusive_fullscreen;
-  const bool render_to_main = !fullscreen && m_is_rendering_to_main;
-  const bool use_main_window_pos = QtHost::CanRenderToMainWindow();
-
-  return emit onAcquireRenderWindowRequested(render_api, window_fullscreen, exclusive_fullscreen, render_to_main,
-                                             m_is_surfaceless, use_main_window_pos, error);
+  return emit onAcquireRenderWindowRequested(render_api, m_is_fullscreen, exclusive_fullscreen, m_is_surfaceless,
+                                             error);
 }
 
 void EmuThread::releaseRenderWindow()

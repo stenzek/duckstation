@@ -251,13 +251,13 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 #endif
 
 std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, bool fullscreen,
-                                                          bool exclusive_fullscreen, bool render_to_main,
-                                                          bool surfaceless, bool use_main_window_pos, Error* error)
+                                                          bool exclusive_fullscreen, bool surfaceless, Error* error)
 {
-  DEV_LOG("acquireRenderWindow() fullscreen={} exclusive_fullscreen={}, render_to_main={} surfaceless={} "
-          "use_main_window_pos={}",
-          fullscreen ? "true" : "false", exclusive_fullscreen ? "true" : "false", render_to_main ? "true" : "false",
-          surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
+  const bool render_to_main =
+    QtHost::CanRenderToMainWindow() && !fullscreen && (s_system_locked.load(std::memory_order_relaxed) == 0);
+
+  DEV_LOG("acquireRenderWindow() fullscreen={} exclusive_fullscreen={}, render_to_main={}, surfaceless={} ", fullscreen,
+          exclusive_fullscreen, render_to_main, surfaceless);
 
   QWidget* container =
     m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
@@ -279,6 +279,9 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
     m_exclusive_fullscreen_requested = exclusive_fullscreen;
 
+    // ensure it's resizable when changing size, we'll fix it up later in updateWindowState()
+    QtUtils::SetWindowResizeable(container, true);
+
     // since we don't destroy the display widget, we need to save it here
     if (!is_fullscreen && !is_rendering_to_main)
       saveDisplayWindowGeometryToConfig();
@@ -290,10 +293,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     else
     {
       container->showNormal();
-      if (use_main_window_pos)
-        container->setGeometry(geometry());
-      else
-        restoreDisplayWindowGeometryFromConfig();
+      restoreDisplayWindowGeometryFromConfig();
     }
 
     updateDisplayWidgetCursor();
@@ -309,7 +309,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   std::optional<WindowInfo> wi;
   if (!surfaceless)
   {
-    createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
+    createDisplayWidget(fullscreen, render_to_main);
 
     wi = m_display_widget->getWindowInfo(render_api, error);
     if (!wi.has_value())
@@ -343,7 +343,7 @@ bool MainWindow::hasDisplayWidget() const
   return m_display_widget != nullptr;
 }
 
-void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos)
+void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 {
   // If we're rendering to main and were hidden (e.g. coming back from fullscreen),
   // make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
@@ -384,10 +384,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
   }
   else if (!render_to_main)
   {
-    if (use_main_window_pos)
-      container->setGeometry(geometry());
-    else
-      restoreDisplayWindowGeometryFromConfig();
+    restoreDisplayWindowGeometryFromConfig();
     container->showNormal();
 
     if (s_disable_window_rounded_corners)
@@ -441,7 +438,7 @@ void MainWindow::releaseRenderWindow()
   // Now we can safely destroy the display window.
   destroyDisplayWidget(true);
   updateWindowTitle();
-  updateWindowState(false);
+  updateWindowState();
 }
 
 void MainWindow::destroyDisplayWidget(bool show_game_list)
@@ -809,7 +806,7 @@ void MainWindow::recreate()
   {
     g_emu_thread->setSurfaceless(false);
     if (was_fullscreen)
-      g_emu_thread->setFullscreen(true, true);
+      g_emu_thread->setFullscreen(true);
     g_main_window->updateEmulationActions(false, s_system_valid, s_achievements_hardcore_mode);
     g_main_window->onFullscreenUIStartedOrStopped(s_fullscreen_ui_started);
   }
@@ -2035,22 +2032,20 @@ void MainWindow::updateWindowTitle()
     g_log_window->updateWindowTitle();
 }
 
-void MainWindow::updateWindowState(bool force_visible)
+void MainWindow::updateWindowState()
 {
   // Skip all of this when we're closing, since we don't want to make ourselves visible and cancel it.
   if (m_is_closing)
     return;
 
-  const bool hide_window = shouldHideMainWindow();
-  const bool disable_resize = (Host::GetBoolSettingValue("Main", "DisableWindowResize", false) && wantsDisplayWidget());
+  const bool visible = !shouldHideMainWindow();
+  const bool resizeable = (!Host::GetBoolSettingValue("Main", "DisableWindowResize", false) || !wantsDisplayWidget() ||
+                           isRenderingFullscreen());
 
-  // Need to test both valid and display widget because of startup (vm invalid while window is created).
-  const bool visible = force_visible || !hide_window;
   if (isVisible() != visible)
     setVisible(visible);
 
   // No point changing realizability if we're not visible.
-  const bool resizeable = force_visible || !disable_resize;
   if (visible)
     QtUtils::SetWindowResizeable(this, resizeable);
 
@@ -2108,12 +2103,12 @@ bool MainWindow::shouldHideMouseCursor() const
 bool MainWindow::shouldHideMainWindow() const
 {
   // CanRenderToMain check is for temporary unfullscreens.
-  return !isRenderingToMain() && wantsDisplayWidget() &&
-         ((Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
-           Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
-          (QtHost::CanRenderToMainWindow() &&
-           (isRenderingFullscreen() || s_system_locked.load(std::memory_order_relaxed))) ||
-          QtHost::InNoGUIMode());
+  return (!isRenderingToMain() && wantsDisplayWidget() &&
+          ((Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
+            Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
+           (QtHost::CanRenderToMainWindow() &&
+            (isRenderingFullscreen() || s_system_locked.load(std::memory_order_relaxed))))) ||
+         QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -2434,7 +2429,7 @@ void MainWindow::saveStateToConfig()
   if (!isVisible() || ((windowState() & Qt::WindowFullScreen) != Qt::WindowNoState))
     return;
 
-  bool changed = QtUtils::SaveWindowGeometry("MainWindow", this, false);
+  bool changed = false;
 
   const QByteArray state(saveState());
   const QByteArray state_b64(state.toBase64());
@@ -2445,14 +2440,14 @@ void MainWindow::saveStateToConfig()
     changed = true;
   }
 
+  changed |= QtUtils::SaveWindowGeometry("MainWindow", this, false);
+
   if (changed)
     Host::CommitBaseSettingChanges();
 }
 
 void MainWindow::restoreStateFromConfig()
 {
-  QtUtils::RestoreWindowGeometry("MainWindow", this);
-
   {
     const std::string state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
     const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
@@ -2473,6 +2468,8 @@ void MainWindow::restoreStateFromConfig()
       m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
     }
   }
+
+  QtUtils::RestoreWindowGeometry("MainWindow", this);
 }
 
 void MainWindow::saveDisplayWindowGeometryToConfig()
@@ -2484,13 +2481,29 @@ void MainWindow::saveDisplayWindowGeometryToConfig()
     return;
   }
 
-  QtUtils::SaveWindowGeometry("DisplayWindow", container);
+  const char* key = m_display_widget->windowPositionKey();
+  if (key)
+    QtUtils::SaveWindowGeometry(key, container);
 }
 
 void MainWindow::restoreDisplayWindowGeometryFromConfig()
 {
   QWidget* const container = getDisplayContainer();
-  if (!QtUtils::RestoreWindowGeometry("DisplayWindow", container))
+  DebugAssert(m_display_widget);
+
+  // just sync it with the main window if we're not using nogui modem, config will be stale
+  if (QtHost::CanRenderToMainWindow())
+  {
+    container->setGeometry(geometry());
+    return;
+  }
+
+  // we don't want the temporary windowed window to be positioned on a different monitor, so use the main window
+  // coordinates... unless you're on wayland, too fucking bad, broken by design.
+  const bool use_main_window_pos = QtHost::UseMainWindowGeometryForDisplayWindow();
+  m_display_widget->setWindowPositionKey(use_main_window_pos ? "MainWindow" : "DisplayWindow");
+
+  if (!QtUtils::RestoreWindowGeometry(m_display_widget->windowPositionKey(), container))
   {
     // default size
     container->resize(640, 480);
@@ -2641,7 +2654,7 @@ void MainWindow::changeEvent(QEvent* event)
       static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
   {
     // TODO: This should check the render-to-main option.
-    if (m_display_widget)
+    if (isRenderingToMain())
       g_emu_thread->redrawDisplayWindow();
   }
 
@@ -2785,6 +2798,10 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
       lock.cancelResume();
   }
 
+  // If we're running in batch mode, don't show the main window after shutting down.
+  if (QtHost::InBatchMode())
+    m_is_closing = true;
+
   // Now we can actually shut down the VM.
   g_emu_thread->shutdownSystem(save_state, check_memcard_busy);
   return true;
@@ -2822,6 +2839,13 @@ void MainWindow::checkForSettingChanges()
       PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()),
                                                 !s_disable_window_rounded_corners);
     }
+  }
+
+  // don't change state if temporary unfullscreened
+  if (m_display_widget && !QtHost::IsSystemLocked() && !isRenderingFullscreen())
+  {
+    if (QtHost::CanRenderToMainWindow() != isRenderingToMain())
+      g_emu_thread->updateDisplayWindow();
   }
 
   LogWindow::updateSettings();
@@ -2986,7 +3010,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   // This can be invoked via big picture, so exit fullscreen.
   if (isRenderingFullscreen())
   {
-    g_emu_thread->setFullscreen(false, true);
+    g_emu_thread->setFullscreen(false);
 
     // wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
@@ -3181,14 +3205,10 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   // However, we do not want to switch back to render-to-main, the window might have generated this event.
   if (was_fullscreen)
   {
-    g_emu_thread->setFullscreen(false, false);
+    g_emu_thread->setFullscreen(false);
 
     // Container could change... thanks Wayland.
-    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() {
-      QWidget* container;
-      return (s_system_valid &&
-              (g_emu_thread->isFullscreen() || !(container = getDisplayContainer()) || container->isFullScreen()));
-    });
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
   }
 
   if (!was_paused)
@@ -3228,7 +3248,7 @@ MainWindow::SystemLock::~SystemLock()
   DebugAssert(s_system_locked.load(std::memory_order_relaxed) > 0);
   s_system_locked.fetch_sub(1, std::memory_order_release);
   if (m_was_fullscreen)
-    g_emu_thread->setFullscreen(true, true);
+    g_emu_thread->setFullscreen(true);
   if (!m_was_paused)
     g_emu_thread->setSystemPaused(false);
 }

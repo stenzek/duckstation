@@ -32,8 +32,8 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include <vector>
 #include <variant>
+#include <vector>
 
 class QActionGroup;
 class QEventLoop;
@@ -97,7 +97,6 @@ public:
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }
-  ALWAYS_INLINE bool isRenderingToMain() const { return m_is_rendering_to_main; }
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
 
   ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
@@ -110,8 +109,6 @@ public:
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
   void wakeThread();
-
-  void checkForSettingsChanges(const Settings& old_settings);
 
   void bootOrLoadState(std::string path);
 
@@ -146,8 +143,7 @@ Q_SIGNALS:
   void gameListRefreshed();
   void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
-                                                           bool exclusive_fullscreen, bool render_to_main,
-                                                           bool surfaceless, bool use_main_window_pos, Error* error);
+                                                           bool exclusive_fullscreen, bool surfaceless, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void focusDisplayWidgetRequested();
@@ -210,8 +206,9 @@ public Q_SLOTS:
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();
-  void setFullscreen(bool fullscreen, bool allow_render_to_main);
+  void setFullscreen(bool fullscreen);
   void setSurfaceless(bool surfaceless);
+  void updateDisplayWindow();
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
@@ -253,7 +250,6 @@ private:
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 
   bool m_shutdown_flag = false;
-  bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;
   bool m_is_fullscreen_ui_started = false;
   bool m_gpu_thread_run_idle = false;
@@ -363,6 +359,9 @@ bool IsRunningOnWayland();
 
 /// Returns true if rendering to the main window should be allowed.
 bool CanRenderToMainWindow();
+
+/// Returns true if the separate-window display widget should use the main window coordinates.
+bool UseMainWindowGeometryForDisplayWindow();
 
 /// Default language for the platform.
 const char* GetDefaultLanguage();

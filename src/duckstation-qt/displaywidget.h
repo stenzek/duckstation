@@ -25,6 +25,9 @@ public:
   explicit DisplayWidget(QWidget* parent);
   ~DisplayWidget();
 
+  ALWAYS_INLINE const char* windowPositionKey() const { return m_window_position_key; }
+  ALWAYS_INLINE void setWindowPositionKey(const char* key) { m_window_position_key = key; }
+
   QPaintEngine* paintEngine() const override;
 
   int scaledWindowWidth() const;
@@ -67,6 +70,8 @@ private:
   u32 m_last_window_width = 0;
   u32 m_last_window_height = 0;
   float m_last_window_scale = 1.0f;
+
+  const char* m_window_position_key = nullptr;
 };
 
 class DisplayContainer final : public QStackedWidget

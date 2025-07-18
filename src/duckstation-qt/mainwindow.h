@@ -138,8 +138,7 @@ private Q_SLOTS:
   void onStatusMessage(const QString& message);
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
-                                                bool render_to_main, bool surfaceless, bool use_main_window_pos,
-                                                Error* error);
+                                                bool surfaceless, Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
   void focusDisplayWidget();
@@ -250,7 +249,7 @@ private:
   void updateShortcutActions(bool starting);
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
-  void updateWindowState(bool force_visible = false);
+  void updateWindowState();
 
   void setProgressBar(int current, int total);
   void clearProgressBar();
@@ -269,7 +268,7 @@ private:
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
   bool wantsDisplayWidget() const;
-  void createDisplayWidget(bool fullscreen, bool render_to_main, bool use_main_window_pos);
+  void createDisplayWidget(bool fullscreen, bool render_to_main);
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool fullscreen);
