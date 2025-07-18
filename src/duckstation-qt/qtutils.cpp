@@ -46,6 +46,12 @@
 
 LOG_CHANNEL(Host);
 
+namespace QtUtils {
+
+bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
+
+}
+
 QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
 {
   QFrame* line = new QFrame(parent);
@@ -402,16 +408,41 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
 
 bool QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes)
 {
-  const TinyString config_key = TinyString::from_format("{}Geometry", window_name);
+  const QRect geometry = widget->geometry();
 
-  const QByteArray geometry = widget->saveGeometry();
-  const QByteArray geometry_b64 = geometry.toBase64();
-  const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", config_key);
-  if (old_geometry_b64 == geometry_b64.constData())
-    return false;
+  const TinyString xkey = TinyString::from_format("{}X", window_name);
+  const TinyString ykey = TinyString::from_format("{}Y", window_name);
+  const TinyString wkey = TinyString::from_format("{}Width", window_name);
+  const TinyString hkey = TinyString::from_format("{}Height", window_name);
 
-  Host::SetBaseStringSettingValue("UI", config_key, geometry_b64.constData());
-  if (auto_commit_changes)
+  const auto lock = Host::GetSettingsLock();
+  SettingsInterface* si = Host::Internal::GetBaseSettingsLayer();
+  bool changed = false;
+  if (si->GetIntValue("UI", xkey.c_str(), std::numeric_limits<s32>::min()) != geometry.x())
+  {
+    si->SetIntValue("UI", xkey.c_str(), geometry.x());
+    changed = true;
+  }
+
+  if (si->GetIntValue("UI", ykey.c_str(), std::numeric_limits<s32>::min()) != geometry.y())
+  {
+    si->SetIntValue("UI", ykey.c_str(), geometry.y());
+    changed = true;
+  }
+
+  if (si->GetIntValue("UI", wkey.c_str(), std::numeric_limits<s32>::min()) != geometry.width())
+  {
+    si->SetIntValue("UI", wkey.c_str(), geometry.width());
+    changed = true;
+  }
+
+  if (si->GetIntValue("UI", hkey.c_str(), std::numeric_limits<s32>::min()) != geometry.height())
+  {
+    si->SetIntValue("UI", hkey.c_str(), geometry.height());
+    changed = true;
+  }
+
+  if (changed && auto_commit_changes)
     Host::CommitBaseSettingChanges();
 
   return true;
@@ -419,15 +450,42 @@ bool QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, 
 
 bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widget)
 {
+  const auto lock = Host::GetSettingsLock();
+  SettingsInterface* si = Host::Internal::GetBaseSettingsLayer();
+
+  s32 x = 0, y = 0, w = 0, h = 0;
+  if (!si->GetIntValue("UI", TinyString::from_format("{}X", window_name).c_str(), &x) ||
+      !si->GetIntValue("UI", TinyString::from_format("{}Y", window_name).c_str(), &y) ||
+      !si->GetIntValue("UI", TinyString::from_format("{}Width", window_name).c_str(), &w) ||
+      !si->GetIntValue("UI", TinyString::from_format("{}Height", window_name).c_str(), &h))
+  {
+    return TryMigrateWindowGeometry(si, window_name, widget);
+  }
+
+  widget->setGeometry(x, y, w, h);
+  return true;
+}
+
+bool QtUtils::TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget)
+{
+  // can we migrate old configuration?
   const TinyString config_key = TinyString::from_format("{}Geometry", window_name);
-  const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", config_key);
-  if (geometry_b64.empty())
+  std::string config_value;
+  if (!si->GetStringValue("UI", config_key.c_str(), &config_value))
     return false;
 
-  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
-  widget->restoreGeometry(geometry);
+  widget->restoreGeometry(QByteArray::fromBase64(QByteArray::fromStdString(config_value)));
 
   // make sure we're not loading a dodgy config which had fullscreen set...
   widget->setWindowState(widget->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+
+  // save the new values, delete the old key
+  const QRect geometry = widget->geometry();
+  si->SetIntValue("UI", TinyString::from_format("{}X", window_name).c_str(), geometry.x());
+  si->SetIntValue("UI", TinyString::from_format("{}Y", window_name).c_str(), geometry.y());
+  si->SetIntValue("UI", TinyString::from_format("{}Width", window_name).c_str(), geometry.width());
+  si->SetIntValue("UI", TinyString::from_format("{}Height", window_name).c_str(), geometry.height());
+  si->DeleteValue("UI", config_key.c_str());
+  Host::CommitBaseSettingChanges();
   return true;
 }

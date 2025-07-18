@@ -731,10 +731,10 @@ bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* h
 {
   const auto lock = Host::GetSettingsLock();
 
-  bool result = s_state.base_settings_interface.GetIntValue("SimpleHost", "WindowX", x);
-  result = result && s_state.base_settings_interface.GetIntValue("SimpleHost", "WindowY", y);
-  result = result && s_state.base_settings_interface.GetIntValue("SimpleHost", "WindowWidth", width);
-  result = result && s_state.base_settings_interface.GetIntValue("SimpleHost", "WindowHeight", height);
+  bool result = s_state.base_settings_interface.GetIntValue("UI", "MainWindowX", x);
+  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowY", y);
+  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowWidth", width);
+  result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowHeight", height);
   return result;
 }
 
@@ -744,10 +744,10 @@ void MiniHost::SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height)
     return;
 
   const auto lock = Host::GetSettingsLock();
-  s_state.base_settings_interface.SetIntValue("SimpleHost", "WindowX", x);
-  s_state.base_settings_interface.SetIntValue("SimpleHost", "WindowY", y);
-  s_state.base_settings_interface.SetIntValue("SimpleHost", "WindowWidth", width);
-  s_state.base_settings_interface.SetIntValue("SimpleHost", "WindowHeight", height);
+  s_state.base_settings_interface.SetIntValue("UI", "MainWindowX", x);
+  s_state.base_settings_interface.SetIntValue("UI", "MainWindowY", y);
+  s_state.base_settings_interface.SetIntValue("UI", "MainWindowWidth", width);
+  s_state.base_settings_interface.SetIntValue("UI", "MainWindowHeight", height);
 }
 
 void MiniHost::UIThreadMainLoop()
