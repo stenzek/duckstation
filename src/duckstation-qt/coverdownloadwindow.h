@@ -1,25 +1,30 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
+#include "qtprogresscallback.h"
+#include "ui_coverdownloadwindow.h"
+
 #include "common/timer.h"
 #include "common/types.h"
-#include "qtprogresscallback.h"
-#include "ui_coverdownloaddialog.h"
-#include <QtWidgets/QDialog>
+
+#include <QtWidgets/QWidget>
+
 #include <array>
 #include <memory>
 #include <string>
 
-class CoverDownloadDialog final : public QDialog
+class CoverDownloadWindow final : public QWidget
 {
   Q_OBJECT
 
 public:
-  CoverDownloadDialog(QWidget* parent = nullptr);
-  ~CoverDownloadDialog();
+  CoverDownloadWindow();
+  ~CoverDownloadWindow();
 
 Q_SIGNALS:
+  void closed();
   void coverRefreshRequested();
 
 protected:
@@ -51,7 +56,7 @@ private:
   void startThread();
   void cancelThread();
 
-  Ui::CoverDownloadDialog m_ui;
+  Ui::CoverDownloadWindow m_ui;
   std::unique_ptr<CoverDownloadThread> m_thread;
   Timer m_last_refresh_time;
 };

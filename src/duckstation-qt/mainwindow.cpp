@@ -5,7 +5,7 @@
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
 #include "autoupdaterwindow.h"
-#include "coverdownloaddialog.h"
+#include "coverdownloadwindow.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
 #include "gamelistsettingswidget.h"
@@ -834,6 +834,7 @@ void MainWindow::recreate()
 
 void MainWindow::destroySubWindows()
 {
+  QtUtils::CloseAndDeleteWindow(m_cover_download_window);
   QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   QtUtils::CloseAndDeleteWindow(m_debugger_window);
   QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
@@ -2983,10 +2984,26 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 void MainWindow::onToolsCoverDownloaderTriggered()
 {
   // This can be invoked via big picture, so exit fullscreen.
-  SystemLock lock(pauseAndLockSystem());
-  CoverDownloadDialog dlg(lock.getDialogParent());
-  connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
-  dlg.exec();
+  if (isRenderingFullscreen())
+  {
+    g_emu_thread->setFullscreen(false, true);
+
+    // wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
+  }
+
+  if (!m_cover_download_window)
+  {
+    m_cover_download_window = new CoverDownloadWindow();
+    connect(m_cover_download_window, &CoverDownloadWindow::coverRefreshRequested, m_game_list_widget,
+            &GameListWidget::refreshGridCovers);
+    connect(m_cover_download_window, &CoverDownloadWindow::closed, this, [this]() {
+      m_cover_download_window->deleteLater();
+      m_cover_download_window = nullptr;
+    });
+  }
+
+  QtUtils::ShowOrRaiseWindow(m_cover_download_window);
 }
 
 void MainWindow::onToolsMediaCaptureToggled(bool checked)

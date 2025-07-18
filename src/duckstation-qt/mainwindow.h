@@ -33,6 +33,7 @@ class AutoUpdaterWindow;
 class MemoryCardEditorWindow;
 class DebuggerWindow;
 class MemoryScannerWindow;
+class CoverDownloadWindow;
 
 struct SystemBootParameters;
 
@@ -339,6 +340,7 @@ private:
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
   MemoryScannerWindow* m_memory_scanner_window = nullptr;
+  CoverDownloadWindow* m_cover_download_window = nullptr;
 
   bool m_was_paused_by_focus_loss = false;
   bool m_relative_mouse_mode = false;

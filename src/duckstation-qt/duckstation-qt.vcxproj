@@ -14,7 +14,7 @@
     <ClCompile Include="controllerbindingwidgets.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
     <ClCompile Include="controllersettingswindow.cpp" />
-    <ClCompile Include="coverdownloaddialog.cpp" />
+    <ClCompile Include="coverdownloadwindow.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
@@ -58,7 +58,7 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="biossettingswidget.h" />
-    <QtMoc Include="coverdownloaddialog.h" />
+    <QtMoc Include="coverdownloadwindow.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="displaywidget.h" />
@@ -202,7 +202,7 @@
     <QtUi Include="foldersettingswidget.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="coverdownloaddialog.ui">
+    <QtUi Include="coverdownloadwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
   </ItemGroup>
@@ -224,7 +224,7 @@
     <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerglobalsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllersettingswindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_coverdownloaddialog.cpp" />
+    <ClCompile Include="$(IntDir)moc_coverdownloadwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
