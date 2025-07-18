@@ -1,7 +1,8 @@
 include(CopyBaseTranslations)
 
+set(CMAKE_AUTOUIC OFF)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 set(SRCS
   aboutdialog.cpp
@@ -125,6 +126,7 @@ set(SRCS
   postprocessingsettingswidget.cpp
   postprocessingsettingswidget.h
   postprocessingchainconfigwidget.ui
+  postprocessingoverlayconfigwidget.ui
   qthost.cpp
   qthost.h
   qtkeycodes.cpp
@@ -178,6 +180,22 @@ target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversio
 target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS)
 
 add_core_resources(duckstation-qt)
+
+# Automatically generate a list of .ui calls and call qt_wrap_ui() to generate targets.
+# This is needed because otherwise CMake rebuilds all source files if any unrelated files change.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/22531 and https://gitlab.kitware.com/cmake/cmake/-/issues/16776
+# Documentation says to use qt_add_ui(), but this generates a separate directory for every file.
+# I'm concerned about arg length limits, so I manually invoke qt_wrap_ui().
+# Also see https://github.com/thorntonryan/autouic_example.
+set(UI_FILES "")
+foreach(src ${SRCS})
+  if(src MATCHES "\\.ui$")
+    list(APPEND UI_FILES ${src})
+  endif()
+endforeach()
+qt_wrap_ui(UI_SRCS SOURCES ${UI_FILES})
+target_sources(duckstation-qt PRIVATE ${UI_SRCS})
+target_include_directories(duckstation-qt PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 
 if(WIN32)
   target_sources(duckstation-qt PRIVATE
