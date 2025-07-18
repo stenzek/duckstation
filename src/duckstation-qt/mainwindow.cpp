@@ -423,7 +423,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
 void MainWindow::exitFullscreen(bool wait_for_completion)
 {
-  if (!m_display_widget || !isRenderingFullscreen())
+  if (!isRenderingFullscreen())
     return;
 
   g_emu_thread->setFullscreen(false);
@@ -518,7 +518,7 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool fullscreen)
 {
   // rendering to main, or switched to gamelist/grid
   m_ui.actionViewSystemDisplay->setEnabled(wantsDisplayWidget() && QtHost::CanRenderToMainWindow());
-  m_ui.menuWindowSize->setEnabled(has_surface && !fullscreen);
+  m_ui.menuWindowSize->setEnabled(s_system_valid && has_surface && !fullscreen);
   m_ui.actionFullscreen->setEnabled(has_surface);
   m_ui.actionFullscreen->setChecked(fullscreen);
 }
@@ -540,8 +540,7 @@ void MainWindow::onMouseModeRequested(bool relative_mode, bool hide_cursor)
 {
   m_relative_mouse_mode = relative_mode;
   m_hide_mouse_cursor = hide_cursor;
-  if (m_display_widget)
-    updateDisplayWidgetCursor();
+  updateDisplayWidgetCursor();
 }
 
 void MainWindow::onSystemStarting()
@@ -577,8 +576,7 @@ void MainWindow::onSystemPaused()
   s_system_paused = true;
   updateStatusBarWidgetVisibility();
   m_ui.statusBar->showMessage(tr("Paused"));
-  if (m_display_widget)
-    updateDisplayWidgetCursor();
+  updateDisplayWidgetCursor();
 }
 
 void MainWindow::onSystemResumed()
@@ -593,11 +591,9 @@ void MainWindow::onSystemResumed()
   m_was_disc_change_request = false;
   m_ui.statusBar->clearMessage();
   updateStatusBarWidgetVisibility();
+  updateDisplayWidgetCursor();
   if (m_display_widget)
-  {
-    updateDisplayWidgetCursor();
     m_display_widget->setFocus();
-  }
 }
 
 void MainWindow::onSystemStopping()
@@ -2159,10 +2155,7 @@ bool MainWindow::isShowingGameList() const
 
 bool MainWindow::isRenderingFullscreen() const
 {
-  if (!m_display_widget)
-    return false;
-
-  return (m_exclusive_fullscreen_requested || getDisplayContainer()->isFullScreen());
+  return m_display_widget && (m_exclusive_fullscreen_requested || getDisplayContainer()->isFullScreen());
 }
 
 bool MainWindow::isRenderingToMain() const
@@ -3059,7 +3052,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 
 void MainWindow::onToolsMediaCaptureToggled(bool checked)
 {
-  if (!QtHost::IsSystemValid())
+  if (!s_system_valid)
   {
     // leave it for later, we'll fill in the boot params
     return;
