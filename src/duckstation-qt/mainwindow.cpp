@@ -62,6 +62,13 @@
 
 LOG_CHANNEL(Host);
 
+static constexpr std::array<std::pair<Qt::ToolBarArea, const char*>, 4> s_toolbar_areas = {{
+  {Qt::TopToolBarArea, QT_TRANSLATE_NOOP("MainWindow", "Top")},
+  {Qt::BottomToolBarArea, QT_TRANSLATE_NOOP("MainWindow", "Bottom")},
+  {Qt::LeftToolBarArea, QT_TRANSLATE_NOOP("MainWindow", "Left")},
+  {Qt::RightToolBarArea, QT_TRANSLATE_NOOP("MainWindow", "Right")},
+}};
+
 static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_actions[] = {
   {"StartFile", &Ui::MainWindow::actionStartFile},
   {"StartBIOS", &Ui::MainWindow::actionStartBios},
@@ -173,10 +180,11 @@ void MainWindow::initialize()
   setupAdditionalUi();
   updateToolbarActions();
   updateToolbarIconStyle();
+  updateToolbarArea();
   updateEmulationActions(false, false, false);
   connectSignals();
 
-  restoreStateFromConfig();
+  QtUtils::RestoreWindowGeometry("MainWindow", this);
   switchToGameListView();
   updateWindowTitle();
 
@@ -1844,6 +1852,30 @@ void MainWindow::updateToolbarIconStyle()
   m_ui.actionViewToolbarLabelsBesideIcons->setEnabled(show_toolbar && show_labels);
 }
 
+void MainWindow::updateToolbarArea()
+{
+  const TinyString cfg_name = Host::GetBaseTinyStringSettingValue("UI", "ToolbarArea", "Top");
+  Qt::ToolBarArea cfg_area = Qt::TopToolBarArea;
+  for (const auto& [area, name] : s_toolbar_areas)
+  {
+    if (cfg_name == name)
+    {
+      cfg_area = area;
+      break;
+    }
+  }
+
+  if (toolBarArea(m_ui.toolBar) == cfg_area)
+    return;
+
+  removeToolBar(m_ui.toolBar);
+  addToolBar(cfg_area, m_ui.toolBar);
+
+  // need to explicitly make it visible again
+  if (Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false))
+    m_ui.toolBar->show();
+}
+
 void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 {
   {
@@ -1877,6 +1909,19 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     action->setEnabled(show_labels);
     connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
 
+    QMenu* position_menu = menu.addMenu(tr("Position"));
+    for (const auto& [area, name] : s_toolbar_areas)
+    {
+      QAction* position_action = position_menu->addAction(tr(name));
+      position_action->setCheckable(true);
+      position_action->setChecked(toolBarArea(m_ui.toolBar) == area);
+      connect(position_action, &QAction::triggered, this, [this, area, name]() {
+        Host::SetBaseStringSettingValue("UI", "ToolbarArea", name);
+        Host::CommitBaseSettingChanges();
+        updateToolbarArea();
+      });
+    }
+
     menu.addSeparator();
 
     for (const auto& [name, action_ptr] : s_toolbar_actions)
@@ -1909,6 +1954,25 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
   }
 
   updateToolbarActions();
+}
+
+void MainWindow::onToolbarTopLevelChanged(bool top_level)
+{
+  // ignore while floating
+  if (top_level)
+    return;
+
+  // update config
+  const Qt::ToolBarArea current_area = toolBarArea(m_ui.toolBar);
+  for (const auto& [area, name] : s_toolbar_areas)
+  {
+    if (current_area == area)
+    {
+      Host::SetBaseStringSettingValue("UI", "ToolbarArea", name);
+      Host::CommitBaseSettingChanges();
+      break;
+    }
+  }
 }
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool achievements_hardcore_mode)
@@ -2159,6 +2223,7 @@ void MainWindow::connectSignals()
 {
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
   connect(m_ui.toolBar, &QToolBar::customContextMenuRequested, this, &MainWindow::onToolbarContextMenuRequested);
+  connect(m_ui.toolBar, &QToolBar::topLevelChanged, this, &MainWindow::onToolbarTopLevelChanged);
 
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
@@ -2424,54 +2489,6 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
   updateDebugMenuVisibility();
 }
 
-void MainWindow::saveStateToConfig()
-{
-  if (!isVisible() || ((windowState() & Qt::WindowFullScreen) != Qt::WindowNoState))
-    return;
-
-  bool changed = false;
-
-  const QByteArray state(saveState());
-  const QByteArray state_b64(state.toBase64());
-  const std::string old_state_b64(Host::GetBaseStringSettingValue("UI", "MainWindowState"));
-  if (old_state_b64 != state_b64.constData())
-  {
-    Host::SetBaseStringSettingValue("UI", "MainWindowState", state_b64.constData());
-    changed = true;
-  }
-
-  changed |= QtUtils::SaveWindowGeometry("MainWindow", this, false);
-
-  if (changed)
-    Host::CommitBaseSettingChanges();
-}
-
-void MainWindow::restoreStateFromConfig()
-{
-  {
-    const std::string state_b64 = Host::GetBaseStringSettingValue("UI", "MainWindowState");
-    const QByteArray state = QByteArray::fromBase64(QByteArray::fromStdString(state_b64));
-    if (!state.isEmpty())
-    {
-      restoreState(state);
-
-      // make sure we're not loading a dodgy config which had fullscreen set...
-      setWindowState(windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
-    }
-
-    {
-      QSignalBlocker sb(m_ui.actionViewToolbar);
-      m_ui.actionViewToolbar->setChecked(!m_ui.toolBar->isHidden());
-    }
-    {
-      QSignalBlocker sb(m_ui.actionViewStatusBar);
-      m_ui.actionViewStatusBar->setChecked(!m_ui.statusBar->isHidden());
-    }
-  }
-
-  QtUtils::RestoreWindowGeometry("MainWindow", this);
-}
-
 void MainWindow::saveDisplayWindowGeometryToConfig()
 {
   QWidget* const container = getDisplayContainer();
@@ -2627,7 +2644,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // If there's no VM, we can just exit as normal.
   if (!s_system_valid)
   {
-    saveStateToConfig();
+    QtUtils::SaveWindowGeometry("MainWindow", this);
     if (s_fullscreen_ui_started)
       g_emu_thread->stopFullscreenUI();
     destroySubWindows();
@@ -2644,7 +2661,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     return;
 
   // Application will be exited in VM stopped handler.
-  saveStateToConfig();
   m_is_closing = true;
 }
 
