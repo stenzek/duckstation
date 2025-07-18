@@ -2182,8 +2182,9 @@ bool MainWindow::shouldHideMainWindow() const
 
 void MainWindow::switchToGameListView()
 {
-  // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
-  exitFullscreen(true);
+  if (QtHost::CanRenderToMainWindow())
+    // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
+    exitFullscreen(true);
 
   if (!isShowingGameList())
   {
@@ -3033,8 +3034,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 {
   // This can be invoked via big picture, so exit fullscreen.
   // Wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
-  if (isRenderingFullscreen())
-    exitFullscreen(true);
+  exitFullscreen(true);
 
   if (!m_cover_download_window)
   {
