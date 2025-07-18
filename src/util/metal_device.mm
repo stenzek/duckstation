@@ -163,7 +163,7 @@ void MetalSwapChain::Destroy(bool wait_for_gpu)
     MetalDevice::GetInstance().WaitForGPUIdle();
 
   RunOnMainThread([this]() {
-    NSView* view = (__bridge NSView*)m_window_info.window_handle;
+    NSView* view = (NSView*)m_window_info.window_handle;
     [view setLayer:nil];
     [view setWantsLayer:FALSE];
     [m_layer release];
@@ -219,7 +219,7 @@ std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi,
       @autoreleasepool
       {
         INFO_LOG("Creating a {}x{} Metal layer.", wi_copy.surface_width, wi_copy.surface_height);
-        layer = [CAMetalLayer layer]; // TODO: Does this need retain??
+        layer = [[CAMetalLayer layer] retain];
         if (layer == nil)
         {
           Error::SetStringView(error, "Failed to create metal layer.");
@@ -242,7 +242,7 @@ std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi,
 
         VERBOSE_LOG("Metal layer pixel format is {}.", GPUTexture::GetFormatName(wi_copy.surface_format));
 
-        NSView* view = (__bridge NSView*)wi_copy.window_handle;
+        NSView* view = (NSView*)wi_copy.window_handle;
         [view setWantsLayer:TRUE];
         [view setLayer:layer];
       }

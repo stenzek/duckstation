@@ -104,19 +104,19 @@ void* CocoaTools::CreateMetalLayer(const WindowInfo& wi, Error* error)
     return ret;
   }
 
-  CAMetalLayer* layer = [CAMetalLayer layer];
+  CAMetalLayer* layer = [[CAMetalLayer layer] retain];
   if (layer == nil)
   {
     Error::SetStringView(error, "Failed to create CAMetalLayer");
     return nullptr;
   }
 
-  NSView* view = (__bridge NSView*)wi.window_handle;
+  NSView* view = (NSView*)wi.window_handle;
   [view setWantsLayer:TRUE];
   [view setLayer:layer];
   [layer setContentsScale:[[[view window] screen] backingScaleFactor]];
 
-  return (__bridge void*)layer;
+  return layer;
 }
 
 void CocoaTools::DestroyMetalLayer(const WindowInfo& wi, void* layer)
@@ -128,8 +128,8 @@ void CocoaTools::DestroyMetalLayer(const WindowInfo& wi, void* layer)
     return;
   }
 
-  NSView* view = (__bridge NSView*)wi.window_handle;
-  CAMetalLayer* clayer = (__bridge CAMetalLayer*)layer;
+  NSView* view = (NSView*)wi.window_handle;
+  CAMetalLayer* clayer = (CAMetalLayer*)layer;
   [view setLayer:nil];
   [view setWantsLayer:NO];
   [clayer release];
@@ -145,7 +145,7 @@ std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi, Error*
   }
 
   std::optional<float> ret;
-  NSView* const view = (__bridge NSView*)wi.window_handle;
+  NSView* const view = (NSView*)wi.window_handle;
   const u32 did = [[[[[view window] screen] deviceDescription] valueForKey:@"NSScreenNumber"] unsignedIntValue];
   if (CGDisplayModeRef mode = CGDisplayCopyDisplayMode(did))
   {
