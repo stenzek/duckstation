@@ -1,0 +1,30 @@
+name: Translation Lint
+
+on:
+  pull_request:
+    paths:
+      - 'src/duckstation-qt/translations/*.ts'
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'src/duckstation-qt/translations/*.ts'
+  workflow_dispatch:
+
+jobs:
+  translation-lint:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Meh, can't be bothered to work out exactly which one was modified, just check them all.
+    - name: Check Translation Placeholders
+      shell: bash
+      run: |
+        for i in src/duckstation-qt/translations/*.ts; do
+          python scripts/verify_translation_placeholders.py "$i";
+        done
