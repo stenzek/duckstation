@@ -411,7 +411,7 @@ void LogWindow::realAppendMessage(const QLatin1StringView& channel, quint32 cat,
     const size_t dark = static_cast<size_t>(m_is_dark_theme);
 
     temp_cursor.beginEditBlock();
-    if (Log::AreTimestampsEnabled())
+    if (Log::AreConsoleOutputTimestampsEnabled())
     {
       const float message_time = Log::GetCurrentMessageTime();
       const QString qtimestamp = QStringLiteral("[%1] ").arg(message_time, 10, 'f', 4);

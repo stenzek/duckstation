@@ -98,7 +98,7 @@ const std::array<const char*, static_cast<size_t>(Channel::MaxCount)>& GetChanne
 
 // returns the time in seconds since the start of the process
 float GetCurrentMessageTime();
-bool AreTimestampsEnabled();
+bool AreConsoleOutputTimestampsEnabled();
 
 // adds a standard console output
 bool IsConsoleOutputCurrentlyAvailable();

@@ -149,9 +149,9 @@ float Log::GetCurrentMessageTime()
   return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.start_timestamp));
 }
 
-bool Log::AreTimestampsEnabled()
+bool Log::AreConsoleOutputTimestampsEnabled()
 {
-  return s_state.console_output_timestamps || s_state.file_output_timestamp;
+  return s_state.console_output_timestamps;
 }
 
 bool Log::IsConsoleOutputCurrentlyAvailable()
