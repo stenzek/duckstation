@@ -421,6 +421,16 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   m_display_widget->setFocus();
 }
 
+void MainWindow::exitFullscreen(bool wait_for_completion)
+{
+  if (!m_display_widget || !isRenderingFullscreen())
+    return;
+
+  g_emu_thread->setFullscreen(false);
+  if (wait_for_completion)
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
+}
+
 void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 {
   if (!m_display_widget)
@@ -2179,6 +2189,9 @@ bool MainWindow::shouldHideMainWindow() const
 
 void MainWindow::switchToGameListView()
 {
+  // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
+  exitFullscreen(true);
+
   if (!isShowingGameList())
   {
     if (wantsDisplayWidget())
@@ -3026,13 +3039,9 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 void MainWindow::onToolsCoverDownloaderTriggered()
 {
   // This can be invoked via big picture, so exit fullscreen.
+  // Wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
   if (isRenderingFullscreen())
-  {
-    g_emu_thread->setFullscreen(false);
-
-    // wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
-    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
-  }
+    exitFullscreen(true);
 
   if (!m_cover_download_window)
   {

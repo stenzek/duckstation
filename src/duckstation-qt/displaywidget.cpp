@@ -400,8 +400,15 @@ bool DisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      if (static_cast<QWindowStateChangeEvent*>(event)->oldState() & Qt::WindowMinimized)
+      const QWindowStateChangeEvent* ws_event = static_cast<const QWindowStateChangeEvent*>(event);
+      if (ws_event->oldState() & Qt::WindowMinimized)
         emit windowRestoredEvent();
+
+#ifdef __APPLE__
+      // On MacOS, the user can "cancel" fullscreen by unmaximizing the window.
+      if (ws_event->oldState() & Qt::WindowFullScreen && !(windowState() & Qt::WindowFullScreen))
+        g_emu_thread->setFullscreen(false);
+#endif
 
       return true;
     }
