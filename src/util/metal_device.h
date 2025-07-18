@@ -334,9 +334,6 @@ protected:
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
-  bool OpenPipelineCache(const std::string& path, Error* error) override;
-  bool CreatePipelineCache(const std::string& path, Error* error) override;
-  bool ClosePipelineCache(const std::string& path, Error* error) override;
 
 private:
   static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
@@ -416,7 +413,6 @@ private:
   MetalStreamBuffer m_texture_upload_buffer;
 
   id<MTLLibrary> m_shaders = nil;
-  id<MTLBinaryArchive> m_pipeline_archive = nil;
   std::vector<std::pair<std::pair<GPUTexture::Format, GPUTexture::Format>, std::unique_ptr<GPUPipeline>>>
     m_resolve_pipelines;
   std::vector<std::pair<ClearPipelineConfig, id<MTLRenderPipelineState>>> m_clear_pipelines;
@@ -450,5 +446,4 @@ private:
   double m_last_gpu_time_end = 0;
 
   id<MTLDrawable> m_layer_drawable = nil;
-  bool m_pipeline_cache_modified = false;
 };
