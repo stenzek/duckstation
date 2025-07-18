@@ -722,7 +722,7 @@ Unread messages: {}</source>
         <location filename="../../core/achievements.cpp" line="1372"/>
         <location filename="../../core/achievements.cpp" line="2779"/>
         <source>This game has no achievements.</source>
-        <translation>이 게임에는 {} 순위표가 있습니다.</translation>
+        <translation>이 게임에는 순위표가 있습니다.</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="1453"/>
@@ -920,7 +920,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <source>You have unlocked {0} of {1} achievements, and earned {2} of {3} points.</source>
-        <translation type="vanished">1}개의 도전 과제 중 {0}개를 잠금 해제하고 {3}점 중 {2}점을 획득했습니다.</translation>
+        <translation type="vanished">{1}개의 도전 과제 중 {0}개를 잠금 해제하고 {3}점 중 {2}점을 획득했습니다.</translation>
     </message>
     <message>
         <source>{} (Hardcore Mode)</source>
@@ -8035,7 +8035,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9970"/>
         <source>This game has no achievements.</source>
-        <translation>이 게임에는 {} 순위표가 있습니다.</translation>
+        <translation>이 게임에는 순위표가 있습니다.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9971"/>

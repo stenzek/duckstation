@@ -7042,11 +7042,11 @@ Bu işlemi geri alamazsınız.</translation>
     </message>
     <message>
         <source>Controller Port {}{} Macros</source>
-        <translation type="vanished">Kol Portu {} Makroları</translation>
+        <translation type="vanished">Kol Portu {}{} Makroları</translation>
     </message>
     <message>
         <source>Controller Port {}{} Settings</source>
-        <translation type="vanished">Kol Portu {} Ayarları</translation>
+        <translation type="vanished">Kol Portu {}{} Ayarları</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9232"/>
@@ -18614,11 +18614,11 @@ Var olan CD imajı kullanılacak &apos;{}&apos;, Bu dengesizliğie sebep olabili
     </message>
     <message>
         <source>Save state contains controller type {0} in port {1}, but {2} is used. Switching.</source>
-        <translation type="vanished">Durum kaydı şu kolu {} şu portta kullanıyor {1} ama {2} kullanımda. Değiştiriliyor.</translation>
+        <translation type="vanished">Durum kaydı şu kolu {0} şu portta kullanıyor {1} ama {2} kullanımda. Değiştiriliyor.</translation>
     </message>
     <message>
         <source>Ignoring mismatched controller type {0} in port {1}.</source>
-        <translation type="vanished">Uyuşmayan kol türü {} şu portta {1} ama görmezden geliniyor.</translation>
+        <translation type="vanished">Uyuşmayan kol türü {0} şu portta {1} ama görmezden geliniyor.</translation>
     </message>
     <message>
         <location filename="../../core/pad.cpp" line="220"/>
@@ -21160,7 +21160,7 @@ Tek kullanımlık giriş kodu (access token) oluşturulma tarihi: %2.</translati
     <message>
         <location filename="../../core/system.cpp" line="3013"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
-        <translation>Durum kaydı uyumsuz: maksimum sürüm bu {0} ama durum kaydı şu {0}.</translation>
+        <translation>Durum kaydı uyumsuz: maksimum sürüm bu {0} ama durum kaydı şu {1}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3166"/>

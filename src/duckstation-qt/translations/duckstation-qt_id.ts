@@ -14106,7 +14106,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../logwindow.cpp" line="248"/>
         <source>Failed to open file for writing.</source>
-        <translation>Gagal membuka file {} untuk penulisan.</translation>
+        <translation>Gagal membuka file untuk penulisan.</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="256"/>

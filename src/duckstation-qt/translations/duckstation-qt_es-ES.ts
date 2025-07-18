@@ -16993,7 +16993,7 @@ Tu volcado podría estar dañado o tu disco físico está arañado.</translation
         <source>Failed to save undo load state:
 {}</source>
         <translation>Error al crear el guardado rápido para deshacer:
-{1}</translation>
+{}</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="2877"/>

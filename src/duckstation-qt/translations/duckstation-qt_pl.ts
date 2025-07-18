@@ -8587,7 +8587,7 @@ Spowodowany błąd:</translation>
 Do you want to {0} anyway?</source>
         <translation>OSTRZEŻENIE: Twoja gra nadal zapisuje się na karcie pamięci. Kontynuowanie {0} może NIEODWRACALNIE ZNISZCZYĆ TWOJĄ KARTĘ PAMIĘCI. Zalecamy wznowienie gry i odczekanie 5 sekund na zakończenie jej zapisywania.
 
-Czy mimo to chcesz {}?</translation>
+Czy mimo to chcesz {0}?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7811"/>
@@ -16012,7 +16012,7 @@ Po zrzuceniu, obraz BIOS powinien zostać umieszczony w folderze bios w katalogu
 This may be due to your GPU not supporting the chosen renderer ({1}), or because your graphics drivers need to be updated.</source>
         <translation>Nie udało się utworzyć urządzenia renderującego:
 
-(0)
+{0}
 
 Może to być spowodowane tym, że twoja karta graficzna nie wspiera wybranego silnika renderującego ({1}) lub sterownik wymaga aktualizacji.</translation>
     </message>

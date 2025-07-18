@@ -10233,7 +10233,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="484"/>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
-        <translation>Resolución interna establecida en {0}x (pantalla {1}x{2}, VRAM {3}x{4}).</translation>
+        <translation>Resolución interna establecida en {0}x (pantalla {1}x{2}).</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="496"/>
@@ -19597,6 +19597,8 @@ Una vez extraída, esta imagen BIOS debe ubicarse en el directorio de BIOS dentr
 
 This may be due to your GPU not supporting the chosen renderer ({1}), or because your graphics drivers need to be updated.</source>
         <translation>Fallo al crear dispositivo de renderizado.
+
+{0}
 
 Puede ser tu GPU no sea compatible con el renderizador seleccionado ({1}), o que tus controladores gráficos no estén actualizados.</translation>
     </message>
