@@ -203,7 +203,7 @@ Do you want to enable hardcore mode?</source>
     <message>
         <location filename="../achievementsettingswidget.ui" line="212"/>
         <source>Refresh Progress</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить прогресс</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="228"/>
@@ -7056,7 +7056,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9612"/>
         <source>Enable Recompiler Memory Exceptions</source>
-        <translatorcomment>(BigP/Настройки/Расширенные настройки/Эмуляция процессора) (wUI/Настройки/Дополнительные/Твики) *Рекомпилятор</translatorcomment>
+        <translatorcomment>#(BigP/Настройки/Расширенные настройки/Эмуляция процессора) (wUI/Настройки/Дополнительные/Твики/) *Рекомпилятор</translatorcomment>
         <translation type="unfinished">Включить исключения памяти перекомпилятора</translation>
     </message>
     <message>
@@ -7364,7 +7364,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9740"/>
         <source>List Compact Mode</source>
-        <translatorcomment>*Компактный режим списка</translatorcomment>
+        <translatorcomment>#Настройка списка игр/Список настроек/*Компактный режим списка</translatorcomment>
         <translation>Компактный список</translation>
     </message>
     <message>
@@ -7624,12 +7624,14 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9915"/>
         <source>Save State On Shutdown</source>
+        <translatorcomment>#Настройки интерфейса/Поведение</translatorcomment>
         <translation type="unfinished">Сохранить состояние при выключении</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9916"/>
         <source>Save as Serial File Names</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>#Настройка списка игр/Настройки обложек/Скачивание обложек</translatorcomment>
+        <translation type="unfinished">Сохранить в виде серийных имен файлов</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9919"/>
@@ -7771,7 +7773,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9995"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translatorcomment>Настройки интерфейса/подсказка</translatorcomment>
+        <translatorcomment>#Настройки интерфейса/Включить присутствие в Discord/подсказка</translatorcomment>
         <translation>Показать игру, в которую вы сейчас играете, как часть вашего профиля в Discord.</translation>
     </message>
     <message>
@@ -7823,7 +7825,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="10023"/>
         <source>Start Disc</source>
-        <translatorcomment>Главное меню</translatorcomment>
+        <translatorcomment>#Главное меню</translatorcomment>
         <translation>Запустить диск</translation>
     </message>
     <message>
@@ -7834,7 +7836,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="10027"/>
         <source>Start Game</source>
-        <translatorcomment>Главное меню</translatorcomment>
+        <translatorcomment>#Главное меню</translatorcomment>
         <translation>Запустить игру</translation>
     </message>
     <message>
@@ -7861,7 +7863,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="10038"/>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translatorcomment>(Эмуляция-Управление задержкой-Вертикальная синхронизация-подсказка)</translatorcomment>
+        <translatorcomment>#Настройки эмуляции/Управление задержкой -&gt; Вертикальная синхронизация-подсказка</translatorcomment>
         <translation>Синхронизирует представление кадров консоли хосту. Пользователям GSync/FreeSync следует вместо этого включить оптимальную синхронизацию кадров.</translation>
     </message>
     <message>
@@ -7935,7 +7937,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="10065"/>
         <source>UI Language</source>
-        <translatorcomment>Настройки интерфейса/подсказка</translatorcomment>
+        <translatorcomment>#Настройки интерфейса/подсказка</translatorcomment>
         <translation>Язык пользовательского интерфейса</translation>
     </message>
     <message>
@@ -7967,7 +7969,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="10112"/>
         <source>Wireframe Rendering</source>
-        <translatorcomment>Расширенные настройки
+        <translatorcomment>#Настройки графики/Дополнительные
 *отрисовка *отображение</translatorcomment>
         <translation>Каркасная отрисовка</translation>
     </message>
@@ -7984,13 +7986,13 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9336"/>
         <source>%.2f Seconds</source>
-        <translatorcomment>Настройки эмуляции/Частота сохранений перемотки назад</translatorcomment>
+        <translatorcomment>#Настройки эмуляции/Частота сохранений перемотки назад</translatorcomment>
         <translation>%.2f секунд</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9337"/>
         <source>%d Frames</source>
-        <translatorcomment>Настройки эмуляции/Ячеек сохранений перемотки назад</translatorcomment>
+        <translatorcomment>#Настройки эмуляции/Ячеек сохранений перемотки назад</translatorcomment>
         <translation>%d кадров</translation>
     </message>
     <message>
@@ -8028,7 +8030,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9422"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translatorcomment>(Эмуляция-Управление Задержкой-Синхронизация с частотой обновления хоста-Подсказка)</translatorcomment>
+        <translatorcomment>#Настройки эмуляции/Управление Задержкой/Синхронизация с частотой обновления хоста/Подсказка</translatorcomment>
         <translation>Настраивает скорость эмуляции так, чтобы частота обновления консоли соответствовала хосту, когда включена VSync.</translation>
     </message>
     <message>
