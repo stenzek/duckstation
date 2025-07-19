@@ -2882,6 +2882,7 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIStyle.PopupBackgroundColor, 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ModAlpha(DarkerColor(UIStyle.PopupBackgroundColor), 1.0f));
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.PopupFrameBackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -2915,7 +2916,7 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
       ImGui::EndPopup();
     }
 
-    ImGui::PopStyleColor(5);
+    ImGui::PopStyleColor(6);
     ImGui::PopStyleVar(6);
     ImGui::PopFont();
     QueueResetFocus(FocusResetType::PopupClosed);
@@ -2937,7 +2938,7 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
 void ImGuiFullscreen::PopupDialog::EndRender()
 {
   ImGui::EndPopup();
-  ImGui::PopStyleColor(5);
+  ImGui::PopStyleColor(6);
   ImGui::PopStyleVar(6);
   ImGui::PopFont();
 }
