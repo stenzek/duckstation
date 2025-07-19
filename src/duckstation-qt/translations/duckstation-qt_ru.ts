@@ -7147,7 +7147,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9638"/>
         <source>Encore Mode</source>
-        <translation type="unfinished">Режим Encore</translation>
+        <translation>Режим &quot;Encore&quot;</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9639"/>
@@ -7322,7 +7322,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9726"/>
         <source>Language</source>
-        <translation type="unfinished">Язык</translation>
+        <translation>Язык</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9727"/>
@@ -7364,7 +7364,8 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9740"/>
         <source>List Compact Mode</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Компактный режим списка</translatorcomment>
+        <translation>Компактный список</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9742"/>
