@@ -772,9 +772,16 @@ void EmuThread::exitFullscreenUI()
 
   stopFullscreenUI();
 
-  // if we were in nogui mode, the game list won't have been populated yet. do it now.
   if (was_in_nogui_mode)
-    g_main_window->refreshGameList(false);
+  {
+    Host::RunOnUIThread([]() {
+      // Restore the geometry of the main window, since the display window may have been moved.
+      QtUtils::RestoreWindowGeometry("MainWindow", g_main_window);
+
+      // if we were in nogui mode, the game list won't have been populated yet. do it now.
+      g_main_window->refreshGameList(false);
+    });
+  }
 }
 
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
