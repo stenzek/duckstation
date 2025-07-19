@@ -2255,9 +2255,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true); });
+          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, false); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false, true); });
+          [this]() { requestShutdown(false, false, false, true, false); });
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
   connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
@@ -2666,7 +2666,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   event->ignore();
 
   // Exit cancelled?
-  if (!requestShutdown(true, true, g_settings.save_state_on_exit, true))
+  if (!requestShutdown(true, true, g_settings.save_state_on_exit, true, true))
     return;
 
   // Application will be exited in VM stopped handler.
@@ -2786,7 +2786,8 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
   func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_memcard_busy)
+bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
+                                 bool exit_fullscreen_ui)
 {
   if (!s_system_valid)
     return true;
@@ -2827,15 +2828,19 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
   if (QtHost::InBatchMode())
     m_is_closing = true;
 
+  // Stop fullscreen UI from reopening if requested.
+  if (exit_fullscreen_ui && s_fullscreen_ui_started)
+    g_emu_thread->stopFullscreenUI();
+
   // Now we can actually shut down the VM.
-  g_emu_thread->shutdownSystem(save_state, check_memcard_busy);
+  g_emu_thread->shutdownSystem(save_state, check_safety);
   return true;
 }
 
 void MainWindow::requestExit(bool allow_confirm /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true))
+  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true))
     return;
 
   // VM stopped signal won't have fired yet, so queue an exit if we still have one.
@@ -2843,9 +2848,6 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
   m_is_closing = true;
   if (s_system_valid)
     return;
-
-  if (s_fullscreen_ui_started)
-    g_emu_thread->stopFullscreenUI();
 
   quit();
 }

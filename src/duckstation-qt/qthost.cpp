@@ -745,6 +745,10 @@ void EmuThread::stopFullscreenUI()
   {
     QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
+    // if we still have a system, don't wait
+    if (QtHost::IsSystemValid())
+      return;
+
     // wait until the host display is gone
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() {
       return QtHost::IsFullscreenUIStarted() || g_main_window->hasDisplayWidget();
@@ -2580,7 +2584,8 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check
     return;
 
   QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-                            Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, check_memcard_busy));
+                            Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, check_memcard_busy),
+                            Q_ARG(bool, false));
 }
 
 void Host::RequestResetSettings(bool system, bool controller)
