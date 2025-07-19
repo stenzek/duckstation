@@ -517,9 +517,10 @@ void MainWindow::updateDisplayWidgetCursor()
 void MainWindow::updateDisplayRelatedActions(bool has_surface, bool fullscreen)
 {
   // rendering to main, or switched to gamelist/grid
-  m_ui.actionViewSystemDisplay->setEnabled(wantsDisplayWidget() && QtHost::CanRenderToMainWindow());
-  m_ui.menuWindowSize->setEnabled(s_system_valid && has_surface && !fullscreen);
-  m_ui.actionFullscreen->setEnabled(has_surface);
+  m_ui.actionViewSystemDisplay->setEnabled(wantsDisplayWidget() && QtHost::CanRenderToMainWindow() &&
+                                           !s_system_starting);
+  m_ui.menuWindowSize->setEnabled(s_system_valid && !s_system_starting && has_surface && !fullscreen);
+  m_ui.actionFullscreen->setEnabled(has_surface && !s_system_starting);
   m_ui.actionFullscreen->setChecked(fullscreen);
 }
 
@@ -551,6 +552,7 @@ void MainWindow::onSystemStarting()
 
   switchToEmulationView();
   updateEmulationActions(true, false, s_achievements_hardcore_mode);
+  updateDisplayRelatedActions(m_display_widget != nullptr, isRenderingFullscreen());
 }
 
 void MainWindow::onSystemStarted()
@@ -560,6 +562,7 @@ void MainWindow::onSystemStarted()
   s_system_valid = true;
 
   updateEmulationActions(false, true, s_achievements_hardcore_mode);
+  updateDisplayRelatedActions(m_display_widget != nullptr, isRenderingFullscreen());
   updateWindowTitle();
   updateStatusBarWidgetVisibility();
   updateDisplayWidgetCursor();
@@ -610,6 +613,7 @@ void MainWindow::onSystemStopping()
   s_undo_state_timestamp.reset();
 
   updateEmulationActions(false, false, s_achievements_hardcore_mode);
+  updateDisplayRelatedActions(m_display_widget != nullptr, isRenderingFullscreen());
   updateStatusBarWidgetVisibility();
 }
 
@@ -2010,9 +2014,13 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionDumpVRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
 
+  m_ui.actionLoadState->setDisabled(starting);
+  m_ui.menuLoadState->setDisabled(starting);
   m_ui.actionSaveState->setDisabled(starting_or_not_running);
   m_ui.menuSaveState->setDisabled(starting_or_not_running);
   m_ui.menuWindowSize->setDisabled(starting_or_not_running);
+  m_ui.actionViewGameList->setDisabled(starting);
+  m_ui.actionViewGameGrid->setDisabled(starting);
 
   m_ui.actionViewGameProperties->setDisabled(starting_or_not_running);
 
