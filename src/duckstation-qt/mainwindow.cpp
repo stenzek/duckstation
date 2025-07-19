@@ -283,7 +283,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   // Container can also be null if we're messing with settings while surfaceless.
   const bool has_container = (m_display_container != nullptr);
   const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-  if (container && !is_rendering_to_main && !render_to_main && has_container == needs_container && !needs_container &&
+  if (container && !is_rendering_to_main && !render_to_main && !has_container && !needs_container &&
       !changing_surfaceless)
   {
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
@@ -306,6 +306,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
       restoreDisplayWindowGeometryFromConfig();
     }
 
+    updateDisplayRelatedActions(!surfaceless, fullscreen);
     updateDisplayWidgetCursor();
     m_display_widget->setFocus();
     updateWindowState();
@@ -410,7 +411,6 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
   updateDisplayRelatedActions(true, fullscreen);
   updateShortcutActions(false);
-
   updateDisplayWidgetCursor();
 
   // We need the surface visible.
