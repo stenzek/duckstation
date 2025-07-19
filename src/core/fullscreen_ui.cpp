@@ -52,35 +52,6 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-using namespace std::literals::string_view_literals;
-
-#define TR_CONTEXT "FullscreenUI"sv
-
-namespace {
-template<size_t L>
-class IconStackString : public SmallStackString<L>
-{
-public:
-  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str)
-  {
-    SmallStackString<L>::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str));
-  }
-  ALWAYS_INLINE IconStackString(std::string_view icon, std::string_view str, std::string_view suffix)
-  {
-    SmallStackString<L>::format("{} {}##{}", icon, Host::TranslateToStringView(TR_CONTEXT, str), suffix);
-  }
-};
-} // namespace
-
-#define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(TR_CONTEXT, str))
-#define FSUI_ICONVSTR(icon, str) IconStackString<128>(icon, str).view()
-#define FSUI_ICONCSTR(icon, str) IconStackString<128>(icon, str).c_str()
-#define FSUI_STR(str) Host::TranslateToString(TR_CONTEXT, str##sv)
-#define FSUI_CSTR(str) Host::TranslateToCString(TR_CONTEXT, str##sv)
-#define FSUI_VSTR(str) Host::TranslateToStringView(TR_CONTEXT, str##sv)
-#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str##sv))
-#define FSUI_NSTR(str) str
-
 using ImGuiFullscreen::ChoiceDialogOptions;
 using ImGuiFullscreen::FocusResetType;
 
@@ -361,12 +332,13 @@ static bool DrawToggleSetting(SettingsInterface* bsi, std::string_view title, st
 static void DrawIntListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                const char* section, const char* key, int default_value,
                                std::span<const char* const> options, bool translate_options = true,
-                               int option_offset = 0, bool enabled = true, std::string_view tr_context = TR_CONTEXT);
+                               int option_offset = 0, bool enabled = true,
+                               std::string_view tr_context = FSUI_TR_CONTEXT);
 static void DrawIntListSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                const char* section, const char* key, int default_value,
                                std::span<const char* const> options, bool translate_options,
                                std::span<const int> values, bool enabled = true,
-                               std::string_view tr_context = TR_CONTEXT);
+                               std::string_view tr_context = FSUI_TR_CONTEXT);
 static void DrawIntRangeSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                                 const char* section, const char* key, int default_value, int min_value, int max_value,
                                 const char* format = "%d", bool enabled = true);
@@ -390,7 +362,7 @@ static void DrawStringListSetting(SettingsInterface* bsi, std::string_view title
                                   const char* section, const char* key, const char* default_value,
                                   std::span<const char* const> options, std::span<const char* const> option_values,
                                   bool enabled = true, void (*changed_callback)(std::string_view) = nullptr,
-                                  std::string_view tr_context = TR_CONTEXT);
+                                  std::string_view tr_context = FSUI_TR_CONTEXT);
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, std::string_view title, std::string_view summary,
                             const char* section, const char* key, DataType default_value,
@@ -3573,7 +3545,7 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
         title, summary,
         value.has_value() ?
           ((index < option_count) ?
-             (translate_options ? Host::TranslateToStringView(TR_CONTEXT, options[index]) : options[index]) :
+             (translate_options ? Host::TranslateToStringView(FSUI_TR_CONTEXT, options[index]) : options[index]) :
              FSUI_VSTR("Unknown")) :
           FSUI_VSTR("Use Global Setting"),
         enabled))
@@ -3584,7 +3556,7 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < option_count; i++)
     {
-      cd_options.emplace_back(translate_options ? Host::TranslateToString(TR_CONTEXT, options[i]) :
+      cd_options.emplace_back(translate_options ? Host::TranslateToString(FSUI_TR_CONTEXT, options[i]) :
                                                   std::string(options[i]),
                               (value.has_value() && i == static_cast<size_t>(index)));
     }
@@ -3961,7 +3933,7 @@ void FullscreenUI::DrawSettingsWindow()
 
     NavTitle(s_state.game_settings_entry ?
                std::string_view(s_state.game_settings_entry->title) :
-               Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
+               Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count);
 
@@ -7926,7 +7898,7 @@ void FullscreenUI::DrawGameListWindow()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
-    NavTitle(Host::TranslateToStringView(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
+    NavTitle(Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
     RightAlignNavButtons(count);
 
     for (u32 i = 0; i < count; i++)
@@ -9428,6 +9400,8 @@ TRANSLATE_NOOP("FullscreenUI", "900% [540 FPS (NTSC) / 450 FPS (PAL)]");
 TRANSLATE_NOOP("FullscreenUI", "9x");
 TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
 TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
+TRANSLATE_NOOP("FullscreenUI", "<Parent Directory>");
+TRANSLATE_NOOP("FullscreenUI", "<Use This Directory>");
 TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you sure that you want to overwrite it?");
 TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
@@ -9810,6 +9784,7 @@ TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
 TRANSLATE_NOOP("FullscreenUI", "Mute All Sound");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
+TRANSLATE_NOOP("FullscreenUI", "No");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
 TRANSLATE_NOOP("FullscreenUI", "No Vibration");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
@@ -10133,6 +10108,7 @@ TRANSLATE_NOOP("FullscreenUI", "Widescreen Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Window Animations");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes backgrounds that can be replaced to the dump directory.");
+TRANSLATE_NOOP("FullscreenUI", "Yes");
 TRANSLATE_NOOP("FullscreenUI", "Yes, {} now and risk memory card corruption.");
 TRANSLATE_NOOP("FullscreenUI", "\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.");
 TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.");

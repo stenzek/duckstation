@@ -3,11 +3,16 @@
 
 #pragma once
 
+#include "host.h"
+
+#include "common/small_string.h"
 #include "common/types.h"
 
 #include "IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+
+#include "fmt/format.h"
 
 #include <functional>
 #include <memory>
@@ -20,7 +25,6 @@
 
 class Image;
 class GPUTexture;
-class SmallStringBase;
 class ProgressCallback;
 
 namespace ImGuiFullscreen {
@@ -171,6 +175,25 @@ ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
   const std::string_view::size_type pos = s.find("##");
   return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
 }
+
+/// Localization support.
+#define FSUI_TR_CONTEXT std::string_view("FullscreenUI")
+
+class IconStackString : public SmallStackString<128>
+{
+public:
+  IconStackString(std::string_view icon, std::string_view str);
+  IconStackString(std::string_view icon, std::string_view str, std::string_view suffix);
+};
+
+#define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str))
+#define FSUI_ICONVSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).view()
+#define FSUI_ICONCSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).c_str()
+#define FSUI_STR(str) Host::TranslateToString(FSUI_TR_CONTEXT, std::string_view(str))
+#define FSUI_CSTR(str) Host::TranslateToCString(FSUI_TR_CONTEXT, std::string_view(str))
+#define FSUI_VSTR(str) Host::TranslateToStringView(FSUI_TR_CONTEXT, std::string_view(str))
+#define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(FSUI_TR_CONTEXT, std::string_view(str)))
+#define FSUI_NSTR(str) str
 
 /// Centers an image within the specified bounds, scaling up or down as needed.
 ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
@@ -326,9 +349,9 @@ bool ToggleButton(std::string_view title, std::string_view summary, bool* v, boo
 bool ThreeWayToggleButton(std::string_view title, std::string_view summary, std::optional<bool>* v,
                           bool enabled = true);
 bool RangeButton(std::string_view title, std::string_view summary, s32* value, s32 min, s32 max, s32 increment,
-                 const char* format = "%d", bool enabled = true, std::string_view ok_text = "OK");
+                 const char* format = "%d", bool enabled = true, std::string_view ok_text = FSUI_VSTR("OK"));
 bool RangeButton(std::string_view title, std::string_view summary, float* value, float min, float max, float increment,
-                 const char* format = "%f", bool enabled = true, std::string_view ok_text = "OK");
+                 const char* format = "%f", bool enabled = true, std::string_view ok_text = FSUI_VSTR("OK"));
 bool EnumChoiceButtonImpl(std::string_view title, std::string_view summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled);
@@ -403,10 +426,10 @@ using InfoMessageDialogCallback = std::function<void()>;
 using MessageDialogCallback = std::function<void(s32)>;
 bool IsMessageBoxDialogOpen();
 void OpenConfirmMessageDialog(std::string_view title, std::string message, ConfirmMessageDialogCallback callback,
-                              std::string yes_button_text = ICON_FA_CHECK " Yes",
-                              std::string no_button_text = ICON_FA_XMARK " No");
+                              std::string yes_button_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes"),
+                              std::string no_button_text = FSUI_ICONSTR(ICON_FA_XMARK, "No"));
 void OpenInfoMessageDialog(std::string_view title, std::string message, InfoMessageDialogCallback callback = {},
-                           std::string button_text = ICON_FA_SQUARE_XMARK " Close");
+                           std::string button_text = FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close"));
 void OpenMessageDialog(std::string_view title, std::string message, MessageDialogCallback callback,
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();

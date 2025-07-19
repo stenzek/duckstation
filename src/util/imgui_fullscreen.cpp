@@ -657,6 +657,16 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 #endif
 }
 
+ImGuiFullscreen::IconStackString::IconStackString(std::string_view icon, std::string_view str)
+{
+  SmallStackString::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str));
+}
+
+ImGuiFullscreen::IconStackString::IconStackString(std::string_view icon, std::string_view str, std::string_view suffix)
+{
+  SmallStackString::format("{} {}##{}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str), suffix);
+}
+
 ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)
 {
   const float fit_ar = fit_size.x / fit_size.y;
@@ -3021,7 +3031,8 @@ void ImGuiFullscreen::FileSelectorDialog::PopulateItems()
         parent_path.push_back(FS_OSPATH_SEPARATOR_CHARACTER);
     }
 
-    m_items.emplace_back(ICON_EMOJI_FILE_FOLDER_OPEN "  <Parent Directory>", std::move(parent_path), false);
+    m_items.emplace_back(fmt::format(ICON_EMOJI_FILE_FOLDER_OPEN " {}", FSUI_VSTR("<Parent Directory>")),
+                         std::move(parent_path), false);
     m_first_item_is_parent_directory = true;
 
     for (const FILESYSTEM_FIND_DATA& fd : results)
@@ -3095,8 +3106,11 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
 
   if (m_is_directory && !m_current_directory.empty())
   {
-    if (MenuButtonWithoutSummary(ICON_EMOJI_FILE_FOLDER_OPEN " <Use This Directory>"))
+    if (MenuButtonWithoutSummary(
+          SmallString::from_format(ICON_EMOJI_FILE_FOLDER_OPEN " {}", FSUI_VSTR("<Use This Directory>"))))
+    {
       directory_selected = true;
+    }
   }
 
   for (Item& item : m_items)
@@ -3608,7 +3622,7 @@ void ImGuiFullscreen::ProgressDialog::Draw()
   if (m_user_closeable)
   {
     BeginHorizontalMenuButtons(1, 150.0f);
-    if (HorizontalMenuButton("Cancel"))
+    if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Cancel")))
       StartClose();
     EndHorizontalMenuButtons();
   }
@@ -3616,7 +3630,8 @@ void ImGuiFullscreen::ProgressDialog::Draw()
   EndRender();
 }
 
-std::unique_ptr<ProgressCallback> ImGuiFullscreen::ProgressDialog::GetProgressCallback(std::string title, float window_unscaled_width)
+std::unique_ptr<ProgressCallback> ImGuiFullscreen::ProgressDialog::GetProgressCallback(std::string title,
+                                                                                       float window_unscaled_width)
 {
   if (m_state == PopupDialog::State::Open)
   {
@@ -3704,7 +3719,8 @@ bool ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
-std::unique_ptr<ProgressCallback> ImGuiFullscreen::OpenModalProgressDialog(std::string title, float window_unscaled_width)
+std::unique_ptr<ProgressCallback> ImGuiFullscreen::OpenModalProgressDialog(std::string title,
+                                                                           float window_unscaled_width)
 {
   return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
 }

@@ -6,11 +6,15 @@ import re
 
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
 END_IDENT = "// TRANSLATION-STRING-AREA-END"
+SRC_FILES = ["src/core/fullscreen_ui.cpp", "src/util/imgui_fullscreen.cpp", "src/util/imgui_fullscreen.h"]
+DST_FILE = "src/core/fullscreen_ui.cpp"
 
-src_file = os.path.join(os.path.dirname(__file__), "..", "src", "core", "fullscreen_ui.cpp")
-
-with open(src_file, "r") as f:
-    full_source = f.read()
+full_source = ""
+for src_file in SRC_FILES:
+    path = os.path.join(os.path.dirname(__file__), "..", src_file)
+    with open(path, "r") as f:
+        full_source += f.read()
+        full_source += "\n"
 
 strings = set()
 for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_VSTR", "FSUI_ICONSTR", "FSUI_ICONVSTR", "FSUI_ICONCSTR"]:
@@ -57,6 +61,10 @@ for token in ["FSUI_STR", "FSUI_CSTR", "FSUI_FSTR", "FSUI_NSTR", "FSUI_VSTR", "F
 
 print(f"Found {len(strings)} unique strings.")
 
+full_source = ""
+dst_path = os.path.join(os.path.dirname(__file__), "..", DST_FILE)
+with open(dst_path, "r") as f:
+    full_source = f.read()
 start = full_source.find(START_IDENT)
 end = full_source.find(END_IDENT)
 assert start >= 0 and end > start
@@ -66,5 +74,5 @@ for string in sorted(list(strings)):
     new_area += f"TRANSLATE_NOOP(\"FullscreenUI\", \"{string}\");\n"
 
 full_source = full_source[:start+len(START_IDENT)+1] + new_area + full_source[end:]
-with open(src_file, "w") as f:
+with open(dst_path, "w") as f:
     f.write(full_source)
