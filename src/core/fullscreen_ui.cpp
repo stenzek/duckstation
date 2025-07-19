@@ -33,6 +33,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/progress_callback.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -330,6 +331,7 @@ static void DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_l
 static void DrawAchievementsLoginWindow();
 static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
+static void DrawCoverDownloaderWindow();
 
 static bool ShouldShowAdvancedSettings();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
@@ -497,6 +499,7 @@ static constexpr std::array s_theme_values = {"",           "Dark",       "Light
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievements_login";
+static constexpr std::string_view COVER_DOWNLOADER_DIALOG_NAME = "##cover_downloader";
 
 //////////////////////////////////////////////////////////////////////////
 // State
@@ -1329,6 +1332,8 @@ void FullscreenUI::Render()
     DrawAboutWindow();
   else if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
     DrawResumeStateSelector();
+  else if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
+    DrawCoverDownloaderWindow();
 
   s_state.input_binding_dialog.Draw();
 
@@ -8758,7 +8763,7 @@ void FullscreenUI::DrawGameListSettingsPage()
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Covers"),
                    FSUI_VSTR("Downloads covers from a user-specified URL template.")))
     {
-      Host::OnCoverDownloaderOpenRequested();
+      OpenFixedPopupDialog(COVER_DOWNLOADER_DIALOG_NAME);
     }
   }
 
@@ -8777,6 +8782,94 @@ void FullscreenUI::DrawGameListSettingsPage()
   }
 
   EndMenuButtons();
+}
+
+void FullscreenUI::DrawCoverDownloaderWindow()
+{
+  static char template_urls[512];
+  static bool use_serial_names;
+
+  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
+                             LayoutScale(1000.0f, 0.0f)))
+  {
+    return;
+  }
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
+
+  ImGui::TextWrapped(
+    "%s",
+    FSUI_CSTR("DuckStation can automatically download covers for games which do not currently have a cover set. We "
+              "do not host any cover images, the user must provide their own source for images."));
+  ImGui::NewLine();
+  ImGui::TextWrapped("%s",
+                     FSUI_CSTR("In the form below, specify the URLs to download covers from, with one template URL "
+                               "per line. The following variables are available:"));
+  ImGui::NewLine();
+  ImGui::TextWrapped("%s", FSUI_CSTR("${title}: Title of the game.\n${filetitle}: Name component of the game's "
+                                     "filename.\n${serial}: Serial of the game."));
+  ImGui::NewLine();
+  ImGui::TextWrapped("%s", FSUI_CSTR("Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg"));
+  ImGui::NewLine();
+
+  ImGui::InputTextMultiline("##templates", template_urls, sizeof(template_urls),
+                            ImVec2(ImGui::GetCurrentWindow()->WorkRect.GetWidth(), LayoutScale(175.0f)));
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(5.0f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(2.0f, 2.0f));
+  ImGui::Checkbox(FSUI_CSTR("Save as Serial File Names"), &use_serial_names);
+  ImGui::PopStyleVar(1);
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+
+  const bool download_enabled = (std::strlen(template_urls) > 0);
+
+  BeginHorizontalMenuButtons(2, 200.0f);
+
+  if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), download_enabled))
+  {
+    // TODO: Remove release once using move_only_function
+    std::unique_ptr<ProgressCallback> progress =
+      ImGuiFullscreen::OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
+    System::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
+                            use_serial_names = use_serial_names]() {
+      GameList::DownloadCovers(
+        urls, use_serial_names, progress, [](const GameList::Entry* entry, std::string save_path) {
+          // cache the cover path on our side once it's saved
+          Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() mutable {
+            GPUThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
+              s_state.cover_image_map[std::move(path)] = std::move(save_path);
+            });
+          });
+        });
+
+      // close the parent window if we weren't cancelled
+      if (!progress->IsCancelled())
+      {
+        Host::RunOnCPUThread([]() {
+          GPUThread::RunOnThread([]() {
+            if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
+              CloseFixedPopupDialog();
+          });
+        });
+      }
+
+      delete progress;
+    });
+  }
+
+  if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_XMARK, "Close")))
+    CloseFixedPopupDialog();
+
+  EndHorizontalMenuButtons();
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::SwitchToGameList()
@@ -9263,6 +9356,7 @@ void FullscreenUI::CloseLoadingScreen()
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
 TRANSLATE_NOOP("FullscreenUI", " (%u MB on disk)");
+TRANSLATE_NOOP("FullscreenUI", "${title}: Title of the game.\n${filetitle}: Name component of the game's filename.\n${serial}: Serial of the game.");
 TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
@@ -9448,6 +9542,7 @@ TRANSLATE_NOOP("FullscreenUI", "Copies the global controller configuration to th
 TRANSLATE_NOOP("FullscreenUI", "Copy Global Settings");
 TRANSLATE_NOOP("FullscreenUI", "Copy Settings");
 TRANSLATE_NOOP("FullscreenUI", "Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.");
+TRANSLATE_NOOP("FullscreenUI", "Cover Downloader");
 TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
 TRANSLATE_NOOP("FullscreenUI", "Cover set.");
 TRANSLATE_NOOP("FullscreenUI", "Covers Directory");
@@ -9518,6 +9613,7 @@ TRANSLATE_NOOP("FullscreenUI", "Downsampling");
 TRANSLATE_NOOP("FullscreenUI", "Downsampling Display Scale");
 TRANSLATE_NOOP("FullscreenUI", "Draws a border around the currently-selected item for readability.");
 TRANSLATE_NOOP("FullscreenUI", "Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)");
+TRANSLATE_NOOP("FullscreenUI", "DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.");
 TRANSLATE_NOOP("FullscreenUI", "DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.");
 TRANSLATE_NOOP("FullscreenUI", "Dump Replaced Textures");
 TRANSLATE_NOOP("FullscreenUI", "Dumps textures that have replacements already loaded.");
@@ -9567,6 +9663,7 @@ TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for o
 TRANSLATE_NOOP("FullscreenUI", "Enter Value");
 TRANSLATE_NOOP("FullscreenUI", "Enter the name of the controller preset you wish to create.");
 TRANSLATE_NOOP("FullscreenUI", "Error");
+TRANSLATE_NOOP("FullscreenUI", "Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
 TRANSLATE_NOOP("FullscreenUI", "Exit");
 TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
@@ -9640,6 +9737,7 @@ TRANSLATE_NOOP("FullscreenUI", "If enabled, the display will be blended with the
 TRANSLATE_NOOP("FullscreenUI", "If enabled, the transparency of the overlay image will be applied.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
 TRANSLATE_NOOP("FullscreenUI", "Image Path");
+TRANSLATE_NOOP("FullscreenUI", "In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:");
 TRANSLATE_NOOP("FullscreenUI", "Includes the elapsed time since the application start in file logs.");
 TRANSLATE_NOOP("FullscreenUI", "Includes the elapsed time since the application start in window and console logs.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
@@ -9837,6 +9935,7 @@ TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Save State Compression");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
+TRANSLATE_NOOP("FullscreenUI", "Save as Serial File Names");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Interlacing");
@@ -9944,6 +10043,7 @@ TRANSLATE_NOOP("FullscreenUI", "Sprite Texture Filtering");
 TRANSLATE_NOOP("FullscreenUI", "Stage {}: {}");
 TRANSLATE_NOOP("FullscreenUI", "Start BIOS");
 TRANSLATE_NOOP("FullscreenUI", "Start Disc");
+TRANSLATE_NOOP("FullscreenUI", "Start Download");
 TRANSLATE_NOOP("FullscreenUI", "Start File");
 TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Start Game");

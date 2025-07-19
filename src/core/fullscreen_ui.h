@@ -155,9 +155,6 @@ void RequestExitApplication(bool allow_confirm);
 /// Requests Big Picture mode to be shut down, returning to the desktop interface.
 void RequestExitBigPicture();
 
-/// Requests the cover downloader be opened.
-void OnCoverDownloaderOpenRequested();
-
 #endif
 
 } // namespace Host

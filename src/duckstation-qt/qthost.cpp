@@ -1681,11 +1681,6 @@ void Host::OnAchievementsAllProgressRefreshed()
   emit g_emu_thread->achievementsAllProgressRefreshed();
 }
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-  emit g_emu_thread->onCoverDownloaderOpenRequested();
-}
-
 bool Host::ShouldPreferHostFileSelector()
 {
 #ifdef __linux__

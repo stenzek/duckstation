@@ -609,11 +609,6 @@ void Host::OnRAIntegrationMenuChanged()
 
 #endif
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-  // noop
-}
-
 const char* Host::GetDefaultFullscreenUITheme()
 {
   return "";

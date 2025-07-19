@@ -1139,11 +1139,6 @@ void Host::OnRAIntegrationMenuChanged()
 
 #endif
 
-void Host::OnCoverDownloaderOpenRequested()
-{
-  // noop
-}
-
 void Host::SetMouseMode(bool relative, bool hide_cursor)
 {
   // noop
