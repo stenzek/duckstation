@@ -8,6 +8,7 @@
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
+#include "gpu_thread.h"
 #include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -184,9 +185,9 @@ class ShaderCompileProgressTracker
 {
 public:
   ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_min_time(Timer::ConvertSecondsToValue(1.0)),
-      m_update_interval(Timer::ConvertSecondsToValue(0.1)), m_start_time(Timer::GetCurrentValue()),
-      m_last_update_time(0), m_progress(0), m_total(total)
+    : m_title(std::move(title)), m_image(System::GetImageForLoadingScreen(GPUThread::GetGameSerial())),
+      m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
+      m_start_time(Timer::GetCurrentValue()), m_last_update_time(0), m_progress(0), m_total(total)
   {
   }
   ~ShaderCompileProgressTracker() = default;
@@ -209,7 +210,7 @@ public:
     const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
-      ImGuiFullscreen::RenderLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, m_title, 0, static_cast<int>(m_total),
+      ImGuiFullscreen::RenderLoadingScreen(m_image, m_title, 0, static_cast<int>(m_total),
                                            static_cast<int>(m_progress));
       m_last_update_time = tv;
     }
@@ -219,6 +220,7 @@ public:
 
 private:
   std::string m_title;
+  std::string m_image;
   Timer::Value m_min_time;
   Timer::Value m_update_interval;
   Timer::Value m_start_time;

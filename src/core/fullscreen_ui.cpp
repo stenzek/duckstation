@@ -9165,6 +9165,8 @@ void FullscreenUI::BackgroundProgressCallback::SetCancelled()
 LoadingScreenProgressCallback::LoadingScreenProgressCallback()
   : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
 {
+  m_image = System::GetImageForLoadingScreen(
+    std::string_view(m_on_gpu_thread ? GPUThread::GetGameSerial() : System::GetGameSerial()));
 }
 
 LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
@@ -9269,15 +9271,16 @@ void LoadingScreenProgressCallback::Redraw(bool force)
   m_last_progress_percent = percent;
   if (m_on_gpu_thread)
   {
-    ImGuiFullscreen::RenderLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, m_status_text, 0,
-                                         static_cast<s32>(m_progress_range), static_cast<s32>(m_progress_value));
+    ImGuiFullscreen::RenderLoadingScreen(m_image, m_status_text, 0, static_cast<s32>(m_progress_range),
+                                         static_cast<s32>(m_progress_value));
   }
   else
   {
-    GPUThread::RunOnThread([status_text = SmallString(std::string_view(m_status_text)),
+    GPUThread::RunOnThread([image = std::move(m_image), status_text = SmallString(std::string_view(m_status_text)),
                             range = static_cast<s32>(m_progress_range), value = static_cast<s32>(m_progress_value)]() {
       ImGuiFullscreen::OpenOrUpdateLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, status_text, 0, range, value);
     });
+    m_image = {};
   }
 }
 

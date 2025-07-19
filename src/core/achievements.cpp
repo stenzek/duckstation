@@ -1856,7 +1856,7 @@ bool Achievements::DoState(StateWrapper& sw)
     {
       // Messy because GPU-thread, but at least it looks pretty.
       GPUThread::RunOnThread([]() {
-        FullscreenUI::OpenLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME,
+        FullscreenUI::OpenLoadingScreen(System::GetImageForLoadingScreen(GPUThread::GetGameSerial()),
                                         TRANSLATE_SV("Achievements", "Downloading achievements data..."));
       });
 

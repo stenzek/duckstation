@@ -3455,11 +3455,12 @@ void GPUTextureCache::PreloadReplacementTextures()
   u32 num_textures_loaded = 0;
   const size_t total_textures = s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
                                 s_state.texture_page_texture_replacements.size();
+  std::string image_path = System::GetImageForLoadingScreen(GPUThread::GetGameSerial());
 
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
   {                                                                                                                    \
-    ImGuiFullscreen::RenderLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, "Preloading replacement textures...", 0,       \
+    ImGuiFullscreen::RenderLoadingScreen(image_path, "Preloading replacement textures...", 0,                          \
                                          static_cast<int>(total_textures), static_cast<int>(num_textures_loaded));     \
     last_update_time.Reset();                                                                                          \
   }

@@ -1182,36 +1182,46 @@ static std::string GetFullCoverPath(std::string_view filename, std::string_view 
 std::string GameList::GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title)
 {
   static constexpr const std::array extensions = {"jpg", "jpeg", "png", "webp"};
+  std::string ret;
 
   for (const char* extension : extensions)
   {
     // Prioritize lookup by serial (Most specific)
     if (!serial.empty())
     {
-      const std::string cover_path(GetFullCoverPath(serial, extension));
+      std::string cover_path(GetFullCoverPath(serial, extension));
       if (FileSystem::FileExists(cover_path.c_str()))
-        return cover_path;
+      {
+        ret = std::move(cover_path);
+        return ret;
+      }
     }
 
     // Try file title (for modded games or specific like above)
     const std::string_view file_title(Path::GetFileTitle(path));
     if (!file_title.empty() && title != file_title)
     {
-      const std::string cover_path(GetFullCoverPath(file_title, extension));
+      std::string cover_path(GetFullCoverPath(file_title, extension));
       if (FileSystem::FileExists(cover_path.c_str()))
-        return cover_path;
+      {
+        ret = std::move(cover_path);
+        return ret;
+      }
     }
 
     // Last resort, check the game title
     if (!title.empty())
     {
-      const std::string cover_path(GetFullCoverPath(title, extension));
+      std::string cover_path(GetFullCoverPath(title, extension));
       if (FileSystem::FileExists(cover_path.c_str()))
-        return cover_path;
+      {
+        ret = std::move(cover_path);
+        return ret;
+      }
     }
   }
 
-  return {};
+  return ret;
 }
 
 std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial)

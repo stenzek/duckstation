@@ -3915,7 +3915,7 @@ void ImGuiFullscreen::OpenOrUpdateLoadingScreen(std::string_view image, std::str
                                                 s32 progress_min /*= -1*/, s32 progress_max /*= -1*/,
                                                 s32 progress_value /*= -1*/)
 {
-  if (s_state.loading_screen_image != image)
+  if (!image.empty() && s_state.loading_screen_image != image)
     s_state.loading_screen_image = image;
   if (s_state.loading_screen_message != message)
     s_state.loading_screen_message = message;

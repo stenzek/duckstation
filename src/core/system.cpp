@@ -6007,6 +6007,22 @@ bool System::ChangeGPUDump(std::string new_path)
   return true;
 }
 
+std::string System::GetImageForLoadingScreen(std::string_view serial)
+{
+  std::string ret;
+
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryBySerial(serial);
+
+  if (entry)
+    ret = GameList::GetCoverImagePathForEntry(entry);
+
+  if (ret.empty())
+    ret = ImGuiManager::LOGO_IMAGE_NAME;
+
+  return ret;
+}
+
 void System::UpdateSessionTime(const std::string& prev_serial)
 {
   const Timer::Value ctime = Timer::GetCurrentValue();

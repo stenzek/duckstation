@@ -138,6 +138,7 @@ private:
   float m_open_delay = 1.0f;
   s32 m_last_progress_percent = -1;
   bool m_on_gpu_thread = false;
+  std::string m_image;
 };
 
 // Host UI triggers from Big Picture mode.

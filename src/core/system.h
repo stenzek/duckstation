@@ -423,6 +423,10 @@ void ToggleSoftwareRendering();
 /// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 void RequestDisplaySize(float scale = 0.0f);
 
+/// Returns the path to a possible cover image for the current serial.
+/// Only intended to be used for loading screens, so it may not be correct with custom titles and such.
+std::string GetImageForLoadingScreen(std::string_view serial);
+
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
