@@ -2654,8 +2654,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
   if (!s_system_valid)
   {
     QtUtils::SaveWindowGeometry("MainWindow", this);
-    if (s_fullscreen_ui_started)
+
+    // surfaceless for language change
+    if (s_fullscreen_ui_started && !g_emu_thread->isSurfaceless())
       g_emu_thread->stopFullscreenUI();
+
     destroySubWindows();
     QMainWindow::closeEvent(event);
     return;
