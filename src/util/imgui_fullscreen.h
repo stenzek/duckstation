@@ -21,6 +21,7 @@
 class Image;
 class GPUTexture;
 class SmallStringBase;
+class ProgressCallback;
 
 namespace ImGuiFullscreen {
 
@@ -410,6 +411,8 @@ void OpenMessageDialog(std::string_view title, std::string message, MessageDialo
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();
 
+std::unique_ptr<ProgressCallback> OpenModalProgressDialog(std::string title, float window_unscaled_width = 500.0f);
+
 float GetNotificationVerticalPosition();
 float GetNotificationVerticalDirection();
 void SetNotificationVerticalPosition(float position, float direction);
@@ -459,7 +462,7 @@ public:
   void ClearState();
 
 protected:
-  enum class State
+  enum class State : u8
   {
     Inactive,
     ClosingTrigger,
@@ -482,6 +485,7 @@ protected:
   std::string m_title;
   float m_animation_time_remaining = 0.0f;
   State m_state = State::Inactive;
+  bool m_user_closeable = true;
 };
 
 // Wrapper for computing menu button bounds.

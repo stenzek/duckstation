@@ -19,6 +19,7 @@
 #include "common/timer.h"
 
 #include "core/fullscreen_ui.h" // For updating run idle state.
+#include "core/gpu_thread.h"    // For kicking to GPU thread.
 #include "core/host.h"
 #include "core/system.h" // For async workers, should be in general host.
 
@@ -192,6 +193,38 @@ private:
   InputStringDialogCallback m_callback;
 };
 
+class ProgressDialog : public PopupDialog
+{
+public:
+  ProgressDialog();
+  ~ProgressDialog();
+
+  std::unique_ptr<ProgressCallback> GetProgressCallback(std::string title, float window_unscaled_width);
+
+  void Draw();
+
+private:
+  class ProgressCallbackImpl : public ProgressCallback
+  {
+  public:
+    ProgressCallbackImpl();
+    ~ProgressCallbackImpl() override;
+
+    void SetStatusText(std::string_view text) override;
+    void SetProgressRange(u32 range) override;
+    void SetProgressValue(u32 value) override;
+    void SetCancellable(bool cancellable) override;
+    bool IsCancelled() const override;
+  };
+
+  std::string m_status_text;
+  float m_last_frac = 0.0f;
+  float m_width = 0.0f;
+  u32 m_progress_value = 0;
+  u32 m_progress_range = 0;
+  std::atomic_bool m_cancelled{false};
+};
+
 class FixedPopupDialog : public PopupDialog
 {
 public:
@@ -238,6 +271,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   FileSelectorDialog file_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
+  ProgressDialog progress_dialog;
 
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
@@ -709,6 +743,7 @@ void ImGuiFullscreen::EndLayout()
   s_state.choice_dialog.Draw();
   s_state.file_selector_dialog.Draw();
   s_state.input_string_dialog.Draw();
+  s_state.progress_dialog.Draw();
 
   DrawFullscreenFooter();
 
@@ -2863,7 +2898,7 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
                                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                                         (m_title.starts_with("##") ? ImGuiWindowFlags_NoTitleBar : 0);
   bool is_open = true;
-  if (popup_open && !ImGui::Begin(m_title.c_str(), &is_open, window_flags))
+  if (popup_open && !ImGui::Begin(m_title.c_str(), m_user_closeable ? &is_open : nullptr, window_flags))
     is_open = false;
 
   if (popup_open && !is_open && m_state != State::ClosingTrigger)
@@ -3497,6 +3532,180 @@ void ImGuiFullscreen::OpenMessageDialog(std::string_view title, std::string mess
 void ImGuiFullscreen::CloseMessageDialog()
 {
   s_state.message_dialog.StartClose();
+}
+
+ImGuiFullscreen::ProgressDialog::ProgressDialog() = default;
+ImGuiFullscreen::ProgressDialog::~ProgressDialog() = default;
+
+void ImGuiFullscreen::ProgressDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  const float window_padding = LayoutScale(20.0f);
+
+  if (!BeginRender(window_padding, window_padding, ImVec2(m_width, 0.0f)))
+  {
+    if (m_user_closeable)
+      m_cancelled.store(true, std::memory_order_release);
+
+    m_status_text = {};
+    m_last_frac = 0.0f;
+    ClearState();
+    return;
+  }
+
+  const float spacing = LayoutScale(5.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(6.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, spacing));
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
+  ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.NormalFontWeight);
+
+  const bool has_progress = (m_progress_range > 0);
+  float wrap_width = ImGui::GetContentRegionAvail().x;
+  if (has_progress)
+  {
+    // reserve space for text
+    TinyString text;
+    text.format("{}/{}", m_progress_value, m_progress_range);
+
+    const ImVec2 text_width = ImGui::CalcTextSize(IMSTR_START_END(text));
+    const ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+    const ImVec2 text_pos = ImVec2(screen_pos.x + wrap_width - text_width.x, screen_pos.y);
+    ImGui::GetWindowDrawList()->AddText(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos,
+                                        ImGui::GetColorU32(ImGuiCol_Text), IMSTR_START_END(text));
+    wrap_width -= text_width.x + spacing;
+  }
+
+  if (!m_status_text.empty())
+    ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(m_status_text), wrap_width);
+
+  const float bar_height = LayoutScale(20.0f);
+
+  float frac;
+  if (has_progress)
+  {
+    const float max_frac = (static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range));
+    const float dt = ImGui::GetIO().DeltaTime;
+    frac = std::min(m_last_frac + dt, max_frac);
+    m_last_frac = frac;
+  }
+  else
+  {
+    frac = static_cast<float>(-ImGui::GetTime());
+  }
+  ImGui::ProgressBar(frac, ImVec2(-1.0f, bar_height), "");
+
+  ImGui::Dummy(ImVec2(0.0f, LayoutScale(5.0f)));
+
+  ImGui::PopFont();
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar(2);
+
+  if (m_user_closeable)
+  {
+    BeginHorizontalMenuButtons(1, 150.0f);
+    if (HorizontalMenuButton("Cancel"))
+      StartClose();
+    EndHorizontalMenuButtons();
+  }
+
+  EndRender();
+}
+
+std::unique_ptr<ProgressCallback> ImGuiFullscreen::ProgressDialog::GetProgressCallback(std::string title, float window_unscaled_width)
+{
+  if (m_state == PopupDialog::State::Open)
+  {
+    // return dummy callback so the op can still go through
+    ERROR_LOG("Progress dialog is already open, cannot create dialog for '{}'.", std::move(title));
+    return std::make_unique<ProgressCallback>();
+  }
+
+  SetTitleAndOpen(std::move(title));
+  m_width = LayoutScale(window_unscaled_width);
+  m_last_frac = 0.0f;
+  m_cancelled.store(false, std::memory_order_release);
+  return std::make_unique<ProgressCallbackImpl>();
+}
+
+ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::ProgressCallbackImpl() = default;
+
+ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
+{
+  Host::RunOnCPUThread([]() mutable {
+    GPUThread::RunOnThread([]() mutable {
+      if (!s_state.progress_dialog.IsOpen())
+        return;
+      s_state.progress_dialog.StartClose();
+    });
+  });
+}
+
+void ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
+{
+  Host::RunOnCPUThread([text = std::string(text)]() mutable {
+    GPUThread::RunOnThread([text = std::move(text)]() mutable {
+      if (!s_state.progress_dialog.IsOpen())
+        return;
+
+      s_state.progress_dialog.m_status_text = std::move(text);
+    });
+  });
+}
+
+void ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::SetProgressRange(u32 range)
+{
+  ProgressCallback::SetProgressRange(range);
+
+  Host::RunOnCPUThread([range]() {
+    GPUThread::RunOnThread([range]() {
+      if (!s_state.progress_dialog.IsOpen())
+        return;
+
+      s_state.progress_dialog.m_progress_range = range;
+    });
+  });
+}
+
+void ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::SetProgressValue(u32 value)
+{
+  ProgressCallback::SetProgressValue(value);
+
+  Host::RunOnCPUThread([value]() {
+    GPUThread::RunOnThread([value]() {
+      if (!s_state.progress_dialog.IsOpen())
+        return;
+
+      s_state.progress_dialog.m_progress_value = value;
+    });
+  });
+}
+
+void ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::SetCancellable(bool cancellable)
+{
+  ProgressCallback::SetCancellable(cancellable);
+
+  Host::RunOnCPUThread([cancellable]() {
+    GPUThread::RunOnThread([cancellable]() {
+      if (!s_state.progress_dialog.IsOpen())
+        return;
+
+      s_state.progress_dialog.m_user_closeable = cancellable;
+    });
+  });
+}
+
+bool ImGuiFullscreen::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
+{
+  return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
+}
+
+std::unique_ptr<ProgressCallback> ImGuiFullscreen::OpenModalProgressDialog(std::string title, float window_unscaled_width)
+{
+  return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
 }
 
 static float s_notification_vertical_position = 0.15f;
