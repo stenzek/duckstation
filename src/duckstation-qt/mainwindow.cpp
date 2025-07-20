@@ -134,6 +134,11 @@ bool QtHost::IsSystemValid()
   return s_system_valid;
 }
 
+bool QtHost::IsSystemValidOrStarting()
+{
+  return (s_system_starting || s_system_valid);
+}
+
 bool QtHost::IsFullscreenUIStarted()
 {
   return s_fullscreen_ui_started;
@@ -346,7 +351,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
 bool MainWindow::wantsDisplayWidget() const
 {
   // big picture or system created
-  return (s_system_starting || s_system_valid || s_fullscreen_ui_started);
+  return (QtHost::IsSystemValidOrStarting() || s_fullscreen_ui_started);
 }
 
 bool MainWindow::hasDisplayWidget() const
@@ -619,7 +624,7 @@ void MainWindow::onSystemStopping()
 
 void MainWindow::onSystemDestroyed()
 {
-  Assert(!s_system_starting && !s_system_valid);
+  Assert(!QtHost::IsSystemValidOrStarting());
 
   // If we're closing or in batch mode, quit the whole application now.
   if (m_is_closing || QtHost::InBatchMode())
@@ -750,10 +755,10 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
 void MainWindow::quit()
 {
   // Make sure VM is gone. It really should be if we're here.
-  if (s_system_valid)
+  if (QtHost::IsSystemValidOrStarting())
   {
     g_emu_thread->shutdownSystem(false, false);
-    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return s_system_valid; });
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, &QtHost::IsSystemValidOrStarting);
   }
 
   // Big picture might still be active.
@@ -2263,9 +2268,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, false); });
+          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, false, false); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false, true, false); });
+          [this]() { requestShutdown(false, false, false, true, false, false); });
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
   connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
@@ -2659,7 +2664,7 @@ void MainWindow::showEvent(QShowEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   // If there's no VM, we can just exit as normal.
-  if (!s_system_valid)
+  if (!QtHost::IsSystemValidOrStarting())
   {
     QtUtils::SaveWindowGeometry("MainWindow", this);
 
@@ -2676,12 +2681,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // or not. The window still needs to be visible while GS is shutting down.
   event->ignore();
 
-  // Exit cancelled?
-  if (!requestShutdown(true, true, g_settings.save_state_on_exit, true, true))
-    return;
-
-  // Application will be exited in VM stopped handler.
-  m_is_closing = true;
+  requestShutdown(true, true, g_settings.save_state_on_exit, true, true, true);
 }
 
 void MainWindow::changeEvent(QEvent* event)
@@ -2797,18 +2797,26 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
   func();
 }
 
-bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
-                                 bool exit_fullscreen_ui)
+void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
+                                 bool exit_fullscreen_ui, bool quit_afterwards)
 {
-  if (!s_system_valid)
-    return true;
+  if (!QtHost::IsSystemValidOrStarting())
+  {
+    if (exit_fullscreen_ui && s_fullscreen_ui_started)
+      g_emu_thread->stopFullscreenUI();
+
+    if (quit_afterwards)
+      quit();
+
+    return;
+  }
 
   // If we don't have a serial, we can't save state.
   allow_save_to_state &= !s_current_game_serial.isEmpty();
   save_state &= allow_save_to_state;
 
   // Only confirm on UI thread because we need to display a msgbox.
-  if (!m_is_closing && allow_confirm && Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
+  if (!m_is_closing && s_system_valid && allow_confirm && Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
     SystemLock lock(pauseAndLockSystem());
 
@@ -2826,7 +2834,7 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
     msgbox.addButton(QMessageBox::No);
     msgbox.setDefaultButton(QMessageBox::Yes);
     if (msgbox.exec() != QMessageBox::Yes)
-      return false;
+      return;
 
     save_state = save_cb->isChecked();
 
@@ -2836,8 +2844,15 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
   }
 
   // If we're running in batch mode, don't show the main window after shutting down.
-  if (QtHost::InBatchMode())
+  if (quit_afterwards || QtHost::InBatchMode())
+  {
+    INFO_LOG("Setting pending main window close flag.");
     m_is_closing = true;
+  }
+
+  // If we're still starting, shut down first. Otherwise the FSUI shutdown will block until it finishes.
+  if (s_system_starting)
+    System::CancelPendingStartup();
 
   // Stop fullscreen UI from reopening if requested.
   if (exit_fullscreen_ui && s_fullscreen_ui_started)
@@ -2845,22 +2860,12 @@ bool MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
   // Now we can actually shut down the VM.
   g_emu_thread->shutdownSystem(save_state, check_safety);
-  return true;
 }
 
 void MainWindow::requestExit(bool allow_confirm /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  if (!requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true))
-    return;
-
-  // VM stopped signal won't have fired yet, so queue an exit if we still have one.
-  // Otherwise, immediately exit, because there's no VM to exit us later.
-  m_is_closing = true;
-  if (s_system_valid)
-    return;
-
-  quit();
+  requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true, true);
 }
 
 void MainWindow::checkForSettingChanges()

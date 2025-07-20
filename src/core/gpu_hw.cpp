@@ -204,6 +204,7 @@ public:
     if (System::IsStartupCancelled())
     {
       Error::SetStringView(error, TRANSLATE_SV("System", "Startup was cancelled."));
+      ERROR_LOG("Shader compilation aborted due to cancelled startup");
       return false;
     }
 

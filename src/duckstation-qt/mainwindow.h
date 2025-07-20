@@ -122,8 +122,8 @@ public Q_SLOTS:
   void cancelGameListRefresh();
 
   void runOnUIThread(const std::function<void()>& func);
-  bool requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
-                       bool exit_fullscreen_ui);
+  void requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
+                       bool exit_fullscreen_ui, bool quit_afterwards);
   void requestExit(bool allow_confirm = true);
   void checkForSettingChanges();
   std::optional<WindowInfo> getWindowInfo();

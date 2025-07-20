@@ -401,6 +401,7 @@ bool ShouldShowDebugOptions();
 
 /// VM state, safe to access on UI thread.
 bool IsSystemValid();
+bool IsSystemValidOrStarting();
 bool IsSystemPaused();
 
 /// Returns true if fullscreen UI is requested.
