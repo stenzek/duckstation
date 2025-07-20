@@ -421,6 +421,10 @@ void CPU::RaiseBreakException(u32 CAUSE_bits, u32 EPC, u32 instruction_bits)
       return;
     }
   }
+  else
+  {
+    WARNING_LOG("PCDrv is not enabled, break HLE will not be executed.");
+  }
 
   // normal exception
   RaiseException(CAUSE_bits, EPC, GetExceptionVector());
