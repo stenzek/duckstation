@@ -16,7 +16,7 @@ class QtModalProgressCallback final : public QObject, public ProgressCallback
   Q_OBJECT
 
 public:
-  QtModalProgressCallback(QWidget* parent_widget, float show_delay = 0.0f);
+  explicit QtModalProgressCallback(QWidget* parent_widget, float show_delay = 0.0f);
   ~QtModalProgressCallback();
 
   QProgressDialog& GetDialog() { return m_dialog; }
@@ -53,7 +53,7 @@ class QtAsyncProgressThread : public QThread, public ProgressCallback
   Q_OBJECT
 
 public:
-  QtAsyncProgressThread(QWidget* parent);
+  explicit QtAsyncProgressThread(QWidget* parent);
   ~QtAsyncProgressThread();
 
   bool IsCancelled() const override;

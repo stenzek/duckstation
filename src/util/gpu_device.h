@@ -172,7 +172,7 @@ IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDriverType);
 class GPUShader
 {
 public:
-  GPUShader(GPUShaderStage stage);
+  explicit GPUShader(GPUShaderStage stage);
   virtual ~GPUShader();
 
   static const char* GetStageName(GPUShaderStage stage);

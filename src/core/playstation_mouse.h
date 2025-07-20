@@ -23,7 +23,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  PlayStationMouse(u32 index);
+  explicit PlayStationMouse(u32 index);
   ~PlayStationMouse() override;
 
   static std::unique_ptr<PlayStationMouse> Create(u32 index);

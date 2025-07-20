@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <QtCore/QSemaphore>
 #include <QtCore/QThread>
 
 #include "common/progress_callback.h"
@@ -14,7 +13,7 @@ class GameListRefreshThread;
 class AsyncRefreshProgressCallback : public ProgressCallback
 {
 public:
-  AsyncRefreshProgressCallback(GameListRefreshThread* parent);
+  explicit AsyncRefreshProgressCallback(GameListRefreshThread* parent);
 
   float timeSinceStart() const;
 
@@ -46,7 +45,7 @@ class GameListRefreshThread final : public QThread
   Q_OBJECT
 
 public:
-  GameListRefreshThread(bool invalidate_cache);
+  explicit GameListRefreshThread(bool invalidate_cache);
   ~GameListRefreshThread();
 
   float timeSinceStart() const;
@@ -58,7 +57,7 @@ Q_SIGNALS:
   void refreshComplete();
 
 protected:
-  void run();
+  void run() final;
 
 private:
   AsyncRefreshProgressCallback m_progress;

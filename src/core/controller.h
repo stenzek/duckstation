@@ -53,7 +53,7 @@ public:
   static constexpr float DEFAULT_STICK_SENSITIVITY = 1.33f;
   static constexpr float DEFAULT_BUTTON_DEADZONE = 0.25f;
 
-  Controller(u32 index);
+  explicit Controller(u32 index);
   virtual ~Controller();
 
   /// Returns the type of controller.

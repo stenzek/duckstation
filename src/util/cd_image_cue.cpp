@@ -28,7 +28,7 @@ namespace {
 class TrackFileInterface
 {
 public:
-  TrackFileInterface(std::string filename);
+  explicit TrackFileInterface(std::string filename);
   virtual ~TrackFileInterface();
 
   ALWAYS_INLINE const std::string& GetFileName() const { return m_filename; }

@@ -8,7 +8,7 @@
 class PerfScope
 {
 public:
-  constexpr PerfScope(const char* prefix) : m_prefix(prefix) {}
+  constexpr explicit PerfScope(const char* prefix) : m_prefix(prefix) {}
   bool HasPrefix() const { return (m_prefix && m_prefix[0]); }
 
   void Register(const void* ptr, size_t size, const char* symbol);

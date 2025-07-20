@@ -60,7 +60,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  AnalogController(u32 index);
+  explicit AnalogController(u32 index);
   ~AnalogController() override;
 
   static std::unique_ptr<AnalogController> Create(u32 index);

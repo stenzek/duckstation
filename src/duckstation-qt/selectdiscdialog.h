@@ -14,7 +14,7 @@ class SelectDiscDialog final : public QDialog
   Q_OBJECT
 
 public:
-  SelectDiscDialog(const std::string& disc_set_name, QWidget* parent = nullptr);
+  explicit SelectDiscDialog(const std::string& disc_set_name, QWidget* parent = nullptr);
   ~SelectDiscDialog();
 
   ALWAYS_INLINE const std::string& getSelectedDiscPath() { return m_selected_path; }

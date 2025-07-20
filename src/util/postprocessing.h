@@ -114,7 +114,7 @@ void ClearStages(SettingsInterface& si, const char* section);
 class Chain final
 {
 public:
-  Chain(const char* section);
+  explicit Chain(const char* section);
   ~Chain();
 
   ALWAYS_INLINE bool HasStages() const { return !m_stages.empty(); }

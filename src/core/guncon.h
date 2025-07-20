@@ -27,7 +27,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  GunCon(u32 index);
+  explicit GunCon(u32 index);
   ~GunCon() override;
 
   static std::unique_ptr<GunCon> Create(u32 index);

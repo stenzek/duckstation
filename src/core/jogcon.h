@@ -43,7 +43,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  JogCon(u32 index);
+  explicit JogCon(u32 index);
   ~JogCon() override;
 
   static std::unique_ptr<JogCon> Create(u32 index);

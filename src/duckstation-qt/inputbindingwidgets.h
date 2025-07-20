@@ -17,7 +17,7 @@ class InputBindingWidget : public QPushButton
   Q_OBJECT
 
 public:
-  InputBindingWidget(QWidget* parent);
+  explicit InputBindingWidget(QWidget* parent);
   InputBindingWidget(QWidget* parent, SettingsInterface* sif, InputBindingInfo::Type bind_type,
                      std::string section_name, std::string key_name);
   ~InputBindingWidget();
@@ -76,7 +76,7 @@ class InputVibrationBindingWidget : public QPushButton
   Q_OBJECT
 
 public:
-  InputVibrationBindingWidget(QWidget* parent);
+  explicit InputVibrationBindingWidget(QWidget* parent);
   InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name,
                               std::string key_name);
   ~InputVibrationBindingWidget();

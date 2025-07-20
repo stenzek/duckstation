@@ -165,8 +165,8 @@ class POSIXLock
 {
 public:
   POSIXLock();
-  POSIXLock(int fd, bool block = true, Error* error = nullptr);
-  POSIXLock(std::FILE* fp, bool block = true, Error* error = nullptr);
+  explicit POSIXLock(int fd, bool block = true, Error* error = nullptr);
+  explicit POSIXLock(std::FILE* fp, bool block = true, Error* error = nullptr);
   POSIXLock(POSIXLock&& move);
   POSIXLock(const POSIXLock&) = delete;
   ~POSIXLock();

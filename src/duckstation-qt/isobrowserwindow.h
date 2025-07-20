@@ -12,7 +12,7 @@ class ISOBrowserWindow : public QWidget
   Q_OBJECT
 
 public:
-  ISOBrowserWindow(QWidget* parent = nullptr);
+  explicit ISOBrowserWindow(QWidget* parent = nullptr);
   ~ISOBrowserWindow();
 
   static ISOBrowserWindow* createAndOpenFile(QWidget* parent, const QString& path);

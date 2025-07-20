@@ -57,7 +57,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  DDGoController(u32 index);
+  explicit DDGoController(u32 index);
   ~DDGoController() override;
 
   static std::unique_ptr<DDGoController> Create(u32 index);
