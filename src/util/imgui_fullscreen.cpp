@@ -3953,36 +3953,42 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
                                         s32 progress_max, s32 progress_value, bool is_persistent)
 {
   const auto& io = ImGui::GetIO();
-  const float scale = ImGuiManager::GetGlobalScale();
-  const float width = (400.0f * scale);
   const bool has_progress = (progress_min < progress_max);
 
-  const float logo_width = ImCeil(260.0f * scale);
-  const float logo_height = ImCeil(260.0f * scale);
+  const float font_size = UIStyle.MediumFontSize;
+  const float padding_and_rounding = LayoutScale(18.0f);
+  const float item_spacing = LayoutScale(10.0f);
+  const float frame_rounding = LayoutScale(6.0f);
+  const float bar_height = (has_progress || is_persistent) ? LayoutScale(15.0f) : 0.0f;
+  const float window_width = LayoutScale(450.0f);
+  const float window_height =
+    ((padding_and_rounding * 2.0f) + font_size + item_spacing + bar_height + LayoutScale(5.0f));
+  const float window_spacing = LayoutScale(20.0f);
 
+  const float image_width = LayoutScale(260.0f);
+  const float image_height = LayoutScale(260.0f);
+  const ImVec2 image_pos = ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f),
+                                  ImCeil(((io.DisplaySize.y - image_height - window_height - window_spacing) * 0.5f)));
   GPUTexture* tex = GetCachedTexture(image);
   if (tex)
   {
-    const ImVec2 image_pos = ImVec2(ImCeil((io.DisplaySize.x - logo_width) * 0.5f),
-                                    ImCeil(((io.DisplaySize.y - logo_height) * 0.5f) - (50.0f * scale)));
-    const ImRect image_rect = CenterImage(ImRect(image_pos, image_pos + ImVec2(logo_width, logo_height)), tex);
+    const ImRect image_rect = CenterImage(ImRect(image_pos, image_pos + ImVec2(image_width, image_height)), tex);
     ImGui::GetBackgroundDrawList()->AddImage(tex, image_rect.Min, image_rect.Max);
   }
 
-  const float padding_and_rounding = 18.0f * scale;
-  const float frame_rounding = 6.0f * scale;
-  const float bar_height = ImCeil(ImGuiManager::GetOSDFontSize() * 1.1f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, frame_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, item_spacing));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.BackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
-  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize(), UIStyle.BoldFontWeight);
-  ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 85.0f : 55.0f) * scale), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
-                          ImGuiCond_Always, ImVec2(0.5f, 0.0f));
+  ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
+  ImGui::SetNextWindowSize(ImVec2(window_width, window_height), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(
+    ImVec2(ImCeil((io.DisplaySize.x - window_width) * 0.5f), image_pos.y + image_height + window_spacing),
+    ImGuiCond_Always);
   if (ImGui::Begin("LoadingScreen", nullptr,
                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
@@ -4000,11 +4006,9 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
 
         const ImVec2 prog_size = ImGui::CalcTextSize(IMSTR_START_END(buf));
         ImGui::SameLine();
-        ImGui::SetCursorPosX(width - padding_and_rounding - prog_size.x);
+        ImGui::SetCursorPosX(window_width - padding_and_rounding - prog_size.x);
         ImGui::TextUnformatted(IMSTR_START_END(buf));
       }
-
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f * scale);
 
       ImGui::ProgressBar(has_progress ?
                            (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :
@@ -4016,7 +4020,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
       if (!message.empty())
       {
         const ImVec2 text_size = ImGui::CalcTextSize(IMSTR_START_END(message));
-        ImGui::SetCursorPosX((width - text_size.x) / 2.0f);
+        ImGui::SetCursorPosX((window_width - text_size.x) / 2.0f);
         ImGui::TextUnformatted(IMSTR_START_END(message));
       }
     }
@@ -4024,7 +4028,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   ImGui::End();
   ImGui::PopFont();
   ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
 }
 
 //////////////////////////////////////////////////////////////////////////

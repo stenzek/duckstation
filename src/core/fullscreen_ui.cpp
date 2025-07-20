@@ -703,7 +703,6 @@ bool FullscreenUI::Initialize()
   ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false));
-  ImGuiFullscreen::UpdateLayoutScale();
 
   if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
     ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);

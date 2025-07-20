@@ -227,6 +227,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   SetKeyMap();
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   FullscreenUI::SetTheme();
+  ImGuiFullscreen::UpdateLayoutScale();
 
   if (!CreateFontAtlas(error) || !CompilePipelines(error))
     return false;
