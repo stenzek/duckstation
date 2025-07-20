@@ -55,9 +55,8 @@ static constexpr u32 THREAD_SPIN_TIME_US = 50;
 static constexpr u32 THREAD_SPIN_TIME_US = 200;
 #endif
 
-static bool Reconfigure(std::string serial, std::optional<GPURenderer> renderer, bool upload_vram,
-                        std::optional<bool> fullscreen, std::optional<bool> start_fullscreen_ui, bool recreate_device,
-                        Error* error);
+static bool Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
+                        std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error);
 
 // NOTE: Use with care! The handler needs to manually run the destructor.
 template<class T, typename... Args>
@@ -85,6 +84,9 @@ static void DestroyGPUPresenterOnThread();
 
 static void SetThreadEnabled(bool enabled);
 static void UpdateSettingsOnThread(GPUSettings&& new_settings);
+static void UpdateGameInfoOnThread(GPUThreadUpdateGameInfoCommand* cmd);
+static void GameInfoChanged(bool serial_changed);
+static void ClearGameInfoOnThread();
 
 static void UpdateRunIdle();
 
@@ -115,7 +117,10 @@ struct ALIGN_TO_CACHE_LINE State
   GPUVSyncMode requested_vsync = GPUVSyncMode::Disabled;
   bool requested_allow_present_throttle = false;
   bool requested_fullscreen_ui = false;
+  std::string game_title;
   std::string game_serial;
+  std::string game_path;
+  GameHash game_hash = 0;
 };
 
 } // namespace
@@ -463,6 +468,14 @@ void GPUThread::Internal::GPUThreadEntryPoint()
         }
         break;
 
+        case GPUBackendCommandType::UpdateGameInfo:
+        {
+          GPUThreadUpdateGameInfoCommand* ccmd = static_cast<GPUThreadUpdateGameInfoCommand*>(cmd);
+          UpdateGameInfoOnThread(ccmd);
+          ccmd->~GPUThreadUpdateGameInfoCommand();
+        }
+        break;
+
         case GPUBackendCommandType::Shutdown:
         {
           // Should have consumed everything, and be shutdown.
@@ -498,15 +511,13 @@ void GPUThread::Internal::DoRunIdle()
     g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
 }
 
-bool GPUThread::Reconfigure(std::string serial, std::optional<GPURenderer> renderer, bool upload_vram,
-                            std::optional<bool> fullscreen, std::optional<bool> start_fullscreen_ui,
-                            bool recreate_device, Error* error)
+bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vram, std::optional<bool> fullscreen,
+                            std::optional<bool> start_fullscreen_ui, bool recreate_device, Error* error)
 {
   INFO_LOG("Reconfiguring GPU thread.");
 
   bool result = false;
   GPUThreadReconfigureCommand* cmd = AllocateCommand<GPUThreadReconfigureCommand>(GPUBackendCommandType::Reconfigure);
-  cmd->game_serial = std::move(serial);
   cmd->renderer = renderer;
   cmd->fullscreen = fullscreen;
   cmd->start_fullscreen_ui = start_fullscreen_ui;
@@ -535,7 +546,7 @@ bool GPUThread::StartFullscreenUI(bool fullscreen, Error* error)
     return true;
   }
 
-  return Reconfigure(std::string(), std::nullopt, false, fullscreen, true, false, error);
+  return Reconfigure(std::nullopt, false, fullscreen, true, false, error);
 }
 
 bool GPUThread::IsFullscreenUIRequested()
@@ -552,7 +563,7 @@ void GPUThread::StopFullscreenUI()
     return;
   }
 
-  Reconfigure(std::string(), std::nullopt, false, std::nullopt, false, false, nullptr);
+  Reconfigure(std::nullopt, false, std::nullopt, false, false, nullptr);
 }
 
 std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
@@ -560,17 +571,17 @@ std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
   return s_state.requested_renderer;
 }
 
-bool GPUThread::CreateGPUBackend(std::string serial, GPURenderer renderer, bool upload_vram, bool fullscreen,
-                                 bool force_recreate_device, Error* error)
+bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
+                                 Error* error)
 {
   s_state.requested_renderer = renderer;
-  return Reconfigure(std::move(serial), renderer, upload_vram, fullscreen ? std::optional<bool>(true) : std::nullopt,
-                     std::nullopt, force_recreate_device, error);
+  return Reconfigure(renderer, upload_vram, fullscreen ? std::optional<bool>(true) : std::nullopt, std::nullopt,
+                     force_recreate_device, error);
 }
 
 void GPUThread::DestroyGPUBackend()
 {
-  Reconfigure(std::string(), std::nullopt, false, std::nullopt, std::nullopt, false, nullptr);
+  Reconfigure(std::nullopt, false, std::nullopt, std::nullopt, false, nullptr);
   s_state.requested_renderer.reset();
 }
 
@@ -779,15 +790,14 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   // Are we shutting down everything?
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
   {
+    // Serial clear must be after backend destroy, otherwise textures won't dump.
     DestroyGPUBackendOnThread();
     DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(true);
-    s_state.game_serial = {};
+    ClearGameInfoOnThread();
     return;
   }
 
-  // Serial clear must be after backend destroy, otherwise textures won't dump.
-  s_state.game_serial = std::move(cmd->game_serial);
   g_gpu_settings = std::move(cmd->settings);
 
   // Readback old VRAM for hardware renderers.
@@ -844,6 +854,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     INFO_LOG("GPU device recreated in {:.2f}ms", timer.GetTimeMilliseconds());
   }
 
+  // Full shutdown case handled above.
+  Assert(cmd->renderer.has_value() || s_state.requested_fullscreen_ui);
   if (cmd->renderer.has_value())
   {
     Timer timer;
@@ -862,6 +874,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
         // No point keeping the presenter around.
         DestroyGPUBackendOnThread();
         DestroyGPUPresenterOnThread();
+        ClearGameInfoOnThread();
       }
     }
 
@@ -878,6 +891,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
 
     // Don't need to present game frames anymore.
     DestroyGPUPresenterOnThread();
+    ClearGameInfoOnThread();
 
     // Don't need timing to run FSUI.
     g_gpu_device->SetGPUTimingEnabled(false);
@@ -888,12 +902,6 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
       if (!had_gpu_device)
         DestroyDeviceOnThread(true);
     }
-  }
-  else
-  {
-    // Device is no longer needed.
-    DestroyGPUBackendOnThread();
-    DestroyDeviceOnThread(true);
   }
 }
 
@@ -965,7 +973,6 @@ void GPUThread::SetThreadEnabled(bool enabled)
   const bool fullscreen = Host::IsFullscreen();
   const bool requested_fullscreen_ui = s_state.requested_fullscreen_ui;
   const std::optional<GPURenderer> requested_renderer = s_state.requested_renderer;
-  std::string serial = s_state.game_serial;
 
   // Force VRAM download, we're recreating.
   if (requested_renderer.has_value())
@@ -979,7 +986,7 @@ void GPUThread::SetThreadEnabled(bool enabled)
   }
 
   // Shutdown reconfigure.
-  Reconfigure(std::string(), std::nullopt, false, false, false, false, nullptr);
+  Reconfigure(std::nullopt, false, false, false, false, nullptr);
 
   // Thread should be idle at this point. Reset the FIFO.
   ResetCommandFIFO();
@@ -988,8 +995,8 @@ void GPUThread::SetThreadEnabled(bool enabled)
   s_state.use_gpu_thread = enabled;
 
   Error error;
-  if (!Reconfigure(std::move(serial), requested_renderer, requested_renderer.has_value(), fullscreen,
-                   requested_fullscreen_ui, true, &error))
+  if (!Reconfigure(requested_renderer, requested_renderer.has_value(), fullscreen, requested_fullscreen_ui, true,
+                   &error))
   {
     ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
     ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
@@ -1100,8 +1107,8 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
     INFO_LOG("Reconfiguring after device settings changed.");
 
     Error error;
-    if (!Reconfigure(System::GetGameSerial(), s_state.requested_renderer, s_state.requested_renderer.has_value(),
-                     std::nullopt, std::nullopt, true, &error)) [[unlikely]]
+    if (!Reconfigure(s_state.requested_renderer, s_state.requested_renderer.has_value(), std::nullopt, std::nullopt,
+                     true, &error)) [[unlikely]]
     {
       Host::ReportErrorAsync("Error", fmt::format("Failed to recreate GPU device: {}", error.GetDescription()));
     }
@@ -1132,6 +1139,71 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
     });
 #endif
   }
+}
+
+void GPUThread::UpdateGameInfo(const std::string& title, const std::string& serial, const std::string& path,
+                               GameHash hash, bool wake_thread /*= true*/)
+{
+  if (!s_state.use_gpu_thread)
+  {
+    const bool serial_changed = (s_state.game_serial != serial);
+    s_state.game_title = title;
+    s_state.game_serial = serial;
+    s_state.game_path = path;
+    s_state.game_hash = hash;
+    GameInfoChanged(serial_changed);
+    return;
+  }
+
+  GPUThreadUpdateGameInfoCommand* cmd =
+    AllocateCommand<GPUThreadUpdateGameInfoCommand>(GPUBackendCommandType::UpdateGameInfo, title, serial, path, hash);
+
+  if (wake_thread)
+    PushCommandAndWakeThread(cmd);
+  else
+    PushCommand(cmd);
+}
+
+void GPUThread::ClearGameInfo()
+{
+  if (!s_state.use_gpu_thread)
+  {
+    ClearGameInfoOnThread();
+    return;
+  }
+
+  PushCommandAndWakeThread(AllocateCommand<GPUThreadUpdateGameInfoCommand>(GPUBackendCommandType::UpdateGameInfo));
+}
+
+void GPUThread::UpdateGameInfoOnThread(GPUThreadUpdateGameInfoCommand* cmd)
+{
+  DEV_LOG("Updating game info on GPU thread: {}/{}", cmd->game_serial, cmd->game_title);
+  const bool serial_changed = (s_state.game_serial != cmd->game_serial);
+  s_state.game_title = std::move(cmd->game_title);
+  s_state.game_serial = std::move(cmd->game_serial);
+  s_state.game_path = std::move(cmd->game_path);
+  s_state.game_hash = cmd->game_hash;
+  GameInfoChanged(serial_changed);
+}
+
+void GPUThread::GameInfoChanged(bool serial_changed)
+{
+  if (!serial_changed)
+    return;
+
+  if (HasGPUBackend())
+    GPUTextureCache::GameSerialChanged();
+  if (SaveStateSelectorUI::IsOpen())
+    SaveStateSelectorUI::RefreshList();
+}
+
+void GPUThread::ClearGameInfoOnThread()
+{
+  DEV_LOG("Clearing game info on GPU thread.");
+  s_state.game_hash = 0;
+  s_state.game_path = {};
+  s_state.game_serial = {};
+  s_state.game_title = {};
 }
 
 void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
@@ -1389,24 +1461,26 @@ void GPUThread::UpdateRunIdle()
   Host::OnGPUThreadRunIdleChanged(new_flag);
 }
 
+const std::string& GPUThread::GetGameTitle()
+{
+  DebugAssert(IsOnThread());
+  return s_state.game_title;
+}
+
 const std::string& GPUThread::GetGameSerial()
 {
   DebugAssert(IsOnThread());
   return s_state.game_serial;
 }
 
-void GPUThread::SetGameSerial(std::string serial)
+const std::string& GPUThread::GetGamePath()
 {
-  DebugAssert(!IsOnThread() || !s_state.use_gpu_thread);
-  RunOnThread([serial = std::move(serial)]() mutable {
-    const bool changed = (s_state.game_serial != serial);
-    s_state.game_serial = std::move(serial);
-    if (changed)
-    {
-      if (HasGPUBackend())
-        GPUTextureCache::GameSerialChanged();
-      if (SaveStateSelectorUI::IsOpen())
-        SaveStateSelectorUI::RefreshList();
-    }
-  });
+  DebugAssert(IsOnThread());
+  return s_state.game_path;
+}
+
+GameHash GPUThread::GetGameHash()
+{
+  DebugAssert(IsOnThread());
+  return s_state.game_hash;
 }

@@ -30,7 +30,6 @@ void OnSystemStarting();
 void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
-void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title, GameHash hash);
 
 void Shutdown(bool clear_state);
 void Render();

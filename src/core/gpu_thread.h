@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "common/types.h"
+#include "types.h"
 
 #include <functional>
 #include <optional>
@@ -46,12 +46,11 @@ void StopFullscreenUI();
 
 /// Backend control.
 std::optional<GPURenderer> GetRequestedRenderer();
-bool CreateGPUBackend(std::string serial, GPURenderer renderer, bool upload_vram, bool fullscreen,
-                      bool force_recreate_device, Error* error);
+bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
+                      Error* error);
 void DestroyGPUBackend();
 bool HasGPUBackend();
 bool IsGPUBackendRequested();
-void SetGameSerial(std::string serial);
 
 /// Re-presents the current frame. Call when things like window resizes happen to re-display
 /// the current frame with the correct proportions. Should only be called from the CPU thread.
@@ -67,6 +66,9 @@ void ResizeDisplayWindow(s32 width, s32 height, float scale);
 const WindowInfo& GetRenderWindowInfo();
 
 void UpdateSettings(bool gpu_settings_changed, bool device_settings_changed, bool thread_changed);
+void UpdateGameInfo(const std::string& title, const std::string& serial, const std::string& path, GameHash hash,
+                    bool wake_thread = true);
+void ClearGameInfo();
 
 /// Triggers an abnormal system shutdown and waits for it to destroy the backend.
 void ReportFatalErrorAndShutdown(std::string_view reason);
@@ -84,7 +86,10 @@ bool GetRunIdleReason(RunIdleReason reason);
 void SetRunIdleReason(RunIdleReason reason, bool enabled);
 bool IsRunningIdle();
 bool IsSystemPaused();
+const std::string& GetGameTitle();
 const std::string& GetGameSerial();
+const std::string& GetGamePath();
+GameHash GetGameHash();
 
 GPUThreadCommand* AllocateCommand(GPUBackendCommandType command, u32 size);
 void PushCommand(GPUThreadCommand* cmd);

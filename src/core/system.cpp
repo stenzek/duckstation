@@ -1193,7 +1193,7 @@ void System::RecreateGPU(GPURenderer renderer)
   StopMediaCapture();
 
   Error error;
-  if (!GPUThread::CreateGPUBackend(s_state.running_game_serial, renderer, true, false, false, &error))
+  if (!GPUThread::CreateGPUBackend(renderer, true, false, false, &error))
   {
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
@@ -1910,23 +1910,22 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   // TODO: Drop class
   g_gpu.Initialize();
 
+  // Game info must be set prior to backend creation because of texture replacements.
+  // We don't do it in UpdateRunningGame() when booting because it can fail in a number of locations.
+  GPUThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
+                            s_state.running_game_hash, false);
+
   // This can fail due to the application being closed during startup.
-  if (!GPUThread::CreateGPUBackend(s_state.running_game_serial,
-                                   force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
+  if (!GPUThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
                                    fullscreen, false, error))
   {
+    // Game info has to be manually cleared since the backend won't shutdown naturally.
+    GPUThread::ClearGameInfo();
     return false;
   }
 
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
-
-  // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
-  if (IsStartupCancelled())
-  {
-    Error::SetStringView(error, TRANSLATE_SV("System", "Startup was cancelled."));
-    return false;
-  }
 
   DMA::Initialize();
   Pad::Initialize();
@@ -4221,15 +4220,15 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   }
 
   if (s_state.running_game_serial != prev_serial)
-  {
-    GPUThread::SetGameSerial(s_state.running_game_serial);
     UpdateSessionTime(prev_serial);
-  }
 
   UpdateRichPresence(booting);
 
-  FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
-                                     s_state.running_game_hash);
+  if (!booting)
+  {
+    GPUThread::UpdateGameInfo(s_state.running_game_title, s_state.running_game_serial, s_state.running_game_path,
+                              s_state.running_game_hash);
+  }
 
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                             s_state.running_game_hash);

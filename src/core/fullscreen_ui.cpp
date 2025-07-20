@@ -432,7 +432,7 @@ static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
                                     bool fallback_to_icon);
 static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
-static GPUTexture* GetCoverForCurrentGame();
+static GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
 static void SwitchToAchievements();
 static void SwitchToLeaderboards();
 
@@ -514,11 +514,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   bool tried_to_initialize = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
-  std::string current_game_title;
-  std::string current_game_serial;
-  std::string current_game_path;
   std::string achievements_user_badge_path;
-  GameHash current_game_hash = 0;
 
   // Resources
   std::shared_ptr<GPUTexture> app_icon_texture;
@@ -722,23 +718,11 @@ bool FullscreenUI::Initialize()
 
   s_state.initialized = true;
 
-  // in case we open the pause menu while the game is running
-  const bool open_main_window = (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
-                                 !GPUThread::IsGPUBackendRequested());
-  if (GPUThread::HasGPUBackend())
-  {
-    Host::RunOnCPUThread([]() {
-      if (System::IsValid())
-      {
-        FullscreenUI::OnRunningGameChanged(System::GetDiscPath(), System::GetGameSerial(), System::GetGameTitle(),
-                                           System::GetGameHash());
-      }
-    });
-  }
-
   LoadBackground();
 
-  if (open_main_window)
+  // in case we open the pause menu while the game is running
+  if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+      !GPUThread::IsGPUBackendRequested())
   {
     ReturnToMainWindow();
     ForceKeyNavEnabled();
@@ -1018,24 +1002,6 @@ void FullscreenUI::OnSystemDestroyed()
   });
 }
 
-void FullscreenUI::OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title,
-                                        GameHash hash)
-{
-  // NOTE: Called on CPU thread.
-  if (!IsInitialized())
-    return;
-
-  GPUThread::RunOnThread([path = path, title = title, serial = serial, hash = hash]() mutable {
-    if (!IsInitialized())
-      return;
-
-    s_state.current_game_title = std::move(title);
-    s_state.current_game_serial = std::move(serial);
-    s_state.current_game_path = std::move(path);
-    s_state.current_game_hash = hash;
-  });
-}
-
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
   s_state.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
@@ -1233,10 +1199,6 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.fullscreen_mode_list_cache = {};
     s_state.graphics_adapter_list_cache = {};
     s_state.hotkey_list_cache = {};
-    s_state.current_game_hash = 0;
-    s_state.current_game_path = {};
-    s_state.current_game_serial = {};
-    s_state.current_game_title = {};
   }
 
   DestroyResources();
@@ -1657,7 +1619,7 @@ void FullscreenUI::StartChangeDiscFromFile()
   };
 
   OpenFileSelector(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
-                   GetDiscImageFilters(), std::string(Path::GetDirectory(s_state.current_game_path)));
+                   GetDiscImageFilters(), std::string(Path::GetDirectory(GPUThread::GetGamePath())));
 }
 
 void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
@@ -3735,14 +3697,15 @@ void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial, GameHa
 
 bool FullscreenUI::SwitchToGameSettings()
 {
-  if (s_state.current_game_serial.empty())
+  const std::string& serial = GPUThread::GetGameSerial();
+  if (serial.empty())
     return false;
 
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(s_state.current_game_path);
+  const GameList::Entry* entry = GameList::GetEntryForPath(GPUThread::GetGamePath());
   if (!entry)
   {
-    SwitchToGameSettingsForSerial(s_state.current_game_serial, s_state.current_game_hash);
+    SwitchToGameSettingsForSerial(serial, GPUThread::GetGameHash());
     return true;
   }
   else
@@ -6999,7 +6962,10 @@ void FullscreenUI::DrawPauseMenu()
     dl->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, scaled_top_bar_height),
                       ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.95f)), 0.0f);
 
-    GPUTexture* const cover = GetCoverForCurrentGame();
+    const std::string& game_title = GPUThread::GetGameTitle();
+    const std::string& game_serial = GPUThread::GetGameSerial();
+    const std::string& game_path = GPUThread::GetGamePath();
+    GPUTexture* const cover = GetCoverForCurrentGame(game_path);
     const float image_padding = LayoutScale(5.0f); // compensate for font baseline
     const float image_size = scaled_top_bar_height - scaled_top_bar_padding - scaled_top_bar_padding - image_padding;
     const ImRect image_rect(
@@ -7008,14 +6974,14 @@ void FullscreenUI::DrawPauseMenu()
                   ImVec2(static_cast<float>(cover->GetWidth()), static_cast<float>(cover->GetHeight()))));
     dl->AddImage(cover, image_rect.Min, image_rect.Max);
 
-    if (!s_state.current_game_serial.empty())
-      buffer.format("{} - {}", s_state.current_game_serial, Path::GetFileName(s_state.current_game_path));
+    if (!game_serial.empty())
+      buffer.format("{} - {}", game_serial, Path::GetFileName(game_path));
     else
-      buffer.assign(Path::GetFileName(s_state.current_game_path));
+      buffer.assign(Path::GetFileName(game_path));
 
     ImVec2 text_pos = ImVec2(scaled_top_bar_padding + image_size + scaled_top_bar_padding, scaled_top_bar_padding);
     RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos, display_size,
-                              title_text_color, s_state.current_game_title);
+                              title_text_color, game_title);
     text_pos.y += UIStyle.LargeFontSize + scaled_text_spacing;
 
     if (Achievements::IsActive())
@@ -7042,9 +7008,9 @@ void FullscreenUI::DrawPauseMenu()
                               title_text_color, buffer);
     text_pos.y += UIStyle.LargeFontSize + scaled_text_spacing;
 
-    if (!s_state.current_game_serial.empty())
+    if (!game_serial.empty())
     {
-      const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(s_state.current_game_serial);
+      const std::time_t cached_played_time = GameList::GetCachedPlayedTimeForSerial(game_serial);
       const std::time_t session_time = static_cast<std::time_t>(System::GetSessionPlayedTime());
 
       buffer.format(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true));
@@ -7110,14 +7076,12 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DOWNLOAD, "Load State"), has_game))
         {
-          BeginTransition(
-            []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, true); });
+          BeginTransition([]() { OpenSaveStateSelector(GPUThread::GetGameSerial(), GPUThread::GetGamePath(), true); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_DISKETTE, "Save State"), has_game))
         {
-          BeginTransition(
-            []() { OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, false); });
+          BeginTransition([]() { OpenSaveStateSelector(GPUThread::GetGameSerial(), GPUThread::GetGamePath(), false); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_GAMEPAD_ALT, "Toggle Analog")))
@@ -8925,11 +8889,11 @@ GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType typ
   }
 }
 
-GPUTexture* FullscreenUI::GetCoverForCurrentGame()
+GPUTexture* FullscreenUI::GetCoverForCurrentGame(const std::string& game_path)
 {
   auto lock = GameList::GetLock();
 
-  const GameList::Entry* entry = GameList::GetEntryForPath(s_state.current_game_path);
+  const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
   if (!entry)
     return s_state.fallback_disc_texture.get();
 

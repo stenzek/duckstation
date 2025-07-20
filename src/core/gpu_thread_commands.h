@@ -31,6 +31,7 @@ enum class GPUBackendCommandType : u8
   AsyncBackendCall,
   Reconfigure,
   UpdateSettings,
+  UpdateGameInfo,
   Shutdown,
   ClearVRAM,
   ClearDisplay,
@@ -71,7 +72,6 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
 {
   Error* error_ptr;
   bool* out_result;
-  std::string game_serial;
   std::optional<GPURenderer> renderer;
   std::optional<bool> fullscreen;
   std::optional<bool> start_fullscreen_ui;
@@ -87,6 +87,21 @@ struct GPUThreadUpdateSettingsCommand : public GPUThreadCommand
   GPUThreadUpdateSettingsCommand(const GPUSettings& settings_) : settings(settings_) {}
 
   GPUSettings settings;
+};
+
+struct GPUThreadUpdateGameInfoCommand : public GPUThreadCommand
+{
+  GPUThreadUpdateGameInfoCommand() = default;
+  GPUThreadUpdateGameInfoCommand(const std::string& game_title_, const std::string& game_serial_,
+                                 const std::string& game_path_, const GameHash& game_hash_)
+    : game_title(game_title_), game_serial(game_serial_), game_path(game_path_), game_hash(game_hash_)
+  {
+  }
+
+  std::string game_title;
+  std::string game_serial;
+  std::string game_path;
+  GameHash game_hash;
 };
 
 struct GPUThreadAsyncCallCommand : public GPUThreadCommand
