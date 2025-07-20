@@ -403,6 +403,8 @@ QIcon GameListModel::getIconForGame(const QString& path)
   {
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
+    if (!entry)
+      return ret;
 
     if (const QPixmap* pm = m_memcard_pixmap_cache.Lookup(entry->serial))
     {
@@ -413,7 +415,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
     else
     {
       // See above.
-      if (entry && !entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
+      if (!entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
       {
         const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
         if (!icon_path.empty())
