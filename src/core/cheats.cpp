@@ -32,7 +32,7 @@ namespace {
 class CheatFileReader
 {
 public:
-  CheatFileReader(const std::string_view contents) : m_contents(contents) {}
+  explicit CheatFileReader(const std::string_view contents) : m_contents(contents) {}
 
   ALWAYS_INLINE size_t GetCurrentOffset() const { return m_current_offset; }
   ALWAYS_INLINE size_t GetCurrentLineOffset() const { return m_current_line_offset; }
@@ -178,7 +178,7 @@ public:
   };
 
 public:
-  CheatCode(Metadata metadata);
+  explicit CheatCode(Metadata metadata);
   virtual ~CheatCode();
 
   ALWAYS_INLINE const Metadata& GetMetadata() const { return m_metadata; }
@@ -2034,7 +2034,7 @@ namespace {
 class GamesharkCheatCode final : public CheatCode
 {
 public:
-  GamesharkCheatCode(Metadata metadata);
+  explicit GamesharkCheatCode(Metadata metadata);
   ~GamesharkCheatCode() override;
 
   static std::unique_ptr<GamesharkCheatCode> Parse(Metadata metadata, const std::string_view data, Error* error);

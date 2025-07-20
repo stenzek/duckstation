@@ -210,7 +210,7 @@ class GameListWidget final : public QWidget
   Q_OBJECT
 
 public:
-  GameListWidget(QWidget* parent = nullptr);
+  explicit GameListWidget(QWidget* parent = nullptr);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }

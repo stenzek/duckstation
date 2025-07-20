@@ -84,7 +84,7 @@ void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 class BackgroundProgressCallback final : public ProgressCallback
 {
 public:
-  BackgroundProgressCallback(std::string name);
+  explicit BackgroundProgressCallback(std::string name);
   ~BackgroundProgressCallback() override;
 
   void SetStatusText(const std::string_view text) override;

@@ -19,7 +19,7 @@ public:
   DynamicLibrary();
 
   /// Automatically loads the specified library. Call IsOpen() to check validity before use.
-  DynamicLibrary(const char* filename);
+  explicit DynamicLibrary(const char* filename);
 
   /// Move constructor, transfers ownership.
   DynamicLibrary(DynamicLibrary&& move);

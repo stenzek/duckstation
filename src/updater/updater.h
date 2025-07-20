@@ -10,7 +10,7 @@
 class Updater
 {
 public:
-  Updater(ProgressCallback* progress);
+  explicit Updater(ProgressCallback* progress);
   ~Updater();
 
   bool Initialize(std::string staging_directory, std::string destination_directory);

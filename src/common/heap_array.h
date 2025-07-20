@@ -167,7 +167,7 @@ public:
   using this_type = DynamicHeapArray<T, alignment>;
 
   DynamicHeapArray() : m_data(nullptr), m_size(0) {}
-  DynamicHeapArray(size_t size) { internal_resize(size, nullptr, 0); }
+  explicit DynamicHeapArray(size_t size) { internal_resize(size, nullptr, 0); }
   DynamicHeapArray(const T* begin, const T* end)
   {
     const size_t size = reinterpret_cast<const char*>(end) - reinterpret_cast<const char*>(begin);
@@ -195,7 +195,7 @@ public:
       m_size = 0;
     }
   }
-  DynamicHeapArray(const std::span<const T> data)
+  explicit DynamicHeapArray(const std::span<const T> data)
   {
     if (!data.empty())
     {

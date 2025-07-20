@@ -49,7 +49,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  NeGconRumble(u32 index);
+  explicit NeGconRumble(u32 index);
   ~NeGconRumble() override;
 
   static std::unique_ptr<NeGconRumble> Create(u32 index);

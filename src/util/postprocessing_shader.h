@@ -27,7 +27,7 @@ class Shader
 {
 public:
   Shader();
-  Shader(std::string name);
+  explicit Shader(std::string name);
   virtual ~Shader();
 
   ALWAYS_INLINE const std::string& GetName() const { return m_name; }

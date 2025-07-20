@@ -20,7 +20,7 @@ class DebuggerCodeModel final : public QAbstractTableModel
   Q_OBJECT
 
 public:
-  DebuggerCodeModel(QObject* parent = nullptr);
+  explicit DebuggerCodeModel(QObject* parent = nullptr);
   ~DebuggerCodeModel() override;
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -61,7 +61,7 @@ class DebuggerRegistersModel final : public QAbstractListModel
   Q_OBJECT
 
 public:
-  DebuggerRegistersModel(QObject* parent = nullptr);
+  explicit DebuggerRegistersModel(QObject* parent = nullptr);
   ~DebuggerRegistersModel() override;
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -82,7 +82,7 @@ class DebuggerStackModel final : public QAbstractListModel
   Q_OBJECT
 
 public:
-  DebuggerStackModel(QObject* parent = nullptr);
+  explicit DebuggerStackModel(QObject* parent = nullptr);
   ~DebuggerStackModel() override;
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -98,7 +98,7 @@ class DebuggerAddBreakpointDialog final : public QDialog
   Q_OBJECT
 
 public:
-  DebuggerAddBreakpointDialog(QWidget* parent = nullptr);
+  explicit DebuggerAddBreakpointDialog(QWidget* parent = nullptr);
   ~DebuggerAddBreakpointDialog() override;
 
   u32 getAddress() const { return m_address; }

@@ -281,7 +281,7 @@ public:
 
   using DeviceList = QList<Device>;
 
-  InputDeviceListModel(QObject* parent = nullptr);
+  explicit InputDeviceListModel(QObject* parent = nullptr);
   ~InputDeviceListModel() override;
 
   // Safe to access on UI thread.
@@ -325,7 +325,7 @@ Q_SIGNALS:
   void completed(QtAsyncTask* self);
 
 private:
-  QtAsyncTask(WorkCallback callback);
+  explicit QtAsyncTask(WorkCallback callback);
 
   std::variant<WorkCallback, CompletionCallback> m_callback;
 };

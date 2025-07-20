@@ -1037,7 +1037,7 @@ namespace {
 class GameListCenterIconStyleDelegate final : public QStyledItemDelegate
 {
 public:
-  GameListCenterIconStyleDelegate(QWidget* parent) : QStyledItemDelegate(parent) {}
+  explicit GameListCenterIconStyleDelegate(QWidget* parent) : QStyledItemDelegate(parent) {}
   ~GameListCenterIconStyleDelegate() = default;
 
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override

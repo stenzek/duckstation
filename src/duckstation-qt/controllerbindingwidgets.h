@@ -78,7 +78,7 @@ class ControllerMacroWidget : public QWidget
   Q_OBJECT
 
 public:
-  ControllerMacroWidget(ControllerBindingWidget* parent);
+  explicit ControllerMacroWidget(ControllerBindingWidget* parent);
   ~ControllerMacroWidget();
 
   void updateListItem(u32 index);
@@ -133,7 +133,7 @@ class ControllerCustomSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
-  ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
+  explicit ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
   ~ControllerCustomSettingsWidget();
 
   void createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget, QGridLayout* layout,

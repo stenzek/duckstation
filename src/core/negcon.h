@@ -81,7 +81,7 @@ public:
 
   static const Controller::ControllerInfo INFO;
 
-  NeGcon(u32 index);
+  explicit NeGcon(u32 index);
   ~NeGcon() override;
 
   static std::unique_ptr<NeGcon> Create(u32 index);
