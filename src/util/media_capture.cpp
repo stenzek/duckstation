@@ -1117,13 +1117,6 @@ MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 frame_rat
   ComPtr<IMFTransform> transform;
   hr = transforms[0]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
   if (transforms)
-    wrap_MFHeapFree(transforms);
-  if (FAILED(hr)) [[unlikely]]
-  {
-    Error::SetHResult(error, "Encoder ActivateObject() failed: ", hr);
-    return nullptr;
-  }
-
   {
     LPWSTR transform_name;
     UINT32 transform_name_length;
@@ -1134,6 +1127,14 @@ MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 frame_rat
                StringUtil::WideStringToUTF8String(std::wstring_view(transform_name, transform_name_length)));
       CoTaskMemFree(transform_name);
     }
+
+    wrap_MFHeapFree(transforms);
+  }
+
+  if (FAILED(hr)) [[unlikely]]
+  {
+    Error::SetHResult(error, "Encoder ActivateObject() failed: ", hr);
+    return nullptr;
   }
 
   *use_async_transform = false;
