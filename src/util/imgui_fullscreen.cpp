@@ -3956,10 +3956,11 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   const bool has_progress = (progress_min < progress_max);
 
   const float font_size = UIStyle.MediumFontSize;
+  const float font_weight = UIStyle.BoldFontWeight;
   const float padding_and_rounding = LayoutScale(18.0f);
   const float item_spacing = LayoutScale(10.0f);
   const float frame_rounding = LayoutScale(6.0f);
-  const float bar_height = (has_progress || is_persistent) ? LayoutScale(15.0f) : 0.0f;
+  const float bar_height = (has_progress || is_persistent) ? LayoutScale(18.0f) : 0.0f;
   const float window_width = LayoutScale(450.0f);
   const float window_height =
     ((padding_and_rounding * 2.0f) + font_size + item_spacing + bar_height + LayoutScale(5.0f));
@@ -3969,66 +3970,78 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   const float image_height = LayoutScale(260.0f);
   const ImVec2 image_pos = ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f),
                                   ImCeil(((io.DisplaySize.y - image_height - window_height - window_spacing) * 0.5f)));
+  ImDrawList* const dl = ImGui::GetBackgroundDrawList();
   GPUTexture* tex = GetCachedTexture(image);
   if (tex)
   {
     const ImRect image_rect = CenterImage(ImRect(image_pos, image_pos + ImVec2(image_width, image_height)), tex);
-    ImGui::GetBackgroundDrawList()->AddImage(tex, image_rect.Min, image_rect.Max);
+    dl->AddImage(tex, image_rect.Min, image_rect.Max);
   }
 
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, frame_rounding);
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, item_spacing));
-  ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
-  ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.BackgroundColor);
-  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
-  ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-  ImGui::SetNextWindowSize(ImVec2(window_width, window_height), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(
-    ImVec2(ImCeil((io.DisplaySize.x - window_width) * 0.5f), image_pos.y + image_height + window_spacing),
-    ImGuiCond_Always);
-  if (ImGui::Begin("LoadingScreen", nullptr,
-                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing))
+  const ImVec2 window_pos =
+    ImVec2(ImCeil((io.DisplaySize.x - window_width) * 0.5f), image_pos.y + image_height + window_spacing);
+  dl->AddRectFilled(window_pos, window_pos + ImVec2(window_width, window_height),
+                    ImGui::GetColorU32(UIStyle.PopupBackgroundColor), padding_and_rounding);
+
+  TinyString prog_text;
+  ImVec2 prog_text_size;
+  if (has_progress)
   {
-    if (has_progress || is_persistent)
+    prog_text.format("{}/{}", progress_value, progress_max);
+    prog_text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(prog_text));
+  }
+
+  const float avail_width = window_width - (padding_and_rounding * 2.0f);
+  const ImVec2 text_pos = window_pos + ImVec2(padding_and_rounding, padding_and_rounding);
+  const float text_wrap_width = avail_width - prog_text_size.x;
+  const ImVec2 text_size =
+    UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, text_wrap_width, IMSTR_START_END(message));
+  dl->AddText(UIStyle.Font, font_size, font_weight, text_pos, ImGui::GetColorU32(UIStyle.PrimaryTextColor),
+              IMSTR_START_END(message), text_wrap_width);
+
+  if (has_progress)
+  {
+    const ImVec2 prog_text_pos = ImVec2(text_pos.x + avail_width - prog_text_size.x, text_pos.y);
+    dl->AddText(UIStyle.Font, font_size, font_weight, prog_text_pos, ImGui::GetColorU32(UIStyle.PrimaryTextColor),
+                IMSTR_START_END(prog_text));
+  }
+
+  if (bar_height > 0.0f)
+  {
+    const ImVec2 box_start = ImVec2(text_pos.x, text_pos.y + text_size.y + item_spacing);
+    const ImVec2 box_end = box_start + ImVec2(avail_width, bar_height);
+    dl->AddRectFilled(box_start, box_end, ImGui::GetColorU32(UIStyle.PopupFrameBackgroundColor), frame_rounding);
+
+    if (has_progress)
     {
-      if (!message.empty())
-        ImGui::TextUnformatted(IMSTR_START_END(message));
+      const float fraction = static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min);
+      ImGui::RenderRectFilledRangeH(dl, ImRect(box_start, box_end), ImGui::GetColorU32(UIStyle.SecondaryColor), 0.0f,
+                                    fraction, frame_rounding);
 
-      if (has_progress)
-      {
-        TinyString buf;
-        buf.format("{}/{}", progress_value, progress_max);
-
-        const ImVec2 prog_size = ImGui::CalcTextSize(IMSTR_START_END(buf));
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(window_width - padding_and_rounding - prog_size.x);
-        ImGui::TextUnformatted(IMSTR_START_END(buf));
-      }
-
-      ImGui::ProgressBar(has_progress ?
-                           (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :
-                           static_cast<float>(-ImGui::GetTime()),
-                         ImVec2(-1.0f, bar_height), "");
+#if 0
+      prog_text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
+      const ImVec2 pct_text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
+                                                               FLT_MAX, 0.0f, IMSTR_START_END(prog_text));
+      const ImVec2 pct_text_pos = ImVec2(box_start.x + ((box_end.x - box_start.x) / 2.0f) - (pct_text_size.x / 2.0f),
+                                         box_start.y + ((box_end.y - box_start.y) / 2.0f) - (pct_text_size.y / 2.0f));
+      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, pct_text_pos,
+                  ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(prog_text));
+#endif
     }
     else
     {
-      if (!message.empty())
+      // indeterminate, so draw a scrolling bar
+      const float bar_width = LayoutScale(30.0f);
+      const float fraction = static_cast<float>(std::fmod(ImGui::GetTime(), 2.0) * 0.5);
+      const ImVec2 bar_start = ImVec2(box_start.x + ImLerp(0.0f, box_end.x, fraction) - bar_width, box_start.y);
+      const ImVec2 bar_end = ImVec2(std::min(bar_start.x + bar_width, box_end.x), box_end.y);
+      if ((bar_end.x - bar_start.x) > LayoutScale(1.0f))
       {
-        const ImVec2 text_size = ImGui::CalcTextSize(IMSTR_START_END(message));
-        ImGui::SetCursorPosX((window_width - text_size.x) / 2.0f);
-        ImGui::TextUnformatted(IMSTR_START_END(message));
+        dl->AddRectFilled(ImClamp(bar_start, box_start, box_end), ImClamp(bar_end, box_start, box_end),
+                          ImGui::GetColorU32(UIStyle.SecondaryColor), frame_rounding);
       }
     }
   }
-  ImGui::End();
-  ImGui::PopFont();
-  ImGui::PopStyleColor(4);
-  ImGui::PopStyleVar(4);
 }
 
 //////////////////////////////////////////////////////////////////////////
