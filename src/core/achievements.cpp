@@ -1189,7 +1189,7 @@ bool Achievements::IdentifyCurrentGame()
 
   // this crap is only needed because we can't grab the image from the reader...
   std::unique_ptr<CDImage> temp_image;
-  if (const std::string& disc_path = System::GetDiscPath(); !disc_path.empty())
+  if (const std::string& disc_path = System::GetGamePath(); !disc_path.empty())
   {
     Error error;
     temp_image = CDImage::Open(disc_path.c_str(), g_settings.cdrom_load_image_patches, &error);
@@ -1856,7 +1856,7 @@ bool Achievements::DoState(StateWrapper& sw)
     {
       // Messy because GPU-thread, but at least it looks pretty.
       GPUThread::RunOnThread([]() {
-        FullscreenUI::OpenLoadingScreen(System::GetImageForLoadingScreen(GPUThread::GetGameSerial()),
+        FullscreenUI::OpenLoadingScreen(System::GetImageForLoadingScreen(GPUThread::GetGamePath()),
                                         TRANSLATE_SV("Achievements", "Downloading achievements data..."));
       });
 

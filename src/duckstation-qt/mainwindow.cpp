@@ -2570,7 +2570,7 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
     return;
 
   Host::RunOnCPUThread([category]() {
-    const std::string& path = System::GetDiscPath();
+    const std::string& path = System::GetGamePath();
     const std::string& serial = System::GetGameSerial();
     if (path.empty() || serial.empty())
       return;

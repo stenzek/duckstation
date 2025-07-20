@@ -219,9 +219,9 @@ GlobalTicks GetGlobalTickCounter();
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
 
-const std::string& GetDiscPath();
-const std::string& GetGameSerial();
 const std::string& GetGameTitle();
+const std::string& GetGameSerial();
+const std::string& GetGamePath();
 const std::string& GetExeOverride();
 const GameDatabase::Entry* GetGameDatabaseEntry();
 GameHash GetGameHash();
@@ -424,8 +424,7 @@ void ToggleSoftwareRendering();
 void RequestDisplaySize(float scale = 0.0f);
 
 /// Returns the path to a possible cover image for the current serial.
-/// Only intended to be used for loading screens, so it may not be correct with custom titles and such.
-std::string GetImageForLoadingScreen(std::string_view serial);
+std::string GetImageForLoadingScreen(const std::string& game_path);
 
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)

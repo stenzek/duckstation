@@ -1690,7 +1690,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
       std::vector<std::string> paths;
       paths.reserve(matches.size());
 
-      const std::string& current_path = System::GetDiscPath();
+      const std::string& current_path = System::GetGamePath();
       for (auto& [title, glentry] : matches)
       {
         options.emplace_back(std::move(title), current_path == glentry->path);
@@ -9129,8 +9129,7 @@ void FullscreenUI::BackgroundProgressCallback::SetCancelled()
 LoadingScreenProgressCallback::LoadingScreenProgressCallback()
   : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
 {
-  m_image = System::GetImageForLoadingScreen(
-    std::string_view(m_on_gpu_thread ? GPUThread::GetGameSerial() : System::GetGameSerial()));
+  m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? GPUThread::GetGamePath() : System::GetGamePath());
 }
 
 LoadingScreenProgressCallback::~LoadingScreenProgressCallback()

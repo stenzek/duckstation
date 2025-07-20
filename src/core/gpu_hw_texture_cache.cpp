@@ -3455,7 +3455,7 @@ void GPUTextureCache::PreloadReplacementTextures()
   u32 num_textures_loaded = 0;
   const size_t total_textures = s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
                                 s_state.texture_page_texture_replacements.size();
-  std::string image_path = System::GetImageForLoadingScreen(GPUThread::GetGameSerial());
+  std::string image_path = System::GetImageForLoadingScreen(GPUThread::GetGamePath());
 
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \

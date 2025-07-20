@@ -763,18 +763,19 @@ u32 System::GetInternalFrameNumber()
   return s_state.internal_frame_number;
 }
 
-const std::string& System::GetDiscPath()
+const std::string& System::GetGameTitle()
 {
-  return s_state.running_game_path;
+  return s_state.running_game_title;
 }
+
 const std::string& System::GetGameSerial()
 {
   return s_state.running_game_serial;
 }
 
-const std::string& System::GetGameTitle()
+const std::string& System::GetGamePath()
 {
-  return s_state.running_game_title;
+  return s_state.running_game_path;
 }
 
 const std::string& System::GetExeOverride()
@@ -6006,12 +6007,12 @@ bool System::ChangeGPUDump(std::string new_path)
   return true;
 }
 
-std::string System::GetImageForLoadingScreen(std::string_view serial)
+std::string System::GetImageForLoadingScreen(const std::string& game_path)
 {
   std::string ret;
 
   const auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryBySerial(serial);
+  const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
 
   if (entry)
     ret = GameList::GetCoverImagePathForEntry(entry);

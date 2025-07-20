@@ -185,7 +185,7 @@ class ShaderCompileProgressTracker
 {
 public:
   ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_image(System::GetImageForLoadingScreen(GPUThread::GetGameSerial())),
+    : m_title(std::move(title)), m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
       m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
       m_start_time(Timer::GetCurrentValue()), m_last_update_time(0), m_progress(0), m_total(total)
   {
