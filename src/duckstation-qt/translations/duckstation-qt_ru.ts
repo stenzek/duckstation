@@ -6134,7 +6134,8 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9412"/>
         <source>Achievement Unlock/Count</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>#Настройка списка игр/Список настроек/Сортировать по/</translatorcomment>
+        <translation type="unfinished">Разблокированные достижения/Количество</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9413"/>
