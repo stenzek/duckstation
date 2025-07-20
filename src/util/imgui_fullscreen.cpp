@@ -3957,23 +3957,17 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   const float width = (400.0f * scale);
   const bool has_progress = (progress_min < progress_max);
 
-  const float logo_width = 260.0f * scale;
-  const float logo_height = 260.0f * scale;
+  const float logo_width = ImCeil(260.0f * scale);
+  const float logo_height = ImCeil(260.0f * scale);
 
-  ImGui::SetNextWindowSize(ImVec2(logo_width, logo_height), ImGuiCond_Always);
-  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) - (50.0f * scale)),
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  if (ImGui::Begin("LoadingScreenLogo", nullptr,
-                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
-                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
-                     ImGuiWindowFlags_NoBackground))
+  GPUTexture* tex = GetCachedTexture(image);
+  if (tex)
   {
-    GPUTexture* tex = GetCachedTexture(image);
-    if (tex)
-      ImGui::Image(tex, ImVec2(logo_width, logo_height));
+    const ImVec2 image_pos = ImVec2(ImCeil((io.DisplaySize.x - logo_width) * 0.5f),
+                                    ImCeil(((io.DisplaySize.y - logo_height) * 0.5f) - (50.0f * scale)));
+    const ImRect image_rect = CenterImage(ImRect(image_pos, image_pos + ImVec2(logo_width, logo_height)), tex);
+    ImGui::GetBackgroundDrawList()->AddImage(tex, image_rect.Min, image_rect.Max);
   }
-  ImGui::End();
 
   const float padding_and_rounding = 18.0f * scale;
   const float frame_rounding = 6.0f * scale;
