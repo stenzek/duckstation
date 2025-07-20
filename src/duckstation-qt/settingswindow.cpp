@@ -38,7 +38,7 @@
 
 #include "moc_settingswindow.cpp"
 
-LOG_CHANNEL(SettingsWindow);
+LOG_CHANNEL(Host);
 
 static QList<SettingsWindow*> s_open_game_properties_dialogs;
 

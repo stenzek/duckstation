@@ -57,7 +57,6 @@
   X(SIO)                                                                                                               \
   X(SPU)                                                                                                               \
   X(Settings)                                                                                                          \
-  X(SettingsWindow)                                                                                                    \
   X(ShaderGen)                                                                                                         \
   X(Sockets)                                                                                                           \
   X(StateWrapper)                                                                                                      \
