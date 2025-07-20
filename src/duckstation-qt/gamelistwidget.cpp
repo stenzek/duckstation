@@ -363,20 +363,27 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
   {
     QPixmap* item = m_memcard_pixmap_cache.Lookup(ge->serial);
     if (item)
-      return *item;
-
-    // Assumes game list lock is held.
-    const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
-    QPixmap pm;
-    if (!path.empty() && pm.load(QString::fromStdString(path)))
     {
-      fixIconPixmapSize(pm);
-      return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
+      if (!item->isNull())
+        return *item;
     }
+    else
+    {
+      // Assumes game list lock is held.
+      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
+      QPixmap pm;
+      if (!path.empty() && pm.load(QString::fromStdString(path)))
+      {
+        fixIconPixmapSize(pm);
+        return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
+      }
 
-    return *m_memcard_pixmap_cache.Insert(ge->serial, m_type_pixmaps[static_cast<u32>(ge->type)]);
+      // Stop it trying again in the future.
+      m_memcard_pixmap_cache.Insert(ge->serial, {});
+    }
   }
 
+  // If we don't have a pixmap, we return the type pixmap.
   return m_type_pixmaps[static_cast<u32>(ge->type)];
 }
 
