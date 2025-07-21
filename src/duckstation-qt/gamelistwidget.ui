@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,1,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,1,0,0,0">
      <property name="spacing">
       <number>3</number>
      </property>
@@ -82,7 +82,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="viewMergeDiscSets">
+      <widget class="QToolButton" name="mergeDiscSets">
        <property name="minimumSize">
         <size>
          <width>32</width>
@@ -101,7 +101,26 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="viewGridTitles">
+      <widget class="QToolButton" name="showGameIcons">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Show Game Icons</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="showGridTitles">
        <property name="minimumSize">
         <size>
          <width>32</width>

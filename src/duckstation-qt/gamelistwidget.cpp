@@ -1192,8 +1192,9 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
   m_ui.viewGameList->setDefaultAction(actionGameList);
   m_ui.viewGameGrid->setDefaultAction(actionGameGrid);
-  m_ui.viewMergeDiscSets->setDefaultAction(actionMergeDiscSets);
-  m_ui.viewGridTitles->setDefaultAction(actionGridShowTitles);
+  m_ui.mergeDiscSets->setDefaultAction(actionMergeDiscSets);
+  m_ui.showGameIcons->setDefaultAction(actionListShowIcons);
+  m_ui.showGridTitles->setDefaultAction(actionGridShowTitles);
 
   connect(m_ui.gridScale, &QSlider::valueChanged, m_grid_view, &GameListGridView::setZoomPct);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
@@ -1502,7 +1503,8 @@ void GameListWidget::updateView(bool grid_view)
 
 void GameListWidget::updateToolbar(bool grid_view)
 {
-  m_ui.viewGridTitles->setVisible(grid_view);
+  m_ui.showGameIcons->setVisible(!grid_view);
+  m_ui.showGridTitles->setVisible(grid_view);
   m_ui.gridScale->setVisible(grid_view);
 }
 

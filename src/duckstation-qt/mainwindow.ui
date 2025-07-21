@@ -939,8 +939,14 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="image-fill"/>
+   </property>
    <property name="text">
     <string>Show Game Icons (List View)</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Game Icons</string>
    </property>
   </action>
   <action name="actionMediaCapture">
