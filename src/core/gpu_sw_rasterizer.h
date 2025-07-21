@@ -15,7 +15,7 @@
 namespace GPU_SW_Rasterizer {
 
 // this is actually (31 * 255) >> 4) == 494, but to simplify addressing we use the next power of two (512)
-static constexpr u32 DITHER_LUT_SIZE = 512;
+inline constexpr u32 DITHER_LUT_SIZE = 512;
 using DitherLUT = std::array<std::array<std::array<u8, DITHER_LUT_SIZE>, DITHER_MATRIX_SIZE>, DITHER_MATRIX_SIZE>;
 extern const DitherLUT g_dither_lut;
 

@@ -13,8 +13,8 @@
 #include <cstdint>
 
 /****************************** MACROS ******************************/
-static constexpr uint32_t AES_BLOCK_SIZE = 16; // AES operates on 16 bytes at a time
-static constexpr uint32_t AES_KEY_SCHEDULE_SIZE = 60;
+inline constexpr uint32_t AES_BLOCK_SIZE = 16; // AES operates on 16 bytes at a time
+inline constexpr uint32_t AES_KEY_SCHEDULE_SIZE = 60;
 
 /*********************** FUNCTION DECLARATIONS **********************/
 ///////////////////

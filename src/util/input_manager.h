@@ -191,24 +191,24 @@ public:
 namespace InputManager {
 
 /// Maximum number of buttons that can be part of a chord.
-static constexpr u32 MAX_KEYS_PER_BINDING = 4;
+inline constexpr u32 MAX_KEYS_PER_BINDING = 4;
 
 /// Maximum number of output vibration motors per pad.
-static constexpr u32 MAX_MOTORS_PER_PAD = 2;
+inline constexpr u32 MAX_MOTORS_PER_PAD = 2;
 
 /// Minimum interval between vibration updates when the effect is continuous.
-static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
+inline constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 
 /// Maximum number of host mouse devices.
-static constexpr u32 MAX_POINTER_DEVICES = 8;
-static constexpr u32 MAX_POINTER_BUTTONS = 3;
+inline constexpr u32 MAX_POINTER_DEVICES = 8;
+inline constexpr u32 MAX_POINTER_BUTTONS = 3;
 
 /// Maximum number of software cursors. We allocate an extra two for controllers with
 /// positioning data from the controller instead of a mouse.
-static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
+inline constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 
 /// Number of macro buttons per controller.
-static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
+inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
 
 /// Returns a pointer to the external input source class, if present.
 InputSource* GetInputSourceInterface(InputSourceType type);

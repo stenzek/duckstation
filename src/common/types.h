@@ -212,29 +212,29 @@ extern const u32 HOST_PAGE_MASK;
 extern const u32 HOST_PAGE_SHIFT;
 #else
 #if defined(OVERRIDE_HOST_PAGE_SIZE)
-static constexpr u32 HOST_PAGE_SIZE = OVERRIDE_HOST_PAGE_SIZE;
-static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
-static constexpr u32 HOST_PAGE_SHIFT = std::bit_width(HOST_PAGE_MASK);
+inline constexpr u32 HOST_PAGE_SIZE = OVERRIDE_HOST_PAGE_SIZE;
+inline constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+inline constexpr u32 HOST_PAGE_SHIFT = std::bit_width(HOST_PAGE_MASK);
 #elif defined(__APPLE__) && defined(__aarch64__)
-static constexpr u32 HOST_PAGE_SIZE = 0x4000;
-static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
-static constexpr u32 HOST_PAGE_SHIFT = 14;
+inline constexpr u32 HOST_PAGE_SIZE = 0x4000;
+inline constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+inline constexpr u32 HOST_PAGE_SHIFT = 14;
 #else
-static constexpr u32 HOST_PAGE_SIZE = 0x1000;
-static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
-static constexpr u32 HOST_PAGE_SHIFT = 12;
+inline constexpr u32 HOST_PAGE_SIZE = 0x1000;
+inline constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
+inline constexpr u32 HOST_PAGE_SHIFT = 12;
 #endif
-static constexpr u32 MIN_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
-static constexpr u32 MAX_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
+inline constexpr u32 MIN_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
+inline constexpr u32 MAX_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
 #endif
 
 // Host cache line sizes.
 #if defined(OVERRIDE_HOST_CACHE_LINE_SIZE)
-static constexpr u32 HOST_CACHE_LINE_SIZE = OVERRIDE_HOST_CACHE_LINE_SIZE;
+inline constexpr u32 HOST_CACHE_LINE_SIZE = OVERRIDE_HOST_CACHE_LINE_SIZE;
 #elif defined(__APPLE__) && defined(__aarch64__)
-static constexpr u32 HOST_CACHE_LINE_SIZE = 128; // Apple Silicon uses 128b cache lines.
+inline constexpr u32 HOST_CACHE_LINE_SIZE = 128; // Apple Silicon uses 128b cache lines.
 #else
-static constexpr u32 HOST_CACHE_LINE_SIZE = 64; // Everything else is 64b.
+inline constexpr u32 HOST_CACHE_LINE_SIZE = 64; // Everything else is 64b.
 #endif
 #define ALIGN_TO_CACHE_LINE alignas(HOST_CACHE_LINE_SIZE)
 

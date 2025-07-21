@@ -8,7 +8,7 @@
 // From https://github.com/nicolausYes/easing-functions/blob/master/src/easing.cpp
 
 namespace Easing {
-static constexpr float pi = 3.1415926545f;
+inline constexpr float pi = 3.1415926545f;
 
 template<typename T>
 ALWAYS_INLINE_RELEASE static T InSine(T t)

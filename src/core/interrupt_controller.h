@@ -8,7 +8,7 @@ class StateWrapper;
 
 namespace InterruptController {
 
-static constexpr u32 NUM_IRQS = 11;
+inline constexpr u32 NUM_IRQS = 11;
 
 enum class IRQ : u32
 {

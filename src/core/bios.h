@@ -80,7 +80,7 @@ static_assert(sizeof(PSEXEHeader) == 0x800);
 #pragma pack(pop)
 
 // .cpe files
-static constexpr u32 CPE_MAGIC = 0x01455043;
+inline constexpr u32 CPE_MAGIC = 0x01455043;
 
 std::optional<Image> LoadImageFromFile(const char* filename, Error* error);
 

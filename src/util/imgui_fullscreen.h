@@ -36,31 +36,31 @@ namespace ImGuiFullscreen {
 // end_ptr() for string_view
 #define IMSTR_START_END(sv) (sv).data(), (sv).data() + (sv).length()
 
-static constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
-static constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
-static constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
-static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
-static constexpr float LAYOUT_MEDIUM_LARGE_FONT_SIZE = 21.0f;
-static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
-static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
-static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
-static constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
-static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
-static constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
-static constexpr float LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING = 6.0f;
-static constexpr float LAYOUT_MENU_ITEM_EXTRA_HEIGHT = 2.0f;
-static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
-static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
-static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
-static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
-static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
-static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 150.0f;
-static constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
-static constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
-static constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
-static constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
-static constexpr float LAYOUT_WIDGET_FRAME_ROUNDING = 20.0f;
-static constexpr ImVec2 LAYOUT_CENTER_ALIGN_TEXT = ImVec2(0.5f, 0.0f);
+inline constexpr float LAYOUT_SCREEN_WIDTH = 1280.0f;
+inline constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
+inline constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
+inline constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
+inline constexpr float LAYOUT_MEDIUM_LARGE_FONT_SIZE = 21.0f;
+inline constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
+inline constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
+inline constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
+inline constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
+inline constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
+inline constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
+inline constexpr float LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING = 6.0f;
+inline constexpr float LAYOUT_MENU_ITEM_EXTRA_HEIGHT = 2.0f;
+inline constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
+inline constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
+inline constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 150.0f;
+inline constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
+inline constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
+inline constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
+inline constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
+inline constexpr float LAYOUT_WIDGET_FRAME_ROUNDING = 20.0f;
+inline constexpr ImVec2 LAYOUT_CENTER_ALIGN_TEXT = ImVec2(0.5f, 0.0f);
 
 struct ALIGN_TO_CACHE_LINE UIStyles
 {
