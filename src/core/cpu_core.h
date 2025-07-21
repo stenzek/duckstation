@@ -253,7 +253,7 @@ struct DebuggerRegisterListEntry
   u32* value_ptr;
 };
 
-static constexpr u32 NUM_DEBUGGER_REGISTER_LIST_ENTRIES = 103;
+inline constexpr u32 NUM_DEBUGGER_REGISTER_LIST_ENTRIES = 103;
 extern const std::array<DebuggerRegisterListEntry, NUM_DEBUGGER_REGISTER_LIST_ENTRIES> g_debugger_register_list;
 
 } // namespace CPU

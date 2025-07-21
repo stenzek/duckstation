@@ -37,7 +37,7 @@ enum class PacketType : u8
   Comment = 0x12,
 };
 
-static constexpr u32 MAX_PACKET_LENGTH = ((1u << 24) - 1); // 3 bytes for packet size
+inline constexpr u32 MAX_PACKET_LENGTH = ((1u << 24) - 1); // 3 bytes for packet size
 
 union PacketHeader
 {

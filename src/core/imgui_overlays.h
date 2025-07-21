@@ -13,7 +13,7 @@ class GPUBackend;
 
 namespace ImGuiManager {
 
-static constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
+inline constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
 
 void UpdateInputOverlay();
 void RenderTextOverlays(const GPUBackend* gpu);
@@ -30,7 +30,7 @@ void DestroyOverlayTextures();
 
 namespace SaveStateSelectorUI {
 
-static constexpr float DEFAULT_OPEN_TIME = 7.5f;
+inline constexpr float DEFAULT_OPEN_TIME = 7.5f;
 
 bool IsOpen();
 void Open(float open_time = DEFAULT_OPEN_TIME);

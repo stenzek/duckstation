@@ -35,9 +35,9 @@
 #include <type_traits>
 
 namespace SettingWidgetBinder {
-static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
-static constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
-static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
+inline constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
+inline constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
+inline constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
 
 template<typename T>
 struct SettingAccessor

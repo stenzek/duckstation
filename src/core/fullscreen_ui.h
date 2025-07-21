@@ -48,9 +48,9 @@ void SetTheme();
 void UpdateRunIdleState();
 void UpdateTransitionState();
 
-static constexpr float SHORT_TRANSITION_TIME = 0.08f;
-static constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
-static constexpr float LONG_TRANSITION_TIME = 0.3f;
+inline constexpr float SHORT_TRANSITION_TIME = 0.08f;
+inline constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
+inline constexpr float LONG_TRANSITION_TIME = 0.3f;
 
 enum class TransitionState : u8
 {

@@ -550,7 +550,7 @@ ALWAYS_INLINE static constexpr GSVector4i GetPaletteRect(GPUTexturePaletteReg pa
 }
 
 // 4x4 dither matrix.
-static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
+inline constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-4, +0, -3, +1},  // row 0
                                                                               {+2, -2, +3, -1},  // row 1
                                                                               {-3, +1, -4, +0},  // row 2
                                                                               {+3, -1, +2, -2}}; // row 3

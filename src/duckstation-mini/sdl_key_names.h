@@ -5,7 +5,6 @@
 
 #include "common/types.h"
 
-#include <array>
 #include <cstring>
 #include <map>
 #include <optional>
@@ -15,7 +14,7 @@
 
 namespace SDLKeyNames {
 
-static const std::map<int, const char*> s_sdl_key_names = {
+inline const std::map<int, const char*> s_sdl_key_names = {
   {SDLK_RETURN, "Return"},
   {SDLK_ESCAPE, "Escape"},
   {SDLK_BACKSPACE, "Backspace"},
@@ -246,13 +245,13 @@ static const std::map<int, const char*> s_sdl_key_names = {
   {SDLK_SLEEP, "Sleep"},
 };
 
-static const char* GetKeyName(u32 key)
+inline const char* GetKeyName(u32 key)
 {
   const auto it = s_sdl_key_names.find(key);
   return it == s_sdl_key_names.end() ? nullptr : it->second;
 }
 
-static std::optional<u32> GetKeyCodeForName(const std::string_view& key_name)
+inline std::optional<u32> GetKeyCodeForName(const std::string_view key_name)
 {
   for (const auto& it : s_sdl_key_names)
   {

@@ -29,7 +29,7 @@ enum class LoginRequestReason
   TokenInvalid,
 };
 
-static constexpr size_t GAME_HASH_LENGTH = 16;
+inline constexpr size_t GAME_HASH_LENGTH = 16;
 using GameHash = std::array<u8, GAME_HASH_LENGTH>;
 
 struct HashDatabaseEntry

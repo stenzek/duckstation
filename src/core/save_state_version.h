@@ -5,9 +5,9 @@
 
 #include "common/types.h"
 
-static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 82;
-static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
+inline constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
+inline constexpr u32 SAVE_STATE_VERSION = 82;
+inline constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
 
@@ -36,7 +36,7 @@ struct SAVE_STATE_HEADER
   u32 media_path_length;
   u32 offset_to_media_path;
   u32 media_subimage_index;
-  
+
   // Screenshot compression added in version 69.
   // Uncompressed size not stored, it can be inferred from width/height.
   u32 screenshot_compression_type;

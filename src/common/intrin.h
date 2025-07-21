@@ -56,7 +56,7 @@
 #endif
 
 /// Only currently using 128-bit vectors at max.
-static constexpr u32 VECTOR_ALIGNMENT = 16;
+inline constexpr u32 VECTOR_ALIGNMENT = 16;
 
 /// Aligns allocation/pitch size to preferred host size.
 template<typename T>

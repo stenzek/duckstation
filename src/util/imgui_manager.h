@@ -71,9 +71,9 @@ using TextFontOrder = std::array<TextFont, static_cast<size_t>(TextFont::MaxCoun
 
 /// Default size for screen margins.
 #ifndef __ANDROID__
-static constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
+inline constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
 #else
-static constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
+inline constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
 #endif
 
 /// Sets the order for text fonts.
@@ -223,11 +223,11 @@ void ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData 
 namespace Host {
 
 /// Typical durations for OSD messages.
-static constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
-static constexpr float OSD_ERROR_DURATION = 15.0f;
-static constexpr float OSD_WARNING_DURATION = 10.0f;
-static constexpr float OSD_INFO_DURATION = 5.0f;
-static constexpr float OSD_QUICK_DURATION = 2.5f;
+inline constexpr float OSD_CRITICAL_ERROR_DURATION = 20.0f;
+inline constexpr float OSD_ERROR_DURATION = 15.0f;
+inline constexpr float OSD_WARNING_DURATION = 10.0f;
+inline constexpr float OSD_INFO_DURATION = 5.0f;
+inline constexpr float OSD_QUICK_DURATION = 2.5f;
 
 /// Adds OSD messages, duration is in seconds.
 void AddOSDMessage(std::string message, float duration = 2.0f);

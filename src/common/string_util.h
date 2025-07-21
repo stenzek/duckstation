@@ -444,7 +444,7 @@ ALWAYS_INLINE std::optional<std::string_view> GetNextToken(std::string_view& car
 }
 
 /// Unicode replacement character.
-static constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
+inline constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
 
 /// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
 void EncodeAndAppendUTF8(std::string& s, char32_t ch);

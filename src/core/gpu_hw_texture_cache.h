@@ -19,9 +19,9 @@ class GPU_HW;
 namespace GPUTextureCache {
 
 /// 4 pages in C16 mode, 2+4 pages in P8 mode, 1+1 pages in P4 mode.
-static constexpr u32 MAX_PAGE_REFS_PER_SOURCE = 6;
+inline constexpr u32 MAX_PAGE_REFS_PER_SOURCE = 6;
 
-static constexpr u32 MAX_PAGE_REFS_PER_WRITE = 32;
+inline constexpr u32 MAX_PAGE_REFS_PER_WRITE = 32;
 
 enum class PaletteRecordFlags : u32
 {
