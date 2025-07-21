@@ -12,8 +12,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|MinSizeRel|RelWithDebInfo|Release")
-  message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release.")
-  set(CMAKE_BUILD_TYPE "Release")
+  message(FATAL_ERROR "CMAKE_BUILD_TYPE not set. Please set it first.")
 endif()
 
 # Pull in modules.

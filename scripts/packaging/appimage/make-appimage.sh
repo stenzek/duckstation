@@ -81,7 +81,7 @@ if [ ! -f "$LINUXDEPLOY_PLUGIN_QT" ]; then
 fi
 
 if [ ! -f "$APPIMAGETOOL" ]; then
-	retry_command wget -O "$APPIMAGETOOL" https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	retry_command wget -O "$APPIMAGETOOL" https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/linux/appimagetool-x86_64.AppImage
 	chmod +x "$APPIMAGETOOL"
 fi
 
