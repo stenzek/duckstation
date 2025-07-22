@@ -2789,6 +2789,78 @@ void SPU::DrawDebugStateWindow(float scale)
     }
   }
 
+  if (ImGui::CollapsingHeader("Reverb Environment"))
+  {
+    ImGui::Columns(4);
+
+    ImGui::Text("[0] FB_SRC_A: 0x%04X", static_cast<u32>(s_state.reverb_registers.FB_SRC_A));
+    ImGui::NextColumn();
+    ImGui::Text("[1] FB_SRC_B: 0x%04X", static_cast<u32>(s_state.reverb_registers.FB_SRC_B));
+    ImGui::NextColumn();
+    ImGui::Text("[2] IIR_ALPHA: %d", static_cast<s32>(s_state.reverb_registers.IIR_ALPHA));
+    ImGui::NextColumn();
+    ImGui::Text("[3] ACC_COEF_A: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_A));
+    ImGui::NextColumn();
+    ImGui::Text("[4] ACC_COEF_B: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_B));
+    ImGui::NextColumn();
+    ImGui::Text("[5] ACC_COEF_C: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_C));
+    ImGui::NextColumn();
+    ImGui::Text("[6] ACC_COEF_D: %d", static_cast<s32>(s_state.reverb_registers.ACC_COEF_D));
+    ImGui::NextColumn();
+    ImGui::Text("[7] IIR_COEF: %d", static_cast<s32>(s_state.reverb_registers.IIR_COEF));
+    ImGui::NextColumn();
+    ImGui::Text("[8] FB_ALPHA: %d", static_cast<s32>(s_state.reverb_registers.FB_ALPHA));
+    ImGui::NextColumn();
+    ImGui::Text("[9] FB_X: %d", static_cast<s32>(s_state.reverb_registers.FB_X));
+    ImGui::NextColumn();
+    ImGui::Text("[10] IIR_DEST_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_A[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[11] IIR_DEST_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_A[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[12] ACC_SRC_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_A[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[13] ACC_SRC_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_A[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[14] ACC_SRC_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_B[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[15] ACC_SRC_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_B[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[16] IIR_SRC_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_A[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[17] IIR_SRC_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_A[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[18] IIR_DEST_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_B[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[19] IIR_DEST_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_DEST_B[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[20] ACC_SRC_C[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_C[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[21] ACC_SRC_C[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_C[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[22] ACC_SRC_D[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_D[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[23] ACC_SRC_D[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.ACC_SRC_D[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[24] IIR_SRC_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_B[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[25] IIR_SRC_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.IIR_SRC_B[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[26] MIX_DEST_A[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_A[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[27] MIX_DEST_A[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_A[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[28] MIX_DEST_B[L]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_B[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[29] MIX_DEST_B[R]: 0x%04X", static_cast<u32>(s_state.reverb_registers.MIX_DEST_B[1]));
+    ImGui::NextColumn();
+    ImGui::Text("[30] IIR_SRC_A[L]: %d", static_cast<u32>(s_state.reverb_registers.IN_COEF[0]));
+    ImGui::NextColumn();
+    ImGui::Text("[31] IIR_SRC_A[R]: %d", static_cast<u32>(s_state.reverb_registers.IN_COEF[1]));
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+  }
+
   if (ImGui::CollapsingHeader("Hacks", ImGuiTreeNodeFlags_DefaultOpen))
   {
     if (ImGui::Button("Key Off All Voices"))
