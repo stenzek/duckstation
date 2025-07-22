@@ -154,10 +154,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
 
-  SettingWidgetBinder::SetAvailability(m_ui.cpuExecutionModeLabel,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter));
-  SettingWidgetBinder::SetAvailability(m_ui.cpuExecutionMode,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter));
+  SettingWidgetBinder::SetAvailability(
+    m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
 
   calculateCPUClockValue();
 }

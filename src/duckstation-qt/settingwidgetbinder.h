@@ -1497,12 +1497,22 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
 }
 
 template<typename WidgetType>
-static inline void SetAvailability(WidgetType* widget, bool available)
+static inline void DisconnectWidget(WidgetType* widget)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+  Accessor::disconnect(widget);
+}
+
+template<typename WidgetType>
+static inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_label = nullptr)
 {
   if (available)
     return;
 
-  widget->disconnect();
+  if (widget_label)
+    widget_label->setEnabled(false);
+
+  DisconnectWidget(widget);
 
   if constexpr (std::is_same_v<WidgetType, QComboBox>)
   {
@@ -1528,13 +1538,6 @@ static inline void SetAvailability(WidgetType* widget, bool available)
   }
 
   widget->setEnabled(false);
-}
-
-template<typename WidgetType>
-static inline void DisconnectWidget(WidgetType* widget)
-{
-  using Accessor = SettingAccessor<WidgetType>;
-  Accessor::disconnect(widget);
 }
 
 } // namespace SettingWidgetBinder
