@@ -2583,7 +2583,7 @@ void SPU::DrawDebugStateWindow(float scale)
 
     const ImVec2 section_size = ImVec2(std::floor(scale * 8.0f), std::floor(scale * 4.0f));
     const float divider_size = std::floor(scale * 1.0f);
-    ImVec2 left_start = ImGui::GetCursorPos() + ImVec2(0.0f, std::floor(scale * 4.0f));
+    ImVec2 left_start = ImGui::GetCursorScreenPos() + ImVec2(0.0f, std::floor(scale * 4.0f));
     ImVec2 right_start = left_start + ImVec2(0.0f, section_size.y + divider_size);
     for (s32 i = 0; i < num_sections; i++)
     {
