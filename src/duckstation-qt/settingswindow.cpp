@@ -352,6 +352,9 @@ void SettingsWindow::onClearSettingsClicked()
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
 {
+  if (!object)
+    return;
+
   // construct rich text with formatted description
   QString full_text;
   full_text += "<table width='100%' cellpadding='0' cellspacing='0'><tr><td><strong>";

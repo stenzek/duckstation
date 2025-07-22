@@ -308,18 +308,11 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
-       <layout class="QGridLayout" name="gridLayout">
+       <layout class="QGridLayout" name="cdromGridLayout">
         <item row="0" column="0">
          <widget class="QCheckBox" name="cdromLoadImageToRAM">
           <property name="text">
            <string>Preload Image To RAM</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QCheckBox" name="cdromLoadImagePatches">
-          <property name="text">
-           <string>Apply Image Patches</string>
           </property>
          </widget>
         </item>
@@ -331,6 +324,13 @@
          </widget>
         </item>
         <item row="1" column="0">
+         <widget class="QCheckBox" name="cdromLoadImagePatches">
+          <property name="text">
+           <string>Apply Image Patches</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
          <widget class="QCheckBox" name="cdromAutoDiscChange">
           <property name="text">
            <string>Switch to Next Disc on Stop</string>

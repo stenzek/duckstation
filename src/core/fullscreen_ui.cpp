@@ -4407,7 +4407,8 @@ void FullscreenUI::DrawConsoleSettingsPage()
 
   static constexpr std::array cdrom_read_seek_speed_values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0};
 
-  SettingsInterface* bsi = GetEditingSettingsInterface();
+  SettingsInterface* const bsi = GetEditingSettingsInterface();
+  const bool game_settings = IsEditingGameSettings(bsi);
 
   BeginMenuButtons();
   ResetFocusHere();
@@ -4492,10 +4493,17 @@ void FullscreenUI::DrawConsoleSettingsPage()
     bsi, FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Preload Images to RAM"),
     FSUI_VSTR("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay."),
     "CDROM", "LoadImageToRAM", false);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_VEST_PATCHES, "Apply Image Patches"),
-    FSUI_VSTR("Automatically applies patches to disc images when they are present, currently only PPF is supported."),
-    "CDROM", "LoadImagePatches", false);
+  if (!game_settings)
+  {
+    DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_VEST_PATCHES, "Apply Image Patches"),
+      FSUI_VSTR("Automatically applies patches to disc images when they are present, currently only PPF is supported."),
+      "CDROM", "LoadImagePatches", false);
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BAN, "Ignore Drive Subcode"),
+                      FSUI_VSTR("Ignores the subchannel provided by the drive when using physical discs, instead "
+                                "always generating subchannel data. Can improve read reliability on some drives."),
+                      "CDROM", "IgnoreHostSubcode", false);
+  }
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Switch to Next Disc on Stop"),
                     FSUI_VSTR("Automatically switches to the next disc in the game when the game stops the CD-ROM "
                               "motor. Does not work for all games."),
@@ -9675,6 +9683,8 @@ TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game direc
 TRANSLATE_NOOP("FullscreenUI", "If enabled, the display will be blended with the transparency of the overlay image.");
 TRANSLATE_NOOP("FullscreenUI", "If enabled, the transparency of the overlay image will be applied.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
+TRANSLATE_NOOP("FullscreenUI", "Ignore Drive Subcode");
+TRANSLATE_NOOP("FullscreenUI", "Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Can improve read reliability on some drives.");
 TRANSLATE_NOOP("FullscreenUI", "Image Path");
 TRANSLATE_NOOP("FullscreenUI", "In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:");
 TRANSLATE_NOOP("FullscreenUI", "Includes the elapsed time since the application start in file logs.");
