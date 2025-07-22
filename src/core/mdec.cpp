@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "mdec.h"
+#include "cdrom.h"
 #include "cpu_core.h"
 #include "dma.h"
 #include "system.h"
@@ -29,6 +30,7 @@ static constexpr u32 DATA_IN_FIFO_SIZE = 1024;
 static constexpr u32 DATA_OUT_FIFO_SIZE = 768;
 static constexpr u32 NUM_BLOCKS = 6;
 static constexpr TickCount TICKS_PER_BLOCK = 448;
+static constexpr u8 ACTIVE_FRAME_COUNT = 30;
 
 enum DataOutputDepth : u8
 {
@@ -131,12 +133,13 @@ struct MDECState
   StatusRegister status = {};
   bool enable_dma_in = false;
   bool enable_dma_out = false;
+  State state = State::Idle;
+  u8 active_frame_count = 0;
+  u32 remaining_halfwords = 0;
 
   // Even though the DMA is in words, we access the FIFO as halfwords.
   InlineFIFOQueue<u16, DATA_IN_FIFO_SIZE / sizeof(u16)> data_in_fifo;
   InlineFIFOQueue<u32, DATA_OUT_FIFO_SIZE / sizeof(u32)> data_out_fifo;
-  State state = State::Idle;
-  u32 remaining_halfwords = 0;
 
   std::array<u8, 64> iq_uv{};
   std::array<u8, 64> iq_y{};
@@ -152,7 +155,9 @@ struct MDECState
   alignas(VECTOR_ALIGNMENT) std::array<u32, 256> block_rgb{};
   TimingEvent block_copy_out_event{"MDEC Block Copy Out", 1, 1, &MDEC::CopyOutBlock, nullptr};
 
+#if defined(_DEBUG) || defined(_DEVEL)
   u32 total_blocks_decoded = 0;
+#endif
 };
 } // namespace
 
@@ -161,7 +166,10 @@ ALIGN_TO_CACHE_LINE static MDECState s_state;
 
 void MDEC::Initialize()
 {
+#if defined(_DEBUG) || defined(_DEVEL)
   s_state.total_blocks_decoded = 0;
+#endif
+  s_state.active_frame_count = 0;
   Reset();
 }
 
@@ -172,6 +180,7 @@ void MDEC::Shutdown()
 
 void MDEC::Reset()
 {
+  s_state.active_frame_count = 0;
   s_state.block_copy_out_event.Deactivate();
   SoftReset();
 }
@@ -208,9 +217,22 @@ bool MDEC::DoState(StateWrapper& sw)
   bool block_copy_out_pending = HasPendingBlockCopyOut();
   sw.Do(&block_copy_out_pending);
   if (sw.IsReading())
+  {
     s_state.block_copy_out_event.SetState(block_copy_out_pending);
+    s_state.active_frame_count = 0;
+  }
 
   return !sw.HasError();
+}
+
+bool MDEC::IsActive()
+{
+  return (s_state.active_frame_count > 0);
+}
+
+void MDEC::EndFrame()
+{
+  s_state.active_frame_count = (s_state.active_frame_count > 0) ? (s_state.active_frame_count - 1) : 0;
 }
 
 u32 MDEC::ReadRegister(u32 offset)
@@ -226,11 +248,11 @@ u32 MDEC::ReadRegister(u32 offset)
       return s_state.status.bits;
     }
 
-      [[unlikely]] default:
-      {
-        ERROR_LOG("Unknown MDEC register read: 0x{:08X}", offset);
-        return UINT32_C(0xFFFFFFFF);
-      }
+    [[unlikely]] default:
+    {
+      ERROR_LOG("Unknown MDEC register read: 0x{:08X}", offset);
+      return UINT32_C(0xFFFFFFFF);
+    }
   }
 }
 
@@ -258,11 +280,11 @@ void MDEC::WriteRegister(u32 offset, u32 value)
       return;
     }
 
-      [[unlikely]] default:
-      {
-        ERROR_LOG("Unknown MDEC register write: 0x{:08X} <- 0x{:08X}", offset, value);
-        return;
-      }
+    [[unlikely]] default:
+    {
+      ERROR_LOG("Unknown MDEC register write: 0x{:08X} <- 0x{:08X}", offset, value);
+      return;
+    }
   }
 }
 
@@ -381,6 +403,12 @@ void MDEC::WriteCommandRegister(u32 value)
 
 void MDEC::Execute()
 {
+  if (std::exchange(s_state.active_frame_count, ACTIVE_FRAME_COUNT) == 0)
+  {
+    if (g_settings.mdec_disable_cdrom_speedup)
+      CDROM::DisableReadSpeedup();
+  }
+
   for (;;)
   {
     switch (s_state.state)
@@ -544,7 +572,9 @@ bool MDEC::DecodeMonoMacroblock()
 
   ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
 
+#if defined(_DEBUG) || defined(_DEVEL)
   s_state.total_blocks_decoded++;
+#endif
   return true;
 }
 
@@ -599,7 +629,9 @@ bool MDEC::DecodeColoredMacroblock()
     YUVToRGB_New(8, 8, s_state.blocks[0], s_state.blocks[1], s_state.blocks[5]);
   }
 
+#if defined(_DEBUG) || defined(_DEVEL)
   s_state.total_blocks_decoded += 4;
+#endif
 
   ScheduleBlockCopyOut(TICKS_PER_BLOCK * 6);
   return true;
@@ -1128,7 +1160,9 @@ void MDEC::DrawDebugStateWindow(float scale)
   static constexpr std::array<const char*, 4> output_depths = {{"4-bit", "8-bit", "24-bit", "15-bit"}};
   static constexpr std::array<const char*, 7> block_names = {{"Crblk", "Cbblk", "Y1", "Y2", "Y3", "Y4", "Output"}};
 
+#if defined(_DEBUG) || defined(_DEVEL)
   ImGui::Text("Blocks Decoded: %u", s_state.total_blocks_decoded);
+#endif
   ImGui::Text("Data-In FIFO Size: %u (%u bytes)", s_state.data_in_fifo.GetSize(), s_state.data_in_fifo.GetSize() * 4);
   ImGui::Text("Data-Out FIFO Size: %u (%u bytes)", s_state.data_out_fifo.GetSize(),
               s_state.data_out_fifo.GetSize() * 4);

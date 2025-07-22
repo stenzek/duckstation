@@ -8,6 +8,7 @@
 #include "fullscreen_ui.h"
 #include "host.h"
 #include "interrupt_controller.h"
+#include "mdec.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
@@ -74,6 +75,9 @@ enum : u32
   MINIMUM_INTERRUPT_DELAY = 1000,
   INTERRUPT_DELAY_CYCLES = 500,
   MISSED_INT1_DELAY_CYCLES = 5000, // See CheckForSectorBufferReadComplete().
+
+  SINGLE_SPEED_SECTORS_PER_SECOND = 75,  // 1X speed is 75 sectors per second.
+  DOUBLE_SPEED_SECTORS_PER_SECOND = 150, // 2X speed is 150 sectors per second.
 };
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -1488,7 +1492,25 @@ bool CDROM::HasPendingDiscEvent()
 bool CDROM::CanUseReadSpeedup()
 {
   // Only use read speedup in 2X mode and when we're not playing/filtering XA.
-  return (!s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed);
+  // Use MDEC as a heuristic for games that don't use XA audio in FMVs. But this is opt-in for now.
+  return (!s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed &&
+          (!g_settings.mdec_disable_cdrom_speedup || !MDEC::IsActive()));
+}
+
+void CDROM::DisableReadSpeedup()
+{
+  if (s_state.drive_state != CDROM::DriveState::Reading || !CanUseReadSpeedup())
+    return;
+
+  // Can't test the interval directly because max speedup changes the downcount directly.
+  const TickCount expected_ticks = System::GetTicksPerSecond() / DOUBLE_SPEED_SECTORS_PER_SECOND;
+  const TickCount ticks_since_last_sector = s_state.drive_event.GetTicksSinceLastExecution();
+  const TickCount ticks_until_next_sector = s_state.drive_event.GetTicksUntilNextExecution();
+  const TickCount sector_ticks = ticks_since_last_sector + ticks_until_next_sector;
+  if (sector_ticks >= expected_ticks)
+    return;
+
+  s_state.drive_event.Schedule(expected_ticks - ticks_since_last_sector);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -1526,9 +1548,9 @@ TickCount CDROM::GetTicksForRead()
   const TickCount tps = System::GetTicksPerSecond();
 
   if (g_settings.cdrom_read_speedup > 1 && CanUseReadSpeedup())
-    return tps / (150 * g_settings.cdrom_read_speedup);
+    return tps / (DOUBLE_SPEED_SECTORS_PER_SECOND * g_settings.cdrom_read_speedup);
 
-  return s_state.mode.double_speed ? (tps / 150) : (tps / 75);
+  return s_state.mode.double_speed ? (tps / DOUBLE_SPEED_SECTORS_PER_SECOND) : (tps / SINGLE_SPEED_SECTORS_PER_SECOND);
 }
 
 u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
@@ -4276,6 +4298,13 @@ void CDROM::DrawDebugWindow(float scale)
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
                          s_drive_state_names[static_cast<u8>(s_state.drive_state)],
                          s_state.drive_event.IsActive() ? s_state.drive_event.GetTicksUntilNextExecution() : 0);
+
+      if (g_settings.cdrom_read_speedup != 1 && !CanUseReadSpeedup())
+      {
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), 400.0f));
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "SPEEDUP BLOCKED");
+      }
     }
 
     ImGui::Text("Interrupt Enable Register: 0x%02X", s_state.interrupt_enable_register);

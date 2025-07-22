@@ -6663,6 +6663,11 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                       "MaxReadSpeedupCycles", Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES, 1, 1000000,
                       FSUI_CSTR("%d cycles"));
 
+  DrawToggleSetting(
+    bsi, FSUI_VSTR("Disable Speedup on MDEC"),
+    FSUI_VSTR("Tries to detect FMVs and disable read speedup during games that don't use XA streaming audio."), "CDROM",
+    "DisableSpeedupOnMDEC", false);
+
   DrawToggleSetting(bsi, FSUI_VSTR("Enable Region Check"),
                     FSUI_VSTR("Simulates the region check present in original, unmodified consoles."), "CDROM",
                     "RegionCheck", false);
@@ -9540,6 +9545,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
+TRANSLATE_NOOP("FullscreenUI", "Disable Speedup on MDEC");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
@@ -10031,6 +10037,7 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "Toggles the macro when the button is pressed, instead of held.");
 TRANSLATE_NOOP("FullscreenUI", "Top: ");
+TRANSLATE_NOOP("FullscreenUI", "Tries to detect FMVs and disable read speedup during games that don't use XA streaming audio.");
 TRANSLATE_NOOP("FullscreenUI", "Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");

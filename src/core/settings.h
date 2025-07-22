@@ -329,6 +329,7 @@ struct Settings : public GPUSettings
   bool audio_output_muted : 1 = false;
 
   bool use_old_mdec_routines : 1 = false;
+  bool mdec_disable_cdrom_speedup : 1 = false;
   bool pcdrv_enable : 1 = false;
   bool export_shared_memory : 1 = false;
 

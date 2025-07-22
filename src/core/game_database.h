@@ -45,6 +45,7 @@ enum class Trait : u32
   DisableMultitap,
   DisableCDROMReadSpeedup,
   DisableCDROMSeekSpeedup,
+  DisableCDROMSpeedupOnMDEC,
   DisableTrueColor,
   DisableFullTrueColor,
   DisableUpscaling,

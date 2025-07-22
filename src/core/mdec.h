@@ -14,6 +14,9 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 
+bool IsActive();
+void EndFrame();
+
 // I/O
 u32 ReadRegister(u32 offset);
 void WriteRegister(u32 offset, u32 value);

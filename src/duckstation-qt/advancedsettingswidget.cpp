@@ -310,6 +310,8 @@ void AdvancedSettingsWidget::addTweakOptions()
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Seek Speedup Cycles"), "CDROM",
                          "MaxSeekSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES,
                          tr(" cycles"));
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Disable Speedup on MDEC"), "CDROM",
+                        "DisableSpeedupOnMDEC", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
@@ -359,6 +361,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
                            Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read Cycles
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES); // CD-ROM Max Speedup Seek Cycles
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // CDROM Disable Speedup on MDEC
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // CDROM Region Check
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // CDROM SubQ Skew
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // Allow booting without SBI file
@@ -395,6 +398,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CDROM", "ReadaheadSectors");
   sif->DeleteValue("CDROM", "MaxReadSpeedupCycles");
   sif->DeleteValue("CDROM", "MaxSeekSpeedupCycles");
+  sif->DeleteValue("CDROM", "DisableSpeedupOnMDEC");
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "SubQSkew");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");

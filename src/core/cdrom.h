@@ -47,6 +47,7 @@ void DMARead(u32* words, u32 word_count);
 void DrawDebugWindow(float scale);
 
 void SetReadaheadSectors(u32 readahead_sectors);
+void DisableReadSpeedup();
 
 /// Reads a frame from the audio FIFO, used by the SPU.
 std::tuple<s16, s16> GetAudioFrame();

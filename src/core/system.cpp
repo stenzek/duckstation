@@ -2089,6 +2089,8 @@ void System::FrameDone()
   // TODO: when running ahead, we can skip this (and the flush above)
   if (!IsReplayingGPUDump()) [[likely]]
   {
+    MDEC::EndFrame();
+
     SPU::GeneratePendingSamples();
 
     Cheats::ApplyFrameEndCodes();
