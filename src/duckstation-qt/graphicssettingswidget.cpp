@@ -112,7 +112,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::SetAvailability(m_ui.textureFiltering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.spriteTextureFiltering,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering) ||
+                                         !m_dialog->hasGameTrait(GameDatabase::Trait::DisableSpriteTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
@@ -830,9 +831,11 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.textureFilteringLabel->setEnabled(is_hardware &&
                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.spriteTextureFiltering->setEnabled(is_hardware &&
-                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
-  m_ui.spriteTextureFilteringLabel->setEnabled(is_hardware &&
-                                               !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering) &&
+                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableSpriteTextureFiltering));
+  m_ui.spriteTextureFilteringLabel->setEnabled(
+    is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering) &&
+    !m_dialog->hasGameTrait(GameDatabase::Trait::DisableSpriteTextureFiltering));
   m_ui.gpuDownsampleLabel->setEnabled(is_hardware);
   m_ui.gpuDownsampleMode->setEnabled(is_hardware);
   m_ui.gpuDownsampleScale->setEnabled(is_hardware);
