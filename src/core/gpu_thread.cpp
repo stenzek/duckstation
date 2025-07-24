@@ -68,6 +68,7 @@ static u32 GetPendingCommandSize();
 static void ResetCommandFIFO();
 static bool IsCommandFIFOEmpty();
 static void WakeGPUThread();
+static void WakeGPUThreadIfSleeping();
 static bool SleepGPUThread(bool allow_sleep);
 
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_fsui_state_on_failure, Error* error);
@@ -168,12 +169,12 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
   {
     u32 read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
     u32 write_ptr = s_state.command_fifo_write_ptr.load(std::memory_order_relaxed);
-    if (read_ptr > write_ptr)
+    if (read_ptr > write_ptr) [[unlikely]]
     {
       u32 available_size = read_ptr - write_ptr;
       while (available_size < (size + sizeof(GPUBackendCommandType)))
       {
-        WakeGPUThread();
+        WakeGPUThreadIfSleeping();
         read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
         available_size = (read_ptr > write_ptr) ? (read_ptr - write_ptr) : (COMMAND_QUEUE_SIZE - write_ptr);
       }
@@ -181,8 +182,19 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
     else
     {
       const u32 available_size = COMMAND_QUEUE_SIZE - write_ptr;
-      if ((size + sizeof(GPUThreadCommand)) > available_size)
+      if ((size + sizeof(GPUThreadCommand)) > available_size) [[unlikely]]
       {
+        // Can't wrap around until the video thread has at least started processing commands...
+        if (read_ptr == 0) [[unlikely]]
+        {
+          DEV_LOG("Buffer full and unprocessed, spinning");
+          do
+          {
+            WakeGPUThreadIfSleeping();
+            read_ptr = s_state.command_fifo_read_ptr.load(std::memory_order_acquire);
+          } while (read_ptr == 0);
+        }
+
         // allocate a dummy command to wrap the buffer around
         GPUThreadCommand* dummy_cmd = reinterpret_cast<GPUThreadCommand*>(&s_state.command_fifo_data[write_ptr]);
         dummy_cmd->type = GPUBackendCommandType::Wraparound;
@@ -293,6 +305,17 @@ void GPUThread::WakeGPUThread()
   // We add 2 so that there's a positive work count if we were sleeping, otherwise the thread would go to sleep.
   if (s_state.thread_wake_count.fetch_add(2, std::memory_order_release) < 0)
     s_state.thread_wake_semaphore.Post();
+}
+
+ALWAYS_INLINE_RELEASE void GPUThread::WakeGPUThreadIfSleeping()
+{
+  if (GetThreadWakeCount(s_state.thread_wake_count.load(std::memory_order_acquire)) < 0)
+  {
+    if (IsCommandFIFOEmpty())
+      return;
+
+    WakeGPUThread();
+  }
 }
 
 void GPUThread::SyncGPUThread(bool spin)
