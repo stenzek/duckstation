@@ -379,7 +379,7 @@ std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(co
   DeclareTexture(ss, "samp0", 0);
 
   if (m_use_glsl_interface_blocks)
-    ss << "layout(location = 0) in VertexData { vec2 v_tex0; }\n";
+    ss << "layout(location = 0) in VertexData { vec2 v_tex0; };\n";
   else
     ss << "layout(location = 0) in vec2 v_tex0;\n";
 
