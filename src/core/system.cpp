@@ -5474,8 +5474,7 @@ bool System::StartMediaCapture(std::string path)
         const GSVector2i video_size = backend->GetPresenter().CalculateScreenshotSize(mode);
         u32 video_width = static_cast<u32>(video_size.x);
         u32 video_height = static_cast<u32>(video_size.y);
-        if (mode != DisplayScreenshotMode::ScreenResolution)
-          MediaCapture::AdjustVideoSize(&video_width, &video_height);
+        MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
         // fire back to the CPU thread to actually start the capture
         Host::RunOnCPUThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
