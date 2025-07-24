@@ -189,6 +189,7 @@ void MainWindow::initialize()
   updateToolbarIconStyle();
   updateToolbarArea();
   updateEmulationActions(false, false, false);
+  updateDisplayRelatedActions(false, false);
   connectSignals();
 
   QtUtils::RestoreWindowGeometry("MainWindow", this);
