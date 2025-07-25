@@ -205,7 +205,7 @@ union GPUSTAT
   BitField<u32, bool, 25, 1> dma_data_request;
   BitField<u32, bool, 26, 1> gpu_idle;
   BitField<u32, bool, 27, 1> ready_to_send_vram;
-  BitField<u32, bool, 28, 1> ready_to_recieve_dma;
+  BitField<u32, bool, 28, 1> ready_to_receive_dma;
   BitField<u32, GPUDMADirection, 29, 2> dma_direction;
   BitField<u32, bool, 31, 1> display_line_lsb;
 
