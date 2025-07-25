@@ -442,22 +442,22 @@ void GPU::UpdateDMARequest()
   {
     case BlitterState::Idle:
       m_GPUSTAT.ready_to_send_vram = false;
-      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.IsEmpty() || m_fifo.GetSize() < m_command_total_words);
+      m_GPUSTAT.ready_to_receive_dma = (m_fifo.IsEmpty() || m_fifo.GetSize() < m_command_total_words);
       break;
 
     case BlitterState::WritingVRAM:
       m_GPUSTAT.ready_to_send_vram = false;
-      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
+      m_GPUSTAT.ready_to_receive_dma = (m_fifo.GetSize() < m_fifo_size);
       break;
 
     case BlitterState::ReadingVRAM:
       m_GPUSTAT.ready_to_send_vram = true;
-      m_GPUSTAT.ready_to_recieve_dma = false;
+      m_GPUSTAT.ready_to_receive_dma = false;
       break;
 
     case BlitterState::DrawingPolyLine:
       m_GPUSTAT.ready_to_send_vram = false;
-      m_GPUSTAT.ready_to_recieve_dma = (m_fifo.GetSize() < m_fifo_size);
+      m_GPUSTAT.ready_to_receive_dma = (m_fifo.GetSize() < m_fifo_size);
       break;
 
     default:
@@ -473,11 +473,11 @@ void GPU::UpdateDMARequest()
       break;
 
     case GPUDMADirection::FIFO:
-      dma_request = m_GPUSTAT.ready_to_recieve_dma;
+      dma_request = m_GPUSTAT.ready_to_receive_dma;
       break;
 
     case GPUDMADirection::CPUtoGP0:
-      dma_request = m_GPUSTAT.ready_to_recieve_dma;
+      dma_request = m_GPUSTAT.ready_to_receive_dma;
       break;
 
     case GPUDMADirection::GPUREADtoCPU:
