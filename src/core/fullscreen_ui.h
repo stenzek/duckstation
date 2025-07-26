@@ -34,7 +34,6 @@ void OnSystemDestroyed();
 void Shutdown(bool clear_state);
 void Render();
 void InvalidateCoverCache();
-void TimeToPrintableString(SmallStringBase* str, time_t t);
 
 float GetBackgroundAlpha();
 

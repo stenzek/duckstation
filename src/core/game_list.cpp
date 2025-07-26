@@ -1275,27 +1275,14 @@ TinyString GameList::Entry::GetCompatibilityIconFileName() const
     static_cast<u32>(dbentry ? dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown));
 }
 
-TinyString GameList::Entry::GetReleaseDateString() const
+std::string GameList::Entry::GetReleaseDateString() const
 {
-  TinyString ret;
+  std::string ret;
 
   if (!dbentry || dbentry->release_date == 0)
-  {
-    ret.append(TRANSLATE_SV("GameList", "Unknown"));
-  }
+    ret = TRANSLATE_STR("GameList", "Unknown");
   else
-  {
-    std::time_t date_as_time = static_cast<std::time_t>(dbentry->release_date);
-#ifdef _WIN32
-    tm date_tm = {};
-    gmtime_s(&date_tm, &date_as_time);
-#else
-    tm date_tm = {};
-    gmtime_r(&date_as_time, &date_tm);
-#endif
-
-    ret.set_size(static_cast<u32>(std::strftime(ret.data(), ret.buffer_size(), "%d %B %Y", &date_tm)));
-  }
+    ret = Host::FormatNumber(Host::NumberFormatType::LongDate, static_cast<s64>(dbentry->release_date));
 
   return ret;
 }
@@ -1548,13 +1535,13 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
   return 0;
 }
 
-TinyString GameList::FormatTimestamp(std::time_t timestamp)
+std::string GameList::FormatTimestamp(std::time_t timestamp)
 {
-  TinyString ret;
+  std::string ret;
 
   if (timestamp == 0)
   {
-    ret = TRANSLATE("GameList", "Never");
+    ret = TRANSLATE_STR("GameList", "Never");
   }
   else
   {
@@ -1571,18 +1558,16 @@ TinyString GameList::FormatTimestamp(std::time_t timestamp)
 
     if (ctime.tm_year == ttime.tm_year && ctime.tm_yday == ttime.tm_yday)
     {
-      ret = TRANSLATE("GameList", "Today");
+      ret = TRANSLATE_STR("GameList", "Today");
     }
     else if ((ctime.tm_year == ttime.tm_year && ctime.tm_yday == (ttime.tm_yday + 1)) ||
              (ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
     {
-      ret = TRANSLATE("GameList", "Yesterday");
+      ret = TRANSLATE_STR("GameList", "Yesterday");
     }
     else
     {
-      char buf[128];
-      std::strftime(buf, std::size(buf), "%x", &ttime);
-      ret.assign(buf);
+      ret = Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
     }
   }
 

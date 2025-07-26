@@ -65,7 +65,7 @@ struct Entry
   TinyString GetLanguageIconName() const;
   TinyString GetCompatibilityIconFileName() const;
 
-  TinyString GetReleaseDateString() const;
+  std::string GetReleaseDateString() const;
 
   ALWAYS_INLINE bool IsValid() const { return (type < EntryType::MaxCount); }
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
@@ -125,7 +125,7 @@ void ClearPlayedTimeForEntry(const Entry* entry);
 std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);
 
 /// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
-TinyString FormatTimestamp(std::time_t timestamp);
+std::string FormatTimestamp(std::time_t timestamp);
 
 /// Formats a timespan to something human readable (e.g. 1h2m3s or 1 hour).
 TinyString FormatTimespan(std::time_t timespan, bool long_format = false);

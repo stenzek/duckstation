@@ -3007,8 +3007,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 
   if (is_unlocked)
   {
-    TinyString date;
-    FullscreenUI::TimeToPrintableString(&date, cheevo->unlock_time);
+    const std::string date =
+      Host::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(cheevo->unlock_time));
     text.format(TRANSLATE_FS("Achievements", "Unlocked: {} | {:.1f}% of players have this achievement"), date,
                 rarity_to_display);
 
@@ -3496,8 +3496,9 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   text_start_x += time_column_width + column_spacing;
 
   const ImRect time_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-  SmallString submit_time;
-  FullscreenUI::TimeToPrintableString(&submit_time, entry.submitted);
+
+  const std::string submit_time =
+    Host::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(entry.submitted));
   RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, time_bb.Min, time_bb.Max,
                             text_color, submit_time, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &time_bb);
 

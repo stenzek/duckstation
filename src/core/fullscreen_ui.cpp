@@ -583,19 +583,6 @@ static UIState s_state;
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::TimeToPrintableString(SmallStringBase* str, time_t t)
-{
-  struct tm lt = {};
-#ifdef _MSC_VER
-  localtime_s(&lt, &t);
-#else
-  localtime_r(&t, &lt);
-#endif
-
-  char buf[256];
-  str->assign(buf, static_cast<u32>(std::strftime(buf, sizeof(buf), "%c", &lt)));
-}
-
 void FullscreenUI::GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel)
 {
   if (IsGamepadInputSource())
