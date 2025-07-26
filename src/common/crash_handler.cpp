@@ -285,6 +285,7 @@ const char* CrashHandler::GetSignalName(int signal_no)
       // clang-format off
     case SIGSEGV: return "SIGSEGV";
     case SIGBUS: return "SIGBUS";
+    case SIGABRT: return "SIGABRT";
     default: return "UNKNOWN";
       // clang-format on
   }
@@ -391,9 +392,13 @@ void CrashHandler::CrashSignalHandler(int signal, siginfo_t* siginfo, void* ctx)
   lock.unlock();
 
   // We can't continue from here. Just bail out and dump core.
-  std::fputs("Aborting application.\n", stderr);
-  std::fflush(stderr);
-  std::abort();
+  static const char abort_message[] = "Aborting application.\n";
+  write(STDERR_FILENO, abort_message, sizeof(abort_message) - 1);
+
+  // Call default abort signal handler, regardless of whether this was SIGSEGV or SIGABRT.
+  lock.lock();
+  std::signal(SIGABRT, SIG_DFL);
+  raise(SIGABRT);
 }
 
 bool CrashHandler::Install(CleanupHandler cleanup_handler)
@@ -412,8 +417,6 @@ bool CrashHandler::Install(CleanupHandler cleanup_handler)
     return false;
   if (sigaction(SIGSEGV, &sa, nullptr) != 0)
     return false;
-
-  sa.sa_flags = SA_SIGINFO;
   if (sigaction(SIGABRT, &sa, nullptr) != 0)
     return false;
 

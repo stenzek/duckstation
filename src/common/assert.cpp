@@ -82,8 +82,6 @@ extern "C" __attribute__((weak)) void android_set_abort_message(const char*);
 {
 #ifndef __ANDROID__
   std::fputs(szMsg, stderr);
-  CrashHandler::WriteDumpForCaller(szMsg);
-  std::fputs("Aborting application.\n", stderr);
   std::fflush(stderr);
   std::abort();
 #else
