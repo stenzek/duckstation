@@ -3148,7 +3148,7 @@ void ImGuiFullscreen::FileSelectorDialog::Draw()
   }
   else
   {
-    if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
+    if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false))
     {
       if (!m_items.empty() && m_first_item_is_parent_directory)
         SetDirectory(std::move(m_items.front().full_path));

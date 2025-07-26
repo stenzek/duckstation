@@ -325,7 +325,7 @@ void GPUBackend::ReleaseQueuedFrame()
   if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_GPU_THREAD_SIGNALING,
                                                             std::memory_order_acq_rel, std::memory_order_acquire))
   {
-    if (g_settings.gpu_max_queued_frames > 0)
+    if (g_gpu_settings.gpu_max_queued_frames > 0)
       DEV_LOG("--> Unblocking CPU thread");
 
     s_cpu_thread_state.gpu_thread_wait.Post();
