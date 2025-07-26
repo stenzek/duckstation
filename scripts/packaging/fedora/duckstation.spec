@@ -70,8 +70,8 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
     -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" \
     -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-    -DALLOW_INSTALL=ON -DINSTALL_SELF_CONTAINED=ON \
-    -DCMAKE_INSTALL_PREFIX=%{buildroot}/opt/%{name}
+    -DCMAKE_INSTALL_PREFIX=%{buildroot}/opt/%{name} \
+    -DALLOW_INSTALL=ON
 ninja -C build %{?_smp_mflags}
 
 %install

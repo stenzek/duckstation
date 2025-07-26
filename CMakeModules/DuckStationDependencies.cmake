@@ -46,7 +46,7 @@ endif()
 find_package(Shaderc REQUIRED)
 find_package(spirv_cross_c_shared REQUIRED)
 
-if(LINUX AND NOT (ALLOW_INSTALL AND INSTALL_SELF_CONTAINED))
+if(LINUX AND NOT ALLOW_INSTALL)
   # We need to add the rpath for shaderc to the executable.
   get_target_property(SHADERC_LIBRARY Shaderc::shaderc_shared IMPORTED_LOCATION)
   get_filename_component(SHADERC_LIBRARY_DIRECTORY ${SHADERC_LIBRARY} DIRECTORY)

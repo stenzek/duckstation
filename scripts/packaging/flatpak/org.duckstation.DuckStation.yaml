@@ -65,19 +65,16 @@ modules:
         # Flatpak build does not appear to default to Release.
         - "-DCMAKE_BUILD_TYPE=Release"
 
-        # Self-contained install, need to change the directory.
-        # Typical flatpak garbage makes it a pain to change the path from /app/bin...
-        - "-DCMAKE_INSTALL_PREFIX=/app/bin"
-
         # Dependencies path.
         - "-DCMAKE_PREFIX_PATH=/app/deps"
 
+        # Self-contained install, need to change the directory.
+        # Typical flatpak garbage makes it a pain to change the path from /app/bin...
+        - "-DCMAKE_INSTALL_PREFIX=/app/bin"
+        - "-DALLOW_INSTALL=ON"
+
         # We're not running tests as part of the flatpak build.
         - "-DBUILD_TESTS=OFF"
-
-        # Install to /app.
-        - "-DALLOW_INSTALL=ON"
-        - "-DINSTALL_SELF_CONTAINED=ON"
 
         # Set the page range to 4K-16K. This has no effect on X86, but is required for
         # ARM builds, as some devices are now shipping with 16K kernels.

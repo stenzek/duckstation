@@ -252,8 +252,7 @@ function(install_imported_dep_library name)
 
   # Only install if it's not a system library.
   foreach(path ${CMAKE_PREFIX_PATH})
-    string(FIND "${LOCATION}" "${path}" out)
-    if (NOT "${out}" EQUAL 0)
+    if (NOT "${LOCATION}" MATCHES "^${path}")
       message(STATUS "Not installing imported system library ${name}")
       return()
     endif()

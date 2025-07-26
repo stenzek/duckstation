@@ -91,16 +91,10 @@ endif()
 # Write binaries to a seperate directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
-# Installation directories. If INSTALL_SELF_CONTAINED is set, everything goes
-# into one directory, otherwise CMAKE_INSTALL_PREFIX/bin is used (for Flatpak).
+# Installation directories. Everything goes into one directory.
 if(ALLOW_INSTALL)
-  if(INSTALL_SELF_CONTAINED)
-    set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}")
-    set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}")
-  else()
-    # Let GNUInstallDirs set the destinations.
-    include(GNUInstallDirs)
-  endif()
+  set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}")
+  set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # Enable large file support on Linux 32-bit platforms.

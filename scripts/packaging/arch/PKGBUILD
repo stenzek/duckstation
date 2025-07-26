@@ -123,9 +123,8 @@ build() {
 		-DCMAKE_PREFIX_PATH="${_depsdir}" \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
-		-DALLOW_INSTALL=ON \
-		-DINSTALL_SELF_CONTAINED=ON \
-		-DCMAKE_INSTALL_PREFIX="${pkgdir}${_destdir}"
+		-DCMAKE_INSTALL_PREFIX="${pkgdir}${_destdir}" \
+		-DALLOW_INSTALL=ON
 	ninja -C build-arch
 }
 
