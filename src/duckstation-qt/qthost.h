@@ -393,6 +393,10 @@ INISettingsInterface* GetBaseSettingsInterface();
 /// Saves a game settings interface.
 bool SaveGameSettings(SettingsInterface* sif, bool delete_if_empty);
 
+/// Formats a number according to the current locale.
+QString FormatNumber(Host::NumberFormatType type, s64 value);
+QString FormatNumber(Host::NumberFormatType type, double value);
+
 /// Downloads the specified URL to the provided path.
 bool DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path);
 

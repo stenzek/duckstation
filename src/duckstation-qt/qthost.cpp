@@ -2180,41 +2180,70 @@ bool Host::CopyTextToClipboard(std::string_view text)
   return true;
 }
 
-std::string Host::FormatNumber(NumberFormatType type, s64 value)
+QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
 {
-  std::string ret;
+  QString ret;
 
-  if (type >= NumberFormatType::ShortDate && type <= NumberFormatType::LongDateTime)
+  if (type >= Host::NumberFormatType::ShortDate && type <= Host::NumberFormatType::LongDateTime)
   {
     QString format;
     switch (type)
     {
-      case NumberFormatType::ShortDate:
-      case NumberFormatType::LongDate:
-        format =
-          s_app_locale.dateFormat((type == NumberFormatType::LongDate) ? QLocale::LongFormat : QLocale::ShortFormat);
-        break;
+      case Host::NumberFormatType::ShortDate:
+      case Host::NumberFormatType::LongDate:
+      {
+        format = s_app_locale.dateFormat((type == Host::NumberFormatType::LongDate) ? QLocale::LongFormat :
+                                                                                      QLocale::ShortFormat);
+      }
+      break;
 
-      case NumberFormatType::ShortTime:
-      case NumberFormatType::LongTime:
-        format =
-          s_app_locale.timeFormat((type == NumberFormatType::LongTime) ? QLocale::LongFormat : QLocale::ShortFormat);
-        break;
+      case Host::NumberFormatType::ShortTime:
+      case Host::NumberFormatType::LongTime:
+      {
+        format = s_app_locale.timeFormat((type == Host::NumberFormatType::LongTime) ? QLocale::LongFormat :
+                                                                                      QLocale::ShortFormat);
+      }
+      break;
 
-      case NumberFormatType::ShortDateTime:
-      case NumberFormatType::LongDateTime:
-        format = s_app_locale.dateTimeFormat((type == NumberFormatType::LongDateTime) ? QLocale::LongFormat :
-                                                                                        QLocale::ShortFormat);
-        break;
+      case Host::NumberFormatType::ShortDateTime:
+      case Host::NumberFormatType::LongDateTime:
+      {
+        format = s_app_locale.dateTimeFormat((type == Host::NumberFormatType::LongDateTime) ? QLocale::LongFormat :
+                                                                                              QLocale::ShortFormat);
+
+        // Remove time zone specifiers 't', 'tt', 'ttt', 'tttt'.
+        format.remove(QRegularExpression("\\s*t+\\s*"));
+      }
+      break;
 
         DefaultCaseIsUnreachable();
     }
 
-    ret = QDateTime::fromSecsSinceEpoch(value).toString(format).toStdString();
+    ret = QDateTime::fromSecsSinceEpoch(value, QTimeZone::utc()).toLocalTime().toString(format);
   }
   else
   {
-    ret = s_app_locale.toString(value).toStdString();
+    ret = s_app_locale.toString(value);
+  }
+
+  return ret;
+}
+
+std::string Host::FormatNumber(NumberFormatType type, s64 value)
+{
+  return QtHost::FormatNumber(type, value).toStdString();
+}
+
+QString QtHost::FormatNumber(Host::NumberFormatType type, double value)
+{
+  QString ret;
+
+  switch (type)
+  {
+    case Host::NumberFormatType::Number:
+    default:
+      ret = s_app_locale.toString(value);
+      break;
   }
 
   return ret;
@@ -2222,17 +2251,7 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
 
 std::string Host::FormatNumber(NumberFormatType type, double value)
 {
-  std::string ret;
-
-  switch (type)
-  {
-    case NumberFormatType::Number:
-    default:
-      ret = s_app_locale.toString(value).toStdString();
-      break;
-  }
-
-  return ret;
+  return QtHost::FormatNumber(type, value).toStdString();
 }
 
 void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)

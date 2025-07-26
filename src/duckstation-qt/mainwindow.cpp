@@ -894,8 +894,8 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
           continue;
 
         const s32 slot = ssi.slot;
-        const QDateTime timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ssi.timestamp)));
-        const QString timestamp_str(timestamp.toString(timestamp_format));
+        const QString timestamp_str =
+          QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(ssi.timestamp));
 
         QAction* action;
         if (slot < 0)
@@ -954,20 +954,16 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
   }
 }
 
-QString MainWindow::formatTimestampForSaveStateMenu(u64 timestamp)
-{
-  const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
-  return qtime.toString(QtHost::GetApplicationLocale().dateTimeFormat(QLocale::ShortFormat));
-}
-
 void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu)
 {
   auto add_slot = [this, menu](const QString& title, const QString& empty_title, const std::string_view& serial,
                                s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
-    const QString menu_title =
-      ssi.has_value() ? title.arg(slot).arg(formatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
+    const QString menu_title = ssi.has_value() ?
+                                 title.arg(slot).arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
+                                                                          static_cast<s64>(ssi->timestamp))) :
+                                 empty_title.arg(slot);
 
     QAction* load_action = menu->addAction(menu_title);
     load_action->setEnabled(ssi.has_value());
@@ -990,7 +986,9 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
   });
   QAction* load_from_state =
     menu->addAction(s_undo_state_timestamp.has_value() ?
-                      tr("Undo Load State (%1)").arg(formatTimestampForSaveStateMenu(s_undo_state_timestamp.value())) :
+                      tr("Undo Load State (%1)")
+                        .arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
+                                                  static_cast<s64>(s_undo_state_timestamp.value()))) :
                       tr("Undo Load State"));
   load_from_state->setEnabled(s_undo_state_timestamp.has_value());
   connect(load_from_state, &QAction::triggered, g_emu_thread, &EmuThread::undoLoadState);
@@ -1014,8 +1012,10 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
   auto add_slot = [menu](const QString& title, const QString& empty_title, const std::string_view& serial, s32 slot) {
     std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
-    const QString menu_title =
-      ssi.has_value() ? title.arg(slot).arg(formatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
+    const QString menu_title = ssi.has_value() ?
+                                 title.arg(slot).arg(QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
+                                                                          static_cast<s64>(ssi->timestamp))) :
+                                 empty_title.arg(slot);
 
     QAction* save_action = menu->addAction(menu_title);
     connect(save_action, &QAction::triggered,
@@ -1132,9 +1132,10 @@ std::optional<bool> MainWindow::promptForResumeState(const std::string& save_sta
   msgbox.setIcon(QMessageBox::Question);
   msgbox.setWindowTitle(tr("Load Resume State"));
   msgbox.setWindowModality(Qt::WindowModal);
-  msgbox.setText(tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, "
-                    "or start from a fresh boot?")
-                   .arg(QDateTime::fromSecsSinceEpoch(sd.ModificationTime, QTimeZone::utc()).toLocalTime().toString()));
+  msgbox.setText(
+    tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, "
+       "or start from a fresh boot?")
+      .arg(QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(sd.ModificationTime))));
 
   QPushButton* load = msgbox.addButton(tr("Load State"), QMessageBox::AcceptRole);
   QPushButton* boot = msgbox.addButton(tr("Fresh Boot"), QMessageBox::RejectRole);

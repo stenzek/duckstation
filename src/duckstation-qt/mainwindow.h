@@ -307,8 +307,6 @@ private:
   void startFileOrChangeDisc(const QString& path);
   void promptForDiscChange(const QString& path);
 
-  static QString formatTimestampForSaveStateMenu(u64 timestamp);
-
   Ui::MainWindow m_ui;
 
   GameListWidget* m_game_list_widget = nullptr;
