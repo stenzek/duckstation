@@ -43,7 +43,6 @@
     </ClCompile>
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="qtthemes.cpp" />
-    <ClCompile Include="qttranslations.cpp" />
     <ClCompile Include="qthost.cpp" />
     <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />

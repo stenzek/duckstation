@@ -35,7 +35,6 @@
     <ClCompile Include="gamelistrefreshthread.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamesummarywidget.cpp" />
-    <ClCompile Include="qttranslations.cpp" />
     <ClCompile Include="coverdownloadwindow.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="pch.cpp" />

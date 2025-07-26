@@ -133,7 +133,6 @@ set(SRCS
   qtprogresscallback.cpp
   qtprogresscallback.h
   qtthemes.cpp
-  qttranslations.cpp
   qtutils.cpp
   qtutils.h
   resource.h

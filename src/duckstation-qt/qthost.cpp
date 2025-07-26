@@ -59,6 +59,7 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
+#include <QtCore/QTranslator>
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
 #include <QtCore/QtLogging>
@@ -77,6 +78,17 @@
 #include "moc_qthost.cpp"
 
 LOG_CHANNEL(Host);
+
+#if 0
+// Mac application menu strings
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Services")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Hide %1")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Hide Others")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Show All")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences...")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1")
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
+#endif
 
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
@@ -110,6 +122,7 @@ static void SetDefaultSettings(SettingsInterface& si, bool system, bool controll
 static void MigrateSettings();
 static void SaveSettings();
 static bool RunSetupWizard();
+static void UpdateFontOrder(std::string_view language);
 static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
@@ -121,6 +134,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 
 static INISettingsInterface s_base_settings_interface;
 static std::unique_ptr<QTimer> s_settings_save_timer;
+static std::vector<QTranslator*> s_translators;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
@@ -2217,6 +2231,196 @@ std::string Host::FormatNumber(NumberFormatType type, double value)
   }
 
   return ret;
+}
+
+void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
+{
+  for (QTranslator* translator : s_translators)
+  {
+    qApp->removeTranslator(translator);
+    translator->deleteLater();
+  }
+  s_translators.clear();
+
+  // Fix old language names.
+  const std::string language = Host::GetBaseStringSettingValue("Main", "Language", GetDefaultLanguage());
+  const QString qlanguage = QString::fromStdString(language);
+
+  // install the base qt translation first
+#ifndef __APPLE__
+  const QString base_dir = QStringLiteral("%1/translations").arg(qApp->applicationDirPath());
+#else
+  const QString base_dir = QStringLiteral("%1/../Resources/translations").arg(qApp->applicationDirPath());
+#endif
+
+  // Qt base uses underscores instead of hyphens.
+  const QString qtbase_language = QString(qlanguage).replace(QChar('-'), QChar('_'));
+  QString base_path(QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qtbase_language));
+  bool has_base_ts = QFile::exists(base_path);
+  if (!has_base_ts)
+  {
+    // Try without the country suffix.
+    const int index = qlanguage.lastIndexOf('-');
+    if (index > 0)
+    {
+      base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qlanguage.left(index));
+      has_base_ts = QFile::exists(base_path);
+    }
+  }
+  if (has_base_ts)
+  {
+    QTranslator* base_translator = new QTranslator(qApp);
+    if (!base_translator->load(base_path))
+    {
+      QMessageBox::warning(
+        dialog_parent, QStringLiteral("Translation Error"),
+        QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
+      delete base_translator;
+    }
+    else
+    {
+      s_translators.push_back(base_translator);
+      qApp->installTranslator(base_translator);
+    }
+  }
+
+  const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir).arg(qlanguage);
+  if (!QFile::exists(path))
+  {
+    QMessageBox::warning(
+      dialog_parent, QStringLiteral("Translation Error"),
+      QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(qlanguage).arg(path));
+    return;
+  }
+
+  QTranslator* translator = new QTranslator(qApp);
+  if (!translator->load(path))
+  {
+    QMessageBox::warning(
+      dialog_parent, QStringLiteral("Translation Error"),
+      QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(qlanguage).arg(path));
+    delete translator;
+    return;
+  }
+
+  INFO_LOG("Loaded translation file for language {}", qlanguage.toUtf8().constData());
+  qApp->installTranslator(translator);
+  s_translators.push_back(translator);
+
+  // We end up here both on language change, and on startup.
+  UpdateFontOrder(language);
+}
+
+s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,
+                                            std::string_view disambiguation, char* tbuf, size_t tbuf_space)
+{
+  // This is really awful. Thankfully we're caching the results...
+  const std::string temp_context(context);
+  const std::string temp_msg(msg);
+  const std::string temp_disambiguation(disambiguation);
+  const QString translated_msg = qApp->translate(temp_context.c_str(), temp_msg.c_str(),
+                                                 disambiguation.empty() ? nullptr : temp_disambiguation.c_str());
+  const QByteArray translated_utf8 = translated_msg.toUtf8();
+  const size_t translated_size = translated_utf8.size();
+  if (translated_size > tbuf_space)
+    return -1;
+  else if (translated_size > 0)
+    std::memcpy(tbuf, translated_utf8.constData(), translated_size);
+
+  return static_cast<s32>(translated_size);
+}
+
+std::string Host::TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count)
+{
+  return qApp->translate(context, msg, disambiguation, count).toStdString();
+}
+
+SmallString Host::TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation,
+                                               int count)
+{
+  const QString qstr = qApp->translate(context, msg, disambiguation, count);
+  SmallString ret;
+
+#ifdef _WIN32
+  // Cheeky way to avoid heap allocations.
+  static_assert(sizeof(*qstr.utf16()) == sizeof(wchar_t));
+  ret.assign(std::wstring_view(reinterpret_cast<const wchar_t*>(qstr.utf16()), qstr.length()));
+#else
+  const QByteArray utf8 = qstr.toUtf8();
+  ret.assign(utf8.constData(), utf8.length());
+#endif
+
+  return ret;
+}
+
+std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
+{
+  static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},
+                                                                            {"Español de Latinoamérica", "es"},
+                                                                            {"Español de España", "es-ES"},
+                                                                            {"Français", "fr"},
+                                                                            {"Bahasa Indonesia", "id"},
+                                                                            {"日本語", "ja"},
+                                                                            {"한국어", "ko"},
+                                                                            {"Italiano", "it"},
+                                                                            {"Polski", "pl"},
+                                                                            {"Português (Pt)", "pt-PT"},
+                                                                            {"Português (Br)", "pt-BR"},
+                                                                            {"Русский", "ru"},
+                                                                            {"Svenska", "sv"},
+                                                                            {"Türkçe", "tr"},
+                                                                            {"简体中文", "zh-CN"}};
+
+  return languages;
+}
+
+bool Host::ChangeLanguage(const char* new_language)
+{
+  Host::RunOnUIThread([new_language = std::string(new_language)]() {
+    Host::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
+    Host::CommitBaseSettingChanges();
+    QtHost::UpdateApplicationLanguage(g_main_window);
+    g_main_window->recreate();
+  });
+  return true;
+}
+
+const char* QtHost::GetDefaultLanguage()
+{
+  // TODO: Default system language instead.
+  return "en";
+}
+
+void QtHost::UpdateFontOrder(std::string_view language)
+{
+  // Why is this a thing? Because we want all glyphs to be available, but don't want to conflict
+  // between codepoints shared between Chinese and Japanese. Therefore we prioritize the language
+  // that the user has selected.
+  ImGuiManager::TextFontOrder font_order;
+#define TF(name) ImGuiManager::TextFont::name
+  if (language == "ja")
+    font_order = {TF(Default), TF(Japanese), TF(Chinese), TF(Korean)};
+  else if (language == "ko")
+    font_order = {TF(Default), TF(Korean), TF(Japanese), TF(Chinese)};
+  else if (language == "zh-CN")
+    font_order = {TF(Default), TF(Chinese), TF(Japanese), TF(Korean)};
+  else
+    font_order = ImGuiManager::GetDefaultTextFontOrder();
+#undef TF
+
+  if (g_emu_thread)
+  {
+    Host::RunOnCPUThread([font_order]() mutable {
+      GPUThread::RunOnThread([font_order]() mutable { ImGuiManager::SetTextFontOrder(font_order); });
+      Host::ClearTranslationCache();
+    });
+  }
+  else
+  {
+    // Startup, safe to set directly.
+    ImGuiManager::SetTextFontOrder(font_order);
+    Host::ClearTranslationCache();
+  }
 }
 
 void Host::ReportDebuggerMessage(std::string_view message)
