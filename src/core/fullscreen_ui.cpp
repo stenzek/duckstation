@@ -571,6 +571,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::string game_list_current_selection_path;
   float game_list_current_selection_timeout = 0.0f;
   bool game_list_show_trophy_icons = true;
+  bool game_grid_show_titles = true;
 };
 
 } // namespace
@@ -8303,6 +8304,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
   const ImGuiStyle& style = ImGui::GetStyle();
 
+  const float title_font_size = UIStyle.MediumFontSize;
+  const float title_font_weight = UIStyle.BoldFontWeight;
   const float avail_width = ImGui::GetContentRegionAvail().x;
   const float title_spacing = LayoutScale(10.0f);
   const float item_width_with_spacing = std::floor(avail_width / 5.0f);
@@ -8310,27 +8313,56 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const float image_width = item_width - (style.FramePadding.x * 2.0f);
   const float image_height = image_width;
   const ImVec2 image_size(image_width, image_height);
-  const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + UIStyle.MediumFontSize;
-  const ImVec2 item_size(item_width, item_height);
+  const float base_item_height = (style.FramePadding.y * 2.0f) + image_height;
   const u32 grid_count_x = static_cast<u32>(std::floor(avail_width / item_width_with_spacing));
 
   // calculate padding to center it, the last item in the row doesn't need spacing
   const float x_padding = std::floor(
     (avail_width - ((item_width_with_spacing * static_cast<float>(grid_count_x)) - style.ItemSpacing.x)) * 0.5f);
 
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
   SmallString draw_title;
   const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
   u32 grid_x = 0;
+  float row_item_height = base_item_height;
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
-  for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
+  for (size_t entry_index = 0; entry_index < s_state.game_list_sorted_entries.size(); entry_index++)
   {
-    ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems)
       continue;
 
+    // This is pretty annoying. If we don't use an equal sized item for each grid item, keyboard/gamepad navigation
+    // tends to break when scrolling vertically - it goes left/right. Precompute the maximum item height for the row
+    // first, and make all items the same size to work around this.
+    const GameList::Entry* entry = s_state.game_list_sorted_entries[entry_index];
+    if (grid_x == 0 && s_state.game_grid_show_titles)
+    {
+      row_item_height = 0.0f;
+
+      const size_t row_entry_index_end = std::min(entry_index + grid_count_x, s_state.game_list_sorted_entries.size());
+      for (size_t row_entry_index = entry_index; row_entry_index < row_entry_index_end; row_entry_index++)
+      {
+        const GameList::Entry* row_entry = s_state.game_list_sorted_entries[row_entry_index];
+        const ImVec2 this_title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width,
+                                                                   image_width, IMSTR_START_END(row_entry->title));
+        row_item_height = std::max(row_item_height, this_title_size.y);
+      }
+
+      row_item_height += title_spacing + base_item_height;
+    }
+
+    ImVec2 title_size;
+    if (s_state.game_grid_show_titles)
+    {
+      title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width, image_width,
+                                               IMSTR_START_END(entry->title));
+    }
+
     const ImGuiID id = window->GetID(entry->path.c_str(), entry->path.c_str() + entry->path.length());
     const ImVec2 pos(window->DC.CursorPos);
+    const ImVec2 item_size(item_width, row_item_height);
     ImRect bb(pos, pos + item_size);
     ImGui::ItemSize(item_size);
     if (ImGui::ItemAdd(bb, id))
@@ -8358,36 +8390,24 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
                                                                 static_cast<float>(cover_texture->GetHeight()))));
 
-      ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-                                           ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+      dl->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                   IM_COL32(255, 255, 255, 255));
 
       GPUTexture* const cover_trophy = GetGameListCoverTrophy(entry, image_size);
       if (cover_trophy)
       {
         const ImVec2 trophy_size =
           ImVec2(static_cast<float>(cover_trophy->GetWidth()), static_cast<float>(cover_trophy->GetHeight()));
-        ImGui::GetWindowDrawList()->AddImage(cover_trophy, bb.Min + image_size - trophy_size, bb.Min + image_size,
-                                             ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+        dl->AddImage(cover_trophy, bb.Min + image_size - trophy_size, bb.Min + image_size, ImVec2(0.0f, 0.0f),
+                     ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       }
 
-      const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-      const char* remaining_text;
-      UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.GetWidth(), 0.0f,
-                                  IMSTR_START_END(entry->title), &remaining_text);
-      const u32 unclipped_size = static_cast<u32>(remaining_text - entry->title.data());
-      if (unclipped_size > 0 && unclipped_size != entry->title.size())
+      if (draw_title)
       {
-        // ellipise title, remove one character to make room
-        draw_title.format("{}...", std::string_view(entry->title).substr(0, unclipped_size - 1));
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, title_bb.Min,
-                                  title_bb.Max, text_color, draw_title, nullptr, LAYOUT_CENTER_ALIGN_TEXT, 0.0f,
-                                  &title_bb);
-      }
-      else
-      {
-        RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, title_bb.Min,
-                                  title_bb.Max, text_color, entry->title, nullptr, LAYOUT_CENTER_ALIGN_TEXT, 0.0f,
-                                  &title_bb);
+        const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
+        ImGuiFullscreen::RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight,
+                                                            title_bb.Min, title_bb.Max, text_color, entry->title,
+                                                            LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
       }
 
       if (pressed)
@@ -8603,6 +8623,12 @@ void FullscreenUI::DrawGameListSettingsPage()
     {
       s_state.game_list_show_trophy_icons = bsi->GetBoolValue("Main", "FullscreenUIShowTrophyIcons", true);
     }
+    if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TAGS, "Show Grid View Titles"),
+                          FSUI_VSTR("Shows titles underneath the images in the game grid view."), "Main",
+                          "FullscreenUIShowGridTitles", true))
+    {
+      s_state.game_grid_show_titles = bsi->GetBoolValue("Main", "FullscreenUIShowGridTitles", true);
+    }
 
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TEXT_SLASH, "List Compact Mode"),
                       FSUI_VSTR("Displays only the game title in the list, instead of the title and serial/file name."),
@@ -8807,6 +8833,7 @@ void FullscreenUI::SwitchToGameList()
   s_state.game_list_view =
     static_cast<GameListView>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
   s_state.game_list_show_trophy_icons = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowTrophyIcons", true);
+  s_state.game_grid_show_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowGridTitles", true);
   s_state.game_list_current_selection_path = {};
   s_state.game_list_current_selection_timeout = 0.0f;
 
@@ -9936,6 +9963,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show FPS");
 TRANSLATE_NOOP("FullscreenUI", "Show Frame Times");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Statistics");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Usage");
+TRANSLATE_NOOP("FullscreenUI", "Show Grid View Titles");
 TRANSLATE_NOOP("FullscreenUI", "Show Latency Statistics");
 TRANSLATE_NOOP("FullscreenUI", "Show OSD Messages");
 TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
@@ -9956,6 +9984,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the game you are currently playing as part
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage of each system thread in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows titles underneath the images in the game grid view.");
 TRANSLATE_NOOP("FullscreenUI", "Shows trophy icons in game grid when games have achievements or have been mastered.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");

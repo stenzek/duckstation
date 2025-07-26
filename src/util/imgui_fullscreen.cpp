@@ -1722,6 +1722,38 @@ void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, float font_size, f
                             text_size_if_known, align, wrap_width, clip_rect);
 }
 
+void ImGuiFullscreen::RenderMultiLineShadowedTextClipped(ImDrawList* draw_list, ImFont* font, float font_size,
+                                                         float font_weight, const ImVec2& pos_min,
+                                                         const ImVec2& pos_max, u32 color, std::string_view text,
+                                                         const ImVec2& align, float wrap_width,
+                                                         const ImRect* clip_rect /* = nullptr */,
+                                                         float shadow_offset /* = LayoutScale(LAYOUT_SHADOW_OFFSET) */)
+{
+  if (text.empty())
+    return;
+
+  const char* text_display_end = ImGui::FindRenderedTextEnd(IMSTR_START_END(text));
+  const size_t text_len = (text_display_end - text.data());
+  if (text_len == 0)
+    return;
+
+  text = text.substr(0, text_len);
+
+  const char* text_ptr = text.data();
+  const char* text_end = text.data() + text_len;
+  ImVec2 current_pos = pos_min;
+  while (text_ptr < text_end)
+  {
+    const char* line_end = font->CalcWordWrapPosition(font_size, font_weight, text_ptr, text_end, wrap_width);
+    const ImVec2 line_size = font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, text_ptr, line_end);
+    RenderShadowedTextClipped(draw_list, font, font_size, font_weight, current_pos, pos_max, color,
+                              std::string_view(text_ptr, line_end), &line_size, align, 0.0f, clip_rect, shadow_offset);
+
+    current_pos.y += line_size.y;
+    text_ptr = line_end;
+  }
+}
+
 void ImGuiFullscreen::RenderAutoLabelText(ImDrawList* draw_list, ImFont* font, float font_size, float font_weight,
                                           float label_weight, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
                                           std::string_view text, char separator, float shadow_offset)
