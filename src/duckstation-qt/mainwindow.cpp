@@ -809,8 +809,8 @@ void MainWindow::recreate()
   // We need to close input sources, because e.g. DInput uses our window handle.
   g_emu_thread->closeInputSources();
 
-  close();
   g_main_window = nullptr;
+  close();
 
   MainWindow* new_main_window = new MainWindow();
   DebugAssert(g_main_window == new_main_window);
@@ -2665,12 +2665,13 @@ void MainWindow::showEvent(QShowEvent* event)
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   // If there's no VM, we can just exit as normal.
-  if (!QtHost::IsSystemValidOrStarting())
+  // When recreating, g_main_window will be null at this point.
+  if (!QtHost::IsSystemValidOrStarting() || !g_main_window)
   {
     QtUtils::SaveWindowGeometry("MainWindow", this);
 
     // surfaceless for language change
-    if (s_fullscreen_ui_started && !g_emu_thread->isSurfaceless())
+    if (s_fullscreen_ui_started && g_main_window)
       g_emu_thread->stopFullscreenUI();
 
     destroySubWindows();
