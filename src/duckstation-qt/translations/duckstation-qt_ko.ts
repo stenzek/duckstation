@@ -8298,8 +8298,8 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>{:%c}에 생성된 자동 저장을 계속 진행하시겠습니까?</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation>{}에 생성된 자동 저장을 계속 진행하시겠습니까?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9521"/>
@@ -9485,8 +9485,8 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9840"/>
-        <source>Saved {:%c}</source>
-        <translation>{:%c} 저장</translation>
+        <source>Saved {}</source>
+        <translation>{} 저장</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9841"/>

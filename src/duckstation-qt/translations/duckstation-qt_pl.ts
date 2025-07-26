@@ -7811,8 +7811,8 @@ Spowodowany błąd:</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7651"/>
-        <source>Saved {:%c}</source>
-        <translation>Zapisano {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Zapisano {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7652"/>

@@ -9162,8 +9162,8 @@ Comprueba el nombre de usuario y contraseña e intenta de nuevo.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9249"/>
-        <source>Saved {:%c}</source>
-        <translation>Guardado {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Guardado {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9250"/>

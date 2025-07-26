@@ -8615,8 +8615,8 @@ L&apos;errore è:</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7408"/>
-        <source>Saved {:%c}</source>
-        <translation>Salvato {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Salvato {}</translation>
     </message>
     <message>
         <source>Saves screenshots at internal render resolution and without postprocessing.</source>

@@ -8641,8 +8641,8 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>Deseja continuar a partir do salvamento automático criado em {:%c}?</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation>Deseja continuar a partir do salvamento automático criado em {}?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9521"/>
@@ -9982,8 +9982,8 @@ Por favor verifique seu nome de usuário e senha, e tente novamente.</translatio
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9840"/>
-        <source>Saved {:%c}</source>
-        <translation>Salvo {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Salvo {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9841"/>

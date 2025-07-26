@@ -6803,8 +6803,8 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
         <translation type="vanished">Spara tillstånd vid avslut</translation>
     </message>
     <message>
-        <source>Saved {:%c}</source>
-        <translation>Sparat {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Sparat {}</translation>
     </message>
     <message>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
@@ -7719,8 +7719,8 @@ Du kan inte ångra den här åtgärden.</translation>
         <translation>Standardvärde</translation>
     </message>
     <message>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>Vill du fortsätta från den automatiska sparning som skapades vid {:%c}?</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation>Vill du fortsätta från den automatiska sparning som skapades vid {}?</translation>
     </message>
     <message>
         <source>Enable Achievements to see your user summary.</source>

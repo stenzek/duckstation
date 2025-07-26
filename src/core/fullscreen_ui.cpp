@@ -41,7 +41,6 @@
 #include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
-#include "fmt/chrono.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -249,6 +248,7 @@ static GPUTexture* GetUserThemeableTexture(
   const ImVec2& svg_size = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE, LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE));
 static bool UserThemeableHorizontalButton(const std::string_view png_name, const std::string_view svg_name,
                                           std::string_view title, std::string_view description);
+static void UpdateCurrentTimeString();
 
 //////////////////////////////////////////////////////////////////////////
 // Landing
@@ -535,6 +535,10 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::unique_ptr<GPUPipeline> transition_blend_pipeline;
   float transition_total_time = 0.0f;
   float transition_remaining_time = 0.0f;
+
+  // Pause Menu
+  std::time_t current_time = 0;
+  std::string current_time_string;
 
   // Settings
   float settings_last_bg_alpha = 1.0f;
@@ -1186,6 +1190,8 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.fullscreen_mode_list_cache = {};
     s_state.graphics_adapter_list_cache = {};
     s_state.hotkey_list_cache = {};
+    s_state.current_time_string = {};
+    s_state.current_time = 0;
   }
 
   DestroyResources();
@@ -1398,6 +1404,17 @@ bool FullscreenUI::UserThemeableHorizontalButton(const std::string_view png_name
     LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE, LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE));
   return HorizontalMenuItem(icon, title, description,
                             is_colorable ? ImGui::GetColorU32(ImGuiCol_Text) : IM_COL32(255, 255, 255, 255));
+}
+
+void FullscreenUI::UpdateCurrentTimeString()
+{
+  const std::time_t current_time = std::time(nullptr);
+  if (s_state.current_time == current_time)
+    return;
+
+  s_state.current_time = current_time;
+  s_state.current_time_string = {};
+  s_state.current_time_string = Host::FormatNumber(Host::NumberFormatType::ShortTime, static_cast<s64>(current_time));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2085,14 +2102,15 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     // draw time
     ImVec2 time_pos;
     {
-      heading_str.format(FSUI_FSTR("{:%H:%M}"), fmt::localtime(std::time(nullptr)));
+      UpdateCurrentTimeString();
 
-      const ImVec2 time_size =
-        heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, "00:00");
+      const ImVec2 time_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
+                                                           IMSTR_START_END(s_state.current_time_string));
       time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
                         LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
       ImGuiFullscreen::RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, time_pos,
-                                                 time_pos + time_size, text_color, heading_str, &time_size);
+                                                 time_pos + time_size, text_color, s_state.current_time_string,
+                                                 &time_size);
     }
 
     // draw achievements info
@@ -6439,11 +6457,9 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
-      TinyString ts_string;
-      ts_string.format(
-        FSUI_FSTR("{:%Y-%m-%d %H:%M:%S}"),
-        fmt::localtime(
-          StringUtil::FromChars<u64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
+      const std::string ts_string = Host::FormatNumber(
+        Host::NumberFormatType::LongDateTime,
+        StringUtil::FromChars<s64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0));
       MenuButtonWithoutSummary(
         SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
         false);
@@ -6994,13 +7010,13 @@ void FullscreenUI::DrawPauseMenu()
                               display_size, text_color, buffer);
 
     // current time / play time
-    buffer.format("{:%X}", fmt::localtime(std::time(nullptr)));
+    UpdateCurrentTimeString();
 
     ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
                                                    std::numeric_limits<float>::max(), -1.0f, IMSTR_START_END(buffer));
     text_pos = ImVec2(display_size.x - scaled_top_bar_padding - text_size.x, scaled_top_bar_padding);
     RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos, display_size,
-                              title_text_color, buffer);
+                              title_text_color, s_state.current_time_string);
     text_pos.y += UIStyle.LargeFontSize + scaled_text_spacing;
 
     if (!game_serial.empty())
@@ -7224,7 +7240,8 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
     li->title = (slot > 0) ? fmt::format(FSUI_FSTR("Game Slot {0}##game_slot_{0}"), slot) : FSUI_STR("Game Quick Save");
   }
 
-  li->summary = fmt::format(FSUI_FSTR("Saved {:%c}"), fmt::localtime(ssi->timestamp));
+  li->summary = fmt::format(
+    FSUI_FSTR("Saved {}"), Host::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(ssi->timestamp)));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
   li->state_path = std::move(path);
@@ -7643,8 +7660,8 @@ void FullscreenUI::DrawResumeStateSelector()
   SaveStateListEntry& entry = s_state.save_state_selector_slots.front();
 
   SmallString sick;
-  sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {:%c}?"),
-              fmt::localtime(entry.timestamp));
+  sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {}?"),
+              Host::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(entry.timestamp)));
   ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGuiFullscreen::TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
   ImGui::PopFont();
@@ -9566,7 +9583,7 @@ TRANSLATE_NOOP("FullscreenUI", "Displays only the game title in the list, instea
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Dithering");
-TRANSLATE_NOOP("FullscreenUI", "Do you want to continue from the automatic save created at {:%c}?");
+TRANSLATE_NOOP("FullscreenUI", "Do you want to continue from the automatic save created at {}?");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
@@ -9901,7 +9918,7 @@ TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Save State Compression");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Save as Serial File Names");
-TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
+TRANSLATE_NOOP("FullscreenUI", "Saved {}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.");
@@ -10108,8 +10125,6 @@ TRANSLATE_NOOP("FullscreenUI", "\"PlayStation\" and \"PSX\" are registered trade
 TRANSLATE_NOOP("FullscreenUI", "change disc");
 TRANSLATE_NOOP("FullscreenUI", "reset");
 TRANSLATE_NOOP("FullscreenUI", "shut down");
-TRANSLATE_NOOP("FullscreenUI", "{:%H:%M}");
-TRANSLATE_NOOP("FullscreenUI", "{:%Y-%m-%d %H:%M:%S}");
 TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");

@@ -9641,8 +9641,8 @@ Hata: {}
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9632"/>
-        <source>Saved {:%c}</source>
-        <translation>Kaydedildi {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Kaydedildi {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9633"/>

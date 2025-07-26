@@ -6879,8 +6879,8 @@ Se eliminarán todas las asignaciones y configuraciones. Esta acción no puede d
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9560"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>¿Deseas retomar el guardado automático creado el:  {:%c}?</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation>¿Deseas retomar el guardado automático creado el:  {}?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9561"/>
@@ -9175,8 +9175,8 @@ Comprueba tu nombre de usuario y contraseña y vuelve a intentarlo.</translation
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9895"/>
-        <source>Saved {:%c}</source>
-        <translation>Archivo guardado: {:%c}</translation>
+        <source>Saved {}</source>
+        <translation>Archivo guardado: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9896"/>

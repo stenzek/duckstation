@@ -7218,8 +7218,8 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9505"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation>您想要从创建于{:%c}的自动保存中继续吗？</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation>您想要从创建于{}的自动保存中继续吗？</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9512"/>
@@ -8556,8 +8556,8 @@ Error was:</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9831"/>
-        <source>Saved {:%c}</source>
-        <translation>保存{:%c}</translation>
+        <source>Saved {}</source>
+        <translation>保存{}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9282"/>

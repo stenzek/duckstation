@@ -6924,8 +6924,8 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9584"/>
-        <source>Do you want to continue from the automatic save created at {:%c}?</source>
-        <translation type="unfinished">Хотите ли вы продолжить с автоматического сохранения, созданного в {:%c}?</translation>
+        <source>Do you want to continue from the automatic save created at {}?</source>
+        <translation type="unfinished">Хотите ли вы продолжить с автоматического сохранения, созданного в {}?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9585"/>
@@ -9231,8 +9231,8 @@ Please check your username and password, and try again.</source>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9917"/>
-        <source>Saved {:%c}</source>
-        <translation type="unfinished">Сохранен {:%c}</translation>
+        <source>Saved {}</source>
+        <translation type="unfinished">Сохранен {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9918"/>
