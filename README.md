@@ -2,7 +2,7 @@
 
 [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage/Flatpak x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Game Compatibility List:** https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
 
@@ -70,7 +70,7 @@ Other features include:
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
-Binaries of DuckStation for Windows x64/ARM64, Linux x86_64/ARM32/ARM64 (in AppImage/Flatpak formats), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push.
+Binaries of DuckStation for Windows x64/ARM64, Linux x86_64/ARM32/ARM64 (in AppImage format), and macOS Universal Binaries are available via GitHub Releases and are automatically built with every commit/push.
 
 As per the terms of CC-BY-NC-ND, redistribution of **unmodified releases and code** is permitted. However, we would prefer if you linked to https://www.duckstation.org/ instead. Please note that pre-configured settings and packages are considered modifications.
 
@@ -105,9 +105,7 @@ The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
 
 #### Flatpak
 
-Due to various Flatpak limitations and Flathub randomly breaking regularly, **the Flatpak package is not recommended**. We recommend that you use the AppImage instead.
-
-There appears to be little interest from users in keeping the Flatpak maintained. If you are a user and using the Flatpak, please let us know, since we are considering dropping it.
+Due to various Flatpak limitations and Flathub randomly breaking regularly, **the Flatpak package is not recommended**. **We recommend that you use the AppImage instead.**
 
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.flatpak`.
  - Run `flatpak install ./duckstation-x64.flatpak`.
@@ -116,6 +114,15 @@ or, if you have FlatHub set up:
  - Run `flatpak install org.duckstation.DuckStation`.
 
 Use `flatpak run org.duckstation.DuckStation` to start, or select `DuckStation` in the launcher of your desktop environment. Follow the Setup Wizard to get started.
+
+**As of 2025/07/26, with the aforementioned issues and a lack of interest from users, the Flatpak package is deprecated. Future updates are not guaranteed.**
+
+To migrate your data from the Flatpak package to the AppImage, you can run the following command:
+```bash
+mv ~/.var/app/org.duckstation.DuckStation/config/duckstation ~/.local/share
+```
+
+You will need to re-add your game directories after switching to the AppImage.
 
 ### macOS
 
