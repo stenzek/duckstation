@@ -2383,8 +2383,7 @@ std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageL
   static constexpr const std::pair<const char*, const char*> languages[] = {
     {QT_TRANSLATE_NOOP("QtHost", "System Language"), ""},
 
-#define TRANSLATION_LIST_ENTRY(name, our_translation_code, locale_code)                                                \
-  {name " [" our_translation_code "]", our_translation_code},
+#define TRANSLATION_LIST_ENTRY(name, code, locale_code, qlanguage, qcountry) {name " [" code "]", code},
 #include "qttranslations.inl"
 #undef TRANSLATION_LIST_ENTRY
   };
@@ -2488,19 +2487,30 @@ const QLocale& QtHost::GetApplicationLocale()
 
 void QtHost::UpdateApplicationLocale(std::string_view language)
 {
-#if 0
-  // Only for testing purposes. Keep the system locale for users.
-  if (language == "ja")
-    s_app_locale = QLocale(QLocale::Japanese, QLocale::Japan);
-  else if (language == "ko")
-    s_app_locale = QLocale(QLocale::Korean, QLocale::SouthKorea);
-  else if (language == "zh-CN")
-    s_app_locale = QLocale(QLocale::Chinese, QLocale::China);
-  else
-    s_app_locale = QLocale::system();
-#else
+  static constexpr const std::tuple<const char*, QLocale::Language, QLocale::Country> lookup[] = {
+#define TRANSLATION_LIST_ENTRY(name, code, locale_code, qlanguage, qcountry) {code, qlanguage, qcountry},
+#include "qttranslations.inl"
+#undef TRANSLATION_LIST_ENTRY
+  };
+
+  // If the system locale is using the same language, then use the system locale.
+  // Otherwise we'll be using that ugly US date format in Straya mate.
   s_app_locale = QLocale::system();
-#endif
+  const std::string system_locale_name = s_app_locale.name().toStdString();
+  if (s_app_locale.name().startsWith(QLatin1StringView(language), Qt::CaseInsensitive))
+  {
+    INFO_LOG("Using system locale for {}.", language);
+    return;
+  }
+
+  for (const auto& [code, qlanguage, qcountry] : lookup)
+  {
+    if (language == code)
+    {
+      s_app_locale = QLocale(qlanguage, qcountry);
+      return;
+    }
+  }
 }
 
 void Host::ReportDebuggerMessage(std::string_view message)
