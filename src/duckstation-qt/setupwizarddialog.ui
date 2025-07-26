@@ -753,69 +753,69 @@
           <number>10</number>
          </property>
          <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Renderer:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="renderer">
-           <property name="toolTip">
-            <string>Selects the backend to use for rendering the console/game visuals.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
           <widget class="QLabel" name="resolutionScaleLabel">
            <property name="text">
             <string>Internal Resolution:</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="0" column="1">
           <widget class="QComboBox" name="resolutionScale">
            <property name="toolTip">
             <string>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="textureFilteringLabel">
            <property name="text">
             <string>Texture Filtering:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="1" column="1">
           <widget class="QComboBox" name="textureFiltering">
            <property name="toolTip">
             <string>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="spriteTextureFilteringLabel">
            <property name="text">
             <string>Sprite Texture Filtering:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="2" column="1">
           <widget class="QComboBox" name="spriteTextureFiltering">
            <property name="toolTip">
             <string>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="3" column="0">
+          <widget class="QLabel" name="gpuDitheringModeLabel">
+           <property name="text">
+            <string>Dithering:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="gpuDitheringMode">
+           <property name="toolTip">
+            <string>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
           <widget class="QLabel" name="label_18">
            <property name="text">
             <string>Aspect Ratio:</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="4" column="1">
           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0,0">
            <item>
             <widget class="QComboBox" name="displayAspectRatio">
@@ -853,35 +853,35 @@
            </item>
           </layout>
          </item>
-         <item row="6" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="label_19">
            <property name="text">
             <string>Crop:</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="5" column="1">
           <widget class="QComboBox" name="displayCropMode">
            <property name="toolTip">
             <string>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="6" column="0">
           <widget class="QLabel" name="label_20">
            <property name="text">
             <string>Scaling:</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="6" column="1">
           <widget class="QComboBox" name="displayScaling">
            <property name="toolTip">
             <string>Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution.</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="0" colspan="2">
+         <item row="7" column="0" colspan="2">
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="1">
             <widget class="QCheckBox" name="widescreenHack">
@@ -904,20 +904,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="gpuDitheringModeLabel">
-           <property name="text">
-            <string>Dithering:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QComboBox" name="gpuDitheringMode">
-           <property name="toolTip">
-            <string>Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader Blending options perform blending in software, and are more accurate but have a &lt;strong&gt;significant&lt;/strong&gt; performance penalty.</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>

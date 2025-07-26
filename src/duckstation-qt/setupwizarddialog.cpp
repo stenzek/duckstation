@@ -520,17 +520,6 @@ void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* updat
 
 void SetupWizardDialog::setupGraphicsPage(bool initial)
 {
-  SettingWidgetBinder::DisconnectWidget(m_ui.renderer);
-  m_ui.renderer->clear();
-
-  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
-  {
-    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
-  }
-
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
-                                               &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
-
   SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
   m_ui.resolutionScale->clear();
   GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale, 16);
