@@ -124,6 +124,7 @@ static void SaveSettings();
 static bool RunSetupWizard();
 static void UpdateFontOrder(std::string_view language);
 static void UpdateApplicationLocale(std::string_view language);
+static std::string_view GetSystemLanguage();
 static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
@@ -2263,9 +2264,11 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   }
   s_translators.clear();
 
-  // Fix old language names.
-  const std::string language = Host::GetBaseStringSettingValue("Main", "Language", GetDefaultLanguage());
-  const QString qlanguage = QString::fromStdString(language);
+  // Fixup automatic language.
+  std::string language = Host::GetBaseStringSettingValue("Main", "Language", "");
+  if (language.empty())
+    language = GetSystemLanguage();
+  QString qlanguage = QString::fromStdString(language);
 
   // install the base qt translation first
 #ifndef __APPLE__
@@ -2377,23 +2380,62 @@ SmallString Host::TranslatePluralToSmallString(const char* context, const char* 
 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
 {
-  static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},
-                                                                            {"Español de Latinoamérica", "es"},
-                                                                            {"Español de España", "es-ES"},
-                                                                            {"Français", "fr"},
-                                                                            {"Bahasa Indonesia", "id"},
-                                                                            {"日本語", "ja"},
-                                                                            {"한국어", "ko"},
-                                                                            {"Italiano", "it"},
-                                                                            {"Polski", "pl"},
-                                                                            {"Português (Pt)", "pt-PT"},
-                                                                            {"Português (Br)", "pt-BR"},
-                                                                            {"Русский", "ru"},
-                                                                            {"Svenska", "sv"},
-                                                                            {"Türkçe", "tr"},
-                                                                            {"简体中文", "zh-CN"}};
+  static constexpr const std::pair<const char*, const char*> languages[] = {
+    {QT_TRANSLATE_NOOP("QtHost", "System Language"), ""},
+
+#define TRANSLATION_LIST_ENTRY(name, our_translation_code, locale_code)                                                \
+  {name " [" our_translation_code "]", our_translation_code},
+#include "qttranslations.inl"
+#undef TRANSLATION_LIST_ENTRY
+  };
 
   return languages;
+}
+
+const char* Host::GetLanguageName(std::string_view language_code)
+{
+  for (const auto& [name, code] : GetAvailableLanguageList())
+  {
+    if (language_code == code)
+      return Host::TranslateToCString("QtHost", name);
+  }
+
+  return TRANSLATE("QtHost", "Unknown");
+}
+
+std::string_view QtHost::GetSystemLanguage()
+{
+  std::string locname = QLocale::system().name().toStdString();
+
+  // Does this match any of our translations?
+  for (const auto& [lname, lcode] : Host::GetAvailableLanguageList())
+  {
+    if (locname == lcode)
+      return lcode;
+  }
+
+  // Check for a partial match, e.g. "zh" for "zh-CN".
+  if (const std::string::size_type pos = locname.find('-'); pos != std::string::npos)
+  {
+    const std::string_view plocname = std::string_view(locname).substr(0, pos);
+    for (const auto& [lname, lcode] : Host::GetAvailableLanguageList())
+    {
+      // Only some languages have a country code, so we need to check both.
+      const std::string_view lcodev(lcode);
+      if (lcodev == plocname)
+      {
+        return lcode;
+      }
+      else if (const std::string_view::size_type lpos = lcodev.find('-'); lpos != std::string::npos)
+      {
+        if (lcodev.substr(0, lpos) == plocname)
+          return lcode;
+      }
+    }
+  }
+
+  // Fallback to English.
+  return "en";
 }
 
 bool Host::ChangeLanguage(const char* new_language)
@@ -2405,12 +2447,6 @@ bool Host::ChangeLanguage(const char* new_language)
     g_main_window->recreate();
   });
   return true;
-}
-
-const char* QtHost::GetDefaultLanguage()
-{
-  // TODO: Default system language instead.
-  return "en";
 }
 
 void QtHost::UpdateFontOrder(std::string_view language)

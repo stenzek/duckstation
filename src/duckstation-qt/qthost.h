@@ -339,9 +339,6 @@ const QLocale& GetApplicationLocale();
 /// Default theme name for the platform.
 const char* GetDefaultThemeName();
 
-/// Default language for the platform.
-const char* GetDefaultLanguage();
-
 /// Sets application theme according to settings.
 void UpdateApplicationTheme();
 
@@ -365,9 +362,6 @@ bool CanRenderToMainWindow();
 
 /// Returns true if the separate-window display widget should use the main window coordinates.
 bool UseMainWindowGeometryForDisplayWindow();
-
-/// Default language for the platform.
-const char* GetDefaultLanguage();
 
 /// Call when the language changes.
 void UpdateApplicationLanguage(QWidget* dialog_parent);

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "interfacesettingswidget.h"
 #include "qthost.h"
 
 #include "util/imgui_fullscreen.h"
@@ -42,8 +41,7 @@ void QtHost::UpdateApplicationTheme()
 
 void QtHost::SetStyleFromSettings()
 {
-  const TinyString theme =
-    Host::GetBaseTinyStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME);
+  const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   if (theme == "qdarkstyle")
   {
@@ -202,40 +200,40 @@ void QtHost::SetStyleFromSettings()
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
   }
-	else if (theme == "greengiant")
-	{
-		// Custom palette by RedDevilus, Tame (Light/Washed out) Green as main color and Grayish Blue as complimentary.
-		// Alternative white theme.
-		qApp->setStyle(QStyleFactory::create("Fusion"));
+  else if (theme == "greengiant")
+  {
+    // Custom palette by RedDevilus, Tame (Light/Washed out) Green as main color and Grayish Blue as complimentary.
+    // Alternative white theme.
+    qApp->setStyle(QStyleFactory::create("Fusion"));
 
-		const QColor black(25, 25, 25);
-		const QColor gray(111, 111, 111);
-		const QColor limerick(176, 196, 0);
-		const QColor brown(135, 100, 50);
-		const QColor pear(213, 222, 46);
+    const QColor black(25, 25, 25);
+    const QColor gray(111, 111, 111);
+    const QColor limerick(176, 196, 0);
+    const QColor brown(135, 100, 50);
+    const QColor pear(213, 222, 46);
 
-		QPalette greenGiantPalette;
-		greenGiantPalette.setColor(QPalette::Window, pear);
-		greenGiantPalette.setColor(QPalette::WindowText, black);
-		greenGiantPalette.setColor(QPalette::Base, limerick);
-		greenGiantPalette.setColor(QPalette::AlternateBase, brown.lighter());
-		greenGiantPalette.setColor(QPalette::ToolTipBase, brown);
-		greenGiantPalette.setColor(QPalette::ToolTipText, Qt::white);
-		greenGiantPalette.setColor(QPalette::Text, black);
-		greenGiantPalette.setColor(QPalette::Button, brown.lighter());
-		greenGiantPalette.setColor(QPalette::ButtonText, black.lighter());
-		greenGiantPalette.setColor(QPalette::Link, brown.lighter());
-		greenGiantPalette.setColor(QPalette::Highlight, brown);
-		greenGiantPalette.setColor(QPalette::HighlightedText, Qt::white);
+    QPalette greenGiantPalette;
+    greenGiantPalette.setColor(QPalette::Window, pear);
+    greenGiantPalette.setColor(QPalette::WindowText, black);
+    greenGiantPalette.setColor(QPalette::Base, limerick);
+    greenGiantPalette.setColor(QPalette::AlternateBase, brown.lighter());
+    greenGiantPalette.setColor(QPalette::ToolTipBase, brown);
+    greenGiantPalette.setColor(QPalette::ToolTipText, Qt::white);
+    greenGiantPalette.setColor(QPalette::Text, black);
+    greenGiantPalette.setColor(QPalette::Button, brown.lighter());
+    greenGiantPalette.setColor(QPalette::ButtonText, black.lighter());
+    greenGiantPalette.setColor(QPalette::Link, brown.lighter());
+    greenGiantPalette.setColor(QPalette::Highlight, brown);
+    greenGiantPalette.setColor(QPalette::HighlightedText, Qt::white);
 
-		greenGiantPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
-		greenGiantPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
-		greenGiantPalette.setColor(QPalette::Disabled, QPalette::Text, gray.darker());
-		greenGiantPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
+    greenGiantPalette.setColor(QPalette::Disabled, QPalette::ButtonText, gray);
+    greenGiantPalette.setColor(QPalette::Disabled, QPalette::WindowText, gray.darker());
+    greenGiantPalette.setColor(QPalette::Disabled, QPalette::Text, gray.darker());
+    greenGiantPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
-		qApp->setPalette(greenGiantPalette);
-		qApp->setStyleSheet(QString());
-	}
+    qApp->setPalette(greenGiantPalette);
+    qApp->setStyleSheet(QString());
+  }
   else if (theme == "pinkypals")
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -398,8 +396,7 @@ void QtHost::SetIconThemeFromStyle()
 
 const char* Host::GetDefaultFullscreenUITheme()
 {
-  const TinyString theme =
-    Host::GetBaseTinyStringSettingValue("UI", "Theme", InterfaceSettingsWidget::DEFAULT_THEME_NAME);
+  const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   if (theme == "cobaltsky")
     return "CobaltSky";

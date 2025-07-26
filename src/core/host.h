@@ -72,6 +72,9 @@ void ReportDebuggerMessage(std::string_view message);
 /// Returns a list of supported languages and codes (suffixes for translation files).
 std::span<const std::pair<const char*, const char*>> GetAvailableLanguageList();
 
+/// Returns the localized language name for the specified language code.
+const char* GetLanguageName(std::string_view language_code);
+
 /// Refreshes the UI when the language is changed.
 bool ChangeLanguage(const char* new_language);
 

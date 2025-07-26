@@ -4097,18 +4097,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     // Have to do this the annoying way, because it's host-derived.
     const auto language_list = Host::GetAvailableLanguageList();
     TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
-    const char* current_language_name = "Unknown";
-    for (const auto& [language, code] : language_list)
-    {
-      if (current_language == code)
-        current_language_name = language;
-    }
     if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Language"),
-                            FSUI_VSTR("Chooses the language used for UI elements."), current_language_name))
+                            FSUI_VSTR("Chooses the language used for UI elements."),
+                            Host::GetLanguageName(current_language)))
     {
       ImGuiFullscreen::ChoiceDialogOptions options;
       for (const auto& [language, code] : language_list)
-        options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
+        options.emplace_back(Host::GetLanguageName(code), (current_language == code));
       OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
                        [language_list](s32 index, const std::string& title, bool checked) {
                          if (static_cast<u32>(index) >= language_list.size())

@@ -64,7 +64,7 @@ private:
   };
 
   void setupUi();
-  void setupLanguagePage();
+  void setupLanguagePage(bool initial);
   void setupBIOSPage();
   void setupGameListPage();
   void setupControllerPage(bool initial);

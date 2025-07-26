@@ -103,6 +103,9 @@ void SetWindowResizeable(QWidget* widget, bool resizeable);
 /// Adjusts the fixed size for a window if it's not resizeable.
 void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
 
+/// Returns icon for language.
+QIcon GetIconForTranslationLanguage(std::string_view language_name);
+
 /// Returns icon for region.
 QIcon GetIconForRegion(ConsoleRegion region);
 QIcon GetIconForRegion(DiscRegion region);

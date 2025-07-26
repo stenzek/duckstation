@@ -337,6 +337,11 @@ std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageL
   return {};
 }
 
+const char* Host::GetLanguageName(std::string_view language_code)
+{
+  return "";
+}
+
 bool Host::ChangeLanguage(const char* new_language)
 {
   return false;

@@ -257,6 +257,31 @@ void QtUtils::ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int h
   widget->resize(width, height);
 }
 
+QIcon QtUtils::GetIconForTranslationLanguage(std::string_view language_name)
+{
+  QString icon_path;
+
+  if (!language_name.empty())
+  {
+    const QLatin1StringView qlanguage_name(language_name.data(), language_name.length());
+    icon_path = QStringLiteral(":/icons/flags/%1.png").arg(qlanguage_name);
+    if (!QFile::exists(icon_path))
+    {
+      // try without the suffix (e.g. es-es -> es)
+      const int index = qlanguage_name.indexOf('-');
+      if (index >= 0)
+        icon_path = QStringLiteral(":/icons/flags/%1.png").arg(qlanguage_name.left(index));
+    }
+  }
+  else
+  {
+    // no language specified, use the default icon
+    icon_path = QStringLiteral(":/icons/applications-system.png");
+  }
+
+  return QIcon(icon_path);
+}
+
 QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
 {
   switch (region)

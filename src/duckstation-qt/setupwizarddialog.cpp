@@ -183,7 +183,7 @@ void SetupWizardDialog::setupUi()
   connect(m_ui.next, &QPushButton::clicked, this, &SetupWizardDialog::nextPage);
   connect(m_ui.cancel, &QPushButton::clicked, this, &SetupWizardDialog::confirmCancel);
 
-  setupLanguagePage();
+  setupLanguagePage(true);
   setupBIOSPage();
   setupGameListPage();
   setupControllerPage(true);
@@ -191,20 +191,27 @@ void SetupWizardDialog::setupUi()
   setupAchievementsPage(true);
 }
 
-void SetupWizardDialog::setupLanguagePage()
+void SetupWizardDialog::setupLanguagePage(bool initial)
 {
+  SettingWidgetBinder::DisconnectWidget(m_ui.theme);
+  m_ui.theme->clear();
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.theme, "UI", "Theme", InterfaceSettingsWidget::THEME_NAMES,
-                                               InterfaceSettingsWidget::THEME_VALUES,
-                                               InterfaceSettingsWidget::DEFAULT_THEME_NAME, "InterfaceSettingsWidget");
+                                               InterfaceSettingsWidget::THEME_VALUES, QtHost::GetDefaultThemeName(),
+                                               "MainWindow");
   connect(m_ui.theme, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SetupWizardDialog::themeChanged);
 
+  SettingWidgetBinder::DisconnectWidget(m_ui.language);
+  m_ui.language->clear();
   InterfaceSettingsWidget::populateLanguageDropdown(m_ui.language);
-  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.language, "Main", "Language",
-                                                 QtHost::GetDefaultLanguage());
+  SettingWidgetBinder::BindWidgetToStringSetting(nullptr, m_ui.language, "Main", "Language", {});
   connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &SetupWizardDialog::languageChanged);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+  if (initial)
+  {
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup",
+                                                 true);
+  }
 }
 
 void SetupWizardDialog::themeChanged()
@@ -218,6 +225,7 @@ void SetupWizardDialog::languageChanged()
   // Skip the recreation, since we don't have many dynamic UI elements.
   QtHost::UpdateApplicationLanguage(this);
   m_ui.retranslateUi(this);
+  setupLanguagePage(false);
   setupControllerPage(false);
   setupGraphicsPage(false);
   setupAchievementsPage(false);
@@ -631,7 +639,8 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
 {
   if (initial)
   {
-    m_ui.achievementsIconLabel->setPixmap(QPixmap(QString::fromStdString(QtHost::GetResourcePath("images/ra-icon.webp", true))));
+    m_ui.achievementsIconLabel->setPixmap(
+      QPixmap(QString::fromStdString(QtHost::GetResourcePath("images/ra-icon.webp", true))));
     QFont title_font(m_ui.achievementsTitleLabel->font());
     title_font.setBold(true);
     title_font.setPixelSize(20);

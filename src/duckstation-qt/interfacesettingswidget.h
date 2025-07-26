@@ -27,6 +27,8 @@ private Q_SLOTS:
   void onLanguageChanged();
 
 private:
+  void setupAdditionalUi();
+
   Ui::InterfaceSettingsWidget m_ui;
 
   SettingsWindow* m_dialog;
@@ -34,5 +36,4 @@ private:
 public:
   static const char* THEME_NAMES[];
   static const char* THEME_VALUES[];
-  static const char* DEFAULT_THEME_NAME;
 };
