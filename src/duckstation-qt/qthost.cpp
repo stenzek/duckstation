@@ -2164,6 +2164,61 @@ bool Host::CopyTextToClipboard(std::string_view text)
   return true;
 }
 
+std::string Host::FormatNumber(NumberFormatType type, s64 value)
+{
+  const QLocale loc = QLocale::system();
+  std::string ret;
+
+  if (type >= NumberFormatType::ShortDate && type <= NumberFormatType::LongDateTime)
+  {
+    QString format;
+    switch (type)
+    {
+      case NumberFormatType::ShortDate:
+      case NumberFormatType::LongDate:
+        format = loc.dateFormat((type == NumberFormatType::LongDate) ? QLocale::LongFormat : QLocale::ShortFormat);
+        break;
+
+      case NumberFormatType::ShortTime:
+      case NumberFormatType::LongTime:
+        format = loc.timeFormat((type == NumberFormatType::LongTime) ? QLocale::LongFormat : QLocale::ShortFormat);
+        break;
+
+      case NumberFormatType::ShortDateTime:
+      case NumberFormatType::LongDateTime:
+        format =
+          loc.dateTimeFormat((type == NumberFormatType::LongDateTime) ? QLocale::LongFormat : QLocale::ShortFormat);
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    ret = QDateTime::fromSecsSinceEpoch(value).toString(format).toStdString();
+  }
+  else
+  {
+    ret = loc.toString(value).toStdString();
+  }
+
+  return ret;
+}
+
+std::string Host::FormatNumber(NumberFormatType type, double value)
+{
+  const QLocale loc = QLocale::system();
+  std::string ret;
+
+  switch (type)
+  {
+    case NumberFormatType::Number:
+    default:
+      ret = loc.toString(value).toStdString();
+      break;
+  }
+
+  return ret;
+}
+
 void Host::ReportDebuggerMessage(std::string_view message)
 {
   INFO_LOG("Debugger message: {}", message);

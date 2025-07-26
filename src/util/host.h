@@ -59,6 +59,22 @@ std::string GetClipboardText();
 /// Copies the provided UTF-8 text to the host's clipboard, if present.
 bool CopyTextToClipboard(std::string_view text);
 
+/// Formats a number according to the current locale.
+enum class NumberFormatType : u8
+{
+  ShortDate,     // Date formatting
+  LongDate,      // Date formatting
+  ShortTime,     // Time formatting
+  LongTime,      // Time formatting
+  ShortDateTime, // Date and time formatting
+  LongDateTime,  // Date and time formatting
+  Number,        // Number formatting
+
+  MaxCount,
+};
+std::string FormatNumber(NumberFormatType type, s64 value);
+std::string FormatNumber(NumberFormatType type, double value);
+
 /// Returns a localized version of the specified string within the specified context.
 /// The pointer is guaranteed to be valid until the next language change.
 const char* TranslateToCString(std::string_view context, std::string_view msg, std::string_view disambiguation = {});
