@@ -59,9 +59,9 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QEventLoop>
-#include <QtCore/QTranslator>
 #include <QtCore/QFile>
 #include <QtCore/QTimer>
+#include <QtCore/QTranslator>
 #include <QtCore/QtLogging>
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
@@ -123,6 +123,7 @@ static void MigrateSettings();
 static void SaveSettings();
 static bool RunSetupWizard();
 static void UpdateFontOrder(std::string_view language);
+static void UpdateApplicationLocale(std::string_view language);
 static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
@@ -135,6 +136,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
 static INISettingsInterface s_base_settings_interface;
 static std::unique_ptr<QTimer> s_settings_save_timer;
 static std::vector<QTranslator*> s_translators;
+static QLocale s_app_locale;
 static bool s_batch_mode = false;
 static bool s_nogui_mode = false;
 static bool s_start_fullscreen_ui = false;
@@ -2180,7 +2182,6 @@ bool Host::CopyTextToClipboard(std::string_view text)
 
 std::string Host::FormatNumber(NumberFormatType type, s64 value)
 {
-  const QLocale loc = QLocale::system();
   std::string ret;
 
   if (type >= NumberFormatType::ShortDate && type <= NumberFormatType::LongDateTime)
@@ -2190,18 +2191,20 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
     {
       case NumberFormatType::ShortDate:
       case NumberFormatType::LongDate:
-        format = loc.dateFormat((type == NumberFormatType::LongDate) ? QLocale::LongFormat : QLocale::ShortFormat);
+        format =
+          s_app_locale.dateFormat((type == NumberFormatType::LongDate) ? QLocale::LongFormat : QLocale::ShortFormat);
         break;
 
       case NumberFormatType::ShortTime:
       case NumberFormatType::LongTime:
-        format = loc.timeFormat((type == NumberFormatType::LongTime) ? QLocale::LongFormat : QLocale::ShortFormat);
+        format =
+          s_app_locale.timeFormat((type == NumberFormatType::LongTime) ? QLocale::LongFormat : QLocale::ShortFormat);
         break;
 
       case NumberFormatType::ShortDateTime:
       case NumberFormatType::LongDateTime:
-        format =
-          loc.dateTimeFormat((type == NumberFormatType::LongDateTime) ? QLocale::LongFormat : QLocale::ShortFormat);
+        format = s_app_locale.dateTimeFormat((type == NumberFormatType::LongDateTime) ? QLocale::LongFormat :
+                                                                                        QLocale::ShortFormat);
         break;
 
         DefaultCaseIsUnreachable();
@@ -2211,7 +2214,7 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
   }
   else
   {
-    ret = loc.toString(value).toStdString();
+    ret = s_app_locale.toString(value).toStdString();
   }
 
   return ret;
@@ -2219,14 +2222,13 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
 
 std::string Host::FormatNumber(NumberFormatType type, double value)
 {
-  const QLocale loc = QLocale::system();
   std::string ret;
 
   switch (type)
   {
     case NumberFormatType::Number:
     default:
-      ret = loc.toString(value).toStdString();
+      ret = s_app_locale.toString(value).toStdString();
       break;
   }
 
@@ -2309,6 +2311,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 
   // We end up here both on language change, and on startup.
   UpdateFontOrder(language);
+  UpdateApplicationLocale(language);
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,
@@ -2421,6 +2424,28 @@ void QtHost::UpdateFontOrder(std::string_view language)
     ImGuiManager::SetTextFontOrder(font_order);
     Host::ClearTranslationCache();
   }
+}
+
+const QLocale& QtHost::GetApplicationLocale()
+{
+  return s_app_locale;
+}
+
+void QtHost::UpdateApplicationLocale(std::string_view language)
+{
+#if 0
+  // Only for testing purposes. Keep the system locale for users.
+  if (language == "ja")
+    s_app_locale = QLocale(QLocale::Japanese, QLocale::Japan);
+  else if (language == "ko")
+    s_app_locale = QLocale(QLocale::Korean, QLocale::SouthKorea);
+  else if (language == "zh-CN")
+    s_app_locale = QLocale(QLocale::Chinese, QLocale::China);
+  else
+    s_app_locale = QLocale::system();
+#else
+  s_app_locale = QLocale::system();
+#endif
 }
 
 void Host::ReportDebuggerMessage(std::string_view message)

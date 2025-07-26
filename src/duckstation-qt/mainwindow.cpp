@@ -887,7 +887,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
     if (!entry->serial.empty())
     {
       std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial));
-      const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
+      const QString timestamp_format = QtHost::GetApplicationLocale().dateTimeFormat(QLocale::ShortFormat);
       for (SaveStateInfo& ssi : available_states)
       {
         if (ssi.global)
@@ -957,7 +957,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 QString MainWindow::formatTimestampForSaveStateMenu(u64 timestamp)
 {
   const QDateTime qtime(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(timestamp)));
-  return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
+  return qtime.toString(QtHost::GetApplicationLocale().dateTimeFormat(QLocale::ShortFormat));
 }
 
 void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu)

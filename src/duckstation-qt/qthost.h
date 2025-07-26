@@ -333,6 +333,9 @@ private:
 extern EmuThread* g_emu_thread;
 
 namespace QtHost {
+/// Returns the locale to use for date/time formatting, etc.
+const QLocale& GetApplicationLocale();
+
 /// Default theme name for the platform.
 const char* GetDefaultThemeName();
 
