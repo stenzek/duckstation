@@ -332,10 +332,7 @@ function(add_util_resources target)
       install_imported_dep_library(spirv-cross-c-shared)
       install_imported_dep_library(SoundTouch::SoundTouchDLL)
       install_imported_dep_library(plutosvg::plutosvg)
-    else()
-      # Prevent CMake from overriding the RPATH in the binary. i.e. use the build locations.
-      # This is needed for Flatpak builds, since the libs are in /app.
-      set_target_properties(${target} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+      install_imported_dep_library(libzip::zip)
     endif()
   endif()
 endfunction()

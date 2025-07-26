@@ -22,15 +22,29 @@ finish-args:
 
 modules:
   # Dependencies.
-  - "modules/10-libbacktrace.yaml"
-  - "modules/11-libzip.yaml"
-  - "modules/20-shaderc.yaml"
-  - "modules/21-spirv-cross.yaml"
-  - "modules/22-cpuinfo.yaml"
-  - "modules/23-discord-rpc.yaml"
-  - "modules/24-soundtouch.yaml"
-  - "modules/25-plutosvg.yaml"
-  - "modules/30-sdl3.yaml"
+  - name: duckstation-deps
+    buildsystem: simple
+    sources:
+      - type: file
+        path: ../../deps/build-dependencies-linux.sh
+    build-options:
+      # Don't need debug info for deps, match AppImage.
+      strip: true
+      no-debuginfo: true
+
+      # Prevent flatpak defaults of fortify etc from creeping in.
+      cflags: ""
+      cflags-override: true
+      cxxflags: ""
+      cxxflags-override: true
+
+      # Need network access to download sources.
+      build-args:
+        - "--share=network"
+    build-commands:
+      - "./build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-zlib -system-zstd -system-qt /app/deps"
+    cleanup:
+      - "*"
 
   # Main module.
   - name: duckstation
@@ -51,12 +65,19 @@ modules:
         # Flatpak build does not appear to default to Release.
         - "-DCMAKE_BUILD_TYPE=Release"
 
+        # Self-contained install, need to change the directory.
+        # Typical flatpak garbage makes it a pain to change the path from /app/bin...
+        - "-DCMAKE_INSTALL_PREFIX=/app/bin"
+
+        # Dependencies path.
+        - "-DCMAKE_PREFIX_PATH=/app/deps"
+
         # We're not running tests as part of the flatpak build.
         - "-DBUILD_TESTS=OFF"
 
-        # Install to /app/bin, use /app/lib for dependencies.
+        # Install to /app.
         - "-DALLOW_INSTALL=ON"
-        - "-DINSTALL_SELF_CONTAINED=OFF"
+        - "-DINSTALL_SELF_CONTAINED=ON"
 
         # Set the page range to 4K-16K. This has no effect on X86, but is required for
         # ARM builds, as some devices are now shipping with 16K kernels.

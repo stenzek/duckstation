@@ -249,6 +249,17 @@ endfunction()
 function(install_imported_dep_library name)
   get_target_property(SONAME "${name}" IMPORTED_SONAME_RELEASE)
   get_target_property(LOCATION "${name}" IMPORTED_LOCATION_RELEASE)
+
+  # Only install if it's not a system library.
+  foreach(path ${CMAKE_PREFIX_PATH})
+    string(FIND "${LOCATION}" "${path}" out)
+    if (NOT "${out}" EQUAL 0)
+      message(STATUS "Not installing imported system library ${name}")
+      return()
+    endif()
+  endforeach()
+
+  message(STATUS "Installing imported library ${SONAME}")
   install(FILES "${LOCATION}" RENAME "${SONAME}" DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 endfunction()
 
