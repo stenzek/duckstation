@@ -70,13 +70,13 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 FREETYPE=2.13.3
-HARFBUZZ=11.2.1
-LIBBACKTRACE=86885d14049fab06ef8a33aac51664230ca09200
-LIBJPEGTURBO=3.1.0
-LIBPNG=1.6.48
-LIBWEBP=1.5.0
-LIBZIP=1.11.3
-SDL3=3.2.16
+HARFBUZZ=11.3.2
+LIBBACKTRACE=793921876c981ce49759114d7bb89bb89b2d3a2d
+LIBJPEGTURBO=3.1.1
+LIBPNG=1.6.50
+LIBWEBP=1.6.0
+LIBZIP=1.11.4
+SDL3=3.2.18
 QT=6.9.1
 ZLIBNG=2.2.4
 ZSTD=1.5.7
@@ -86,7 +86,8 @@ DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
 PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
 SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-SPIRV_CROSS=vulkan-sdk-1.4.309.0
+SPIRV_CROSS=vulkan-sdk-1.4.321.0
+SPIRV_CROSS_SHA=d8e3e2b141b8c8a167b2e3984736a6baacff316c
 
 mkdir -p deps-build
 cd deps-build
@@ -103,8 +104,8 @@ if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; t
 fi
 
 cat > SHASUMS <<EOF
-baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$LIBBACKTRACE.tar.gz
-6340e58879b2d15830c8460d2f589a385c444d1faa2a4828a9626c7322562be8  SDL3-$SDL3.tar.gz
+858b1225351052234f7e71f0f36622fc9ad33aac947db7816d0b443ae0dd33ce  libbacktrace-$LIBBACKTRACE.tar.gz
+1a775bde924397a8e0c08bfda198926c17be859d0288ad0dec1dea1b2ee04f8f  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
 cc8eed38daf68aaaaa96e904f68f5524c02f10b5d42062b91cdc93f93445f68a  plutosvg-$PLUTOSVG.tar.gz
@@ -125,7 +126,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-057d5754c3ac0c499bbf4d729d52acf134c7bb4ba8868ba22e84ae96bc272816  harfbuzz-$HARFBUZZ.tar.gz
+b6120ebc56238474f4030b2fbcfd235912b6adaf1477c088f4a399a942dd0ab0  harfbuzz-$HARFBUZZ.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
@@ -133,7 +134,7 @@ if [ "$SKIP_LIBJPEG" != true ]; then
 		curl -C - -L -O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBPNG" != true ]; then
@@ -141,7 +142,7 @@ if [ "$SKIP_LIBPNG" != true ]; then
 		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
-46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03  libpng-$LIBPNG.tar.xz
+4df396518620a7aa3651443e87d1b2862e4e88cad135a8b93423e01706232307  libpng-$LIBPNG.tar.xz
 EOF
 fi
 if [ "$SKIP_LIBWEBP" != true ]; then
@@ -149,7 +150,7 @@ if [ "$SKIP_LIBWEBP" != true ]; then
 		curl -C - -L -O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c  libwebp-$LIBWEBP.tar.gz
+e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBZIP" != true ]; then
@@ -157,7 +158,7 @@ if [ "$SKIP_LIBZIP" != true ]; then
 		curl -C - -L -O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
-9509d878ba788271c8b5abca9cfde1720f075335686237b7e9a9e7210fe67c1b  libzip-$LIBZIP.tar.xz
+8a247f57d1e3e6f6d11413b12a6f28a9d388de110adc0ec608d893180ed7097b  libzip-$LIBZIP.tar.xz
 EOF
 fi
 if [ "$SKIP_ZLIBNG" != true ]; then
@@ -201,6 +202,10 @@ shasum -a 256 --check SHASUMS
 # Have to clone with git, because it does version detection.
 if [[ "$SKIP_DOWNLOAD" != true && ! -d "SPIRV-Cross" ]]; then
 	git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
+	if [ "$(git --git-dir=SPIRV-Cross/.git rev-parse HEAD)" != "$SPIRV_CROSS_SHA" ]; then
+		echo "SPIRV-Cross version mismatch, expected $SPIRV_CROSS_SHA, got $(git rev-parse HEAD)"
+		exit 1
+	fi
 fi
 
 # Only downloading sources?

@@ -37,13 +37,13 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 FREETYPE=2.13.3
-HARFBUZZ=11.2.1
-SDL3=3.2.16
+HARFBUZZ=11.3.2
+SDL3=3.2.18
 ZSTD=1.5.7
-LIBPNG=1.6.48
-LIBJPEGTURBO=3.1.0
-LIBWEBP=1.5.0
-LIBZIP=1.11.3
+LIBPNG=1.6.50
+LIBJPEGTURBO=3.1.1
+LIBWEBP=1.6.0
+LIBZIP=1.11.4
 FFMPEG=7.1.1
 MOLTENVK=1.2.9
 QT=6.9.1
@@ -53,7 +53,8 @@ DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
 PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
 SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-SPIRV_CROSS=vulkan-sdk-1.4.309.0
+SPIRV_CROSS=vulkan-sdk-1.4.321.0
+SPIRV_CROSS_SHA=d8e3e2b141b8c8a167b2e3984736a6baacff316c
 
 mkdir -p deps-build
 cd deps-build
@@ -81,12 +82,12 @@ CMAKE_COMMON_QT=(
 
 cat > SHASUMS <<EOF
 0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289  freetype-$FREETYPE.tar.xz
-057d5754c3ac0c499bbf4d729d52acf134c7bb4ba8868ba22e84ae96bc272816  harfbuzz-$HARFBUZZ.tar.gz
-46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03  libpng-$LIBPNG.tar.xz
-9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
-7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c  libwebp-$LIBWEBP.tar.gz
-9509d878ba788271c8b5abca9cfde1720f075335686237b7e9a9e7210fe67c1b  libzip-$LIBZIP.tar.xz
-6340e58879b2d15830c8460d2f589a385c444d1faa2a4828a9626c7322562be8  SDL3-$SDL3.tar.gz
+b6120ebc56238474f4030b2fbcfd235912b6adaf1477c088f4a399a942dd0ab0  harfbuzz-$HARFBUZZ.tar.gz
+4df396518620a7aa3651443e87d1b2862e4e88cad135a8b93423e01706232307  libpng-$LIBPNG.tar.xz
+aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
+8a247f57d1e3e6f6d11413b12a6f28a9d388de110adc0ec608d893180ed7097b  libzip-$LIBZIP.tar.xz
+1a775bde924397a8e0c08bfda198926c17be859d0288ad0dec1dea1b2ee04f8f  SDL3-$SDL3.tar.gz
 eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
 733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
@@ -129,6 +130,10 @@ shasum -a 256 --check SHASUMS
 # Have to clone with git, because it does version detection.
 if [ ! -d "SPIRV-Cross" ]; then
   git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
+	if [ "$(git --git-dir=SPIRV-Cross/.git rev-parse HEAD)" != "$SPIRV_CROSS_SHA" ]; then
+		echo "SPIRV-Cross version mismatch, expected $SPIRV_CROSS_SHA, got $(git rev-parse HEAD)"
+		exit 1
+	fi
 fi
 
 echo "Installing libpng..."
