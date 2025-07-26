@@ -2278,16 +2278,19 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
         return false;
       }
 #else
-      if (!vcodec->pix_fmts)
+      supported_pixel_formats = vcodec->pix_fmts;
+      if (supported_pixel_formats)
+      {
+        while (supported_pixel_formats[num_supported_pixel_formats] != AV_PIX_FMT_NONE)
+          num_supported_pixel_formats++;
+      }
+#endif
+
+      if (!supported_pixel_formats || num_supported_pixel_formats == 0)
       {
         Error::SetStringView(error, "Video codec supports no formats.");
         return false;
       }
-
-      supported_pixel_formats = vcodec->pix_fmts;
-      while (supported_pixel_formats[num_supported_pixel_formats] != AV_PIX_FMT_NONE)
-        num_supported_pixel_formats++;
-#endif
 
       // Prefer YUV420 given the choice, but otherwise fall back to whatever it supports.
       sw_pix_fmt = supported_pixel_formats[0];
