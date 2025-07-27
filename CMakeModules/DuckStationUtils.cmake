@@ -262,6 +262,15 @@ function(install_imported_dep_library name)
   install(FILES "${LOCATION}" RENAME "${SONAME}" DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 endfunction()
 
+function(add_debug_symbol_flag var)
+  # CMake's regex engine is missing so many features...
+  set(value "${${var}}")
+  if (NOT " ${value} " MATCHES " -g[1-3]? ")
+    message(STATUS "Adding -g1 to ${var}.")
+    set(${var} "${value} -g1" PARENT_SCOPE)
+  endif()
+endfunction()
+
 function(check_cpp20_feature MACRO MINIMUM_VALUE)
   set(CACHE_VAR "CHECK_CPP20_FEATURE_${MACRO}")
   if(NOT DEFINED ${CACHE_VAR})

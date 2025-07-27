@@ -65,12 +65,8 @@ if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS_DEVEL "${CMAKE_EXE_LINKER_FLAGS_DEVEL} /OPT:REF /OPT:ICF")
 else()
   # Force debug symbols for Linux builds.
-  if (NOT CMAKE_C_FLAGS_RELEASE MATCHES "\\s*-g\\s*")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g")
-  endif()
-  if (NOT CMAKE_CXX_FLAGS_RELEASE MATCHES "\\s*-g\\s*")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
-  endif()
+  add_debug_symbol_flag(CMAKE_C_FLAGS_RELEASE)
+  add_debug_symbol_flag(CMAKE_CXX_FLAGS_RELEASE)
 endif()
 
 # Warning disables.
