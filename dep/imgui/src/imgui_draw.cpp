@@ -4408,11 +4408,21 @@ static void ImFontBaked_BuildGrowIndex(ImFontBaked* baked, int new_size)
     baked->IndexLookup.resize(new_size, IM_FONTGLYPH_INDEX_UNUSED);
 }
 
-static void ImFontAtlas_FontHookRemapCodepoint(ImFontAtlas* atlas, ImFont* font, ImWchar* c)
+static ImWchar ImFontAtlas_FontHookRemapCodepoint(ImFontAtlas* atlas, ImFont* font, ImWchar c)
 {
     IM_UNUSED(atlas);
     if (font->RemapPairs.Data.Size != 0)
-        *c = (ImWchar)font->RemapPairs.GetInt((ImGuiID)*c, (int)*c);
+    {
+        const ImWchar remap_c = (ImWchar)font->RemapPairs.GetInt((ImGuiID)c, 0);
+        if (remap_c != 0)
+            return remap_c;
+    }
+
+    // Handle non-breaking spaces. The non-breaking space isn't handled by ImCharIsBlankW(),
+    // so word wrapping should behave correctly if we remap it to a regular space here.
+    // MacOS likes to use NNBSP in formatting, so need to handle that here. Strictly speaking,
+    // it should be narrower, but it doesn't exist in our fonts so shrug.
+    return (c == 0x00A0 || c == 0x202F) ? ImWchar(' ') : c; // NBSP/NNBSP
 }
 
 static ImFontGlyph* ImFontBaked_BuildLoadGlyph(ImFontBaked* baked, ImWchar codepoint)
@@ -4429,7 +4439,7 @@ static ImFontGlyph* ImFontBaked_BuildLoadGlyph(ImFontBaked* baked, ImWchar codep
 
     // User remapping hooks
     ImWchar src_codepoint = codepoint;
-    ImFontAtlas_FontHookRemapCodepoint(atlas, font, &codepoint);
+    codepoint = ImFontAtlas_FontHookRemapCodepoint(atlas, font, codepoint);
 
     //char utf8_buf[5];
     //IMGUI_DEBUG_LOG("[font] BuildLoadGlyph U+%04X (%s)\n", (unsigned int)codepoint, ImTextCharToUtf8(utf8_buf, (unsigned int)codepoint));
@@ -5195,7 +5205,7 @@ bool ImFontBaked::IsGlyphLoaded(ImWchar c)
 bool ImFont::IsGlyphInFont(ImWchar c)
 {
     ImFontAtlas* atlas = ContainerAtlas;
-    ImFontAtlas_FontHookRemapCodepoint(atlas, this, &c);
+    c = ImFontAtlas_FontHookRemapCodepoint(atlas, this, c);
     for (ImFontConfig* src : Sources)
     {
         const ImFontLoader* loader = src->FontLoader ? src->FontLoader : atlas->FontLoader;
