@@ -2217,7 +2217,7 @@ QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
       }
       break;
 
-        DefaultCaseIsUnreachable();
+      DefaultCaseIsUnreachable();
     }
 
     ret = QDateTime::fromSecsSinceEpoch(value, QTimeZone::utc()).toLocalTime().toString(format);

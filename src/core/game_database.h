@@ -107,7 +107,7 @@ struct Entry
   std::string_view publisher;
   std::string_view compatibility_version_tested;
   std::string_view compatibility_comments;
-  u64 release_date;
+  u64 release_date; ///< Number of seconds since Epoch.
   u8 min_players;
   u8 max_players;
   u8 min_blocks;
