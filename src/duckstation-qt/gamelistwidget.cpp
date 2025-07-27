@@ -544,23 +544,19 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Year:
         {
-          if (ge->dbentry && ge->dbentry->release_date != 0)
-          {
-            return QStringLiteral("%1").arg(
-              QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), QTimeZone::utc())
-                .date()
-                .year());
-          }
-          else
-          {
-            return QString();
-          }
+          if (!ge->dbentry || ge->dbentry->release_date == 0)
+            return {};
+
+          return QString::number(
+            QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), QTimeZone::utc())
+              .date()
+              .year());
         }
 
         case Column_Players:
         {
           if (!ge->dbentry || ge->dbentry->min_players == 0)
-            return QString();
+            return {};
           else if (ge->dbentry->min_players == ge->dbentry->max_players)
             return QStringLiteral("%1").arg(ge->dbentry->min_players);
           else
@@ -596,6 +592,9 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           else
             return {};
         }
+
+        default:
+          return {};
       }
     }
 
@@ -651,6 +650,30 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
           return *m_cover_pixmap_cache.Insert(ge->path, m_loading_pixmap);
         }
+
+        default:
+          return {};
+      }
+    }
+
+    case Qt::ToolTipRole:
+    {
+      switch (index.column())
+      {
+        case Column_TimePlayed:
+          if (ge->total_played_time == 0)
+            return {};
+          else
+            return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time, false));
+
+        case Column_LastPlayed:
+          if (ge->last_played_time == 0)
+            return {};
+          else
+            return QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(ge->last_played_time));
+
+        default:
+          return {};
       }
     }
   }
