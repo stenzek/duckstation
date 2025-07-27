@@ -7012,8 +7012,9 @@ void FullscreenUI::DrawPauseMenu()
     // current time / play time
     UpdateCurrentTimeString();
 
-    ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
-                                                   std::numeric_limits<float>::max(), -1.0f, IMSTR_START_END(buffer));
+    ImVec2 text_size =
+      UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, std::numeric_limits<float>::max(),
+                                  -1.0f, IMSTR_START_END(s_state.current_time_string));
     text_pos = ImVec2(display_size.x - scaled_top_bar_padding - text_size.x, scaled_top_bar_padding);
     RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos, display_size,
                               title_text_color, s_state.current_time_string);
