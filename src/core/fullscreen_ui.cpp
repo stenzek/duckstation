@@ -7885,6 +7885,7 @@ void FullscreenUI::DrawGameListWindow()
         BeginTransition([]() {
           s_state.game_list_view =
             (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+          QueueResetFocus(FocusResetType::ViewChanged);
         });
       }
     }
