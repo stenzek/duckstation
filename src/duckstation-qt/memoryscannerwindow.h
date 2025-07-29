@@ -35,6 +35,10 @@ private Q_SLOTS:
   void onSystemStarted();
   void onSystemDestroyed();
 
+  void newSearchClicked();
+  void searchAgainClicked();
+  void resetSearchClicked();
+
   void addToWatchClicked();
   void addManualWatchAddressClicked();
   void freezeWatchClicked();

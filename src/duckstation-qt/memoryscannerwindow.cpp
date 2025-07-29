@@ -159,18 +159,9 @@ void MemoryScannerWindow::connectUi()
       m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE, 8));
     }
   });
-  connect(m_ui.scanNewSearch, &QPushButton::clicked, [this]() {
-    m_scanner.Search();
-    updateResults();
-  });
-  connect(m_ui.scanSearchAgain, &QPushButton::clicked, [this]() {
-    m_scanner.SearchAgain();
-    updateResults();
-  });
-  connect(m_ui.scanResetSearch, &QPushButton::clicked, [this]() {
-    m_scanner.ResetSearch();
-    updateResults();
-  });
+  connect(m_ui.scanNewSearch, &QPushButton::clicked, this, &MemoryScannerWindow::newSearchClicked);
+  connect(m_ui.scanSearchAgain, &QPushButton::clicked, this, &MemoryScannerWindow::searchAgainClicked);
+  connect(m_ui.scanResetSearch, &QPushButton::clicked, this, &MemoryScannerWindow::resetSearchClicked);
   connect(m_ui.scanAddWatch, &QPushButton::clicked, this, &MemoryScannerWindow::addToWatchClicked);
   connect(m_ui.scanAddManualAddress, &QPushButton::clicked, this, &MemoryScannerWindow::addManualWatchAddressClicked);
   connect(m_ui.scanFreezeWatch, &QPushButton::clicked, this, &MemoryScannerWindow::freezeWatchClicked);
@@ -290,6 +281,36 @@ void MemoryScannerWindow::onSystemDestroyed()
     m_update_timer->stop();
 
   enableUi(false);
+}
+
+void MemoryScannerWindow::newSearchClicked()
+{
+  // swap back to any value if we're set to changed value
+  if (m_ui.scanOperator->currentIndex() == static_cast<int>(MemoryScan::Operator::NotEqualLast))
+    m_ui.scanOperator->setCurrentIndex(static_cast<int>(MemoryScan::Operator::Any));
+
+  m_scanner.Search();
+  updateResults();
+
+  // swap to changed value if we're set to any value
+  if (m_ui.scanOperator->currentIndex() == static_cast<int>(MemoryScan::Operator::Any))
+    m_ui.scanOperator->setCurrentIndex(static_cast<int>(MemoryScan::Operator::NotEqualLast));
+}
+
+void MemoryScannerWindow::searchAgainClicked()
+{
+  m_scanner.SearchAgain();
+  updateResults();
+}
+
+void MemoryScannerWindow::resetSearchClicked()
+{
+  m_scanner.ResetSearch();
+  updateResults();
+
+  // swap back to any value if we're set to changed value
+  if (m_ui.scanOperator->currentIndex() == static_cast<int>(MemoryScan::Operator::NotEqualLast))
+    m_ui.scanOperator->setCurrentIndex(static_cast<int>(MemoryScan::Operator::Any));
 }
 
 void MemoryScannerWindow::addToWatchClicked()
