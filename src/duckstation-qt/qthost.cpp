@@ -1927,6 +1927,13 @@ void EmuThread::stopInThread()
 
   m_shutdown_flag = true;
   m_event_loop->quit();
+
+  // Ensure settings are saved.
+  if (s_settings_save_timer)
+  {
+    s_settings_save_timer.reset();
+    QtHost::SaveSettings();
+  }
 }
 
 void EmuThread::run()
@@ -3400,13 +3407,6 @@ shutdown_and_exit:
   // Close main window.
   delete g_main_window;
   Assert(!g_main_window);
-
-  // Ensure settings are saved.
-  if (s_settings_save_timer)
-  {
-    s_settings_save_timer.reset();
-    QtHost::SaveSettings();
-  }
 
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
