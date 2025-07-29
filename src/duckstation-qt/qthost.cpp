@@ -145,11 +145,13 @@ static bool s_start_fullscreen_ui_fullscreen = false;
 static bool s_run_setup_wizard = false;
 static bool s_cleanup_after_update = false;
 
-EmuThread* g_emu_thread = nullptr;
+EmuThread* g_emu_thread;
 
-EmuThread::EmuThread(QThread* ui_thread)
-  : QThread(), m_ui_thread(ui_thread), m_input_device_list_model(std::make_unique<InputDeviceListModel>())
+EmuThread::EmuThread()
+  : QThread(), m_ui_thread(QThread::currentThread()), m_input_device_list_model(std::make_unique<InputDeviceListModel>())
 {
+  // owned by itself
+  moveToThread(this);
 }
 
 EmuThread::~EmuThread() = default;
@@ -1904,10 +1906,8 @@ void EmuThread::updateFullscreenUITheme()
 
 void EmuThread::start()
 {
-  AssertMsg(!g_emu_thread, "Emu thread does not exist");
+  AssertMsg(!g_emu_thread->isRunning(), "Emu thread is not started");
 
-  g_emu_thread = new EmuThread(QThread::currentThread());
-  g_emu_thread->moveToThread(g_emu_thread);
   g_emu_thread->QThread::start();
   g_emu_thread->m_started_semaphore.acquire();
 }
@@ -3345,12 +3345,16 @@ int main(int argc, char* argv[])
   // Start logging early.
   LogWindow::updateSettings();
 
-  // Start up the CPU thread.
+  // Create emuthread object, but don't start it yet. That way the main window can connect to it,
+  // and ensures that no signals are lost. Then we create and connect the main window.
+  g_emu_thread = new EmuThread();
+  new MainWindow();
+
+  // Now we can actually start the CPU thread.
   QtHost::HookSignals();
-  EmuThread::start();
+  g_emu_thread->start();
 
   // Optionally run setup wizard.
-  MainWindow* main_window;
   int result;
   if (s_run_setup_wizard && !QtHost::RunSetupWizard())
   {
@@ -3358,18 +3362,15 @@ int main(int argc, char* argv[])
     goto shutdown_and_exit;
   }
 
-  // Create all window objects, the emuthread might still be starting up at this point.
-  main_window = new MainWindow();
-
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
   if (!s_batch_mode)
-    main_window->refreshGameList(false);
+    g_main_window->refreshGameList(false);
   else
     GameList::Refresh(false, true);
 
   // Don't bother showing the window in no-gui mode.
   if (!s_nogui_mode)
-    main_window->show();
+    g_main_window->show();
 
   // Initialize big picture mode if requested.
   if (s_start_fullscreen_ui)
@@ -3378,7 +3379,7 @@ int main(int argc, char* argv[])
     s_start_fullscreen_ui_fullscreen = false;
 
   // Always kick off update check. It'll take over if the user is booting a game fullscreen.
-  main_window->startupUpdateCheck();
+  g_main_window->startupUpdateCheck();
 
   // Skip the update check if we're booting a game directly.
   if (autoboot)
@@ -3388,16 +3389,17 @@ int main(int argc, char* argv[])
   result = app.exec();
 
 shutdown_and_exit:
+  if (g_main_window)
+    g_main_window->close();
+
   // Shutting down.
-  EmuThread::stop();
+  g_emu_thread->stop();
+  delete g_emu_thread;
+  g_emu_thread = nullptr;
 
   // Close main window.
-  if (g_main_window)
-  {
-    g_main_window->close();
-    delete g_main_window;
-    Assert(!g_main_window);
-  }
+  delete g_main_window;
+  Assert(!g_main_window);
 
   // Ensure settings are saved.
   if (s_settings_save_timer)

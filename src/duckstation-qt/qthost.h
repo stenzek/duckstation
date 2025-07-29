@@ -88,11 +88,11 @@ public:
   };
 
 public:
-  explicit EmuThread(QThread* ui_thread);
+  EmuThread();
   ~EmuThread();
 
-  static void start();
-  static void stop();
+  void start();
+  void stop();
 
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
@@ -156,7 +156,6 @@ Q_SIGNALS:
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
   void achievementsAllProgressRefreshed();
-  void cheatEnabled(quint32 index, bool enabled);
   void mediaCaptureStarted();
   void mediaCaptureStopped();
 
