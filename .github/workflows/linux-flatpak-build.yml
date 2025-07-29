@@ -87,7 +87,7 @@ jobs:
         branch: stable
         cache: true
         restore-cache: true
-        cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/**/*.yaml') }}
+        cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/org.duckstation.DuckStation.yaml', 'scripts/deps/build-dependencies-linux.sh') }}
 
     - name: Validate Build
       run: |
