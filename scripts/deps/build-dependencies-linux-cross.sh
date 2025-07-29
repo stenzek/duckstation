@@ -102,7 +102,7 @@ fi
 # TODO: Pull all of this from the main file.
 
 FREETYPE=2.13.3
-HARFBUZZ=11.3.2
+HARFBUZZ=11.2.1
 LIBBACKTRACE=793921876c981ce49759114d7bb89bb89b2d3a2d
 LIBJPEGTURBO=3.1.1
 LIBPNG=1.6.50
@@ -159,7 +159,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-b6120ebc56238474f4030b2fbcfd235912b6adaf1477c088f4a399a942dd0ab0  harfbuzz-$HARFBUZZ.tar.gz
+057d5754c3ac0c499bbf4d729d52acf134c7bb4ba8868ba22e84ae96bc272816  harfbuzz-$HARFBUZZ.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
