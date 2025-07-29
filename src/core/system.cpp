@@ -1632,6 +1632,24 @@ void System::PauseSystem(bool paused)
   }
 }
 
+bool System::CanPauseSystem(bool display_message)
+{
+  const u32 frames_until_pause_allowed = Achievements::GetPauseThrottleFrames();
+  if (frames_until_pause_allowed == 0)
+    return true;
+
+  if (display_message)
+  {
+    const float seconds = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
+    Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+                            TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+                                                 "", static_cast<int>(std::ceil(seconds))),
+                            std::max(seconds, Host::OSD_QUICK_DURATION));
+  }
+
+  return false;
+}
+
 bool System::SaveResumeState(Error* error)
 {
   if (s_state.running_game_serial.empty())

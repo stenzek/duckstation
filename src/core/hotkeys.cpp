@@ -141,20 +141,6 @@ static void HotkeyToggleOSD()
 
 #ifndef __ANDROID__
 
-static bool CanPause()
-{
-  const u32 frames_until_pause_allowed = Achievements::GetPauseThrottleFrames();
-  if (frames_until_pause_allowed == 0)
-    return true;
-
-  const float seconds = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
-  Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
-                          TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
-                                               "", static_cast<int>(std::ceil(seconds))),
-                          std::max(seconds, Host::OSD_QUICK_DURATION));
-  return false;
-}
-
 #define DEFINE_NON_ANDROID_HOTKEY(name, category, display_name, handler)                                               \
   DEFINE_HOTKEY(name, category, display_name, handler)
 
@@ -168,25 +154,25 @@ BEGIN_HOTKEY_LIST(g_common_hotkeys)
 
 DEFINE_NON_ANDROID_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               FullscreenUI::OpenPauseMenu();
                           })
 
 DEFINE_NON_ANDROID_HOTKEY("OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Cheat Settings"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               FullscreenUI::OpenCheatsMenu();
                           })
 
 DEFINE_NON_ANDROID_HOTKEY("OpenAchievements", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Achievement List"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               FullscreenUI::OpenAchievementsWindow();
                           })
 
 DEFINE_NON_ANDROID_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Leaderboard List"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               FullscreenUI::OpenLeaderboardsWindow();
                           })
 
@@ -198,7 +184,7 @@ DEFINE_NON_ANDROID_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "Interface"),
 
 DEFINE_NON_ANDROID_HOTKEY("TogglePause", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Toggle Pause"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               System::PauseSystem(!System::IsPaused());
                           })
 
@@ -235,7 +221,7 @@ DEFINE_HOTKEY("ToggleTurbo", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP
 
 DEFINE_NON_ANDROID_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "System"),
                           TRANSLATE_NOOP("Hotkeys", "Power Off System"), [](s32 pressed) {
-                            if (!pressed && CanPause())
+                            if (!pressed && System::CanPauseSystem(true))
                               Host::RequestSystemShutdown(true, g_settings.save_state_on_exit, true);
                           })
 

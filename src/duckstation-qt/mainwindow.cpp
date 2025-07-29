@@ -1338,6 +1338,35 @@ void MainWindow::onFullscreenUIStartedOrStopped(bool running)
   m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
 }
 
+void MainWindow::onPauseActionToggled(bool checked)
+{
+  if (s_system_paused == checked)
+    return;
+
+  if (checked && s_achievements_hardcore_mode)
+  {
+    // Need to check restrictions.
+    Host::RunOnCPUThread([]() {
+      if (System::CanPauseSystem(true))
+      {
+        g_emu_thread->setSystemPaused(true);
+      }
+      else
+      {
+        // Restore action state.
+        Host::RunOnUIThread([]() {
+          QSignalBlocker sb(g_main_window->m_ui.actionPause);
+          g_main_window->m_ui.actionPause->setChecked(false);
+        });
+      }
+    });
+  }
+  else
+  {
+    g_emu_thread->setSystemPaused(checked);
+  }
+}
+
 void MainWindow::onRemoveDiscActionTriggered()
 {
   g_emu_thread->changeDisc(QString(), false, true);
@@ -2274,7 +2303,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
           [this]() { requestShutdown(false, false, false, true, false, false); });
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
-  connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
+  connect(m_ui.actionPause, &QAction::toggled, this, &MainWindow::onPauseActionToggled);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
@@ -2821,6 +2850,24 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
   // Only confirm on UI thread because we need to display a msgbox.
   if (!m_is_closing && s_system_valid && allow_confirm && Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
+    // Hardcore mode restrictions.
+    if (!s_system_paused && s_achievements_hardcore_mode && allow_confirm)
+    {
+      Host::RunOnCPUThread(
+        [allow_confirm, allow_save_to_state, save_state, check_safety, exit_fullscreen_ui, quit_afterwards]() {
+          if (!System::CanPauseSystem(true))
+            return;
+
+          Host::RunOnUIThread(
+            [allow_confirm, allow_save_to_state, save_state, check_safety, exit_fullscreen_ui, quit_afterwards]() {
+              g_main_window->requestShutdown(allow_confirm, allow_save_to_state, save_state, check_safety,
+                                             exit_fullscreen_ui, quit_afterwards);
+            });
+        });
+
+      return;
+    }
+
     SystemLock lock(pauseAndLockSystem());
 
     QMessageBox msgbox(lock.getDialogParent());

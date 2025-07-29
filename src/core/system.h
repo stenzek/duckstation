@@ -260,6 +260,9 @@ bool BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();
 
+/// Returns true if the system can be paused, i.e. not subject to achievement restrictions.
+bool CanPauseSystem(bool display_message);
+
 /// Returns the maximum size of a save state, considering the current configuration.
 size_t GetMaxSaveStateSize();
 
