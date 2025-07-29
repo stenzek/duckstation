@@ -35,6 +35,14 @@ if(ALLOW_INSTALL)
   endif()
 endif()
 
+# Refuse to build in Arch package environments. My license does not allow for packages, and I'm sick of
+# dealing with people complaining about things broken by packagers. This is why we can't have nice things.
+if(DEFINED ENV{DEBUGINFOD_URLS})
+  if($ENV{DEBUGINFOD_URLS} MATCHES ".*archlinux.*")
+    message(FATAL_ERROR "Unsupported environment.")
+  endif()
+endif()
+
 if(DEFINED HOST_MIN_PAGE_SIZE AND DEFINED HOST_MAX_PAGE_SIZE)
   message(STATUS "Building with a dynamic page size of ${HOST_MIN_PAGE_SIZE} - ${HOST_MAX_PAGE_SIZE} bytes.")
 elseif(DEFINED HOST_PAGE_SIZE)
