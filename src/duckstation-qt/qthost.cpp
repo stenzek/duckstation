@@ -148,7 +148,8 @@ static bool s_cleanup_after_update = false;
 EmuThread* g_emu_thread;
 
 EmuThread::EmuThread()
-  : QThread(), m_ui_thread(QThread::currentThread()), m_input_device_list_model(std::make_unique<InputDeviceListModel>())
+  : QThread(), m_ui_thread(QThread::currentThread()),
+    m_input_device_list_model(std::make_unique<InputDeviceListModel>())
 {
   // owned by itself
   moveToThread(this);
@@ -530,7 +531,13 @@ bool QtHost::SetCriticalFolders()
   // the resources directory should exist, bail out if not
   const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
   if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)) ||
-      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
+      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str())
+#ifdef __linux__
+      // Broken packages that won't stop distributing my application.
+      || StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr/lib")
+#endif
+  )
+
   {
     QMessageBox::critical(nullptr, QStringLiteral("Error"),
                           QStringLiteral("Resources are missing, your installation is incomplete."));
@@ -2224,7 +2231,7 @@ QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
       }
       break;
 
-      DefaultCaseIsUnreachable();
+        DefaultCaseIsUnreachable();
     }
 
     ret = QDateTime::fromSecsSinceEpoch(value, QTimeZone::utc()).toLocalTime().toString(format);
