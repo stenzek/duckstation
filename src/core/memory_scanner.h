@@ -38,6 +38,7 @@ public:
     PhysicalMemoryAddress address;
     u32 value;
     u32 last_value;
+    u32 first_value;
     bool value_changed;
 
     bool Filter(Operator op, u32 comp_value, bool is_signed) const;

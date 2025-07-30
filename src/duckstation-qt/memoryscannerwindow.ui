@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>833</width>
+    <width>850</width>
     <height>610</height>
    </rect>
   </property>
@@ -41,6 +41,9 @@
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
+     </property>
      <column>
       <property name="text">
        <string>Address</string>
@@ -54,6 +57,11 @@
      <column>
       <property name="text">
        <string>Previous Value</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>First Value</string>
       </property>
      </column>
     </widget>

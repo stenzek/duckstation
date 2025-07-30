@@ -77,6 +77,7 @@ void MemoryScan::SearchBytes()
     res.address = address;
     res.value = m_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     res.last_value = res.value;
+    res.first_value = res.value;
     res.value_changed = false;
 
     if (res.Filter(m_operator, m_value, m_signed))
@@ -99,6 +100,7 @@ void MemoryScan::SearchHalfwords()
     res.address = address;
     res.value = m_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
     res.last_value = res.value;
+    res.first_value = res.value;
     res.value_changed = false;
 
     if (res.Filter(m_operator, m_value, m_signed))
@@ -121,6 +123,7 @@ void MemoryScan::SearchWords()
     res.address = address;
     res.value = bvalue;
     res.last_value = res.value;
+    res.first_value = res.value;
     res.value_changed = false;
 
     if (res.Filter(m_operator, m_value, m_signed))

@@ -70,6 +70,8 @@ private:
   int getSelectedWatchIndexFirst() const;
   int getSelectedWatchIndexLast() const;
 
+  QTableWidgetItem* createValueItem(MemoryAccessSize size, u32 value, bool is_signed, bool editable) const;
+
   Ui::MemoryScannerWindow m_ui;
 
   MemoryScan m_scanner;

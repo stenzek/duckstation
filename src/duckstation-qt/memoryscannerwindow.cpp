@@ -227,7 +227,7 @@ void MemoryScannerWindow::resizeEvent(QResizeEvent* event)
 
 void MemoryScannerWindow::resizeColumns()
 {
-  QtUtils::ResizeColumnsForTableView(m_ui.scanTable, {-1, 130, 130});
+  QtUtils::ResizeColumnsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
   QtUtils::ResizeColumnsForTableView(m_ui.watchTable, {-1, 100, 100, 100, 40});
 }
 
@@ -484,6 +484,26 @@ void MemoryScannerWindow::updateScanValue()
     m_scanner.SetValue(uint_value);
 }
 
+QTableWidgetItem* MemoryScannerWindow::createValueItem(MemoryAccessSize size, u32 value, bool is_signed,
+                                                    bool editable) const
+{
+  QTableWidgetItem* item;
+  if (m_ui.scanValueBase->currentIndex() == 0)
+    item = new QTableWidgetItem(formatValue(value, is_signed));
+  else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
+    item = new QTableWidgetItem(formatHexValue(value, 2));
+  else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
+    item = new QTableWidgetItem(formatHexValue(value, 4));
+  else
+    item = new QTableWidgetItem(formatHexValue(value, 8));
+
+  if (!editable)
+    item->setFlags(item->flags() & ~(Qt::ItemIsEditable));
+
+  item->setTextAlignment(Qt::AlignCenter | Qt::AlignHCenter);
+  return item;
+}
+
 void MemoryScannerWindow::updateResults()
 {
   QSignalBlocker sb(m_ui.scanTable);
@@ -500,31 +520,15 @@ void MemoryScannerWindow::updateResults()
 
     QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, 8));
     address_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
+    address_item->setTextAlignment(Qt::AlignCenter | Qt::AlignHCenter);
     m_ui.scanTable->setItem(row, 0, address_item);
 
-    QTableWidgetItem* value_item;
-    if (m_ui.scanValueBase->currentIndex() == 0)
-      value_item = new QTableWidgetItem(formatValue(res.value, m_scanner.GetValueSigned()));
-    else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
-      value_item = new QTableWidgetItem(formatHexValue(res.value, 2));
-    else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
-      value_item = new QTableWidgetItem(formatHexValue(res.value, 4));
-    else
-      value_item = new QTableWidgetItem(formatHexValue(res.value, 8));
-    m_ui.scanTable->setItem(row, 1, value_item);
+    m_ui.scanTable->setItem(row, 1, createValueItem(m_scanner.GetSize(), res.value, m_scanner.GetValueSigned(), true));
+    m_ui.scanTable->setItem(row, 2,
+                            createValueItem(m_scanner.GetSize(), res.last_value, m_scanner.GetValueSigned(), false));
+    m_ui.scanTable->setItem(row, 3,
+                            createValueItem(m_scanner.GetSize(), res.first_value, m_scanner.GetValueSigned(), false));
 
-    QTableWidgetItem* previous_item;
-    if (m_ui.scanValueBase->currentIndex() == 0)
-      previous_item = new QTableWidgetItem(formatValue(res.last_value, m_scanner.GetValueSigned()));
-    else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
-      previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 2));
-    else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
-      previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 4));
-    else
-      previous_item = new QTableWidgetItem(formatHexValue(res.last_value, 8));
-
-    previous_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
-    m_ui.scanTable->setItem(row, 2, previous_item);
     row++;
   }
 
