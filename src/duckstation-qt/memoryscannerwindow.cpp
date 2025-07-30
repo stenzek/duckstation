@@ -36,56 +36,47 @@ static constexpr std::array<const char*, 6> s_size_strings = {
    TRANSLATE_NOOP("MemoryScannerWindow", "Word"), TRANSLATE_NOOP("MemoryScannerWindow", "Signed Byte"),
    TRANSLATE_NOOP("MemoryScannerWindow", "Signed Halfword"), TRANSLATE_NOOP("MemoryScannerWindow", "Signed Word")}};
 
-static QString formatHexValue(u32 value, u8 size)
+static QString formatHexValue(u32 value, MemoryAccessSize size)
 {
-  return QStringLiteral("0x%1").arg(static_cast<uint>(value), size, 16, QChar('0'));
+  const u32 width = (2u << static_cast<u32>(size));
+  return QStringLiteral("0x%1").arg(static_cast<uint>(value), width, 16, QChar('0'));
 }
 
-static QString formatHexAndDecValue(u32 value, u8 size, bool is_signed)
+static QString formatHexAndDecValue(u32 value, MemoryAccessSize size, bool is_signed)
 {
-
+  const u32 width = (2u << static_cast<u32>(size));
   if (is_signed)
   {
     u32 value_raw = value;
-    if (size == 2)
+    if (size == MemoryAccessSize::Byte)
       value_raw &= 0xFF;
-    else if (size == 4)
+    else if (size == MemoryAccessSize::HalfWord)
       value_raw &= 0xFFFF;
-    return QStringLiteral("0x%1 (%2)")
-      .arg(static_cast<u32>(value_raw), size, 16, QChar('0'))
-      .arg(static_cast<int>(value));
+    return QStringLiteral("%1 (0x%2)")
+      .arg(static_cast<int>(value))
+      .arg(static_cast<u32>(value_raw), width, 16, QChar('0'));
   }
   else
-    return QStringLiteral("0x%1 (%2)").arg(static_cast<u32>(value), size, 16, QChar('0')).arg(static_cast<uint>(value));
+  {
+    return QStringLiteral("0x%1 (%2)")
+      .arg(static_cast<u32>(value), width, 16, QChar('0'))
+      .arg(static_cast<uint>(value));
+  }
 }
 
-static QString formatCheatCode(u32 address, u32 value, const MemoryAccessSize size)
+static std::string formatCheatCode(u32 address, u32 value, MemoryAccessSize size)
 {
-
+  std::string ret;
   if (size == MemoryAccessSize::Byte && address <= 0x00200000)
-    return QStringLiteral("CHEAT CODE: %1 %2")
-      .arg(static_cast<u32>(address) + 0x30000000, 8, 16, QChar('0'))
-      .toUpper()
-      .arg(static_cast<u16>(value), 4, 16, QChar('0'))
-      .toUpper();
+    ret = fmt::format("CHEAT CODE: {:08X} {:02X}", address + 0x30000000u, static_cast<u8>(value));
   else if (size == MemoryAccessSize::HalfWord && address <= 0x001FFFFE)
-    return QStringLiteral("CHEAT CODE: %1 %2")
-      .arg(static_cast<u32>(address) + 0x80000000, 8, 16, QChar('0'))
-      .toUpper()
-      .arg(static_cast<u16>(value), 4, 16, QChar('0'))
-      .toUpper();
+    ret = fmt::format("CHEAT CODE: {:08X} {:04X}", address + 0x80000000u, static_cast<u16>(value));
   else if (size == MemoryAccessSize::Word && address <= 0x001FFFFC)
-    return QStringLiteral("CHEAT CODE: %1 %2")
-      .arg(static_cast<u32>(address) + 0x90000000, 8, 16, QChar('0'))
-      .toUpper()
-      .arg(static_cast<u32>(value), 8, 16, QChar('0'))
-      .toUpper();
+    ret = fmt::format("CHEAT CODE: {:08X} {:08X}", address + 0x90000000u, value);
   else
-    return QStringLiteral("OUTSIDE RAM RANGE. POKE %1 with %2")
-      .arg(static_cast<u32>(address), 8, 16, QChar('0'))
-      .toUpper()
-      .arg(static_cast<u16>(value), 8, 16, QChar('0'))
-      .toUpper();
+    ret = fmt::format("OUTSIDE RAM RANGE. POKE {:08X} with {:08X}", address, value);
+
+  return ret;
 }
 
 static QString formatValue(u32 value, bool is_signed)
@@ -110,8 +101,8 @@ MemoryScannerWindow::~MemoryScannerWindow() = default;
 
 void MemoryScannerWindow::connectUi()
 {
-  m_ui.scanStartAddress->setText(formatHexValue(m_scanner.GetStartAddress(), 8));
-  m_ui.scanEndAddress->setText(formatHexValue(m_scanner.GetEndAddress(), 8));
+  m_ui.scanStartAddress->setText(formatHexValue(m_scanner.GetStartAddress(), MemoryAccessSize::Word));
+  m_ui.scanEndAddress->setText(formatHexValue(m_scanner.GetEndAddress(), MemoryAccessSize::Word));
   m_ui.scanOperator->setCurrentIndex(static_cast<int>(m_scanner.GetOperator()));
   m_ui.scanSize->setCurrentIndex(static_cast<int>(m_scanner.GetSize()));
 
@@ -149,18 +140,18 @@ void MemoryScannerWindow::connectUi()
   connect(m_ui.scanPresetRange, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (index == 0)
     {
-      m_ui.scanStartAddress->setText(formatHexValue(0, 8));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::g_ram_size, 8));
+      m_ui.scanStartAddress->setText(formatHexValue(0, MemoryAccessSize::Word));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::g_ram_size, MemoryAccessSize::Word));
     }
     else if (index == 1)
     {
-      m_ui.scanStartAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR, 8));
-      m_ui.scanEndAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, 8));
+      m_ui.scanStartAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR, MemoryAccessSize::Word));
+      m_ui.scanEndAddress->setText(formatHexValue(CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, MemoryAccessSize::Word));
     }
     else
     {
-      m_ui.scanStartAddress->setText(formatHexValue(Bus::BIOS_BASE, 8));
-      m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE, 8));
+      m_ui.scanStartAddress->setText(formatHexValue(Bus::BIOS_BASE, MemoryAccessSize::Word));
+      m_ui.scanEndAddress->setText(formatHexValue(Bus::BIOS_BASE + Bus::BIOS_SIZE, MemoryAccessSize::Word));
     }
   });
   connect(m_ui.scanNewSearch, &QPushButton::clicked, this, &MemoryScannerWindow::newSearchClicked);
@@ -232,7 +223,7 @@ void MemoryScannerWindow::resizeEvent(QResizeEvent* event)
 void MemoryScannerWindow::resizeColumns()
 {
   QtUtils::ResizeColumnsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
-  QtUtils::ResizeColumnsForTableView(m_ui.watchTable, {-1, 100, 100, 100, 40});
+  QtUtils::ResizeColumnsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
 }
 
 int MemoryScannerWindow::getSelectedResultIndexFirst() const
@@ -337,8 +328,8 @@ void MemoryScannerWindow::addToWatchClicked()
   for (int index = indexFirst; index <= indexLast; index++)
   {
     const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
-    m_watch.AddEntry(fmt::format("0x{:08x}", res.address), res.address, m_scanner.GetSize(), m_scanner.GetValueSigned(),
-                     false);
+    m_watch.AddEntry(formatCheatCode(res.address, res.value, m_scanner.GetSize()), res.address, m_scanner.GetSize(),
+                     m_scanner.GetValueSigned(), false);
     updateWatch();
   }
 }
@@ -364,8 +355,8 @@ void MemoryScannerWindow::addManualWatchAddressClicked()
   else if (index == 2 || index == 5)
     address.value() &= 0xFFFFFFFC;
 
-  m_watch.AddEntry(fmt::format("0x{:08x}", address.value()), address.value(), static_cast<MemoryAccessSize>(index % 3),
-                   (index > 3), false);
+  const MemoryAccessSize size = static_cast<MemoryAccessSize>(index % 3);
+  m_watch.AddEntry(formatCheatCode(address.value(), 0, size), address.value(), size, (index > 3), false);
   updateWatch();
 }
 
@@ -461,23 +452,21 @@ void MemoryScannerWindow::watchItemChanged(QTableWidgetItem* item)
     case 3:
     {
       const MemoryWatchList::Entry& entry = m_watch.GetEntry(index);
-      bool value_ok = false;
       if (entry.is_signed)
       {
-        int value = item->text().toInt(&value_ok);
-        if (value_ok)
-          m_watch.SetEntryValue(index, static_cast<u32>(value));
+        const std::optional<s32> value = StringUtil::FromChars<s32>(item->text().toStdString());
+        if (value.has_value())
+          m_watch.SetEntryValue(index, static_cast<u32>(value.value()));
       }
       else
       {
-        uint value;
-        if (item->text()[1] == 'x' || item->text()[1] == 'X')
-          value = item->text().toUInt(&value_ok, 16);
-        else
-          value = item->text().toUInt(&value_ok);
-        if (value_ok)
-          m_watch.SetEntryValue(index, static_cast<u32>(value));
+        const std::optional<u32> value = StringUtil::FromCharsWithOptionalBase<u32>(item->text().toStdString());
+        if (value.has_value())
+          m_watch.SetEntryValue(index, value.value());
       }
+
+      const QSignalBlocker sb(m_ui.watchTable);
+      item->setText(formatHexAndDecValue(entry.value, entry.size, entry.is_signed));
     }
     break;
 
@@ -504,12 +493,8 @@ QTableWidgetItem* MemoryScannerWindow::createValueItem(MemoryAccessSize size, u3
   QTableWidgetItem* item;
   if (m_ui.scanValueBase->currentIndex() == 0)
     item = new QTableWidgetItem(formatValue(value, is_signed));
-  else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
-    item = new QTableWidgetItem(formatHexValue(value, 2));
-  else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
-    item = new QTableWidgetItem(formatHexValue(value, 4));
   else
-    item = new QTableWidgetItem(formatHexValue(value, 8));
+    item = new QTableWidgetItem(formatHexValue(value, m_scanner.GetSize()));
 
   if (!editable)
     item->setFlags(item->flags() & ~(Qt::ItemIsEditable));
@@ -532,7 +517,7 @@ void MemoryScannerWindow::updateResults()
 
     m_ui.scanTable->insertRow(row);
 
-    QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, 8));
+    QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, MemoryAccessSize::Word));
     address_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
     address_item->setTextAlignment(Qt::AlignCenter | Qt::AlignHCenter);
     m_ui.scanTable->setItem(row, 0, address_item);
@@ -567,12 +552,8 @@ void MemoryScannerWindow::updateResultsValues()
       QTableWidgetItem* item = m_ui.scanTable->item(row, 1);
       if (m_ui.scanValueBase->currentIndex() == 0)
         item->setText(formatValue(res.value, m_scanner.GetValueSigned()));
-      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
-        item->setText(formatHexValue(res.value, 2));
-      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
-        item->setText(formatHexValue(res.value, 4));
       else
-        item->setText(formatHexValue(res.value, 8));
+        item->setText(formatHexValue(res.value, m_scanner.GetSize()));
       item->setForeground(Qt::red);
     }
 
@@ -597,10 +578,10 @@ void MemoryScannerWindow::updateWatch()
     {
       m_ui.watchTable->insertRow(row);
 
-      QTableWidgetItem* description_item = new QTableWidgetItem(formatCheatCode(res.address, res.value, res.size));
+      QTableWidgetItem* description_item = new QTableWidgetItem(QString::fromStdString(res.description));
       m_ui.watchTable->setItem(row, 0, description_item);
 
-      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, 8));
+      QTableWidgetItem* address_item = new QTableWidgetItem(formatHexValue(res.address, MemoryAccessSize::Word));
       address_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.watchTable->setItem(row, 1, address_item);
 
@@ -609,13 +590,7 @@ void MemoryScannerWindow::updateWatch()
       size_item->setFlags(address_item->flags() & ~(Qt::ItemIsEditable));
       m_ui.watchTable->setItem(row, 2, size_item);
 
-      QTableWidgetItem* value_item;
-      if (res.size == MemoryAccessSize::Byte)
-        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 2, res.is_signed));
-      else if (res.size == MemoryAccessSize::HalfWord)
-        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 4, res.is_signed));
-      else
-        value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, 8, res.is_signed));
+      QTableWidgetItem* value_item = new QTableWidgetItem(formatHexAndDecValue(res.value, res.size, res.is_signed));
 
       m_ui.watchTable->setItem(row, 3, value_item);
 
@@ -643,12 +618,8 @@ void MemoryScannerWindow::updateWatchValues()
     {
       if (m_ui.scanValueBase->currentIndex() == 0)
         m_ui.watchTable->item(row, 3)->setText(formatValue(res.value, res.is_signed));
-      else if (m_scanner.GetSize() == MemoryAccessSize::Byte)
-        m_ui.watchTable->item(row, 3)->setText(formatHexValue(res.value, 2));
-      else if (m_scanner.GetSize() == MemoryAccessSize::HalfWord)
-        m_ui.watchTable->item(row, 3)->setText(formatHexValue(res.value, 4));
       else
-        m_ui.watchTable->item(row, 3)->setText(formatHexValue(res.value, 8));
+        m_ui.watchTable->item(row, 3)->setText(formatHexAndDecValue(res.value, res.size, res.is_signed));
     }
     row++;
   }
