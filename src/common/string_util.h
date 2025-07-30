@@ -30,11 +30,11 @@
 namespace StringUtil {
 
 /// Returns the given character in uppercase.
-ALWAYS_INLINE static char ToLower(char ch)
+ALWAYS_INLINE char ToLower(char ch)
 {
   return ch + ((static_cast<u8>(ch) >= 'A' && static_cast<u8>(ch) <= 'Z') ? ('a' - 'A') : 0);
 }
-ALWAYS_INLINE static char ToUpper(char ch)
+ALWAYS_INLINE char ToUpper(char ch)
 {
   return ch - ((static_cast<u8>(ch) >= 'a' && static_cast<u8>(ch) <= 'z') ? ('a' - 'A') : 0);
 }
@@ -52,7 +52,7 @@ std::size_t Strlcpy(char* dst, const std::string_view src, std::size_t size);
 std::size_t Strnlen(const char* str, std::size_t max_size);
 
 /// Platform-independent strcasecmp
-static inline int Strcasecmp(const char* s1, const char* s2)
+inline int Strcasecmp(const char* s1, const char* s2)
 {
 #ifdef _MSC_VER
   return _stricmp(s1, s2);
@@ -62,7 +62,7 @@ static inline int Strcasecmp(const char* s1, const char* s2)
 }
 
 /// Platform-independent strcasecmp
-static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
+inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 {
 #ifdef _MSC_VER
   return _strnicmp(s1, s2, n);
@@ -72,7 +72,7 @@ static inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
 }
 
 // Case-insensitive equality of string views.
-static inline bool EqualNoCase(std::string_view s1, std::string_view s2)
+inline bool EqualNoCase(std::string_view s1, std::string_view s2)
 {
   const size_t s1_len = s1.length();
   const size_t s2_len = s2.length();
@@ -83,7 +83,7 @@ static inline bool EqualNoCase(std::string_view s1, std::string_view s2)
 
   return (Strncasecmp(s1.data(), s2.data(), s1_len) == 0);
 }
-static inline int CompareNoCase(std::string_view s1, std::string_view s2)
+inline int CompareNoCase(std::string_view s1, std::string_view s2)
 {
   const size_t s1_len = s1.length();
   const size_t s2_len = s2.length();
@@ -91,7 +91,7 @@ static inline int CompareNoCase(std::string_view s1, std::string_view s2)
   const int compare_res = (compare_len > 0) ? Strncasecmp(s1.data(), s2.data(), compare_len) : 0;
   return (compare_len != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
 }
-static inline bool ContainsNoCase(std::string_view s1, std::string_view s2)
+inline bool ContainsNoCase(std::string_view s1, std::string_view s2)
 {
   return (std::search(s1.begin(), s1.end(), s2.begin(), s2.end(),
                       [](char lhs, char rhs) { return (ToLower(lhs) == ToLower(rhs)); }) != s1.end());
@@ -249,7 +249,7 @@ inline std::string ToChars(bool value, int base)
 }
 
 /// Returns true if the given character is whitespace.
-ALWAYS_INLINE static bool IsWhitespace(char ch)
+ALWAYS_INLINE bool IsWhitespace(char ch)
 {
   return ((ch >= 0x09 && ch <= 0x0D) || // horizontal tab, line feed, vertical tab, form feed, carriage return
           ch == 0x20);                  // space
@@ -261,14 +261,14 @@ size_t DecodeHex(std::span<u8> dest, const std::string_view str);
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 std::string EncodeHex(const void* data, size_t length);
 template<typename T>
-ALWAYS_INLINE static std::string EncodeHex(const std::span<const T> data)
+ALWAYS_INLINE std::string EncodeHex(const std::span<const T> data)
 {
   return EncodeHex(data.data(), data.size_bytes());
 }
 
 /// Returns true if the character is a hexadecimal digit.
 template<typename T>
-ALWAYS_INLINE static bool IsHexDigit(T ch)
+ALWAYS_INLINE bool IsHexDigit(T ch)
 {
   return ((ch >= static_cast<T>('a') && ch <= static_cast<T>('f')) ||
           (ch >= static_cast<T>('A') && ch <= static_cast<T>('F')) ||
@@ -277,7 +277,7 @@ ALWAYS_INLINE static bool IsHexDigit(T ch)
 
 /// Returns a byte array from the provided hex string, computed at compile-time.
 template<size_t Length>
-static constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
+inline constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
 {
   std::array<u8, Length> h{};
   for (int i = 0; str[i] != '\0'; i++)
@@ -297,7 +297,7 @@ static constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
 }
 
 /// Encode/decode Base64 buffers.
-static constexpr size_t DecodedBase64Length(const std::string_view str)
+inline constexpr size_t DecodedBase64Length(const std::string_view str)
 {
   // Should be a multiple of 4.
   const size_t str_length = str.length();
@@ -314,7 +314,7 @@ static constexpr size_t DecodedBase64Length(const std::string_view str)
 
   return (str_length / 4) * 3 - padding;
 }
-static constexpr size_t EncodedBase64Length(const std::span<const u8> data)
+inline constexpr size_t EncodedBase64Length(const std::span<const u8> data)
 {
   return ((data.size() + 2) / 3) * 4;
 }
@@ -324,11 +324,11 @@ std::string EncodeBase64(const std::span<u8> data);
 std::optional<std::vector<u8>> DecodeBase64(const std::string_view str);
 
 /// StartsWith/EndsWith variants which aren't case sensitive.
-ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
+ALWAYS_INLINE bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
 {
   return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
 }
-ALWAYS_INLINE static bool EndsWithNoCase(const std::string_view str, const std::string_view suffix)
+ALWAYS_INLINE bool EndsWithNoCase(const std::string_view str, const std::string_view suffix)
 {
   const std::size_t suffix_length = suffix.length();
   return (str.length() >= suffix_length &&
@@ -347,14 +347,14 @@ void StripWhitespace(std::string* str);
 
 /// Returns true if the given string is found in the string list container.
 template<typename T>
-static inline bool IsInStringList(const T& list, const std::string_view str)
+inline bool IsInStringList(const T& list, const std::string_view str)
 {
   return std::any_of(std::begin(list), std::end(list), [&str](const auto& it) { return (str == it); });
 }
 
 /// Adds a string to a string list container. No append is performed if the string already exists.
 template<typename T>
-static inline bool AddToStringList(T& list, const std::string_view str)
+inline bool AddToStringList(T& list, const std::string_view str)
 {
   if (IsInStringList(list, str))
     return false;
@@ -365,7 +365,7 @@ static inline bool AddToStringList(T& list, const std::string_view str)
 
 /// Removes a string from a string list container.
 template<typename T>
-static inline bool RemoveFromStringList(T& list, const std::string_view str)
+inline bool RemoveFromStringList(T& list, const std::string_view str)
 {
   bool removed = false;
   for (auto iter = std::begin(list); iter != std::end(list);)
@@ -386,7 +386,7 @@ static inline bool RemoveFromStringList(T& list, const std::string_view str)
 
 /// Joins a string together using the specified delimiter.
 template<typename T>
-static inline std::string JoinString(const T& start, const T& end, char delimiter)
+inline std::string JoinString(const T& start, const T& end, char delimiter)
 {
   std::string ret;
   for (auto it = start; it != end; ++it)
@@ -398,12 +398,12 @@ static inline std::string JoinString(const T& start, const T& end, char delimite
   return ret;
 }
 template<typename T>
-static inline std::string JoinString(const T& list, char delimiter)
+inline std::string JoinString(const T& list, char delimiter)
 {
   return JoinString(std::begin(list), std::end(list), delimiter);
 }
 template<typename T>
-static inline std::string JoinString(const T& start, const T& end, const std::string_view delimiter)
+inline std::string JoinString(const T& start, const T& end, const std::string_view delimiter)
 {
   std::string ret;
   for (auto it = start; it != end; ++it)
@@ -415,7 +415,7 @@ static inline std::string JoinString(const T& start, const T& end, const std::st
   return ret;
 }
 template<typename T>
-static inline std::string JoinString(const T& list, const std::string_view delimiter)
+inline std::string JoinString(const T& list, const std::string_view delimiter)
 {
   return JoinString(std::begin(list), std::end(list), delimiter);
 }
@@ -477,8 +477,8 @@ void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis = "
 std::optional<size_t> BytePatternSearch(const std::span<const u8> bytes, const std::string_view pattern);
 
 /// Strided memcpy/memcmp.
-ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
-                                       std::size_t copy_size, std::size_t count)
+ALWAYS_INLINE void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
+                                std::size_t copy_size, std::size_t count)
 {
   if (src_stride == dst_stride && src_stride == copy_size)
   {
@@ -496,8 +496,8 @@ ALWAYS_INLINE static void StrideMemCpy(void* dst, std::size_t dst_stride, const 
   }
 }
 
-ALWAYS_INLINE static int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
-                                      std::size_t copy_size, std::size_t count)
+ALWAYS_INLINE int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
+                               std::size_t copy_size, std::size_t count)
 {
   if (p1_stride == p2_stride && p1_stride == copy_size)
     return std::memcmp(p1, p2, p1_stride * count);

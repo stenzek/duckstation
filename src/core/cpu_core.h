@@ -143,34 +143,35 @@ void Execute();
 // Forces an early exit from the CPU dispatcher.
 [[noreturn]] void ExitExecution();
 
-ALWAYS_INLINE static Registers& GetRegs()
+ALWAYS_INLINE Registers& GetRegs()
 {
   return g_state.regs;
 }
 
-ALWAYS_INLINE static u32 GetPendingTicks()
+ALWAYS_INLINE u32 GetPendingTicks()
 {
   return g_state.pending_ticks;
 }
-ALWAYS_INLINE static void ResetPendingTicks()
+ALWAYS_INLINE void ResetPendingTicks()
 {
   g_state.gte_completion_tick =
     (g_state.pending_ticks < g_state.gte_completion_tick) ? (g_state.gte_completion_tick - g_state.pending_ticks) : 0;
-  g_state.muldiv_completion_tick =
-    (g_state.pending_ticks < g_state.muldiv_completion_tick) ? (g_state.muldiv_completion_tick - g_state.pending_ticks) : 0;
+  g_state.muldiv_completion_tick = (g_state.pending_ticks < g_state.muldiv_completion_tick) ?
+                                     (g_state.muldiv_completion_tick - g_state.pending_ticks) :
+                                     0;
   g_state.pending_ticks = 0;
 }
-ALWAYS_INLINE static void AddPendingTicks(TickCount ticks)
+ALWAYS_INLINE void AddPendingTicks(TickCount ticks)
 {
   g_state.pending_ticks += static_cast<u32>(ticks);
 }
 
 // state helpers
-ALWAYS_INLINE static bool InUserMode()
+ALWAYS_INLINE bool InUserMode()
 {
   return g_state.cop0_regs.sr.KUc;
 }
-ALWAYS_INLINE static bool InKernelMode()
+ALWAYS_INLINE bool InKernelMode()
 {
   return !g_state.cop0_regs.sr.KUc;
 }

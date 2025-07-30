@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "log.h"
-#include "types.h"
+#include "small_string.h"
 #include "string_util.h"
+#include "types.h"
 
 #include "ryml.hpp"
 
@@ -12,22 +13,22 @@
 
 // RapidYAML utility routines.
 
-static inline std::string_view to_stringview(const c4::csubstr& s)
+inline std::string_view to_stringview(const c4::csubstr& s)
 {
   return std::string_view(s.data(), s.size());
 }
 
-static inline std::string_view to_stringview(const c4::substr& s)
+inline std::string_view to_stringview(const c4::substr& s)
 {
   return std::string_view(s.data(), s.size());
 }
 
-static inline c4::csubstr to_csubstr(std::string_view sv)
+inline c4::csubstr to_csubstr(std::string_view sv)
 {
   return c4::csubstr(sv.data(), sv.length());
 }
 
-static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string* dest)
+inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string* dest)
 {
   dest->clear();
 
@@ -42,7 +43,7 @@ static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::st
   return true;
 }
 
-static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string_view* dest)
+inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string_view* dest)
 {
   const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
   if (!member.valid())
@@ -56,7 +57,7 @@ static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::st
 }
 
 template<typename T>
-static inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
+inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
 {
   *dest = 0;
 
@@ -84,7 +85,7 @@ static inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::stri
 }
 
 template<typename T>
-static inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key)
+inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key)
 {
   std::optional<T> ret;
 
@@ -125,8 +126,8 @@ static inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& 
 }
 
 template<typename T>
-static inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
-                                                        std::optional<T> (*from_string_function)(const char* str))
+inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
+                                                 std::optional<T> (*from_string_function)(const char* str))
 {
   std::optional<T> ret;
 
@@ -151,7 +152,7 @@ static inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef
   return ret;
 }
 
-static inline void SetRymlCallbacks()
+inline void SetRymlCallbacks()
 {
   ryml::Callbacks callbacks = ryml::get_callbacks();
   callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {

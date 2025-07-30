@@ -227,7 +227,7 @@ union GPUSTAT
   }
 };
 
-ALWAYS_INLINE static constexpr u32 VRAMRGBA5551ToRGBA8888(u32 color)
+ALWAYS_INLINE constexpr u32 VRAMRGBA5551ToRGBA8888(u32 color)
 {
   // Helper/format conversion functions - constants from https://stackoverflow.com/a/9069480
 #define E5TO8(color) ((((color) * 527u) + 23u) >> 6)
@@ -241,7 +241,7 @@ ALWAYS_INLINE static constexpr u32 VRAMRGBA5551ToRGBA8888(u32 color)
 #undef E5TO8
 }
 
-ALWAYS_INLINE static constexpr u16 VRAMRGBA8888ToRGBA5551(u32 color)
+ALWAYS_INLINE constexpr u16 VRAMRGBA8888ToRGBA5551(u32 color)
 {
   const u32 r = (color & 0xFFu) >> 3;
   const u32 g = ((color >> 8) & 0xFFu) >> 3;
@@ -252,12 +252,12 @@ ALWAYS_INLINE static constexpr u16 VRAMRGBA8888ToRGBA5551(u32 color)
 
 #ifdef CPU_ARCH_SIMD
 
-ALWAYS_INLINE static GSVector4i VRAM5BitTo8Bit(GSVector4i val)
+ALWAYS_INLINE GSVector4i VRAM5BitTo8Bit(GSVector4i val)
 {
   return val.mul32l(GSVector4i::cxpr(527)).add32(GSVector4i::cxpr(23)).srl32<6>();
 }
 
-ALWAYS_INLINE static GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
+ALWAYS_INLINE GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
 {
   static constexpr GSVector4i cmask = GSVector4i::cxpr(0x1F);
 
@@ -270,7 +270,7 @@ ALWAYS_INLINE static GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
 }
 
 template<GPUTexture::Format format>
-ALWAYS_INLINE static void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
+ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
 {
   if constexpr (format == GPUTexture::Format::RGBA8)
   {
@@ -317,7 +317,7 @@ ALWAYS_INLINE static void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
 #endif
 
 template<GPUTexture::Format format>
-ALWAYS_INLINE static void ConvertVRAMPixel(u8*& dest, u16 c16)
+ALWAYS_INLINE void ConvertVRAMPixel(u8*& dest, u16 c16)
 {
   if constexpr (format == GPUTexture::Format::RGBA8)
   {
@@ -354,7 +354,7 @@ union GPUVertexPosition
 };
 
 // Sprites/rectangles should be clipped to 11 bits before drawing.
-static constexpr s32 TruncateGPUVertexPosition(s32 x)
+inline constexpr s32 TruncateGPUVertexPosition(s32 x)
 {
   return SignExtendN<11, s32>(x);
 }
@@ -427,77 +427,77 @@ union GPUTextureWindow
   }
 };
 
-ALWAYS_INLINE static constexpr u32 VRAMPageIndex(u32 px, u32 py)
+ALWAYS_INLINE constexpr u32 VRAMPageIndex(u32 px, u32 py)
 {
   return ((py * VRAM_PAGES_WIDE) + px);
 }
-ALWAYS_INLINE static constexpr GSVector4i VRAMPageRect(u32 px, u32 py)
+ALWAYS_INLINE constexpr GSVector4i VRAMPageRect(u32 px, u32 py)
 {
   return GSVector4i::cxpr(px * VRAM_PAGE_WIDTH, py * VRAM_PAGE_HEIGHT, (px + 1) * VRAM_PAGE_WIDTH,
                           (py + 1) * VRAM_PAGE_HEIGHT);
 }
-ALWAYS_INLINE static constexpr GSVector4i VRAMPageRect(u32 pn)
+ALWAYS_INLINE constexpr GSVector4i VRAMPageRect(u32 pn)
 {
   // TODO: Put page rects in a LUT instead?
   return VRAMPageRect(pn % VRAM_PAGES_WIDE, pn / VRAM_PAGES_WIDE);
 }
 
-ALWAYS_INLINE static constexpr u32 VRAMCoordinateToPage(u32 x, u32 y)
+ALWAYS_INLINE constexpr u32 VRAMCoordinateToPage(u32 x, u32 y)
 {
   return VRAMPageIndex(x / VRAM_PAGE_WIDTH, y / VRAM_PAGE_HEIGHT);
 }
 
-ALWAYS_INLINE static constexpr u32 VRAMPageStartX(u32 pn)
+ALWAYS_INLINE constexpr u32 VRAMPageStartX(u32 pn)
 {
   return (pn % VRAM_PAGES_WIDE) * VRAM_PAGE_WIDTH;
 }
 
-ALWAYS_INLINE static constexpr u32 VRAMPageStartY(u32 pn)
+ALWAYS_INLINE constexpr u32 VRAMPageStartY(u32 pn)
 {
   return (pn / VRAM_PAGES_WIDE) * VRAM_PAGE_HEIGHT;
 }
 
-ALWAYS_INLINE static constexpr u8 GetTextureModeShift(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u8 GetTextureModeShift(GPUTextureMode mode)
 {
   return ((mode < GPUTextureMode::Direct16Bit) ? (2 - static_cast<u8>(mode)) : 0);
 }
 
-ALWAYS_INLINE static constexpr u32 ApplyTextureModeShift(GPUTextureMode mode, u32 vram_width)
+ALWAYS_INLINE constexpr u32 ApplyTextureModeShift(GPUTextureMode mode, u32 vram_width)
 {
   return vram_width << GetTextureModeShift(mode);
 }
 
-ALWAYS_INLINE static GSVector4i ApplyTextureModeShift(GPUTextureMode mode, const GSVector4i rect)
+ALWAYS_INLINE GSVector4i ApplyTextureModeShift(GPUTextureMode mode, const GSVector4i rect)
 {
   return rect.sll32(GetTextureModeShift(mode));
 }
 
-ALWAYS_INLINE static constexpr u32 TexturePageCountForMode(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u32 TexturePageCountForMode(GPUTextureMode mode)
 {
   return ((mode < GPUTextureMode::Direct16Bit) ? (1 + static_cast<u8>(mode)) : 4);
 }
 
-ALWAYS_INLINE static constexpr u32 TexturePageWidthForMode(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u32 TexturePageWidthForMode(GPUTextureMode mode)
 {
   return TEXTURE_PAGE_WIDTH >> GetTextureModeShift(mode);
 }
 
-ALWAYS_INLINE static constexpr bool TexturePageIsWrapping(GPUTextureMode mode, u32 pn)
+ALWAYS_INLINE constexpr bool TexturePageIsWrapping(GPUTextureMode mode, u32 pn)
 {
   return ((VRAMPageStartX(pn) + TexturePageWidthForMode(mode)) > VRAM_WIDTH);
 }
 
-ALWAYS_INLINE static constexpr u32 PalettePageCountForMode(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u32 PalettePageCountForMode(GPUTextureMode mode)
 {
   return (mode == GPUTextureMode::Palette4Bit) ? 1 : 4;
 }
 
-ALWAYS_INLINE static constexpr u32 PalettePageNumber(GPUTexturePaletteReg reg)
+ALWAYS_INLINE constexpr u32 PalettePageNumber(GPUTexturePaletteReg reg)
 {
   return VRAMCoordinateToPage(reg.GetXBase(), reg.GetYBase());
 }
 
-ALWAYS_INLINE static constexpr GSVector4i GetTextureRect(u32 pn, GPUTextureMode mode)
+ALWAYS_INLINE constexpr GSVector4i GetTextureRect(u32 pn, GPUTextureMode mode)
 {
   u32 left = VRAMPageStartX(pn);
   u32 top = VRAMPageStartY(pn);
@@ -517,7 +517,7 @@ ALWAYS_INLINE static constexpr GSVector4i GetTextureRect(u32 pn, GPUTextureMode 
   return GSVector4i::cxpr(left, top, right, bottom);
 }
 
-ALWAYS_INLINE static constexpr GSVector4i GetTextureRectWithoutWrap(u32 pn, GPUTextureMode mode)
+ALWAYS_INLINE constexpr GSVector4i GetTextureRectWithoutWrap(u32 pn, GPUTextureMode mode)
 {
   const u32 left = VRAMPageStartX(pn);
   const u32 top = VRAMPageStartY(pn);
@@ -527,14 +527,14 @@ ALWAYS_INLINE static constexpr GSVector4i GetTextureRectWithoutWrap(u32 pn, GPUT
 }
 
 /// Returns the maximum index for a paletted texture.
-ALWAYS_INLINE static constexpr u32 GetPaletteWidth(GPUTextureMode mode)
+ALWAYS_INLINE constexpr u32 GetPaletteWidth(GPUTextureMode mode)
 {
   return (mode == GPUTextureMode::Palette4Bit ? 16 : ((mode == GPUTextureMode::Palette8Bit) ? 256 : 0));
 }
 
 /// Returns a rectangle comprising the texture palette area.
-ALWAYS_INLINE static constexpr GSVector4i GetPaletteRect(GPUTexturePaletteReg palette, GPUTextureMode mode,
-                                                         bool clamp_instead_of_wrapping = false)
+ALWAYS_INLINE constexpr GSVector4i GetPaletteRect(GPUTexturePaletteReg palette, GPUTextureMode mode,
+                                                  bool clamp_instead_of_wrapping = false)
 {
   const u32 width = GetPaletteWidth(mode);
   u32 left = palette.GetXBase();

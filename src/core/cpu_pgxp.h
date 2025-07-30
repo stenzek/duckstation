@@ -66,7 +66,7 @@ void CPU_MTC0(Instruction instr, u32 rdVal, u32 rtVal);
 
 // Utility functions.
 
-ALWAYS_INLINE static u32 PackMoveArgs(Reg rd, Reg rs)
+ALWAYS_INLINE u32 PackMoveArgs(Reg rd, Reg rs)
 {
   return (static_cast<u32>(rd) << 8) | static_cast<u32>(rs);
 }

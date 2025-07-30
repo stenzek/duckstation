@@ -127,7 +127,7 @@ private:
 #ifdef ENABLE_GPU_OBJECT_NAMES
 void SetObjectName(ID3D12Object* object, std::string_view name);
 #else
-static inline void SetObjectName(ID3D12Object* object, std::string_view name)
+inline void SetObjectName(ID3D12Object* object, std::string_view name)
 {
 }
 #endif

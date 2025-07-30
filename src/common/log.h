@@ -65,20 +65,20 @@ enum class Channel : u32
 
 // Packs a level and channel into one 16-bit number.
 using MessageCategory = u32;
-[[maybe_unused]] ALWAYS_INLINE static constexpr u32 PackCategory(Channel channel, Level level, Color colour)
+[[maybe_unused]] ALWAYS_INLINE constexpr u32 PackCategory(Channel channel, Level level, Color colour)
 {
   return ((static_cast<MessageCategory>(colour) << 10) | (static_cast<MessageCategory>(channel) << 3) |
           static_cast<MessageCategory>(level));
 }
-[[maybe_unused]] ALWAYS_INLINE static constexpr Color UnpackColor(MessageCategory cat)
+[[maybe_unused]] ALWAYS_INLINE constexpr Color UnpackColor(MessageCategory cat)
 {
   return static_cast<Color>((cat >> 10) & 0x1f);
 }
-[[maybe_unused]] ALWAYS_INLINE static constexpr Channel UnpackChannel(MessageCategory cat)
+[[maybe_unused]] ALWAYS_INLINE constexpr Channel UnpackChannel(MessageCategory cat)
 {
   return static_cast<Channel>((cat >> 3) & 0x7f);
 }
-[[maybe_unused]] ALWAYS_INLINE static constexpr Level UnpackLevel(MessageCategory cat)
+[[maybe_unused]] ALWAYS_INLINE constexpr Level UnpackLevel(MessageCategory cat)
 {
   return static_cast<Level>(cat & 0x7);
 }
@@ -136,50 +136,49 @@ void Write(MessageCategory cat, const char* functionName, std::string_view messa
 void WriteFmtArgs(MessageCategory cat, fmt::string_view fmt, fmt::format_args args);
 void WriteFmtArgs(MessageCategory cat, const char* functionName, fmt::string_view fmt, fmt::format_args args);
 
-ALWAYS_INLINE static void FastWrite(Channel channel, Level level, std::string_view message)
+ALWAYS_INLINE void FastWrite(Channel channel, Level level, std::string_view message)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     Write(PackCategory(channel, level, Color::Default), message);
 }
-ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, Level level, std::string_view message)
+ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, std::string_view message)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     Write(PackCategory(channel, level, Color::Default), functionName, message);
 }
 template<typename... T>
-ALWAYS_INLINE static void FastWrite(Channel channel, Level level, fmt::format_string<T...> fmt, T&&... args)
+ALWAYS_INLINE void FastWrite(Channel channel, Level level, fmt::format_string<T...> fmt, T&&... args)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(PackCategory(channel, level, Color::Default), fmt, fmt::make_format_args(args...));
 }
 template<typename... T>
-ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, Level level,
-                                    fmt::format_string<T...> fmt, T&&... args)
+ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, fmt::format_string<T...> fmt,
+                             T&&... args)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(PackCategory(channel, level, Color::Default), functionName, fmt, fmt::make_format_args(args...));
 }
-ALWAYS_INLINE static void FastWrite(Channel channel, Level level, Color colour, std::string_view message)
+ALWAYS_INLINE void FastWrite(Channel channel, Level level, Color colour, std::string_view message)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     Write(PackCategory(channel, level, colour), message);
 }
-ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
-                                    std::string_view message)
+ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
+                             std::string_view message)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     Write(PackCategory(channel, level, colour), functionName, message);
 }
 template<typename... T>
-ALWAYS_INLINE static void FastWrite(Channel channel, Level level, Color colour, fmt::format_string<T...> fmt,
-                                    T&&... args)
+ALWAYS_INLINE void FastWrite(Channel channel, Level level, Color colour, fmt::format_string<T...> fmt, T&&... args)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(PackCategory(channel, level, colour), fmt, fmt::make_format_args(args...));
 }
 template<typename... T>
-ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
-                                    fmt::format_string<T...> fmt, T&&... args)
+ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
+                             fmt::format_string<T...> fmt, T&&... args)
 {
   if (level <= GetLogLevel()) [[unlikely]]
     WriteFmtArgs(PackCategory(channel, level, colour), functionName, fmt, fmt::make_format_args(args...));

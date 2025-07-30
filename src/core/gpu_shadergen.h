@@ -11,7 +11,6 @@ public:
   GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPUShaderGen();
 
-  std::string GenerateDisplayVertexShader() const;
   std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const;
   std::string GenerateDisplaySharpBilinearFragmentShader() const;
   std::string GenerateDisplayLanczosFragmentShader() const;

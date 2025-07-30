@@ -24,7 +24,7 @@
 namespace ControllerSettingWidgetBinder {
 /// Interface specific method of BindWidgetToBoolSetting().
 template<typename WidgetType>
-static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* widget, std::string section,
                                          std::string key, bool default_value)
 {
   using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -57,7 +57,7 @@ static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* wid
 
 /// Interface specific method of BindWidgetToIntSetting().
 template<typename WidgetType>
-static void BindWidgetToInputProfileInt(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileInt(SettingsInterface* sif, WidgetType* widget, std::string section,
                                         std::string key, int default_value, int option_offset = 0)
 {
   using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -92,7 +92,7 @@ static void BindWidgetToInputProfileInt(SettingsInterface* sif, WidgetType* widg
 
 /// Interface specific method of BindWidgetToFloatSetting().
 template<typename WidgetType>
-static void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* widget, std::string section,
                                           std::string key, float default_value)
 {
   using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -125,7 +125,7 @@ static void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* wi
 
 /// Interface specific method of BindWidgetToNormalizedSetting().
 template<typename WidgetType>
-static void BindWidgetToInputProfileNormalized(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileNormalized(SettingsInterface* sif, WidgetType* widget, std::string section,
                                                std::string key, float range, float default_value)
 {
   using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -158,7 +158,7 @@ static void BindWidgetToInputProfileNormalized(SettingsInterface* sif, WidgetTyp
 
 /// Interface specific method of BindWidgetToStringSetting().
 template<typename WidgetType>
-static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* widget, std::string section,
                                            std::string key, std::string default_value = std::string())
 {
   using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
@@ -194,7 +194,7 @@ static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
 
 /// Interface specific method of BindWidgetToEnumSetting().
 template<typename WidgetType, typename DataType, typename ValueCountType>
-static void BindWidgetToInputProfileEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToInputProfileEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section,
                                                 std::string key,
                                                 std::optional<DataType> (*from_string_function)(const char* str),
                                                 const char* (*to_string_function)(DataType value),

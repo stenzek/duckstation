@@ -745,7 +745,7 @@ struct SettingAccessor<QAction>
 /// Binds a widget's value to a setting, updating it when the value changes.
 
 template<typename WidgetType>
-static void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                     bool default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -786,7 +786,7 @@ static void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
 }
 
 template<typename WidgetType>
-static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                    int default_value, int option_offset = 0)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -830,7 +830,7 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
 }
 
 template<typename WidgetType>
-static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                    int default_value, std::span<const int> values)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -881,9 +881,9 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
 }
 
 template<typename WidgetType>
-static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* widget, QLabel* label,
-                                                  const QString& label_suffix, std::string section, std::string key,
-                                                  int default_value, int option_offset = 0)
+inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* widget, QLabel* label,
+                                           const QString& label_suffix, std::string section, std::string key,
+                                           int default_value, int option_offset = 0)
 {
   using Accessor = SettingAccessor<WidgetType>;
 
@@ -962,7 +962,7 @@ static inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, Widget
 }
 
 template<typename WidgetType>
-static void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                      float default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -1003,7 +1003,7 @@ static void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
 }
 
 template<typename WidgetType>
-static void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* widget, std::string section,
+inline void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* widget, std::string section,
                                           std::string key, float range, float default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -1044,7 +1044,7 @@ static void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
 }
 
 template<typename WidgetType>
-static void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                       std::string default_value = std::string())
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -1086,7 +1086,7 @@ static void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
 }
 
 template<typename WidgetType, typename DataType>
-static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                     std::optional<DataType> (*from_string_function)(const char* str),
                                     const char* (*to_string_function)(DataType value), DataType default_value)
 {
@@ -1152,7 +1152,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 }
 
 template<typename WidgetType, typename DataType, typename ValueCountType>
-static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                     std::optional<DataType> (*from_string_function)(const char* str),
                                     const char* (*to_string_function)(DataType value),
                                     const char* (*to_display_name_function)(DataType value), DataType default_value,
@@ -1223,7 +1223,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 }
 
 template<typename DataType, typename ValueCountType>
-static void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string key,
+inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string key,
                                   std::optional<DataType> (*from_string_function)(const char* str),
                                   const char* (*to_string_function)(DataType value),
                                   const char* (*to_display_name_function)(DataType value), DataType default_value,
@@ -1260,7 +1260,7 @@ static void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string 
 }
 
 template<typename WidgetType, typename DataType>
-static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                     const char** enum_names, DataType default_value)
 {
   using Accessor = SettingAccessor<WidgetType>;
@@ -1323,7 +1323,7 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 }
 
 template<typename WidgetType>
-static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
                                     const char** enum_names, const char** enum_values, const char* default_value,
                                     const char* translation_ctx = nullptr)
 {
@@ -1391,10 +1391,10 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
   }
 }
 
-static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
-                                             QString browse_title, QAbstractButton* open_button,
-                                             QAbstractButton* reset_button, std::string section, std::string key,
-                                             std::string default_value, bool use_relative = true)
+inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget, QAbstractButton* browse_button,
+                                      QString browse_title, QAbstractButton* open_button, QAbstractButton* reset_button,
+                                      std::string section, std::string key, std::string default_value,
+                                      bool use_relative = true)
 {
   using Accessor = SettingAccessor<QLineEdit>;
 
@@ -1497,14 +1497,14 @@ static inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* 
 }
 
 template<typename WidgetType>
-static inline void DisconnectWidget(WidgetType* widget)
+inline void DisconnectWidget(WidgetType* widget)
 {
   using Accessor = SettingAccessor<WidgetType>;
   Accessor::disconnect(widget);
 }
 
 template<typename WidgetType>
-static inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_label = nullptr)
+inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_label = nullptr)
 {
   if (available)
     return;

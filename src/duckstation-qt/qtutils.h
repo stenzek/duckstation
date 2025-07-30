@@ -56,7 +56,7 @@ void ShowOrRaiseWindow(QWidget* window);
 
 /// Closes and deletes a window later, outside of this event pump.
 template<typename T>
-[[maybe_unused]] static void CloseAndDeleteWindow(T*& window)
+inline void CloseAndDeleteWindow(T*& window)
 {
   if (!window)
     return;
@@ -129,8 +129,7 @@ bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>
-[[maybe_unused]] static void ProcessEventsWithSleep(QEventLoop::ProcessEventsFlags flags, const Predicate& pred,
-                                                    int sleep_time_ms = 10)
+inline void ProcessEventsWithSleep(QEventLoop::ProcessEventsFlags flags, const Predicate& pred, int sleep_time_ms = 10)
 {
   if (sleep_time_ms == 0)
   {

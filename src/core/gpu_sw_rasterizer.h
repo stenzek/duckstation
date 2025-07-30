@@ -52,19 +52,19 @@ extern CopyVRAMFunction CopyVRAM;
 
 extern void SelectImplementation();
 
-ALWAYS_INLINE static DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable)
+ALWAYS_INLINE DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable)
 {
   return (*DrawLineFunctions)[u8(shading_enable)][u8(transparency_enable)];
 }
 
-ALWAYS_INLINE static DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
-                                                                    bool transparency_enable)
+ALWAYS_INLINE DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
+                                                             bool transparency_enable)
 {
   return (*DrawRectangleFunctions)[u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];
 }
 
-ALWAYS_INLINE static DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
-                                                                  bool raw_texture_enable, bool transparency_enable)
+ALWAYS_INLINE DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
+                                                           bool raw_texture_enable, bool transparency_enable)
 {
   return (
     *DrawTriangleFunctions)[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)][u8(transparency_enable)];

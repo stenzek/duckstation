@@ -173,8 +173,6 @@ static bool InjectELF(const ELFFile& elf, bool set_pc, Error* error);
 static void SetHandlers();
 static void UpdateMappedRAMSize();
 
-template<typename FP>
-static FP* OffsetHandlerArray(void** handlers, MemoryAccessSize size, MemoryAccessType type);
 } // namespace Bus
 
 namespace MemoryMap {

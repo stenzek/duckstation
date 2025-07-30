@@ -394,7 +394,7 @@ struct VkObjectTypeMap;
 #endif
 
 template<typename T>
-static inline void SetObjectName(VkDevice device, T object_handle, const std::string_view name)
+inline void SetObjectName(VkDevice device, T object_handle, const std::string_view name)
 {
 #ifdef ENABLE_VULKAN_DEBUG_OBJECTS
   if (!vkSetDebugUtilsObjectNameEXT)

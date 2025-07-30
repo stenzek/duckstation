@@ -134,7 +134,7 @@ using MemoryWriteHandler = void (*)(VirtualMemoryAddress, u32);
 void** GetMemoryHandlers(bool isolate_cache, bool swap_caches);
 
 template<typename FP>
-ALWAYS_INLINE_RELEASE static FP* OffsetHandlerArray(void** handlers, MemoryAccessSize size, MemoryAccessType type)
+ALWAYS_INLINE_RELEASE FP* OffsetHandlerArray(void** handlers, MemoryAccessSize size, MemoryAccessType type)
 {
   return reinterpret_cast<FP*>(handlers +
                                (((static_cast<size_t>(size) * 2) + static_cast<size_t>(type)) * MEMORY_LUT_SIZE));
@@ -158,19 +158,19 @@ extern std::array<TickCount, 3> g_cdrom_access_time;
 extern std::array<TickCount, 3> g_spu_access_time;
 
 /// Returns true if the address specified is writable (RAM).
-ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)
+ALWAYS_INLINE bool IsRAMAddress(PhysicalMemoryAddress address)
 {
   return address < RAM_MIRROR_END;
 }
 
 /// Returns the code page index for a RAM address.
-ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
+ALWAYS_INLINE u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 {
   return (address & g_ram_mask) >> HOST_PAGE_SHIFT;
 }
 
 /// Returns true if the specified page contains code.
-ALWAYS_INLINE static bool IsRAMCodePage(u32 index)
+ALWAYS_INLINE bool IsRAMCodePage(u32 index)
 {
   return g_ram_code_bits[index];
 }
@@ -191,7 +191,7 @@ bool IsCodePageAddress(PhysicalMemoryAddress address);
 bool HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size);
 
 /// Returns the number of cycles stolen by DMA RAM access.
-ALWAYS_INLINE static TickCount GetDMARAMTickCount(u32 word_count)
+ALWAYS_INLINE TickCount GetDMARAMTickCount(u32 word_count)
 {
   // DMA is using DRAM Hyper Page mode, allowing it to access DRAM rows at 1 clock cycle per word (effectively around
   // 17 clks per 16 words, due to required row address loading, probably plus some further minimal overload due to

@@ -106,45 +106,45 @@ struct ALIGN_TO_CACHE_LINE UIStyles
 
 extern UIStyles UIStyle;
 
-ALWAYS_INLINE static float LayoutScale(float v)
+ALWAYS_INLINE float LayoutScale(float v)
 {
   return ImCeil(UIStyle.LayoutScale * v);
 }
 
-ALWAYS_INLINE static ImVec2 LayoutScale(const ImVec2& v)
+ALWAYS_INLINE ImVec2 LayoutScale(const ImVec2& v)
 {
   return ImVec2(ImCeil(v.x * UIStyle.LayoutScale), ImCeil(v.y * UIStyle.LayoutScale));
 }
 
-ALWAYS_INLINE static ImVec2 LayoutScale(float x, float y)
+ALWAYS_INLINE ImVec2 LayoutScale(float x, float y)
 {
   return ImVec2(ImCeil(x * UIStyle.LayoutScale), ImCeil(y * UIStyle.LayoutScale));
 }
 
-ALWAYS_INLINE static float LayoutUnscale(float v)
+ALWAYS_INLINE float LayoutUnscale(float v)
 {
   return ImCeil(UIStyle.RcpLayoutScale * v);
 }
-ALWAYS_INLINE static ImVec2 LayoutUnscale(const ImVec2& v)
+ALWAYS_INLINE ImVec2 LayoutUnscale(const ImVec2& v)
 {
   return ImVec2(ImCeil(v.x * UIStyle.RcpLayoutScale), ImCeil(v.y * UIStyle.RcpLayoutScale));
 }
-ALWAYS_INLINE static ImVec2 LayoutUnscale(float x, float y)
+ALWAYS_INLINE ImVec2 LayoutUnscale(float x, float y)
 {
   return ImVec2(ImCeil(x * UIStyle.RcpLayoutScale), ImCeil(y * UIStyle.RcpLayoutScale));
 }
 
-ALWAYS_INLINE static ImVec4 ModAlpha(const ImVec4& v, float a)
+ALWAYS_INLINE ImVec4 ModAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, a);
 }
-ALWAYS_INLINE static u32 ModAlpha(u32 col32, float a)
+ALWAYS_INLINE u32 ModAlpha(u32 col32, float a)
 {
   return (col32 & ~IM_COL32_A_MASK) | (static_cast<u32>(a * 255.0f) << IM_COL32_A_SHIFT);
 }
 
 // lighter in light themes
-ALWAYS_INLINE static ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
+ALWAYS_INLINE ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
 {
   // light theme
   f = (UIStyle.PrimaryTextColor.x < UIStyle.PrimaryColor.x) ? (1.0f / f) : f;
@@ -152,25 +152,25 @@ ALWAYS_INLINE static ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
                 v.w);
 }
 
-ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
+ALWAYS_INLINE ImVec4 MulAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, v.w * a);
 }
 
-ALWAYS_INLINE static u32 MulAlpha(u32 col32, float a)
+ALWAYS_INLINE u32 MulAlpha(u32 col32, float a)
 {
   return (col32 & ~IM_COL32_A_MASK) |
          (static_cast<u32>(static_cast<float>((col32 /*& IM_COL32_A_MASK*/) >> IM_COL32_A_SHIFT) * a)
           << IM_COL32_A_SHIFT);
 }
 
-ALWAYS_INLINE static u32 MulAlpha(u32 col32, u32 a)
+ALWAYS_INLINE u32 MulAlpha(u32 col32, u32 a)
 {
   return (col32 & ~IM_COL32_A_MASK) |
          (((((col32 /*& IM_COL32_A_MASK*/) >> IM_COL32_A_SHIFT) * a) / 255u) << IM_COL32_A_SHIFT);
 }
 
-ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
+ALWAYS_INLINE std::string_view RemoveHash(std::string_view s)
 {
   const std::string_view::size_type pos = s.find("##");
   return (pos != std::string_view::npos) ? s.substr(0, pos) : s;
