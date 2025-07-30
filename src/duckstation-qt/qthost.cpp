@@ -1926,6 +1926,13 @@ void EmuThread::stop()
 
   QMetaObject::invokeMethod(g_emu_thread, &EmuThread::stopInThread, Qt::QueuedConnection);
   QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_emu_thread->isRunning()); });
+
+  // Ensure settings are saved.
+  if (s_settings_save_timer)
+  {
+    s_settings_save_timer.reset();
+    QtHost::SaveSettings();
+  }
 }
 
 void EmuThread::stopInThread()
@@ -1934,13 +1941,6 @@ void EmuThread::stopInThread()
 
   m_shutdown_flag = true;
   m_event_loop->quit();
-
-  // Ensure settings are saved.
-  if (s_settings_save_timer)
-  {
-    s_settings_save_timer.reset();
-    QtHost::SaveSettings();
-  }
 }
 
 void EmuThread::run()
