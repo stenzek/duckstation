@@ -1210,8 +1210,6 @@ bool GameDatabase::LoadGameDBYaml()
     return false;
   }
 
-  SetRymlCallbacks();
-
   const ryml::Tree tree = ryml::parse_in_place(
     to_csubstr(GAMEDB_YAML_FILENAME), c4::substr(reinterpret_cast<char*>(gamedb_data->data()), gamedb_data->size()));
   const ryml::ConstNodeRef root = tree.rootref();
@@ -1545,8 +1543,6 @@ bool GameDatabase::LoadTrackHashes()
     ERROR_LOG("Failed to read disc database: {}", error.GetDescription());
     return false;
   }
-
-  SetRymlCallbacks();
 
   // TODO: Parse in-place, avoid string allocations.
   const ryml::Tree tree = ryml::parse_in_arena(to_csubstr(DISCDB_YAML_FILENAME), to_csubstr(gamedb_data.value()));
