@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memory_scanner.h"
@@ -6,7 +6,11 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 
+#include "common/error.h"
+#include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
+#include "common/ryml_helpers.h"
 
 #include "fmt/format.h"
 
@@ -340,6 +344,7 @@ bool MemoryWatchList::AddEntry(std::string description, u32 address, MemoryAcces
   entry.freeze = freeze;
 
   m_entries.push_back(std::move(entry));
+  m_entries_changed = true;
   return true;
 }
 
@@ -357,6 +362,7 @@ void MemoryWatchList::RemoveEntry(u32 index)
     return;
 
   m_entries.erase(m_entries.begin() + index);
+  m_entries_changed = true;
 }
 
 bool MemoryWatchList::RemoveEntryByAddress(u32 address)
@@ -366,6 +372,7 @@ bool MemoryWatchList::RemoveEntryByAddress(u32 address)
     if (it->address == address)
     {
       m_entries.erase(it);
+      m_entries_changed = true;
       return true;
     }
   }
@@ -389,6 +396,7 @@ void MemoryWatchList::SetEntryFreeze(u32 index, bool freeze)
 
   Entry& entry = m_entries[index];
   entry.freeze = freeze;
+  m_entries_changed = true;
 }
 
 void MemoryWatchList::SetEntryValue(u32 index, u32 value)
@@ -425,6 +433,12 @@ void MemoryWatchList::UpdateValues()
 {
   for (Entry& entry : m_entries)
     UpdateEntryValue(&entry);
+}
+
+void MemoryWatchList::ClearEntries()
+{
+  m_entries.clear();
+  m_entries_changed = false;
 }
 
 void MemoryWatchList::SetEntryValue(Entry* entry, u32 value)
@@ -481,4 +495,92 @@ void MemoryWatchList::UpdateEntryValue(Entry* entry)
 
   if (entry->freeze && entry->changed)
     SetEntryValue(entry, old_value);
+}
+
+bool MemoryWatchList::LoadFromFile(const char* path, Error* error)
+{
+  std::optional<std::string> yaml_data = FileSystem::ReadFileToString(path, error);
+  if (!yaml_data.has_value())
+  {
+    Error::AddPrefixFmt(error, "Failed to read {}: ", Path::GetFileName(path));
+    return false;
+  }
+
+  m_entries.clear();
+  m_entries_changed = false;
+
+  const ryml::Tree yaml =
+    ryml::parse_in_place(to_csubstr(path), c4::substr(reinterpret_cast<char*>(yaml_data->data()), yaml_data->size()));
+  const ryml::ConstNodeRef root = yaml.rootref();
+
+  m_entries.reserve(root.num_children());
+  for (const ryml::ConstNodeRef& child : root.cchildren())
+  {
+    Entry entry;
+    std::string_view address;
+    std::string_view size;
+    std::optional<u32> parsed_address;
+    if (!GetStringFromObject(child, "description", &entry.description) ||
+        !GetStringFromObject(child, "address", &address) || !GetStringFromObject(child, "size", &size) ||
+        !GetUIntFromObject(child, "isSigned", &entry.is_signed) || !GetUIntFromObject(child, "freeze", &entry.freeze) ||
+        !(parsed_address = StringUtil::FromCharsWithOptionalBase<u32>(address)).has_value() ||
+        (size != "byte" && size != "halfword" && size != "word"))
+    {
+      Error::SetStringView(error, "One or more required fields are missing in the memory watch entry.");
+      m_entries.clear();
+      return false;
+    }
+
+    entry.address = parsed_address.value();
+    if (size == "byte")
+      entry.size = MemoryAccessSize::Byte;
+    else if (size == "halfword")
+      entry.size = MemoryAccessSize::HalfWord;
+    else // if (size == "word")
+      entry.size = MemoryAccessSize::Word;
+
+    entry.changed = false;
+    UpdateEntryValue(&entry);
+
+    m_entries.push_back(std::move(entry));
+  }
+
+  DEV_LOG("Loaded {} entries from {}", m_entries.size(), Path::GetFileName(path));
+  return true;
+}
+
+bool MemoryWatchList::SaveToFile(const char* path, Error* error)
+{
+  std::string buf;
+  auto appender = std::back_inserter(buf);
+
+  for (const Entry& entry : m_entries)
+  {
+    fmt::format_to(appender, "- description: {}\n", entry.description);
+    fmt::format_to(appender, "  address: 0x{:08x}\n", entry.address);
+    fmt::format_to(appender, "  size: {}\n",
+                   (entry.size == MemoryAccessSize::Byte) ?
+                     "byte" :
+                     ((entry.size == MemoryAccessSize::HalfWord) ? "halfword" : "word"));
+    fmt::format_to(appender, "  isSigned: {}\n", entry.is_signed);
+    fmt::format_to(appender, "  freeze: {}\n", entry.freeze);
+  }
+
+  // avoid rewriting if unchanged
+  std::optional<std::string> current_file = FileSystem::ReadFileToString(path);
+  if (current_file.has_value() && current_file.value() == buf)
+  {
+    DEV_LOG("Memory watch list unchanged, not saving to {}", Path::GetFileName(path));
+    m_entries_changed = false;
+    return true;
+  }
+
+  if (!FileSystem::WriteStringToFile(path, buf, error))
+  {
+    Error::AddPrefixFmt(error, "Failed to write {}: ", Path::GetFileName(path));
+    return false;
+  }
+
+  m_entries_changed = false;
+  return true;
 }

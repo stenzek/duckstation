@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+class Error;
 
 class MemoryScan
 {
@@ -111,6 +113,7 @@ public:
   const EntryVector& GetEntries() const { return m_entries; }
   const Entry& GetEntry(u32 index) const { return m_entries[index]; }
   u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
+  bool HasEntriesChanged() const { return m_entries_changed; }
 
   bool AddEntry(std::string description, u32 address, MemoryAccessSize size, bool is_signed, bool freeze);
   bool GetEntryFreeze(u32 index) const;
@@ -125,9 +128,15 @@ public:
 
   void UpdateValues();
 
+  void ClearEntries();
+
+  bool LoadFromFile(const char* path, Error* error);
+  bool SaveToFile(const char* path, Error* error);
+
 private:
   static void SetEntryValue(Entry* entry, u32 value);
   static void UpdateEntryValue(Entry* entry);
 
   EntryVector m_entries;
+  bool m_entries_changed = false;
 };

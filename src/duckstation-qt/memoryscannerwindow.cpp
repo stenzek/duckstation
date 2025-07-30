@@ -8,9 +8,13 @@
 #include "core/bus.h"
 #include "core/cpu_core.h"
 #include "core/host.h"
+#include "core/settings.h"
 #include "core/system.h"
 
 #include "common/assert.h"
+#include "common/error.h"
+#include "common/file_system.h"
+#include "common/path.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -273,12 +277,22 @@ void MemoryScannerWindow::onSystemStarted()
     m_update_timer->start(SCAN_INTERVAL);
 
   enableUi(true);
+
+  // this is a bit yuck, but the title is cleared by the time that onSystemDestroyed() is called,
+  // which means we can't generate it there to save...
+  m_watch_save_filename = QStringLiteral("%1.ini").arg(QtHost::GetCurrentGameTitle()).toStdString();
+  Path::SanitizeFileName(&m_watch_save_filename);
+
+  reloadWatches();
 }
 
 void MemoryScannerWindow::onSystemDestroyed()
 {
   if (m_update_timer->isActive())
     m_update_timer->stop();
+
+  clearWatches();
+  m_watch_save_filename = {};
 
   enableUi(false);
 }
@@ -485,7 +499,7 @@ void MemoryScannerWindow::updateScanValue()
 }
 
 QTableWidgetItem* MemoryScannerWindow::createValueItem(MemoryAccessSize size, u32 value, bool is_signed,
-                                                    bool editable) const
+                                                       bool editable) const
 {
   QTableWidgetItem* item;
   if (m_ui.scanValueBase->currentIndex() == 0)
@@ -647,4 +661,74 @@ void MemoryScannerWindow::updateScanUi()
 
   updateResultsValues();
   updateWatchValues();
+}
+
+std::string MemoryScannerWindow::getWatchSavePath(bool saving)
+{
+  std::string ret;
+
+  if (m_watch_save_filename.empty())
+    return ret;
+
+  const std::string dir = Path::Combine(EmuFolders::DataRoot, "watches");
+  if (saving && !FileSystem::DirectoryExists(dir.c_str()))
+  {
+    Error error;
+    if (!FileSystem::CreateDirectory(dir.c_str(), false, &error))
+    {
+      QMessageBox::critical(
+        this, windowTitle(),
+        tr("Failed to create watches directory: %1").arg(QString::fromStdString(error.GetDescription())));
+      return ret;
+    }
+  }
+
+  ret = Path::Combine(dir, m_watch_save_filename);
+  return ret;
+}
+
+void MemoryScannerWindow::saveWatches()
+{
+  if (!m_watch.HasEntriesChanged())
+    return;
+
+  const std::string path = getWatchSavePath(true);
+  if (path.empty())
+    return;
+
+  Error error;
+  if (!m_watch.SaveToFile(path.c_str(), &error))
+  {
+    QMessageBox::critical(this, windowTitle(),
+                          tr("Failed to save watches to file: %1").arg(QString::fromStdString(error.GetDescription())));
+  }
+}
+
+void MemoryScannerWindow::reloadWatches()
+{
+  saveWatches();
+
+  m_watch.ClearEntries();
+
+  const std::string path = getWatchSavePath(false);
+  if (!path.empty() && FileSystem::FileExists(path.c_str()))
+  {
+    Error error;
+    if (!m_watch.LoadFromFile(path.c_str(), &error))
+    {
+      QMessageBox::critical(
+        this, windowTitle(),
+        tr("Failed to load watches from file: %1").arg(QString::fromStdString(error.GetDescription())));
+    }
+  }
+
+  updateWatch();
+}
+
+void MemoryScannerWindow::clearWatches()
+{
+  saveWatches();
+
+  m_watch.ClearEntries();
+  updateWatch();
 }

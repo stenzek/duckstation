@@ -72,10 +72,16 @@ private:
 
   QTableWidgetItem* createValueItem(MemoryAccessSize size, u32 value, bool is_signed, bool editable) const;
 
+  std::string getWatchSavePath(bool saving);
+  void saveWatches();
+  void reloadWatches();
+  void clearWatches();
+
   Ui::MemoryScannerWindow m_ui;
 
   MemoryScan m_scanner;
   MemoryWatchList m_watch;
 
   QTimer* m_update_timer = nullptr;
+  std::string m_watch_save_filename;
 };
