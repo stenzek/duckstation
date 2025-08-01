@@ -213,6 +213,7 @@ private:
 
   u32 m_target_buffer_size = 0;
   u32 m_stretch_reset = STRETCH_RESET_THRESHOLD;
+  u64 m_stretch_reset_time = 0;
 
   u32 m_stretch_ok_count = 0;
   float m_nominal_rate = 1.0f;
