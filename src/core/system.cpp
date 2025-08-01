@@ -3562,6 +3562,7 @@ void System::UpdateSpeedLimiterState()
 {
   DebugAssert(IsValid());
 
+  const float prev_speed = s_state.target_speed;
   s_state.target_speed = (IsFastForwardingBoot() || s_state.memory_card_fast_forward_frames > 0) ?
                            0.0f :
                            (s_state.turbo_enabled ? g_settings.turbo_speed :
@@ -3598,6 +3599,10 @@ void System::UpdateSpeedLimiterState()
   AudioStream* stream = SPU::GetOutputStream();
   stream->SetOutputVolume(GetAudioOutputVolume());
   stream->SetNominalRate(GetAudioNominalRate());
+
+  // Only empty stretch buffers when we're decreasing speed.
+  if (s_state.target_speed != prev_speed && (prev_speed > s_state.target_speed || prev_speed == 0.0f))
+    stream->EmptyStretchBuffers();
 
   UpdateThrottlePeriod();
   ResetThrottler();

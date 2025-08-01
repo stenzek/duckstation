@@ -143,6 +143,9 @@ public:
 
   void SetStretchMode(AudioStretchMode mode);
 
+  /// Wipes out the time stretching buffer, call when reducing target speed.
+  void EmptyStretchBuffers();
+
   static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
   static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver, u32 sample_rate);
   static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate,

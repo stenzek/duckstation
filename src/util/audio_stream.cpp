@@ -356,8 +356,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
       const u32 increment =
         static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read) / static_cast<float>(num_frames)));
 
-      SampleType* resample_ptr =
-        static_cast<SampleType*>(alloca(frames_to_read * NUM_CHANNELS * sizeof(SampleType)));
+      SampleType* resample_ptr = static_cast<SampleType*>(alloca(frames_to_read * NUM_CHANNELS * sizeof(SampleType)));
       std::memcpy(resample_ptr, samples, frames_to_read * NUM_CHANNELS * sizeof(SampleType));
 
       SampleType* out_ptr = samples;
@@ -697,8 +696,6 @@ void AudioStream::StretchWriteBlock(const float* block)
 
 float AudioStream::AddAndGetAverageTempo(float val)
 {
-  if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
-    m_average_available = 0;
   if (m_average_available < AVERAGING_BUFFER_SIZE)
     m_average_available++;
 
@@ -708,7 +705,7 @@ float AudioStream::AddAndGetAverageTempo(float val)
   const u32 actual_window = std::min<u32>(m_average_available, AVERAGING_WINDOW);
   const u32 first_index = (m_average_position - actual_window + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
 
-  float sum = 0;
+  float sum = 0.0f;
   for (u32 i = first_index; i < first_index + actual_window; i++)
     sum += m_average_fullness[i % AVERAGING_BUFFER_SIZE];
   sum = sum / actual_window;
@@ -719,7 +716,7 @@ float AudioStream::AddAndGetAverageTempo(float val)
 void AudioStream::UpdateStretchTempo()
 {
   static constexpr float MIN_TEMPO = 0.05f;
-  static constexpr float MAX_TEMPO = 50.0f;
+  static constexpr float MAX_TEMPO = 500.0f;
 
   // Which range we will run in 1:1 mode for.
   static constexpr float INACTIVE_GOOD_FACTOR = 1.04f;
@@ -736,6 +733,9 @@ void AudioStream::UpdateStretchTempo()
     m_stretch_inactive = false;
     m_stretch_ok_count = 0;
     m_dynamic_target_usage = base_target_usage;
+    m_average_available = 0;
+    m_average_position = 0;
+    m_stretch_reset = 0;
   }
 
   const u32 ibuffer_usage = GetBufferedFramesRelaxed();
@@ -785,6 +785,15 @@ void AudioStream::UpdateStretchTempo()
 
   if constexpr (LOG_TIMESTRETCH_STATS)
   {
+    static float min_tempo = 0.0f;
+    static float max_tempo = 0.0f;
+    static float acc_tempo = 0.0f;
+    static u32 acc_cnt = 0;
+    acc_tempo += tempo;
+    acc_cnt++;
+    min_tempo = std::min(min_tempo, tempo);
+    max_tempo = std::max(max_tempo, tempo);
+
     static int iterations = 0;
     static u64 last_log_time = 0;
 
@@ -792,21 +801,25 @@ void AudioStream::UpdateStretchTempo()
 
     if (Timer::ConvertValueToSeconds(now - last_log_time) > 1.0f)
     {
-      VERBOSE_LOG("buffers: {:4d} ms ({:3.0f}%), tempo: {}, comp: {:2.3f}, iters: {}, reset:{}",
-                  (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,
-                  m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
+      const float avg_tempo = (acc_cnt > 0) ? (acc_tempo / static_cast<float>(acc_cnt)) : 0.0f;
+
+      VERBOSE_LOG("{:3d} ms ({:3.0f}%), tempo: avg={:.2f} min={:.2f} max={:.2f}, comp: {:2.3f}, iters: {}, reset:{}",
+                  (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, avg_tempo,
+                  min_tempo, max_tempo, m_dynamic_target_usage / base_target_usage, iterations, m_stretch_reset);
 
       last_log_time = now;
       iterations = 0;
+
+      min_tempo = std::numeric_limits<float>::max();
+      max_tempo = std::numeric_limits<float>::min();
+      acc_tempo = 0.0f;
+      acc_cnt = 0;
     }
 
     iterations++;
   }
 
   soundtouch_setTempo(m_soundtouch, tempo);
-
-  if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
-    m_stretch_reset = 0;
 }
 
 void AudioStream::StretchUnderrun()
@@ -823,4 +836,14 @@ void AudioStream::StretchOverrun()
   // Drop two packets to give the time stretcher a bit more time to slow things down.
   const u32 discard = CHUNK_SIZE * 2;
   m_rpos.store((m_rpos.load(std::memory_order_acquire) + discard) % m_buffer_size, std::memory_order_release);
+}
+
+void AudioStream::EmptyStretchBuffers()
+{
+  m_stretch_reset = STRETCH_RESET_THRESHOLD;
+
+  // Wipe soundtouch samples. If we don't do this and we're switching from a high tempo to low,
+  // we'll still have quite a large buffer of samples that will be played back at a low tempo,
+  // resulting in a long delay before the audio starts playing at the new tempo.
+  soundtouch_clear(m_soundtouch);
 }
