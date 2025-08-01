@@ -1202,25 +1202,12 @@ GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) con
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.gpu_show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
-    float f_width, f_height;
-    if (mode == DisplayScreenshotMode::InternalResolution)
-    {
-      f_width =
-        m_display_width * (static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width));
-      f_height = m_display_height *
-                 (static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height));
-      if (!g_gpu_settings.gpu_show_vram)
-        GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
-    }
-    else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
-    {
-      const s32 pad_width = (m_display_width - m_display_vram_width) + m_display_origin_left;
-      const s32 pad_height = (m_display_height - m_display_vram_height) + m_display_origin_top;
-      const float multiplier =
-        static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width);
-      f_width = static_cast<float>(m_display_texture_view_width) + (static_cast<float>(pad_width) * multiplier);
-      f_height = static_cast<float>(m_display_texture_view_height) + (static_cast<float>(pad_height) * multiplier);
-    }
+    float f_width =
+      m_display_width * (static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width));
+    float f_height = m_display_height *
+                     (static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height));
+    if (!g_gpu_settings.gpu_show_vram && mode != DisplayScreenshotMode::UncorrectedInternalResolution)
+      GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
 
     // DX11 won't go past 16K texture size.
     const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
