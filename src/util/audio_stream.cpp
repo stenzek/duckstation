@@ -696,6 +696,8 @@ void AudioStream::StretchWriteBlock(const float* block)
 
 float AudioStream::AddAndGetAverageTempo(float val)
 {
+  static constexpr u32 AVERAGING_WINDOW = 50;
+
   // Build up a circular buffer for tempo averaging to prevent rapid tempo oscillations.
   if (m_average_available < AVERAGING_BUFFER_SIZE)
     m_average_available++;
@@ -705,12 +707,38 @@ float AudioStream::AddAndGetAverageTempo(float val)
 
   // The + AVERAGING_BUFFER_SIZE ensures we don't go negative when using modulo arithmetic.
   const u32 actual_window = std::min<u32>(m_average_available, AVERAGING_WINDOW);
-  const u32 first_index = (m_average_position - actual_window + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
-
+  u32 index = (m_average_position - actual_window + AVERAGING_BUFFER_SIZE) % AVERAGING_BUFFER_SIZE;
   float sum = 0.0f;
-  for (u32 i = first_index; i < first_index + actual_window; i++)
-    sum += m_average_fullness[i % AVERAGING_BUFFER_SIZE];
-  sum = sum / actual_window;
+  u32 count = 0;
+
+#ifdef CPU_ARCH_SIMD
+  GSVector4 vsum = GSVector4::zero();
+  const u32 vcount = Common::AlignDownPow2(actual_window, 4);
+  for (; count < vcount; count += 4)
+  {
+    if ((index + 4) > AVERAGING_BUFFER_SIZE)
+    {
+      // wraparound
+      for (u32 i = 0; i < 4; i++)
+      {
+        sum += m_average_fullness[index];
+        index = (index + 1) % AVERAGING_BUFFER_SIZE;
+      }
+    }
+    else
+    {
+      vsum += GSVector4::load<false>(&m_average_fullness[index]);
+      index = (index + 4) % AVERAGING_BUFFER_SIZE;
+    }
+  }
+  sum += vsum.addv();
+#endif
+  for (; count < actual_window; count++)
+  {
+    sum += m_average_fullness[index];
+    index = (index + 1) % AVERAGING_BUFFER_SIZE;
+  }
+  sum /= static_cast<float>(actual_window);
 
   return (sum != 0.0f) ? sum : 1.0f;
 }

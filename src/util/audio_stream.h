@@ -168,9 +168,7 @@ protected:
 
 private:
   static constexpr u32 AVERAGING_BUFFER_SIZE = 256;
-  static constexpr u32 AVERAGING_WINDOW = 50;
   static constexpr u32 STRETCH_RESET_THRESHOLD = 5;
-  static constexpr u32 TARGET_IPS = 691;
 
 #ifndef __ANDROID__
   static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
