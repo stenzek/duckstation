@@ -1066,11 +1066,6 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       }
     }
   }
-  else
-  {
-    // transitions still need to be updated otherwise the fade timer breaks
-    FullscreenUI::UpdateTransitionState();
-  }
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   const GPUDevice::PresentResult pres = skip_present ?
@@ -1110,6 +1105,8 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       SleepUntilPresentTime(present_time);
       g_gpu_device->SubmitPresent(swap_chain);
     }
+
+    ImGuiManager::NewFrame();
   }
   else
   {
@@ -1133,10 +1130,13 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       g_gpu_device->FlushCommands();
 
     // Still need to kick ImGui or it gets cranky.
-    ImGui::EndFrame();
+    if (!skip_present)
+    {
+      ImGui::EndFrame();
+      ImGuiManager::NewFrame();
+    }
   }
 
-  ImGuiManager::NewFrame();
   return true;
 }
 
