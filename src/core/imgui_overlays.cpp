@@ -710,11 +710,11 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
     {
       const PerformanceCounters::FrameTimeHistory& history = PerformanceCounters::GetFrameTimeHistory();
       static_assert((PerformanceCounters::NUM_FRAME_TIME_SAMPLES % 4) == 0);
-      GSVector4 vmin = GSVector4::load<false>(history.data());
+      GSVector4 vmin = GSVector4::load<true>(history.data());
       GSVector4 vmax = vmin;
       for (size_t i = 4; i < history.size(); i += 4)
       {
-        const GSVector4 v = GSVector4::load<false>(&history[i]);
+        const GSVector4 v = GSVector4::load<true>(&history[i]);
         vmin = vmin.min(v);
         vmax = vmax.max(v);
       }

@@ -7,8 +7,8 @@
 
 class GPUBackend;
 
-namespace PerformanceCounters
-{
+namespace PerformanceCounters {
+
 inline constexpr u32 NUM_FRAME_TIME_SAMPLES = 152;
 using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
 
@@ -32,4 +32,4 @@ void Reset();
 void Update(GPUBackend* gpu, u32 frame_number, u32 internal_frame_number);
 void AccumulateGPUTime();
 
-} // namespace Host
+} // namespace PerformanceCounters
