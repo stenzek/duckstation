@@ -22,7 +22,7 @@ namespace PerformanceCounters {
 
 namespace {
 
-struct State
+struct ALIGN_TO_CACHE_LINE State
 {
   Timer::Value last_update_time;
   Timer::Value last_frame_time;
@@ -55,7 +55,7 @@ struct State
   float accumulated_gpu_time;
   float gpu_usage;
 
-  FrameTimeHistory frame_time_history;
+  alignas(VECTOR_ALIGNMENT) FrameTimeHistory frame_time_history;
   u32 frame_time_history_pos;
 };
 
@@ -63,7 +63,7 @@ struct State
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
 
-ALIGN_TO_CACHE_LINE State s_state = {};
+State s_state = {};
 
 } // namespace PerformanceCounters
 

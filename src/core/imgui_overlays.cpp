@@ -129,32 +129,6 @@ static InputOverlayState s_input_overlay_state = {};
 
 } // namespace ImGuiManager
 
-static std::tuple<float, float> GetMinMax(std::span<const float> values)
-{
-  GSVector4 vmin(GSVector4::load<false>(values.data()));
-  GSVector4 vmax(vmin);
-
-  const u32 count = static_cast<u32>(values.size());
-  const u32 aligned_count = Common::AlignDownPow2(count, 4);
-  u32 i = 4;
-  for (; i < aligned_count; i += 4)
-  {
-    const GSVector4 v(GSVector4::load<false>(&values[i]));
-    vmin = vmin.min(v);
-    vmax = vmax.max(v);
-  }
-
-  float min = std::min(vmin.x, std::min(vmin.y, std::min(vmin.z, vmin.w)));
-  float max = std::max(vmax.x, std::max(vmax.y, std::max(vmax.z, vmax.w)));
-  for (; i < count; i++)
-  {
-    min = std::min(min, values[i]);
-    max = std::max(max, values[i]);
-  }
-
-  return std::tie(min, max);
-}
-
 bool ImGuiManager::AreAnyDebugWindowsEnabled(const SettingsInterface& si)
 {
 #ifndef __ANDROID__
@@ -731,7 +705,23 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
   {
     ImGui::PushFont(fixed_font, fixed_font_size, fixed_font_weight);
 
-    auto [min, max] = GetMinMax(PerformanceCounters::GetFrameTimeHistory());
+    // LLVM likes to unroll this... whatever.
+    float min, max;
+    {
+      const PerformanceCounters::FrameTimeHistory& history = PerformanceCounters::GetFrameTimeHistory();
+      static_assert((PerformanceCounters::NUM_FRAME_TIME_SAMPLES % 4) == 0);
+      GSVector4 vmin = GSVector4::load<false>(history.data());
+      GSVector4 vmax = vmin;
+      for (size_t i = 4; i < history.size(); i += 4)
+      {
+        const GSVector4 v = GSVector4::load<false>(&history[i]);
+        vmin = vmin.min(v);
+        vmax = vmax.max(v);
+      }
+
+      min = vmin.minv();
+      max = vmin.maxv();
+    }
 
     // add a little bit of space either side, so we're not constantly resizing
     if ((max - min) < 4.0f)

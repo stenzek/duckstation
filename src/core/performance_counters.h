@@ -9,7 +9,7 @@ class GPUBackend;
 
 namespace PerformanceCounters
 {
-inline constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
+inline constexpr u32 NUM_FRAME_TIME_SAMPLES = 152;
 using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
 
 float GetFPS();

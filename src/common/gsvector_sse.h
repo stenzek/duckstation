@@ -2039,6 +2039,11 @@ public:
 
 #ifdef CPU_ARCH_SSE41
   ALWAYS_INLINE float dot(const GSVector4& v) const { return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0xf1)); }
+  ALWAYS_INLINE float addv() const
+  {
+    const __m128 pairs = _mm_hadd_ps(m, m);
+    return _mm_cvtss_f32(_mm_hadd_ps(pairs, pairs));
+  }
 #else
   float dot(const GSVector4& v) const
   {
@@ -2047,7 +2052,27 @@ public:
     tmp = _mm_add_ss(tmp, _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3, 2, 1, 1)));
     return _mm_cvtss_f32(tmp);
   }
+  float addv() const
+  {
+    __m128 tmp = _mm_add_ps(m, _mm_movehl_ps(m, m)); // (x+z, y+w, ..., ...)
+    tmp = _mm_add_ss(tmp, _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3, 2, 1, 1)));
+    return _mm_cvtss_f32(tmp);
+  }
 #endif
+
+  ALWAYS_INLINE float minv() const
+  {
+    __m128 v = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(3, 2, 3, 2)));
+    v = _mm_min_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)));
+    return _mm_cvtss_f32(v);
+  }
+
+  ALWAYS_INLINE float maxv() const
+  {
+    __m128 v = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(3, 2, 3, 2)));
+    v = _mm_max_ps(v, _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)));
+    return _mm_cvtss_f32(v);
+  }
 
   ALWAYS_INLINE GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {

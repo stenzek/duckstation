@@ -279,7 +279,7 @@ public:
   {
     constexpr int bit1 = ((mask & 2) * 3) << 1;
     constexpr int bit0 = (mask & 1) * 3;
-    return blend16<bit1 | bit0>(v);
+    return blend16 < bit1 | bit0 > (v);
   }
 
   ALWAYS_INLINE GSVector2i blend(const GSVector2i& v, const GSVector2i& mask) const
@@ -2607,6 +2607,36 @@ public:
     const float32x4_t dp = vmulq_f32(v4s, v.v4s);
     float32x2_t tmp = vadd_f32(vget_low_f32(dp), vget_high_f32(dp)); // (x+z, y+w)
     return vget_lane_f32(vadd_f32(tmp, vdup_lane_f32(tmp, 1)), 0);
+#endif
+  }
+
+  ALWAYS_INLINE float addv() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vaddvq_f32(v4s);
+#else
+    float32x2_t tmp = vadd_f32(vget_low_f32(v4s), vget_high_f32(v4s)); // (x+z, y+w)
+    return vget_lane_f32(vadd_f32(tmp, vdup_lane_f32(tmp, 1)), 0);
+#endif
+  }
+
+  ALWAYS_INLINE float minv() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vminvq_f32(v4s);
+#else
+    float32x2_t tmp = vmin_f32(vget_low_f32(v4s), vget_high_f32(v4s)); // (x+z, y+w)
+    return vget_lane_f32(vmin_f32(tmp, vdup_lane_f32(tmp, 1)), 0);
+#endif
+  }
+
+  ALWAYS_INLINE float maxv() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vmaxvq_f32(v4s);
+#else
+    float32x2_t tmp = vmax_f32(vget_low_f32(v4s), vget_high_f32(v4s)); // (x+z, y+w)
+    return vget_lane_f32(vmax_f32(tmp, vdup_lane_f32(tmp, 1)), 0);
 #endif
   }
 

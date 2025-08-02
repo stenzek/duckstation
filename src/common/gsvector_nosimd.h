@@ -1859,6 +1859,10 @@ public:
 
   ALWAYS_INLINE float dot(const GSVector4& v) const { return (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w); }
 
+  ALWAYS_INLINE float addv() const { return (x + y + z + w); }
+  ALWAYS_INLINE float minv() const { return std::min(x, std::min(y, std::min(z, w))); }
+  ALWAYS_INLINE float maxv() const { return std::max(x, std::max(y, std::max(z, w))); }
+
   GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {
     return GSVector4(std::clamp(x, min.x, max.x), std::clamp(y, min.y, max.y), std::clamp(z, min.z, max.z),
