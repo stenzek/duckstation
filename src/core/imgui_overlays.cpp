@@ -1230,6 +1230,10 @@ void SaveStateSelectorUI::Draw()
       const float item_height = std::floor(image_size.y + padding * 2.0f);
       const float text_indent = image_size.x + padding + padding;
 
+      ImDrawList* const dl = ImGui::GetWindowDrawList();
+      dl->ChannelsSplit(2);
+      dl->ChannelsSetCurrent(1);
+
       for (size_t i = 0; i < s_state.slots.size(); i++)
       {
         const ListEntry& entry = s_state.slots[i];
@@ -1269,9 +1273,10 @@ void SaveStateSelectorUI::Draw()
           else
             highlight_pos = p_start;
 
-          ImGui::GetWindowDrawList()->AddRectFilled(highlight_pos,
-                                                    ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
-                                                    ImGui::GetColorU32(UIStyle.PrimaryColor), padding_and_rounding);
+          dl->ChannelsSetCurrent(0);
+          dl->AddRectFilled(highlight_pos, ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
+                            ImGui::GetColorU32(UIStyle.PrimaryColor), padding_and_rounding);
+          dl->ChannelsSetCurrent(1);
         }
 
         if (GPUTexture* preview_texture =
@@ -1305,6 +1310,8 @@ void SaveStateSelectorUI::Draw()
         if (entry.slot == current_slot && entry.global == current_slot_global)
           ImGui::PopStyleColor();
       }
+
+      dl->ChannelsMerge();
     }
     ImGui::EndChild();
 
