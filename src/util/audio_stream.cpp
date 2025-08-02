@@ -510,7 +510,7 @@ void AudioStream::SetNominalRate(float tempo)
   m_nominal_rate = tempo;
   if (m_parameters.stretch_mode == AudioStretchMode::Resample)
     soundtouch_setRate(m_soundtouch, tempo);
-  else if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch && m_stretch_inactive)
+  else if (m_parameters.stretch_mode == AudioStretchMode::TimeStretch && !m_stretch_inactive)
     soundtouch_setTempo(m_soundtouch, tempo);
 }
 
@@ -757,8 +757,14 @@ void AudioStream::UpdateStretchTempo()
   static constexpr u32 INACTIVE_MIN_OK_COUNT = 50;
   static constexpr u32 COMPENSATION_DIVIDER = 100;
 
-  // Controls how aggressively we adjust the dynamic target.
-  float base_target_usage = static_cast<float>(m_target_buffer_size) * m_nominal_rate;
+  // Controls how aggressively we adjust the dynamic target. We want to keep the same target size regardless
+  // of the target speed, but need additional buffering when intentionally running below 100%.
+  float base_target_usage = static_cast<float>(m_target_buffer_size) / std::min(m_nominal_rate, 1.0f);
+
+  // tempo = current_buffer / target_buffer.
+  const u32 ibuffer_usage = GetBufferedFramesRelaxed();
+  float buffer_usage = static_cast<float>(ibuffer_usage);
+  float tempo = buffer_usage / m_dynamic_target_usage;
 
   // Prevents the system from getting stuck in a bad state due to accumulated errors.
   if (m_stretch_reset >= STRETCH_RESET_THRESHOLD)
@@ -770,6 +776,7 @@ void AudioStream::UpdateStretchTempo()
     m_average_available = 0;
     m_average_position = 0;
     m_stretch_reset = 0;
+    tempo = m_nominal_rate;
   }
   else if (m_stretch_reset > 0)
   {
@@ -783,9 +790,7 @@ void AudioStream::UpdateStretchTempo()
     }
   }
 
-  const u32 ibuffer_usage = GetBufferedFramesRelaxed();
-  float buffer_usage = static_cast<float>(ibuffer_usage);
-  float tempo = buffer_usage / m_dynamic_target_usage;
+  // Apply temporal smoothing to prevent rapid tempo changes that cause artifacts.
   tempo = AddAndGetAverageTempo(tempo);
 
   // Apply non-linear dampening when close to target to reduce oscillation.
