@@ -131,7 +131,6 @@ set(SRCS
   postprocessingoverlayconfigwidget.ui
   qthost.cpp
   qthost.h
-  qtkeycodes.cpp
   qtprogresscallback.cpp
   qtprogresscallback.h
   qtthemes.cpp

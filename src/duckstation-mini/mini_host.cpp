@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "sdl_key_names.h"
-
 #include "scmversion/scmversion.h"
 
 #include "core/achievements.h"
@@ -831,10 +829,13 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP:
     {
-      Host::RunOnCPUThread([key_code = static_cast<u32>(ev->key.key), pressed = (ev->type == SDL_EVENT_KEY_DOWN)]() {
-        InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key_code), pressed ? 1.0f : 0.0f,
-                                   GenericInputBinding::Unknown);
-      });
+      if (const std::optional<u32> key = InputManager::ConvertHostNativeKeyCodeToKeyCode(ev->key.raw))
+      {
+        Host::RunOnCPUThread([key_code = key.value(), pressed = (ev->type == SDL_EVENT_KEY_DOWN)]() {
+          InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key_code), pressed ? 1.0f : 0.0f,
+                                     GenericInputBinding::Unknown);
+        });
+      }
     }
     break;
 
@@ -1437,22 +1438,6 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
 std::string Host::FormatNumber(NumberFormatType type, double value)
 {
   return fmt::format("{}", value);
-}
-
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
-{
-  return SDLKeyNames::GetKeyCodeForName(str);
-}
-
-std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
-{
-  const char* converted = SDLKeyNames::GetKeyName(code);
-  return converted ? std::optional<std::string>(converted) : std::nullopt;
-}
-
-const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
-{
-  return nullptr;
 }
 
 bool Host::ConfirmMessage(std::string_view title, std::string_view message)

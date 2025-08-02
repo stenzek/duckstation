@@ -77,8 +77,7 @@ void SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<i
 void SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
 
 /// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
-/// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
-u32 KeyEventToCode(const QKeyEvent* ev);
+std::optional<u32> KeyEventToCode(const QKeyEvent* ev);
 
 /// Opens a URL with the default handler.
 void OpenURL(QWidget* parent, const QUrl& qurl);

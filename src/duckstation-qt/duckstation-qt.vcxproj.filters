@@ -28,7 +28,6 @@
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="achievementsettingswidget.cpp" />
     <ClCompile Include="achievementlogindialog.cpp" />
-    <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
     <ClCompile Include="controllersettingswindow.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />

@@ -237,6 +237,9 @@ std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
 /// Converts a key code from an identifier to an icon which can be drawn.
 const char* ConvertHostKeyboardCodeToIcon(u32 code);
 
+/// Converts a native host key code to a USB key code.
+std::optional<u32> ConvertHostNativeKeyCodeToKeyCode(u32 native_code);
+
 /// Creates a key for a host-specific key code.
 InputBindingKey MakeHostKeyboardKey(u32 key_code);
 

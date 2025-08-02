@@ -65,7 +65,7 @@ private:
   bool m_cursor_hidden = false;
   bool m_destroying = false;
 
-  std::vector<u32> m_keys_pressed_with_modifiers;
+  std::vector<int> m_keys_pressed_with_modifiers;
 
   u32 m_last_window_width = 0;
   u32 m_last_window_height = 0;

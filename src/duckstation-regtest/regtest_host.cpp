@@ -690,21 +690,6 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
   callback(std::string());
 }
 
-std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
-{
-  return std::nullopt;
-}
-
-std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
-{
-  return std::nullopt;
-}
-
-const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
-{
-  return nullptr;
-}
-
 void Host::AddFixedInputBindings(const SettingsInterface& si)
 {
   // noop

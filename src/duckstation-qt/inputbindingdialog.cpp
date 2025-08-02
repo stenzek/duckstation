@@ -86,7 +86,8 @@ bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
   else if (event_type == QEvent::KeyPress)
   {
     const QKeyEvent* key_event = static_cast<const QKeyEvent*>(event);
-    m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(QtUtils::KeyEventToCode(key_event)));
+    if (const std::optional<u32> key = QtUtils::KeyEventToCode(key_event))
+      m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(key.value()));
     return true;
   }
   else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)

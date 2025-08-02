@@ -1,6 +1,5 @@
 add_executable(duckstation-mini
   mini_host.cpp
-  sdl_key_names.h
 )
 
 target_link_libraries(duckstation-mini PRIVATE core util common imgui scmversion SDL3::SDL3)

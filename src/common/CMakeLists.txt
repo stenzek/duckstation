@@ -60,6 +60,8 @@ add_library(common
   thirdparty/SmallVector.h
   thirdparty/aes.cpp
   thirdparty/aes.h
+  thirdparty/usb_key_code_data.h
+  thirdparty/usb_key_code_data.inl
   task_queue.cpp
   task_queue.h
   threading.cpp

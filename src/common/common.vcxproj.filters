@@ -54,6 +54,9 @@
     <ClInclude Include="thirdparty\aes.h" />
     <ClInclude Include="task_queue.h" />
     <ClInclude Include="xorshift_prng.h" />
+    <ClInclude Include="thirdparty\usb_key_code_data.h">
+      <Filter>thirdparty</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -103,5 +106,10 @@
   </ItemGroup>
   <ItemGroup>
     <MARMASM Include="fastjmp_arm.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="thirdparty\usb_key_code_data.inl">
+      <Filter>thirdparty</Filter>
+    </None>
   </ItemGroup>
 </Project>

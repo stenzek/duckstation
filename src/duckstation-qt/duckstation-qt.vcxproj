@@ -45,7 +45,6 @@
     <ClCompile Include="postprocessingsettingswidget.cpp" />
     <ClCompile Include="qtthemes.cpp" />
     <ClCompile Include="qthost.cpp" />
-    <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
     <ClCompile Include="selectdiscdialog.cpp" />

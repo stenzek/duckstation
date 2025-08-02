@@ -242,10 +242,10 @@ bool DisplayWidget::event(QEvent* event)
       // but I can't think of a better way of handling it, and there doesn't appear to be
       // any window flag which changes this behavior that I can see.
 
-      const u32 key = QtUtils::KeyEventToCode(key_event);
       const Qt::KeyboardModifiers modifiers = key_event->modifiers();
       const bool pressed = (key_event->type() == QEvent::KeyPress);
-      const auto it = std::find(m_keys_pressed_with_modifiers.begin(), m_keys_pressed_with_modifiers.end(), key);
+      const auto it =
+        std::find(m_keys_pressed_with_modifiers.begin(), m_keys_pressed_with_modifiers.end(), key_event->key());
       if (it != m_keys_pressed_with_modifiers.end())
       {
         if (pressed)
@@ -255,10 +255,12 @@ bool DisplayWidget::event(QEvent* event)
       }
       else if (modifiers != Qt::NoModifier && modifiers != Qt::KeypadModifier && pressed)
       {
-        m_keys_pressed_with_modifiers.push_back(key);
+        m_keys_pressed_with_modifiers.push_back(key_event->key());
       }
 
-      emit windowKeyEvent(key, pressed);
+      if (const std::optional<u32> key = QtUtils::KeyEventToCode(key_event))
+        emit windowKeyEvent(key.value(), pressed);
+
       return true;
     }
 

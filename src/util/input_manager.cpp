@@ -107,6 +107,14 @@ struct PointerAxisState
   float last_value;
 };
 
+struct KeyCodeData
+{
+  u32 usb_code;
+  u32 native_code;
+  const char* name;
+  const char* icon_name;
+};
+
 } // namespace
 
 // ------------------------------------------------------------------------
@@ -143,6 +151,8 @@ static void UpdateMacroButtons();
 
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
+
+static const KeyCodeData* FindKeyCodeData(u32 usb_code);
 
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
@@ -207,6 +217,20 @@ struct ALIGN_TO_CACHE_LINE State
 } // namespace
 
 static State s_state;
+
+static constexpr const std::array s_key_code_data = {
+#if defined(_WIN32)
+#define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, win, name, icon_name},
+#elif defined(__APPLE__)
+#define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, mac, name, icon_name},
+#elif defined(__ANDROID__)
+#define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, evdev, name, icon_name},
+#else
+#define KEY_ENTRY(ename, usb, evdev, xkb, win, mac, name, icon_name) KeyCodeData{usb, xkb, name, icon_name},
+#endif
+#include "common/thirdparty/usb_key_code_data.inl"
+#undef KEY_ENTRY
+};
 
 } // namespace InputManager
 
@@ -615,6 +639,52 @@ InputBindingKey InputManager::MakeSensorAxisKey(InputSubclass sensor, u32 axis)
   key.source_type = InputSourceType::Sensor;
   key.source_subtype = sensor;
   return key;
+}
+
+std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
+{
+  for (const KeyCodeData& name : s_key_code_data)
+  {
+    if (str == name.name)
+      return name.usb_code;
+  }
+
+  return std::nullopt;
+}
+
+std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
+{
+  std::optional<std::string> ret;
+
+  const KeyCodeData* key_data = FindKeyCodeData(code);
+  if (key_data)
+    ret.emplace(key_data->name);
+
+  return ret;
+}
+
+const InputManager::KeyCodeData* InputManager::FindKeyCodeData(u32 usb_code)
+{
+  const auto iter = std::lower_bound(s_key_code_data.begin(), s_key_code_data.end(), usb_code,
+                                     [](const auto& it, const auto& value) { return (it.usb_code < value); });
+  return (iter != s_key_code_data.end() && iter->usb_code == usb_code) ? &(*iter) : nullptr;
+}
+
+const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
+{
+  const KeyCodeData* key_data = FindKeyCodeData(code);
+  return key_data ? key_data->icon_name : nullptr;
+}
+
+std::optional<u32> InputManager::ConvertHostNativeKeyCodeToKeyCode(u32 native_code)
+{
+  for (const KeyCodeData& name : s_key_code_data)
+  {
+    if (native_code == name.native_code)
+      return name.usb_code;
+  }
+
+  return std::nullopt;
 }
 
 // ------------------------------------------------------------------------
@@ -2141,10 +2211,10 @@ InputManager::VibrationMotorList InputManager::EnumerateVibrationMotors(std::opt
 
 static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputBinding, std::string>>* mapping)
 {
-  mapping->emplace_back(GenericInputBinding::DPadUp, "Keyboard/Up");
-  mapping->emplace_back(GenericInputBinding::DPadRight, "Keyboard/Right");
-  mapping->emplace_back(GenericInputBinding::DPadDown, "Keyboard/Down");
-  mapping->emplace_back(GenericInputBinding::DPadLeft, "Keyboard/Left");
+  mapping->emplace_back(GenericInputBinding::DPadUp, "Keyboard/UpArrow");
+  mapping->emplace_back(GenericInputBinding::DPadRight, "Keyboard/RightArrow");
+  mapping->emplace_back(GenericInputBinding::DPadDown, "Keyboard/DownArrow");
+  mapping->emplace_back(GenericInputBinding::DPadLeft, "Keyboard/LeftArrow");
   mapping->emplace_back(GenericInputBinding::LeftStickUp, "Keyboard/W");
   mapping->emplace_back(GenericInputBinding::LeftStickRight, "Keyboard/D");
   mapping->emplace_back(GenericInputBinding::LeftStickDown, "Keyboard/S");
@@ -2153,7 +2223,7 @@ static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputB
   mapping->emplace_back(GenericInputBinding::RightStickRight, "Keyboard/H");
   mapping->emplace_back(GenericInputBinding::RightStickDown, "Keyboard/G");
   mapping->emplace_back(GenericInputBinding::RightStickLeft, "Keyboard/F");
-  mapping->emplace_back(GenericInputBinding::Start, "Keyboard/Return");
+  mapping->emplace_back(GenericInputBinding::Start, "Keyboard/Enter");
   mapping->emplace_back(GenericInputBinding::Select, "Keyboard/Backspace");
   mapping->emplace_back(GenericInputBinding::Triangle, "Keyboard/I");
   mapping->emplace_back(GenericInputBinding::Circle, "Keyboard/L");
