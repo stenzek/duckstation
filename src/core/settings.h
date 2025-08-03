@@ -270,7 +270,7 @@ struct Settings : public GPUSettings
 {
   Settings();
 
-  ALIGN_TO_CACHE_LINE u32 cpu_overclock_numerator = 1;
+  u32 cpu_overclock_numerator = 1;
   u32 cpu_overclock_denominator = 1;
 
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
