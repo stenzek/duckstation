@@ -2299,9 +2299,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, false, false); });
+          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, true, false, false); });
   connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false, true, false, false); });
+          [this]() { requestShutdown(false, false, false, true, false, false, false); });
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
   connect(m_ui.actionPause, &QAction::toggled, this, &MainWindow::onPauseActionToggled);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
@@ -2710,10 +2710,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
   }
 
   // But if there is, we have to cancel the action, regardless of whether we ended exiting
-  // or not. The window still needs to be visible while GS is shutting down.
+  // or not. The window still needs to be visible while the system shuts down.
   event->ignore();
 
-  requestShutdown(true, true, g_settings.save_state_on_exit, true, true, true);
+  requestShutdown(true, true, g_settings.save_state_on_exit, true, true, true, true);
 }
 
 void MainWindow::changeEvent(QEvent* event)
@@ -2830,7 +2830,7 @@ void MainWindow::runOnUIThread(const std::function<void()>& func)
 }
 
 void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
-                                 bool exit_fullscreen_ui, bool quit_afterwards)
+                                 bool check_pause, bool exit_fullscreen_ui, bool quit_afterwards)
 {
   if (!QtHost::IsSystemValidOrStarting())
   {
@@ -2851,7 +2851,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
   if (!m_is_closing && s_system_valid && allow_confirm && Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
     // Hardcore mode restrictions.
-    if (!s_system_paused && s_achievements_hardcore_mode && allow_confirm)
+    if (check_pause && !s_system_paused && s_achievements_hardcore_mode && allow_confirm)
     {
       Host::RunOnCPUThread(
         [allow_confirm, allow_save_to_state, save_state, check_safety, exit_fullscreen_ui, quit_afterwards]() {
@@ -2860,7 +2860,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
           Host::RunOnUIThread(
             [allow_confirm, allow_save_to_state, save_state, check_safety, exit_fullscreen_ui, quit_afterwards]() {
-              g_main_window->requestShutdown(allow_confirm, allow_save_to_state, save_state, check_safety,
+              g_main_window->requestShutdown(allow_confirm, allow_save_to_state, save_state, check_safety, false,
                                              exit_fullscreen_ui, quit_afterwards);
             });
         });
@@ -2915,7 +2915,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 void MainWindow::requestExit(bool allow_confirm /* = true */)
 {
   // this is block, because otherwise closeEvent() will also prompt
-  requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true, true);
+  requestShutdown(allow_confirm, true, g_settings.save_state_on_exit, true, true, true, true);
 }
 
 void MainWindow::checkForSettingChanges()

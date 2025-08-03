@@ -143,7 +143,7 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
   {
     QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, true),
                               Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, true), Q_ARG(bool, true),
-                              Q_ARG(bool, false));
+                              Q_ARG(bool, true), Q_ARG(bool, false));
   }
   else
   {

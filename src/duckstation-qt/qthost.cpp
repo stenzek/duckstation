@@ -537,7 +537,6 @@ bool QtHost::SetCriticalFolders()
       || StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr/lib")
 #endif
   )
-
   {
     QMessageBox::critical(nullptr, QStringLiteral("Error"),
                           QStringLiteral("Resources are missing, your installation is incomplete."));
@@ -2943,7 +2942,7 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check
 
   QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
                             Q_ARG(bool, true), Q_ARG(bool, save_state), Q_ARG(bool, check_memcard_busy),
-                            Q_ARG(bool, false), Q_ARG(bool, false));
+                            Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, false));
 }
 
 void Host::RequestResetSettings(bool system, bool controller)

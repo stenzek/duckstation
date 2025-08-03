@@ -123,7 +123,7 @@ public Q_SLOTS:
 
   void runOnUIThread(const std::function<void()>& func);
   void requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
-                       bool exit_fullscreen_ui, bool quit_afterwards);
+                       bool check_pause, bool exit_fullscreen_ui, bool quit_afterwards);
   void requestExit(bool allow_confirm = true);
   void checkForSettingChanges();
   std::optional<WindowInfo> getWindowInfo();
