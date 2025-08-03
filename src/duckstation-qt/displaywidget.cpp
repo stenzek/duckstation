@@ -139,7 +139,7 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
   // In the latter case, it's going to destroy us, so don't let Qt do it first.
   // Treat a close event while fullscreen as an exit, that way ALT+F4 closes DuckStation,
   // rather than just the game.
-  if (QtHost::IsSystemValidOrStarting() && !isActuallyFullscreen())
+  if ((QtHost::IsSystemValidOrStarting() || QtHost::IsFullscreenUIStarted()) && !isActuallyFullscreen())
   {
     QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, true),
                               Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, true), Q_ARG(bool, true),
