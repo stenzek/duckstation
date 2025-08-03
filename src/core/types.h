@@ -228,6 +228,16 @@ enum class DisplayScreenshotFormat : u8
   Count
 };
 
+enum class AchievementChallengeIndicatorMode : u8
+{
+  Disabled,
+  PersistentIcon,
+  TemporaryIcon,
+  Notification,
+
+  MaxCount
+};
+
 enum class ControllerType : u8
 {
   None,

@@ -6414,21 +6414,6 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     }
   }
 
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_BELL, "Achievement Notifications"),
-    FSUI_VSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
-    "Notifications", true, enabled);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
-                    FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
-                    "Cheevos", "LeaderboardNotifications", true, enabled);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_MUSIC, "Sound Effects"),
-    FSUI_VSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
-    "SoundEffects", true, enabled);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable In-Game Overlays"),
-    FSUI_VSTR("Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active."),
-    "Cheevos", "Overlays", true, enabled);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_ROTATE_RIGHT, "Encore Mode"),
                     FSUI_VSTR("When enabled, each session will behave as if no achievements have been unlocked."),
                     "Cheevos", "EncoreMode", false, enabled);
@@ -6441,6 +6426,34 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
     FSUI_VSTR("When enabled, DuckStation will list achievements from unofficial sets. These achievements are not "
               "tracked by RetroAchievements."),
     "Cheevos", "UnofficialTestMode", false, enabled);
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_BELL, "Achievement Notifications"),
+    FSUI_VSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
+    "Notifications", true, enabled);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
+                    FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
+                    "Cheevos", "LeaderboardNotifications", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_CLOCK, "Leaderboard Trackers"),
+    FSUI_VSTR("Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active."),
+    "Cheevos", "LeaderboardTrackers", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_MUSIC, "Sound Effects"),
+    FSUI_VSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
+    "SoundEffects", true, enabled);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),
+    FSUI_VSTR(
+      "Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes."),
+    "Cheevos", "ProgressIndicators", true, enabled);
+  DrawEnumSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_TEMPERATURE_ARROW_UP, "Challenge Indicators"),
+    FSUI_VSTR("Shows a notification or icons in the lower-right corner of the screen when a challenge/primed "
+              "achievement is active."),
+    "Cheevos", "ChallengeIndicatorMode", Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
+    &Settings::ParseAchievementChallengeIndicatorMode, &Settings::GetAchievementChallengeIndicatorModeName,
+    &Settings::GetAchievementChallengeIndicatorModeDisplayName, AchievementChallengeIndicatorMode::MaxCount, enabled);
 
   if (!IsEditingGameSettings(bsi))
   {
@@ -6461,7 +6474,8 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
         Host::NumberFormatType::LongDateTime,
         StringUtil::FromChars<s64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0));
       MenuButtonWithoutSummary(
-        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
+        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_USER_CLOCK, "Login token generated on {}")),
+                                 ts_string),
         false);
     }
   }
@@ -9478,6 +9492,7 @@ TRANSLATE_NOOP("FullscreenUI", "CPU Emulation");
 TRANSLATE_NOOP("FullscreenUI", "CPU Mode");
 TRANSLATE_NOOP("FullscreenUI", "Cancel");
 TRANSLATE_NOOP("FullscreenUI", "Capture");
+TRANSLATE_NOOP("FullscreenUI", "Challenge Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Change Disc");
 TRANSLATE_NOOP("FullscreenUI", "Change Page");
 TRANSLATE_NOOP("FullscreenUI", "Change Selection");
@@ -9608,7 +9623,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Enable GPU-Based Validation");
 TRANSLATE_NOOP("FullscreenUI", "Enable GPU-based validation when supported by the host's renderer API. Only for developer use.");
-TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
 TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
 TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");
 TRANSLATE_NOOP("FullscreenUI", "Enable Recompiler Block Linking");
@@ -9739,6 +9753,7 @@ TRANSLATE_NOOP("FullscreenUI", "Launch a game by selecting a file/disc image.");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from a file, disc, or starts the console without any disc inserted.");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game directories.");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Leaderboard Trackers");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Left: ");
 TRANSLATE_NOOP("FullscreenUI", "Light");
@@ -9855,6 +9870,7 @@ TRANSLATE_NOOP("FullscreenUI", "Press To Toggle");
 TRANSLATE_NOOP("FullscreenUI", "Pressure");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and the host from sleeping while emulation is running.");
+TRANSLATE_NOOP("FullscreenUI", "Progress Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Provides vibration and LED control support over Bluetooth.");
 TRANSLATE_NOOP("FullscreenUI", "Purple Rain");
 TRANSLATE_NOOP("FullscreenUI", "Push a controller button or axis now.");
@@ -9989,9 +10005,11 @@ TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Show Speed");
 TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Shows a background image or shader when a game isn't running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.");
+TRANSLATE_NOOP("FullscreenUI", "Shows a notification or icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
+TRANSLATE_NOOP("FullscreenUI", "Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes.");
+TRANSLATE_NOOP("FullscreenUI", "Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active.");
 TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows enhancement settings in the bottom-right corner of the screen.");
-TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
 TRANSLATE_NOOP("FullscreenUI", "Shows information about input and audio latency in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows information about the emulated GPU in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows on-screen-display messages when events occur.");

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>674</width>
-    <height>420</height>
+    <height>479</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -80,6 +80,13 @@
       <string>Notifications</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,1">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="leaderboardNotifications">
+        <property name="text">
+         <string>Show Leaderboard Notifications</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
         <item>
@@ -165,26 +172,45 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="leaderboardNotifications">
-        <property name="text">
-         <string>Show Leaderboard Notifications</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
+      <item row="2" column="1">
        <widget class="QCheckBox" name="soundEffects">
         <property name="text">
          <string>Enable Sound Effects</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="overlays">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="leaderboardTrackers">
         <property name="text">
-         <string>Enable In-Game Overlays</string>
+         <string>Show Leaderboard Trackers</string>
         </property>
        </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Progress Tracking</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
+      <item row="0" column="0">
+       <widget class="QLabel" name="challengeIndicatorModeLabel">
+        <property name="text">
+         <string>Challenge Indicators:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="progressIndicators">
+        <property name="text">
+         <string>Show Progress Indicators</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="challengeIndicatorMode"/>
       </item>
      </layout>
     </widget>

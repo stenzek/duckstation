@@ -347,16 +347,19 @@ struct Settings : public GPUSettings
   // achievements
   bool achievements_enabled : 1 = false;
   bool achievements_hardcore_mode : 1 = false;
-  bool achievements_notifications : 1 = true;
-  bool achievements_leaderboard_notifications : 1 = true;
-  bool achievements_sound_effects : 1 = true;
-  bool achievements_overlays : 1 = true;
   bool achievements_encore_mode : 1 = false;
   bool achievements_spectator_mode : 1 = false;
   bool achievements_unofficial_test_mode : 1 = false;
   bool achievements_use_raintegration : 1 = false;
-  s32 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
-  s32 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
+  bool achievements_notifications : 1 = true;
+  bool achievements_leaderboard_notifications : 1 = true;
+  bool achievements_leaderboard_trackers : 1 = true;
+  bool achievements_sound_effects : 1 = true;
+  bool achievements_progress_indicators : 1 = true;
+  AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
+    DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
+  u8 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
+  u8 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;
 
   float emulation_speed = 1.0f;
   float fast_forward_speed = 0.0f;
@@ -546,6 +549,10 @@ struct Settings : public GPUSettings
   static const char* GetDisplayScreenshotModeName(DisplayScreenshotMode mode);
   static const char* GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode mode);
 
+  static std::optional<AchievementChallengeIndicatorMode> ParseAchievementChallengeIndicatorMode(const char* str);
+  static const char* GetAchievementChallengeIndicatorModeName(AchievementChallengeIndicatorMode mode);
+  static const char* GetAchievementChallengeIndicatorModeDisplayName(AchievementChallengeIndicatorMode mode);
+
   static std::optional<DisplayScreenshotFormat> ParseDisplayScreenshotFormat(const char* str);
   static const char* GetDisplayScreenshotFormatName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
@@ -602,8 +609,10 @@ struct Settings : public GPUSettings
   static constexpr MultitapMode DEFAULT_MULTITAP_MODE = MultitapMode::Disabled;
   static constexpr PIODeviceType DEFAULT_PIO_DEVICE_TYPE = PIODeviceType::None;
 
-  static constexpr s32 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
-  static constexpr s32 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
+  static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
+    AchievementChallengeIndicatorMode::PersistentIcon;
+  static constexpr u8 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
+  static constexpr u8 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 
   static constexpr Log::Level DEFAULT_LOG_LEVEL = Log::Level::Info;
 

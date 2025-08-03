@@ -437,18 +437,27 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
   achievements_hardcore_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
-  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
-  achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
-  achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
-  achievements_overlays = si.GetBoolValue("Cheevos", "Overlays", true);
   achievements_encore_mode = si.GetBoolValue("Cheevos", "EncoreMode", false);
   achievements_spectator_mode = si.GetBoolValue("Cheevos", "SpectatorMode", false);
   achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
+  achievements_notifications = si.GetBoolValue("Cheevos", "Notifications", true);
+  achievements_leaderboard_notifications = si.GetBoolValue("Cheevos", "LeaderboardNotifications", true);
+  achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
+  achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
+  achievements_progress_indicators = si.GetBoolValue("Cheevos", "ProgressIndicators", true);
+  achievements_challenge_indicator_mode =
+    ParseAchievementChallengeIndicatorMode(
+      si.GetStringValue("Cheevos", "ChallengeIndicatorMode",
+                        GetAchievementChallengeIndicatorModeName(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE))
+        .c_str())
+      .value_or(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE);
   achievements_notification_duration =
-    si.GetIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
+    Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME),
+                            std::numeric_limits<u8>::max()));
   achievements_leaderboard_duration =
-    si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+    Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME),
+                            std::numeric_limits<u8>::max()));
 
 #ifndef __ANDROID__
   enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
@@ -737,16 +746,19 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   si.SetBoolValue("Cheevos", "Enabled", achievements_enabled);
   si.SetBoolValue("Cheevos", "ChallengeMode", achievements_hardcore_mode);
-  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
-  si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);
-  si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
-  si.SetBoolValue("Cheevos", "Overlays", achievements_overlays);
   si.SetBoolValue("Cheevos", "EncoreMode", achievements_encore_mode);
   si.SetBoolValue("Cheevos", "SpectatorMode", achievements_spectator_mode);
   si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
-  si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
-  si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
+  si.SetBoolValue("Cheevos", "Notifications", achievements_notifications);
+  si.SetBoolValue("Cheevos", "LeaderboardNotifications", achievements_leaderboard_notifications);
+  si.SetBoolValue("Cheevos", "LeaderboardTrackers", achievements_leaderboard_trackers);
+  si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
+  si.SetBoolValue("Cheevos", "ProgressIndicators", achievements_progress_indicators);
+  si.SetStringValue("Cheevos", "ChallengeIndicatorMode",
+                    GetAchievementChallengeIndicatorModeName(achievements_challenge_indicator_mode));
+  si.SetUIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
+  si.SetUIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
 
 #ifndef __ANDROID__
   si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
@@ -2154,6 +2166,49 @@ std::optional<DisplayScreenshotFormat> Settings::GetDisplayScreenshotFormatFromF
   }
 
   return std::nullopt;
+}
+
+static constexpr const std::array s_achievement_challenge_indicator_mode_names = {
+  "Disabled",
+  "PersistentIcon",
+  "TemporaryIcon",
+  "Notification",
+};
+static_assert(s_achievement_challenge_indicator_mode_names.size() ==
+              static_cast<size_t>(AchievementChallengeIndicatorMode::MaxCount));
+static constexpr const std::array s_achievement_challenge_indicator_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "AchievementChallengeIndicatorMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Show Persistent Icons", "AchievementChallengeIndicatorMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Show Temporary Icons", "AchievementChallengeIndicatorMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Show Notifications", "AchievementChallengeIndicatorMode"),
+};
+static_assert(s_achievement_challenge_indicator_mode_display_names.size() ==
+              static_cast<size_t>(AchievementChallengeIndicatorMode::MaxCount));
+
+std::optional<AchievementChallengeIndicatorMode> Settings::ParseAchievementChallengeIndicatorMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_achievement_challenge_indicator_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<AchievementChallengeIndicatorMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetAchievementChallengeIndicatorModeName(AchievementChallengeIndicatorMode mode)
+{
+  return s_achievement_challenge_indicator_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetAchievementChallengeIndicatorModeDisplayName(AchievementChallengeIndicatorMode mode)
+{
+  return Host::TranslateToCString("Settings",
+                                  s_achievement_challenge_indicator_mode_display_names[static_cast<size_t>(mode)],
+                                  "AchievementChallengeIndicatorMode");
 }
 
 static constexpr const std::array s_memory_card_type_names = {
