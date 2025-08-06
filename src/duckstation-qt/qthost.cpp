@@ -3394,7 +3394,6 @@ int main(int argc, char* argv[])
   // Always kick off update check. It'll take over if the user is booting a game fullscreen.
   g_main_window->startupUpdateCheck();
 
-  // Skip the update check if we're booting a game directly.
   if (autoboot)
     g_emu_thread->bootSystem(std::move(autoboot));
 
