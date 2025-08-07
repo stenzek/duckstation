@@ -19,9 +19,6 @@ public:
 
   ALWAYS_INLINE const std::string& getSelectedDiscPath() { return m_selected_path; }
 
-protected:
-  void resizeEvent(QResizeEvent* ev);
-
 private Q_SLOTS:
   void onListItemActivated(const QTreeWidgetItem* item);
   void updateStartEnabled();

@@ -19,17 +19,12 @@ public:
 
   bool tryOpenFile(const QString& path, Error* error = nullptr);
 
-protected:
-  void resizeEvent(QResizeEvent* ev);
-  void showEvent(QShowEvent* ev);
-
 private Q_SLOTS:
   void onOpenFileClicked();
   void onDirectoryItemClicked(QTreeWidgetItem* item, int column);
   void onFileItemActivated(QTreeWidgetItem* item, int column);
   void onFileItemSelectionChanged();
   void onFileContextMenuRequested(const QPoint& pos);
-  void resizeFileListColumns();
 
 private:
   void enableUi(bool enabled);

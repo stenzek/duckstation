@@ -16,6 +16,7 @@
 SelectDiscDialog::SelectDiscDialog(const std::string& disc_set_name, QWidget* parent /* = nullptr */) : QDialog(parent)
 {
   m_ui.setupUi(this);
+  QtUtils::SetColumnWidthsForTreeView(m_ui.discList, {50, -1, 100});
   populateList(disc_set_name);
   updateStartEnabled();
 
@@ -26,13 +27,6 @@ SelectDiscDialog::SelectDiscDialog(const std::string& disc_set_name, QWidget* pa
 }
 
 SelectDiscDialog::~SelectDiscDialog() = default;
-
-void SelectDiscDialog::resizeEvent(QResizeEvent* ev)
-{
-  QDialog::resizeEvent(ev);
-
-  QtUtils::ResizeColumnsForTreeView(m_ui.discList, {50, -1, 100});
-}
 
 void SelectDiscDialog::onListItemActivated(const QTreeWidgetItem* item)
 {

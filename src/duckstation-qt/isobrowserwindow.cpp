@@ -13,7 +13,6 @@
 #include "common/log.h"
 #include "common/path.h"
 
-#include <QtCore/QTimer>
 #include <QtGui/QIcon>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
@@ -27,6 +26,7 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);
   m_ui.splitter->setSizes({200, 600});
+  QtUtils::SetColumnWidthsForTreeView(m_ui.fileView, {-1, 200, 100});
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   enableUi(false);
 
@@ -79,18 +79,6 @@ bool ISOBrowserWindow::tryOpenFile(const QString& path, Error* error /*= nullptr
   populateDirectories();
   populateFiles(QString());
   return true;
-}
-
-void ISOBrowserWindow::resizeEvent(QResizeEvent* ev)
-{
-  QWidget::resizeEvent(ev);
-  resizeFileListColumns();
-}
-
-void ISOBrowserWindow::showEvent(QShowEvent* ev)
-{
-  QWidget::showEvent(ev);
-  resizeFileListColumns();
 }
 
 void ISOBrowserWindow::onOpenFileClicked()
@@ -184,11 +172,6 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
   }
 
   menu.exec(m_ui.fileView->mapToGlobal(pos));
-}
-
-void ISOBrowserWindow::resizeFileListColumns()
-{
-  QtUtils::ResizeColumnsForTreeView(m_ui.fileView, {-1, 200, 100});
 }
 
 void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode)
@@ -365,7 +348,4 @@ void ISOBrowserWindow::populateFiles(const QString& path)
 
     add_entry(full_path, entry);
   }
-
-  // this is utter shit, the scrollbar visibility doesn't update in time, so we have to queue it.
-  QTimer::singleShot(20, Qt::CoarseTimer, this, &ISOBrowserWindow::resizeFileListColumns);
 }

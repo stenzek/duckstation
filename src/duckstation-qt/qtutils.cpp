@@ -165,6 +165,8 @@ static void SetColumnWidthForView(T* const view, QHeaderView* const header, cons
 
     column_index++;
   }
+
+  header->setStretchLastSection(false);
 }
 
 void QtUtils::ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
