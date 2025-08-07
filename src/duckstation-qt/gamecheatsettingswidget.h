@@ -43,9 +43,6 @@ public:
   bool hasCodeWithName(const std::string_view name) const;
   void disableAllCheats();
 
-protected:
-  void resizeEvent(QResizeEvent* event) override;
-
 private Q_SLOTS:
   void onEnableCheatsChanged(Qt::CheckState state);
   void onSortCheatsToggled(bool checked);
@@ -71,7 +68,6 @@ private:
   QStandardItem* getTreeWidgetParent(const std::string_view parent);
   void populateTreeWidgetItem(QStandardItem* parent, const Cheats::CodeInfo& pi, bool enabled);
   void expandAllItems();
-  void resizeColumns();
 
   void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
   void setStateForAll(bool enabled);
@@ -130,9 +126,6 @@ public:
   ~GameCheatCodeChoiceEditorDialog() override;
 
   Cheats::CodeOptionList getNewOptions() const;
-
-protected:
-  void resizeEvent(QResizeEvent* event) override;
 
 private Q_SLOTS:
   void onAddClicked();

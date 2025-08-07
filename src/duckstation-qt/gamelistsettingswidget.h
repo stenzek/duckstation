@@ -35,9 +35,6 @@ private Q_SLOTS:
   void onScanForNewGamesClicked();
   void onRescanAllGamesClicked();
 
-protected:
-  bool event(QEvent* event) override;
-
 private:
   void addPathToTable(const std::string& path, bool recursive);
   void refreshDirectoryList();

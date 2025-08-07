@@ -35,20 +35,14 @@ private Q_SLOTS:
   void languageChanged();
 
   void refreshBiosList();
-  // void biosListItemChanged(const QTreeWidgetItem* current, const QTreeWidgetItem* previous);
-  // void listRefreshed(const QVector<BIOSInfo>& items);
 
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
   void onSearchDirectoryListSelectionChanged();
   void refreshDirectoryList();
-  void resizeDirectoryListColumns();
 
   void doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label);
-
-protected:
-  void resizeEvent(QResizeEvent* event);
 
 private:
   enum Page : u32
@@ -72,7 +66,6 @@ private:
   void setupAchievementsPage(bool initial);
   void updateStylesheets();
 
-  void pageChangedTo(int page);
   void updatePageLabels(int prev_page);
   void updatePageButtons();
 

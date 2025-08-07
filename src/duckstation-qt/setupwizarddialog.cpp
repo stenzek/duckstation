@@ -35,12 +35,6 @@ SetupWizardDialog::SetupWizardDialog()
 
 SetupWizardDialog::~SetupWizardDialog() = default;
 
-void SetupWizardDialog::resizeEvent(QResizeEvent* event)
-{
-  QDialog::resizeEvent(event);
-  resizeDirectoryListColumns();
-}
-
 bool SetupWizardDialog::canShowNextPage()
 {
   const int current_page = m_ui.pages->currentIndex();
@@ -112,20 +106,6 @@ void SetupWizardDialog::nextPage()
   m_ui.pages->setCurrentIndex(new_page);
   updatePageLabels(current_page);
   updatePageButtons();
-  pageChangedTo(new_page);
-}
-
-void SetupWizardDialog::pageChangedTo(int page)
-{
-  switch (page)
-  {
-    case Page_GameList:
-      resizeDirectoryListColumns();
-      break;
-
-    default:
-      break;
-  }
 }
 
 void SetupWizardDialog::updatePageLabels(int prev_page)
@@ -266,6 +246,7 @@ void SetupWizardDialog::setupGameListPage()
   m_ui.searchDirectoryList->verticalHeader()->hide();
   m_ui.searchDirectoryList->setCurrentIndex({});
   m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+  QtUtils::SetColumnWidthsForTableView(m_ui.searchDirectoryList, {-1, 100});
 
   connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this,
           &SetupWizardDialog::onDirectoryListContextMenuRequested);
@@ -389,11 +370,6 @@ void SetupWizardDialog::refreshDirectoryList()
 
   m_ui.searchDirectoryList->sortByColumn(0, Qt::AscendingOrder);
   m_ui.removeSearchDirectoryButton->setEnabled(false);
-}
-
-void SetupWizardDialog::resizeDirectoryListColumns()
-{
-  QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 100});
 }
 
 void SetupWizardDialog::setupControllerPage(bool initial)

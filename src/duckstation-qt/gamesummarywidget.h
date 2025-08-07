@@ -26,10 +26,6 @@ public:
 
   void reloadGameSettings();
 
-protected:
-  void resizeEvent(QResizeEvent* event) override;
-  void showEvent(QShowEvent* event) override;
-
 private Q_SLOTS:
   void onSeparateDiscSettingsChanged(Qt::CheckState state);
   void onCustomLanguageChanged(int language);
@@ -48,7 +44,6 @@ private:
   void setRevisionText(const QString& text);
 
   void populateTracksInfo();
-  void updateTracksInfoColumnSizes();
 
   Ui::GameSummaryWidget m_ui;
   SettingsWindow* m_dialog;

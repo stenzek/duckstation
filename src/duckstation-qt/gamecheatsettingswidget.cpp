@@ -194,6 +194,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   m_ui.cheatList->setItemDelegate(new CheatListOptionDelegate(this, m_ui.cheatList));
 
   reloadList();
+  QtUtils::SetColumnWidthsForTreeView(m_ui.cheatList, {-1, 150});
 
   // We don't use the binder here, because they're binary - either enabled, or not in the file.
   m_ui.enableCheats->setChecked(sif->GetBoolValue("Cheats", "EnableCheats", false));
@@ -472,17 +473,6 @@ void GameCheatSettingsWidget::disableAllCheats()
   setStateForAll(false);
 }
 
-void GameCheatSettingsWidget::resizeEvent(QResizeEvent* event)
-{
-  QWidget::resizeEvent(event);
-  resizeColumns();
-}
-
-void GameCheatSettingsWidget::resizeColumns()
-{
-  QtUtils::ResizeColumnsForTreeView(m_ui.cheatList, {-1, 150});
-}
-
 void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings)
 {
   SettingsInterface* si = m_dialog->getSettingsInterface();
@@ -564,7 +554,6 @@ void GameCheatSettingsWidget::reloadList()
 
   // Expand all items, and ensure the size is correct. Otherwise editing codes resizes it.
   expandAllItems();
-  resizeColumns();
 }
 
 void GameCheatSettingsWidget::expandAllItems()
@@ -1013,6 +1002,7 @@ GameCheatCodeChoiceEditorDialog::GameCheatCodeChoiceEditorDialog(QWidget* parent
   : QDialog(parent)
 {
   m_ui.setupUi(this);
+  QtUtils::SetColumnWidthsForTreeView(m_ui.optionList, {-1, 150});
 
   connect(m_ui.add, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onAddClicked);
   connect(m_ui.remove, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onRemoveClicked);
@@ -1031,12 +1021,6 @@ GameCheatCodeChoiceEditorDialog::GameCheatCodeChoiceEditorDialog(QWidget* parent
 }
 
 GameCheatCodeChoiceEditorDialog::~GameCheatCodeChoiceEditorDialog() = default;
-
-void GameCheatCodeChoiceEditorDialog::resizeEvent(QResizeEvent* event)
-{
-  QDialog::resizeEvent(event);
-  QtUtils::ResizeColumnsForTreeView(m_ui.optionList, {-1, 150});
-}
 
 void GameCheatCodeChoiceEditorDialog::onAddClicked()
 {

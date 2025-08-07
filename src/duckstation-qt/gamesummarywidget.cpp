@@ -115,25 +115,6 @@ void GameSummaryWidget::reloadGameSettings()
   m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
 }
 
-void GameSummaryWidget::resizeEvent(QResizeEvent* event)
-{
-  QWidget::resizeEvent(event);
-  updateTracksInfoColumnSizes();
-}
-
-void GameSummaryWidget::showEvent(QShowEvent* event)
-{
-  QWidget::showEvent(event);
-
-  // Need to put this on show as well, otherwise it lags behind the vertical scrollbar being enabled.
-  updateTracksInfoColumnSizes();
-}
-
-void GameSummaryWidget::updateTracksInfoColumnSizes()
-{
-  QtUtils::ResizeColumnsForTableView(m_ui.tracks, {70, 75, 70, 70, -1, 40});
-}
-
 void GameSummaryWidget::populateUi(const std::string& path, const std::string& serial, DiscRegion region,
                                    const GameDatabase::Entry* entry)
 {
@@ -362,6 +343,7 @@ void GameSummaryWidget::populateTracksInfo()
     {"Audio", "Mode 1", "Mode 1/Raw", "Mode 2", "Mode 2/Form 1", "Mode 2/Form 2", "Mode 2/Mix", "Mode 2/Raw"}};
 
   m_ui.tracks->clearContents();
+  QtUtils::SetColumnWidthsForTableView(m_ui.tracks, {70, 75, 70, 70, -1, 40});
 
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)

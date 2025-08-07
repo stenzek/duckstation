@@ -36,6 +36,7 @@ GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* 
   m_ui.searchDirectoryList->verticalHeader()->hide();
   m_ui.searchDirectoryList->setCurrentIndex({});
   m_ui.searchDirectoryList->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+  QtUtils::SetColumnWidthsForTableView(m_ui.searchDirectoryList, {-1, 120});
 
   connect(m_ui.searchDirectoryList, &QTableWidget::customContextMenuRequested, this,
           &GameListSettingsWidget::onDirectoryListContextMenuRequested);
@@ -81,24 +82,6 @@ void GameListSettingsWidget::refreshExclusionList()
     m_ui.excludedPaths->addItem(QString::fromStdString(path));
 
   m_ui.removeExcludedPath->setEnabled(false);
-}
-
-bool GameListSettingsWidget::event(QEvent* event)
-{
-  bool res = QWidget::event(event);
-
-  switch (event->type())
-  {
-    case QEvent::LayoutRequest:
-    case QEvent::Resize:
-      QtUtils::ResizeColumnsForTableView(m_ui.searchDirectoryList, {-1, 120});
-      break;
-
-    default:
-      break;
-  }
-
-  return res;
 }
 
 void GameListSettingsWidget::addPathToTable(const std::string& path, bool recursive)
