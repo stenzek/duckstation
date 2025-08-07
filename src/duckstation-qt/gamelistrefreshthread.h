@@ -8,39 +8,7 @@
 #include "common/progress_callback.h"
 #include "common/timer.h"
 
-class GameListRefreshThread;
-
-class AsyncRefreshProgressCallback : public ProgressCallback
-{
-public:
-  explicit AsyncRefreshProgressCallback(GameListRefreshThread* parent);
-
-  float timeSinceStart() const;
-
-  void Cancel();
-
-  void PushState() override;
-  void PopState() override;
-
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
-
-  void ModalError(const std::string_view message) override;
-  bool ModalConfirmation(const std::string_view message) override;
-  void ModalInformation(const std::string_view message) override;
-
-private:
-  void fireUpdate();
-
-  GameListRefreshThread* m_parent;
-  Timer m_start_time;
-  QString m_status_text;
-  int m_last_range = 1;
-  int m_last_value = 0;
-};
-
-class GameListRefreshThread final : public QThread
+class GameListRefreshThread final : public QThread, public ProgressCallback
 {
   Q_OBJECT
 
@@ -53,13 +21,29 @@ public:
   void cancel();
 
 Q_SIGNALS:
-  void refreshProgress(const QString& status, int current, int total, float time);
+  void refreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void refreshComplete();
 
 protected:
   void run() final;
 
 private:
-  AsyncRefreshProgressCallback m_progress;
+  void PushState() override;
+  void PopState() override;
+
+  void SetStatusText(const std::string_view text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
+
+  void ModalError(const std::string_view message) override;
+  bool ModalConfirmation(const std::string_view message) override;
+  void ModalInformation(const std::string_view message) override;
+
+  void fireUpdate();
+
+  Timer m_start_time;
+  QString m_status_text;
+  int m_last_range = 1;
+  int m_last_value = 0;
   bool m_invalidate_cache;
 };

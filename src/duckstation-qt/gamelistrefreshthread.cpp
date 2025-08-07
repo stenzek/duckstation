@@ -14,27 +14,30 @@
 
 #include "moc_gamelistrefreshthread.cpp"
 
-AsyncRefreshProgressCallback::AsyncRefreshProgressCallback(GameListRefreshThread* parent) : m_parent(parent)
+GameListRefreshThread::GameListRefreshThread(bool invalidate_cache) : QThread(), m_invalidate_cache(invalidate_cache)
 {
 }
 
-float AsyncRefreshProgressCallback::timeSinceStart() const
-{
-  return m_start_time.GetTimeSeconds();
-}
+GameListRefreshThread::~GameListRefreshThread() = default;
 
-void AsyncRefreshProgressCallback::Cancel()
+void GameListRefreshThread::cancel()
 {
   // Not atomic, but we don't need to cancel immediately.
   m_cancelled = true;
 }
 
-void AsyncRefreshProgressCallback::PushState()
+void GameListRefreshThread::run()
+{
+  GameList::Refresh(m_invalidate_cache, false, this);
+  emit refreshComplete();
+}
+
+void GameListRefreshThread::PushState()
 {
   ProgressCallback::PushState();
 }
 
-void AsyncRefreshProgressCallback::PopState()
+void GameListRefreshThread::PopState()
 {
   ProgressCallback::PopState();
 
@@ -46,7 +49,7 @@ void AsyncRefreshProgressCallback::PopState()
   fireUpdate();
 }
 
-void AsyncRefreshProgressCallback::SetStatusText(const std::string_view text)
+void GameListRefreshThread::SetStatusText(const std::string_view text)
 {
   const QString new_text = QtUtils::StringViewToQString(text);
   if (new_text == m_status_text)
@@ -56,7 +59,7 @@ void AsyncRefreshProgressCallback::SetStatusText(const std::string_view text)
   fireUpdate();
 }
 
-void AsyncRefreshProgressCallback::SetProgressRange(u32 range)
+void GameListRefreshThread::SetProgressRange(u32 range)
 {
   ProgressCallback::SetProgressRange(range);
   if (static_cast<int>(m_progress_range) == m_last_range)
@@ -66,7 +69,7 @@ void AsyncRefreshProgressCallback::SetProgressRange(u32 range)
   fireUpdate();
 }
 
-void AsyncRefreshProgressCallback::SetProgressValue(u32 value)
+void GameListRefreshThread::SetProgressValue(u32 value)
 {
   ProgressCallback::SetProgressValue(value);
   if (static_cast<int>(m_progress_value) == m_last_value)
@@ -76,46 +79,24 @@ void AsyncRefreshProgressCallback::SetProgressValue(u32 value)
   fireUpdate();
 }
 
-void AsyncRefreshProgressCallback::ModalError(const std::string_view message)
+void GameListRefreshThread::ModalError(const std::string_view message)
 {
   QMessageBox::critical(nullptr, QStringLiteral("Error"), QtUtils::StringViewToQString(message));
 }
 
-bool AsyncRefreshProgressCallback::ModalConfirmation(const std::string_view message)
+bool GameListRefreshThread::ModalConfirmation(const std::string_view message)
 {
   return QMessageBox::question(nullptr, QStringLiteral("Question"), QtUtils::StringViewToQString(message)) ==
          QMessageBox::Yes;
 }
 
-void AsyncRefreshProgressCallback::ModalInformation(const std::string_view message)
+void GameListRefreshThread::ModalInformation(const std::string_view message)
 {
   QMessageBox::information(nullptr, QStringLiteral("Information"), QtUtils::StringViewToQString(message));
 }
 
-void AsyncRefreshProgressCallback::fireUpdate()
+void GameListRefreshThread::fireUpdate()
 {
-  m_parent->refreshProgress(m_status_text, m_last_value, m_last_range, m_start_time.GetTimeSeconds());
-}
-
-GameListRefreshThread::GameListRefreshThread(bool invalidate_cache)
-  : QThread(), m_progress(this), m_invalidate_cache(invalidate_cache)
-{
-}
-
-GameListRefreshThread::~GameListRefreshThread() = default;
-
-float GameListRefreshThread::timeSinceStart() const
-{
-  return m_progress.timeSinceStart();
-}
-
-void GameListRefreshThread::cancel()
-{
-  m_progress.Cancel();
-}
-
-void GameListRefreshThread::run()
-{
-  GameList::Refresh(m_invalidate_cache, false, &m_progress);
-  emit refreshComplete();
+  emit refreshProgress(m_status_text, m_last_value, m_last_range, static_cast<int>(GameList::GetEntryCount()),
+                       m_start_time.GetTimeSeconds());
 }

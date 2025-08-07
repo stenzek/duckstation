@@ -27,10 +27,13 @@ Q_DECLARE_METATYPE(const GameList::Entry*);
 
 class GameListSortModel;
 class GameListRefreshThread;
+class GameListWidget;
 
 class GameListModel final : public QAbstractTableModel
 {
   Q_OBJECT
+
+  friend GameListWidget;
 
 public:
   enum Column : int
@@ -242,7 +245,7 @@ Q_SIGNALS:
   void addGameDirectoryRequested();
 
 private Q_SLOTS:
-  void onRefreshProgress(const QString& status, int current, int total, float time);
+  void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
 
   void onCoverScaleChanged(float scale);
@@ -280,7 +283,8 @@ private:
   QWidget* m_empty_widget = nullptr;
   Ui::EmptyGameListWidget m_empty_ui;
 
-  GameListRefreshThread* m_refresh_thread = nullptr;
-
   QImage m_background_image;
+
+  GameListRefreshThread* m_refresh_thread = nullptr;
+  int m_refresh_last_entry_count = 0;
 };

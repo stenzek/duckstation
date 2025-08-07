@@ -32,6 +32,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
 #include <algorithm>
+#include <limits>
 
 #include "moc_gamelistwidget.cpp"
 
@@ -1281,6 +1282,7 @@ void GameListWidget::refresh(bool invalidate_cache)
           Qt::QueuedConnection);
   connect(m_refresh_thread, &GameListRefreshThread::refreshComplete, this, &GameListWidget::onRefreshComplete,
           Qt::QueuedConnection);
+  m_refresh_last_entry_count = std::numeric_limits<int>::max(); // force reset on first progress update
   m_refresh_thread->start();
 }
 
@@ -1336,12 +1338,25 @@ void GameListWidget::updateBackground(bool reload_image)
   });
 }
 
-void GameListWidget::onRefreshProgress(const QString& status, int current, int total, float time)
+void GameListWidget::onRefreshProgress(const QString& status, int current, int total, int entry_count, float time)
 {
   // Avoid spamming the UI on very short refresh (e.g. game exit).
   static constexpr float SHORT_REFRESH_TIME = 0.5f;
   if (!m_model->hasTakenGameList())
-    m_model->refresh();
+  {
+    if (entry_count > m_refresh_last_entry_count)
+    {
+      m_model->beginInsertRows(QModelIndex(), m_refresh_last_entry_count, entry_count - 1);
+      m_model->endInsertRows();
+    }
+    else
+    {
+      m_model->beginResetModel();
+      m_model->endResetModel();
+    }
+
+    m_refresh_last_entry_count = entry_count;
+  }
 
   // switch away from the placeholder while we scan, in case we find anything
   if (m_ui.stack->currentIndex() == 2)
