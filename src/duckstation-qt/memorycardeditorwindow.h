@@ -31,7 +31,6 @@ public:
   static bool createMemoryCard(const QString& path, Error* error);
 
 protected:
-  void resizeEvent(QResizeEvent* ev);
   void closeEvent(QCloseEvent* ev);
 
 private Q_SLOTS:

@@ -52,6 +52,9 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
 
+  QtUtils::SetColumnWidthsForTableView(m_card_a.table, {32, -1, 155, 45});
+  QtUtils::SetColumnWidthsForTableView(m_card_b.table, {32, -1, 155, 45});
+
   createCardButtons(&m_card_a, m_ui.buttonBoxA);
   createCardButtons(&m_card_b, m_ui.buttonBoxB);
   connectUi();
@@ -112,12 +115,6 @@ bool MemoryCardEditorWindow::createMemoryCard(const QString& path, Error* error)
   MemoryCardImage::Format(data.get());
 
   return MemoryCardImage::SaveToFile(*data.get(), path.toUtf8().constData(), error);
-}
-
-void MemoryCardEditorWindow::resizeEvent(QResizeEvent* ev)
-{
-  QtUtils::ResizeColumnsForTableView(m_card_a.table, {32, -1, 155, 45});
-  QtUtils::ResizeColumnsForTableView(m_card_b.table, {32, -1, 155, 45});
 }
 
 void MemoryCardEditorWindow::closeEvent(QCloseEvent* ev)
@@ -303,10 +300,12 @@ void MemoryCardEditorWindow::updateCardTable(Card* card)
     card->table->setItem(row, 1, item);
 
     item = new QTableWidgetItem(QString::fromStdString(fi.filename));
+    item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     setCardTableItemProperties(item, fi);
     card->table->setItem(row, 2, item);
 
     item = new QTableWidgetItem(QString::number(fi.num_blocks));
+    item->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     setCardTableItemProperties(item, fi);
     card->table->setItem(row, 3, item);
   }

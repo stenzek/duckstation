@@ -153,9 +153,15 @@ static void SetColumnWidthForView(T* const view, QHeaderView* const header, cons
   int column_index = 0;
   for (const int width : widths)
   {
-    header->setSectionResizeMode(column_index, (width < 0) ? QHeaderView::Stretch : QHeaderView::Fixed);
-    if (width > 0)
+    if (width <= 0)
+    {
+      header->setSectionResizeMode(column_index, (width < 0) ? QHeaderView::Stretch : QHeaderView::ResizeToContents);
+    }
+    else
+    {
+      header->setSectionResizeMode(column_index, QHeaderView::Fixed);
       view->setColumnWidth(column_index, width);
+    }
 
     column_index++;
   }
