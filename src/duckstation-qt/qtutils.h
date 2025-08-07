@@ -70,11 +70,6 @@ inline void CloseAndDeleteWindow(T*& window)
   window = nullptr;
 }
 
-/// Resizes columns of the table view to at the specified widths. A negative width will stretch the column to use the
-/// remaining space.
-void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths);
-void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
-
 /// For any positive values, sets the corresponding column width to the specified value.
 /// Any values of 0 will set the column's width based on the content.
 /// Any values of -1 will stretch the column to use the remaining space.

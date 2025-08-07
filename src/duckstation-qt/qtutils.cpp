@@ -97,56 +97,6 @@ void QtUtils::ShowOrRaiseWindow(QWidget* window)
   }
 }
 
-template<typename T>
-ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initializer_list<int>& widths)
-{
-  QHeaderView* header;
-  if constexpr (std::is_same_v<T, QTableView>)
-    header = view->horizontalHeader();
-  else
-    header = view->header();
-
-  const int min_column_width = header->minimumSectionSize();
-  const int scrollbar_width = ((view->verticalScrollBar() && view->verticalScrollBar()->isVisible()) ||
-                               view->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOn) ?
-                                view->verticalScrollBar()->width() :
-                                0;
-  int num_flex_items = 0;
-  int total_width = 0;
-  int column_index = 0;
-  for (const int spec_width : widths)
-  {
-    if (!view->isColumnHidden(column_index))
-    {
-      if (spec_width < 0)
-        num_flex_items++;
-      else
-        total_width += std::max(spec_width, min_column_width);
-    }
-
-    column_index++;
-  }
-
-  const int flex_width =
-    (num_flex_items > 0) ?
-      std::max((view->contentsRect().width() - total_width - scrollbar_width) / num_flex_items, 1) :
-      0;
-
-  column_index = 0;
-  for (const int spec_width : widths)
-  {
-    if (view->isColumnHidden(column_index))
-    {
-      column_index++;
-      continue;
-    }
-
-    const int width = spec_width < 0 ? flex_width : (std::max(spec_width, min_column_width));
-    view->setColumnWidth(column_index, width);
-    column_index++;
-  }
-}
-
 template<class T>
 static void SetColumnWidthForView(T* const view, QHeaderView* const header, const std::initializer_list<int>& widths)
 {
@@ -167,16 +117,6 @@ static void SetColumnWidthForView(T* const view, QHeaderView* const header, cons
   }
 
   header->setStretchLastSection(false);
-}
-
-void QtUtils::ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
-{
-  ResizeColumnsForView(view, widths);
-}
-
-void QtUtils::ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
-{
-  ResizeColumnsForView(view, widths);
 }
 
 void QtUtils::SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<int>& widths)
