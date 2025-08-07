@@ -1423,6 +1423,10 @@ void GameListWidget::onRefreshComplete()
     m_ui.stack->setCurrentIndex(2);
     setFocusProxy(nullptr);
   }
+  else
+  {
+    m_list_view->updateDynamicColumnWidths();
+  }
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -1572,7 +1576,6 @@ void GameListWidget::updateView(bool grid_view)
   {
     m_ui.stack->setCurrentIndex(0);
     setFocusProxy(m_list_view);
-    resizeListViewColumnsToFit();
   }
 }
 
@@ -1593,11 +1596,6 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QWidget::resizeEvent(event);
   updateBackground(false);
-}
-
-void GameListWidget::resizeListViewColumnsToFit()
-{
-  m_list_view->resizeColumnsToFit();
 }
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const
@@ -1647,6 +1645,11 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   QHeaderView* const horizontal_header = horizontalHeader();
   horizontal_header->setHighlightSections(false);
   horizontal_header->setContextMenuPolicy(Qt::CustomContextMenu);
+  setFixedColumnWidths();
+  updateDynamicColumnWidths();
+
+  horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::ResizeMode::Stretch);
+  horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::ResizeMode::Stretch);
 
   verticalHeader()->hide();
 
@@ -1669,32 +1672,76 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 
 GameListListView::~GameListListView() = default;
 
-void GameListListView::resizeEvent(QResizeEvent* e)
+void GameListListView::setFixedColumnWidth(int column, int width)
 {
-  QTableView::resizeEvent(e);
-  resizeColumnsToFit();
+  horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);
+  setColumnWidth(column, width);
 }
 
-void GameListListView::resizeColumnsToFit()
+void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width, int padding)
 {
-  QtUtils::ResizeColumnsForTableView(this, {
-                                             45,  // type
-                                             95,  // serial
-                                             -1,  // title
-                                             -1,  // file title
-                                             200, // developer
-                                             200, // publisher
-                                             200, // genre
-                                             50,  // year
-                                             100, // players
-                                             85,  // time played
-                                             85,  // last played
-                                             80,  // file size
-                                             80,  // size
-                                             55,  // region
-                                             100, // achievements
-                                             100  // compatibility
-                                           });
+  const int width = std::max(fm.boundingRect(m_model->getColumnDisplayName(column)).width(), str_width) + (padding * 2);
+  setFixedColumnWidth(column, width);
+}
+
+void GameListListView::updateDynamicColumnWidths()
+{
+  s64 max_file_size = 0;
+  u64 max_disk_file_size = 0;
+
+  {
+    const auto lock = GameList::GetLock();
+    for (const GameList::Entry& entry : GameList::GetEntries())
+    {
+      max_file_size = std::max(max_file_size, entry.file_size);
+      max_disk_file_size = std::max(max_disk_file_size, entry.uncompressed_size);
+    }
+  }
+
+  const QFontMetrics fm(font());
+  const auto width_for = [&fm](const QString& text) { return fm.boundingRect(text).width(); };
+
+  setFixedColumnWidth(fm, GameListModel::Column_FileSize,
+                      width_for(QStringLiteral("%1 MB").arg(static_cast<double>(max_file_size) / 1048576.0, 0, 'f', 2)),
+                      10);
+  setFixedColumnWidth(
+    fm, GameListModel::Column_UncompressedSize,
+    width_for(QStringLiteral("%1 MB").arg(static_cast<double>(max_disk_file_size) / 1048576.0, 0, 'f', 2)), 10);
+}
+
+void GameListListView::setFixedColumnWidths()
+{
+  const QFontMetrics fm(font());
+  const auto width_for = [&fm](const QString& text) { return fm.boundingRect(text).width(); };
+
+  setFixedColumnWidth(fm, GameListModel::Column_Serial, width_for(QStringLiteral("SWWW-00000")), 4);
+  setFixedColumnWidth(fm, GameListModel::Column_Year, width_for(QStringLiteral("1999")), 4);
+  setFixedColumnWidth(fm, GameListModel::Column_Players, width_for(QStringLiteral("1 - 2")), 4);
+
+  // Played time is a little trickier, since some locales might have longer words for "hours" and "minutes".
+  setFixedColumnWidth(fm, GameListModel::Column_TimePlayed,
+                      std::max(width_for(qApp->translate("GameList", "%n seconds", "", 59)),
+                               std::max(width_for(qApp->translate("GameList", "%n minutes", "", 59)),
+                                        width_for(qApp->translate("GameList", "%n hours", "", 1000)))),
+                      10);
+
+  // And this is a monstrosity.
+  setFixedColumnWidth(
+    fm, GameListModel::Column_LastPlayed,
+    std::max(width_for(qApp->translate("GameList", "Today")),
+             std::max(width_for(qApp->translate("GameList", "Yesterday")),
+                      std::max(width_for(qApp->translate("GameList", "Never")),
+                               width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
+                                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))),
+    10);
+
+  setFixedColumnWidth(GameListModel::Column_Icon, 45);
+  setFixedColumnWidth(GameListModel::Column_Region, 55);
+  setFixedColumnWidth(GameListModel::Column_Achievements, 100);
+  setFixedColumnWidth(GameListModel::Column_Compatibility, 100);
+  setColumnWidth(GameListModel::Column_Developer, 200);
+  setColumnWidth(GameListModel::Column_Publisher, 200);
+  setColumnWidth(GameListModel::Column_Genre, 200);
 }
 
 static TinyString getColumnVisibilitySettingsKeyName(int column)
@@ -1771,7 +1818,6 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
   setColumnHidden(column, hidden);
   Host::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column), !hidden);
   Host::CommitBaseSettingChanges();
-  resizeColumnsToFit();
 }
 
 void GameListListView::onHeaderSortIndicatorChanged(int, Qt::SortOrder)
@@ -1791,10 +1837,7 @@ void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
     QAction* action = menu.addAction(m_model->getColumnDisplayName(column));
     action->setCheckable(true);
     action->setChecked(!isColumnHidden(column));
-    connect(action, &QAction::triggered, [this, column](bool enabled) {
-      setAndSaveColumnHidden(column, !enabled);
-      resizeColumnsToFit();
-    });
+    connect(action, &QAction::triggered, [this, column](bool enabled) { setAndSaveColumnHidden(column, !enabled); });
   }
 
   menu.exec(mapToGlobal(point));

@@ -93,6 +93,7 @@ bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 
 // Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.
 std::unique_lock<std::recursive_mutex> GetLock();
+std::span<const Entry> GetEntries();
 const Entry* GetEntryByIndex(u32 index);
 const Entry* GetEntryForPath(std::string_view path);
 const Entry* GetEntryBySerial(std::string_view serial);

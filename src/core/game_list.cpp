@@ -859,6 +859,11 @@ std::unique_lock<std::recursive_mutex> GameList::GetLock()
   return std::unique_lock(s_mutex);
 }
 
+std::span<const GameList::Entry> GameList::GetEntries()
+{
+  return s_entries;
+}
+
 const GameList::Entry* GameList::GetEntryByIndex(u32 index)
 {
   return (index < s_entries.size()) ? &s_entries[index] : nullptr;

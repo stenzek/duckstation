@@ -161,14 +161,15 @@ public:
 
   void setAndSaveColumnHidden(int column, bool hidden);
 
-  void resizeColumnsToFit();
-
-protected:
-  void resizeEvent(QResizeEvent* e) override;
+  void updateDynamicColumnWidths();
 
 private:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
+
+  void setFixedColumnWidth(int column, int width);
+  void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width, int padding);
+  void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
@@ -222,7 +223,6 @@ public:
 
   void initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
                   QAction* actionListShowIcons, QAction* actionGridShowTitles);
-  void resizeListViewColumnsToFit();
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();

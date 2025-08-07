@@ -2681,17 +2681,6 @@ void MainWindow::openInputProfileEditor(const std::string_view name)
   m_input_profile_editor_window->switchProfile(name);
 }
 
-void MainWindow::showEvent(QShowEvent* event)
-{
-  QMainWindow::showEvent(event);
-
-  // This is a bit silly, but for some reason resizing *before* the window is shown
-  // gives the incorrect sizes for columns, if you set the style before setting up
-  // the rest of the window... so, instead, let's just force it to be resized on show.
-  if (isShowingGameList())
-    m_game_list_widget->resizeListViewColumnsToFit();
-}
-
 void MainWindow::closeEvent(QCloseEvent* event)
 {
   // If there's no VM, we can just exit as normal.

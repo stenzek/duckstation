@@ -227,7 +227,6 @@ private Q_SLOTS:
   void openCPUDebugger();
 
 protected:
-  void showEvent(QShowEvent* event) override;
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;
   void dragEnterEvent(QDragEnterEvent* event) override;
