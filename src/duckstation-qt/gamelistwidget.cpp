@@ -661,17 +661,54 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
     {
       switch (index.column())
       {
+        case Column_Serial:
+          return QtUtils::StringViewToQString(ge->serial);
+
+        case Column_Title:
+          return QtUtils::StringViewToQString(ge->title);
+
+        case Column_FileTitle:
+          return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
+
+        case Column_Developer:
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->developer) : QString();
+
+        case Column_Publisher:
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->publisher) : QString();
+
+        case Column_Genre:
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->genre) : QString();
+
         case Column_TimePlayed:
+        {
           if (ge->total_played_time == 0)
             return {};
           else
             return QtUtils::StringViewToQString(GameList::FormatTimespan(ge->total_played_time, false));
+        }
 
         case Column_LastPlayed:
+        {
           if (ge->last_played_time == 0)
             return {};
           else
             return QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(ge->last_played_time));
+        }
+
+        case Column_Achievements:
+        {
+          if (ge->num_achievements == 0)
+            return tr("No Achievements");
+
+          QString tooltip = tr("%1/%2 achievements unlocked").arg(ge->unlocked_achievements).arg(ge->num_achievements);
+          if (ge->unlocked_achievements_hc > 0)
+          {
+            tooltip = QStringLiteral("%1\n%2").arg(tooltip).arg(
+              tr("%1 unlocked in hardcore mode").arg(ge->unlocked_achievements_hc));
+          }
+
+          return tooltip;
+        }
 
         default:
           return {};
