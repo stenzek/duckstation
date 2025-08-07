@@ -147,6 +147,20 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
   }
 }
 
+template<class T>
+static void SetColumnWidthForView(T* const view, QHeaderView* const header, const std::initializer_list<int>& widths)
+{
+  int column_index = 0;
+  for (const int width : widths)
+  {
+    header->setSectionResizeMode(column_index, (width < 0) ? QHeaderView::Stretch : QHeaderView::Fixed);
+    if (width > 0)
+      view->setColumnWidth(column_index, width);
+
+    column_index++;
+  }
+}
+
 void QtUtils::ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
 {
   ResizeColumnsForView(view, widths);
@@ -155,6 +169,16 @@ void QtUtils::ResizeColumnsForTableView(QTableView* view, const std::initializer
 void QtUtils::ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 {
   ResizeColumnsForView(view, widths);
+}
+
+void QtUtils::SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+{
+  SetColumnWidthForView(view, view->horizontalHeader(), widths);
+}
+
+void QtUtils::SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
+{
+  SetColumnWidthForView(view, view->header(), widths);
 }
 
 void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)

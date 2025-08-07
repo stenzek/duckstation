@@ -27,9 +27,7 @@ Q_SIGNALS:
   void closed();
 
 protected:
-  void showEvent(QShowEvent* event);
   void closeEvent(QCloseEvent* event);
-  void resizeEvent(QResizeEvent* event);
 
 private Q_SLOTS:
   void onSystemStarted();
@@ -57,9 +55,9 @@ private:
     SCAN_INTERVAL = 100,
   };
 
+  void setupAdditionalUi();
   void connectUi();
   void enableUi(bool enabled);
-  void resizeColumns();
   void updateResults();
   void updateResultsValues();
   void updateWatch();

@@ -90,7 +90,7 @@ static QString formatValue(u32 value, bool is_signed)
 MemoryScannerWindow::MemoryScannerWindow() : QWidget()
 {
   m_ui.setupUi(this);
-  QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this);
+  setupAdditionalUi();
   connectUi();
 
   m_ui.cheatEngineAddress->setText(tr("Address of RAM for HxD Usage: 0x%1")
@@ -98,6 +98,13 @@ MemoryScannerWindow::MemoryScannerWindow() : QWidget()
 }
 
 MemoryScannerWindow::~MemoryScannerWindow() = default;
+
+void MemoryScannerWindow::setupAdditionalUi()
+{
+  QtUtils::SetColumnWidthsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
+  QtUtils::SetColumnWidthsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
+  QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this);
+}
 
 void MemoryScannerWindow::connectUi()
 {
@@ -201,29 +208,11 @@ void MemoryScannerWindow::enableUi(bool enabled)
   m_ui.scanRemoveWatch->setEnabled(enabled && !m_ui.watchTable->selectedItems().empty());
 }
 
-void MemoryScannerWindow::showEvent(QShowEvent* event)
-{
-  QWidget::showEvent(event);
-  resizeColumns();
-}
-
 void MemoryScannerWindow::closeEvent(QCloseEvent* event)
 {
   QtUtils::SaveWindowGeometry("MemoryScannerWindow", this);
   QWidget::closeEvent(event);
   emit closed();
-}
-
-void MemoryScannerWindow::resizeEvent(QResizeEvent* event)
-{
-  QWidget::resizeEvent(event);
-  resizeColumns();
-}
-
-void MemoryScannerWindow::resizeColumns()
-{
-  QtUtils::ResizeColumnsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
-  QtUtils::ResizeColumnsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
 }
 
 int MemoryScannerWindow::getSelectedResultIndexFirst() const

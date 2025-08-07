@@ -75,6 +75,11 @@ inline void CloseAndDeleteWindow(T*& window)
 void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths);
 void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
 
+/// For any positive values, sets the corresponding column width to the specified value.
+/// Any values of -1 will stretch the column to use the remaining space.
+void SetColumnWidthsForTableView(QTableView* view, const std::initializer_list<int>& widths);
+void SetColumnWidthsForTreeView(QTreeView* view, const std::initializer_list<int>& widths);
+
 /// Returns a key id for a key event, including any modifiers that we need (e.g. Keypad).
 /// NOTE: Defined in QtKeyCodes.cpp, not QtUtils.cpp.
 u32 KeyEventToCode(const QKeyEvent* ev);
