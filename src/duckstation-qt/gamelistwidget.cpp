@@ -1634,11 +1634,11 @@ void GameListListView::resizeColumnsToFit()
                                              200, // publisher
                                              200, // genre
                                              50,  // year
-                                             100, // players
+                                             75,  // players
                                              85,  // time played
                                              85,  // last played
-                                             80,  // file size
-                                             80,  // size
+                                             85,  // file size
+                                             85,  // size
                                              55,  // region
                                              100, // achievements
                                              100  // compatibility
