@@ -1591,12 +1591,12 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
             ret.emplace_back(fmt::format("/dev/r{}", buf), buf);
         }
         CFRelease(path);
-        IOObjectRelease(media);
       }
       IOObjectRelease(media);
     }
 
     IOObjectRelease(iter);
+    CFRelease(classes);
   };
 
   append_list(kIOCDMediaClass);
