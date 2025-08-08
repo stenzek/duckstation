@@ -385,6 +385,7 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
 
       m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
       m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
+      m_ui.downloadSize->setText(tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
 #ifdef AUTO_UPDATER_SUPPORTED
       // search for the correct file
@@ -502,9 +503,6 @@ void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, 
           tr("<h2>Settings Warning</h2><p>Installing this update will reset your program configuration. Please note "
              "that you will have to reconfigure your settings after this update.</p>"));
       }
-
-      changes_html += tr("<h4>Installing this update will download %1 MB through your internet connection.</h4>")
-                        .arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2);
 
       m_ui.updateNotes->setText(changes_html);
     }
