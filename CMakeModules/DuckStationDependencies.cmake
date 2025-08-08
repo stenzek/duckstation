@@ -9,18 +9,18 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(SDL3 3.2.16 REQUIRED)
+find_package(SDL3 3.2.18 REQUIRED)
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
-find_package(PNG 1.6.40 REQUIRED) # 1.6.48, but Fedora is out of date.
+find_package(PNG 1.6.44 REQUIRED) # 1.6.48, but Flatpak is out of date.
 find_package(JPEG REQUIRED)
 find_package(Freetype 2.13.2 REQUIRED) # 2.13.3, but flatpak is still on 2.13.2.
 find_package(plutosvg 0.0.6 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
 find_package(SoundTouch 2.3.3 REQUIRED)
-find_package(libzip 1.11.1 REQUIRED)
+find_package(libzip 1.11.4 REQUIRED)
 
 if(NOT WIN32)
   find_package(CURL REQUIRED)
@@ -40,7 +40,8 @@ if(ENABLE_WAYLAND)
 endif()
 
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED) # 6.9.1, but flatpak stuck on 6.9.0.
+  # 6.9.1, but flatpak stuck on 6.9.0 because they love to ship vulnerable software.
+  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 endif()
 
 find_package(Shaderc REQUIRED)
