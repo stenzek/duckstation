@@ -381,6 +381,31 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
     {
       const QJsonObject doc_object(doc.object());
 
+#ifdef AUTO_UPDATER_SUPPORTED
+      // search for the correct file
+      const QJsonArray assets(doc_object["assets"].toArray());
+      const QString asset_filename(UPDATE_ASSET_FILENAME);
+      bool asset_found = false;
+      for (const QJsonValue& asset : assets)
+      {
+        const QJsonObject asset_obj(asset.toObject());
+        if (asset_obj["name"] == asset_filename)
+        {
+          m_download_url = asset_obj["browser_download_url"].toString();
+          if (!m_download_url.isEmpty())
+            m_download_size = asset_obj["size"].toInt();
+          asset_found = true;
+          break;
+        }
+      }
+
+      if (!asset_found)
+      {
+        reportError("Asset/asset download not found");
+        return;
+      }
+#endif
+
       const QString current_date = QtHost::FormatNumber(
         Host::NumberFormatType::ShortDateTime,
         static_cast<s64>(
@@ -407,30 +432,7 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
       m_ui.downloadSize->setText(
         tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
-#ifdef AUTO_UPDATER_SUPPORTED
-      // search for the correct file
-      const QJsonArray assets(doc_object["assets"].toArray());
-      const QString asset_filename(UPDATE_ASSET_FILENAME);
-      bool asset_found = false;
-      for (const QJsonValue& asset : assets)
-      {
-        const QJsonObject asset_obj(asset.toObject());
-        if (asset_obj["name"] == asset_filename)
-        {
-          m_download_url = asset_obj["browser_download_url"].toString();
-          if (!m_download_url.isEmpty())
-            m_download_size = asset_obj["size"].toInt();
-          asset_found = true;
-          break;
-        }
-      }
-
-      if (!asset_found)
-      {
-        reportError("Asset/asset download not found");
-        return;
-      }
-#else
+#ifndef AUTO_UPDATER_SUPPORTED
       // Just display the version and a download link.
       m_ui.downloadAndInstall->setText(tr("Download..."));
 #endif
