@@ -54,11 +54,9 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 // Requires that the channel be defined by the buildbot.
 #if __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
-#if defined(SCM_RELEASE_TAGS) && defined(SCM_RELEASE_TAG)
 #define UPDATE_CHECKER_SUPPORTED
 #ifdef SCM_RELEASE_ASSET
 #define AUTO_UPDATER_SUPPORTED
-#endif
 #endif
 #endif
 
@@ -383,9 +381,31 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
     {
       const QJsonObject doc_object(doc.object());
 
-      m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
-      m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
-      m_ui.downloadSize->setText(tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
+      const QString current_date = QtHost::FormatNumber(
+        Host::NumberFormatType::ShortDateTime,
+        static_cast<s64>(
+          QDateTime::fromString(QString::fromUtf8(g_scm_date_str), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
+      const QString release_date = QtHost::FormatNumber(
+        Host::NumberFormatType::ShortDateTime,
+        static_cast<s64>(
+          QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
+
+      // strip sha off the version
+      std::string_view current_version = g_scm_tag_str;
+      if (std::string_view::size_type pos = current_version.find('-'); pos != std::string_view::npos)
+      {
+        if (std::string_view::size_type pos2 = current_version.find('-', pos + 1); pos2 != std::string_view::npos)
+          current_version = current_version.substr(0, pos2);
+      }
+
+      m_ui.currentVersion->setText(
+        tr("Current Version: %1 (%2)")
+          .arg(QtUtils::StringViewToQString(TinyString::from_format("{}/{}", current_version, THIS_RELEASE_TAG)))
+          .arg(current_date));
+      m_ui.newVersion->setText(
+        tr("New Version: %1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));
+      m_ui.downloadSize->setText(
+        tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
 #ifdef AUTO_UPDATER_SUPPORTED
       // search for the correct file
