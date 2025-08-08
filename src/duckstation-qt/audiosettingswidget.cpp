@@ -84,11 +84,17 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
        "lowest latency, if you encounter issues, try the SDL backend. The null backend disables all host audio "
        "output."));
   dialog->registerWidgetHelp(
-    m_ui.outputLatencyMS, tr("Output Latency"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS),
+    m_ui.bufferMS, tr("Buffer Size"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_BUFFER_MS),
     tr("The buffer size determines the size of the chunks of audio which will be pulled by the "
        "host. Smaller values reduce the output latency, but may cause hitches if the emulation "
        "speed is inconsistent. Note that the Cubeb backend uses smaller chunks regardless of "
        "this value, so using a low value here may not significantly change latency."));
+  dialog->registerWidgetHelp(
+    m_ui.outputLatencyMS, tr("Output Latency"), tr("%1 ms").arg(AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS),
+    tr("Determines how much latency there is between the audio being picked up by the host API, and "
+       "played through speakers."));
+  dialog->registerWidgetHelp(m_ui.outputLatencyMinimal, tr("Minimal Output Latency"), tr("Unchecked"),
+                             tr("When enabled, the minimum supported output latency will be used for the host API."));
   dialog->registerWidgetHelp(m_ui.volume, tr("Output Volume"), "100%",
                              tr("Controls the volume of the audio played on the host."));
   dialog->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
