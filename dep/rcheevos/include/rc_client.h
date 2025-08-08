@@ -216,6 +216,9 @@ typedef struct rc_client_user_game_summary_t {
 
   uint32_t points_core;
   uint32_t points_unlocked;
+
+  time_t beaten_time; /* 0 if not beaten, otherwise the time the game was beaten */
+  time_t completed_time;  /* 0 if not mastered, otherwise the time the game was mastered */
 } rc_client_user_game_summary_t;
 
 /**

@@ -2769,7 +2769,8 @@ void Achievements::DrawAchievementsWindow()
 
   static constexpr float alpha = 0.8f;
   static constexpr float heading_alpha = 0.95f;
-  static constexpr float heading_height_unscaled = 110.0f;
+  const float heading_height_unscaled =
+    (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time) ? 140.0f : 110.0f;
 
   const ImVec4 background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, heading_alpha);
@@ -2844,6 +2845,41 @@ void Achievements::DrawAchievementsWindow()
                               summary_bb.Max,
                               ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
                               text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+
+    if (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time > 0)
+    {
+      text.clear();
+      if (s_state.game_summary.beaten_time > 0)
+      {
+        const std::string beaten_time =
+          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.beaten_time));
+        if (s_state.game_summary.completed_time > 0)
+        {
+          const std::string completion_time =
+            Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.beaten_time));
+          text.format(TRANSLATE_FS("Achievements", "Game was beaten on {0}, and completed on {1}."), beaten_time,
+                      completion_time);
+        }
+        else
+        {
+          text.format(TRANSLATE_FS("Achievements", "Game was beaten on {0}."), beaten_time);
+        }
+      }
+      else
+      {
+        const std::string completion_time =
+          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.beaten_time));
+        text.format(TRANSLATE_FS("Achievements", "Game was completed on {0}."), completion_time);
+      }
+
+      const ImRect beaten_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
+      RenderShadowedTextClipped(
+        UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, beaten_bb.Min, beaten_bb.Max,
+        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
+        ImVec2(0.0f, 0.0f), 0.0f, &beaten_bb);
+
+      top += UIStyle.MediumFontSize + spacing;
+    }
 
     if (s_state.game_summary.num_core_achievements > 0)
     {
