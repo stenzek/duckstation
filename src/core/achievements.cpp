@@ -2868,7 +2868,7 @@ void Achievements::DrawAchievementsWindow()
       else
       {
         const std::string completion_time =
-          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.beaten_time));
+          Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.completed_time));
         text.format(TRANSLATE_FS("Achievements", "Game was completed on {0}."), completion_time);
       }
 
