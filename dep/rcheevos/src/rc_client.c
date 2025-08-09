@@ -933,6 +933,11 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
         ++summary->num_core_achievements;
         summary->points_core += achievement->public_.points;
 
+        if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION)
+          ++num_progression_achievements;
+        else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN)
+          ++num_win_condition_achievements;
+
         if (achievement->public_.unlocked & unlock_bit) {
           ++summary->num_unlocked_achievements;
           summary->points_unlocked += achievement->public_.points;
@@ -949,17 +954,12 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
           }
           else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN)
           {
-            ++num_win_condition_achievements;
             first_win_condition_unlock = (first_win_condition_unlock == 0) ?
-                                          achievement->public_.unlock_time :
-                                          first_win_condition_unlock;
+                                           achievement->public_.unlock_time :
+                                           first_win_condition_unlock;
           }
-        } else {
-          if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION)
-            ++num_progression_achievements;
-          else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN)
-            ++num_win_condition_achievements;
         }
+
         if (achievement->public_.bucket == RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED) {
           ++summary->num_unsupported_achievements;
         }
