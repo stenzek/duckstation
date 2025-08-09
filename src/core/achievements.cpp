@@ -2770,7 +2770,7 @@ void Achievements::DrawAchievementsWindow()
   static constexpr float alpha = 0.8f;
   static constexpr float heading_alpha = 0.95f;
   const float heading_height_unscaled =
-    (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time) ? 140.0f : 110.0f;
+    (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time) ? 122.0f : 102.0f;
 
   const ImVec4 background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, heading_alpha);
@@ -2784,8 +2784,8 @@ void Achievements::DrawAchievementsWindow()
                                                ImGuiWindowFlags_NoScrollWithMouse))
   {
     const ImVec2 pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
-    const float spacing = LayoutScale(10.0f);
-    const float image_size = LayoutScale(85.0f);
+    const float spacing = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
+    const float image_size = LayoutScale(75.0f);
 
     if (!s_state.game_icon.empty())
     {
@@ -2797,7 +2797,7 @@ void Achievements::DrawAchievementsWindow()
       }
     }
 
-    float left = pos.x + image_size + spacing;
+    float left = pos.x + image_size + LayoutScale(10.0f);
     float right = pos.x + ImGuiFullscreen::GetMenuButtonAvailableWidth();
     float top = pos.y;
     ImDrawList* dl = ImGui::GetWindowDrawList();
