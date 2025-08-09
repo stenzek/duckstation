@@ -100,13 +100,10 @@ jobs:
       if: steps.cache-deps.outputs.cache-hit != 'true'
       run: scripts/deps/build-ffmpeg-linux.sh "$HOME/deps"
 
-    - name: Initialize Build Tag
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
+        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "DuckStation-x64-SSE2.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
