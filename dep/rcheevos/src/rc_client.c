@@ -954,9 +954,9 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
           }
           else if (achievement->public_.type == RC_CLIENT_ACHIEVEMENT_TYPE_WIN)
           {
-            first_win_condition_unlock = (first_win_condition_unlock == 0) ?
-                                           achievement->public_.unlock_time :
-                                           first_win_condition_unlock;
+            if (first_win_condition_unlock == 0 ||
+                (achievement->public_.unlock_time > 0 && achievement->public_.unlock_time < first_win_condition_unlock))
+              first_win_condition_unlock = achievement->public_.unlock_time;
           }
         }
 
@@ -979,7 +979,7 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
    * is unlocked, or all progression achievements are unlocked and no there are no win condition achievements. */
   summary->beaten_time = 0;
   if (num_progression_achievements > 0 && unlocked_progression_achievements == num_progression_achievements &&
-     (num_win_condition_achievements == 0 || first_win_condition_unlock > 0)) {
+      (num_win_condition_achievements == 0 || first_win_condition_unlock > 0)) {
     summary->beaten_time = (num_win_condition_achievements == 0) ? last_progression_unlock : first_win_condition_unlock;
   }
 
