@@ -57,13 +57,10 @@ jobs:
         echo 'set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")' >> "$HOME/toolchain.cmake"
         echo 'set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")' >> "$HOME/toolchain.cmake"
 
-    - name: Initialize Build Tag
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
+        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "DuckStation-${{ matrix.arch }}.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 

@@ -35,15 +35,11 @@ jobs:
         DEBUG: 0
       run: scripts/deps/build-dependencies-windows-arm64.bat
 
-    - name: Initialize Build Tag
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
+        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
@@ -133,15 +129,11 @@ jobs:
         DEBUG: 0
       run: scripts/deps/build-dependencies-windows-arm64.bat
 
-    - name: Initialize Build Tag
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
+        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-sse2-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
@@ -232,15 +224,11 @@ jobs:
         DEBUG: 0
       run: scripts/deps/build-dependencies-windows-arm64.bat
 
-    - name: Initialize Build Tag
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       shell: cmd
       run: |
+        echo #pragma once > src/scmversion/tag.h
         echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 

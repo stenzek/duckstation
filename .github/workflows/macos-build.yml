@@ -33,13 +33,10 @@ jobs:
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'
       run: scripts/deps/build-dependencies-mac.sh "$HOME/deps"
 
-    - name: Initialize Build Tag
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-
     - name: Set Build Tags
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
+        echo '#pragma once' > src/scmversion/tag.h
         echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
