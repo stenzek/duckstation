@@ -1423,10 +1423,6 @@ void GameListWidget::onRefreshComplete()
     m_ui.stack->setCurrentIndex(2);
     setFocusProxy(nullptr);
   }
-  else
-  {
-    m_list_view->updateDynamicColumnWidths();
-  }
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -1646,10 +1642,9 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   horizontal_header->setHighlightSections(false);
   horizontal_header->setContextMenuPolicy(Qt::CustomContextMenu);
   setFixedColumnWidths();
-  updateDynamicColumnWidths();
 
-  horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::ResizeMode::Stretch);
-  horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::ResizeMode::Stretch);
+  horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::Stretch);
+  horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::Stretch);
 
   verticalHeader()->hide();
 
@@ -1678,52 +1673,32 @@ void GameListListView::setFixedColumnWidth(int column, int width)
   setColumnWidth(column, width);
 }
 
-void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width, int padding)
+void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width)
 {
-  const int width = std::max(fm.boundingRect(m_model->getColumnDisplayName(column)).width(), str_width) + (padding * 2);
+  const int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
+  const int header_width = fm.size(0, m_model->getColumnDisplayName(column)).width() +
+                           style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this) + // sort indicator
+                           margin; // space between text and sort indicator
+  const int width = std::max(header_width, str_width) +
+                    2 * margin; // left and right margins
   setFixedColumnWidth(column, width);
-}
-
-void GameListListView::updateDynamicColumnWidths()
-{
-  s64 max_file_size = 0;
-  u64 max_disk_file_size = 0;
-
-  {
-    const auto lock = GameList::GetLock();
-    for (const GameList::Entry& entry : GameList::GetEntries())
-    {
-      max_file_size = std::max(max_file_size, entry.file_size);
-      max_disk_file_size = std::max(max_disk_file_size, entry.uncompressed_size);
-    }
-  }
-
-  const QFontMetrics fm(font());
-  const auto width_for = [&fm](const QString& text) { return fm.boundingRect(text).width(); };
-
-  setFixedColumnWidth(fm, GameListModel::Column_FileSize,
-                      width_for(QStringLiteral("%1 MB").arg(static_cast<double>(max_file_size) / 1048576.0, 0, 'f', 2)),
-                      10);
-  setFixedColumnWidth(
-    fm, GameListModel::Column_UncompressedSize,
-    width_for(QStringLiteral("%1 MB").arg(static_cast<double>(max_disk_file_size) / 1048576.0, 0, 'f', 2)), 10);
 }
 
 void GameListListView::setFixedColumnWidths()
 {
-  const QFontMetrics fm(font());
-  const auto width_for = [&fm](const QString& text) { return fm.boundingRect(text).width(); };
+  const QFontMetrics fm(fontMetrics());
+  const auto width_for = [&fm](const QString& text) { return fm.size(0, text).width(); };
 
-  setFixedColumnWidth(fm, GameListModel::Column_Serial, width_for(QStringLiteral("SWWW-00000")), 4);
-  setFixedColumnWidth(fm, GameListModel::Column_Year, width_for(QStringLiteral("1999")), 4);
-  setFixedColumnWidth(fm, GameListModel::Column_Players, width_for(QStringLiteral("1 - 2")), 4);
+  setFixedColumnWidth(fm, GameListModel::Column_Serial, width_for(QStringLiteral("SWWW-00000")));
+  setFixedColumnWidth(fm, GameListModel::Column_Year,
+                      std::max(width_for(QStringLiteral("1999")), width_for(QStringLiteral("2000"))));
+  setFixedColumnWidth(fm, GameListModel::Column_Players, width_for(QStringLiteral("1-8")));
 
   // Played time is a little trickier, since some locales might have longer words for "hours" and "minutes".
   setFixedColumnWidth(fm, GameListModel::Column_TimePlayed,
                       std::max(width_for(qApp->translate("GameList", "%n seconds", "", 59)),
                                std::max(width_for(qApp->translate("GameList", "%n minutes", "", 59)),
-                                        width_for(qApp->translate("GameList", "%n hours", "", 1000)))),
-                      10);
+                                        width_for(qApp->translate("GameList", "%n hours", "", 1000)))));
 
   // And this is a monstrosity.
   setFixedColumnWidth(
@@ -1732,8 +1707,12 @@ void GameListListView::setFixedColumnWidths()
              std::max(width_for(qApp->translate("GameList", "Yesterday")),
                       std::max(width_for(qApp->translate("GameList", "Never")),
                                width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
-                                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))),
-    10);
+                                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))));
+
+  // Assume 8 is the widest digit.
+  int size_width = width_for(QStringLiteral("%1 MB").arg(8888.88, 0, 'f', 2));
+  setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
+  setFixedColumnWidth(fm, GameListModel::Column_UncompressedSize, size_width);
 
   setFixedColumnWidth(GameListModel::Column_Icon, 45);
   setFixedColumnWidth(GameListModel::Column_Region, 55);
@@ -1933,7 +1912,7 @@ void GameListGridView::updateLayout()
   const int item_width = icon_width + item_margin + item_spacing + 2;
 
   // one line of text
-  const int item_height = item_width + (m_model->getShowCoverTitles() ? QFontMetrics(font()).height() : 0);
+  const int item_height = item_width + (m_model->getShowCoverTitles() ? fontMetrics().height() : 0);
 
   const int available_width = width() - scrollbar_width;
   const int num_columns = available_width / item_width;

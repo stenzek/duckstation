@@ -161,14 +161,12 @@ public:
 
   void setAndSaveColumnHidden(int column, bool hidden);
 
-  void updateDynamicColumnWidths();
-
 private:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
 
   void setFixedColumnWidth(int column, int width);
-  void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width, int padding);
+  void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
