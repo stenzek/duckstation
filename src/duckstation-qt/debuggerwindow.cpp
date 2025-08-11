@@ -235,10 +235,15 @@ void DebuggerWindow::onBreakpointListItemChanged(QTreeWidgetItem* item, int colu
   if (!ok)
     return;
 
+  const uint bp_type = item->data(2, Qt::UserRole).toUInt(&ok);
+  if (!ok)
+    return;
+
   const bool enabled = (item->checkState(0) == Qt::Checked);
 
-  Host::RunOnCPUThread(
-    [bp_addr, enabled]() { CPU::SetBreakpointEnabled(CPU::BreakpointType::Execute, bp_addr, enabled); });
+  Host::RunOnCPUThread([bp_addr, bp_type, enabled]() {
+    CPU::SetBreakpointEnabled(static_cast<CPU::BreakpointType>(bp_type), bp_addr, enabled);
+  });
 }
 
 void DebuggerWindow::onStepIntoActionTriggered()
@@ -312,7 +317,8 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   menu.addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
   menu.addSeparator();
 
-  QAction* action = menu.addAction(QIcon::fromTheme(QStringLiteral("debug-toggle-breakpoint")), tr("Toggle &Breakpoint"));
+  QAction* action =
+    menu.addAction(QIcon::fromTheme(QStringLiteral("debug-toggle-breakpoint")), tr("Toggle &Breakpoint"));
   connect(action, &QAction::triggered, this, [this, address]() { toggleBreakpoint(address); });
 
   action = menu.addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-cursor")), tr("&Run To Cursor"));
@@ -736,7 +742,7 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
     item->setText(3, QString::asprintf("%u", bp.hit_count));
     item->setData(0, Qt::UserRole, bp.number);
     item->setData(1, Qt::UserRole, QVariant(static_cast<uint>(bp.address)));
-    item->setData(2, Qt::UserRole, static_cast<u32>(bp.type));
+    item->setData(2, Qt::UserRole, QVariant(static_cast<uint>(bp.type)));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }
 }
