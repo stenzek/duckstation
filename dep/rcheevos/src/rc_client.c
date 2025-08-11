@@ -976,9 +976,9 @@ static void rc_client_subset_get_user_game_summary(const rc_client_subset_info_t
   }
 
   /* Game considered beaten when all progression achievements are unlocked and any win condition achievement
-   * is unlocked, or all progression achievements are unlocked and no there are no win condition achievements. */
+   * is unlocked, or all progression achievements are unlocked and there are no win condition achievements. */
   summary->beaten_time = 0;
-  if (num_progression_achievements > 0 && unlocked_progression_achievements == num_progression_achievements &&
+  if (unlocked_progression_achievements == num_progression_achievements &&
       (num_win_condition_achievements == 0 || first_win_condition_unlock > 0)) {
     summary->beaten_time = (num_win_condition_achievements == 0) ? last_progression_unlock : first_win_condition_unlock;
   }
