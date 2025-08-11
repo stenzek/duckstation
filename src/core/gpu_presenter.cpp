@@ -1199,35 +1199,39 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, 
 
 GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) const
 {
-  const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.gpu_show_vram);
-  if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
+  if (m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
-    float f_width =
-      m_display_width * (static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width));
-    float f_height = m_display_height *
-                     (static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height));
-    if (!g_gpu_settings.gpu_show_vram && mode != DisplayScreenshotMode::UncorrectedInternalResolution)
-      GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
-
-    // DX11 won't go past 16K texture size.
-    const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
-    if (f_width > max_texture_size)
+    if (g_gpu_settings.gpu_show_vram)
     {
-      f_height = f_height / (f_width / max_texture_size);
-      f_width = max_texture_size;
+      return GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
     }
-    if (f_height > max_texture_size)
+    else if (mode != DisplayScreenshotMode::ScreenResolution)
     {
-      f_height = max_texture_size;
-      f_width = f_width / (f_height / max_texture_size);
-    }
+      float f_width =
+        m_display_width * (static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width));
+      float f_height = m_display_height *
+                       (static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height));
+      if (mode != DisplayScreenshotMode::UncorrectedInternalResolution)
+        GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
 
-    return GSVector2i(static_cast<s32>(std::ceil(f_width)), static_cast<s32>(std::ceil(f_height)));
+      // DX11 won't go past 16K texture size.
+      const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
+      if (f_width > max_texture_size)
+      {
+        f_height = f_height / (f_width / max_texture_size);
+        f_width = max_texture_size;
+      }
+      if (f_height > max_texture_size)
+      {
+        f_height = max_texture_size;
+        f_width = f_width / (f_height / max_texture_size);
+      }
+
+      return GSVector2i(static_cast<s32>(std::ceil(f_width)), static_cast<s32>(std::ceil(f_height)));
+    }
   }
-  else
-  {
-    return g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i(1, 1);
-  }
+
+  return g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i(1, 1);
 }
 
 void GPUPresenter::LoadPostProcessingSettings(bool force_load)
