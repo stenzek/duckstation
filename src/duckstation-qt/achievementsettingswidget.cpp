@@ -82,7 +82,6 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     tr("Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes."));
 
   connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this,
           &AchievementSettingsWidget::onHardcoreModeStateChanged);
   connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this,
@@ -160,7 +159,8 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.encoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
-  m_ui.refreshProgress->setEnabled(enabled && m_ui.viewProfile->isEnabled());
+  if (!m_dialog->isPerGameSettings())
+    m_ui.refreshProgress->setEnabled(enabled && m_ui.viewProfile->isEnabled());
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()
