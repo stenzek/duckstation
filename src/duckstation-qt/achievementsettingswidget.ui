@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>674</width>
-    <height>479</height>
+    <height>524</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -220,7 +220,7 @@
      <property name="title">
       <string>Account</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0">
       <item>
        <widget class="QLabel" name="loginStatus">
         <property name="text">
@@ -240,22 +240,18 @@ Login token generated at:</string>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QPushButton" name="viewProfile">
-          <property name="text">
-           <string>View Profile...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="loginButton">
-          <property name="text">
-           <string>Login...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QPushButton" name="viewProfile">
+        <property name="text">
+         <string>View Profile...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="loginButton">
+        <property name="text">
+         <string>Login...</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
