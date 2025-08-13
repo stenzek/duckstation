@@ -900,6 +900,9 @@ void AudioStream::StretchOverrun()
 
 void AudioStream::EmptyStretchBuffers()
 {
+  if (!IsStretchEnabled())
+    return;
+
   m_stretch_reset = STRETCH_RESET_THRESHOLD;
 
   // Wipe soundtouch samples. If we don't do this and we're switching from a high tempo to low,
