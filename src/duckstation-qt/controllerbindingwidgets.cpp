@@ -30,6 +30,7 @@
 #include "fmt/format.h"
 
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLineEdit>
@@ -64,7 +65,8 @@ ControllerBindingWidget::~ControllerBindingWidget() = default;
 void ControllerBindingWidget::populateControllerTypes()
 {
   for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
-    m_ui.controllerType->addItem(QtUtils::StringViewToQString(cinfo->GetDisplayName()), QVariant(static_cast<int>(cinfo->type)));
+    m_ui.controllerType->addItem(QtUtils::StringViewToQString(cinfo->GetDisplayName()),
+                                 QVariant(static_cast<int>(cinfo->type)));
 
   m_controller_info = Controller::GetControllerInfo(
     m_dialog->getStringValue(m_config_section.c_str(), "Type",
@@ -820,41 +822,13 @@ void ControllerMacroEditWidget::updateBinds()
 
 //////////////////////////////////////////////////////////////////////////
 
-ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBindingWidget* parent)
-  : QWidget(parent), m_parent(parent)
+static void createSettingWidgets(SettingsInterface* const sif, QWidget* parent_widget, QGridLayout* layout,
+                                 const std::string& section, std::span<const SettingInfo> settings,
+                                 const char* tr_context)
 {
-  const Controller::ControllerInfo* cinfo = parent->getControllerInfo();
-  DebugAssert(cinfo);
-  if (cinfo->settings.empty())
-    return;
-
-  QScrollArea* sarea = new QScrollArea(this);
-  QWidget* swidget = new QWidget(sarea);
-  sarea->setWidget(swidget);
-  sarea->setWidgetResizable(true);
-  sarea->setFrameShape(QFrame::StyledPanel);
-  sarea->setFrameShadow(QFrame::Sunken);
-
-  QGridLayout* swidget_layout = new QGridLayout(swidget);
-  createSettingWidgets(parent, swidget, swidget_layout, cinfo);
-
-  QVBoxLayout* layout = new QVBoxLayout(this);
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->addWidget(sarea);
-}
-
-ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget()
-{
-}
-
-void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget,
-                                                          QGridLayout* layout, const Controller::ControllerInfo* cinfo)
-{
-  const std::string& section = parent->getConfigSection();
-  SettingsInterface* sif = parent->getDialog()->getEditingSettingsInterface();
   int current_row = 0;
 
-  for (const SettingInfo& si : cinfo->settings)
+  for (const SettingInfo& si : settings)
   {
     std::string key_name = si.name;
 
@@ -862,7 +836,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* cb = new QCheckBox(qApp->translate(cinfo->name, si.display_name), this);
+        QCheckBox* cb = new QCheckBox(qApp->translate(tr_context, si.display_name), parent_widget);
         cb->setObjectName(QString::fromUtf8(si.name));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, cb, section, std::move(key_name),
                                                                     si.BooleanDefaultValue());
@@ -873,14 +847,14 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
       case SettingInfo::Type::Integer:
       {
-        QSpinBox* sb = new QSpinBox(this);
+        QSpinBox* sb = new QSpinBox(parent_widget);
         sb->setObjectName(QString::fromUtf8(si.name));
         sb->setMinimum(si.IntegerMinValue());
         sb->setMaximum(si.IntegerMaxValue());
         sb->setSingleStep(si.IntegerStepValue());
         ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, sb, section, std::move(key_name),
                                                                    si.IntegerDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -888,13 +862,13 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
       case SettingInfo::Type::IntegerList:
       {
-        QComboBox* cb = new QComboBox(this);
+        QComboBox* cb = new QComboBox(parent_widget);
         cb->setObjectName(QString::fromUtf8(si.name));
         for (u32 j = 0; si.options[j] != nullptr; j++)
-          cb->addItem(qApp->translate(cinfo->name, si.options[j]));
+          cb->addItem(qApp->translate(tr_context, si.options[j]));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, cb, section, std::move(key_name),
                                                                    si.IntegerDefaultValue(), si.IntegerMinValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
         layout->addWidget(cb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -902,7 +876,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
       case SettingInfo::Type::Float:
       {
-        QDoubleSpinBox* sb = new QDoubleSpinBox(this);
+        QDoubleSpinBox* sb = new QDoubleSpinBox(parent_widget);
         sb->setObjectName(QString::fromUtf8(si.name));
         if (si.multiplier != 0.0f && si.multiplier != 1.0f)
         {
@@ -928,7 +902,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
           ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, sb, section, std::move(key_name),
                                                                        si.FloatDefaultValue());
         }
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
       }
@@ -936,11 +910,11 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
       case SettingInfo::Type::String:
       {
-        QLineEdit* le = new QLineEdit(this);
+        QLineEdit* le = new QLineEdit(parent_widget);
         le->setObjectName(QString::fromUtf8(si.name));
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
         layout->addWidget(le, current_row, 1, 1, 3);
         current_row++;
       }
@@ -948,13 +922,15 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
 
       case SettingInfo::Type::Path:
       {
-        QLineEdit* le = new QLineEdit(this);
+        QLineEdit* le = new QLineEdit(parent_widget);
         le->setObjectName(QString::fromUtf8(si.name));
-        QPushButton* browse_button = new QPushButton(tr("Browse..."), this);
+        QPushButton* browse_button =
+          new QPushButton(qApp->translate("ControllerCustomSettingsWidget", "Browse..."), parent_widget);
         ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
                                                                       si.StringDefaultValue());
-        connect(browse_button, &QPushButton::clicked, [this, le]() {
-          QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select File")));
+        QObject::connect(browse_button, &QPushButton::clicked, [le, root = QtUtils::GetRootWidget(parent_widget)]() {
+          QString path = QDir::toNativeSeparators(
+            QFileDialog::getOpenFileName(root, qApp->translate("ControllerCustomSettingsWidget", "Select File")));
           if (!path.isEmpty())
             le->setText(path);
         });
@@ -963,39 +939,24 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         hbox->addWidget(le, 1);
         hbox->addWidget(browse_button);
 
-        layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
+        layout->addWidget(new QLabel(qApp->translate(tr_context, si.display_name), parent_widget), current_row, 0);
         layout->addLayout(hbox, current_row, 1, 1, 3);
         current_row++;
       }
       break;
     }
 
-    QLabel* label = new QLabel(si.description ? qApp->translate(cinfo->name, si.description) : QString(), this);
+    QLabel* label = new QLabel(si.description ? qApp->translate(tr_context, si.description) : QString(), parent_widget);
     label->setWordWrap(true);
     layout->addWidget(label, current_row++, 0, 1, 4);
 
     layout->addItem(new QSpacerItem(1, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), current_row++, 0, 1, 4);
   }
-
-  QHBoxLayout* bottom_hlayout = new QHBoxLayout();
-  QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), this);
-  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
-  connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
-  bottom_hlayout->addStretch(1);
-  bottom_hlayout->addWidget(restore_defaults);
-  layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);
-
-  layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), current_row++, 0, 1, 4);
 }
 
-void ControllerCustomSettingsWidget::restoreDefaults()
+static void restoreDefaultSettingWidgets(QWidget* parent_widget, std::span<const SettingInfo> settings)
 {
-  const Controller::ControllerInfo* cinfo = m_parent->getControllerInfo();
-  DebugAssert(cinfo);
-  if (cinfo->settings.empty())
-    return;
-
-  for (const SettingInfo& si : cinfo->settings)
+  for (const SettingInfo& si : settings)
   {
     const QString key(QString::fromStdString(si.name));
 
@@ -1003,7 +964,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
     {
       case SettingInfo::Type::Boolean:
       {
-        QCheckBox* widget = findChild<QCheckBox*>(QString::fromStdString(si.name));
+        QCheckBox* widget = parent_widget->findChild<QCheckBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setChecked(si.BooleanDefaultValue());
       }
@@ -1011,7 +972,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Integer:
       {
-        QSpinBox* widget = findChild<QSpinBox*>(QString::fromStdString(si.name));
+        QSpinBox* widget = parent_widget->findChild<QSpinBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setValue(si.IntegerDefaultValue());
       }
@@ -1019,7 +980,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::IntegerList:
       {
-        QComboBox* widget = findChild<QComboBox*>(QString::fromStdString(si.name));
+        QComboBox* widget = parent_widget->findChild<QComboBox*>(QString::fromStdString(si.name));
         if (widget)
           widget->setCurrentIndex(si.IntegerDefaultValue() - si.IntegerMinValue());
       }
@@ -1027,7 +988,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Float:
       {
-        QDoubleSpinBox* widget = findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
+        QDoubleSpinBox* widget = parent_widget->findChild<QDoubleSpinBox*>(QString::fromStdString(si.name));
         if (widget)
         {
           if (si.multiplier != 0.0f && si.multiplier != 1.0f)
@@ -1040,7 +1001,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::String:
       {
-        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
+        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(QString::fromStdString(si.name));
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }
@@ -1048,7 +1009,7 @@ void ControllerCustomSettingsWidget::restoreDefaults()
 
       case SettingInfo::Type::Path:
       {
-        QLineEdit* widget = findChild<QLineEdit*>(QString::fromStdString(si.name));
+        QLineEdit* widget = parent_widget->findChild<QLineEdit*>(QString::fromStdString(si.name));
         if (widget)
           widget->setText(QString::fromUtf8(si.StringDefaultValue()));
       }
@@ -1056,3 +1017,71 @@ void ControllerCustomSettingsWidget::restoreDefaults()
     }
   }
 }
+
+ControllerCustomSettingsWidget::ControllerCustomSettingsWidget(ControllerBindingWidget* parent)
+  : QWidget(parent), m_parent(parent)
+{
+  const Controller::ControllerInfo* cinfo = parent->getControllerInfo();
+  DebugAssert(cinfo);
+  if (cinfo->settings.empty())
+    return;
+
+  QScrollArea* sarea = new QScrollArea(this);
+  QWidget* swidget = new QWidget(sarea);
+  sarea->setWidget(swidget);
+  sarea->setWidgetResizable(true);
+  sarea->setFrameShape(QFrame::StyledPanel);
+  sarea->setFrameShadow(QFrame::Sunken);
+
+  QGridLayout* swidget_layout = new QGridLayout(swidget);
+  createSettingWidgets(parent->getDialog()->getEditingSettingsInterface(), swidget, swidget_layout,
+                       parent->getConfigSection(), cinfo->settings, cinfo->name);
+
+  int current_row = swidget_layout->rowCount();
+
+  QHBoxLayout* bottom_hlayout = new QHBoxLayout();
+  QPushButton* restore_defaults = new QPushButton(tr("Restore Default Settings"), swidget);
+  restore_defaults->setIcon(QIcon::fromTheme(QStringLiteral("restart-line")));
+  bottom_hlayout->addStretch(1);
+  bottom_hlayout->addWidget(restore_defaults);
+  swidget_layout->addLayout(bottom_hlayout, current_row++, 0, 1, 4);
+  connect(restore_defaults, &QPushButton::clicked, this, &ControllerCustomSettingsWidget::restoreDefaults);
+
+  swidget_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), current_row++, 0, 1, 4);
+
+  QVBoxLayout* layout = new QVBoxLayout(this);
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->addWidget(sarea);
+}
+
+ControllerCustomSettingsWidget::~ControllerCustomSettingsWidget() = default;
+
+void ControllerCustomSettingsWidget::restoreDefaults()
+{
+  const Controller::ControllerInfo* cinfo = m_parent->getControllerInfo();
+  DebugAssert(cinfo);
+
+  restoreDefaultSettingWidgets(this, cinfo->settings);
+}
+
+ControllerCustomSettingsDialog::ControllerCustomSettingsDialog(QWidget* parent, SettingsInterface* sif,
+                                                               const std::string& section,
+                                                               std::span<const SettingInfo> settings,
+                                                               const char* tr_context, const QString& window_title)
+  : QDialog(parent)
+{
+  setMinimumWidth(500);
+  resize(minimumWidth(), 100);
+  setWindowTitle(window_title);
+
+  QGridLayout* layout = new QGridLayout(this);
+  createSettingWidgets(sif, this, layout, section, settings, tr_context);
+
+  QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::RestoreDefaults, this);
+  connect(bbox, &QDialogButtonBox::accepted, this, &ControllerCustomSettingsDialog::accept);
+  connect(bbox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this,
+          [this, settings]() { restoreDefaultSettingWidgets(this, settings); });
+  layout->addWidget(bbox, layout->rowCount(), 0, 1, 4);
+}
+
+ControllerCustomSettingsDialog::~ControllerCustomSettingsDialog() = default;

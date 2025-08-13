@@ -31,6 +31,7 @@ Q_SIGNALS:
 private:
   void updateSDLOptionsEnabled();
   void ledSettingsClicked();
+  void sdlHelpTextLinkClicked(const QString& link);
 
   Ui::ControllerGlobalSettingsWidget m_ui;
   ControllerSettingsWindow* m_dialog;

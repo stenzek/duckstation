@@ -109,51 +109,6 @@
       <string>SDL Input Source</string>
      </property>
      <layout class="QGridLayout" name="sdlGridLayout">
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="enableSDLMFIDriver">
-        <property name="text">
-         <string>Enable MFI Driver</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="enableSDLIOKitDriver">
-        <property name="text">
-         <string>Enable IOKit Driver</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="enableSDLSource">
-        <property name="text">
-         <string>Enable SDL Input Source</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="enableTouchPadAsPointer">
-        <property name="text">
-         <string>Enable Touchpad</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="enableSDLEnhancedMode">
-        <property name="text">
-         <string>DualShock 4 / DualSense Enhanced Mode</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
@@ -180,6 +135,37 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="enableSDLSource">
+        <property name="text">
+         <string>Enable SDL Input Source</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="enableSDLEnhancedMode">
+        <property name="text">
+         <string>DualShock 4 / DualSense Enhanced Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="SDLHelpText">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;advanced options&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="enableTouchPadAsPointer">
+        <property name="text">
+         <string>Enable Touchpad</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

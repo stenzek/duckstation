@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controllerglobalsettingswidget.h"
+#include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
 #include "qtutils.h"
@@ -31,20 +32,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
-
-#ifdef __APPLE__
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLIOKitDriver, "InputSources",
-                                                              "SDLIOKitDriver", true);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLMFIDriver, "InputSources",
-                                                              "SDLMFIDriver", true);
-#else
-  m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
-  delete m_ui.enableSDLIOKitDriver;
-  m_ui.enableSDLIOKitDriver = nullptr;
-  m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLMFIDriver);
-  delete m_ui.enableSDLMFIDriver;
-  m_ui.enableSDLMFIDriver = nullptr;
-#endif
+  connect(m_ui.SDLHelpText, &QLabel::linkActivated, this, &ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked);
 
 #ifdef _WIN32
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput",
@@ -110,6 +98,17 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 {
   ControllerLEDSettingsDialog dialog(this, m_dialog);
   dialog.exec();
+}
+
+void ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked(const QString& link)
+{
+  if (link == QStringLiteral("ADVANCED_SDL_OPTIONS"))
+  {
+    ControllerCustomSettingsDialog dialog(m_dialog, m_dialog->getEditingSettingsInterface(), "InputSources",
+                                          SDLInputSource::GetAdvancedSettingsInfo(), "SDLInputSource",
+                                          tr("Advanced SDL Options"));
+    dialog.exec();
+  }
 }
 
 void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()

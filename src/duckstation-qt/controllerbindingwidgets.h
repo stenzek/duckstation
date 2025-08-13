@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "core/controller.h"
 #include "core/settings.h"
+#include <QtWidgets/QDialog>
 #include <QtWidgets/QWidget>
 #include <functional>
 #include <vector>
@@ -136,12 +137,22 @@ public:
   explicit ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
   ~ControllerCustomSettingsWidget();
 
-  void createSettingWidgets(ControllerBindingWidget* parent, QWidget* parent_widget, QGridLayout* layout,
-                            const Controller::ControllerInfo* cinfo);
-
 private Q_SLOTS:
   void restoreDefaults();
 
 private:
   ControllerBindingWidget* m_parent;
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class ControllerCustomSettingsDialog : public QDialog
+{
+  Q_OBJECT
+
+public:
+  explicit ControllerCustomSettingsDialog(QWidget* parent, SettingsInterface* sif, const std::string& section,
+                                          std::span<const SettingInfo> settings, const char* tr_context,
+                                          const QString& window_title);
+  ~ControllerCustomSettingsDialog();
 };
