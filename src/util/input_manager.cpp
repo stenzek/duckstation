@@ -1185,6 +1185,58 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
   } while (matched);
 }
 
+void InputManager::SynchronizeBindingHandlerState()
+{
+  // should be called on the main thread, so no need to lock
+  for (const auto& [key, binding] : s_binding_map)
+  {
+    // ignore hotkeys
+    if (!IsAxisHandler(binding->handler))
+      continue;
+
+    if (key.source_type >= InputSourceType::Count || !s_input_sources[static_cast<u32>(key.source_type)])
+      continue;
+
+    const std::optional<float> value = s_input_sources[static_cast<u32>(key.source_type)]->GetCurrentValue(key);
+    if (!value.has_value())
+      continue;
+
+    const InputBindingKey masked_key = key.MaskDirection();
+    for (u32 i = 0; i < binding->num_keys; i++)
+    {
+      if (binding->keys[i].MaskDirection() != masked_key)
+        continue;
+
+      float value_to_pass = 0.0f;
+      switch (binding->keys[i].modifier)
+      {
+        case InputModifier::None:
+        {
+          if (value > 0.0f)
+            value_to_pass = value.value();
+        }
+        break;
+        case InputModifier::Negate:
+        {
+          if (value < 0.0f)
+            value_to_pass = -value.value();
+        }
+        break;
+        case InputModifier::FullAxis:
+        {
+          value_to_pass = value.value() * 0.5f + 0.5f;
+        }
+        break;
+      }
+
+      // handle inverting, needed for some wheels.
+      value_to_pass = binding->keys[i].invert ? (1.0f - value_to_pass) : value_to_pass;
+
+      std::get<InputAxisEventHandler>(binding->handler)(value_to_pass);
+    }
+  }
+}
+
 bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
   // does imgui want the event?

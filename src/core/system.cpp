@@ -1857,6 +1857,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   InputManager::UpdateHostMouseMode();
+  InputManager::SynchronizeBindingHandlerState();
 
   if (g_settings.inhibit_screensaver)
     PlatformMisc::SuspendScreensaver();

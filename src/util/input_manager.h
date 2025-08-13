@@ -282,6 +282,9 @@ GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
 /// Returns true if the specified input source is enabled.
 bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 
+/// Synchronizes handlers with the current state of all registered bindings.
+void SynchronizeBindingHandlerState();
+
 /// Re-parses the config and registers all hotkey and pad bindings.
 void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si);
 
