@@ -1496,27 +1496,7 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
     if (copy_pad_config)
     {
       for (const SettingInfo& csi : info->settings)
-      {
-        switch (csi.type)
-        {
-          case SettingInfo::Type::Boolean:
-            dest_si->CopyBoolValue(src_si, section.c_str(), csi.name);
-            break;
-          case SettingInfo::Type::Integer:
-          case SettingInfo::Type::IntegerList:
-            dest_si->CopyIntValue(src_si, section.c_str(), csi.name);
-            break;
-          case SettingInfo::Type::Float:
-            dest_si->CopyFloatValue(src_si, section.c_str(), csi.name);
-            break;
-          case SettingInfo::Type::String:
-          case SettingInfo::Type::Path:
-            dest_si->CopyStringValue(src_si, section.c_str(), csi.name);
-            break;
-          default:
-            break;
-        }
-      }
+        csi.CopyValue(dest_si, src_si, section.c_str());
     }
   }
 

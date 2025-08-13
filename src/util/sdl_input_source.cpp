@@ -155,6 +155,49 @@ static constexpr std::array<const char*, 4> s_sdl_default_led_colors = {{
   "ffff00", // SDL-3
 }};
 
+#ifdef _WIN32
+static constexpr bool SDL_DEFAULT_XBOX_HIDAPI = false;
+#else
+static constexpr bool SDL_DEFAULT_XBOX_HIDAPI = true;
+#endif
+
+static constexpr const SettingInfo s_sdl_advanced_settings_info[] = {
+  {SettingInfo::Type::Boolean, "SDLJoystickXboxHIDAPI", TRANSLATE_NOOP("SDLInputSource", "Enable XBox HIDAPI Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Enables the HIDAPI driver for XBox controllers."),
+   SDL_DEFAULT_XBOX_HIDAPI ? "true" : "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+#if defined(_WIN32)
+  {SettingInfo::Type::Boolean, "SDLJoystickRawInput", TRANSLATE_NOOP("SDLInputSource", "Enable Raw Input Drivers"),
+   TRANSLATE_NOOP("SDLInputSource",
+                  "Enables raw input joystick drivers which can improve handling of XInput-capable devices."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "SDLJoystickDirectInput", TRANSLATE_NOOP("SDLInputSource", "Enable DirectInput Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with DirectInput controllers."), "true", nullptr, nullptr,
+   nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "SDLJoystickXInput", TRANSLATE_NOOP("SDLInputSource", "Enable XInput Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with XInput controllers."), "true", nullptr, nullptr,
+   nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "SDLJoystickWGI", TRANSLATE_NOOP("SDLInputSource", "Enable WGI Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with Windows.Gaming.Input controllers."), "true", nullptr,
+   nullptr, nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "SDLJoystickGameInput", TRANSLATE_NOOP("SDLInputSource", "Enable GameInput Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with GameInput controllers."), "false", nullptr, nullptr,
+   nullptr, nullptr, nullptr, 0.0f},
+#elif defined(__APPLE__)
+  {SettingInfo::Type::Boolean, "SDLIOKitDriver", TRANSLATE_NOOP("SDLInputSource", "Enable IOKit Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Allows the use of IOKit for controller handling."), "true", nullptr, nullptr,
+   nullptr, nullptr, nullptr, 0.0f},
+  {SettingInfo::Type::Boolean, "SDLMFIDriver", TRANSLATE_NOOP("SDLInputSource", "Enable MFI Driver"),
+   TRANSLATE_NOOP("SDLInputSource", "Allows the use of GCController/MFI for controller handling."), "true", nullptr,
+   nullptr, nullptr, nullptr, nullptr, 0.0f},
+#else
+  {SettingInfo::Type::Boolean, "SDLJoystickLinuxDigitalHats",
+   TRANSLATE_NOOP("SDLInputSource", "Force Digital Hat Inputs"),
+   TRANSLATE_NOOP("SDLInputSource", "Forces joysticks to always treat 'hat' axis inputs (ABS_HAT0X - ABS_HAT3Y) as "
+                                    "8-way digital hats without checking whether they may be analog."),
+   "false", nullptr, nullptr, nullptr, nullptr, nullptr, 0.0f},
+#endif
+};
+
 static void SetControllerRGBLED(SDL_Gamepad* gp, u32 color)
 {
   SDL_SetGamepadLED(gp, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
@@ -197,25 +240,13 @@ bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<st
 
 void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-  const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
-  const bool old_controller_ps5_player_led = m_controller_ps5_player_led;
-
-#ifdef __APPLE__
-  const bool old_enable_iokit_driver = m_enable_iokit_driver;
-  const bool old_enable_mfi_driver = m_enable_mfi_driver;
-#endif
+  const bool old_controller_touchpad_as_pointer = m_controller_touchpad_as_pointer;
+  const u8 old_advanced_options_bits = m_advanced_options_bits;
 
   LoadSettings(si);
 
-#ifdef __APPLE__
-  const bool drivers_changed =
-    (m_enable_iokit_driver != old_enable_iokit_driver || m_enable_mfi_driver != old_enable_mfi_driver);
-#else
-  constexpr bool drivers_changed = false;
-#endif
-
-  if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
-      m_controller_ps5_player_led != old_controller_ps5_player_led || drivers_changed)
+  if (m_advanced_options_bits != old_advanced_options_bits ||
+      m_controller_touchpad_as_pointer != old_controller_touchpad_as_pointer)
   {
     settings_lock.unlock();
     ShutdownSubsystem();
@@ -259,9 +290,18 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
   m_controller_touchpad_as_pointer = si.GetBoolValue("InputSources", "SDLTouchpadAsPointer", false);
   m_sdl_hints = si.GetKeyValueList("SDLHints");
 
-#ifdef __APPLE__
+  m_joystick_xbox_hidapi = si.GetBoolValue("InputSources", "SDLJoystickXboxHIDAPI", SDL_DEFAULT_XBOX_HIDAPI);
+#if defined(_WIN32)
+  m_joystick_rawinput = si.GetBoolValue("InputSources", "SDLJoystickRawInput", false);
+  m_joystick_directinput = si.GetBoolValue("InputSources", "SDLJoystickDirectInput", true);
+  m_joystick_xinput = si.GetBoolValue("InputSources", "SDLJoystickXInput", true);
+  m_joystick_wgi = si.GetBoolValue("InputSources", "SDLJoystickWGI", true);
+  m_joystick_gameinput = si.GetBoolValue("InputSources", "SDLJoystickGameInput", false);
+#elif defined(__APPLE__)
   m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);
   m_enable_mfi_driver = si.GetBoolValue("InputSources", "SDLMFIDriver", true);
+#else
+  m_joystick_force_hat_input = si.GetBoolValue("InputSources", "SDLJoystickLinuxDigitalHats", false);
 #endif
 }
 
@@ -274,6 +314,9 @@ void InputSource::CopySDLSourceSettings(SettingsInterface* dest_si, const Settin
   dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5PlayerLED");
   dest_si->CopyBoolValue(src_si, "InputSources", "SDLTouchpadAsPointer");
   dest_si->CopySection(src_si, "SDLHints");
+
+  for (const SettingInfo& si : s_sdl_advanced_settings_info)
+    si.CopyValue(dest_si, src_si, "InputSources");
 }
 
 u32 SDLInputSource::GetRGBForPlayerId(const SettingsInterface& si, u32 player_id)
@@ -292,6 +335,11 @@ u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id)
   const u32 color = StringUtil::FromChars<u32>(str, 16).value_or(default_color);
 
   return color;
+}
+
+std::span<const SettingInfo> SDLInputSource::GetAdvancedSettingsInfo()
+{
+  return s_sdl_advanced_settings_info;
 }
 
 void SDLInputSource::SetHints()
@@ -318,11 +366,26 @@ void SDLInputSource::SetHints()
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
 
-#ifdef __APPLE__
+  INFO_LOG("XBox HIDAPI is {}.", m_joystick_xbox_hidapi ? "enabled" : "disabled");
+  SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_XBOX, m_joystick_xbox_hidapi ? "1" : "0");
+
+#if defined(_WIN32)
+  INFO_LOG("RawInput is {}, DirectInput is {}, XInput is {}, WGI is {}, GameInput is {}.",
+           m_joystick_rawinput ? "enabled" : "disabled", m_joystick_directinput ? "enabled" : "disabled",
+           m_joystick_xinput ? "enabled" : "disabled", m_joystick_wgi ? "enabled" : "disabled",
+           m_joystick_gameinput ? "enabled" : "disabled");
+  SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_joystick_rawinput ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_DIRECTINPUT, m_joystick_rawinput ? "1" : "0");
+  SDL_SetHint(SDL_HINT_XINPUT_ENABLED, m_joystick_xinput ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_WGI, m_joystick_wgi ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_GAMEINPUT, m_joystick_gameinput ? "1" : "0");
+#elif defined(__APPLE__)
   INFO_LOG("IOKit is {}, MFI is {}.", m_enable_iokit_driver ? "enabled" : "disabled",
            m_enable_mfi_driver ? "enabled" : "disabled");
   SDL_SetHint(SDL_HINT_JOYSTICK_IOKIT, m_enable_iokit_driver ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_MFI, m_enable_mfi_driver ? "1" : "0");
+#else
+  SDL_SetHint(SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS, m_joystick_force_hat_input ? "1" : "0");
 #endif
 
   for (const std::pair<std::string, std::string>& hint : m_sdl_hints)

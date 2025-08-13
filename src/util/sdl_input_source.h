@@ -10,9 +10,11 @@
 #include <array>
 #include <functional>
 #include <mutex>
+#include <span>
 #include <vector>
 
 class SettingsInterface;
+struct SettingInfo;
 
 class SDLInputSource final : public InputSource
 {
@@ -49,9 +51,9 @@ public:
   static u32 GetRGBForPlayerId(const SettingsInterface& si, u32 player_id);
   static u32 ParseRGBForPlayerId(std::string_view str, u32 player_id);
 
-  static bool IsHandledInputEvent(const SDL_Event* ev);
+  static std::span<const SettingInfo> GetAdvancedSettingsInfo();
 
-  static void CopySettings(SettingsInterface& dest_si, const SettingsInterface& src_si);
+  static bool IsHandledInputEvent(const SDL_Event* ev);
 
   static bool ALLOW_EVENT_POLLING;
 
@@ -106,14 +108,33 @@ private:
   std::vector<std::pair<std::string, std::string>> m_sdl_hints;
 
   bool m_sdl_subsystem_initialized = false;
-  bool m_controller_enhanced_mode = false;
-  bool m_controller_ps5_player_led = false;
   bool m_controller_touchpad_as_pointer = false;
 
-#ifdef __APPLE__
-  bool m_enable_iokit_driver = false;
-  bool m_enable_mfi_driver = false;
+  union
+  {
+    struct
+    {
+      bool m_controller_enhanced_mode : 1;
+      bool m_controller_ps5_player_led : 1;
+
+      bool m_joystick_xbox_hidapi : 1;
+
+#if defined(_WIN32)
+      bool m_joystick_rawinput : 1;
+      bool m_joystick_directinput : 1;
+      bool m_joystick_xinput : 1;
+      bool m_joystick_wgi : 1;
+      bool m_joystick_gameinput : 1;
+#elif defined(__APPLE__)
+      bool m_enable_iokit_driver : 1;
+      bool m_enable_mfi_driver : 1;
+#else
+      bool m_joystick_force_hat_input : 1;
 #endif
+    };
+
+    u8 m_advanced_options_bits = 0;
+  };
 };
 
 class SDLForceFeedbackDevice : public ForceFeedbackDevice

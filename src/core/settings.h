@@ -55,6 +55,8 @@ struct SettingInfo
   float FloatMinValue() const;
   float FloatMaxValue() const;
   float FloatStepValue() const;
+
+  void CopyValue(SettingsInterface* dest_si, const SettingsInterface& src_si, const char* section) const;
 };
 
 struct GPUSettings

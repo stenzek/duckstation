@@ -91,6 +91,29 @@ float SettingInfo::FloatStepValue() const
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
 
+void SettingInfo::CopyValue(SettingsInterface* dest_si, const SettingsInterface& src_si, const char* section) const
+{
+  switch (type)
+  {
+    case SettingInfo::Type::Boolean:
+      dest_si->CopyBoolValue(src_si, section, name);
+      break;
+    case SettingInfo::Type::Integer:
+    case SettingInfo::Type::IntegerList:
+      dest_si->CopyIntValue(src_si, section, name);
+      break;
+    case SettingInfo::Type::Float:
+      dest_si->CopyFloatValue(src_si, section, name);
+      break;
+    case SettingInfo::Type::String:
+    case SettingInfo::Type::Path:
+      dest_si->CopyStringValue(src_si, section, name);
+      break;
+    default:
+      break;
+  }
+}
+
 GPUSettings::GPUSettings()
 {
   SetPGXPDepthClearThreshold(DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
