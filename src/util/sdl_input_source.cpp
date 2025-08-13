@@ -1145,6 +1145,46 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
   return true;
 }
 
+std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
+{
+  std::optional<float> ret;
+  if (key.source_type != InputSourceType::SDL)
+    return ret;
+
+  const auto cd = GetControllerDataForPlayerId(static_cast<int>(key.source_index));
+  if (cd == m_controllers.end())
+    return ret;
+
+  if (key.source_subtype == InputSubclass::ControllerAxis)
+  {
+    if (cd->gamepad && key.data < std::size(s_sdl_axis_names))
+      ret = NormalizeS16(SDL_GetGamepadAxis(cd->gamepad, static_cast<SDL_GamepadAxis>(key.data)));
+    else if (key.data >= std::size(s_sdl_axis_names))
+      ret = NormalizeS16(SDL_GetJoystickAxis(cd->joystick, static_cast<int>(key.data - std::size(s_sdl_axis_names))));
+  }
+  else if (key.source_subtype == InputSubclass::ControllerButton)
+  {
+    if (cd->gamepad && key.data < std::size(s_sdl_button_names))
+    {
+      ret = BoolToFloat(SDL_GetGamepadButton(cd->gamepad, static_cast<SDL_GamepadButton>(key.data)));
+    }
+    else if (key.data >= std::size(s_sdl_axis_names))
+    {
+      ret =
+        BoolToFloat(SDL_GetJoystickButton(cd->joystick, static_cast<int>(key.data - std::size(s_sdl_button_names))));
+    }
+  }
+  else if (key.source_subtype == InputSubclass::ControllerHat)
+  {
+    const u32 hat_index = key.data / static_cast<u32>(std::size(s_sdl_hat_direction_names));
+    const u8 hat_direction = Truncate8(key.data % static_cast<u32>(std::size(s_sdl_hat_direction_names)));
+    const u8 hat_value = SDL_GetJoystickHat(cd->joystick, static_cast<int>(hat_index));
+    ret = BoolToFloat((hat_value & (1u << hat_direction)) != 0);
+  }
+
+  return ret;
+}
+
 InputManager::VibrationMotorList SDLInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
   InputManager::VibrationMotorList ret;

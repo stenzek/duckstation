@@ -76,6 +76,12 @@ void Win32RawInputSource::PollEvents()
   // noop, handled by message pump
 }
 
+std::optional<float> Win32RawInputSource::GetCurrentValue(InputBindingKey key)
+{
+  // not really used
+  return std::nullopt;
+}
+
 InputManager::DeviceList Win32RawInputSource::EnumerateDevices()
 {
   InputManager::DeviceList ret;

@@ -25,16 +25,34 @@ public:
   InputSource();
   virtual ~InputSource();
 
+  // Sets up the input source.
   virtual bool Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+
+  /// Updates the settings for this input source. This should be called when settings change.
   virtual void UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+
+  /// Reloads the devices for this input source. This should be called when a device change is detected.
   virtual bool ReloadDevices() = 0;
+
+  /// Shuts down the input source, releasing any resources it holds.
   virtual void Shutdown() = 0;
 
+  /// Polls the input source for events. This should be called at a regular interval, such as every frame.
   virtual void PollEvents() = 0;
 
+  /// Returns the current value for the specified device and key.
+  virtual std::optional<float> GetCurrentValue(InputBindingKey key) = 0;
+
+  /// Returns true if the source contains the specified device.
   virtual bool ContainsDevice(std::string_view device) const = 0;
+
+  /// Parses a key string for the specified device. Returns std::nullopt if the key is not valid.
   virtual std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) = 0;
+
+  /// Converts a key to a string representation. The string should be suitable for parsing with ParseKeyString().
   virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
+
+  /// Converts a key to an icon representation. The icon is suitable for display in the UI.
   virtual TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) = 0;
 
   /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.

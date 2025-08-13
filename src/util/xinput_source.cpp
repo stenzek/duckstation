@@ -508,6 +508,44 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
   cd.last_state = new_state;
 }
 
+std::optional<float> XInputSource::GetCurrentValue(InputBindingKey key)
+{
+  std::optional<float> ret;
+  if (key.source_type != InputSourceType::XInput || key.source_index >= NUM_CONTROLLERS)
+    return ret;
+
+  const ControllerData& cd = m_controllers[key.source_index];
+  if (!cd.connected)
+    return ret;
+
+  if (key.source_subtype == InputSubclass::ControllerAxis && key.data < NUM_AXES)
+  {
+    const XINPUT_GAMEPAD& state = cd.last_state.Gamepad;
+#define CHECK_AXIS(field, axis, min_value, max_value)                                                                  \
+  case axis:                                                                                                           \
+    ret = static_cast<float>(state.field) / ((state.field < 0) ? min_value : max_value);
+
+    // Y axes is inverted in XInput when compared to SDL.
+    switch (key.data)
+    {
+      CHECK_AXIS(sThumbLX, AXIS_LEFTX, 32768, 32767);
+      CHECK_AXIS(sThumbLY, AXIS_LEFTY, -32768, -32767);
+      CHECK_AXIS(sThumbRX, AXIS_RIGHTX, 32768, 32767);
+      CHECK_AXIS(sThumbRY, AXIS_RIGHTY, -32768, -32767);
+      CHECK_AXIS(bLeftTrigger, AXIS_LEFTTRIGGER, 0, 255);
+      CHECK_AXIS(bRightTrigger, AXIS_RIGHTTRIGGER, 0, 255);
+    }
+  }
+  else if (key.source_subtype == InputSubclass::ControllerButton && key.data < NUM_BUTTONS)
+  {
+    const XINPUT_GAMEPAD& state = cd.last_state.Gamepad;
+    const u16 button_mask = s_button_masks[key.data];
+    ret = BoolToFloat((state.wButtons & button_mask) != 0);
+  }
+
+  return ret;
+}
+
 void XInputSource::UpdateMotorState(InputBindingKey key, float intensity)
 {
   if (key.source_subtype != InputSubclass::ControllerMotor || key.source_index >= NUM_CONTROLLERS)

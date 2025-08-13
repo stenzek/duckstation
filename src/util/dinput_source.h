@@ -39,6 +39,7 @@ public:
   void Shutdown() override;
 
   void PollEvents() override;
+  std::optional<float> GetCurrentValue(InputBindingKey key) override;
   InputManager::DeviceList EnumerateDevices() override;
   InputManager::VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device) override;
   bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping) override;

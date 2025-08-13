@@ -8,6 +8,7 @@
 #include "platform_misc.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -509,6 +510,45 @@ void DInputSource::CheckForStateChanges(size_t index, const DIJOYSTATE& new_stat
       }
     }
   }
+}
+
+std::optional<float> DInputSource::GetCurrentValue(InputBindingKey key)
+{
+  std::optional<float> ret;
+
+  if (key.source_type != InputSourceType::DInput)
+    return ret;
+
+  if (key.source_index >= m_controllers.size())
+    return ret;
+
+  const ControllerData& cd = m_controllers[key.source_index];
+  if (key.source_subtype == InputSubclass::ControllerAxis && key.data < cd.axis_offsets.size())
+  {
+    LONG value;
+    std::memcpy(&value, reinterpret_cast<const u8*>(&cd.last_state) + cd.axis_offsets[key.data], sizeof(value));
+    ret = static_cast<float>(value) / (value < 0 ? 32768.0f : 32767.0f);
+  }
+  else if (key.source_subtype == InputSubclass::ControllerButton)
+  {
+    if (key.data < cd.num_buttons)
+    {
+      ret = BoolToFloat(cd.last_state.rgbButtons[key.data]);
+    }
+    else
+    {
+      // might be a hat
+      const u32 hat_index = (key.data - cd.num_buttons) / NUM_HAT_DIRECTIONS;
+      const u32 hat_direction = (key.data - cd.num_buttons) % NUM_HAT_DIRECTIONS;
+      if (hat_index < cd.num_hats)
+      {
+        const std::array<bool, NUM_HAT_DIRECTIONS> buttons(GetHatButtons(cd.last_state.rgdwPOV[hat_index]));
+        ret = BoolToFloat(buttons[hat_direction]);
+      }
+    }
+  }
+
+  return ret;
 }
 
 std::unique_ptr<InputSource> InputSource::CreateDInputSource()
