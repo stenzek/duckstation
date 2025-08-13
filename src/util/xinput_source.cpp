@@ -165,7 +165,7 @@ bool XInputSource::ReloadDevices()
       if (m_controllers[i].connected)
         continue;
 
-      HandleControllerConnection(i);
+      HandleControllerConnection(i, new_state);
       changed = true;
     }
     else if (result == ERROR_DEVICE_NOT_CONNECTED)
@@ -214,9 +214,9 @@ void XInputSource::PollEvents()
     if (result == ERROR_SUCCESS)
     {
       if (!was_connected)
-        HandleControllerConnection(i);
-
-      CheckForStateChanges(i, new_state);
+        HandleControllerConnection(i, new_state);
+      else
+        CheckForStateChanges(i, new_state);
     }
     else
     {
@@ -434,7 +434,7 @@ bool XInputSource::GetGenericBindingMapping(std::string_view device, GenericInpu
   return true;
 }
 
-void XInputSource::HandleControllerConnection(u32 index)
+void XInputSource::HandleControllerConnection(u32 index, const XINPUT_STATE& state)
 {
   INFO_LOG("XInput controller {} connected.", index);
 
@@ -446,7 +446,7 @@ void XInputSource::HandleControllerConnection(u32 index)
   cd.connected = true;
   cd.has_large_motor = caps.Vibration.wLeftMotorSpeed != 0;
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
-  cd.last_state = {};
+  cd.last_state = state;
 
   InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
                                        fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));

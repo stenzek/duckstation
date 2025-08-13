@@ -69,7 +69,7 @@ private:
   using ControllerDataArray = std::array<ControllerData, NUM_CONTROLLERS>;
 
   void CheckForStateChanges(u32 index, const XINPUT_STATE& new_state);
-  void HandleControllerConnection(u32 index);
+  void HandleControllerConnection(u32 index, const XINPUT_STATE& state);
   void HandleControllerDisconnection(u32 index);
 
   ControllerDataArray m_controllers;
