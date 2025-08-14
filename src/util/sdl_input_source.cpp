@@ -375,7 +375,7 @@ void SDLInputSource::SetHints()
            m_joystick_xinput ? "enabled" : "disabled", m_joystick_wgi ? "enabled" : "disabled",
            m_joystick_gameinput ? "enabled" : "disabled");
   SDL_SetHint(SDL_HINT_JOYSTICK_RAWINPUT, m_joystick_rawinput ? "1" : "0");
-  SDL_SetHint(SDL_HINT_JOYSTICK_DIRECTINPUT, m_joystick_rawinput ? "1" : "0");
+  SDL_SetHint(SDL_HINT_JOYSTICK_DIRECTINPUT, m_joystick_directinput ? "1" : "0");
   SDL_SetHint(SDL_HINT_XINPUT_ENABLED, m_joystick_xinput ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_WGI, m_joystick_wgi ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_GAMEINPUT, m_joystick_gameinput ? "1" : "0");
