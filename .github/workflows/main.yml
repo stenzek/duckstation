@@ -98,4 +98,3 @@ jobs:
             ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
             ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
-
