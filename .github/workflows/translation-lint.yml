@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -26,5 +26,5 @@ jobs:
       shell: bash
       run: |
         for i in src/duckstation-qt/translations/*.ts; do
-          python scripts/verify_translation_placeholders.py "$i";
+          python scripts/verify_translation_placeholders.py "$i"
         done

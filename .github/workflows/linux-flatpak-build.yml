@@ -27,7 +27,7 @@ jobs:
       options: --privileged
     timeout-minutes: 60
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
         set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
