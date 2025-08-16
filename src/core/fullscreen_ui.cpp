@@ -9588,6 +9588,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will
 TRANSLATE_NOOP("FullscreenUI", "Determines the margin between the edge of the screen and on-screen messages.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the rotation of the simulated TV screen.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the scaling algorithm used when 24-bit content is active, typically FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by DuckStation.");
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
@@ -9671,6 +9672,7 @@ TRANSLATE_NOOP("FullscreenUI", "Exit DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits Big Picture mode, returning to the desktop interface.");
 TRANSLATE_NOOP("FullscreenUI", "FMV Chroma Smoothing");
+TRANSLATE_NOOP("FullscreenUI", "FMV Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy cover: {}");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete existing cover: {}");
