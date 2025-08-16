@@ -66,7 +66,6 @@ struct GPUSettings
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
   u8 gpu_resolution_scale = 1;
   u8 gpu_multisamples = 1;
-  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
 
   ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
@@ -82,6 +81,7 @@ struct GPUSettings
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayRotation display_rotation = DEFAULT_DISPLAY_ROTATION;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
+  DisplayScalingMode display_scaling_24bit = DEFAULT_DISPLAY_SCALING;
   DisplayExclusiveFullscreenControl display_exclusive_fullscreen_control = DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL;
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
@@ -93,6 +93,7 @@ struct GPUSettings
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
 
+  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_debug_device : 1 = false;
@@ -227,10 +228,10 @@ struct GPUSettings
     return (gpu_dithering_mode == GPUDitheringMode::Scaled ||
             gpu_dithering_mode == GPUDitheringMode::ScaledShaderBlend);
   }
-  ALWAYS_INLINE bool IsUsingIntegerDisplayScaling() const
+  ALWAYS_INLINE bool IsUsingIntegerDisplayScaling(bool is_24bit) const
   {
-    return (display_scaling == DisplayScalingMode::NearestInteger ||
-            display_scaling == DisplayScalingMode::BilinearInteger);
+    const DisplayScalingMode mode = is_24bit ? display_scaling_24bit : display_scaling;
+    return (mode == DisplayScalingMode::NearestInteger || mode == DisplayScalingMode::BilinearInteger);
   }
 
   ALWAYS_INLINE bool UsingPGXPCPUMode() const { return gpu_pgxp_enable && gpu_pgxp_cpu; }

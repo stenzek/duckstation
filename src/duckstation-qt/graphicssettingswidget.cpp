@@ -97,6 +97,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.displayScaling, "Display", "Scaling", &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
     &Settings::GetDisplayScalingDisplayName, Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling24Bit, "Display", "Scaling24Bit",
+                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
+                                               &Settings::GetDisplayScalingDisplayName,
+                                               Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
@@ -417,6 +421,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
+  dialog->registerWidgetHelp(m_ui.displayScaling24Bit, tr("FMV Scaling"), tr("Bilinear (Smooth)"),
+                             tr("Determines the scaling algorithm used when 24-bit content is active, typically FMVs."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Rendering"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "

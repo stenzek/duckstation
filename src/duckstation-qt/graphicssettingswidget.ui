@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>655</width>
-    <height>538</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,15 +207,15 @@
             </item>
            </layout>
           </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="displayCropMode"/>
+          </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Crop:</string>
             </property>
            </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="displayCropMode"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel" name="label_8">
@@ -227,7 +227,17 @@
           <item row="8" column="1">
            <widget class="QComboBox" name="displayScaling"/>
           </item>
-          <item row="9" column="0" colspan="2">
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>FMV Scaling:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QComboBox" name="displayScaling24Bit"/>
+          </item>
+          <item row="10" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="2" column="0">
              <widget class="QCheckBox" name="force43For24Bit">

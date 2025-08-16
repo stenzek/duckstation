@@ -544,9 +544,10 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
 void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd)
 {
   // Height has to be doubled because we halved it on the GPU side.
-  m_presenter.SetDisplayParameters(
-    cmd->display_width, cmd->display_height, cmd->display_origin_left, cmd->display_origin_top, cmd->display_vram_width,
-    cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled), cmd->display_pixel_aspect_ratio);
+  m_presenter.SetDisplayParameters(cmd->display_width, cmd->display_height, cmd->display_origin_left,
+                                   cmd->display_origin_top, cmd->display_vram_width,
+                                   cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled),
+                                   cmd->display_pixel_aspect_ratio, cmd->display_24bit);
 
   UpdateDisplay(cmd);
   if (cmd->submit_frame)
@@ -585,7 +586,8 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
   {
     if (g_gpu_settings.gpu_pgxp_depth_buffer)
     {
-      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W | \x01{}\x02 DBC",
+      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | "
+                 "\x01{}\x02 C | \x01{}\x02 W | \x01{}\x02 DBC",
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
                  s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes,
@@ -593,7 +595,8 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
     }
     else
     {
-      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W",
+      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | "
+                 "\x01{}\x02 C | \x01{}\x02 W",
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
                  s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
                  s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes);
@@ -680,7 +683,7 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
         // Crop it if border overlay isn't enabled.
         GSVector4i draw_rect, display_rect;
         backend->GetPresenter().CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), apply_aspect_ratio,
-                                                  false, &display_rect, &draw_rect);
+                                                  false, false, &display_rect, &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }

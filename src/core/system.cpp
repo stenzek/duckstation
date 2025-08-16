@@ -4596,6 +4596,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
              g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
              g_settings.display_scaling != old_settings.display_scaling ||
+             g_settings.display_scaling_24bit != old_settings.display_scaling_24bit ||
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||

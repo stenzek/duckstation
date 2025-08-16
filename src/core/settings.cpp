@@ -322,6 +322,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_scaling =
     ParseDisplayScaling(si.GetStringValue("Display", "Scaling", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
       .value_or(DEFAULT_DISPLAY_SCALING);
+  display_scaling_24bit =
+    ParseDisplayScaling(
+      si.GetStringValue("Display", "Scaling24Bit", GetDisplayScalingName(DEFAULT_DISPLAY_SCALING)).c_str())
+      .value_or(DEFAULT_DISPLAY_SCALING);
   display_exclusive_fullscreen_control =
     ParseDisplayExclusiveFullscreenControl(
       si.GetStringValue("Display", "ExclusiveFullscreenControl",
@@ -674,6 +678,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
+  si.SetStringValue("Display", "Scaling24Bit", GetDisplayScalingName(display_scaling_24bit));
   si.SetBoolValue("Display", "OptimalFramePacing", display_optimal_frame_pacing);
   si.SetBoolValue("Display", "PreFrameSleep", display_pre_frame_sleep);
   si.SetBoolValue("Display", "SkipPresentingDuplicateFrames", display_skip_presenting_duplicate_frames);

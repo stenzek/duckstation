@@ -71,6 +71,7 @@ bool GPUPresenter::Initialize(Error* error)
 bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
   if (g_gpu_settings.display_scaling != old_settings.display_scaling ||
+      g_gpu_settings.display_scaling_24bit != old_settings.display_scaling_24bit ||
       g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
       g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing)
   {
@@ -79,7 +80,8 @@ bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
       DestroyDeinterlaceTextures();
 
     if (!CompileDisplayPipelines(
-          g_gpu_settings.display_scaling != old_settings.display_scaling,
+          g_gpu_settings.display_scaling != old_settings.display_scaling ||
+            g_gpu_settings.display_scaling_24bit != old_settings.display_scaling_24bit,
           g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
           g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing, error))
     {
@@ -121,30 +123,34 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
 
     std::string fs;
-    switch (g_gpu_settings.display_scaling)
-    {
-      case DisplayScalingMode::BilinearSharp:
-        fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
-        break;
+    static constexpr auto compile_display_shader = [](const GPUShaderGen& shadergen, std::string& fs,
+                                                      DisplayScalingMode mode, Error* error) {
+      switch (mode)
+      {
+        case DisplayScalingMode::BilinearSharp:
+          fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
+          break;
 
-      case DisplayScalingMode::BilinearSmooth:
-      case DisplayScalingMode::BilinearInteger:
-        fs = shadergen.GenerateDisplayFragmentShader(true, false);
-        break;
+        case DisplayScalingMode::BilinearSmooth:
+        case DisplayScalingMode::BilinearInteger:
+          fs = shadergen.GenerateDisplayFragmentShader(true, false);
+          break;
 
-      case DisplayScalingMode::Lanczos:
-        fs = shadergen.GenerateDisplayLanczosFragmentShader();
-        break;
+        case DisplayScalingMode::Lanczos:
+          fs = shadergen.GenerateDisplayLanczosFragmentShader();
+          break;
 
-      case DisplayScalingMode::Nearest:
-      case DisplayScalingMode::NearestInteger:
-      default:
-        fs = shadergen.GenerateDisplayFragmentShader(false, true);
-        break;
-    }
+        case DisplayScalingMode::Nearest:
+        case DisplayScalingMode::NearestInteger:
+        default:
+          fs = shadergen.GenerateDisplayFragmentShader(false, true);
+          break;
+      }
 
-    std::unique_ptr<GPUShader> fso =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
+      return g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
+    };
+
+    std::unique_ptr<GPUShader> fso = compile_display_shader(shadergen, fs, g_settings.display_scaling, error);
     if (!fso)
       return false;
     GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
@@ -156,6 +162,26 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
       return false;
     GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
                        Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
+
+    std::unique_ptr<GPUShader> fso_24bit;
+    if (g_gpu_settings.display_scaling_24bit != g_gpu_settings.display_scaling)
+    {
+      fso_24bit = compile_display_shader(shadergen, fs, g_settings.display_scaling_24bit, error);
+      if (!fso_24bit)
+        return false;
+      GL_OBJECT_NAME_FMT(fso_24bit, "Display Fragment Shader 24bit [{}]",
+                         Settings::GetDisplayScalingName(g_gpu_settings.display_scaling_24bit));
+
+      plconfig.fragment_shader = fso_24bit.get();
+      if (!(m_display_24bit_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME_FMT(m_display_24bit_pipeline, "Display Pipeline 24bit [{}]",
+                         Settings::GetDisplayScalingName(g_gpu_settings.display_scaling_24bit));
+    }
+    else
+    {
+      m_display_24bit_pipeline.reset();
+    }
 
     std::unique_ptr<GPUShader> copy_fso = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateCopyFragmentShader(false), error);
@@ -212,6 +238,15 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
       GL_OBJECT_NAME_FMT(m_display_blend_pipeline, "Display Pipeline [Blended, {}]",
                          Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
 
+      if (g_gpu_settings.display_scaling_24bit != g_gpu_settings.display_scaling)
+      {
+        plconfig.fragment_shader = fso_24bit.get();
+        if (!(m_display_24bit_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+          return false;
+        GL_OBJECT_NAME_FMT(m_display_24bit_blend_pipeline, "Display Pipeline 24bit [Blended, {}]",
+                           Settings::GetDisplayScalingName(g_gpu_settings.display_scaling_24bit));
+      }
+
       plconfig.fragment_shader = copy_fso.get();
       if (!(m_present_copy_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
@@ -222,6 +257,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
       m_border_overlay_pipeline.reset();
       m_present_clear_pipeline.reset();
       m_display_blend_pipeline.reset();
+      m_display_24bit_blend_pipeline.reset();
       m_present_copy_blend_pipeline.reset();
     }
   }
@@ -359,7 +395,7 @@ void GPUPresenter::ClearDisplayTexture()
 
 void GPUPresenter::SetDisplayParameters(u16 display_width, u16 display_height, u16 display_origin_left,
                                         u16 display_origin_top, u16 display_vram_width, u16 display_vram_height,
-                                        float display_pixel_aspect_ratio)
+                                        float display_pixel_aspect_ratio, bool display_24bit)
 {
   m_display_width = display_width;
   m_display_height = display_height;
@@ -368,6 +404,7 @@ void GPUPresenter::SetDisplayParameters(u16 display_width, u16 display_height, u
   m_display_vram_width = display_vram_width;
   m_display_vram_height = display_vram_height;
   m_display_pixel_aspect_ratio = display_pixel_aspect_ratio;
+  m_display_texture_24bit = display_24bit;
 }
 
 void GPUPresenter::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
@@ -402,6 +439,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   const WindowInfo::PreRotation prerotation = target ? WindowInfo::PreRotation::Identity : swap_chain->GetPreRotation();
   const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
   const bool is_vram_view = g_gpu_settings.gpu_show_vram;
+  const bool integer_scale = g_gpu_settings.IsUsingIntegerDisplayScaling(m_display_texture_24bit);
   const bool have_overlay = (postfx && !is_vram_view && HasBorderOverlay());
   const bool have_prerotation = (prerotation != WindowInfo::PreRotation::Identity);
   GL_INS(have_overlay ? "Overlay is ENABLED" : "Overlay is disabled");
@@ -429,8 +467,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
 
     // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
-    CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, false,
-                      &display_rect, &draw_rect);
+    CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, integer_scale,
+                      false, &display_rect, &draw_rect);
 
     // Apply overlay area offset.
     display_rect = display_rect.add32(overlay_display_rect.xyxy());
@@ -438,7 +476,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   }
   else
   {
-    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, true, &display_rect, &draw_rect);
+    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, integer_scale, true, &display_rect, &draw_rect);
   }
 
   // There's a bunch of scenarios where we need to use intermediate buffers.
@@ -660,7 +698,7 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
 
   const GSVector2 display_texture_size = GSVector2(m_display_texture->GetSizeVec());
 
-  switch (g_gpu_settings.display_scaling)
+  switch (m_display_texture_24bit ? g_gpu_settings.display_scaling_24bit : g_gpu_settings.display_scaling)
   {
     case DisplayScalingMode::Nearest:
     case DisplayScalingMode::NearestInteger:
@@ -697,7 +735,10 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
       break;
   }
 
-  g_gpu_device->SetPipeline(dst_alpha_blend ? m_display_blend_pipeline.get() : m_display_pipeline.get());
+  if (m_display_texture_24bit && m_display_24bit_pipeline)
+    g_gpu_device->SetPipeline(dst_alpha_blend ? m_display_24bit_blend_pipeline.get() : m_display_24bit_pipeline.get());
+  else
+    g_gpu_device->SetPipeline(dst_alpha_blend ? m_display_blend_pipeline.get() : m_display_pipeline.get());
   g_gpu_device->SetTextureSampler(
     0, m_display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
 
@@ -1001,10 +1042,9 @@ bool GPUPresenter::ApplyChromaSmoothing()
   return true;
 }
 
-void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool apply_alignment,
-                                     GSVector4i* display_rect, GSVector4i* draw_rect) const
+void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool integer_scale,
+                                     bool apply_alignment, GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
-  const bool integer_scale = g_gpu_settings.IsUsingIntegerDisplayScaling();
   const bool show_vram = g_gpu_settings.gpu_show_vram;
   const u32 display_width = show_vram ? VRAM_WIDTH : m_display_width;
   const u32 display_height = show_vram ? VRAM_HEIGHT : m_display_height;

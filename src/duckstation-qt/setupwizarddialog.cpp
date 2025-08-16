@@ -562,6 +562,13 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
                                                &Settings::GetDisplayScalingDisplayName,
                                                Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
 
+  SettingWidgetBinder::DisconnectWidget(m_ui.displayScaling24Bit);
+  m_ui.displayScaling24Bit->clear();
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling24Bit, "Display", "Scaling24Bit",
+                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
+                                               &Settings::GetDisplayScalingDisplayName,
+                                               Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
+
   if (initial)
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);

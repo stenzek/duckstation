@@ -2011,7 +2011,7 @@ u8 GPU::CalculateAutomaticResolutionScale() const
                       m_crtc_state.display_height, m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
                       m_crtc_state.display_vram_width, m_crtc_state.display_vram_height, g_settings.display_rotation,
                       g_settings.display_alignment, g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
-                      g_settings.IsUsingIntegerDisplayScaling(), &display_rect, &draw_rect);
+                      g_settings.IsUsingIntegerDisplayScaling(false), &display_rect, &draw_rect);
 
     // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
     // anamorphic aspect ratio.

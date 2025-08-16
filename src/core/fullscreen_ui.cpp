@@ -5459,6 +5459,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
 
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_VIDEO, "FMV Scaling"),
+                  FSUI_VSTR("Determines the scaling algorithm used when 24-bit content is active, typically FMVs."),
+                  "Display", "Scaling24Bit", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
+                  &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
+
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE, "Widescreen Rendering"),
                     FSUI_VSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
                     "GPU", "WidescreenHack", false);
