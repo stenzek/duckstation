@@ -59,22 +59,28 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // Rendering Tab
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
-                                               &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
+                                               &Settings::GetRendererName, &Settings::GetRendererDisplayName,
+                                               Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+                                               &Settings::GetTextureFilterDisplayName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+                                               &Settings::GetTextureFilterDisplayName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
                                                &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
-                                               Settings::DEFAULT_GPU_DITHERING_MODE);
+                                               &Settings::GetGPUDitheringModeDisplayName,
+                                               Settings::DEFAULT_GPU_DITHERING_MODE, GPUDitheringMode::MaxCount);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
-                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
+                                               &Settings::GetDownsampleModeDisplayName,
+                                               Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, GPUDownsampleMode::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
-                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+                                               &Settings::GetDisplayAspectRatioDisplayName,
+                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO, DisplayAspectRatio::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.customAspectRatioNumerator, "Display",
                                               "CustomAspectRatioNumerator", 1);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.customAspectRatioDenominator, "Display",
@@ -82,13 +88,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.displayDeinterlacing, "GPU", "DeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode,
-    &Settings::GetDisplayDeinterlacingModeName, Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE);
+    &Settings::GetDisplayDeinterlacingModeName, &Settings::GetDisplayDeinterlacingModeDisplayName,
+    Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE, DisplayDeinterlacingMode::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
-                                               Settings::DEFAULT_DISPLAY_CROP_MODE);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
-                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
-                                               Settings::DEFAULT_DISPLAY_SCALING);
+                                               &Settings::GetDisplayCropModeDisplayName,
+                                               Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.displayScaling, "Display", "Scaling", &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
+    &Settings::GetDisplayScalingDisplayName, Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
@@ -123,13 +131,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.exclusiveFullscreenControl, "Display", "ExclusiveFullscreenControl",
     &Settings::ParseDisplayExclusiveFullscreenControl, &Settings::GetDisplayExclusiveFullscreenControlName,
-    Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL);
+    &Settings::GetDisplayExclusiveFullscreenControlDisplayName, Settings::DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL,
+    DisplayExclusiveFullscreenControl::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAlignment, "Display", "Alignment",
                                                &Settings::ParseDisplayAlignment, &Settings::GetDisplayAlignmentName,
-                                               Settings::DEFAULT_DISPLAY_ALIGNMENT);
+                                               &Settings::GetDisplayAlignmentDisplayName,
+                                               Settings::DEFAULT_DISPLAY_ALIGNMENT, DisplayAlignment::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayRotation, "Display", "Rotation",
                                                &Settings::ParseDisplayRotation, &Settings::GetDisplayRotationName,
-                                               Settings::DEFAULT_DISPLAY_ROTATION);
+                                               &Settings::GetDisplayRotationDisplayName,
+                                               Settings::DEFAULT_DISPLAY_ROTATION, DisplayRotation::Count);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
                                                "DisableMailboxPresentation", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
@@ -139,10 +150,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 #endif
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuLineDetectMode, "GPU", "LineDetectMode",
                                                &Settings::ParseLineDetectModeName, &Settings::GetLineDetectModeName,
-                                               Settings::DEFAULT_GPU_LINE_DETECT_MODE);
+                                               &Settings::GetLineDetectModeDisplayName,
+                                               Settings::DEFAULT_GPU_LINE_DETECT_MODE, GPULineDetectMode::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, "GPU", "WireframeMode",
                                                Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
-                                               Settings::DEFAULT_GPU_WIREFRAME_MODE);
+                                               &Settings::GetGPUWireframeModeDisplayName,
+                                               Settings::DEFAULT_GPU_WIREFRAME_MODE, GPUWireframeMode::Count);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
@@ -214,16 +227,19 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.screenshotSize, "Display", "ScreenshotMode", &Settings::ParseDisplayScreenshotMode,
-    &Settings::GetDisplayScreenshotModeName, Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE);
+    &Settings::GetDisplayScreenshotModeName, &Settings::GetDisplayScreenshotModeDisplayName,
+    Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE, DisplayScreenshotMode::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.screenshotFormat, "Display", "ScreenshotFormat", &Settings::ParseDisplayScreenshotFormat,
-    &Settings::GetDisplayScreenshotFormatName, Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT);
+    &Settings::GetDisplayScreenshotFormatName, &Settings::GetDisplayScreenshotFormatDisplayName,
+    Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT, DisplayScreenshotFormat::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.screenshotQuality, "Display", "ScreenshotQuality",
                                               Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.mediaCaptureBackend, "MediaCapture", "Backend",
                                                &MediaCapture::ParseBackendName, &MediaCapture::GetBackendName,
-                                               Settings::DEFAULT_MEDIA_CAPTURE_BACKEND);
+                                               &MediaCapture::GetBackendDisplayName,
+                                               Settings::DEFAULT_MEDIA_CAPTURE_BACKEND, MediaCaptureBackend::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableVideoCapture, "MediaCapture", "VideoCapture", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.videoCaptureWidth, "MediaCapture", "VideoWidth",
                                               Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
@@ -672,57 +688,6 @@ GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
 
 void GraphicsSettingsWidget::setupAdditionalUi()
 {
-  // Rendering Tab
-
-  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
-  {
-    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
-  {
-    m_ui.textureFiltering->addItem(
-      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
-    m_ui.spriteTextureFiltering->addItem(
-      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUDitheringMode::MaxCount); i++)
-  {
-    m_ui.gpuDitheringMode->addItem(
-      QString::fromUtf8(Settings::GetGPUDitheringModeDisplayName(static_cast<GPUDitheringMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
-  {
-    m_ui.gpuDownsampleMode->addItem(
-      QString::fromUtf8(Settings::GetDownsampleModeDisplayName(static_cast<GPUDownsampleMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
-  {
-    m_ui.displayAspectRatio->addItem(
-      QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(static_cast<DisplayAspectRatio>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayDeinterlacingMode::Count); i++)
-  {
-    m_ui.displayDeinterlacing->addItem(
-      QString::fromUtf8(Settings::GetDisplayDeinterlacingModeDisplayName(static_cast<DisplayDeinterlacingMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::MaxCount); i++)
-  {
-    m_ui.displayCropMode->addItem(
-      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayScalingMode::Count); i++)
-  {
-    m_ui.displayScaling->addItem(
-      QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
-  }
-
   // OSD Tab
 
   const std::vector<std::string_view> fsui_theme_names = FullscreenUI::GetThemeNames();
@@ -731,60 +696,6 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.fullscreenUITheme->addItem(QtUtils::StringViewToQString(fsui_theme_names[i]),
                                     QString::fromUtf8(fsui_theme_values[i]));
-  }
-
-  // Advanced Tab
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayExclusiveFullscreenControl::Count); i++)
-  {
-    m_ui.exclusiveFullscreenControl->addItem(QString::fromUtf8(
-      Settings::GetDisplayExclusiveFullscreenControlDisplayName(static_cast<DisplayExclusiveFullscreenControl>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayAlignment::Count); i++)
-  {
-    m_ui.displayAlignment->addItem(
-      QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(static_cast<DisplayAlignment>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayRotation::Count); i++)
-  {
-    m_ui.displayRotation->addItem(
-      QString::fromUtf8(Settings::GetDisplayRotationDisplayName(static_cast<DisplayRotation>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(GPULineDetectMode::Count); i++)
-  {
-    m_ui.gpuLineDetectMode->addItem(
-      QString::fromUtf8(Settings::GetLineDetectModeDisplayName(static_cast<GPULineDetectMode>(i))));
-  }
-
-  // Capture Tab
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayScreenshotMode::Count); i++)
-  {
-    m_ui.screenshotSize->addItem(
-      QString::fromUtf8(Settings::GetDisplayScreenshotModeDisplayName(static_cast<DisplayScreenshotMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayScreenshotFormat::Count); i++)
-  {
-    m_ui.screenshotFormat->addItem(
-      QString::fromUtf8(Settings::GetDisplayScreenshotFormatDisplayName(static_cast<DisplayScreenshotFormat>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(MediaCaptureBackend::MaxCount); i++)
-  {
-    m_ui.mediaCaptureBackend->addItem(
-      QString::fromUtf8(MediaCapture::GetBackendDisplayName(static_cast<MediaCaptureBackend>(i))));
-  }
-
-  // Debugging Tab
-
-  for (u32 i = 0; i < static_cast<u32>(GPUWireframeMode::Count); i++)
-  {
-    m_ui.gpuWireframeMode->addItem(
-      QString::fromUtf8(Settings::GetGPUWireframeModeDisplayName(static_cast<GPUWireframeMode>(i))));
   }
 }
 

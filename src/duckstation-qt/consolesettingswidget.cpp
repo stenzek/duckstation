@@ -25,33 +25,19 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   m_ui.setupUi(this);
 
-  for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
-  {
-    m_ui.region->addItem(QtUtils::GetIconForRegion(static_cast<ConsoleRegion>(i)),
-                         QString::fromUtf8(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(ForceVideoTimingMode::Count); i++)
-  {
-    const ForceVideoTimingMode mode = static_cast<ForceVideoTimingMode>(i);
-    const QIcon region_icon =
-      QtUtils::GetIconForRegion((mode == ForceVideoTimingMode::Disabled) ?
-                                  ConsoleRegion::Auto :
-                                  ((mode == ForceVideoTimingMode::NTSC) ? ConsoleRegion::NTSC_U : ConsoleRegion::PAL));
-    m_ui.forceVideoTiming->addItem(region_icon, QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(mode)));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
-  {
-    m_ui.cpuExecutionMode->addItem(
-      QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(static_cast<CPUExecutionMode>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
-                                               &Settings::GetConsoleRegionName, Settings::DEFAULT_CONSOLE_REGION);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.forceVideoTiming, "GPU", "ForceVideoTiming",
-                                               &Settings::ParseForceVideoTimingName, &Settings::GetForceVideoTimingName,
-                                               Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE);
+                                               &Settings::GetConsoleRegionName, &Settings::GetConsoleRegionDisplayName,
+                                               Settings::DEFAULT_CONSOLE_REGION, ConsoleRegion::Count,
+                                               &QtUtils::GetIconForRegion);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.forceVideoTiming, "GPU", "ForceVideoTiming", &Settings::ParseForceVideoTimingName,
+    &Settings::GetForceVideoTimingName, &Settings::GetForceVideoTimingDisplayName,
+    Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE, ForceVideoTimingMode::Count, +[](ForceVideoTimingMode mode) {
+      return QtUtils::GetIconForRegion(
+        (mode == ForceVideoTimingMode::Disabled) ?
+          ConsoleRegion::Auto :
+          ((mode == ForceVideoTimingMode::NTSC) ? ConsoleRegion::NTSC_U : ConsoleRegion::PAL));
+    });
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
@@ -62,7 +48,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
-                                               Settings::DEFAULT_CPU_EXECUTION_MODE);
+                                               &Settings::GetCPUExecutionModeDisplayName,
+                                               Settings::DEFAULT_CPU_EXECUTION_MODE, CPUExecutionMode::Count);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableCPUClockSpeedControl, "CPU", "OverclockEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.recompilerICache, "CPU", "RecompilerICache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.cdromLoadImageToRAM, "CDROM", "LoadImageToRAM", false);

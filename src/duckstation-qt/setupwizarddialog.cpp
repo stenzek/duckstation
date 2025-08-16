@@ -514,46 +514,30 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.spriteTextureFiltering);
   m_ui.spriteTextureFiltering->clear();
 
-  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
-  {
-    m_ui.textureFiltering->addItem(
-      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
-    m_ui.spriteTextureFiltering->addItem(
-      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+                                               &Settings::GetTextureFilterDisplayName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
-                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+                                               &Settings::GetTextureFilterDisplayName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER, GPUTextureFilter::Count);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.gpuDitheringMode);
   m_ui.gpuDitheringMode->clear();
 
-  for (u32 i = 0; i < static_cast<u32>(GPUDitheringMode::MaxCount); i++)
-  {
-    m_ui.gpuDitheringMode->addItem(
-      QString::fromUtf8(Settings::GetGPUDitheringModeDisplayName(static_cast<GPUDitheringMode>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
                                                &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
-                                               Settings::DEFAULT_GPU_DITHERING_MODE);
+                                               &Settings::GetGPUDitheringModeDisplayName,
+                                               Settings::DEFAULT_GPU_DITHERING_MODE, GPUDitheringMode::MaxCount);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayAspectRatio);
   m_ui.displayAspectRatio->clear();
 
-  for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
-  {
-    m_ui.displayAspectRatio->addItem(
-      QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(static_cast<DisplayAspectRatio>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayAspectRatio, "Display", "AspectRatio",
                                                &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
-                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+                                               &Settings::GetDisplayAspectRatioDisplayName,
+                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO, DisplayAspectRatio::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioNumerator, "Display",
                                               "CustomAspectRatioNumerator", 1);
   SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioDenominator, "Display",
@@ -565,28 +549,18 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.displayCropMode);
   m_ui.displayCropMode->clear();
 
-  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::MaxCount); i++)
-  {
-    m_ui.displayCropMode->addItem(
-      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
-                                               Settings::DEFAULT_DISPLAY_CROP_MODE);
+                                               &Settings::GetDisplayCropModeDisplayName,
+                                               Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::MaxCount);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayScaling);
   m_ui.displayScaling->clear();
 
-  for (u32 i = 0; i < static_cast<u32>(DisplayScalingMode::Count); i++)
-  {
-    m_ui.displayScaling->addItem(
-      QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
-  }
-
   SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling, "Display", "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
-                                               Settings::DEFAULT_DISPLAY_SCALING);
+                                               &Settings::GetDisplayScalingDisplayName,
+                                               Settings::DEFAULT_DISPLAY_SCALING, DisplayScalingMode::Count);
 
   if (initial)
   {
@@ -648,11 +622,10 @@ void SetupWizardDialog::updateAchievementsLoginState()
   {
     const u64 login_unix_timestamp =
       StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
-    const QString login_timestamp = QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime,
-                                                         static_cast<s64>(login_unix_timestamp));
-    m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
-                                .arg(QString::fromStdString(username))
-                                .arg(login_timestamp));
+    const QString login_timestamp =
+      QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
+    m_ui.loginStatus->setText(
+      tr("Username: %1\nLogin token generated on %2.").arg(QString::fromStdString(username)).arg(login_timestamp));
     m_ui.loginButton->setText(tr("Logout"));
   }
   else

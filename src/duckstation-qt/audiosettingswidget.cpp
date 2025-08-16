@@ -22,21 +22,12 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 
   m_ui.setupUi(this);
 
-  for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
-    m_ui.audioBackend->addItem(QString::fromUtf8(AudioStream::GetBackendDisplayName(static_cast<AudioBackend>(i))));
-
-  for (u32 i = 0; i < static_cast<u32>(AudioStretchMode::Count); i++)
-  {
-    m_ui.stretchMode->addItem(
-      QString::fromUtf8(AudioStream::GetStretchModeDisplayName(static_cast<AudioStretchMode>(i))));
-  }
-
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend",
-                                               &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
-                                               AudioStream::DEFAULT_BACKEND);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.stretchMode, "Audio", "StretchMode",
-                                               &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
-                                               AudioStreamParameters::DEFAULT_STRETCH_MODE);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.audioBackend, "Audio", "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
+    &AudioStream::GetBackendDisplayName, AudioStream::DEFAULT_BACKEND, AudioBackend::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.stretchMode, "Audio", "StretchMode", &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
+    &AudioStream::GetStretchModeDisplayName, AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "Audio", "BufferMS",
                                               AudioStreamParameters::DEFAULT_BUFFER_MS);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
