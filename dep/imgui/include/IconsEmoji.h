@@ -7,6 +7,7 @@
 // List to use: https://www.freecodecamp.org/news/all-emojis-emoji-list-for-copy-and-paste/
 
 #define ICON_EMOJI_WARNING "\xe2\x9a\xa0"
+#define ICON_EMOJI_CHECKMARK_BUTTON "\xe2\x9c\x85"
 #define ICON_EMOJI_OPTICAL_DISK "\xf0\x9f\x92\xbf"
 #define ICON_EMOJI_FLOPPY_DISK "\xf0\x9f\x92\xbe"
 #define ICON_EMOJI_INFORMATION "\xe2\x84\xb9"

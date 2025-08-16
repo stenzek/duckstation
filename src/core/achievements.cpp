@@ -77,6 +77,7 @@ static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC = 10.0f;
+static constexpr float ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME = 12.0f;
 static constexpr float GAME_COMPLETE_NOTIFICATION_TIME = 20.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
@@ -1385,9 +1386,24 @@ void Achievements::DisplayAchievementSummary()
       if (!FullscreenUI::Initialize())
         return;
 
-      ImGuiFullscreen::AddNotification("achievement_summary", time, std::move(title), std::move(summary),
+      ImGuiFullscreen::AddNotification("AchievementsSummary", time, std::move(title), std::move(summary),
                                        std::move(icon));
     });
+
+    if (s_state.game_summary.num_unsupported_achievements > 0)
+    {
+      GPUThread::RunOnThread([num_unsupported = s_state.game_summary.num_unsupported_achievements]() mutable {
+        if (!FullscreenUI::Initialize())
+          return;
+
+        ImGuiFullscreen::AddNotification("UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME,
+                                         TRANSLATE_STR("Achievements", "Unsupported Achievements"),
+                                         TRANSLATE_PLURAL_STR("Achievements",
+                                                              "%n achievements are not supported by DuckStation.",
+                                                              "Achievement popup", num_unsupported),
+                                         "images/warning.svg");
+      });
+    }
   }
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
@@ -2770,7 +2786,8 @@ void Achievements::DrawAchievementsWindow()
   static constexpr float alpha = 0.8f;
   static constexpr float heading_alpha = 0.95f;
   const float heading_height_unscaled =
-    (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time) ? 122.0f : 102.0f;
+    ((s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time) ? 122.0f : 102.0f) +
+    ((s_state.game_summary.num_unsupported_achievements > 0) ? 20.0f : 0.0f);
 
   const ImVec4 background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, heading_alpha);
@@ -2821,14 +2838,15 @@ void Achievements::DrawAchievementsWindow()
     const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
     if (s_state.game_summary.num_core_achievements > 0)
     {
+      text.assign(ICON_EMOJI_UNLOCKED " ");
       if (s_state.game_summary.num_unlocked_achievements == s_state.game_summary.num_core_achievements)
       {
-        text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
-                                     "Point count", s_state.game_summary.points_unlocked);
+        text.append(TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
+                                     "Point count", s_state.game_summary.points_unlocked));
       }
       else
       {
-        text.format(TRANSLATE_FS("Achievements",
+        text.append_format(TRANSLATE_FS("Achievements",
                                  "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
                     s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements,
                     s_state.game_summary.points_unlocked, s_state.game_summary.points_core);
@@ -2836,7 +2854,7 @@ void Achievements::DrawAchievementsWindow()
     }
     else
     {
-      text.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
+      text.format(ICON_FA_BAN " {}", TRANSLATE_SV("Achievements", "This game has no achievements."));
     }
 
     top += UIStyle.MediumFontSize + spacing;
@@ -2846,9 +2864,26 @@ void Achievements::DrawAchievementsWindow()
                               ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
                               text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
+    if (s_state.game_summary.num_unsupported_achievements)
+    {
+      text.format("{} {}", ICON_EMOJI_WARNING,
+                  TRANSLATE_PLURAL_SSTR(
+                    "Achievements", "%n achievements are not supported by DuckStation and cannot be unlocked.",
+                    "Unsupported achievement count", s_state.game_summary.num_unsupported_achievements));
+
+      const ImRect unsupported_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
+      RenderShadowedTextClipped(
+        UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, unsupported_bb.Min, unsupported_bb.Max,
+        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
+        ImVec2(0.0f, 0.0f), 0.0f, &unsupported_bb);
+
+      top += UIStyle.MediumFontSize + spacing;
+    }
+
     if (s_state.game_summary.beaten_time > 0 || s_state.game_summary.completed_time > 0)
     {
-      text.clear();
+      text.assign(ICON_EMOJI_CHECKMARK_BUTTON " ");
+
       if (s_state.game_summary.beaten_time > 0)
       {
         const std::string beaten_time =
@@ -2857,19 +2892,19 @@ void Achievements::DrawAchievementsWindow()
         {
           const std::string completion_time =
             Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.beaten_time));
-          text.format(TRANSLATE_FS("Achievements", "Game was beaten on {0}, and completed on {1}."), beaten_time,
-                      completion_time);
+          text.append_format(TRANSLATE_FS("Achievements", "Game was beaten on {0}, and completed on {1}."), beaten_time,
+                             completion_time);
         }
         else
         {
-          text.format(TRANSLATE_FS("Achievements", "Game was beaten on {0}."), beaten_time);
+          text.append_format(TRANSLATE_FS("Achievements", "Game was beaten on {0}."), beaten_time);
         }
       }
       else
       {
         const std::string completion_time =
           Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(s_state.game_summary.completed_time));
-        text.format(TRANSLATE_FS("Achievements", "Game was completed on {0}."), completion_time);
+        text.append_format(TRANSLATE_FS("Achievements", "Game was completed on {0}."), completion_time);
       }
 
       const ImRect beaten_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
