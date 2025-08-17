@@ -11,75 +11,75 @@ namespace Easing {
 inline constexpr float pi = 3.1415926545f;
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InSine(T t)
+ALWAYS_INLINE_RELEASE T InSine(T t)
 {
   return std::sin(1.5707963f * t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutSine(T t)
+ALWAYS_INLINE_RELEASE T OutSine(T t)
 {
   return 1 + std::sin(1.5707963f * (--t));
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutSine(T t)
+ALWAYS_INLINE_RELEASE T InOutSine(T t)
 {
   return 0.5f * (1 + std::sin(3.1415926f * (t - 0.5f)));
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InQuad(T t)
+ALWAYS_INLINE_RELEASE T InQuad(T t)
 {
   return t * t;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutQuad(T t)
+ALWAYS_INLINE_RELEASE T OutQuad(T t)
 {
   return t * (2 - t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutQuad(T t)
+ALWAYS_INLINE_RELEASE T InOutQuad(T t)
 {
   return t < 0.5f ? 2 * t * t : t * (4 - 2 * t) - 1;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InCubic(T t)
+ALWAYS_INLINE_RELEASE T InCubic(T t)
 {
   return t * t * t;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutCubic(T t)
+ALWAYS_INLINE_RELEASE T OutCubic(T t)
 {
   return 1 + (--t) * t * t;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutCubic(T t)
+ALWAYS_INLINE_RELEASE T InOutCubic(T t)
 {
   return t < 0.5f ? 4 * t * t * t : 1 + (--t) * (2 * (--t)) * (2 * t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InQuart(T t)
+ALWAYS_INLINE_RELEASE T InQuart(T t)
 {
   t *= t;
   return t * t;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutQuart(T t)
+ALWAYS_INLINE_RELEASE T OutQuart(T t)
 {
   t = (--t) * t;
   return 1 - t * t;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutQuart(T t)
+ALWAYS_INLINE_RELEASE T InOutQuart(T t)
 {
   if (t < 0.5)
   {
@@ -94,21 +94,21 @@ ALWAYS_INLINE_RELEASE static T InOutQuart(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InQuint(T t)
+ALWAYS_INLINE_RELEASE T InQuint(T t)
 {
   T t2 = t * t;
   return t * t2 * t2;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutQuint(T t)
+ALWAYS_INLINE_RELEASE T OutQuint(T t)
 {
   T t2 = (--t) * t;
   return 1 + t * t2 * t2;
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutQuint(T t)
+ALWAYS_INLINE_RELEASE T InOutQuint(T t)
 {
   T t2;
   if (t < 0.5)
@@ -124,19 +124,19 @@ ALWAYS_INLINE_RELEASE static T InOutQuint(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InExpo(T t)
+ALWAYS_INLINE_RELEASE T InExpo(T t)
 {
   return (std::pow(static_cast<T>(2), static_cast<T>(8) * t) - static_cast<T>(1)) / static_cast<T>(255);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutExpo(T t)
+ALWAYS_INLINE_RELEASE T OutExpo(T t)
 {
   return static_cast<T>(1) - std::pow(static_cast<T>(2), static_cast<T>(-8) * t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutExpo(T t)
+ALWAYS_INLINE_RELEASE T InOutExpo(T t)
 {
   if (t < 0.5f)
   {
@@ -149,19 +149,19 @@ ALWAYS_INLINE_RELEASE static T InOutExpo(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InCirc(T t)
+ALWAYS_INLINE_RELEASE T InCirc(T t)
 {
   return 1 - std::sqrt(1 - t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutCirc(T t)
+ALWAYS_INLINE_RELEASE T OutCirc(T t)
 {
   return std::sqrt(t);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutCirc(T t)
+ALWAYS_INLINE_RELEASE T InOutCirc(T t)
 {
   if (t < 0.5f)
   {
@@ -174,20 +174,20 @@ ALWAYS_INLINE_RELEASE static T InOutCirc(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InBack(T t)
+ALWAYS_INLINE_RELEASE T InBack(T t)
 {
   return t * t * (2.70158f * t - 1.70158f);
 }
 
 template<typename T>
-static T OutBack(T t)
+ALWAYS_INLINE_RELEASE T OutBack(T t)
 {
   t -= 1;
   return 1 + t * t * (2.70158f * t + 1.70158f);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutBack(T t)
+ALWAYS_INLINE_RELEASE T InOutBack(T t)
 {
   if (t < 0.5f)
   {
@@ -200,21 +200,21 @@ ALWAYS_INLINE_RELEASE static T InOutBack(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InElastic(T t)
+ALWAYS_INLINE_RELEASE T InElastic(T t)
 {
   T t2 = t * t;
   return t2 * t2 * std::sin(t * pi * 4.5f);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutElastic(T t)
+ALWAYS_INLINE_RELEASE T OutElastic(T t)
 {
   T t2 = (t - 1) * (t - 1);
   return 1 - t2 * t2 * std::cos(t * pi * 4.5f);
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutElastic(T t)
+ALWAYS_INLINE_RELEASE T InOutElastic(T t)
 {
   T t2;
   if (t < 0.45f)
@@ -234,19 +234,19 @@ ALWAYS_INLINE_RELEASE static T InOutElastic(T t)
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InBounce(T t)
+ALWAYS_INLINE_RELEASE T InBounce(T t)
 {
   return std::pow(2, 6 * (t - 1)) * std::abs(sin(t * pi * 3.5f));
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T OutBounce(T t)
+ALWAYS_INLINE_RELEASE T OutBounce(T t)
 {
   return 1 - std::pow(2, -6 * t) * std::abs(std::cos(t * pi * 3.5f));
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE static T InOutBounce(T t)
+ALWAYS_INLINE_RELEASE T InOutBounce(T t)
 {
   if (t < 0.5f)
   {

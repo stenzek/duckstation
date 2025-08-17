@@ -16,7 +16,7 @@
 
 namespace ZipHelpers {
 
-[[maybe_unused]] static void SetErrorObject(Error* error, std::string_view msg, zip_error_t* ze)
+inline void SetErrorObject(Error* error, std::string_view msg, zip_error_t* ze)
 {
   Error::SetStringFmt(error, "{}{}", msg, ze ? zip_error_strerror(ze) : "UNKNOWN");
   if (ze)
@@ -53,7 +53,7 @@ struct ZipFileDeleter
 using ManagedZipT = std::unique_ptr<zip_t, ZipDeleter>;
 using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
 
-[[maybe_unused]] static inline ManagedZipT OpenManagedZipFile(const char* filename, int flags, Error* error = nullptr)
+inline ManagedZipT OpenManagedZipFile(const char* filename, int flags, Error* error = nullptr)
 {
   zip_error_t ze;
   zip_source_t* zs = zip_source_file_create(filename, 0, 0, &ze);
@@ -76,7 +76,7 @@ using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
   return ManagedZipT(zip);
 }
 
-[[maybe_unused]] static inline ManagedZipT OpenManagedZipCFile(std::FILE* fp, int flags, Error* error = nullptr)
+inline ManagedZipT OpenManagedZipCFile(std::FILE* fp, int flags, Error* error = nullptr)
 {
   zip_error_t ze;
   zip_source_t* zs = zip_source_filep_create(fp, 0, 0, &ze);
@@ -100,8 +100,8 @@ using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
   return ManagedZipT(zip);
 }
 
-[[maybe_unused]] static inline ManagedZipT OpenManagedZipBuffer(const void* buffer, size_t size, int flags,
-                                                                bool free_buffer, Error* error = nullptr)
+inline ManagedZipT OpenManagedZipBuffer(const void* buffer, size_t size, int flags, bool free_buffer,
+                                        Error* error = nullptr)
 {
   zip_error_t ze;
   zip_source_t* zs = zip_source_buffer_create(buffer, size, free_buffer, &ze);
@@ -126,8 +126,7 @@ using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
   return ManagedZipT(zip);
 }
 
-[[maybe_unused]] static inline ManagedZipFileT OpenManagedFileInZip(zip_t* zip, const char* filename, zip_flags_t flags,
-                                                                    Error* error = nullptr)
+inline ManagedZipFileT OpenManagedFileInZip(zip_t* zip, const char* filename, zip_flags_t flags, Error* error = nullptr)
 {
   zip_file_t* zf = zip_fopen(zip, filename, flags);
   if (!zf)
@@ -135,8 +134,8 @@ using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
   return ManagedZipFileT(zf);
 }
 
-[[maybe_unused]] static inline ManagedZipFileT OpenManagedFileIndexInZip(zip_t* zip, zip_uint64_t index,
-                                                                         zip_flags_t flags, Error* error = nullptr)
+inline ManagedZipFileT OpenManagedFileIndexInZip(zip_t* zip, zip_uint64_t index, zip_flags_t flags,
+                                                 Error* error = nullptr)
 {
   zip_file_t* zf = zip_fopen_index(zip, index, flags);
   if (!zf)
@@ -145,8 +144,8 @@ using ManagedZipFileT = std::unique_ptr<zip_file_t, ZipFileDeleter>;
 }
 
 template<typename T>
-[[maybe_unused]] static inline std::optional<T>
-ReadFileInZipToContainer(zip_t* zip, const char* name, bool case_sensitive = true, Error* error = nullptr)
+inline std::optional<T> ReadFileInZipToContainer(zip_t* zip, const char* name, bool case_sensitive = true,
+                                                 Error* error = nullptr)
 {
   const int flags = case_sensitive ? 0 : ZIP_FL_NOCASE;
 
@@ -185,8 +184,7 @@ ReadFileInZipToContainer(zip_t* zip, const char* name, bool case_sensitive = tru
 }
 
 template<typename T>
-[[maybe_unused]] static inline std::optional<T> ReadFileInZipToContainer(zip_file_t* file, u32 chunk_size = 4096,
-                                                                         Error* error = nullptr)
+inline std::optional<T> ReadFileInZipToContainer(zip_file_t* file, u32 chunk_size = 4096, Error* error = nullptr)
 {
   std::optional<T> ret = T();
   for (;;)
@@ -212,26 +210,25 @@ template<typename T>
   return ret;
 }
 
-[[maybe_unused]] static inline std::optional<std::string>
-ReadFileInZipToString(zip_t* zip, const char* name, bool case_sensitive = true, Error* error = nullptr)
+inline std::optional<std::string> ReadFileInZipToString(zip_t* zip, const char* name, bool case_sensitive = true,
+                                                        Error* error = nullptr)
 {
   return ReadFileInZipToContainer<std::string>(zip, name, case_sensitive, error);
 }
 
-[[maybe_unused]] static inline std::optional<std::string> ReadFileInZipToString(zip_file_t* file, u32 chunk_size = 4096,
-                                                                                Error* error = nullptr)
+inline std::optional<std::string> ReadFileInZipToString(zip_file_t* file, u32 chunk_size = 4096, Error* error = nullptr)
 {
   return ReadFileInZipToContainer<std::string>(file, chunk_size, error);
 }
 
-[[maybe_unused]] static inline std::optional<std::vector<u8>>
-ReadBinaryFileInZip(zip_t* zip, const char* name, bool case_sensitive = true, Error* error = nullptr)
+inline std::optional<std::vector<u8>> ReadBinaryFileInZip(zip_t* zip, const char* name, bool case_sensitive = true,
+                                                          Error* error = nullptr)
 {
   return ReadFileInZipToContainer<std::vector<u8>>(zip, name, case_sensitive, error);
 }
 
-[[maybe_unused]] static inline std::optional<std::vector<u8>>
-ReadBinaryFileInZip(zip_file_t* file, u32 chunk_size = 4096, Error* error = nullptr)
+inline std::optional<std::vector<u8>> ReadBinaryFileInZip(zip_file_t* file, u32 chunk_size = 4096,
+                                                          Error* error = nullptr)
 {
   return ReadFileInZipToContainer<std::vector<u8>>(file, chunk_size, error);
 }

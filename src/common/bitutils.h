@@ -14,14 +14,14 @@
 
 // Zero-extending helper
 template<typename TReturn, typename TValue>
-ALWAYS_INLINE static constexpr TReturn ZeroExtend(TValue value)
+ALWAYS_INLINE constexpr TReturn ZeroExtend(TValue value)
 {
   return static_cast<TReturn>(static_cast<typename std::make_unsigned<TReturn>::type>(
     static_cast<typename std::make_unsigned<TValue>::type>(value)));
 }
 // Sign-extending helper
 template<typename TReturn, typename TValue>
-ALWAYS_INLINE static constexpr TReturn SignExtend(TValue value)
+ALWAYS_INLINE constexpr TReturn SignExtend(TValue value)
 {
   return static_cast<TReturn>(
     static_cast<typename std::make_signed<TReturn>::type>(static_cast<typename std::make_signed<TValue>::type>(value)));
@@ -29,101 +29,101 @@ ALWAYS_INLINE static constexpr TReturn SignExtend(TValue value)
 
 // Type-specific helpers
 template<typename TValue>
-ALWAYS_INLINE static constexpr u16 ZeroExtend16(TValue value)
+ALWAYS_INLINE constexpr u16 ZeroExtend16(TValue value)
 {
   return ZeroExtend<u16, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u32 ZeroExtend32(TValue value)
+ALWAYS_INLINE constexpr u32 ZeroExtend32(TValue value)
 {
   return ZeroExtend<u32, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u64 ZeroExtend64(TValue value)
+ALWAYS_INLINE constexpr u64 ZeroExtend64(TValue value)
 {
   return ZeroExtend<u64, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u16 SignExtend16(TValue value)
+ALWAYS_INLINE constexpr u16 SignExtend16(TValue value)
 {
   return SignExtend<u16, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u32 SignExtend32(TValue value)
+ALWAYS_INLINE constexpr u32 SignExtend32(TValue value)
 {
   return SignExtend<u32, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u64 SignExtend64(TValue value)
+ALWAYS_INLINE constexpr u64 SignExtend64(TValue value)
 {
   return SignExtend<u64, TValue>(value);
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u8 Truncate8(TValue value)
+ALWAYS_INLINE constexpr u8 Truncate8(TValue value)
 {
   return static_cast<u8>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u16 Truncate16(TValue value)
+ALWAYS_INLINE constexpr u16 Truncate16(TValue value)
 {
   return static_cast<u16>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 template<typename TValue>
-ALWAYS_INLINE static constexpr u32 Truncate32(TValue value)
+ALWAYS_INLINE constexpr u32 Truncate32(TValue value)
 {
   return static_cast<u32>(static_cast<typename std::make_unsigned<decltype(value)>::type>(value));
 }
 
 // BCD helpers
-ALWAYS_INLINE static constexpr u8 BinaryToBCD(u8 value)
+ALWAYS_INLINE constexpr u8 BinaryToBCD(u8 value)
 {
   return ((value / 10) << 4) + (value % 10);
 }
-ALWAYS_INLINE static constexpr u8 PackedBCDToBinary(u8 value)
+ALWAYS_INLINE constexpr u8 PackedBCDToBinary(u8 value)
 {
   return ((value >> 4) * 10) + (value % 16);
 }
-ALWAYS_INLINE static constexpr u8 IsValidBCDDigit(u8 digit)
+ALWAYS_INLINE constexpr u8 IsValidBCDDigit(u8 digit)
 {
   return (digit <= 9);
 }
-ALWAYS_INLINE static constexpr u8 IsValidPackedBCD(u8 value)
+ALWAYS_INLINE constexpr u8 IsValidPackedBCD(u8 value)
 {
   return IsValidBCDDigit(value & 0x0F) && IsValidBCDDigit(value >> 4);
 }
 
 // Boolean to integer
-ALWAYS_INLINE static constexpr u8 BoolToUInt8(bool value)
+ALWAYS_INLINE constexpr u8 BoolToUInt8(bool value)
 {
   return static_cast<u8>(value);
 }
-ALWAYS_INLINE static constexpr u16 BoolToUInt16(bool value)
+ALWAYS_INLINE constexpr u16 BoolToUInt16(bool value)
 {
   return static_cast<u16>(value);
 }
-ALWAYS_INLINE static constexpr u32 BoolToUInt32(bool value)
+ALWAYS_INLINE constexpr u32 BoolToUInt32(bool value)
 {
   return static_cast<u32>(value);
 }
-ALWAYS_INLINE static constexpr u64 BoolToUInt64(bool value)
+ALWAYS_INLINE constexpr u64 BoolToUInt64(bool value)
 {
   return static_cast<u64>(value);
 }
-ALWAYS_INLINE static constexpr float BoolToFloat(bool value)
+ALWAYS_INLINE constexpr float BoolToFloat(bool value)
 {
   return static_cast<float>(value);
 }
 
 // Integer to boolean
 template<typename TValue>
-ALWAYS_INLINE static constexpr bool ConvertToBool(TValue value)
+ALWAYS_INLINE constexpr bool ConvertToBool(TValue value)
 {
   return static_cast<bool>(value);
 }
 
 // Unsafe integer to boolean
 template<typename TValue>
-ALWAYS_INLINE static bool ConvertToBoolUnchecked(TValue value)
+ALWAYS_INLINE bool ConvertToBoolUnchecked(TValue value)
 {
   // static_assert(sizeof(uint8) == sizeof(bool));
   bool ret;
@@ -133,7 +133,7 @@ ALWAYS_INLINE static bool ConvertToBoolUnchecked(TValue value)
 
 // Generic sign extension
 template<int NBITS, typename T>
-ALWAYS_INLINE static constexpr T SignExtendN(T value)
+ALWAYS_INLINE constexpr T SignExtendN(T value)
 {
   // http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
   constexpr int shift = 8 * sizeof(T) - NBITS;
@@ -142,7 +142,7 @@ ALWAYS_INLINE static constexpr T SignExtendN(T value)
 
 /// Returns the number of zero bits before the first set bit, going MSB->LSB.
 template<typename T>
-ALWAYS_INLINE static unsigned CountLeadingZeros(T value)
+ALWAYS_INLINE unsigned CountLeadingZeros(T value)
 {
 #ifdef _MSC_VER
   if constexpr (sizeof(value) >= sizeof(u64))
@@ -169,7 +169,7 @@ ALWAYS_INLINE static unsigned CountLeadingZeros(T value)
 
 /// Returns the number of zero bits before the first set bit, going LSB->MSB.
 template<typename T>
-ALWAYS_INLINE static unsigned CountTrailingZeros(T value)
+ALWAYS_INLINE unsigned CountTrailingZeros(T value)
 {
 #ifdef _MSC_VER
   if constexpr (sizeof(value) >= sizeof(u64))
@@ -194,7 +194,7 @@ ALWAYS_INLINE static unsigned CountTrailingZeros(T value)
 
 // C++23-like std::byteswap()
 template<typename T>
-ALWAYS_INLINE static T ByteSwap(T value)
+ALWAYS_INLINE T ByteSwap(T value)
 {
   if constexpr (std::is_signed_v<T>)
   {

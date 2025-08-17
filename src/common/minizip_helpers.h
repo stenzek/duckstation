@@ -13,7 +13,7 @@
 
 namespace MinizipHelpers {
 
-[[maybe_unused]] static unzFile OpenUnzMemoryFile(const void* memory, size_t memory_size)
+inline unzFile OpenUnzMemoryFile(const void* memory, size_t memory_size)
 {
   struct MemoryFileInfo
   {
@@ -70,7 +70,7 @@ namespace MinizipHelpers {
   return unzOpen2_64("", &funcs);
 }
 
-[[maybe_unused]] static unzFile OpenUnzFile(const char* filename)
+inline unzFile OpenUnzFile(const char* filename)
 {
   zlib_filefunc64_def funcs;
   fill_fopen64_filefunc(&funcs);
@@ -90,8 +90,8 @@ namespace MinizipHelpers {
   return unzOpen2_64(filename, &funcs);
 }
 
-[[maybe_unused]] static std::optional<std::string> ReadZipFileToString(unzFile zf, const char* filename,
-                                                                       bool case_sensitivity, Error* error)
+inline std::optional<std::string> ReadZipFileToString(unzFile zf, const char* filename, bool case_sensitivity,
+                                                      Error* error)
 {
   std::optional<std::string> ret;
 
