@@ -1232,7 +1232,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   {
     m_ui.filterType->addItem(
       QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(type)),
-      qApp->translate("GameList", GameList::GetEntryTypeDisplayName(static_cast<GameList::EntryType>(type))));
+      QString::fromUtf8(GameList::GetEntryTypeDisplayName(static_cast<GameList::EntryType>(type))));
   }
   for (u32 region = 0; region < static_cast<u32>(DiscRegion::Count); region++)
   {

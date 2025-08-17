@@ -241,7 +241,7 @@ void AudioSettingsWidget::updateVolumeLabel()
 
 void AudioSettingsWidget::onMinimalOutputLatencyChecked(Qt::CheckState state)
 {
-  const bool minimal = m_dialog->getEffectiveBoolValue("SPU2/Output", "OutputLatencyMinimal", false);
+  const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", false);
   m_ui.outputLatencyMS->setEnabled(!minimal);
   updateLatencyLabel();
 }
