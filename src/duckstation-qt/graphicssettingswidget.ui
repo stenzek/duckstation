@@ -1362,62 +1362,69 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QCheckBox" name="preferGLESContext">
+            <property name="text">
+             <string>Prefer OpenGL ES Context</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="QCheckBox" name="disableShaderCache">
             <property name="text">
              <string>Disable Shader Cache</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="0">
            <widget class="QCheckBox" name="disableCompressedTextures">
             <property name="text">
              <string>Disable Compressed Textures</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="2" column="1">
            <widget class="QCheckBox" name="disableDualSource">
             <property name="text">
              <string>Disable Dual-Source Blending</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="0">
            <widget class="QCheckBox" name="disableFramebufferFetch">
             <property name="text">
              <string>Disable Framebuffer Fetch</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="3" column="1">
            <widget class="QCheckBox" name="disableTextureBuffers">
             <property name="text">
              <string>Disable Texture Buffers</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="0">
            <widget class="QCheckBox" name="disableTextureCopyToSelf">
             <property name="text">
              <string>Disable Texture Copy To Self</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="4" column="1">
            <widget class="QCheckBox" name="disableMemoryImport">
             <property name="text">
              <string>Disable Memory Import</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="0">
            <widget class="QCheckBox" name="disableRasterOrderViews">
             <property name="text">
              <string>Disable Rasterizer Order Views</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="5" column="1">
            <widget class="QCheckBox" name="disableComputeShaders">
             <property name="text">
              <string>Disable Compute Shaders</string>

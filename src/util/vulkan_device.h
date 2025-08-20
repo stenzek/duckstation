@@ -241,7 +241,7 @@ public:
   void UnbindTextureBuffer(VulkanTextureBuffer* buf);
 
 protected:
-  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
@@ -329,16 +329,16 @@ private:
   static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                        bool enable_debug_utils);
   bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
-                    FeatureMask disabled_features, Error* error);
+                    CreateFlags create_flags, Error* error);
   bool EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
                                       std::span<const VkExtensionProperties> available_extensions,
                                       ExtensionList& enabled_extensions, VkPhysicalDeviceFeatures& enabled_features,
                                       bool enable_surface, Error* error);
-  void SetFeatures(FeatureMask disabled_features, VkPhysicalDevice physical_device,
+  void SetFeatures(CreateFlags create_flags, VkPhysicalDevice physical_device,
                    const VkPhysicalDeviceFeatures& vk_features);
 
   static GPUDriverType GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
-                                        const VkPhysicalDeviceDriverProperties& driver_properties);
+                                       const VkPhysicalDeviceDriverProperties& driver_properties);
   static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
   bool CreateAllocator();

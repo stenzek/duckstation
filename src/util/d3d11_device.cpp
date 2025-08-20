@@ -57,17 +57,16 @@ D3D11Device::~D3D11Device()
   Assert(!m_device);
 }
 
-bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
-                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                               bool allow_present_throttle,
+bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
-  UINT create_flags = 0;
+  UINT d3d_create_flags = 0;
   if (m_debug_device)
-    create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+    d3d_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 
   m_dxgi_factory = D3DCommon::CreateFactory(m_debug_device, error);
   if (!m_dxgi_factory)
@@ -82,7 +81,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
   ComPtr<ID3D11Device> temp_device;
   ComPtr<ID3D11DeviceContext> temp_context;
   HRESULT hr;
-  if (!D3DCommon::CreateD3D11Device(dxgi_adapter.Get(), create_flags, requested_feature_levels.data(),
+  if (!D3DCommon::CreateD3D11Device(dxgi_adapter.Get(), d3d_create_flags, requested_feature_levels.data(),
                                     static_cast<UINT>(requested_feature_levels.size()), &temp_device, nullptr,
                                     &temp_context, error))
   {
@@ -129,7 +128,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
            D3DCommon::GetFeatureLevelString(D3DCommon::GetRenderAPIVersionForFeatureLevel(m_max_feature_level)));
 
   SetDriverType(driver_type);
-  SetFeatures(disabled_features);
+  SetFeatures(create_flags);
 
   if (!wi.IsSurfaceless())
   {
@@ -155,7 +154,7 @@ void D3D11Device::DestroyDevice()
   m_device.Reset();
 }
 
-void D3D11Device::SetFeatures(FeatureMask disabled_features)
+void D3D11Device::SetFeatures(CreateFlags create_flags)
 {
   const D3D_FEATURE_LEVEL feature_level = m_device->GetFeatureLevel();
 
@@ -173,17 +172,17 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
     }
   }
 
-  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
+  m_features.dual_source_blend = !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend);
   m_features.framebuffer_fetch = false;
   m_features.per_sample_shading = (feature_level >= D3D_FEATURE_LEVEL_10_1);
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = false;
-  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
-  m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
+  m_features.geometry_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders);
   m_features.compute_shaders =
-    (!(disabled_features & FEATURE_MASK_COMPUTE_SHADERS) && feature_level >= D3D_FEATURE_LEVEL_11_0);
+    (!HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders) && feature_level >= D3D_FEATURE_LEVEL_11_0);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
   m_features.exclusive_fullscreen = true;
@@ -194,7 +193,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = false;
   m_features.raster_order_views = false;
-  if (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS))
+  if (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
   {
     D3D11_FEATURE_DATA_D3D11_OPTIONS2 data = {};
     m_features.raster_order_views =
@@ -203,11 +202,11 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   }
 
   m_features.dxt_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
      (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
       SupportsTextureFormat(GPUTexture::Format::BC3)));
-  m_features.bptc_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && SupportsTextureFormat(GPUTexture::Format::BC7));
+  m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
+                              SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,

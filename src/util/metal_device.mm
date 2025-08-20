@@ -284,7 +284,7 @@ void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
   }
 }
 
-bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                                bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
@@ -334,7 +334,7 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     INFO_LOG("Metal Device: {}", device_name);
 
     SetDriverType(GuessDriverType(0, {}, device_name));
-    SetFeatures(disabled_features);
+    SetFeatures(create_flags);
     CreateCommandBuffer();
 
     if (!wi.IsSurfaceless())
@@ -363,7 +363,7 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
   }
 }
 
-void MetalDevice::SetFeatures(FeatureMask disabled_features)
+void MetalDevice::SetFeatures(CreateFlags create_flags)
 {
   // Set version to Metal 2.3, that's all we're using. Use SPIRV-Cross version encoding.
   m_render_api_version = 20300;
@@ -377,12 +377,12 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   const bool supports_barriers =
     ([m_device supportsFamily:MTLGPUFamilyMac1] && ![m_device supportsFamily:MTLGPUFamilyApple3]);
 
-  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
-  m_features.framebuffer_fetch = !(disabled_features & FEATURE_MASK_FRAMEBUFFER_FETCH) && supports_fbfetch;
+  m_features.dual_source_blend = !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend);
+  m_features.framebuffer_fetch = !HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch) && supports_fbfetch;
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
-  m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
-  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_copy_to_self = !HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf);
+  m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = true;
   m_features.feedback_loops = (m_features.framebuffer_fetch || supports_barriers);
   m_features.geometry_shaders = false;
@@ -397,7 +397,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
 
   // Same feature bit for both.
   m_features.dxt_textures = m_features.bptc_textures =
-    !(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && m_device.supportsBCTextureCompression;
+    !HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && m_device.supportsBCTextureCompression;
 }
 
 bool MetalDevice::LoadShaders()

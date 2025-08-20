@@ -329,7 +329,7 @@ public:
   static void DeferRelease(u64 fence_counter, id obj);
 
 protected:
-  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
@@ -358,7 +358,7 @@ private:
   };
   static_assert(sizeof(ClearPipelineConfig) == 8);
 
-  void SetFeatures(FeatureMask disabled_features);
+  void SetFeatures(CreateFlags create_flags);
   bool LoadShaders();
 
   std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,

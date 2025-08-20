@@ -578,22 +578,24 @@ class GPUDevice
 public:
   friend GPUTexture;
 
-  // TODO: drop virtuals
-  // TODO: gpu crash handling on present
   using DrawIndex = u16;
 
-  enum FeatureMask : u32
+  enum class CreateFlags : u32
   {
-    FEATURE_MASK_DUAL_SOURCE_BLEND = (1 << 0),
-    FEATURE_MASK_FEEDBACK_LOOPS = (1 << 1),
-    FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 2),
-    FEATURE_MASK_TEXTURE_BUFFERS = (1 << 3),
-    FEATURE_MASK_GEOMETRY_SHADERS = (1 << 4),
-    FEATURE_MASK_COMPUTE_SHADERS = (1 << 5),
-    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 6),
-    FEATURE_MASK_MEMORY_IMPORT = (1 << 7),
-    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 8),
-    FEATURE_MASK_COMPRESSED_TEXTURES = (1 << 9),
+    None = 0,
+    PreferGLESContext = (1 << 0),
+    EnableDebugDevice = (1 << 1),
+    EnableGPUValidation = (1 << 2),
+    DisableDualSourceBlend = (1 << 3),
+    DisableFeedbackLoops = (1 << 4),
+    DisableFramebufferFetch = (1 << 5),
+    DisableTextureBuffers = (1 << 6),
+    DisableGeometryShaders = (1 << 7),
+    DisableComputeShaders = (1 << 8),
+    DisableTextureCopyToSelf = (1 << 9),
+    DisableMemoryImport = (1 << 10),
+    DisableRasterOrderViews = (1 << 11),
+    DisableCompressedTextures = (1 << 12),
   };
 
   enum class DrawBarrier : u32
@@ -715,6 +717,12 @@ public:
   /// Converts a RGBA8 value to 4 floating-point values.
   static std::array<float, 4> RGBA8ToFloat(u32 rgba);
 
+  /// Returns true if the given device creation flag is present.
+  static constexpr bool HasCreateFlag(CreateFlags flags, CreateFlags flag)
+  {
+    return ((static_cast<u32>(flags) & static_cast<u32>(flag)) != 0);
+  }
+
   /// Returns the number of texture bindings for a given pipeline layout.
   static constexpr u32 GetActiveTexturesForLayout(GPUPipeline::Layout layout)
   {
@@ -763,10 +771,9 @@ public:
 
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
-  bool Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
-              std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device, bool gpu_validation,
-              const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
-              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+  bool Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
+              std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi, GPUVSyncMode vsync,
+              bool allow_present_throttle, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
               std::optional<bool> exclusive_fullscreen_control, Error* error);
   void Destroy();
 
@@ -920,8 +927,8 @@ public:
   static void ResetStatistics();
 
 protected:
-  virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
-                                            const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+  virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                            GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                             const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                             std::optional<bool> exclusive_fullscreen_control, Error* error) = 0;
   virtual void DestroyDevice() = 0;
@@ -1030,10 +1037,11 @@ protected:
 
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
-  bool m_debug_device_gpu_validation = false;
 };
 
 extern std::unique_ptr<GPUDevice> g_gpu_device;
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDevice::CreateFlags);
 
 ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const tex)
 {

@@ -639,21 +639,29 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
       (g_gpu_settings.display_exclusive_fullscreen_control == DisplayExclusiveFullscreenControl::Allowed);
   }
 
-  u32 disabled_features = 0;
+  GPUDevice::CreateFlags create_flags = GPUDevice::CreateFlags::None;
+  if (g_gpu_settings.gpu_prefer_gles_context)
+    create_flags |= GPUDevice::CreateFlags::PreferGLESContext;
+  if (g_gpu_settings.gpu_use_debug_device)
+    create_flags |= GPUDevice::CreateFlags::EnableDebugDevice;
+  if (g_gpu_settings.gpu_use_debug_device && g_gpu_settings.gpu_use_debug_device_gpu_validation)
+    create_flags |= GPUDevice::CreateFlags::EnableGPUValidation;
   if (g_gpu_settings.gpu_disable_dual_source_blend)
-    disabled_features |= GPUDevice::FEATURE_MASK_DUAL_SOURCE_BLEND;
+    create_flags |= GPUDevice::CreateFlags::DisableDualSourceBlend;
   if (g_gpu_settings.gpu_disable_framebuffer_fetch)
-    disabled_features |= GPUDevice::FEATURE_MASK_FRAMEBUFFER_FETCH;
+    create_flags |= GPUDevice::CreateFlags::DisableFramebufferFetch;
   if (g_gpu_settings.gpu_disable_texture_buffers)
-    disabled_features |= GPUDevice::FEATURE_MASK_TEXTURE_BUFFERS;
+    create_flags |= GPUDevice::CreateFlags::DisableTextureBuffers;
+  if (g_gpu_settings.gpu_disable_texture_copy_to_self)
+    create_flags |= GPUDevice::CreateFlags::DisableTextureCopyToSelf;
   if (g_gpu_settings.gpu_disable_memory_import)
-    disabled_features |= GPUDevice::FEATURE_MASK_MEMORY_IMPORT;
+    create_flags |= GPUDevice::CreateFlags::DisableMemoryImport;
   if (g_gpu_settings.gpu_disable_raster_order_views)
-    disabled_features |= GPUDevice::FEATURE_MASK_RASTER_ORDER_VIEWS;
+    create_flags |= GPUDevice::CreateFlags::DisableRasterOrderViews;
   if (g_gpu_settings.gpu_disable_compute_shaders)
-    disabled_features |= GPUDevice::FEATURE_MASK_COMPUTE_SHADERS;
+    create_flags |= GPUDevice::CreateFlags::DisableComputeShaders;
   if (g_gpu_settings.gpu_disable_compressed_textures)
-    disabled_features |= GPUDevice::FEATURE_MASK_COMPRESSED_TEXTURES;
+    create_flags |= GPUDevice::CreateFlags::DisableCompressedTextures;
 
   // Don't dump shaders on debug builds for Android, users will complain about storage...
 #if !defined(__ANDROID__) || defined(_DEBUG)
@@ -667,11 +675,9 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        Host::GetStringSettingValue("GPU", "Adapter"), static_cast<GPUDevice::FeatureMask>(disabled_features),
-        shader_dump_directory,
+        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory,
         g_gpu_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-        SHADER_CACHE_VERSION, g_gpu_settings.gpu_use_debug_device, g_gpu_settings.gpu_use_debug_device_gpu_validation,
-        wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
+        SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
         fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {
     ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());

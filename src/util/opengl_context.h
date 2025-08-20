@@ -49,7 +49,8 @@ public:
   virtual bool SetSwapInterval(s32 interval, Error* error = nullptr) = 0;
   virtual std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) = 0;
 
-  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface, Error* error);
+  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface, bool prefer_gles_context,
+                                               Error* error);
 
 protected:
   Version m_version = {};

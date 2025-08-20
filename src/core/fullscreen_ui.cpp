@@ -6641,6 +6641,11 @@ void FullscreenUI::DrawAdvancedSettingsPage()
     "UseGPUBasedValidation", false);
 
   DrawToggleSetting(
+    bsi, FSUI_VSTR("Prefer OpenGL ES Device"),
+    FSUI_VSTR("Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers."),
+    "GPU", "PreferGLESContext", Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
+
+  DrawToggleSetting(
     bsi, FSUI_VSTR("Load Devices From Save States"),
     FSUI_VSTR("When enabled, memory cards and controllers will be overwritten when save states are loaded."), "Main",
     "LoadDevicesFromSaveStates", false);
@@ -9870,6 +9875,7 @@ TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
+TRANSLATE_NOOP("FullscreenUI", "Prefer OpenGL ES Device");
 TRANSLATE_NOOP("FullscreenUI", "Preload Images to RAM");
 TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
 TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");
@@ -10115,6 +10121,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Separate Disc Settings");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "User Name");
+TRANSLATE_NOOP("FullscreenUI", "Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.");

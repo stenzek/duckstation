@@ -240,6 +240,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_multisamples = static_cast<u8>(si.GetUIntValue("GPU", "Multisamples", 1u));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_use_debug_device_gpu_validation = si.GetBoolValue("GPU", "UseGPUBasedValidation", false);
+  gpu_prefer_gles_context = si.GetBoolValue("GPU", "PreferGLESContext", DEFAULT_GPU_PREFER_GLES_CONTEXT);
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
   gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);
   gpu_disable_framebuffer_fetch = si.GetBoolValue("GPU", "DisableFramebufferFetch", false);
@@ -622,6 +623,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   {
     si.SetBoolValue("GPU", "UseDebugDevice", gpu_use_debug_device);
     si.SetBoolValue("GPU", "UseGPUBasedValidation", gpu_use_debug_device_gpu_validation);
+    si.SetBoolValue("GPU", "PreferGLESContext", gpu_prefer_gles_context);
     si.SetBoolValue("GPU", "DisableShaderCache", gpu_disable_shader_cache);
     si.SetBoolValue("GPU", "DisableDualSourceBlend", gpu_disable_dual_source_blend);
     si.SetBoolValue("GPU", "DisableFramebufferFetch", gpu_disable_framebuffer_fetch);
@@ -1184,6 +1186,7 @@ bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
   return (gpu_adapter != old_settings.gpu_adapter || gpu_use_thread != old_settings.gpu_use_thread ||
           gpu_use_debug_device != old_settings.gpu_use_debug_device ||
           gpu_use_debug_device_gpu_validation != old_settings.gpu_use_debug_device_gpu_validation ||
+          gpu_prefer_gles_context != old_settings.gpu_prefer_gles_context ||
           gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
           gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
           gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||

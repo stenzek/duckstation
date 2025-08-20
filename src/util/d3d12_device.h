@@ -199,7 +199,7 @@ public:
                            u32 src_width, u32 src_height);
 
 protected:
-  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
@@ -246,7 +246,7 @@ private:
   static_assert(sizeof(PIPELINE_CACHE_HEADER) == 16);
 
   void GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr);
-  void SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features);
+  void SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags create_flags);
 
   bool CreateCommandLists(Error* error);
   void DestroyCommandLists();

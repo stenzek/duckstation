@@ -116,7 +116,7 @@ public:
   void UnbindTexture(D3D11Texture* tex);
 
 protected:
-  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
@@ -142,7 +142,7 @@ private:
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
-  void SetFeatures(FeatureMask disabled_features);
+  void SetFeatures(CreateFlags create_flags);
 
   bool CreateBuffers(Error* error);
   void DestroyBuffers();

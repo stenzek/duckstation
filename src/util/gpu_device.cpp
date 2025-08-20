@@ -446,19 +446,50 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
   return ret;
 }
 
-bool GPUDevice::Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
-                       std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-                       bool gpu_validation, const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
+bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::string_view shader_dump_path,
+                       std::string_view shader_cache_path, u32 shader_cache_version, const WindowInfo& wi,
+                       GPUVSyncMode vsync, bool allow_present_throttle,
                        const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                        std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  m_debug_device = debug_device;
-  m_debug_device_gpu_validation = debug_device && gpu_validation;
+  m_debug_device = HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice);
   s_shader_dump_path = shader_dump_path;
 
   INFO_LOG("Main render window is {}x{}.", wi.surface_width, wi.surface_height);
-  if (!CreateDeviceAndMainSwapChain(adapter, disabled_features, wi, vsync, allow_present_throttle,
-                                    exclusive_fullscreen_mode, exclusive_fullscreen_control, error))
+
+  if (create_flags != CreateFlags::None) [[unlikely]]
+  {
+    WARNING_LOG("One or more non-standard creation flags are set:");
+    if (HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice))
+      WARNING_LOG("  - Use debug device");
+    if (HasCreateFlag(create_flags, CreateFlags::EnableGPUValidation))
+      WARNING_LOG("  - Enable GPU validation");
+    if (HasCreateFlag(create_flags, CreateFlags::PreferGLESContext))
+      WARNING_LOG("  - Prefer OpenGL ES context");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend))
+      WARNING_LOG("  - Disable dual source blend");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops))
+      WARNING_LOG("  - Disable feedback loops");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch))
+      WARNING_LOG("  - Disable framebuffer fetch");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers))
+      WARNING_LOG("  - Disable texture buffers");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders))
+      WARNING_LOG("  - Disable geometry shaders");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders))
+      WARNING_LOG("  - Disable compute shaders");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf))
+      WARNING_LOG("  - Disable texture copy to self");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableMemoryImport))
+      WARNING_LOG("  - Disable memory import");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
+      WARNING_LOG("  - Disable raster order views");
+    if (HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures))
+      WARNING_LOG("  - Disable compressed textures");
+  }
+
+  if (!CreateDeviceAndMainSwapChain(adapter, create_flags, wi, vsync, allow_present_throttle, exclusive_fullscreen_mode,
+                                    exclusive_fullscreen_control, error))
   {
     if (error && !error->IsValid())
       error->SetStringView("Failed to create device.");
@@ -1202,7 +1233,6 @@ void GPUDevice::ResetStatistics()
 {
   s_stats = {};
 }
-
 
 GPUDriverType GPUDevice::GuessDriverType(u32 pci_vendor_id, std::string_view vendor_name, std::string_view adapter_name)
 {

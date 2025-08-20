@@ -266,15 +266,15 @@ static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, 
   }
 }
 
-bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
-                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
+bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                                GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   WindowInfo wi_copy(wi);
   OpenGLContext::SurfaceHandle wi_surface;
-  m_gl_context = OpenGLContext::Create(wi_copy, &wi_surface, error);
+  m_gl_context =
+    OpenGLContext::Create(wi_copy, &wi_surface, HasCreateFlag(create_flags, CreateFlags::PreferGLESContext), error);
   if (!m_gl_context)
   {
     ERROR_LOG("Failed to create any GL context");
@@ -324,7 +324,7 @@ bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
     RenderBlankFrame();
   }
 
-  if (!CheckFeatures(disabled_features))
+  if (!CheckFeatures(create_flags))
     return false;
 
   if (!CreateBuffers())
@@ -336,7 +336,7 @@ bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   return true;
 }
 
-bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
+bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
 {
   const bool is_gles = m_gl_context->IsGLES();
 
@@ -374,11 +374,11 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   GLint max_dual_source_draw_buffers = 0;
   glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS, &max_dual_source_draw_buffers);
   m_features.dual_source_blend =
-    !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && (max_dual_source_draw_buffers > 0) &&
+    !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend) && (max_dual_source_draw_buffers > 0) &&
     (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended || GLAD_GL_EXT_blend_func_extended);
 
   m_features.framebuffer_fetch =
-    !(disabled_features & (FEATURE_MASK_FEEDBACK_LOOPS | FEATURE_MASK_FRAMEBUFFER_FETCH)) &&
+    !HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops | CreateFlags::DisableFramebufferFetch) &&
     (GLAD_GL_EXT_shader_framebuffer_fetch || GLAD_GL_ARM_shader_framebuffer_fetch);
 
 #ifdef __APPLE__
@@ -386,7 +386,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.texture_buffers = false;
 #else
   m_features.texture_buffers =
-    !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS) && (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
+    !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers) && (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
 
   // And Samsung's ANGLE/GLES driver?
   if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "ANGLE"))
@@ -406,7 +406,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   }
 #endif
 
-  if (!m_features.texture_buffers && !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS))
+  if (!m_features.texture_buffers && !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers))
   {
     // Try SSBOs.
     GLint max_fragment_storage_blocks = 0;
@@ -443,13 +443,13 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   // glBlitFramebufer with same source/destination should be legal, but on Mali (at least Bifrost) it breaks.
   // So, blit from the shadow texture, like in the other renderers.
-  m_features.texture_copy_to_self =
-    (m_driver_type != GPUDriverType::ARMProprietary) && !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
+  m_features.texture_copy_to_self = (m_driver_type != GPUDriverType::ARMProprietary) &&
+                                    !HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf);
 
   m_features.feedback_loops = false;
 
   m_features.geometry_shaders =
-    !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
+    !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
   m_features.compute_shaders = false;
 
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
@@ -463,9 +463,9 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.shader_cache = false;
 
   m_features.dxt_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && GLAD_GL_EXT_texture_compression_s3tc);
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && GLAD_GL_EXT_texture_compression_s3tc);
   m_features.bptc_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
      (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc));
 
   m_features.pipeline_cache = m_gl_context->IsGLES() || GLAD_GL_ARB_get_program_binary;

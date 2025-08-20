@@ -745,7 +745,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
 }
 
 bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
-                                FeatureMask disabled_features, Error* error)
+                                CreateFlags create_flags, Error* error)
 {
   u32 queue_family_count;
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
@@ -932,7 +932,7 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
           queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
           m_device_properties.limits.timestampPeriod);
 
-  SetFeatures(disabled_features, physical_device, enabled_features);
+  SetFeatures(create_flags, physical_device, enabled_features);
   return true;
 }
 
@@ -1973,9 +1973,8 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 #endif
 }
 
-bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
-                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                                bool allow_present_throttle,
+bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                                GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -2078,7 +2077,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
 
   // Attempt to create the device.
   if (!CreateDevice(physical_device, swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, enable_validation_layer,
-                    disabled_features, error))
+                    create_flags, error))
   {
     return false;
   }
@@ -2481,7 +2480,7 @@ u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkP
     return 1;
 }
 
-void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice physical_device,
+void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physical_device,
                                const VkPhysicalDeviceFeatures& vk_features)
 {
   const u32 store_api_version = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
@@ -2491,19 +2490,20 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice p
     std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
   m_max_multisamples = static_cast<u16>(GetMaxMultisamples(physical_device, m_device_properties));
 
-  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND) && vk_features.dualSrcBlend;
+  m_features.dual_source_blend =
+    !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend) && vk_features.dualSrcBlend;
   m_features.framebuffer_fetch =
-    !(disabled_features & (FEATURE_MASK_FEEDBACK_LOOPS | FEATURE_MASK_FRAMEBUFFER_FETCH)) &&
+    !HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops | CreateFlags::DisableFramebufferFetch) &&
     m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 
   if (!m_features.dual_source_blend)
     WARNING_LOG("Vulkan driver is missing dual-source blending. This will have an impact on performance.");
 
   m_features.noperspective_interpolation = true;
-  m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
+  m_features.texture_copy_to_self = !HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf);
   m_features.per_sample_shading = vk_features.sampleRateShading;
-  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
-  m_features.feedback_loops = !(disabled_features & FEATURE_MASK_FEEDBACK_LOOPS);
+  m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
+  m_features.feedback_loops = !HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops);
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS/MoltenVK.
@@ -2520,8 +2520,9 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice p
   if (m_features.texture_buffers_emulated_with_ssbo)
     WARNING_LOG("Emulating texture buffers with SSBOs.");
 
-  m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && vk_features.geometryShader;
-  m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
+  m_features.geometry_shaders =
+    !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders) && vk_features.geometryShader;
+  m_features.compute_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders);
 
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
@@ -2532,12 +2533,12 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, VkPhysicalDevice p
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
   m_features.raster_order_views =
-    (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS) && vk_features.fragmentStoresAndAtomics &&
+    (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews) && vk_features.fragmentStoresAndAtomics &&
      m_optional_extensions.vk_ext_fragment_shader_interlock);
 
   // Same feature bit for both.
   m_features.dxt_textures = m_features.bptc_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && vk_features.textureCompressionBC);
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && vk_features.textureCompressionBC);
 }
 
 GPUDriverType VulkanDevice::GuessDriverType(const VkPhysicalDeviceProperties& device_properties,

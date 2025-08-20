@@ -39,21 +39,6 @@
 
 LOG_CHANNEL(GPUDevice);
 
-static bool ShouldPreferESContext()
-{
-#if defined(__ANDROID__)
-  return true;
-#elif !defined(_MSC_VER)
-  const char* value = std::getenv("PREFER_GLES_CONTEXT");
-  return (value && std::strcmp(value, "1") == 0);
-#else
-  char buffer[2] = {};
-  size_t buffer_size = sizeof(buffer);
-  getenv_s(&buffer_size, buffer, "PREFER_GLES_CONTEXT");
-  return (std::strcmp(buffer, "1") == 0);
-#endif
-}
-
 static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_renderer, const char* gl_version)
 {
   if (std::strstr(gl_vendor, "ARM"))
@@ -122,7 +107,8 @@ OpenGLContext::OpenGLContext() = default;
 
 OpenGLContext::~OpenGLContext() = default;
 
-std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHandle* surface, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHandle* surface, bool prefer_gles_context,
+                                                     Error* error)
 {
   static constexpr std::array<Version, 14> vlist = {{{Profile::Core, 4, 6},
                                                      {Profile::Core, 4, 5},
@@ -140,7 +126,7 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
                                                      {Profile::Core, 3, 0}}};
 
   std::span<const Version> versions_to_try = vlist;
-  if (ShouldPreferESContext())
+  if (prefer_gles_context)
   {
     // move ES versions to the front
     Version* new_versions_to_try = static_cast<Version*>(alloca(sizeof(Version) * versions_to_try.size()));

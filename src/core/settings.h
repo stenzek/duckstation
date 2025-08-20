@@ -98,6 +98,7 @@ struct GPUSettings
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_debug_device : 1 = false;
   bool gpu_use_debug_device_gpu_validation : 1 = false;
+  bool gpu_prefer_gles_context : 1 = DEFAULT_GPU_PREFER_GLES_CONTEXT;
   bool gpu_disable_shader_cache : 1 = false;
   bool gpu_disable_dual_source_blend : 1 = false;
   bool gpu_disable_framebuffer_fetch : 1 = false;
@@ -264,8 +265,10 @@ struct GPUSettings
 
 #ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;
+  static constexpr bool DEFAULT_GPU_PREFER_GLES_CONTEXT = false;
 #else
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 3;
+  static constexpr bool DEFAULT_GPU_PREFER_GLES_CONTEXT = true;
 #endif
 };
 

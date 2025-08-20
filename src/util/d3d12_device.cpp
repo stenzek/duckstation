@@ -148,7 +148,7 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                                bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
@@ -173,7 +173,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
       INFO_LOG("Enabling debug layer.");
       debug12->EnableDebugLayer();
 
-      if (m_debug_device_gpu_validation)
+      if (HasCreateFlag(create_flags, GPUDevice::CreateFlags::EnableGPUValidation))
       {
         ComPtr<ID3D12Debug1> debug12_1;
         if (SUCCEEDED(debug12.As(&debug12_1)))
@@ -184,7 +184,6 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
         else
         {
           ERROR_LOG("GPU-based validation requested but not available.");
-          m_debug_device_gpu_validation = false;
         }
       }
     }
@@ -283,7 +282,7 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     return false;
   }
 
-  SetFeatures(feature_level, disabled_features);
+  SetFeatures(feature_level, create_flags);
 
   if (!CreateCommandLists(error) || !CreateDescriptorHeaps(error))
     return false;
@@ -1319,7 +1318,7 @@ void D3D12Device::InsertDebugMessage(const char* msg)
 
 #endif
 
-void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features)
+void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags create_flags)
 {
   m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
   m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
@@ -1336,17 +1335,17 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
     }
   }
 
-  m_features.dual_source_blend = !(disabled_features & FEATURE_MASK_DUAL_SOURCE_BLEND);
+  m_features.dual_source_blend = !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend);
   m_features.framebuffer_fetch = false;
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self =
-    /*!(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF)*/ false; // TODO: Support with Enhanced Barriers
-  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+    /*!HasCreateFlag(create_flags, CreateFlag::DisableTextureCopyToSelf)*/ false; // TODO: Support with Enhanced Barriers
+  m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
-  m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
-  m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
+  m_features.geometry_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders);
+  m_features.compute_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
   m_features.exclusive_fullscreen = true;
@@ -1358,7 +1357,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.prefer_unused_textures = true;
 
   m_features.raster_order_views = false;
-  if (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS))
+  if (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
   {
     D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
     m_features.raster_order_views =
@@ -1367,11 +1366,11 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   }
 
   m_features.dxt_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
      (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
       SupportsTextureFormat(GPUTexture::Format::BC3)));
   m_features.bptc_textures =
-    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && SupportsTextureFormat(GPUTexture::Format::BC7));
+    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,

@@ -143,7 +143,7 @@ public:
   void RenderBlankFrame();
 
 protected:
-  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                     const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                     std::optional<bool> exclusive_fullscreen_control, Error* error) override;
@@ -163,7 +163,7 @@ private:
   static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
-  bool CheckFeatures(FeatureMask disabled_features);
+  bool CheckFeatures(CreateFlags create_flags);
   bool CreateBuffers();
   void DestroyBuffers();
 

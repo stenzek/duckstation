@@ -334,6 +334,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "GPU", "UseDebugDevice", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useGPUBasedValidation, "GPU", "UseGPUBasedValidation", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preferGLESContext, "GPU", "PreferGLESContext",
+                                               Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "GPU", "DisableShaderCache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "GPU", "DisableDualSourceBlend", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "GPU", "DisableFramebufferFetch",
@@ -421,8 +423,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
-  dialog->registerWidgetHelp(m_ui.displayScaling24Bit, tr("FMV Scaling"), tr("Bilinear (Smooth)"),
-                             tr("Determines the scaling algorithm used when 24-bit content is active, typically FMVs."));
+  dialog->registerWidgetHelp(
+    m_ui.displayScaling24Bit, tr("FMV Scaling"), tr("Bilinear (Smooth)"),
+    tr("Determines the scaling algorithm used when 24-bit content is active, typically FMVs."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Rendering"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
@@ -660,6 +663,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.useGPUBasedValidation, tr("Use GPU-Based Validation"), tr("Unchecked"),
     tr("Enable GPU-based validation when supported by the renderer API. <strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(
+    m_ui.preferGLESContext, tr("Prefer OpenGL ES Context"), tr("Unchecked"),
+    tr("Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers."));
   dialog->registerWidgetHelp(
     m_ui.disableShaderCache, tr("Disable Shader Cache"), tr("Unchecked"),
     tr("Forces shaders to be compiled for every run of the program. <strong>Only for developer use.</strong>"));
