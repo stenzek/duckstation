@@ -454,6 +454,7 @@ struct Settings : public GPUSettings
   void Save(SettingsInterface& si, bool ignore_base) const;
   static void Clear(SettingsInterface& si);
 
+  void ApplySettingRestrictions();
   void FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages);
 
   bool AreGPUDeviceSettingsChanged(const Settings& old_settings) const;

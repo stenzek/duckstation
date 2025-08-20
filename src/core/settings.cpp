@@ -1036,7 +1036,7 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
                      comment_str, replacement_scale_linear_filter);    // ReplacementScaleLinearFilter
 }
 
-void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages)
+void Settings::ApplySettingRestrictions()
 {
   if (g_settings.disable_all_enhancements)
   {
@@ -1071,6 +1071,33 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     g_settings.pcdrv_enable = false;
   }
 
+  // if challenge mode is enabled, disable things like rewind since they use save states
+  if (Achievements::IsHardcoreModeActive())
+  {
+    g_settings.emulation_speed =
+      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
+    g_settings.fast_forward_speed =
+      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
+    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
+    g_settings.rewind_enable = false;
+    if (g_settings.cpu_overclock_enable && g_settings.GetCPUOverclockPercent() < 100)
+    {
+      g_settings.cpu_overclock_enable = false;
+      g_settings.UpdateOverclockActive();
+    }
+
+#ifndef __ANDROID__
+    g_settings.enable_gdb_server = false;
+#endif
+
+    g_settings.gpu_show_vram = false;
+    g_settings.gpu_dump_cpu_to_vram_copies = false;
+    g_settings.gpu_dump_vram_to_cpu_copies = false;
+  }
+}
+
+void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages)
+{
   // fast forward boot requires fast boot
   g_settings.bios_fast_forward_boot = g_settings.bios_patch_fast_boot && g_settings.bios_fast_forward_boot;
 
@@ -1149,30 +1176,6 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
       WARNING_LOG("Disabling block linking due to runahead.");
       g_settings.cpu_recompiler_block_linking = false;
     }
-  }
-
-  // if challenge mode is enabled, disable things like rewind since they use save states
-  if (Achievements::IsHardcoreModeActive())
-  {
-    g_settings.emulation_speed =
-      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
-    g_settings.fast_forward_speed =
-      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
-    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
-    g_settings.rewind_enable = false;
-    if (g_settings.cpu_overclock_enable && g_settings.GetCPUOverclockPercent() < 100)
-    {
-      g_settings.cpu_overclock_enable = false;
-      g_settings.UpdateOverclockActive();
-    }
-
-#ifndef __ANDROID__
-    g_settings.enable_gdb_server = false;
-#endif
-
-    g_settings.gpu_show_vram = false;
-    g_settings.gpu_dump_cpu_to_vram_copies = false;
-    g_settings.gpu_dump_vram_to_cpu_copies = false;
   }
 }
 

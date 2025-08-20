@@ -1225,6 +1225,9 @@ void System::LoadSettings(bool display_osd_messages)
   if (g_settings.gpu_automatic_resolution_scale && IsValid())
     g_settings.gpu_resolution_scale = g_gpu.CalculateAutomaticResolutionScale();
 
+  // safe mode, cheevos hardcore mode, etc.
+  g_settings.ApplySettingRestrictions();
+
   Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
