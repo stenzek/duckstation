@@ -1521,11 +1521,11 @@ inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_l
   if constexpr (std::is_same_v<WidgetType, QComboBox>)
   {
     widget->clear();
-    widget->addItem(qApp->translate("SettingWidgetBinder", "Incompatible with this game."));
+    widget->addItem(qApp->translate("SettingWidgetBinder", "Incompatible with this game"));
   }
   else if constexpr (std::is_same_v<WidgetType, QLineEdit>)
   {
-    widget->setText(qApp->translate("SettingWidgetBinder", "Incompatible with this game."));
+    widget->setText(qApp->translate("SettingWidgetBinder", "Incompatible with this game"));
   }
   else if constexpr (std::is_same_v<WidgetType, QCheckBox>)
   {

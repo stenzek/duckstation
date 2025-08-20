@@ -141,8 +141,16 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
           &ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked);
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
 
+  SettingWidgetBinder::SetAvailability(m_ui.fastBoot, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
+  SettingWidgetBinder::SetAvailability(m_ui.fastForwardBoot, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
   SettingWidgetBinder::SetAvailability(
     m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
+  SettingWidgetBinder::SetAvailability(m_ui.cdromReadSpeedup,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableCDROMReadSpeedup),
+                                       m_ui.cdromReadSpeedupLabel);
+  SettingWidgetBinder::SetAvailability(m_ui.cdromSeekSpeedup,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableCDROMSeekSpeedup),
+                                       m_ui.cdromSeekSpeedupLabel);
 
   calculateCPUClockValue();
 }
