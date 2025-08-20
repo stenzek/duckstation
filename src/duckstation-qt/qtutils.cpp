@@ -12,7 +12,6 @@
 #include "common/error.h"
 #include "common/log.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
@@ -478,6 +477,41 @@ bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widge
   {
     return TryMigrateWindowGeometry(si, window_name, widget);
   }
+
+  // Ensure that the geometry is not off-screen. This is quite painful to do, but better than spawning the
+  // window off-screen. It also won't work on Wankland, and apparently doesn't support multiple monitors
+  // on X11, but who cares. I'm just going to disable the whole thing on Linux, because I don't want to
+  // deal with people moaning that their window manager's behavior is causing positions to revert to the
+  // primary monitor, so just yolo it and hope for the best....
+#ifndef __linux__
+  bool window_is_offscreen = true;
+  for (const QScreen* screen : qApp->screens())
+  {
+    const QRect screen_geometry = screen->geometry();
+    if (screen_geometry.contains(x, y))
+    {
+      window_is_offscreen = false;
+      break;
+    }
+  }
+  if (window_is_offscreen)
+  {
+    // If the window is off-screen, we will just center it on the primary screen.
+    const QScreen* primary_screen = QGuiApplication::primaryScreen();
+    if (primary_screen)
+    {
+      // Might be a different monitor, clamp to size.
+      const QRect screen_geometry = primary_screen->availableGeometry();
+      w = std::min(w, screen_geometry.width());
+      h = std::min(h, screen_geometry.height());
+      x = screen_geometry.x() + (screen_geometry.width() - w) / 2;
+      y = screen_geometry.y() + (screen_geometry.height() - h) / 2;
+    }
+
+    WARNING_LOG("Saved window position for {} is off-screen, centering to primary screen ({},{} w={},h={})",
+                window_name, x, y, w, h);
+  }
+#endif // __linux__
 
   widget->setGeometry(x, y, w, h);
   if (maximized)
