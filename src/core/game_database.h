@@ -124,6 +124,7 @@ struct Entry
   std::optional<DisplayCropMode> display_crop_mode;
   std::optional<DisplayDeinterlacingMode> display_deinterlacing_mode;
   std::optional<GPULineDetectMode> gpu_line_detect_mode;
+  std::optional<u8> cpu_overclock;
   std::optional<u32> dma_max_slice_ticks;
   std::optional<u32> dma_halt_ticks;
   std::optional<u32> cdrom_max_seek_speedup_cycles;

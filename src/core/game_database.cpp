@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 27,
+  GAME_DATABASE_CACHE_VERSION = 28,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -442,6 +442,13 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       INFO_LOG("GameDB: GPU line detect mode set to {}.",
                Settings::GetLineDetectModeName(settings.gpu_line_detect_mode));
     }
+  }
+  if (cpu_overclock.has_value() && (!settings.cpu_overclock_enable || settings.disable_all_enhancements))
+  {
+    settings.SetCPUOverclockPercent(cpu_overclock.value());
+    settings.cpu_overclock_enable = settings.cpu_overclock_active = true;
+    if (display_osd_messages)
+      INFO_LOG("GameDB: CPU overclock set to {}.", cpu_overclock.value());
   }
 
   SmallStackString<512> messages;
@@ -967,6 +974,7 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
                     &Settings::GetDisplayCropModeDisplayName, display_crop_mode);
   AppendEnumSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "Display Deinterlacing Mode"),
                     &Settings::GetDisplayDeinterlacingModeDisplayName, display_deinterlacing_mode);
+  AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CPU Overclock Percent"), cpu_overclock);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Max Slice Ticks"), dma_max_slice_ticks);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "DMA Halt Ticks"), dma_halt_ticks);
   AppendIntegerSetting(ret, settings_heading, TRANSLATE_SV("GameDatabase", "CD-ROM Max Seek Speedup Cycles"),
@@ -1062,7 +1070,8 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadOptionalT(&entry.gpu_max_run_ahead) || !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) || !reader.ReadOptionalT(&entry.gpu_line_detect_mode) ||
-        !reader.ReadSizePrefixedString(&entry.disc_set_name) || !reader.ReadU32(&num_disc_set_serials))
+        !reader.ReadOptionalT(&entry.cpu_overclock) || !reader.ReadSizePrefixedString(&entry.disc_set_name) ||
+        !reader.ReadU32(&num_disc_set_serials))
     {
       DEV_LOG("Cache entry is corrupted.");
       return false;
@@ -1184,6 +1193,7 @@ bool GameDatabase::SaveToCache()
     writer.WriteOptionalT(entry.gpu_pgxp_depth_threshold);
     writer.WriteOptionalT(entry.gpu_pgxp_preserve_proj_fp);
     writer.WriteOptionalT(entry.gpu_line_detect_mode);
+    writer.WriteOptionalT(entry.cpu_overclock);
 
     writer.WriteSizePrefixedString(entry.disc_set_name);
     writer.WriteU32(static_cast<u32>(entry.disc_set_serials.size()));
@@ -1447,6 +1457,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     entry->gpu_pgxp_preserve_proj_fp = GetOptionalTFromObject<bool>(settings, "gpuPGXPPreserveProjFP");
     entry->gpu_line_detect_mode =
       ParseOptionalTFromObject<GPULineDetectMode>(settings, "gpuLineDetectMode", &Settings::ParseLineDetectModeName);
+    entry->cpu_overclock = GetOptionalTFromObject<u8>(settings, "cpuOverclockPercent");
   }
 
   if (const ryml::ConstNodeRef disc_set = value.find_child("discSet"); disc_set.valid() && disc_set.has_children())
