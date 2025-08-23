@@ -277,9 +277,9 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->Bind(&dispatch);
 
     // x9 <- s_fast_map[pc >> 16]
-    rvAsm->LWU(RARG1, PTR(&g_state.pc));
+    rvAsm->LW(RARG1, PTR(&g_state.pc));
     rvMoveAddressToReg(rvAsm, RARG3, g_code_lut.data());
-    rvAsm->SRLI(RARG2, RARG1, 16);
+    rvAsm->SRLIW(RARG2, RARG1, 16);
     rvAsm->SLLI(RARG2, RARG2, 3);
     rvAsm->ADD(RARG2, RARG2, RARG3);
     rvAsm->LD(RARG2, 0, RARG2);
@@ -541,8 +541,8 @@ void CPU::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const 
 
   while (size >= 4)
   {
-    rvAsm->LWU(RARG3, offset, RARG1);
-    rvAsm->LWU(RSCRATCH, offset, RARG2);
+    rvAsm->LW(RARG3, offset, RARG1);
+    rvAsm->LW(RSCRATCH, offset, RARG2);
     rvAsm->BNE(RARG3, RSCRATCH, &block_changed);
     offset += 4;
     size -= 4;
@@ -564,7 +564,7 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
     {
       rvEmitFarLoad(rvAsm, RARG2, GetFetchMemoryAccessTimePtr());
-      rvAsm->LWU(RARG1, PTR(&g_state.pending_ticks));
+      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
       rvEmitMov(rvAsm, RARG3, m_block->size);
       rvAsm->MULW(RARG2, RARG2, RARG3);
       rvAsm->ADD(RARG1, RARG1, RARG2);
@@ -572,7 +572,7 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     }
     else
     {
-      rvAsm->LWU(RARG1, PTR(&g_state.pending_ticks));
+      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
       SafeADDIW(RARG1, RARG1, static_cast<u32>(m_block->uncached_fetch_ticks));
       rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
     }
@@ -588,7 +588,7 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     DebugAssert(!IsHostRegAllocated(maddr_reg.Index()));
 
     VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
-    rvAsm->LWU(ticks_reg, PTR(&g_state.pending_ticks));
+    rvAsm->LW(ticks_reg, PTR(&g_state.pending_ticks));
     rvEmitMov(rvAsm, current_tag_reg, current_pc);
 
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
