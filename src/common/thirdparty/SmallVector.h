@@ -1265,21 +1265,22 @@ public:
   }
 
   SmallVector &operator=(SmallVector &&RHS) {
-    if (N) {
+    if constexpr (N) {
       SmallVectorImpl<T>::operator=(::std::move(RHS));
       return *this;
-    }
-    // SmallVectorImpl<T>::operator= does not leverage N==0. Optimize the
-    // case.
-    if (this == &RHS)
-      return *this;
-    if (RHS.empty()) {
-      this->destroy_range(this->begin(), this->end());
-      this->Size = 0;
     } else {
-      this->assignRemote(std::move(RHS));
+      // SmallVectorImpl<T>::operator= does not leverage N==0. Optimize the
+      // case.
+      if (this == &RHS)
+        return *this;
+      if (RHS.empty()) {
+        this->destroy_range(this->begin(), this->end());
+        this->Size = 0;
+      } else {
+        this->assignRemote(std::move(RHS));
+      }
+      return *this;
     }
-    return *this;
   }
 
   SmallVector &operator=(SmallVectorImpl<T> &&RHS) {

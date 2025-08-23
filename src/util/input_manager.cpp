@@ -15,6 +15,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
 #include "IconsPromptFont.h"
@@ -89,13 +90,15 @@ struct PadVibrationBinding
 
 struct MacroButton
 {
-  std::vector<u32> buttons; ///< Buttons to activate.
-  u16 toggle_frequency;     ///< Interval at which the buttons will be toggled, if not 0.
-  u16 toggle_counter;       ///< When this counter reaches zero, buttons will be toggled.
-  bool toggle_state;        ///< Current state for turbo.
-  bool trigger_state;       ///< Whether the macro button is active.
-  bool trigger_toggle;      ///< Whether the macro is trigged by holding or press.
-  u8 trigger_pressure;      ///< Pressure to apply when macro is active.
+  u16 pad_index;                     ///< Pad index this macro button is for.
+  u16 macro_index;                   ///< Index of the macro button.
+  llvm::SmallVector<u32, 2> buttons; ///< Buttons to activate.
+  u16 toggle_frequency;              ///< Interval at which the buttons will be toggled, if not 0.
+  u16 toggle_counter;                ///< When this counter reaches zero, buttons will be toggled.
+  bool toggle_state;                 ///< Current state for turbo.
+  bool trigger_state;                ///< Whether the macro button is active.
+  bool trigger_toggle;               ///< Whether the macro is trigged by holding or press.
+  u8 trigger_pressure;               ///< Pressure to apply when macro is active.
 };
 
 struct PointerAxisState
@@ -135,7 +138,7 @@ static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_hand
 
 static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                   const Controller::ControllerInfo& cinfo);
-static void ApplyMacroButton(u32 pad, const MacroButton& mb);
+static void ApplyMacroButton(const MacroButton& mb);
 static void UpdateMacroButtons();
 
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
@@ -171,10 +174,12 @@ using PointerMoveCallback = std::function<void(InputBindingKey key, float value)
 
 namespace {
 
-struct State
+struct ALIGN_TO_CACHE_LINE State
 {
   BindingMap binding_map;
   VibrationBindingArray pad_vibration_array;
+  std::vector<MacroButton> macro_buttons;
+  std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
   std::recursive_mutex mutex;
 
   // Hooks/intercepting (for setting bindings)
@@ -183,18 +188,13 @@ struct State
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
 
-  // Macro buttons.
-  std::array<std::array<MacroButton, InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER>, NUM_CONTROLLER_AND_CARD_PORTS>
-    macro_buttons;
-
+  ALIGN_TO_CACHE_LINE
   std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
     host_pointer_positions;
   std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
     pointer_state;
   u32 pointer_count = 0;
   std::array<float, static_cast<u8>(InputPointerAxis::Count)> pointer_axis_scale;
-
-  std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
 
   // Window size, used for clamping the mouse position in raw input modes.
   std::array<float, 2> window_size = {};
@@ -206,7 +206,7 @@ struct State
 
 } // namespace
 
-ALIGN_TO_CACHE_LINE static State s_state;
+static State s_state;
 
 } // namespace InputManager
 
@@ -939,43 +939,6 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
 
   if (vibration_binding_valid)
     s_state.pad_vibration_array.push_back(std::move(vibration_binding));
-
-  for (u32 macro_button_index = 0; macro_button_index < NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
-  {
-    const std::vector<std::string> bindings(
-      si.GetStringList(section.c_str(), TinyString::from_format("Macro{}", macro_button_index + 1u).c_str()));
-    if (!bindings.empty())
-    {
-      const float deadzone = si.GetFloatValue(
-        section.c_str(), TinyString::from_format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
-      for (const std::string& binding : bindings)
-      {
-        // We currently can't use chords with a deadzone.
-        if (binding.find('&') != std::string::npos || deadzone == 0.0f)
-        {
-          if (deadzone != 0.0f)
-            WARNING_LOG("Chord binding {} not supported with trigger deadzone {}.", binding, deadzone);
-
-          AddBinding(binding, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
-                       if (!System::IsValid())
-                         return;
-
-                       SetMacroButtonState(pad_index, macro_button_index, state);
-                     }});
-        }
-        else
-        {
-          AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
-                        if (!System::IsValid())
-                          return;
-
-                        const bool state = (value > deadzone);
-                        SetMacroButtonState(pad_index, macro_button_index, state);
-                      }});
-        }
-      }
-    }
-  }
 }
 
 // ------------------------------------------------------------------------
@@ -1846,7 +1809,6 @@ void InputManager::UpdateContinuedVibration()
 void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                          const Controller::ControllerInfo& cinfo)
 {
-  s_state.macro_buttons[pad] = {};
   if (cinfo.bindings.empty())
     return;
 
@@ -1866,7 +1828,7 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
     const bool toggle = si.GetBoolValue(section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1u), false);
 
     // convert binds
-    std::vector<u32> bind_indices;
+    decltype(MacroButton::buttons) bind_indices;
     std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
     if (buttons_split.empty())
       continue;
@@ -1892,39 +1854,78 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
     if (bind_indices.empty())
       continue;
 
-    MacroButton& macro = s_state.macro_buttons[pad][i];
+    MacroButton& macro = s_state.macro_buttons.emplace_back();
+    macro.pad_index = static_cast<u16>(pad);
+    macro.macro_index = static_cast<u16>(i);
     macro.buttons = std::move(bind_indices);
     macro.toggle_frequency = static_cast<u16>(frequency);
     macro.trigger_toggle = toggle;
     macro.trigger_pressure = pressure;
+
+    const std::vector<std::string> trigger_bindings =
+      si.GetStringList(section.c_str(), TinyString::from_format("Macro{}", i + 1u).c_str());
+    if (!trigger_bindings.empty())
+    {
+      const float deadzone =
+        si.GetFloatValue(section.c_str(), TinyString::from_format("Macro{}Deadzone", i + 1u).c_str(), 0.0f);
+      for (const std::string& trigger_binding : trigger_bindings)
+      {
+        // We currently can't use chords with a deadzone.
+        if (trigger_binding.find('&') != std::string::npos || deadzone == 0.0f)
+        {
+          if (deadzone != 0.0f)
+            WARNING_LOG("Chord binding {} not supported with trigger deadzone {}.", trigger_binding, deadzone);
+
+          AddBinding(trigger_binding,
+                     InputButtonEventHandler{[pad = macro.pad_index, index = macro.macro_index](bool state) {
+                       if (!System::IsValid())
+                         return;
+
+                       SetMacroButtonState(pad, index, state);
+                     }});
+        }
+        else
+        {
+          AddBindings(trigger_bindings,
+                      InputAxisEventHandler{[pad = macro.pad_index, index = macro.macro_index, deadzone](float value) {
+                        if (!System::IsValid())
+                          return;
+
+                        const bool state = (value > deadzone);
+                        SetMacroButtonState(pad, index, state);
+                      }});
+        }
+      }
+    }
   }
 }
 
 void InputManager::SetMacroButtonState(u32 pad, u32 index, bool state)
 {
-  if (pad >= NUM_CONTROLLER_AND_CARD_PORTS || index >= NUM_MACRO_BUTTONS_PER_CONTROLLER)
+  const auto mb =
+    std::find_if(s_state.macro_buttons.begin(), s_state.macro_buttons.end(),
+                 [pad, index](const MacroButton& mb) { return (mb.pad_index == pad && mb.macro_index == index); });
+  if (mb == s_state.macro_buttons.end())
     return;
 
-  MacroButton& mb = s_state.macro_buttons[pad][index];
-  if (mb.buttons.empty())
+  DebugAssert(!mb->buttons.empty());
+
+  const bool trigger_state = (mb->trigger_toggle ? (state ? !mb->trigger_state : mb->trigger_state) : state);
+  if (mb->trigger_state == trigger_state)
     return;
 
-  const bool trigger_state = (mb.trigger_toggle ? (state ? !mb.trigger_state : mb.trigger_state) : state);
-  if (mb.trigger_state == trigger_state)
-    return;
-
-  mb.toggle_counter = mb.toggle_frequency;
-  mb.trigger_state = trigger_state;
-  if (mb.toggle_state != trigger_state)
+  mb->toggle_counter = mb->toggle_frequency;
+  mb->trigger_state = trigger_state;
+  if (mb->toggle_state != trigger_state)
   {
-    mb.toggle_state = trigger_state;
-    ApplyMacroButton(pad, mb);
+    mb->toggle_state = trigger_state;
+    ApplyMacroButton(*mb);
   }
 }
 
-void InputManager::ApplyMacroButton(u32 pad, const MacroButton& mb)
+void InputManager::ApplyMacroButton(const MacroButton& mb)
 {
-  Controller* const controller = System::GetController(pad);
+  Controller* const controller = System::GetController(mb.pad_index);
   if (!controller)
     return;
 
@@ -1935,22 +1936,18 @@ void InputManager::ApplyMacroButton(u32 pad, const MacroButton& mb)
 
 void InputManager::UpdateMacroButtons()
 {
-  for (u32 pad = 0; pad < NUM_CONTROLLER_AND_CARD_PORTS; pad++)
+  for (MacroButton& mb : s_state.macro_buttons)
   {
-    for (u32 index = 0; index < NUM_MACRO_BUTTONS_PER_CONTROLLER; index++)
-    {
-      MacroButton& mb = s_state.macro_buttons[pad][index];
-      if (!mb.trigger_state || mb.toggle_frequency == 0)
-        continue;
+    if (!mb.trigger_state || mb.toggle_frequency == 0)
+      continue;
 
-      mb.toggle_counter--;
-      if (mb.toggle_counter > 0)
-        continue;
+    mb.toggle_counter--;
+    if (mb.toggle_counter > 0)
+      continue;
 
-      mb.toggle_counter = mb.toggle_frequency;
-      mb.toggle_state = !mb.toggle_state;
-      ApplyMacroButton(pad, mb);
-    }
+    mb.toggle_counter = mb.toggle_frequency;
+    mb.toggle_state = !mb.toggle_state;
+    ApplyMacroButton(mb);
   }
 }
 
@@ -2004,6 +2001,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
+  s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
 
   Host::AddFixedInputBindings(binding_si);
