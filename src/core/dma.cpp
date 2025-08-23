@@ -49,6 +49,7 @@ static constexpr PhysicalMemoryAddress LINKED_LIST_TERMINATOR = UINT32_C(0x00FFF
 static constexpr TickCount LINKED_LIST_HEADER_READ_TICKS = 10;
 static constexpr TickCount LINKED_LIST_BLOCK_SETUP_TICKS = 5;
 static constexpr TickCount SLICE_SIZE_WHEN_TRANSMITTING_PAD = 10;
+static constexpr TickCount SLICE_SIZE_WHEN_DECODING_MDEC = 100;
 
 struct ChannelState
 {
@@ -195,6 +196,7 @@ static TickCount TransferDeviceToMemory(u32 address, u32 increment, u32 word_cou
 template<Channel channel>
 static TickCount TransferMemoryToDevice(u32 address, u32 increment, u32 word_count);
 
+template<Channel channel>
 static TickCount GetMaxSliceTicks(TickCount max_slice_size);
 
 // configuration
@@ -533,9 +535,19 @@ ALWAYS_INLINE_RELEASE void DMA::CompleteTransfer(Channel channel, ChannelState& 
   }
 }
 
+template<DMA::Channel channel>
 TickCount DMA::GetMaxSliceTicks(TickCount max_slice_size)
 {
-  const TickCount max = Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : max_slice_size;
+  TickCount max = Pad::IsTransmitting() ? SLICE_SIZE_WHEN_TRANSMITTING_PAD : max_slice_size;
+
+  // Prevent the slice size from being too large for MDEC.
+  // Since we use a larger than real FIFO, this can lead to excessively large chunks of data being
+  // transferred and queued in the FIFO (multiple kilobytes), which steals a large number of CPU
+  // cycles and results in other interrupts being missed. I hate it, but unless we do tight sync
+  // all the time, which has a massive performance penalty, it's really the best option.
+  if constexpr (channel == Channel::MDECin || channel == Channel::MDECout)
+    max = MDEC::IsDecodingMacroblock() ? SLICE_SIZE_WHEN_DECODING_MDEC : max;
+
   if (!TimingEvents::IsRunningEvents())
     return max;
 
@@ -593,7 +605,7 @@ bool DMA::TransferChannel()
       const u8* const ram_ptr = Bus::g_ram;
       const u32 mask = Bus::g_ram_mask;
 
-      const TickCount slice_ticks = GetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+      const TickCount slice_ticks = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_ticks);
       TickCount remaining_ticks = slice_ticks;
       while (cs.request && remaining_ticks > 0)
       {
@@ -663,7 +675,7 @@ bool DMA::TransferChannel()
 
       const u32 block_size = cs.block_control.request.GetBlockSize();
       u32 blocks_remaining = cs.block_control.request.GetBlockCount();
-      TickCount ticks_remaining = GetMaxSliceTicks(g_settings.dma_max_slice_ticks);
+      TickCount ticks_remaining = GetMaxSliceTicks<channel>(g_settings.dma_max_slice_ticks);
 
       if (copy_to_device)
       {

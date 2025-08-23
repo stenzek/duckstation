@@ -230,6 +230,11 @@ bool MDEC::IsActive()
   return (s_state.active_frame_count > 0);
 }
 
+bool MDEC::IsDecodingMacroblock()
+{
+  return (s_state.state == State::DecodingMacroblock);
+}
+
 void MDEC::EndFrame()
 {
   s_state.active_frame_count = (s_state.active_frame_count > 0) ? (s_state.active_frame_count - 1) : 0;

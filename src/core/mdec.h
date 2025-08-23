@@ -15,6 +15,7 @@ void Reset();
 bool DoState(StateWrapper& sw);
 
 bool IsActive();
+bool IsDecodingMacroblock();
 void EndFrame();
 
 // I/O

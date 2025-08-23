@@ -401,7 +401,7 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
 
       if (!asset_found)
       {
-        reportError("Asset/asset download not found");
+        reportError("Asset not found");
         return;
       }
 #endif
