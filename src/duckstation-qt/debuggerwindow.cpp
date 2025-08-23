@@ -83,7 +83,7 @@ void DebuggerWindow::refreshAll()
   m_stack_model->invalidateView();
   m_ui.memoryView->forceRefresh();
 
-  m_code_model->setPC(CPU::g_state.pc);
+  m_ui.codeView->setPC(CPU::g_state.pc);
   scrollToPC(false);
 }
 
@@ -94,25 +94,8 @@ void DebuggerWindow::scrollToPC(bool center)
 
 void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address, bool center)
 {
-  m_code_model->ensureAddressVisible(address);
-
-  const int row = m_code_model->getRowForAddress(address);
-  if (row >= 0)
-  {
-    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-
-    const QModelIndex index = m_code_model->index(row, 0);
-    const QRect rect = m_ui.codeView->visualRect(index);
-    if (rect.left() < 0 || rect.top() < 0 || rect.right() > m_ui.codeView->viewport()->width() ||
-        rect.bottom() > m_ui.codeView->viewport()->height())
-    {
-      center = true;
-    }
-
-    m_ui.codeView->scrollTo(index, center ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible);
-    m_ui.codeView->selectionModel()->setCurrentIndex(index,
-                                                     QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-  }
+  m_ui.codeView->scrollToAddress(address, center);
+  m_ui.codeView->setSelectedAddress(address);
 }
 
 void DebuggerWindow::onPauseActionToggled(bool paused)
@@ -128,7 +111,7 @@ void DebuggerWindow::onPauseActionToggled(bool paused)
 
 void DebuggerWindow::onRunToCursorTriggered()
 {
-  std::optional<VirtualMemoryAddress> addr = getSelectedCodeAddress();
+  std::optional<VirtualMemoryAddress> addr = m_ui.codeView->getSelectedAddress();
   if (!addr.has_value())
   {
     QMessageBox::critical(this, windowTitle(), tr("No address selected."));
@@ -180,11 +163,6 @@ void DebuggerWindow::onTraceTriggered()
   }
 }
 
-void DebuggerWindow::onFollowAddressTriggered()
-{
-  //
-}
-
 void DebuggerWindow::onAddBreakpointTriggered()
 {
   DebuggerAddBreakpointDialog dlg(this);
@@ -196,7 +174,7 @@ void DebuggerWindow::onAddBreakpointTriggered()
 
 void DebuggerWindow::onToggleBreakpointTriggered()
 {
-  std::optional<VirtualMemoryAddress> address = getSelectedCodeAddress();
+  std::optional<VirtualMemoryAddress> address = m_ui.codeView->getSelectedAddress();
   if (!address.has_value())
     return;
 
@@ -281,37 +259,26 @@ void DebuggerWindow::onStepOutActionTriggered()
   g_emu_thread->setSystemPaused(false);
 }
 
-void DebuggerWindow::onCodeViewItemActivated(QModelIndex index)
+void DebuggerWindow::onCodeViewAddressActivated(VirtualMemoryAddress address)
 {
-  if (!index.isValid())
-    return;
+  scrollToMemoryAddress(address);
+}
 
-  const VirtualMemoryAddress address = m_code_model->getAddressForIndex(index);
-  switch (index.column())
-  {
-    case 0: // breakpoint
-    case 3: // disassembly
-      toggleBreakpoint(address);
-      break;
+void DebuggerWindow::onCodeViewToggleBreakpointActivated(VirtualMemoryAddress address)
+{
+  toggleBreakpoint(address);
+}
 
-    case 1: // address
-    case 2: // bytes
-      scrollToMemoryAddress(address);
-      break;
-
-    case 4: // comment
-      tryFollowLoadStore(address);
-      break;
-  }
+void DebuggerWindow::onCodeViewCommentActivated(VirtualMemoryAddress address)
+{
+  if (!tryFollowLoadStore(address))
+    toggleBreakpoint(address);
 }
 
 void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
 {
-  const QModelIndex index = m_ui.codeView->indexAt(pt);
-  if (!index.isValid())
-    return;
-
-  const VirtualMemoryAddress address = m_code_model->getAddressForIndex(index);
+  const VirtualMemoryAddress address = m_ui.codeView->getAddressAtPoint(pt);
+  m_ui.codeView->setSelectedAddress(address);
 
   QMenu menu;
   menu.addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
@@ -484,6 +451,7 @@ void DebuggerWindow::setupAdditionalUi()
 #endif
 #endif
   m_ui.codeView->setFont(fixedFont);
+  m_ui.codeView->updateRowHeight();
   m_ui.registerView->setFont(fixedFont);
   m_ui.memoryView->setFont(fixedFont);
   m_ui.stackView->setFont(fixedFont);
@@ -518,8 +486,11 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.actionToggleBreakpoint, &QAction::triggered, this, &DebuggerWindow::onToggleBreakpointTriggered);
   connect(m_ui.actionClearBreakpoints, &QAction::triggered, this, &DebuggerWindow::onClearBreakpointsTriggered);
   connect(m_ui.actionClose, &QAction::triggered, this, &DebuggerWindow::close);
-  connect(m_ui.codeView, &QTreeView::activated, this, &DebuggerWindow::onCodeViewItemActivated);
-  connect(m_ui.codeView, &QTreeView::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
+  connect(m_ui.codeView, &DebuggerCodeView::addressActivated, this, &DebuggerWindow::onCodeViewAddressActivated);
+  connect(m_ui.codeView, &DebuggerCodeView::toggleBreakpointActivated, this,
+          &DebuggerWindow::onCodeViewToggleBreakpointActivated);
+  connect(m_ui.codeView, &DebuggerCodeView::commentActivated, this, &DebuggerWindow::onCodeViewCommentActivated);
+  connect(m_ui.codeView, &QWidget::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointListItemChanged);
@@ -545,22 +516,12 @@ void DebuggerWindow::disconnectSignals()
 
 void DebuggerWindow::createModels()
 {
-  m_code_model = std::make_unique<DebuggerCodeModel>();
-  m_ui.codeView->setModel(m_code_model.get());
-
-  // set default column width in code view
-  m_ui.codeView->setColumnWidth(0, 40);
-  m_ui.codeView->setColumnWidth(1, 100);
-  m_ui.codeView->setColumnWidth(2, 90);
-  m_ui.codeView->setColumnWidth(3, 250);
-  m_ui.codeView->setColumnWidth(4, m_ui.codeView->width() - (40 + 100 + 90 + 250));
-
-  m_registers_model = std::make_unique<DebuggerRegistersModel>();
-  m_ui.registerView->setModel(m_registers_model.get());
+  m_registers_model = new DebuggerRegistersModel(this);
+  m_ui.registerView->setModel(m_registers_model);
   // m_ui->registerView->resizeRowsToContents();
 
-  m_stack_model = std::make_unique<DebuggerStackModel>();
-  m_ui.stackView->setModel(m_stack_model.get());
+  m_stack_model = new DebuggerStackModel(this);
+  m_ui.stackView->setModel(m_stack_model);
 
   m_ui.breakpointsWidget->setColumnWidth(0, 50);
   m_ui.breakpointsWidget->setColumnWidth(1, 80);
@@ -670,7 +631,7 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
     }
 
     Host::RunOnUIThread([this, address, new_bp_state, bps = CPU::CopyBreakpointList()]() {
-      m_code_model->setBreakpointState(address, new_bp_state);
+      m_ui.codeView->setBreakpointState(address, new_bp_state);
       refreshBreakpointList(bps);
     });
   });
@@ -678,18 +639,8 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 
 void DebuggerWindow::clearBreakpoints()
 {
-  m_code_model->clearBreakpoints();
+  m_ui.codeView->clearBreakpoints();
   Host::RunOnCPUThread(&CPU::ClearBreakpoints);
-}
-
-std::optional<VirtualMemoryAddress> DebuggerWindow::getSelectedCodeAddress()
-{
-  QItemSelectionModel* sel_model = m_ui.codeView->selectionModel();
-  const QModelIndexList indices(sel_model->selectedIndexes());
-  if (indices.empty())
-    return std::nullopt;
-
-  return m_code_model->getAddressForIndex(indices[0]);
 }
 
 bool DebuggerWindow::tryFollowLoadStore(VirtualMemoryAddress address)
@@ -760,7 +711,7 @@ void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
       }
 
       if (type == CPU::BreakpointType::Execute)
-        m_code_model->setBreakpointState(address, true);
+        m_ui.codeView->setBreakpointState(address, true);
 
       refreshBreakpointList(bps);
     });
@@ -779,7 +730,7 @@ void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
       }
 
       if (type == CPU::BreakpointType::Execute)
-        m_code_model->setBreakpointState(address, false);
+        m_ui.codeView->setBreakpointState(address, false);
 
       refreshBreakpointList(bps);
     });

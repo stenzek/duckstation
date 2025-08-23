@@ -48,6 +48,7 @@
     <ClCompile Include="gamecheatsettingswidget.cpp" />
     <ClCompile Include="gamepatchsettingswidget.cpp" />
     <ClCompile Include="isobrowserwindow.cpp" />
+    <ClCompile Include="debuggercodeview.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -107,6 +108,7 @@
     <QtMoc Include="gamecheatsettingswidget.h" />
     <QtMoc Include="gamepatchsettingswidget.h" />
     <QtMoc Include="isobrowserwindow.h" />
+    <QtMoc Include="debuggercodeview.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />

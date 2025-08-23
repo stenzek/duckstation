@@ -94,7 +94,7 @@
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
-   <widget class="QTreeView" name="codeView">
+   <widget class="DebuggerCodeView" name="codeView">
     <property name="sizePolicy">
      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
       <horstretch>0</horstretch>
@@ -479,6 +479,12 @@
    <class>MemoryViewWidget</class>
    <extends>QWidget</extends>
    <header>duckstation-qt/memoryviewwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DebuggerCodeView</class>
+   <extends>QAbstractScrollArea</extends>
+   <header>duckstation-qt/debuggercodeview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

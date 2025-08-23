@@ -15,6 +15,7 @@
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
     <ClCompile Include="controllersettingswindow.cpp" />
     <ClCompile Include="coverdownloadwindow.cpp" />
+    <ClCompile Include="debuggercodeview.cpp" />
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
@@ -84,6 +85,7 @@
     <QtMoc Include="gamecheatsettingswidget.h" />
     <QtMoc Include="gamepatchsettingswidget.h" />
     <QtMoc Include="isobrowserwindow.h" />
+    <QtMoc Include="debuggercodeview.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
