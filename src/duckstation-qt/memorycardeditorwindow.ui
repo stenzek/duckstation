@@ -31,8 +31,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>16</width>
-       <height>16</height>
+       <width>32</width>
+       <height>32</height>
       </size>
      </property>
      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
@@ -188,8 +188,8 @@
      </property>
      <property name="iconSize">
       <size>
-       <width>16</width>
-       <height>16</height>
+       <width>32</width>
+       <height>32</height>
       </size>
      </property>
      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
