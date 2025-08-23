@@ -4,14 +4,14 @@
 #pragma once
 
 #include "core/bus.h"
-#include "core/cpu_types.h"
+#include "core/cpu_core.h"
 #include "core/types.h"
 
 #include <QtCore/QPoint>
 #include <QtGui/QPixmap>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QAbstractScrollArea>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QWidget>
 
 #include <memory>
 #include <optional>
@@ -37,7 +37,7 @@ public:
   void resetCodeView(VirtualMemoryAddress start_address);
   void setPC(VirtualMemoryAddress pc);
   void ensureAddressVisible(VirtualMemoryAddress address);
-  void setBreakpointState(VirtualMemoryAddress address, bool enabled);
+  void updateBreakpointList(const CPU::BreakpointList& bps);
   void clearBreakpoints();
   VirtualMemoryAddress getPC() const { return m_last_pc; }
   bool hasBreakpointAtAddress(VirtualMemoryAddress address) const;
@@ -83,36 +83,36 @@ private:
   // Address/row conversion methods
   int getRowForAddress(VirtualMemoryAddress address) const;
   VirtualMemoryAddress getAddressForRow(int row) const;
-  
+
   // Memory region management
   bool updateRegion(VirtualMemoryAddress address);
-  
+
   // Drawing methods
   void updateScrollBars();
   void updateVisibleRange();
   void calculateBranchArrows();
   void drawBranchArrows(QPainter& painter, const QRect& visible_rect);
   void drawInstruction(QPainter& painter, VirtualMemoryAddress address, int y, bool is_selected, bool is_pc);
-  
+
   int getVisibleRowCount() const;
   VirtualMemoryAddress getFirstVisibleAddress() const;
   VirtualMemoryAddress getLastVisibleAddress() const;
 
   int m_row_height = 1;
   int m_char_width = 0;
-   
+
   VirtualMemoryAddress m_selected_address = 0;
   bool m_has_selection = false;
-  
+
   std::vector<BranchArrow> m_branch_arrows;
-  
+
   QPixmap m_pc_pixmap;
   QPixmap m_breakpoint_pixmap;
-  
+
   // Scroll state
   VirtualMemoryAddress m_top_address = 0;
   int m_visible_rows = 0;
-  
+
   // Code region state (from DebuggerCodeModel)
   Bus::MemoryRegion m_current_code_region = Bus::MemoryRegion::Count;
   CPU::Segment m_current_segment = CPU::Segment::KUSEG;

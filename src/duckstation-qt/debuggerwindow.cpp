@@ -630,8 +630,7 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
         return;
     }
 
-    Host::RunOnUIThread([this, address, new_bp_state, bps = CPU::CopyBreakpointList()]() {
-      m_ui.codeView->setBreakpointState(address, new_bp_state);
+    Host::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() {
       refreshBreakpointList(bps);
     });
   });
@@ -696,22 +695,21 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
     item->setData(2, Qt::UserRole, QVariant(static_cast<uint>(bp.type)));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }
+
+  m_ui.codeView->updateBreakpointList(bps);
 }
 
 void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 {
   Host::RunOnCPUThread([this, address, type]() {
     const bool result = CPU::AddBreakpoint(type, address);
-    Host::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([this, result, bps = CPU::CopyBreakpointList()]() {
       if (!result)
       {
         QMessageBox::critical(this, windowTitle(),
                               tr("Failed to add breakpoint. A breakpoint may already exist at this address."));
         return;
       }
-
-      if (type == CPU::BreakpointType::Execute)
-        m_ui.codeView->setBreakpointState(address, true);
 
       refreshBreakpointList(bps);
     });
@@ -722,15 +720,12 @@ void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 {
   Host::RunOnCPUThread([this, address, type]() {
     const bool result = CPU::RemoveBreakpoint(type, address);
-    Host::RunOnUIThread([this, address, type, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([this, result, bps = CPU::CopyBreakpointList()]() {
       if (!result)
       {
         QMessageBox::critical(this, windowTitle(), tr("Failed to remove breakpoint. This breakpoint may not exist."));
         return;
       }
-
-      if (type == CPU::BreakpointType::Execute)
-        m_ui.codeView->setBreakpointState(address, false);
 
       refreshBreakpointList(bps);
     });

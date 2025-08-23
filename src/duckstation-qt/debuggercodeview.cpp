@@ -103,22 +103,17 @@ void DebuggerCodeView::ensureAddressVisible(VirtualMemoryAddress address)
   }
 }
 
-void DebuggerCodeView::setBreakpointState(VirtualMemoryAddress address, bool enabled)
+void DebuggerCodeView::updateBreakpointList(const CPU::BreakpointList& bps)
 {
-  if (enabled)
-  {
-    if (std::find(m_breakpoints.begin(), m_breakpoints.end(), address) != m_breakpoints.end())
-      return;
+  static constexpr auto pred = [](const CPU::Breakpoint& bp) { return (bp.type == CPU::BreakpointType::Execute); };
 
-    m_breakpoints.push_back(address);
-  }
-  else
-  {
-    auto it = std::find(m_breakpoints.begin(), m_breakpoints.end(), address);
-    if (it == m_breakpoints.end())
-      return;
+  m_breakpoints.clear();
+  m_breakpoints.reserve(std::count_if(bps.begin(), bps.end(), pred));
 
-    m_breakpoints.erase(it);
+  for (const CPU::Breakpoint& bp : bps)
+  {
+    if (pred(bp))
+      m_breakpoints.push_back(bp.address);
   }
 
   viewport()->update();
