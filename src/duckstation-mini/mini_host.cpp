@@ -1423,7 +1423,7 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
 #endif
 
     char buf[128];
-    std::strftime(buf, std::size(buf), "%x", &ttime);
+    std::strftime(buf, std::size(buf), format, &ttime);
     ret.assign(buf);
   }
   else
