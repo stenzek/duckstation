@@ -8,6 +8,7 @@
 
 #include "core/memory_card_image.h"
 
+#include <QtCore/QTimer>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -40,6 +41,7 @@ private Q_SLOTS:
   void doCopyFile();
   void doDeleteFile();
   void doUndeleteFile();
+  void incrementAnimationFrame();
 
 private:
   struct Card
@@ -84,6 +86,8 @@ private:
   std::tuple<Card*, const MemoryCardImage::FileInfo*> getSelectedFile();
   void updateButtonState();
 
+  void updateAnimationTimerActive();
+
   Ui::MemoryCardEditorDialog m_ui;
   QPushButton* m_deleteFile;
   QPushButton* m_undeleteFile;
@@ -94,6 +98,9 @@ private:
 
   Card m_card_a;
   Card m_card_b;
+  u32 m_current_frame_index = 0;
+
+  QTimer* m_animation_timer = nullptr;
 };
 
 class MemoryCardRenameFileDialog final : public QDialog
