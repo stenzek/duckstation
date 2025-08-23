@@ -240,7 +240,7 @@ void MemoryCardEditorWindow::connectUi()
   m_ui.cardA->setItemDelegateForColumn(
     0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, m_current_frame_index, m_ui.cardA));
   m_ui.cardB->setItemDelegateForColumn(
-    0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, m_current_frame_index, m_ui.cardB));
+    0, new MemoryCardEditorIconStyleDelegate(m_card_b.files, m_current_frame_index, m_ui.cardB));
 
   connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardASelectionChanged);
   connect(m_ui.cardA, &QTableWidget::customContextMenuRequested, this,
