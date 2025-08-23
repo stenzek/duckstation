@@ -99,6 +99,8 @@ private:
   Card m_card_a;
   Card m_card_b;
   u32 m_current_frame_index = 0;
+  int m_file_icon_width = 0;
+  int m_file_icon_height = 0;
 
   QTimer* m_animation_timer = nullptr;
 };

@@ -37,6 +37,7 @@ static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CAR
   {ConsoleRegion::NTSC_J, "BI"},
   {ConsoleRegion::PAL, "BE"},
 }};
+static constexpr int MEMORY_CARD_ICON_SIZE = 32;
 static constexpr int MEMORY_CARD_ICON_FRAME_DURATION_MS = 200;
 
 namespace {
@@ -141,8 +142,10 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
 
-  QtUtils::SetColumnWidthsForTableView(m_card_a.table, {32, -1, 155, 45});
-  QtUtils::SetColumnWidthsForTableView(m_card_b.table, {32, -1, 155, 45});
+  m_file_icon_width = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this);
+  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
+  QtUtils::SetColumnWidthsForTableView(m_card_a.table, {m_file_icon_width, -1, 155, 45});
+  QtUtils::SetColumnWidthsForTableView(m_card_b.table, {m_file_icon_width, -1, 155, 45});
 
   createCardButtons(&m_card_a, m_ui.buttonBoxA);
   createCardButtons(&m_card_b, m_ui.buttonBoxB);
@@ -380,6 +383,8 @@ void MemoryCardEditorWindow::updateCardTable(Card* card)
   {
     const int row = card->table->rowCount();
     card->table->insertRow(row);
+
+    card->table->setRowHeight(row, m_file_icon_height);
 
     QString title_str(QString::fromStdString(fi.title));
     if (fi.deleted)
