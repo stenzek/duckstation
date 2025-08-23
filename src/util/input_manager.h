@@ -208,7 +208,7 @@ inline constexpr u32 MAX_POINTER_BUTTONS = 3;
 inline constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 
 /// Number of macro buttons per controller.
-inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
+inline constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 8;
 
 /// Returns a pointer to the external input source class, if present.
 InputSource* GetInputSourceInterface(InputSourceType type);
