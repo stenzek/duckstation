@@ -266,8 +266,9 @@ static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, 
   }
 }
 
-bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
-                                                GPUVSyncMode vsync_mode, bool allow_present_throttle,
+bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
+                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -356,11 +357,13 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
   // broken on mobile drivers.
   const bool is_shitty_mobile_driver =
     (m_driver_type == GPUDriverType::ARMProprietary || m_driver_type == GPUDriverType::QualcommProprietary ||
-     m_driver_type == GPUDriverType::ImaginationProprietary);
+     m_driver_type == GPUDriverType::ImaginationProprietary || m_driver_type == GPUDriverType::ARMMesa);
   m_disable_pbo =
     (!GLAD_GL_VERSION_4_4 && !GLAD_GL_ARB_buffer_storage && !GLAD_GL_EXT_buffer_storage) || is_shitty_mobile_driver;
   if (m_disable_pbo && !is_shitty_mobile_driver)
     WARNING_LOG("Not using PBOs for texture uploads because buffer_storage is unavailable.");
+  else if (m_disable_pbo)
+    WARNING_LOG("Disabling PBOs due to known slow or broken driver.");
 
   GLint max_texture_size = 1024;
   GLint max_samples = 1;
@@ -448,8 +451,8 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
 
   m_features.feedback_loops = false;
 
-  m_features.geometry_shaders =
-    !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
+  m_features.geometry_shaders = !HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders) &&
+                                (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
   m_features.compute_shaders = false;
 
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
