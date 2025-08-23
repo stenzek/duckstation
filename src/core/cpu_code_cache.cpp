@@ -106,7 +106,6 @@ static std::unordered_set<u32> s_fastmem_faulting_pcs;
 
 NORETURN_FUNCTION_POINTER void (*g_enter_recompiler)();
 const void* g_compile_or_revalidate_block;
-const void* g_check_events_and_dispatch;
 const void* g_run_events_and_dispatch;
 const void* g_dispatcher;
 const void* g_interpret_block;

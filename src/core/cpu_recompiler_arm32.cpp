@@ -268,7 +268,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // check events then for frame done
-  g_check_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
   {
     Label skip_event_check;
     armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));

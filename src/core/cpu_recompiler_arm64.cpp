@@ -469,7 +469,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   // check events then for frame done
   armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
-  g_check_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
     armAsm->ldr(RWARG2, PTR(&g_state.downcount));

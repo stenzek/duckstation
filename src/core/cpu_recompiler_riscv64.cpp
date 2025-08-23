@@ -258,7 +258,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // check events then for frame done
-  g_check_events_and_dispatch = rvAsm->GetCursorPointer();
   {
     Label skip_event_check;
     rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));

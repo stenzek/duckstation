@@ -137,7 +137,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   // check events then for frame done
   cg->align(FUNCTION_ALIGNMENT);
-  g_check_events_and_dispatch = cg->getCurr();
   {
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pending_ticks)]);
     cg->cmp(RWARG1, cg->dword[PTR(&g_state.downcount)]);

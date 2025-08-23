@@ -256,7 +256,6 @@ extern CodeLUTArray g_code_lut;
 
 extern NORETURN_FUNCTION_POINTER void (*g_enter_recompiler)();
 extern const void* g_compile_or_revalidate_block;
-extern const void* g_check_events_and_dispatch;
 extern const void* g_run_events_and_dispatch;
 extern const void* g_dispatcher;
 extern const void* g_block_dispatcher;
