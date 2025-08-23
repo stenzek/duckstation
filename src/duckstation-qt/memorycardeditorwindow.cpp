@@ -32,6 +32,7 @@ static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CAR
   {ConsoleRegion::NTSC_J, "BI"},
   {ConsoleRegion::PAL, "BE"},
 }};
+static constexpr int MEMORY_CARD_ICON_FRAME_DURATION_MS = 200;
 
 MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
 {
@@ -282,13 +283,35 @@ void MemoryCardEditorWindow::updateCardTable(Card* card)
 
     if (!fi.icon_frames.empty())
     {
-      const QImage image(reinterpret_cast<const u8*>(fi.icon_frames[0].pixels), MemoryCardImage::ICON_WIDTH,
-                         MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
+      std::shared_ptr<QVector<QPixmap>> pixmaps = std::make_shared<QVector<QPixmap>>();
 
-      QTableWidgetItem* icon = new QTableWidgetItem();
-      setCardTableItemProperties(icon, fi);
-      icon->setIcon(QIcon(QPixmap::fromImage(image)));
-      card->table->setItem(row, 0, icon);
+      for (const auto& icon_frame : fi.icon_frames) {
+        const QImage image(reinterpret_cast<const u8*>(icon_frame.pixels), MemoryCardImage::ICON_WIDTH,
+                           MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
+
+        QPixmap pixmap = QPixmap::fromImage(image.copy()).scaledToHeight(
+            MemoryCardImage::ICON_HEIGHT * 2,
+            Qt::FastTransformation
+        );
+
+        pixmaps->append(pixmap);
+      }
+
+      QLabel* icon = new QLabel;
+      icon->setPixmap((*pixmaps).first());
+
+      card->table->setCellWidget(row, 0, icon);
+      card->table->resizeRowToContents(row);
+      card->table->resizeColumnToContents(0);
+
+      QTimer* timer = new QTimer(icon);
+      std::shared_ptr<int> frame = std::make_shared<int>(0);
+
+      connect(timer, &QTimer::timeout, icon, [=]() {
+          icon->setPixmap((*pixmaps)[*frame]);
+          *frame = (*frame + 1) % pixmaps->size();
+      });
+      timer->start(MEMORY_CARD_ICON_FRAME_DURATION_MS);
     }
 
     QString title_str(QString::fromStdString(fi.title));
