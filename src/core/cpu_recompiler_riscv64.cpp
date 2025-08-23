@@ -241,6 +241,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   Assembler* rvAsm = &actual_asm;
 
   Label dispatch;
+  Label run_events_and_dispatch;
 
   g_enter_recompiler = reinterpret_cast<decltype(g_enter_recompiler)>(rvAsm->GetCursorPointer());
   {
@@ -264,6 +265,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->LW(RARG2, PTR(&g_state.downcount));
     rvAsm->BLTU(RARG1, RARG2, &skip_event_check);
 
+    rvAsm->Bind(&run_events_and_dispatch);
     g_run_events_and_dispatch = rvAsm->GetCursorPointer();
     rvEmitCall(rvAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents));
 
@@ -309,6 +311,9 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   g_interpret_block = rvAsm->GetCursorPointer();
   {
     rvEmitCall(rvAsm, CodeCache::GetInterpretUncachedBlockFunction());
+    rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
+    rvAsm->LW(RARG2, PTR(&g_state.downcount));
+    rvAsm->BGE(RARG1, RARG2, &run_events_and_dispatch);
     rvAsm->J(&dispatch);
   }
 

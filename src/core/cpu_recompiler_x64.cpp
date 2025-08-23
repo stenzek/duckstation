@@ -118,6 +118,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   Label dispatch;
   Label exit_recompiler;
+  Label run_events_and_dispatch;
 
   g_enter_recompiler = reinterpret_cast<decltype(g_enter_recompiler)>(const_cast<u8*>(cg->getCurr()));
   {
@@ -143,6 +144,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->jl(dispatch);
 
     g_run_events_and_dispatch = cg->getCurr();
+    cg->L(run_events_and_dispatch);
     cg->call(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
   }
 
@@ -183,6 +185,9 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   g_interpret_block = cg->getCurr();
   {
     cg->call(CodeCache::GetInterpretUncachedBlockFunction());
+    cg->mov(RWARG1, cg->dword[PTR(&g_state.pending_ticks)]);
+    cg->cmp(RWARG1, cg->dword[PTR(&g_state.downcount)]);
+    cg->jge(run_events_and_dispatch);
     cg->jmp(dispatch);
   }
 

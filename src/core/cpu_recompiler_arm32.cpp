@@ -259,6 +259,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 #endif
 
   Label dispatch;
+  Label run_events_and_dispatch;
 
   g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
   {
@@ -276,6 +277,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->b(lt, &skip_event_check);
 
     g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+    armAsm->bind(&run_events_and_dispatch);
     armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
 
     armAsm->bind(&skip_event_check);
@@ -315,6 +317,10 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   g_interpret_block = armAsm->GetCursorAddress<const void*>();
   {
     armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
+    armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
+    armAsm->ldr(RARG2, PTR(&g_state.downcount));
+    armAsm->cmp(RARG1, RARG2);
+    armAsm->b(ge, &run_events_and_dispatch);
     armAsm->b(&dispatch);
   }
 
