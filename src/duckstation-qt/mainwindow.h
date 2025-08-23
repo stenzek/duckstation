@@ -105,6 +105,7 @@ public:
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
   ALWAYS_INLINE AutoUpdaterWindow* getAutoUpdaterDialog() const { return m_auto_updater_dialog; }
+  ALWAYS_INLINE DebuggerWindow* getDebuggerWindow() const { return m_debugger_window; }
 
   /// Opens the editor for a specific input profile.
   void openInputProfileEditor(const std::string_view name);

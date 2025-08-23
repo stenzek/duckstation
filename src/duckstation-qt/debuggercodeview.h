@@ -36,6 +36,7 @@ public:
   // Code model functionality integrated
   void resetCodeView(VirtualMemoryAddress start_address);
   void setPC(VirtualMemoryAddress pc);
+  void invalidatePC();
   void ensureAddressVisible(VirtualMemoryAddress address);
   void updateBreakpointList(const CPU::BreakpointList& bps);
   void clearBreakpoints();

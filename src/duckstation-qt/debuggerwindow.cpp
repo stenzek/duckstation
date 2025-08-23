@@ -3,6 +3,7 @@
 
 #include "debuggerwindow.h"
 #include "debuggermodels.h"
+#include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 
@@ -60,6 +61,7 @@ void DebuggerWindow::onSystemPaused()
 void DebuggerWindow::onSystemResumed()
 {
   setUIEnabled(false, true);
+  m_ui.codeView->invalidatePC();
 
   {
     QSignalBlocker sb(m_ui.actionPause);
@@ -149,18 +151,30 @@ void DebuggerWindow::onDumpAddressTriggered()
 
 void DebuggerWindow::onTraceTriggered()
 {
-  if (!CPU::IsTraceEnabled())
-  {
-    QMessageBox::critical(
-      this, windowTitle(),
-      tr("Trace logging started to cpu_log.txt.\nThis file can be several gigabytes, so be aware of SSD wear."));
-    CPU::StartTrace();
-  }
-  else
-  {
-    CPU::StopTrace();
-    QMessageBox::critical(this, windowTitle(), tr("Trace logging to cpu_log.txt stopped."));
-  }
+  Host::RunOnCPUThread([]() {
+    const bool trace_enabled = !CPU::IsTraceEnabled();
+    if (trace_enabled)
+      CPU::StartTrace();
+    else
+      CPU::StopTrace();
+
+    Host::RunOnUIThread([trace_enabled]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
+      if (trace_enabled)
+      {
+        QMessageBox::critical(
+          win, win->windowTitle(),
+          tr("Trace logging started to cpu_log.txt.\nThis file can be several gigabytes, so be aware of SSD wear."));
+      }
+      else
+      {
+        QMessageBox::critical(win, win->windowTitle(), tr("Trace logging to cpu_log.txt stopped."));
+      }
+    });
+  });
 }
 
 void DebuggerWindow::onAddBreakpointTriggered()
@@ -532,30 +546,30 @@ void DebuggerWindow::createModels()
 
 void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
 {
-  const bool memory_view_enabled = (enabled || allow_pause);
+  const bool read_only_views = (enabled || allow_pause);
 
   m_ui.actionPause->setEnabled(allow_pause);
 
   // Disable all UI elements that depend on execution state
-  m_ui.codeView->setEnabled(enabled);
-  m_ui.registerView->setEnabled(enabled);
-  m_ui.stackView->setEnabled(enabled);
-  m_ui.memoryView->setEnabled(memory_view_enabled);
+  m_ui.codeView->setEnabled(read_only_views);
+  m_ui.registerView->setEnabled(read_only_views);
+  m_ui.stackView->setEnabled(read_only_views);
+  m_ui.memoryView->setEnabled(read_only_views);
   m_ui.actionRunToCursor->setEnabled(enabled);
   m_ui.actionAddBreakpoint->setEnabled(enabled);
   m_ui.actionToggleBreakpoint->setEnabled(enabled);
   m_ui.actionClearBreakpoints->setEnabled(enabled);
-  m_ui.actionDumpAddress->setEnabled(memory_view_enabled);
+  m_ui.actionDumpAddress->setEnabled(read_only_views);
   m_ui.actionStepInto->setEnabled(enabled);
   m_ui.actionStepOver->setEnabled(enabled);
   m_ui.actionStepOut->setEnabled(enabled);
   m_ui.actionGoToAddress->setEnabled(enabled);
   m_ui.actionGoToPC->setEnabled(enabled);
   m_ui.actionTrace->setEnabled(enabled);
-  m_ui.memoryRegionRAM->setEnabled(memory_view_enabled);
-  m_ui.memoryRegionEXP1->setEnabled(memory_view_enabled);
-  m_ui.memoryRegionScratchpad->setEnabled(memory_view_enabled);
-  m_ui.memoryRegionBIOS->setEnabled(memory_view_enabled);
+  m_ui.memoryRegionRAM->setEnabled(read_only_views);
+  m_ui.memoryRegionEXP1->setEnabled(read_only_views);
+  m_ui.memoryRegionScratchpad->setEnabled(read_only_views);
+  m_ui.memoryRegionBIOS->setEnabled(read_only_views);
 
   // Partial/timer refreshes only active when not paused.
   const bool timer_active = (!enabled && allow_pause);
@@ -617,7 +631,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
 void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 {
-  Host::RunOnCPUThread([this, address]() {
+  Host::RunOnCPUThread([address]() {
     const bool new_bp_state = !CPU::HasBreakpointAtAddress(CPU::BreakpointType::Execute, address);
     if (new_bp_state)
     {
@@ -630,8 +644,12 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
         return;
     }
 
-    Host::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() {
-      refreshBreakpointList(bps);
+    Host::RunOnUIThread([bps = CPU::CopyBreakpointList()]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
+      win->refreshBreakpointList(bps);
     });
   });
 }
@@ -672,8 +690,15 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 
 void DebuggerWindow::refreshBreakpointList()
 {
-  Host::RunOnCPUThread(
-    [this]() { Host::RunOnUIThread([this, bps = CPU::CopyBreakpointList()]() { refreshBreakpointList(bps); }); });
+  Host::RunOnCPUThread([]() {
+    Host::RunOnUIThread([bps = CPU::CopyBreakpointList()]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
+      win->refreshBreakpointList(bps);
+    });
+  });
 }
 
 void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
@@ -701,33 +726,42 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
 
 void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCPUThread([this, address, type]() {
+  Host::RunOnCPUThread([address, type]() {
     const bool result = CPU::AddBreakpoint(type, address);
-    Host::RunOnUIThread([this, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
       if (!result)
       {
-        QMessageBox::critical(this, windowTitle(),
+        QMessageBox::critical(win, win->windowTitle(),
                               tr("Failed to add breakpoint. A breakpoint may already exist at this address."));
         return;
       }
 
-      refreshBreakpointList(bps);
+      win->refreshBreakpointList(bps);
     });
   });
 }
 
 void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCPUThread([this, address, type]() {
+  Host::RunOnCPUThread([address, type]() {
     const bool result = CPU::RemoveBreakpoint(type, address);
-    Host::RunOnUIThread([this, result, bps = CPU::CopyBreakpointList()]() {
+    Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
       if (!result)
       {
-        QMessageBox::critical(this, windowTitle(), tr("Failed to remove breakpoint. This breakpoint may not exist."));
+        QMessageBox::critical(win, win->windowTitle(),
+                              tr("Failed to remove breakpoint. This breakpoint may not exist."));
         return;
       }
 
-      refreshBreakpointList(bps);
+      win->refreshBreakpointList(bps);
     });
   });
 }

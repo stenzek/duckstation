@@ -94,6 +94,13 @@ void DebuggerCodeView::setPC(VirtualMemoryAddress pc)
   }
 }
 
+void DebuggerCodeView::invalidatePC()
+{
+  // something that will always pass the test above
+  m_last_pc = 0xFFFFFFFFu;
+  viewport()->update();
+}
+
 void DebuggerCodeView::ensureAddressVisible(VirtualMemoryAddress address)
 {
   const bool region_changed = updateRegion(address);
