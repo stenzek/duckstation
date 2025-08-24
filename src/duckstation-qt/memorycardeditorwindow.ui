@@ -30,14 +30,14 @@
       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-      <bool>true</bool>
+      <bool>false</bool>
      </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
      <column>
       <property name="text">
-       <string/>
+       <string>Icon</string>
       </property>
      </column>
      <column>
@@ -62,7 +62,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Memory Card:</string>
+        <string>Memory Card 2:</string>
        </property>
       </widget>
      </item>
@@ -138,7 +138,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Memory Card:</string>
+        <string>Memory Card 1:</string>
        </property>
       </widget>
      </item>
@@ -181,14 +181,14 @@
       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-      <bool>true</bool>
+      <bool>false</bool>
      </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
      <column>
       <property name="text">
-       <string/>
+       <string>Icon</string>
       </property>
      </column>
      <column>
