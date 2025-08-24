@@ -43,6 +43,7 @@
 
 #include "util/audio_stream.h"
 #include "util/cd_image.h"
+#include "util/compress_helpers.h"
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -84,9 +85,6 @@
 #include <cstdio>
 #include <limits>
 #include <thread>
-#include <zlib.h>
-#include <zstd.h>
-#include <zstd_errors.h>
 
 LOG_CHANNEL(System);
 
@@ -3145,49 +3143,32 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
     return false;
   }
 
-  if (method == SAVE_STATE_HEADER::CompressionType::Deflate)
+  CompressHelpers::CompressType type;
+  switch (method)
   {
-    uLong source_len = compressed_size;
-    uLong dest_len = static_cast<uLong>(dst.size());
-    const int err = uncompress2(dst.data(), &dest_len, compressed_data.data(), &source_len);
-    if (err != Z_OK) [[unlikely]]
-    {
-      Error::SetStringFmt(error, "uncompress2() failed: ", err);
-      return false;
-    }
-    else if (dest_len < dst.size()) [[unlikely]]
-    {
-      Error::SetStringFmt(error, "Only decompressed {} of {} bytes", dest_len, dst.size());
-      return false;
-    }
+    case SAVE_STATE_HEADER::CompressionType::Deflate:
+      type = CompressHelpers::CompressType::Deflate;
+      break;
 
-    if (source_len < compressed_size) [[unlikely]]
-      WARNING_LOG("Only consumed {} of {} compressed bytes", source_len, compressed_size);
+    case SAVE_STATE_HEADER::CompressionType::Zstandard:
+      type = CompressHelpers::CompressType::Zstandard;
+      break;
 
-    return true;
+    case SAVE_STATE_HEADER::CompressionType::XZ:
+      type = CompressHelpers::CompressType::XZ;
+      break;
+
+    default:
+      Error::SetStringFmt(error, "Unknown compression method {}", static_cast<u32>(method));
+      return false;
   }
-  else if (method == SAVE_STATE_HEADER::CompressionType::Zstandard)
-  {
-    const size_t result = ZSTD_decompress(dst.data(), dst.size(), compressed_data.data(), compressed_size);
-    if (ZSTD_isError(result)) [[unlikely]]
-    {
-      const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(result));
-      Error::SetStringFmt(error, "ZSTD_decompress() failed: {}", errstr ? errstr : "<unknown>");
-      return false;
-    }
-    else if (result < dst.size())
-    {
-      Error::SetStringFmt(error, "Only decompressed {} of {} bytes", result, dst.size());
-      return false;
-    }
 
-    return true;
-  }
-  else [[unlikely]]
-  {
-    Error::SetStringView(error, "Unknown method.");
+  const std::optional<size_t> decompressed_size =
+    CompressHelpers::DecompressBuffer(dst, type, compressed_data.cspan(), dst.size(), error);
+  if (!decompressed_size.has_value() || decompressed_size.value() != dst.size())
     return false;
-  }
+
+  return true;
 }
 
 bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
@@ -3443,59 +3424,48 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
     return static_cast<u32>(src.size());
   }
 
-  DynamicHeapArray<u8> buffer;
-  u32 write_size;
+  CompressHelpers::CompressType ctype;
+  int clevel;
   if (method >= SaveStateCompressionMode::DeflateLow && method <= SaveStateCompressionMode::DeflateHigh)
   {
-    const size_t buffer_size = compressBound(static_cast<uLong>(src.size()));
-    buffer.resize(buffer_size);
-
-    uLongf compressed_size = static_cast<uLongf>(buffer_size);
-    const int level =
-      ((method == SaveStateCompressionMode::DeflateLow) ?
-         Z_BEST_SPEED :
-         ((method == SaveStateCompressionMode::DeflateHigh) ? Z_BEST_COMPRESSION : Z_DEFAULT_COMPRESSION));
-    const int err = compress2(buffer.data(), &compressed_size, src.data(), static_cast<uLong>(src.size()), level);
-    if (err != Z_OK) [[unlikely]]
-    {
-      Error::SetStringFmt(error, "compress2() failed: {}", err);
-      return 0;
-    }
-
+    ctype = CompressHelpers::CompressType::Deflate;
     *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::Deflate);
-    write_size = static_cast<u32>(compressed_size);
+    clevel =
+      ((method == SaveStateCompressionMode::DeflateLow) ? 1 :
+                                                          ((method == SaveStateCompressionMode::DeflateHigh) ? 9 : -1));
   }
   else if (method >= SaveStateCompressionMode::ZstLow && method <= SaveStateCompressionMode::ZstHigh)
   {
-    const size_t buffer_size = ZSTD_compressBound(src.size());
-    buffer.resize(buffer_size);
-
-    const int level =
-      ((method == SaveStateCompressionMode::ZstLow) ? 1 : ((method == SaveStateCompressionMode::ZstHigh) ? 18 : 0));
-    const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), level);
-    if (ZSTD_isError(compressed_size)) [[unlikely]]
-    {
-      const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(compressed_size));
-      Error::SetStringFmt(error, "ZSTD_compress() failed: {}", errstr ? errstr : "<unknown>");
-      return 0;
-    }
-
+    ctype = CompressHelpers::CompressType::Zstandard;
     *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::Zstandard);
-    write_size = static_cast<u32>(compressed_size);
+    clevel =
+      ((method == SaveStateCompressionMode::ZstLow) ? 1 : ((method == SaveStateCompressionMode::ZstHigh) ? 18 : 0));
   }
-  else [[unlikely]]
+  else if (method >= SaveStateCompressionMode::XZLow && method <= SaveStateCompressionMode::XZHigh)
   {
-    Error::SetStringView(error, "Unknown method.");
+    ctype = CompressHelpers::CompressType::XZ;
+    *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::XZ);
+    clevel =
+      ((method == SaveStateCompressionMode::XZLow) ? 1 : ((method == SaveStateCompressionMode::XZHigh) ? 9 : 5));
+  }
+  else
+  {
+    Error::SetStringFmt(error, "Unknown compression type {}", static_cast<u32>(method));
     return 0;
   }
 
-  if (std::fwrite(buffer.data(), write_size, 1, fp) != 1) [[unlikely]]
+  const CompressHelpers::OptionalByteBuffer compressed_data =
+    CompressHelpers::CompressToBuffer(ctype, src, clevel, error);
+  if (!compressed_data.has_value())
+    return 0;
+
+  if (std::fwrite(compressed_data->data(), compressed_data->size(), 1, fp) != 1) [[unlikely]]
   {
     Error::SetStringFmt(error, "fwrite() failed: {}", errno);
     return 0;
   }
 
-  return write_size;
+  return static_cast<u32>(compressed_data->size());
 }
 
 float System::GetTargetSpeed()

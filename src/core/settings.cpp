@@ -2376,7 +2376,8 @@ const char* Settings::GetCDROMMechVersionDisplayName(CDROMMechaconVersion mode)
 }
 
 static constexpr const std::array s_save_state_compression_mode_names = {
-  "Uncompressed", "DeflateLow", "DeflateDefault", "DeflateHigh", "ZstLow", "ZstDefault", "ZstHigh",
+  "Uncompressed", "DeflateLow", "DeflateDefault", "DeflateHigh", "ZstLow",
+  "ZstDefault",   "ZstHigh",    "XZLow",          "XZDefault",   "XZHigh",
 };
 static constexpr const std::array s_save_state_compression_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Uncompressed", "SaveStateCompressionMode"),
@@ -2386,6 +2387,9 @@ static constexpr const std::array s_save_state_compression_mode_display_names = 
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Low)", "SaveStateCompressionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Default)", "SaveStateCompressionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (High)", "SaveStateCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (Low)", "SaveStateCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (Default)", "SaveStateCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (High)", "SaveStateCompressionMode"),
 };
 static_assert(s_save_state_compression_mode_names.size() == static_cast<size_t>(SaveStateCompressionMode::Count));
 static_assert(s_save_state_compression_mode_display_names.size() ==

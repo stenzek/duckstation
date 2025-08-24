@@ -318,6 +318,9 @@ enum class SaveStateCompressionMode : u8
   ZstLow,
   ZstDefault,
   ZstHigh,
+  XZLow,
+  XZDefault,
+  XZHigh,
 
   Count,
 };

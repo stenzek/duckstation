@@ -26,6 +26,7 @@ struct SAVE_STATE_HEADER
     None = 0,
     Deflate = 1,
     Zstandard = 2,
+    XZ = 3,
   };
 
   u32 magic;
