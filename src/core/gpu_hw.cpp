@@ -1768,6 +1768,7 @@ bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
   plconfig.geometry_shader = nullptr;
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
