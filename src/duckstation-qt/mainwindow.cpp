@@ -2062,6 +2062,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
 
   m_ui.actionControllerTest->setDisabled(starting_or_running);
 
+  m_game_list_widget->setDisabled(starting);
+
   updateShortcutActions(starting);
 
   if (starting_or_running)
