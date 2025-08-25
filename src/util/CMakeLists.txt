@@ -140,6 +140,9 @@ if(ENABLE_OPENGL)
         opengl_context_egl_wayland.cpp
         opengl_context_egl_wayland.h
       )
+      target_include_directories(util PRIVATE
+        "${Wayland_INCLUDE_DIRS}" # For wayland-egl
+      )
     endif()
     if(ANDROID)
       target_include_directories(util PRIVATE "${CMAKE_SOURCE_DIR}/android")
