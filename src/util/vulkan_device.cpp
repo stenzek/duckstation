@@ -2533,7 +2533,7 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
   m_features.raster_order_views =
-    (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews) && vk_features.fragmentStoresAndAtomics &&
+    (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews) && vk_features.fragmentStoresAndAtomics &&
      m_optional_extensions.vk_ext_fragment_shader_interlock);
 
   // Same feature bit for both.

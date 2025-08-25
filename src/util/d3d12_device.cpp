@@ -1357,7 +1357,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.prefer_unused_textures = true;
 
   m_features.raster_order_views = false;
-  if (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
+  if (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
   {
     D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
     m_features.raster_order_views =

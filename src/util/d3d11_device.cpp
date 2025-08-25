@@ -193,7 +193,7 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = false;
   m_features.raster_order_views = false;
-  if (!!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
+  if (!HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
   {
     D3D11_FEATURE_DATA_D3D11_OPTIONS2 data = {};
     m_features.raster_order_views =
