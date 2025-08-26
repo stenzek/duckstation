@@ -37,7 +37,7 @@ static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CAR
   {ConsoleRegion::NTSC_J, "BI"},
   {ConsoleRegion::PAL, "BE"},
 }};
-static constexpr int MEMORY_CARD_ICON_SIZE = 32;
+static constexpr int MEMORY_CARD_ICON_SIZE = MemoryCardImage::ICON_HEIGHT * 2;
 static constexpr int MEMORY_CARD_ICON_FRAME_DURATION_MS = 200;
 
 namespace {
@@ -97,7 +97,18 @@ public:
       QImage src_image = QImage(reinterpret_cast<const uchar*>(frame.pixels), MemoryCardImage::ICON_WIDTH,
                                 MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
       if (src_image.width() != icon_size || src_image.height() != icon_size)
-        src_image = src_image.scaled(icon_size, icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+      {
+        // Sharp Bilinear scaling
+        // First, scale the icon by the largest integer size using nearest-neighbor...
+        const float scaled_icon_size = MEMORY_CARD_ICON_SIZE * dpr;
+        const int integer_icon_size = static_cast<int>(scaled_icon_size / MemoryCardImage::ICON_HEIGHT) * MemoryCardImage::ICON_HEIGHT;
+        src_image = src_image.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+
+        // ...then scale any remainder using bilinear interpolation.
+        if (scaled_icon_size - integer_icon_size > 0)
+            src_image = src_image.scaled(icon_size, icon_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+      }
+
       src_image.setDevicePixelRatio(dpr);
 
       pixmap = QPixmap(pixmap_width, pixmap_height);
