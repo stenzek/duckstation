@@ -6641,7 +6641,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
     "UseGPUBasedValidation", false);
 
   DrawToggleSetting(
-    bsi, FSUI_VSTR("Prefer OpenGL ES Device"),
+    bsi, FSUI_VSTR("Prefer OpenGL ES Context"),
     FSUI_VSTR("Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers."),
     "GPU", "PreferGLESContext", Settings::DEFAULT_GPU_PREFER_GLES_CONTEXT);
 
@@ -9875,7 +9875,7 @@ TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
-TRANSLATE_NOOP("FullscreenUI", "Prefer OpenGL ES Device");
+TRANSLATE_NOOP("FullscreenUI", "Prefer OpenGL ES Context");
 TRANSLATE_NOOP("FullscreenUI", "Preload Images to RAM");
 TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
 TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");

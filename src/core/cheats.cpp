@@ -220,7 +220,8 @@ static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbo
                               bool show_disabled_codes);
 
 template<typename F>
-bool SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash, const F& f);
+static bool SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash,
+                               const F& f);
 
 template<typename F>
 static void EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
