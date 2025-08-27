@@ -3123,22 +3123,22 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="305"/>
+        <location filename="../../core/cheats.cpp" line="306"/>
         <source>Gameshark</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="330"/>
+        <location filename="../../core/cheats.cpp" line="331"/>
         <source>Manual</source>
         <translation>手动操作</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="330"/>
+        <location filename="../../core/cheats.cpp" line="331"/>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧结束)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1020"/>
+        <location filename="../../core/cheats.cpp" line="1021"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -3146,7 +3146,7 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1027"/>
+        <location filename="../../core/cheats.cpp" line="1028"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -3154,12 +3154,12 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1035"/>
+        <location filename="../../core/cheats.cpp" line="1036"/>
         <source>No cheats/patches are found or enabled.</source>
         <translation>未发现或启用任何金手指/补丁。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1054"/>
+        <location filename="../../core/cheats.cpp" line="1055"/>
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
@@ -3167,7 +3167,7 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1056"/>
+        <location filename="../../core/cheats.cpp" line="1057"/>
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
@@ -3175,17 +3175,17 @@ WAV文件必须是立体声，并使用44100hz的采样率。</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1059"/>
+        <location filename="../../core/cheats.cpp" line="1060"/>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
         <translation>通过成就硬核模式/安全模式禁用{0}和{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1061"/>
+        <location filename="../../core/cheats.cpp" line="1062"/>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
         <translation>通过成就硬核模式/安全模式禁用{}。</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1094"/>
+        <location filename="../../core/cheats.cpp" line="1095"/>
         <source>Cheat &apos;{}&apos; applied.</source>
         <translation>金手指&apos;{}&apos;已应用。</translation>
     </message>
@@ -7548,6 +7548,11 @@ You cannot undo this action.</source>
         <translation>FMV缩放</translation>
     </message>
     <message>
+        <location filename="../../core/fullscreen_ui.cpp" line="9878"/>
+        <source>Prefer OpenGL ES Context</source>
+        <translation>优先选择OpenGL ES上下文</translation>
+    </message>
+    <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9917"/>
         <source>Reset Settings</source>
         <translation>重置设置</translation>
@@ -10404,9 +10409,8 @@ Please check your username and password, and try again.</source>
         <translation>请在下面输入您在retroachievements.org的用户名和密码。您的密码不会保存在DuckStation中，取而代之的是会生成并使用一个访问令牌。</translation>
     </message>
     <message>
-        <location filename="../../core/fullscreen_ui.cpp" line="9878"/>
         <source>Prefer OpenGL ES Device</source>
-        <translation>优先选择OpenGL ES设备</translation>
+        <translation type="vanished">优先选择OpenGL ES设备</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9882"/>
