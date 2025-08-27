@@ -1017,7 +1017,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     {
       System::SetTaint(System::Taint::Patches);
       Host::AddIconOSDMessage(
-        "LoadPatches", ICON_FA_BANDAGE,
+        "LoadCheats", ICON_FA_BANDAGE,
         TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", s_active_patch_count),
         Host::OSD_INFO_DURATION);
     }
@@ -1031,7 +1031,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     }
     else if (s_active_patch_count == 0)
     {
-      Host::RemoveKeyedOSDMessage("LoadPatches");
+      Host::RemoveKeyedOSDMessage("LoadCheats");
       Host::AddIconOSDMessage("LoadCheats", ICON_FA_BANDAGE,
                               TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
                               Host::OSD_INFO_DURATION);
