@@ -2126,11 +2126,11 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Signed</source>
-        <translation type="vanished">Firmato</translation>
+        <translation type="vanished">Con segno</translation>
     </message>
     <message>
         <source>Unsigned</source>
-        <translation type="vanished">Non firmato</translation>
+        <translation type="vanished">Senza segno</translation>
     </message>
     <message>
         <source>Decimal</source>
@@ -2400,15 +2400,15 @@ Messaggi non letti: {}</translation>
     </message>
     <message>
         <source>Signed Byte</source>
-        <translation type="vanished">Byte Firmato</translation>
+        <translation type="vanished">Byte con segno</translation>
     </message>
     <message>
         <source>Signed Halfword</source>
-        <translation type="vanished">Halfword Firmata</translation>
+        <translation type="vanished">Halfword con segno</translation>
     </message>
     <message>
         <source>Signed Word</source>
-        <translation type="vanished">Word Firmata</translation>
+        <translation type="vanished">Word con segno</translation>
     </message>
 </context>
 <context>
