@@ -65,7 +65,25 @@ int main(int argc, char* argv[])
   std::thread worker([&progress, zip_path = std::move(zip_path),
                       destination_directory = std::move(destination_directory),
                       staging_directory = std::move(staging_directory), &result]() {
-    ScopedGuard app_stopper([]() { dispatch_async(dispatch_get_main_queue(), []() { [NSApp stop:nil]; }); });
+    ScopedGuard app_stopper([]() {
+      dispatch_async(dispatch_get_main_queue(), []() {
+        [NSApp stop:nil];
+
+        // NSApp stop doesn't immediately exit the event loop, so we'll get stuck waiting until
+        // a key is pressed or the mouse is moved. Manually queue an event to ensure the run
+        // loop wakes and exits.
+        NSEvent* event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                            location:NSMakePoint(0, 0)
+                                       modifierFlags:0
+                                           timestamp:0
+                                        windowNumber:0
+                                             context:nil
+                                             subtype:0
+                                               data1:0
+                                               data2:0];
+        [NSApp postEvent:event atStart:YES];
+      });
+    });
 
     Updater updater(&progress);
     if (!updater.Initialize(std::move(staging_directory), std::move(destination_directory)))
@@ -114,7 +132,7 @@ int main(int argc, char* argv[])
 
     updater.CleanupStagingDirectory();
     updater.RemoveUpdateZip();
-    
+
     result = EXIT_SUCCESS;
   });
 
