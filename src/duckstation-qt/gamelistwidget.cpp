@@ -12,6 +12,7 @@
 #include "core/host.h"
 #include "core/settings.h"
 #include "core/system.h"
+#include "core/memory_card_image.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -57,6 +58,7 @@ static constexpr int COVER_ART_SIZE = 512;
 static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
+static constexpr int MEMORY_CARD_ICON_SIZE = MemoryCardImage::ICON_HEIGHT * 2;
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
 {
@@ -449,16 +451,26 @@ void GameListModel::fixIconPixmapSize(QPixmap& pm)
   const int width = static_cast<int>(static_cast<float>(pm.width()) * dpr);
   const int height = static_cast<int>(static_cast<float>(pm.height()) * dpr);
   const int max_dim = std::max(width, height);
-  if (max_dim == 16)
-    return;
 
   const float wanted_dpr = qApp->devicePixelRatio();
   pm.setDevicePixelRatio(wanted_dpr);
 
-  const float scale = static_cast<float>(max_dim) / 16.0f / wanted_dpr;
+  const float scale = static_cast<float>(max_dim) / MEMORY_CARD_ICON_SIZE / wanted_dpr;
   const int new_width = static_cast<int>(static_cast<float>(width) / scale);
   const int new_height = static_cast<int>(static_cast<float>(height) / scale);
-  pm = pm.scaled(new_width, new_height);
+
+  if (width != new_width || height != new_height)
+  {
+    // Sharp Bilinear scaling
+    // First, scale the icon by the largest integer size using nearest-neighbor...
+    const float scaled_icon_size = MEMORY_CARD_ICON_SIZE * wanted_dpr;
+    const int integer_icon_size = static_cast<int>(scaled_icon_size / MemoryCardImage::ICON_HEIGHT) * MemoryCardImage::ICON_HEIGHT;
+    pm = pm.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+
+    // ...then scale any remainder using bilinear interpolation.
+    if (scaled_icon_size - integer_icon_size > 0)
+        pm = pm.scaled(scaled_icon_size, scaled_icon_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+  }
 }
 
 int GameListModel::getCoverArtSize() const
@@ -1645,8 +1657,11 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 
   horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::Stretch);
   horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::Stretch);
+  horizontal_header->setSectionResizeMode(GameListModel::Column_Icon, QHeaderView::ResizeToContents);
 
-  verticalHeader()->hide();
+  QHeaderView* const vertical_header = verticalHeader();
+  vertical_header->hide();
+  vertical_header->setDefaultSectionSize(MEMORY_CARD_ICON_SIZE + 12 + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this));
 
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
