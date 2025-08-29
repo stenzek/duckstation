@@ -146,6 +146,8 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
 
   m_file_icon_width = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this);
   m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
+  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
+  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
   QtUtils::SetColumnWidthsForTableView(m_card_a.table, {m_file_icon_width, -1, 155, 45});
   QtUtils::SetColumnWidthsForTableView(m_card_b.table, {m_file_icon_width, -1, 155, 45});
 

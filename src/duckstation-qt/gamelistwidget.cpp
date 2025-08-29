@@ -158,6 +158,26 @@ void GameListModel::refreshIcons()
   emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
 }
 
+void GameListModel::setIconScale(float scale)
+{
+  if (m_icon_scale == scale)
+    return;
+
+  m_icon_scale = scale;
+
+  Host::SetBaseFloatSettingValue("UI", "GameListIconScale", scale);
+  Host::CommitBaseSettingChanges();
+  updateIconScale();
+}
+
+void GameListModel::updateIconScale()
+{
+  m_memcard_pixmap_cache.Clear();
+
+  emit iconScaleChanged(m_icon_scale);
+  refresh();
+}
+
 void GameListModel::setCoverScale(float scale)
 {
   if (m_cover_scale == scale)
@@ -376,7 +396,8 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        fixIconPixmapSize(pm);
+        //fixIconPixmapSize(pm);
+        const_cast<GameListModel*>(this)->fixIconPixmapSize(pm);
         return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
@@ -454,7 +475,7 @@ void GameListModel::fixIconPixmapSize(QPixmap& pm)
   const float wanted_dpr = qApp->devicePixelRatio();
   pm.setDevicePixelRatio(wanted_dpr);
 
-  const float scale = static_cast<float>(max_dim) / MEMORY_CARD_ICON_SIZE / wanted_dpr;
+  const float scale = static_cast<float>(max_dim) / MEMORY_CARD_ICON_SIZE / wanted_dpr * m_icon_scale;
   const int new_width = static_cast<int>(static_cast<float>(width) / scale);
   const int new_height = static_cast<int>(static_cast<float>(height) / scale);
 
@@ -1224,6 +1245,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 {
   m_model = new GameListModel(this);
   connect(m_model, &GameListModel::coverScaleChanged, this, &GameListWidget::onCoverScaleChanged);
+  connect(m_model, &GameListModel::iconScaleChanged, this, &GameListWidget::onIconScaleChanged);
 
   m_sort_model = new GameListSortModel(m_model);
   m_sort_model->setSourceModel(m_model);
@@ -1259,6 +1281,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   m_ui.showGridTitles->setDefaultAction(actionGridShowTitles);
 
   connect(m_ui.gridScale, &QSlider::valueChanged, m_grid_view, &GameListGridView::setZoomPct);
+  connect(m_ui.listScale, &QSlider::valueChanged, m_list_view, &GameListListView::setZoomPct);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
                                                static_cast<GameList::EntryType>(index - 1));
@@ -1581,12 +1604,19 @@ void GameListWidget::updateToolbar(bool grid_view)
   m_ui.showGameIcons->setVisible(!grid_view);
   m_ui.showGridTitles->setVisible(grid_view);
   m_ui.gridScale->setVisible(grid_view);
+  m_ui.listScale->setVisible(!grid_view);
 }
 
 void GameListWidget::onCoverScaleChanged(float scale)
 {
   QSignalBlocker sb(m_ui.gridScale);
   m_ui.gridScale->setValue(static_cast<int>(scale * 100.0f));
+}
+
+void GameListWidget::onIconScaleChanged(float scale)
+{
+  QSignalBlocker sb(m_ui.listScale);
+  m_ui.listScale->setValue(static_cast<int>(scale * 100.0f));
 }
 
 void GameListWidget::resizeEvent(QResizeEvent* event)
@@ -1667,9 +1697,35 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   connect(horizontal_header, &QHeaderView::sortIndicatorChanged, this, &GameListListView::onHeaderSortIndicatorChanged);
   connect(horizontal_header, &QHeaderView::customContextMenuRequested, this,
           &GameListListView::onHeaderContextMenuRequested);
+  connect(m_model, &GameListModel::iconScaleChanged, this, &GameListListView::onIconScaleChanged);
 }
 
 GameListListView::~GameListListView() = default;
+
+void GameListListView::wheelEvent(QWheelEvent* e)
+{
+  if (e->modifiers() & Qt::ControlModifier)
+  {
+    int dy = e->angleDelta().y();
+    if (dy != 0)
+    {
+      if (dy < 0)
+        zoomOut();
+      else
+        zoomIn();
+
+      return;
+    }
+  }
+
+  QTableView::wheelEvent(e);
+}
+
+void GameListListView::resizeEvent(QResizeEvent* e)
+{
+  QTableView::resizeEvent(e);
+  updateLayout();
+}
 
 void GameListListView::setFixedColumnWidth(int column, int width)
 {
@@ -1824,6 +1880,38 @@ void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
   }
 
   menu.exec(mapToGlobal(point));
+}
+
+void GameListListView::onIconScaleChanged(float scale)
+{
+  updateLayout();
+}
+
+void GameListListView::adjustZoom(float delta)
+{
+  const float new_scale = std::clamp(m_model->getIconScale() + delta, MIN_SCALE, MAX_SCALE);
+  m_model->setIconScale(new_scale);
+}
+
+void GameListListView::zoomIn()
+{
+  adjustZoom(0.05f);
+}
+
+void GameListListView::zoomOut()
+{
+  adjustZoom(-0.05f);
+}
+
+void GameListListView::setZoomPct(int int_scale)
+{
+  const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_SCALE, MAX_SCALE);
+  m_model->setIconScale(new_scale);
+}
+
+void GameListListView::updateLayout()
+{
+  m_model->refreshIcons();
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)
