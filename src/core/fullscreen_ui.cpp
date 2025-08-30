@@ -429,6 +429,7 @@ static void HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* dsentry
 static void DrawGameListSettingsPage();
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
+std::string_view GetKeyForGameListEntry(const GameList::Entry* entry);
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
                                     bool fallback_to_icon);
@@ -8037,7 +8038,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
                                                   row_left_margin);
 
       bool visible, hovered;
-      bool pressed = MenuButtonFrame(entry->path, true, mbb.frame_bb, &visible, &hovered);
+      bool pressed = MenuButtonFrame(GetKeyForGameListEntry(entry), true, mbb.frame_bb, &visible, &hovered);
       if (!visible)
         continue;
 
@@ -8415,7 +8416,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
                                                IMSTR_START_END(title));
     }
 
-    const ImGuiID id = window->GetID(entry->path.c_str(), entry->path.c_str() + entry->path.length());
+    const std::string_view item_key = GetKeyForGameListEntry(entry);
+    const ImGuiID id = window->GetID(IMSTR_START_END(item_key));
     const ImVec2 pos(window->DC.CursorPos);
     const ImVec2 item_size(item_width, row_item_height);
     ImRect bb(pos, pos + item_size);
@@ -8949,6 +8951,11 @@ GPUTexture* FullscreenUI::GetGameListCoverTrophy(const GameList::Entry* entry, c
 
   // don't draw the placeholder, it's way too large
   return (texture == GetPlaceholderTexture().get()) ? nullptr : texture;
+}
+
+std::string_view FullscreenUI::GetKeyForGameListEntry(const GameList::Entry* entry)
+{
+  return entry->IsDiscSet() ? entry->GetDiscSetEntry()->GetSaveTitle() : std::string_view(entry->path);
 }
 
 GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type)
