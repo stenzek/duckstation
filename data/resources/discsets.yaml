@@ -1,0 +1,3284 @@
+- name: "3x3 Eyes - Kyuusei Koushu"
+  localizedName: "サザン　アイズ　～吸精公主～"
+  saveName: "3x3 Eyes - Kyuusei Koushu (Japan)"
+  serials:
+    - SLPS-00071
+    - SLPS-00072
+- name: "3x3 Eyes - Tenrinou Genmu"
+  saveName: "3x3 Eyes - Tenrinou Genmu (Japan)"
+  serials:
+    - SLPS-01497
+    - SLPS-01498
+    - SLPS-01499
+- name: "70's Robot Anime - Geppy-X - The Super Boosted Armor"
+  localizedName: "´７０年代風ロボット・アニメ　ゲッＰ‐Ｘ"
+  saveName: "70's Robot Anime - Geppy-X - The Super Boosted Armor (Japan)"
+  serials:
+    - SLPS-01995
+    - SLPS-01996
+    - SLPS-01997
+    - SLPS-01998
+- name: "A Sangre Fria"
+  saveName: "A Sangre Fria (Spain)"
+  serials:
+    - SCES-02153
+    - SCES-12153
+- name: "A Sangue Freddo"
+  saveName: "A Sangue Freddo (Italy)"
+  serials:
+    - SCES-02152
+    - SCES-12152
+- name: "Abe '99"
+  localizedName: "エイブ’９９"
+  saveName: "Abe '99 (Japan)"
+  serials:
+    - SLPS-02095
+    - SLPS-02096
+- name: "Ace Combat 3 - Electrosphere"
+  localizedName: "エースコンバット３　エレクトロスフィア"
+  saveName: "Ace Combat 3 - Electrosphere (Japan)"
+  serials:
+    - SLPS-02020
+    - SLPS-02021
+- name: "Aconcagua"
+  localizedName: "アコンカグア"
+  saveName: "Aconcagua (Japan)"
+  serials:
+    - SCPS-10131
+    - SCPS-10132
+- name: "Aitakute... - Your Smiles in My Heart"
+  localizedName: "あいたくて…　～ｙｏｕｒ　ｓｍｉｌｅｓ　ｉｎ　ｍｙ　ｈｅａｒｔ～"
+  saveName: "Aitakute... - Your Smiles in My Heart (Japan)"
+  serials:
+    - SLPM-86254
+    - SLPM-86255
+    - SLPM-86256
+    - SLPM-86257
+- name: "Alive"
+  localizedName: "アライブ"
+  saveName: "Alive (Japan)"
+  serials:
+    - SLPS-01527
+    - SLPS-01528
+    - SLPS-01529
+- name: "All Star Action"
+  saveName: "All Star Action (Europe)"
+  serials:
+    - SLES-04107
+    - SLES-14107
+- name: "Alnam no Tsubasa - Shoujin no Sora no Kanata e"
+  localizedName: "アルナムの翼　焼塵の空の彼方へ"
+  saveName: "Alnam no Tsubasa - Shoujin no Sora no Kanata e (Japan)"
+  serials:
+    - SLPS-01187
+    - SLPS-01188
+    - SLPS-01189
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (Europe)"
+  serials:
+    - SLES-02801
+    - SLES-12801
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (France)"
+  serials:
+    - SLES-02802
+    - SLES-12802
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (Germany)"
+  serials:
+    - SLES-02803
+    - SLES-12803
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (Italy)"
+  serials:
+    - SLES-02805
+    - SLES-12805
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (Spain)"
+  serials:
+    - SLES-02804
+    - SLES-12804
+- name: "Alone in the Dark - The New Nightmare"
+  saveName: "Alone in the Dark - The New Nightmare (USA)"
+  serials:
+    - SLUS-01201
+    - SLUS-01377
+- name: "Amerzone - Das Testament des Forschungsreisenden"
+  saveName: "Amerzone - Das Testament des Forschungsreisenden (Germany)"
+  serials:
+    - SLES-02348
+    - SLES-12348
+- name: "Amerzone - El Legado del Explorador"
+  saveName: "Amerzone - El Legado del Explorador (Spain)"
+  serials:
+    - SLES-02349
+    - SLES-12349
+- name: "Amerzone - Il Testamento dell'Esploratore"
+  saveName: "Amerzone - Il Testamento dell'Esploratore (Italy)"
+  serials:
+    - SLES-02350
+    - SLES-12350
+- name: "Amerzone - O Testamento do Explorador"
+  saveName: "Amerzone - O Testamento do Explorador (Portugal)"
+  serials:
+    - SLES-02429
+    - SLES-12429
+- name: "Amerzone - The Explorer's Legacy"
+  saveName: "Amerzone - The Explorer's Legacy (Europe)"
+  serials:
+    - SLES-02347
+    - SLES-12347
+- name: "Amerzone, L'"
+  saveName: "Amerzone, L' (France)"
+  serials:
+    - SLES-02346
+    - SLES-12346
+- name: "Ancient Roman - Power of Dark Side"
+  localizedName: "アンシャントロマン～Ｐｏｗｅｒ　ｏｆ　Ｄａｒｋ　Ｓｉｄｅ～"
+  saveName: "Ancient Roman - Power of Dark Side (Japan)"
+  serials:
+    - SLPS-01108
+    - SLPS-01109
+- name: "Animetic Story Game 1 - Cardcaptor Sakura"
+  localizedName: "アニメチックストーリーゲーム１　カードキャプターさくら"
+  saveName: "Animetic Story Game 1 - Cardcaptor Sakura (Japan)"
+  serials:
+    - SLPS-01830
+    - SLPS-01831
+- name: "Ankh - Tutankhamen no Nazo"
+  localizedName: "ツタンカーメンの謎　アンク"
+  saveName: "Ankh - Tutankhamen no Nazo (Japan)"
+  serials:
+    - SLPS-01068
+    - SLPS-01069
+- name: "Ao no 6-gou - Antarctica"
+  localizedName: "青の６号　アンタクティカ"
+  saveName: "Ao no 6-gou - Antarctica (Japan)"
+  serials:
+    - SLPS-02940
+    - SLPS-02941
+- name: "Arc the Lad - Monster Game with Casino Game"
+  saveName: "Arc the Lad - Monster Game with Casino Game (Japan)"
+  serials:
+    - SCPS-10040
+    - SCPS-10041
+- name: "Arc the Lad Collection - Arc the Lad III"
+  saveName: "Arc the Lad Collection - Arc the Lad III (USA)"
+  serials:
+    - SLUS-01253
+    - SLUS-01254
+- name: "Arc the Lad III"
+  localizedName: "アークザラッドⅢ"
+  saveName: "Arc the Lad III (Japan)"
+  serials:
+    - SCPS-10106
+    - SCPS-10107
+- name: "Arc the Lad III (Rev 1)"
+  saveName: "Arc the Lad III (Japan) (Rev 1)"
+  serials:
+    - SCPS-91228
+    - SCPS-91229
+- name: "Armored Core - Master of Arena"
+  localizedName: "アーマードコア　マスターオブアリーナ"
+  saveName: "Armored Core - Master of Arena (Japan)"
+  serials:
+    - SLPS-01855
+    - SLPS-01856
+- name: "Armored Core - Master of Arena (PSone Books)"
+  saveName: "Armored Core - Master of Arena (Japan) (PSone Books)"
+  serials:
+    - SLPS-91444
+    - SLPS-91445
+- name: "Armored Core - Master of Arena"
+  saveName: "Armored Core - Master of Arena (USA)"
+  serials:
+    - SLUS-01030
+    - SLUS-01081
+- name: "Athena - Awakening from the Ordinary Life"
+  localizedName: "アテナ　～Ａｗａｋｅｎｉｎｇ　ｆｒｏｍ　ｔｈｅ　ｏｒｄｉｎａｒｙ　ｌｉｆｅ～"
+  saveName: "Athena - Awakening from the Ordinary Life (Japan)"
+  serials:
+    - SLPM-86185
+    - SLPM-86186
+    - SLPM-86187
+- name: "Atlantis - Das sagenhafte Abenteuer"
+  saveName: "Atlantis - Das sagenhafte Abenteuer (Germany)"
+  serials:
+    - SLES-01603
+    - SLES-11603
+    - SLES-21603
+- name: "Atlantis - Secrets d'un Monde Oublie"
+  saveName: "Atlantis - Secrets d'un Monde Oublie (France)"
+  serials:
+    - SLES-01602
+    - SLES-11602
+    - SLES-21602
+- name: "Atlantis - Segreti d'un Mondo Perduto"
+  saveName: "Atlantis - Segreti d'un Mondo Perduto (Italy)"
+  serials:
+    - SLES-01604
+    - SLES-11604
+    - SLES-21604
+- name: "Atlantis - The Lost Tales"
+  saveName: "Atlantis - The Lost Tales (Europe)"
+  serials:
+    - SLES-01291
+    - SLES-11291
+    - SLES-21291
+- name: "Atlantis - The Lost Tales"
+  saveName: "Atlantis - The Lost Tales (Europe) (En,Es,Nl,Sv)"
+  serials:
+    - SLES-01605
+    - SLES-11605
+    - SLES-21605
+- name: "Ayakashi Ninden Kunoichiban"
+  localizedName: "あやかし忍伝くの一番"
+  saveName: "Ayakashi Ninden Kunoichiban (Japan)"
+  serials:
+    - SLPS-00946
+    - SLPS-00947
+- name: "B Senjou no Alice - Alice on Borderlines"
+  localizedName: "Ｂ線上のアリス"
+  saveName: "B Senjou no Alice - Alice on Borderlines (Japan)"
+  serials:
+    - SLPS-01003
+    - SLPS-01004
+    - SLPS-01005
+- name: "Back Guiner - Yomigaeru Yuusha Tachi - Hishou Hen 'Uragiri no Senjou'"
+  saveName: "Back Guiner - Yomigaeru Yuusha Tachi - Hishou Hen 'Uragiri no Senjou' (Japan)"
+  serials:
+    - SLPS-01446
+    - SLPS-01447
+- name: "Back Guiner - Yomigaeru Yuusha Tachi - Kakusei Hen 'Guiner Tensei'"
+  saveName: "Back Guiner - Yomigaeru Yuusha Tachi - Kakusei Hen 'Guiner Tensei' (Japan)"
+  serials:
+    - SLPS-01217
+    - SLPS-01218
+- name: "Beat Mania"
+  saveName: "Beat Mania (Japan)"
+  serials:
+    - SLPM-86126
+    - SLPM-86127
+- name: "Biohazard 2"
+  localizedName: "バイオハザード２"
+  saveName: "Biohazard 2 (Japan)"
+  serials:
+    - SLPS-01222
+    - SLPS-01223
+- name: "Biohazard 2 - Dual Shock Ver."
+  localizedName: "バイオハザード２　デュアルショックバージョン"
+  saveName: "Biohazard 2 - Dual Shock Ver. (Japan)"
+  serials:
+    - SLPS-01510
+    - SLPS-01511
+- name: "Black-Matrix +"
+  localizedName: "ブラックマトリクスクロス"
+  saveName: "Black-Matrix + (Japan)"
+  serials:
+    - SLPS-03415
+    - SLPS-03416
+- name: "Black-Matrix 00"
+  localizedName: "ブラック・マトリクス　ゼロ　ダブルオー"
+  saveName: "Black-Matrix 00 (Japan)"
+  serials:
+    - SLPS-03573
+    - SLPS-03574
+- name: "Black-Matrix 00 (Shokai Genteiban)"
+  saveName: "Black-Matrix 00 (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-03571
+    - SLPS-03572
+- name: "The Book of Watermarks"
+  localizedName: "ザ・ブック・オブ・ウォーターマークス"
+  saveName: "Book of Watermarks, The (Japan)"
+  sortName: "Book of Watermarks, The"
+  serials:
+    - SCPS-10094
+    - SCPS-10095
+- name: "BrainDead 13"
+  localizedName: "ブレインデッド１３"
+  saveName: "BrainDead 13 (Japan)"
+  serials:
+    - SLPS-00514
+    - SLPS-00515
+- name: "BrainDead 13"
+  saveName: "BrainDead 13 (USA)"
+  serials:
+    - SLUS-00083
+    - SLUS-00171
+- name: "Brave Saga 2"
+  localizedName: "ブレイブサーガ２"
+  saveName: "Brave Saga 2 (Japan)"
+  serials:
+    - SLPS-02580
+    - SLPS-02581
+- name: "Brigandine - Grand Edition"
+  localizedName: "ブリガンダイン　～グランド・エディション～"
+  saveName: "Brigandine - Grand Edition (Japan)"
+  serials:
+    - SLPS-02661
+    - SLPS-02662
+- name: "Bust A Move (Genteiban)"
+  saveName: "Bust A Move (Japan) (Genteiban)"
+  serials:
+    - SLPS-01232
+    - SLPS-01233
+- name: "Capcom Generations"
+  saveName: "Capcom Generations (Europe)"
+  serials:
+    - SLES-01881
+    - SLES-11881
+    - SLES-21881
+    - SLES-31881
+- name: "Capcom Generations"
+  saveName: "Capcom Generations (Germany)"
+  serials:
+    - SLES-02098
+    - SLES-12098
+    - SLES-22098
+- name: "Chase the Express"
+  saveName: "Chase the Express (Europe)"
+  serials:
+    - SCES-02812
+    - SCES-12812
+- name: "Chase the Express"
+  saveName: "Chase the Express (France)"
+  serials:
+    - SCES-02813
+    - SCES-12813
+- name: "Chase the Express"
+  saveName: "Chase the Express (Germany)"
+  serials:
+    - SCES-02814
+    - SCES-12814
+- name: "Chase the Express"
+  saveName: "Chase the Express (Italy)"
+  serials:
+    - SCES-02815
+    - SCES-12815
+- name: "Chase the Express"
+  localizedName: "チェイス・ザ・エクスプレス"
+  saveName: "Chase the Express (Japan, Asia)"
+  serials:
+    - SCPS-10109
+    - SCPS-10110
+- name: "Chase the Express - El Expreso de la Muerte"
+  saveName: "Chase the Express - El Expreso de la Muerte (Spain)"
+  serials:
+    - SCES-02816
+    - SCES-12816
+- name: "Chibi Chara Game - Ginga Eiyuu Densetsu (Shokai Tokuten Reinhart Genteiban)"
+  saveName: "Chibi Chara Game - Ginga Eiyuu Densetsu (Japan) (Shokai Tokuten Reinhart Genteiban)"
+  serials:
+    - SLPS-01834
+    - SLPS-01835
+- name: "Chibi Chara Game - Ginga Eiyuu Densetsu (Shokai Tokuten Yan Genteiban)"
+  saveName: "Chibi Chara Game - Ginga Eiyuu Densetsu (Japan) (Shokai Tokuten Yan Genteiban)"
+  serials:
+    - SLPS-02025
+    - SLPS-02026
+- name: "Chou Jikuu Yousai Macross - Ai Oboete Imasu ka"
+  localizedName: "超時空要塞マクロス　愛・おぼえていますか"
+  saveName: "Chou Jikuu Yousai Macross - Ai Oboete Imasu ka (Japan)"
+  serials:
+    - SLPS-02005
+    - SLPS-02006
+- name: "Chou-Kousoku Gran Doll (Premium Edition)"
+  saveName: "Chou-Kousoku Gran Doll (Japan) (Premium Edition)"
+  serials:
+    - SLPS-00869
+    - SLPS-00870
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (Europe)"
+  serials:
+    - SLES-00165
+    - SLES-10165
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (France)"
+  serials:
+    - SLES-00166
+    - SLES-10166
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (Germany)"
+  serials:
+    - SLES-00167
+    - SLES-10167
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (Italy)"
+  serials:
+    - SLES-00192
+    - SLES-10192
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (Spain)"
+  serials:
+    - SLES-00191
+    - SLES-10191
+- name: "Chronicles of the Sword"
+  saveName: "Chronicles of the Sword (USA)"
+  serials:
+    - SCUS-94700
+    - SCUS-94701
+- name: "Chrono Cross"
+  localizedName: "クロノクロス"
+  saveName: "Chrono Cross (Japan)"
+  serials:
+    - SLPM-87395
+    - SLPM-87396
+- name: "Chrono Cross"
+  saveName: "Chrono Cross (USA)"
+  serials:
+    - SLUS-01041
+    - SLUS-01080
+- name: "Cinema Eikaiwa Series Dai-1-dan - Tengoku ni Ikenai Papa"
+  saveName: "Cinema Eikaiwa Series Dai-1-dan - Tengoku ni Ikenai Papa (Japan)"
+  serials:
+    - SLPM-86565
+    - SLPM-86566
+    - SLPM-86567
+- name: "Cinema Eikaiwa Series Dai-2-dan - Interceptor"
+  saveName: "Cinema Eikaiwa Series Dai-2-dan - Interceptor (Japan)"
+  serials:
+    - SLPM-86554
+    - SLPM-86555
+    - SLPM-86556
+- name: "Cinema Eikaiwa Series Dai-3-dan - Arashigaoka"
+  saveName: "Cinema Eikaiwa Series Dai-3-dan - Arashigaoka (Japan)"
+  serials:
+    - SLPM-86551
+    - SLPM-86552
+    - SLPM-86553
+- name: "Cinema Eikaiwa Series Dai-4-dan - Boy's Life"
+  localizedName: "シネマ英会話　「ボーイズ・ライフ」"
+  saveName: "Cinema Eikaiwa Series Dai-4-dan - Boy's Life (Japan)"
+  serials:
+    - SLPM-86568
+    - SLPM-86569
+    - SLPM-86570
+    - SLPM-86571
+- name: "Cinema Eikaiwa Series Dai-5-dan - Zombie"
+  localizedName: "シネマ英会話　「ゾンビ」"
+  saveName: "Cinema Eikaiwa Series Dai-5-dan - Zombie (Japan)"
+  serials:
+    - SLPM-86557
+    - SLPM-86558
+    - SLPM-86559
+    - SLPM-86560
+- name: "Cinema Eikaiwa Series Dai-6-dan - Ai no Hate ni"
+  localizedName: "シネマ英会話　「愛の果てに」"
+  saveName: "Cinema Eikaiwa Series Dai-6-dan - Ai no Hate ni (Japan)"
+  serials:
+    - SLPM-86241
+    - SLPM-86242
+    - SLPM-86243
+    - SLPM-86564
+- name: "Circadia"
+  localizedName: "サーカディア"
+  saveName: "Circadia (Japan)"
+  serials:
+    - SCPS-10077
+    - SCPS-10078
+- name: "Cold Blood"
+  saveName: "Cold Blood (Germany)"
+  serials:
+    - SCES-02151
+    - SCES-12151
+- name: "Colony Wars"
+  saveName: "Colony Wars (Europe)"
+  serials:
+    - SLES-00860
+    - SLES-10860
+- name: "Colony Wars"
+  saveName: "Colony Wars (France)"
+  serials:
+    - SLES-00861
+    - SLES-10861
+- name: "Colony Wars"
+  saveName: "Colony Wars (Germany)"
+  serials:
+    - SLES-00862
+    - SLES-10862
+- name: "Colony Wars"
+  saveName: "Colony Wars (Italy)"
+  serials:
+    - SLES-00863
+    - SLES-10863
+- name: "Colony Wars"
+  localizedName: "コロニー・ウォーズ"
+  saveName: "Colony Wars (Japan)"
+  serials:
+    - SLPS-01403
+    - SLPS-01404
+- name: "Colony Wars"
+  saveName: "Colony Wars (Spain)"
+  serials:
+    - SLES-00864
+    - SLES-10864
+- name: "Colony Wars"
+  saveName: "Colony Wars (USA)"
+  serials:
+    - SLUS-00543
+    - SLUS-00554
+- name: "Command & Conquer"
+  saveName: "Command & Conquer (Europe)"
+  serials:
+    - SLES-00530
+    - SLES-10530
+- name: "Command & Conquer"
+  saveName: "Command & Conquer (France)"
+  serials:
+    - SLES-00531
+    - SLES-10531
+- name: "Command & Conquer"
+  saveName: "Command & Conquer (USA)"
+  serials:
+    - SLUS-00379
+    - SLUS-00410
+- name: "Command & Conquer - Alarmstufe Rot"
+  saveName: "Command & Conquer - Alarmstufe Rot (Germany)"
+  serials:
+    - SLES-01007
+    - SLES-11007
+- name: "Command & Conquer - Alarmstufe Rot - Gegenschlag"
+  saveName: "Command & Conquer - Alarmstufe Rot - Gegenschlag (Germany)"
+  serials:
+    - SLES-01345
+    - SLES-11345
+- name: "Command & Conquer - Alerte Rouge"
+  saveName: "Command & Conquer - Alerte Rouge (France)"
+  serials:
+    - SLES-01006
+    - SLES-11006
+- name: "Command & Conquer - Alerte Rouge - Mission Tesla"
+  saveName: "Command & Conquer - Alerte Rouge - Mission Tesla (France)"
+  serials:
+    - SLES-01344
+    - SLES-11344
+- name: "Command & Conquer - Red Alert"
+  saveName: "Command & Conquer - Red Alert (Europe)"
+  serials:
+    - SLES-00949
+    - SLES-10949
+- name: "Command & Conquer - Red Alert"
+  saveName: "Command & Conquer - Red Alert (USA)"
+  serials:
+    - SLUS-00431
+    - SLUS-00485
+- name: "Command & Conquer - Red Alert - Retaliation"
+  saveName: "Command & Conquer - Red Alert - Retaliation (Europe)"
+  serials:
+    - SLES-01343
+    - SLES-11343
+- name: "Command & Conquer - Red Alert - Retaliation"
+  saveName: "Command & Conquer - Red Alert - Retaliation (USA)"
+  serials:
+    - SLUS-00665
+    - SLUS-00667
+- name: "Command & Conquer - Teil 1 - Der Tiberiumkonflikt"
+  saveName: "Command & Conquer - Teil 1 - Der Tiberiumkonflikt (Germany)"
+  serials:
+    - SLES-00532
+    - SLES-10532
+- name: "Command & Conquer Complete"
+  saveName: "Command & Conquer Complete (Japan)"
+  serials:
+    - SLPS-00976
+    - SLPS-00977
+- name: "Countdown Vampires"
+  localizedName: "カウントダウン　ヴァンパイヤーズ"
+  saveName: "Countdown Vampires (Japan)"
+  serials:
+    - SLPS-02504
+    - SLPS-02505
+- name: "Countdown Vampires"
+  saveName: "Countdown Vampires (USA)"
+  serials:
+    - SLUS-00898
+    - SLUS-01199
+- name: "Covert Ops - Nuclear Dawn"
+  saveName: "Covert Ops - Nuclear Dawn (USA)"
+  serials:
+    - SLUS-01151
+    - SLUS-01157
+- name: "Creature Shock"
+  localizedName: "クリーチャーショック"
+  saveName: "Creature Shock (Japan)"
+  serials:
+    - SLPS-00120
+    - SLPS-00121
+- name: "Cross Tantei Monogatari"
+  localizedName: "クロス探偵物語"
+  saveName: "Cross Tantei Monogatari (Japan)"
+  serials:
+    - SLPM-86280
+    - SLPM-86281
+- name: "Cybernetic Empire"
+  localizedName: "サイバネティック　エンパイア"
+  saveName: "Cybernetic Empire (Japan)"
+  serials:
+    - SLPS-01912
+    - SLPS-01913
+- name: "Cyberwar"
+  localizedName: "サイバーウォー"
+  saveName: "Cyberwar (Japan)"
+  serials:
+    - SLPS-00055
+    - SLPS-00056
+    - SLPS-00057
+- name: "D"
+  saveName: "D (Europe)"
+  serials:
+    - SLES-00065
+    - SLES-10065
+    - SLES-20065
+- name: "D"
+  saveName: "D (France)"
+  serials:
+    - SLES-00161
+    - SLES-10161
+    - SLES-20161
+- name: "D"
+  saveName: "D (Germany)"
+  serials:
+    - SLES-00160
+    - SLES-10160
+    - SLES-20160
+- name: "D"
+  saveName: "D (USA)"
+  serials:
+    - SLUS-00128
+    - SLUS-00173
+    - SLUS-00174
+- name: "D no Shokutaku - Complete Graphics"
+  localizedName: "Ｄの食卓 コンプリートグラフィックス"
+  saveName: "D no Shokutaku - Complete Graphics (Japan)"
+  serials:
+    - SLPS-00133
+    - SLPS-00134
+    - SLPS-00135
+- name: "Dancing Blade Katte ni Momotenshi II - Tears of Eden"
+  localizedName: "ｄａｎｃｉｎｇ　ｂｌａｄｅ　かってに桃天使ＩＩ　～Ｔｅａｒｓ　ｏｆ　Ｅｄｅｎ～"
+  saveName: "Dancing Blade Katte ni Momotenshi II - Tears of Eden (Japan)"
+  serials:
+    - SLPM-86210
+    - SLPM-86211
+    - SLPM-86212
+- name: "Dancing Blade Katte ni Momotenshi!"
+  localizedName: "ｄａｎｃｉｎｇ　ｂｌａｄｅ　かってに桃天使！"
+  saveName: "Dancing Blade Katte ni Momotenshi! (Japan)"
+  serials:
+    - SLPM-86100
+    - SLPM-86101
+    - SLPM-86102
+- name: "De Sang Froid"
+  saveName: "De Sang Froid (France)"
+  serials:
+    - SCES-02150
+    - SCES-12150
+- name: "DeathMask"
+  localizedName: "デスマスク"
+  saveName: "DeathMask (Japan)"
+  serials:
+    - SLPS-00225
+    - SLPS-00226
+    - SLPS-00227
+- name: "Deep Sea Adventure - Kaitei-kyuu Pantarassa no Nazo"
+  localizedName: "ディープシーアドベンチャー　～海底宮パンタラッサの謎～"
+  saveName: "Deep Sea Adventure - Kaitei-kyuu Pantarassa no Nazo (Japan)"
+  serials:
+    - SLPS-00660
+    - SLPS-00661
+- name: "Devil Summoner - Soul Hackers"
+  localizedName: "デビル・サマナー　ソウル・ハッカーズ"
+  saveName: "Devil Summoner - Soul Hackers (Japan)"
+  serials:
+    - SLPM-87184
+    - SLPM-87185
+- name: "Doki Doki Pretty League - Nekketsu Otome Seishunki"
+  localizedName: "ドキドキプリティリーグ　熱血乙女青春記"
+  saveName: "Doki Doki Pretty League - Nekketsu Otome Seishunki (Japan)"
+  serials:
+    - SLPS-01507
+    - SLPS-01508
+    - SLPS-01509
+- name: "Dracula - A Ressurreicao"
+  saveName: "Dracula - A Ressurreicao (Portugal)"
+  serials:
+    - SLES-02762
+    - SLES-12762
+- name: "Dracula - La Risurrezione"
+  saveName: "Dracula - La Risurrezione (Italy)"
+  serials:
+    - SLES-02761
+    - SLES-12761
+- name: "Dracula - Resurreccion"
+  saveName: "Dracula - Resurreccion (Spain)"
+  serials:
+    - SLES-02760
+    - SLES-12760
+- name: "Dracula - Resurrection"
+  saveName: "Dracula - Resurrection (France)"
+  serials:
+    - SLES-02758
+    - SLES-12758
+- name: "Dracula - Resurrection"
+  saveName: "Dracula - Resurrection (Germany)"
+  serials:
+    - SLES-02759
+    - SLES-12759
+- name: "Dracula - The Last Sanctuary"
+  saveName: "Dracula - The Last Sanctuary (USA)"
+  serials:
+    - SLUS-01440
+    - SLUS-01443
+- name: "Dracula - The Resurrection"
+  saveName: "Dracula - The Resurrection (Europe)"
+  serials:
+    - SLES-02757
+    - SLES-12757
+- name: "Dracula - The Resurrection"
+  saveName: "Dracula - The Resurrection (USA)"
+  serials:
+    - SLUS-01284
+    - SLUS-01316
+- name: "Dracula 2 - Die letzte Zufluchtsstaette"
+  saveName: "Dracula 2 - Die letzte Zufluchtsstaette (Germany)"
+  serials:
+    - SLES-03350
+    - SLES-13350
+- name: "Dracula 2 - El Ultimo Santuario"
+  saveName: "Dracula 2 - El Ultimo Santuario (Spain)"
+  serials:
+    - SLES-03352
+    - SLES-13352
+- name: "Dracula 2 - L'Ultimo Santuario"
+  saveName: "Dracula 2 - L'Ultimo Santuario (Italy)"
+  serials:
+    - SLES-03351
+    - SLES-13351
+- name: "Dracula 2 - Le Dernier Sanctuaire"
+  saveName: "Dracula 2 - Le Dernier Sanctuaire (France)"
+  serials:
+    - SLES-03349
+    - SLES-13349
+- name: "Dracula 2 - The Last Sanctuary"
+  saveName: "Dracula 2 - The Last Sanctuary (Europe)"
+  serials:
+    - SLES-03348
+    - SLES-13348
+- name: "Dragon Quest VII - Eden no Senshi-tachi"
+  localizedName: "ドラゴン・クエストⅦ　～エデンの戦士たち～"
+  saveName: "Dragon Quest VII - Eden no Senshi-tachi (Japan)"
+  serials:
+    - SLPM-86500
+    - SLPM-86501
+- name: "Dragon Quest VII - Eden no Senshi-tachi (Rev 1)"
+  localizedName: "ドラゴン・クエストⅦ　～エデンの戦士たち～"
+  saveName: "Dragon Quest VII - Eden no Senshi-tachi (Japan) (Rev 1)"
+  serials:
+    - SLPM-87352
+    - SLPM-87353
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (Europe)"
+  serials:
+    - SCES-01705
+    - SCES-11705
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (France)"
+  serials:
+    - SCES-02565
+    - SCES-12565
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (Germany)"
+  serials:
+    - SCES-02566
+    - SCES-12566
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (Italy)"
+  serials:
+    - SCES-02567
+    - SCES-12567
+- name: "Dragon Valor"
+  localizedName: "ドラゴンヴァラー"
+  saveName: "Dragon Valor (Japan)"
+  serials:
+    - SLPS-02190
+    - SLPS-02191
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (Spain)"
+  serials:
+    - SCES-02568
+    - SCES-12568
+- name: "Dragon Valor"
+  saveName: "Dragon Valor (USA)"
+  serials:
+    - SLUS-01092
+    - SLUS-01164
+- name: "Dragon Warrior VII"
+  saveName: "Dragon Warrior VII (USA)"
+  serials:
+    - SLUS-01206
+    - SLUS-01346
+- name: "Driver 2"
+  saveName: "Driver 2 (USA)"
+  serials:
+    - SLUS-01161
+    - SLUS-01318
+- name: "Driver 2 - Back on the Streets"
+  saveName: "Driver 2 - Back on the Streets (Europe)"
+  serials:
+    - SLES-02993
+    - SLES-12993
+- name: "Driver 2 - Back on the Streets"
+  saveName: "Driver 2 - Back on the Streets (France)"
+  serials:
+    - SLES-02994
+    - SLES-12994
+- name: "Driver 2 - Back on the Streets"
+  saveName: "Driver 2 - Back on the Streets (Germany)"
+  serials:
+    - SLES-02995
+    - SLES-12995
+- name: "Driver 2 - Back on the Streets"
+  saveName: "Driver 2 - Back on the Streets (Italy)"
+  serials:
+    - SLES-02996
+    - SLES-12996
+- name: "Driver 2 - Back on the Streets"
+  saveName: "Driver 2 - Back on the Streets (Spain)"
+  serials:
+    - SLES-02997
+    - SLES-12997
+- name: "Dungeon Creator"
+  localizedName: "ダンジョンクリエイター"
+  saveName: "Dungeon Creator (Japan)"
+  serials:
+    - SLPS-00370
+    - SLPS-00371
+- name: "Eberouge"
+  localizedName: "エーベルージュ"
+  saveName: "Eberouge (Japan)"
+  serials:
+    - SLPS-00844
+    - SLPS-00845
+- name: "Ecsaform"
+  localizedName: "エクサフォーム"
+  saveName: "Ecsaform (Japan)"
+  serials:
+    - SLPS-01791
+    - SLPS-01792
+- name: "Eithea"
+  localizedName: "アイシア"
+  saveName: "Eithea (Japan)"
+  serials:
+    - SLPS-03058
+    - SLPS-03059
+- name: "Eithea (Rev 1)"
+  saveName: "Eithea (Japan) (Rev 1)"
+  serials:
+    - SLPM-87091
+    - SLPM-87092
+- name: "Elf o Karu Monotachi - Kanzenban"
+  localizedName: "エルフを狩るモノたち　－完全版－"
+  saveName: "Elf o Karu Monotachi - Kanzenban (Japan)"
+  serials:
+    - SLPS-00973
+    - SLPS-00974
+- name: "Elf wo Karu Monotachi II"
+  saveName: "Elf wo Karu Monotachi II (Japan)"
+  serials:
+    - SLPS-01456
+    - SLPS-01457
+    - SLPS-01458
+- name: "Emit Value Pack"
+  saveName: "Emit Value Pack (Japan)"
+  serials:
+    - SLPS-00117
+    - SLPS-00118
+    - SLPS-00119
+- name: "Enigma"
+  localizedName: "エニグマ"
+  saveName: "Enigma (Japan)"
+  serials:
+    - SLPS-01351
+    - SLPS-01352
+- name: "Eurasia Express Satsujin Jiken"
+  localizedName: "ユーラシアエクスプレス殺人事件"
+  saveName: "Eurasia Express Satsujin Jiken (Japan)"
+  serials:
+    - SLPM-86135
+    - SLPM-86136
+    - SLPM-86137
+    - SLPM-86138
+- name: "Eve - The Fatal Attraction"
+  localizedName: "イヴ・ザ・フェイタル・アトラクション"
+  saveName: "Eve - The Fatal Attraction (Japan)"
+  serials:
+    - SLPM-86826
+    - SLPM-86827
+    - SLPM-86828
+- name: "Eve - The Fatal Attraction (Premium Box)"
+  saveName: "Eve - The Fatal Attraction (Japan) (Premium Box)"
+  serials:
+    - SLPM-86821
+    - SLPM-86822
+    - SLPM-86823
+- name: "Eve - The Lost One"
+  saveName: "Eve - The Lost One (Japan)"
+  serials:
+    - SLPS-01805
+    - SLPS-01806
+    - SLPS-01807
+    - SLPS-01808
+- name: "Eve - The Lost One (GameVillage The Best)"
+  saveName: "Eve - The Lost One (Japan) (GameVillage The Best)"
+  serials:
+    - SLPM-87246
+    - SLPM-87247
+    - SLPM-87248
+- name: "Eve Zero"
+  localizedName: "イウ＇　ゼロ"
+  saveName: "Eve Zero (Japan)"
+  serials:
+    - SLPM-86478
+    - SLPM-86479
+    - SLPM-86480
+- name: "Eve Zero (Premium Box)"
+  saveName: "Eve Zero (Japan) (Premium Box)"
+  serials:
+    - SLPM-86475
+    - SLPM-86476
+    - SLPM-86477
+- name: "Evil Dead - Hail to the King"
+  saveName: "Evil Dead - Hail to the King (Europe)"
+  serials:
+    - SLES-03428
+    - SLES-13428
+- name: "Evil Dead - Hail to the King"
+  saveName: "Evil Dead - Hail to the King (USA)"
+  serials:
+    - SLUS-01072
+    - SLUS-01326
+- name: "e-Jump"
+  localizedName: "ｅジャンプ"
+  saveName: "e-Jump (Japan)"
+  serials:
+    - PCPX-96178
+    - PCPX-96179
+- name: "Family Games Compendium"
+  saveName: "Family Games Compendium (Europe)"
+  serials:
+    - SLES-03485
+    - SLES-13485
+- name: "Fear Effect"
+  saveName: "Fear Effect (Europe) (En,Es,It)"
+  serials:
+    - SLES-02166
+    - SLES-12166
+    - SLES-22166
+    - SLES-32166
+- name: "Fear Effect"
+  saveName: "Fear Effect (France)"
+  serials:
+    - SLES-02167
+    - SLES-12167
+    - SLES-22167
+    - SLES-32167
+- name: "Fear Effect"
+  saveName: "Fear Effect (Germany)"
+  serials:
+    - SLES-02168
+    - SLES-12168
+    - SLES-22168
+    - SLES-32168
+- name: "Fear Effect"
+  saveName: "Fear Effect (USA)"
+  serials:
+    - SLUS-00920
+    - SLUS-01056
+    - SLUS-01057
+    - SLUS-01058
+- name: "Fear Effect 2 - Retro Helix"
+  saveName: "Fear Effect 2 - Retro Helix (Europe) (En,Fr,De)"
+  serials:
+    - SLES-03386
+    - SLES-13386
+    - SLES-23386
+    - SLES-33386
+- name: "Fear Effect 2 - Retro Helix"
+  saveName: "Fear Effect 2 - Retro Helix (USA)"
+  serials:
+    - SLUS-01266
+    - SLUS-01275
+    - SLUS-01276
+    - SLUS-01277
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (Europe)"
+  serials:
+    - SLES-02965
+    - SLES-12965
+    - SLES-22965
+    - SLES-32965
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (France)"
+  serials:
+    - SLES-02966
+    - SLES-12966
+    - SLES-22966
+    - SLES-32966
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (Germany)"
+  serials:
+    - SLES-02967
+    - SLES-12967
+    - SLES-22967
+    - SLES-32967
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (Italy)"
+  serials:
+    - SLES-02968
+    - SLES-12968
+    - SLES-22968
+    - SLES-32968
+- name: "Final Fantasy IX"
+  localizedName: "ファイナルファンタジーⅨ"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (Japan, Asia)"
+  serials:
+    - SCPS-45500
+    - SCPS-45501
+    - SCPS-45502
+    - SCPS-45503
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (Spain)"
+  serials:
+    - SLES-02969
+    - SLES-12969
+    - SLES-22969
+    - SLES-32969
+- name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy IX (USA)"
+  serials:
+    - SLUS-01251
+    - SLUS-01295
+    - SLUS-01296
+    - SLUS-01297
+- name: "Final Fantasy VII"
+  sortName: "Final Fantasy 9"
+  saveName: "Final Fantasy VII (Europe)"
+  serials:
+    - SCES-00867
+    - SCES-10867
+    - SCES-20867
+- name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
+  saveName: "Final Fantasy VII (France)"
+  serials:
+    - SCES-00868
+    - SCES-10868
+    - SCES-20868
+- name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
+  saveName: "Final Fantasy VII (Germany)"
+  serials:
+    - SCES-00869
+    - SCES-10869
+    - SCES-20869
+- name: "Final Fantasy VII"
+  localizedName: "ファイナルファンタジーⅦ"
+  sortName: "Final Fantasy 7"
+  saveName: "Final Fantasy VII (Japan)"
+  serials:
+    - SLPS-00700
+    - SLPS-00701
+    - SLPS-00702
+- name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
+  saveName: "Final Fantasy VII (Spain)"
+  serials:
+    - SCES-00900
+    - SCES-10900
+    - SCES-20900
+- name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
+  saveName: "Final Fantasy VII (USA)"
+  serials:
+    - SCUS-94163
+    - SCUS-94164
+    - SCUS-94165
+- name: "Final Fantasy VII International"
+  localizedName: "ファイナルファンタジーⅦ　インターナショナル"
+  sortName: "Final Fantasy 7 International"
+  saveName: "Final Fantasy VII International (Japan)"
+  serials:
+    - SLPM-84020
+    - SLPM-84021
+    - SLPM-84022
+    - SLPM-87383
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (Europe, Australia)"
+  serials:
+    - SCES-02080
+    - SCES-12080
+    - SCES-22080
+    - SCES-32080
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (France)"
+  serials:
+    - SLES-02081
+    - SLES-12081
+    - SLES-22081
+    - SLES-32081
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (Germany)"
+  serials:
+    - SLES-02082
+    - SLES-12082
+    - SLES-22082
+    - SLES-32082
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (Italy)"
+  serials:
+    - SLES-02083
+    - SLES-12083
+    - SLES-22083
+    - SLES-32083
+- name: "Final Fantasy VIII"
+  localizedName: "ファイナルファンタジーⅧ"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (Japan)"
+  serials:
+    - SLPM-87384
+    - SLPM-87385
+    - SLPM-87386
+    - SLPM-87387
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (Spain)"
+  serials:
+    - SLES-02084
+    - SLES-12084
+    - SLES-22084
+    - SLES-32084
+- name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
+  saveName: "Final Fantasy VIII (USA)"
+  serials:
+    - SLUS-00892
+    - SLUS-00908
+    - SLUS-00909
+    - SLUS-00910
+- name: "First Kiss Story"
+  localizedName: "ファーストＫｉｓｓ☆物語"
+  saveName: "First Kiss Story (Japan)"
+  serials:
+    - SLPS-01708
+    - SLPS-01709
+- name: "Fox Hunt"
+  saveName: "Fox Hunt (USA)"
+  serials:
+    - SLUS-00101
+    - SLUS-00175
+    - SLUS-00176
+- name: "G-Police"
+  saveName: "G-Police (Europe)"
+  serials:
+    - SLES-00082
+    - SLES-10082
+- name: "G-Police"
+  saveName: "G-Police (France)"
+  serials:
+    - SLES-00853
+    - SLES-10853
+- name: "G-Police"
+  saveName: "G-Police (Germany)"
+  serials:
+    - SLES-00854
+    - SLES-10854
+- name: "G-Police"
+  saveName: "G-Police (Italy)"
+  serials:
+    - SLES-00855
+    - SLES-10855
+- name: "G-Police"
+  localizedName: "Ｇポリス"
+  saveName: "G-Police (Japan)"
+  serials:
+    - SCPS-10065
+    - SCPS-10066
+- name: "G-Police"
+  saveName: "G-Police (Spain)"
+  serials:
+    - SLES-00856
+    - SLES-10856
+- name: "G-Police"
+  saveName: "G-Police (USA)"
+  serials:
+    - SLUS-00544
+    - SLUS-00556
+- name: "GZSZ Vol. 2"
+  saveName: "GZSZ Vol. 2 (Germany)"
+  serials:
+    - SLES-02441
+    - SLES-12441
+- name: "Gadget - Past as Future"
+  localizedName: "ガジェット　～パスト・アズ・フューチャー～"
+  saveName: "Gadget - Past as Future (Japan)"
+  serials:
+    - SLPS-01082
+    - SLPS-01083
+    - SLPS-01084
+    - SLPS-01085
+- name: "Galerians"
+  saveName: "Galerians (Europe)"
+  serials:
+    - SLES-02328
+    - SLES-12328
+    - SLES-22328
+- name: "Galerians"
+  saveName: "Galerians (France)"
+  serials:
+    - SLES-02329
+    - SLES-12329
+    - SLES-22329
+- name: "Galerians"
+  saveName: "Galerians (Germany)"
+  serials:
+    - SLES-02330
+    - SLES-12330
+    - SLES-22330
+- name: "Galerians"
+  localizedName: "ガレリアンズ"
+  saveName: "Galerians (Japan)"
+  serials:
+    - SLPS-02192
+    - SLPS-02193
+    - SLPS-02194
+- name: "Galerians"
+  saveName: "Galerians (USA)"
+  serials:
+    - SLUS-00986
+    - SLUS-01098
+    - SLUS-01099
+- name: "Gate Keepers"
+  localizedName: "ゲート・キーパーズ"
+  saveName: "Gate Keepers (Japan)"
+  serials:
+    - SLPS-02246
+    - SLPS-02247
+- name: "Glay - Complete Works"
+  localizedName: "グレイ　～コンプリート・ワークス～"
+  saveName: "Glay - Complete Works (Japan)"
+  serials:
+    - SLPM-86226
+    - SLPM-86227
+- name: "Go Go I Land"
+  localizedName: "ゴーゴー・アイ・ランド"
+  saveName: "Go Go I Land (Japan)"
+  serials:
+    - SLPS-03061
+    - SLPS-03062
+- name: "Golden Nugget"
+  saveName: "Golden Nugget (USA)"
+  serials:
+    - SLUS-00319
+    - SLUS-00555
+- name: "Gran Turismo 2"
+  saveName: "Gran Turismo 2 (Europe) (En,Fr,De,Es,It)"
+  serials:
+    - SCES-02380
+    - SCES-12380
+- name: "Gran Turismo 2"
+  localizedName: "グランツーリスモ２"
+  saveName: "Gran Turismo 2 (Japan, Asia)"
+  serials:
+    - SCPS-10116
+    - SCPS-10117
+- name: "Grand Theft Auto"
+  saveName: "Grand Theft Auto (Europe) (En,Fr,De,It)"
+  serials:
+    - SLES-00032
+    - SLES-01714
+- name: "Grand Theft Auto"
+  saveName: "Grand Theft Auto (USA)"
+  serials:
+    - SLUS-00106
+    - SLUS-00846
+- name: "Grandia"
+  saveName: "Grandia (Europe)"
+  serials:
+    - SLES-02397
+    - SLES-12397
+- name: "Grandia"
+  saveName: "Grandia (France)"
+  serials:
+    - SLES-02398
+    - SLES-12398
+- name: "Grandia"
+  saveName: "Grandia (Germany)"
+  serials:
+    - SLES-02399
+    - SLES-12399
+- name: "Grandia"
+  localizedName: "グランディア"
+  saveName: "Grandia (Japan)"
+  serials:
+    - SLPS-02124
+    - SLPS-02125
+- name: "Grandia"
+  saveName: "Grandia (USA)"
+  serials:
+    - SCUS-94457
+    - SCUS-94465
+- name: "Growlanser"
+  localizedName: "グローランサー"
+  saveName: "Growlanser (Japan)"
+  serials:
+    - SLPM-87333
+    - SLPM-87334
+- name: "Guardian Recall - Shugojuu Shoukan"
+  localizedName: "ガーディアンリコール　～守護獣召喚～"
+  saveName: "Guardian Recall - Shugojuu Shoukan (Japan)"
+  serials:
+    - SLPS-01297
+    - SLPS-01298
+- name: "Gundam 0079 - The War for Earth"
+  saveName: "Gundam 0079 - The War for Earth (Japan)"
+  serials:
+    - SLPS-00815
+    - SLPS-00816
+- name: "Harukaze Sentai V-Force"
+  localizedName: "はるかぜ戦隊　Ｖフォース"
+  saveName: "Harukaze Sentai V-Force (Japan)"
+  serials:
+    - SLPS-00578
+    - SLPS-00579
+    - SLPS-00580
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (Europe)"
+  serials:
+    - SLES-00461
+    - SLES-10461
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (France)"
+  serials:
+    - SLES-00462
+    - SLES-10462
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (Germany)"
+  serials:
+    - SLES-00463
+    - SLES-10463
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (Italy)"
+  serials:
+    - SLES-00464
+    - SLES-10464
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (Spain)"
+  serials:
+    - SLES-00465
+    - SLES-10465
+- name: "Heart of Darkness"
+  saveName: "Heart of Darkness (USA)"
+  serials:
+    - SLUS-00696
+    - SLUS-00741
+- name: "Helix - Fear Effect"
+  localizedName: "ヘリックス　フィアエフェクト"
+  saveName: "Helix - Fear Effect (Japan)"
+  serials:
+    - SLPS-03340
+    - SLPS-03341
+    - SLPS-03342
+    - SLPS-03343
+- name: "Hexamoon Guardians"
+  localizedName: "ヘキサムーン・ガーディアンズ"
+  saveName: "Hexamoon Guardians (Japan)"
+  serials:
+    - SLPS-02641
+    - SLPS-02642
+- name: "Himiko-den - Renge"
+  localizedName: "火魅子伝　～恋解～"
+  saveName: "Himiko-den - Renge (Japan)"
+  serials:
+    - SLPS-01890
+    - SLPS-01891
+    - SLPS-01892
+- name: "Himitsu Sentai Metamor V Deluxe"
+  localizedName: "ひみつ戦隊メタモルⅤデラックス"
+  saveName: "Himitsu Sentai Metamor V Deluxe (Japan)"
+  serials:
+    - SLPS-01626
+    - SLPS-01627
+- name: "The Hive Wars"
+  localizedName: "ザ・ハイヴウォーズ"
+  saveName: "Hive Wars, The (Japan)"
+  sortName: "Hive Wars, The"
+  serials:
+    - SLPS-00325
+    - SLPS-00326
+- name: "The Hive"
+  saveName: "Hive, The (USA)"
+  sortName: "Hive, The"
+  serials:
+    - SLUS-00120
+    - SLUS-00182
+- name: "Hyper PlayStation Re-mix 1998 No. 11"
+  saveName: "Hyper PlayStation Re-mix 1998 No. 11 (Japan)"
+  serials:
+    - SLPM-80317
+    - PAPX-90059
+- name: "Hyper PlayStation Re-mix 1998 No. 7"
+  saveName: "Hyper PlayStation Re-mix 1998 No. 7 (Japan)"
+  serials:
+    - SLPM-80248
+    - PCPX-96115
+- name: "Hyper PlayStation Re-mix 1999 No. 9"
+  saveName: "Hyper PlayStation Re-mix 1999 No. 9 (Japan)"
+  serials:
+    - SLPM-80470
+    - PCPX-96170
+- name: "Hyper PlayStation Re-mix No. 7"
+  saveName: "Hyper PlayStation Re-mix No. 7 (Japan)"
+  serials:
+    - SLPM-80113
+    - SLPM-80114
+- name: "Idol Janshi Suchie-Pai II Limited"
+  localizedName: "アイドル雀士スーチーパイⅡリミテッド"
+  saveName: "Idol Janshi Suchie-Pai II Limited (Japan)"
+  serials:
+    - SLPS-00290
+    - SLPS-00291
+    - SLPS-00292
+- name: "In Cold Blood"
+  saveName: "In Cold Blood (Europe)"
+  serials:
+    - SCES-02149
+    - SCES-12149
+- name: "In Cold Blood"
+  saveName: "In Cold Blood (USA)"
+  serials:
+    - SLUS-01294
+    - SLUS-01314
+- name: "J. B. Harold - Blue Chicago Blues"
+  localizedName: "Ｊ．Ｂ．ハロルド　ブルー・シカゴ・ブルース"
+  saveName: "J. B. Harold - Blue Chicago Blues (Japan)"
+  serials:
+    - SLPS-00144
+    - SLPS-00145
+- name: "JailBreaker"
+  localizedName: "ジェイルブレイカー"
+  saveName: "JailBreaker (Japan)"
+  serials:
+    - SLPS-02076
+    - SLPS-02077
+- name: "Jikuu Tantei DD - Maboroshi no Lorelei"
+  localizedName: "時空探偵ＤＤ　～幻のローレライ～"
+  saveName: "Jikuu Tantei DD - Maboroshi no Lorelei (Japan)"
+  serials:
+    - SLPS-00397
+    - SLPS-00398
+- name: "Jikuu Tantei DD 2 - Hangyaku no Apusararu"
+  saveName: "Jikuu Tantei DD 2 - Hangyaku no Apusararu (Japan)"
+  serials:
+    - SLPS-01533
+    - SLPS-01534
+- name: "Jissen Pachi-Slot Hisshouhou! Single - Kamen Rider & Gallop"
+  saveName: "Jissen Pachi-Slot Hisshouhou! Single - Kamen Rider & Gallop (Japan)"
+  serials:
+    - SLPM-86342
+    - SLPM-86343
+- name: "Juggernaut"
+  saveName: "Juggernaut (USA)"
+  serials:
+    - SLUS-00894
+    - SLUS-00988
+    - SLUS-00989
+- name: "Juggernaut - Senritsu no Tobira"
+  localizedName: "ジャガーノート　－戦慄の扉－"
+  saveName: "Juggernaut - Senritsu no Tobira (Japan)"
+  serials:
+    - SLPS-01671
+    - SLPS-01672
+    - SLPS-01673
+- name: "Kagayaku Kisetsu e"
+  localizedName: "輝く季節へ"
+  saveName: "Kagayaku Kisetsu e (Japan)"
+  serials:
+    - SLPS-01972
+    - SLPS-01973
+- name: "Karyuujou"
+  saveName: "Karyuujou (Japan)"
+  serials:
+    - SLPS-00563
+    - SLPS-00564
+- name: "Kidou Senshi Gundam - Gihren no Yabou - Zeon no Keifu"
+  saveName: "Kidou Senshi Gundam - Gihren no Yabou - Zeon no Keifu (Japan)"
+  serials:
+    - SLPS-02570
+    - SLPS-02571
+- name: "Kindaichi Shounen no Jikenbo - Jigoku Yuuen Satsujin Jiken"
+  localizedName: "金田一少年の事件簿　～地獄遊園殺人事件～"
+  saveName: "Kindaichi Shounen no Jikenbo - Jigoku Yuuen Satsujin Jiken (Japan)"
+  serials:
+    - SLPS-01340
+    - SLPS-01341
+- name: "Kindaichi Shounen no Jikenbo 3 - Seiryuu Densetsu Satsujin Jiken"
+  localizedName: "金田一少年の事件簿３　～青龍伝説殺人事件～"
+  saveName: "Kindaichi Shounen no Jikenbo 3 - Seiryuu Densetsu Satsujin Jiken (Japan)"
+  serials:
+    - SLPS-02223
+    - SLPS-02224
+- name: "Kizuna toyuu Na no Pendant with Toybox Stories"
+  localizedName: "絆という名のペンダントｗｉｔｈ　ＴＯＹＢＯＸストーリーズ"
+  saveName: "Kizuna toyuu Na no Pendant with Toybox Stories (Japan)"
+  serials:
+    - SLPS-02681
+    - SLPS-02682
+- name: "Koudelka"
+  saveName: "Koudelka (Europe)"
+  serials:
+    - SLES-02897
+    - SLES-12897
+    - SLES-22897
+    - SLES-32897
+- name: "Koudelka"
+  saveName: "Koudelka (France)"
+  serials:
+    - SLES-02898
+    - SLES-12898
+    - SLES-22898
+    - SLES-32898
+- name: "Koudelka"
+  saveName: "Koudelka (Germany)"
+  serials:
+    - SLES-02899
+    - SLES-12899
+    - SLES-22899
+    - SLES-32899
+- name: "Koudelka"
+  saveName: "Koudelka (Italy)"
+  serials:
+    - SLES-02900
+    - SLES-12900
+    - SLES-22900
+    - SLES-32900
+- name: "Koudelka"
+  localizedName: "クーデルカ"
+  saveName: "Koudelka (Japan)"
+  serials:
+    - SLPS-02460
+    - SLPS-02461
+    - SLPS-02462
+    - SLPS-02463
+- name: "Koudelka"
+  saveName: "Koudelka (Spain)"
+  serials:
+    - SLES-02901
+    - SLES-12901
+    - SLES-22901
+    - SLES-32901
+- name: "Koudelka"
+  saveName: "Koudelka (USA)"
+  serials:
+    - SLUS-01051
+    - SLUS-01100
+    - SLUS-01101
+    - SLUS-01102
+- name: "Kowloon's Gate - Kowloon Fuusuiden"
+  saveName: "Kowloon's Gate - Kowloon Fuusuiden (Japan, Asia)"
+  serials:
+    - SCPS-45014
+    - SCPS-45015
+    - SCPS-45016
+    - SCPS-45017
+- name: "Langrisser IV & V - Final Edition"
+  saveName: "Langrisser IV & V - Final Edition (Japan)"
+  serials:
+    - SLPS-01818
+    - SLPS-01819
+- name: "The Legend of Dragoon"
+  saveName: "Legend of Dragoon, The (Europe)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCES-03043
+    - SCES-13043
+    - SCES-23043
+    - SCES-33043
+- name: "The Legend of Dragoon"
+  saveName: "Legend of Dragoon, The (France)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCES-03044
+    - SCES-13044
+    - SCES-23044
+    - SCES-33044
+- name: "The Legend of Dragoon"
+  saveName: "Legend of Dragoon, The (Germany)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCES-03045
+    - SCES-13045
+    - SCES-23045
+    - SCES-33045
+- name: "The Legend of Dragoon"
+  saveName: "Legend of Dragoon, The (Italy)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCES-03046
+    - SCES-13046
+    - SCES-23046
+    - SCES-33046
+- name: "The Legend of Dragoon"
+  localizedName: "レジェンド・オブ・ドラグーン"
+  saveName: "Legend of Dragoon, The (Japan)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCPS-10119
+    - SCPS-10120
+    - SCPS-10121
+    - SCPS-10122
+- name: "The Legend of Dragoon"
+  localizedName: "The Legend of Dragoon - La Leyenda de los Dragoon"
+  saveName: "Legend of Dragoon, The (Spain)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCES-03047
+    - SCES-13047
+    - SCES-23047
+    - SCES-33047
+- name: "The Legend of Dragoon"
+  saveName: "Legend of Dragoon, The (USA)"
+  sortName: "Legend of Dragoon, The"
+  serials:
+    - SCUS-94491
+    - SCUS-94584
+    - SCUS-94585
+    - SCUS-94586
+- name: "LifeScape - Seimei 40-okunen Haruka na Tabi"
+  saveName: "LifeScape - Seimei 40-okunen Haruka na Tabi (Japan)"
+  serials:
+    - SLPS-00185
+    - SLPS-00186
+- name: "Little Lovers - She So Game"
+  localizedName: "リトル・ラバーズ　～シー・ソ・ーゲーム～"
+  saveName: "Little Lovers - She So Game (Japan)"
+  serials:
+    - SLPM-86757
+    - SLPM-86758
+- name: "Little Princess - Marl Oukoku no Ningyou-hime 2"
+  localizedName: "リトル・プリンセス　マール王国の人形姫２"
+  saveName: "Little Princess - Marl Oukoku no Ningyou-hime 2 (Japan)"
+  serials:
+    - SLPS-03012
+    - SLPS-03013
+- name: "Louvre - A Maldicao"
+  saveName: "Louvre - A Maldicao (Portugal)"
+  serials:
+    - SLES-03159
+    - SLES-13159
+- name: "Louvre - L'Ultime Malediction"
+  saveName: "Louvre - L'Ultime Malediction (France)"
+  serials:
+    - SLES-03174
+    - SLES-13174
+- name: "Louvre - La Maledizione Finale"
+  saveName: "Louvre - La Maledizione Finale (Italy)"
+  serials:
+    - SLES-03160
+    - SLES-13160
+- name: "Louvre - La maldicion final"
+  saveName: "Louvre - La maldicion final (Spain)"
+  serials:
+    - SLES-03161
+    - SLES-13161
+- name: "Louvre - The Final Curse"
+  saveName: "Louvre - The Final Curse (Europe)"
+  serials:
+    - SLES-03158
+    - SLES-13158
+- name: "Lunar - Silver Star Story"
+  localizedName: "ルナ　シルバースターストーリー"
+  saveName: "Lunar - Silver Star Story (Japan, Asia)"
+  serials:
+    - SCPS-45249
+    - SCPS-45250
+- name: "Lunar - Silver Star Story Complete"
+  saveName: "Lunar - Silver Star Story Complete (USA)"
+  serials:
+    - SLUS-00628
+    - SLUS-00899
+- name: "Lunar 2 - Eternal Blue"
+  localizedName: "ルナ２　エターナル・ブルー"
+  saveName: "Lunar 2 - Eternal Blue (Japan)"
+  serials:
+    - SLPS-02081
+    - SLPS-02082
+    - SLPS-02083
+- name: "Lunar 2 - Eternal Blue Complete"
+  saveName: "Lunar 2 - Eternal Blue Complete (USA)"
+  serials:
+    - SLUS-01071
+    - SLUS-01239
+    - SLUS-01240
+- name: "Lupin 3sei - Cagliostro no Shiro - Saikai"
+  localizedName: "ルパン三世　カリオストロの城　再会"
+  saveName: "Lupin 3sei - Cagliostro no Shiro - Saikai (Japan)"
+  serials:
+    - SLPS-91060
+    - SLPS-91061
+    - SLPS-91062
+- name: "Maboroshi Tsukiyo - Tsukiyono Kitan"
+  localizedName: "まぼろし月夜　～月夜野綺譚～"
+  saveName: "Maboroshi Tsukiyo - Tsukiyono Kitan (Japan)"
+  serials:
+    - SLPS-02705
+    - SLPS-02706
+- name: "Magical Drop III"
+  saveName: "Magical Drop III (Europe) (En,Fr,De,Es,It,Nl)"
+  serials:
+    - SLES-02964
+    - SLES-12964
+- name: "Mahou Shoujo Pretty Samy - Part 1 - In the Earth"
+  saveName: "Mahou Shoujo Pretty Samy - Part 1 - In the Earth (Japan)"
+  serials:
+    - SLPS-00645
+    - SLPS-00646
+- name: "Mahou Shoujo Pretty Samy - Part 2 - In the Julyhelm"
+  saveName: "Mahou Shoujo Pretty Samy - Part 2 - In the Julyhelm (Japan)"
+  serials:
+    - SLPS-00760
+    - SLPS-00761
+- name: "Maria - Kimitachi ga Umareta Wake"
+  saveName: "Maria - Kimitachi ga Umareta Wake (Japan)"
+  serials:
+    - SLPS-01136
+    - SLPS-01137
+    - SLPS-01138
+- name: "Maria 2 - Jutai Kokuchi no Nazo"
+  localizedName: "マリア２　－受胎告知の謎－"
+  saveName: "Maria 2 - Jutai Kokuchi no Nazo (Japan)"
+  serials:
+    - SLPS-02240
+    - SLPS-02241
+    - SLPS-02242
+- name: "Martialbeat 2"
+  saveName: "Martialbeat 2 (Japan)"
+  serials:
+    - SLPM-87148
+    - SLPM-87149
+- name: "Martialbeat 2 (Controller Doukon Set)"
+  saveName: "Martialbeat 2 (Japan) (Controller Doukon Set)"
+  serials:
+    - SLPM-87146
+    - SLPM-87147
+- name: "Matsumoto Reiji 999 - Story of Galaxy Express 999"
+  localizedName: "松本零士９９９"
+  saveName: "Matsumoto Reiji 999 - Story of Galaxy Express 999 (Japan)"
+  serials:
+    - SLPS-03220
+    - SLPS-03221
+- name: "MeltyLancer - Re-inforce"
+  localizedName: "メルティランサー　Ｒｅ－ｉｎｆｏｒｃｅ"
+  saveName: "MeltyLancer - Re-inforce (Japan)"
+  serials:
+    - SLPS-01147
+    - SLPS-01148
+- name: "MeltyLancer - The 3rd Planet"
+  localizedName: "メルティランサー　－ＴＨＥ　３ｒｄ　ＰＬＡＮＥＴ－"
+  saveName: "MeltyLancer - The 3rd Planet (Japan)"
+  serials:
+    - SLPM-86231
+    - SLPM-86232
+- name: "Memories Off 2nd"
+  localizedName: "メモリーズオフ　セカンド"
+  saveName: "Memories Off 2nd (Japan)"
+  serials:
+    - SLPS-03292
+    - SLPS-03293
+- name: "Memories Off 2nd (Shokai Genteiban)"
+  saveName: "Memories Off 2nd (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-03289
+    - SLPS-03290
+    - SLPS-03291
+- name: "Mermaid no Kisetsu"
+  localizedName: "マーメイドの季節"
+  saveName: "Mermaid no Kisetsu (Japan)"
+  serials:
+    - SLPM-86934
+    - SLPM-86935
+    - SLPM-86936
+- name: "Mermaid no Kisetsu - Curtain Call"
+  localizedName: "マーメイドの季節　～カーテンコール～"
+  saveName: "Mermaid no Kisetsu - Curtain Call (Japan)"
+  serials:
+    - SLPM-87108
+    - SLPM-87109
+- name: "Meta-Ph-List Mu.X.2297"
+  saveName: "Meta-Ph-List Mu.X.2297 (Japan)"
+  serials:
+    - SLPS-00680
+    - SLPS-00681
+- name: "Metal Angel 3"
+  localizedName: "メタル・エンジェル３"
+  saveName: "Metal Angel 3 (Japan)"
+  serials:
+    - SLPS-00867
+    - SLPS-00868
+- name: "Metal Gear Solid (Premium Package)"
+  localizedName: "メタルギア　ソリッド"
+  saveName: "Metal Gear Solid (Japan, Asia) (Premium Package)"
+  serials:
+    - SCPS-45317
+    - SCPS-45318
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (Europe)"
+  serials:
+    - SLES-01370
+    - SLES-11370
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (France)"
+  serials:
+    - SLES-01506
+    - SLES-11506
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (Germany)"
+  serials:
+    - SLES-01507
+    - SLES-11507
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (Italy)"
+  serials:
+    - SLES-01508
+    - SLES-11508
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (Japan)"
+  localizedName: "メタル・ギア・ソリッド"
+  serials:
+    - SLPM-86114
+    - SLPM-86115
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (Spain)"
+  serials:
+    - SLES-01734
+    - SLES-11734
+- name: "Metal Gear Solid"
+  saveName: "Metal Gear Solid (USA)"
+  serials:
+    - SLUS-00594
+    - SLUS-00776
+- name: "Metal Gear Solid - Integral"
+  localizedName: "メタル・ギア・ソリッド　～インテグラル～"
+  saveName: "Metal Gear Solid - Integral (Japan, Asia) (En,Ja)"
+  serials:
+    - SCPS-45412
+    - SCPS-45413
+    - SCPS-45414
+- name: "Mikagura Shoujo Tanteidan"
+  saveName: "Mikagura Shoujo Tanteidan (Japan)"
+  serials:
+    - SLPS-01611
+    - SLPS-01612
+    - SLPS-01613
+    - SLPS-01614
+- name: "Million Classic"
+  saveName: "Million Classic (Japan)"
+  serials:
+    - SLPS-01609
+    - SLPS-01610
+- name: "Million Classic (Nescafe-ban)"
+  saveName: "Million Classic (Japan) (Nescafe-ban)"
+  serials:
+    - SLPM-80397
+    - SLPM-80398
+- name: "Minakata Hakudou Toujou"
+  localizedName: "南方珀堂登場"
+  saveName: "Minakata Hakudou Toujou (Japan)"
+  serials:
+    - SLPS-00951
+    - SLPS-00952
+- name: "Misa no Mahou Monogatari"
+  localizedName: "ミサの魔法物語"
+  saveName: "Misa no Mahou Monogatari (Japan)"
+  serials:
+    - SLPS-01276
+    - SLPS-01277
+- name: "Misa no Mahou Monogatari (Shokai Genteiban)"
+  saveName: "Misa no Mahou Monogatari (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-01274
+    - SLPS-01275
+- name: "Mobile Suit Z-Gundam"
+  localizedName: "機動戦士Ｚガンダム"
+  saveName: "Mobile Suit Z-Gundam (Japan)"
+  serials:
+    - SLPS-01142
+    - SLPS-01143
+- name: "Mobile Suit Z-Gundam (Bandai the Best)"
+  saveName: "Mobile Suit Z-Gundam (Japan) (Bandai the Best)"
+  serials:
+    - SLPS-03232
+    - SLPS-03233
+- name: "Monte Carlo Games Compendium"
+  saveName: "Monte Carlo Games Compendium (Europe)"
+  serials:
+    - SLES-03813
+    - SLES-13813
+- name: "Moonlight Syndrome"
+  localizedName: "ムーンライトシンドローム"
+  saveName: "Moonlight Syndrome (Japan)"
+  serials:
+    - SLPS-01001
+    - SLPS-01002
+- name: "Moritaka Chisato - Safari Tokyo"
+  localizedName: "森高千里　サファリ東京"
+  saveName: "Moritaka Chisato - Safari Tokyo (Japan)"
+  serials:
+    - SLPM-86130
+    - SLPM-86131
+- name: "Motor Toon Grand Prix 2"
+  localizedName: "モータートゥーン・グランプリ２"
+  saveName: "Motor Toon Grand Prix 2 (Japan)"
+  serials:
+    - SCPS-10018
+    - SCPS-10019
+- name: "Murakoshi Seikai no Bakuchou SeaBass Fishing"
+  localizedName: "村越正海の爆釣シーバス・フィッシング"
+  saveName: "Murakoshi Seikai no Bakuchou SeaBass Fishing (Japan)"
+  serials:
+    - SLPS-01988
+    - SLPS-01989
+- name: "My Dream - On Air ga Matenakute"
+  localizedName: "マイ・ドリーム　オンエアが待てなくて"
+  saveName: "My Dream - On Air ga Matenakute (Japan)"
+  serials:
+    - SLPS-00996
+    - SLPS-00997
+- name: "Mystic Mind - Yureru Omoi"
+  localizedName: "ミスティックマインド　揺れる想い"
+  saveName: "Mystic Mind - Yureru Omoi (Japan)"
+  serials:
+    - SLPS-01562
+    - SLPS-01563
+- name: "NOeL - La Neige"
+  localizedName: "ノエル　～ラ・ネージュ～"
+  saveName: "NOeL - La Neige (Japan)"
+  serials:
+    - SLPS-01193
+    - SLPS-01194
+    - SLPS-01195
+- name: "NOeL - La Neige (Special Edition)"
+  saveName: "NOeL - La Neige (Japan) (Special Edition)"
+  serials:
+    - SLPS-01190
+    - SLPS-01191
+    - SLPS-01192
+- name: "NOeL - Not Digital"
+  localizedName: "ノエル　－ＮＯＴ　ＤｉＧＩＴＡＬ－"
+  saveName: "NOeL - Not Digital (Japan)"
+  serials:
+    - SLPS-00304
+    - SLPS-00305
+- name: "NOeL 3 - Mission on the Line"
+  localizedName: "ノエル３　－ＭＩＳＳＩＯＮ　ＯＮ　ＴＨＥ　ＬＩＮＥ－"
+  saveName: "NOeL 3 - Mission on the Line (Japan)"
+  serials:
+    - SLPS-01895
+    - SLPS-01896
+    - SLPS-01897
+- name: "NOeL 3 - Mission on the Line (Major Wave)"
+  saveName: "NOeL 3 - Mission on the Line (Japan) (Major Wave)"
+  serials:
+    - SLPM-86609
+    - SLPM-86610
+    - SLPM-86611
+- name: "Nanatsu no Hikan"
+  localizedName: "七つの秘館"
+  saveName: "Nanatsu no Hikan (Japan)"
+  serials:
+    - SLPM-86179
+    - SLPM-86180
+    - SLPM-86181
+- name: "Natsuiro Kenjutsu Komachi"
+  localizedName: "夏色剣術小町"
+  saveName: "Natsuiro Kenjutsu Komachi (Japan)"
+  serials:
+    - SLPS-02665
+    - SLPS-02666
+- name: "Necronomicon - Das Mysterium der Daemmerung"
+  saveName: "Necronomicon - Das Mysterium der Daemmerung (Germany)"
+  serials:
+    - SLES-03495
+    - SLES-13495
+- name: "Necronomicon - El Alba de las Tinieblas"
+  saveName: "Necronomicon - El Alba de las Tinieblas (Spain)"
+  serials:
+    - SLES-03497
+    - SLES-13497
+- name: "Necronomicon - Ispirato alle opere di H.P. Lovecraft"
+  saveName: "Necronomicon - Ispirato alle opere di H.P. Lovecraft (Italy)"
+  serials:
+    - SLES-03496
+    - SLES-13496
+- name: "Necronomicon - L'Aube des Tenebres"
+  saveName: "Necronomicon - L'Aube des Tenebres (France)"
+  serials:
+    - SLES-03494
+    - SLES-13494
+- name: "Necronomicon - O Despertar das Trevas"
+  saveName: "Necronomicon - O Despertar das Trevas (Portugal)"
+  serials:
+    - SLES-03498
+    - SLES-13498
+- name: "Necronomicon - The Dawning of Darkness"
+  saveName: "Necronomicon - The Dawning of Darkness (Europe)"
+  serials:
+    - SLES-03493
+    - SLES-13493
+- name: "Neko Zamurai"
+  localizedName: "猫侍"
+  saveName: "Neko Zamurai (Japan)"
+  serials:
+    - SLPS-01543
+    - SLPS-01544
+    - SLPS-01545
+- name: "Neorude"
+  saveName: "Neorude (Japan)"
+  serials:
+    - SLPS-00823
+    - SLPS-00824
+- name: "Nessa no Hoshi"
+  localizedName: "熱砂の惑星"
+  saveName: "Nessa no Hoshi (Japan)"
+  serials:
+    - SLPS-00913
+    - SLPS-00914
+- name: "Nightmare Project - Yakata"
+  localizedName: "ナイトメア・プロジェクト　ＹＡＫＡＴＡ"
+  saveName: "Nightmare Project - Yakata (Japan)"
+  serials:
+    - SLPS-01045
+    - SLPS-01046
+    - SLPS-01047
+- name: "Novastorm"
+  saveName: "Novastorm (Europe)"
+  serials:
+    - SCES-00011
+    - SCES-10011
+- name: "Novastorm"
+  localizedName: "ノバストーム"
+  saveName: "Novastorm (Japan)"
+  serials:
+    - SLPS-00314
+    - SLPS-00315
+- name: "Novastorm"
+  saveName: "Novastorm (USA)"
+  serials:
+    - SCUS-94404
+    - SCUS-94407
+- name: "Oddworld - Abe's Exoddus"
+  saveName: "Oddworld - Abe's Exoddus (Europe)"
+  serials:
+    - SLES-01480
+    - SLES-11480
+- name: "Oddworld - Abe's Exoddus"
+  saveName: "Oddworld - Abe's Exoddus (Germany)"
+  serials:
+    - SLES-01503
+    - SLES-11503
+- name: "Oddworld - Abe's Exoddus"
+  saveName: "Oddworld - Abe's Exoddus (Italy)"
+  serials:
+    - SLES-01504
+    - SLES-11504
+- name: "Oddworld - Abe's Exoddus"
+  saveName: "Oddworld - Abe's Exoddus (Spain)"
+  serials:
+    - SLES-01505
+    - SLES-11505
+- name: "Oddworld - Abe's Exoddus"
+  saveName: "Oddworld - Abe's Exoddus (USA)"
+  serials:
+    - SLUS-00710
+    - SLUS-00731
+- name: "Oddworld - L'Exode d'Abe"
+  saveName: "Oddworld - L'Exode d'Abe (France)"
+  serials:
+    - SLES-01502
+    - SLES-11502
+- name: "Ojousama Express"
+  localizedName: "お嬢様特急"
+  saveName: "Ojousama Express (Japan)"
+  serials:
+    - SLPS-01495
+    - SLPS-01496
+- name: "Our Graduation - Mahjong de Pon! Hanafuda de Koi!"
+  saveName: "Our Graduation - Mahjong de Pon! Hanafuda de Koi! (Japan)"
+  serials:
+    - SLPS-02576
+    - SLPS-02577
+- name: "OverBlood 2"
+  saveName: "OverBlood 2 (Europe)"
+  serials:
+    - SLES-01879
+    - SLES-11879
+- name: "OverBlood 2 (Rev 1)"
+  saveName: "OverBlood 2 (Germany) (Rev 1)"
+  serials:
+    - SLES-02187
+    - SLES-12187
+- name: "OverBlood 2"
+  saveName: "OverBlood 2 (Italy)"
+  serials:
+    - SLES-01880
+    - SLES-11880
+- name: "OverBlood 2"
+  localizedName: "オーバーブラッド２"
+  saveName: "OverBlood 2 (Japan)"
+  serials:
+    - SLPS-01261
+    - SLPS-01262
+- name: "Parasite Eve"
+  localizedName: "パラサイト・イヴ"
+  saveName: "Parasite Eve (Japan)"
+  serials:
+    - SLPS-01230
+    - SLPS-01231
+- name: "Parasite Eve"
+  saveName: "Parasite Eve (USA)"
+  serials:
+    - SLUS-00662
+    - SLUS-00668
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (Europe)"
+  serials:
+    - SLES-02558
+    - SLES-12558
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (France)"
+  serials:
+    - SLES-02559
+    - SLES-12559
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (Germany)"
+  serials:
+    - SLES-02560
+    - SLES-12560
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (Italy)"
+  serials:
+    - SLES-02562
+    - SLES-12562
+- name: "Parasite Eve II"
+  localizedName: "パラサイト・イヴ２"
+  saveName: "Parasite Eve II (Japan, Asia)"
+  serials:
+    - SCPS-45467
+    - SCPS-45468
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (Spain)"
+  serials:
+    - SLES-02561
+    - SLES-12561
+- name: "Parasite Eve II"
+  saveName: "Parasite Eve II (USA)"
+  serials:
+    - SLUS-01042
+    - SLUS-01055
+- name: "Persona 2 - Batsu - Eternal Punishment"
+  localizedName: "ペルソナ２　罰　－ＥＴＥＲＮＡＬ　ＰＵＮＩＳＨＭＥＮＴ－"
+  saveName: "Persona 2 - Batsu - Eternal Punishment (Japan)"
+  serials:
+    - SLPM-86967
+    - SLPS-02826
+- name: "Persona 2 - Batsu - Eternal Punishment (Deluxe Pack)"
+  localizedName: "ペルソナ２　罰"
+  saveName: "Persona 2 - Batsu - Eternal Punishment (Japan) (Deluxe Pack)"
+  serials:
+    - SLPS-02785
+    - SLPS-02786
+- name: "Pixygarden"
+  saveName: "Pixygarden (Japan)"
+  serials:
+    - SLPS-02290
+    - SLPS-02291
+- name: "PlayStation Underground 3.1"
+  saveName: "PlayStation Underground 3.1 (USA)"
+  serials:
+    - SCUS-94440
+    - SCUS-94441
+- name: "PlayStation Underground 3.2"
+  saveName: "PlayStation Underground 3.2 (USA)"
+  serials:
+    - SCUS-94442
+    - SCUS-94443
+- name: "PlayStation Underground 3.3"
+  saveName: "PlayStation Underground 3.3 (USA)"
+  serials:
+    - SCUS-94444
+    - SCUS-94445
+- name: "PlayStation Underground 3.4"
+  saveName: "PlayStation Underground 3.4 (USA)"
+  serials:
+    - SCUS-94446
+    - SCUS-94447
+- name: "PlayStation Underground 4.1"
+  saveName: "PlayStation Underground 4.1 (USA)"
+  serials:
+    - SCUS-94565
+    - SCUS-94566
+- name: "PlayStation Underground 4.2"
+  saveName: "PlayStation Underground 4.2 (USA)"
+  serials:
+    - SCUS-94612
+    - SCUS-94613
+- name: "PlayStation Underground 4.3"
+  saveName: "PlayStation Underground 4.3 (USA)"
+  serials:
+    - SCUS-94620
+    - SCUS-94621
+- name: "PlayStation Underground Number 3"
+  saveName: "PlayStation Underground Number 3 (USA)"
+  serials:
+    - SCUS-94191
+    - SCUS-94192
+- name: "PlayStation Underground Number 4"
+  saveName: "PlayStation Underground Number 4 (USA)"
+  serials:
+    - SCUS-94225
+    - SCUS-94226
+- name: "PlayStation Underground Volume 2 Issue 1"
+  saveName: "PlayStation Underground Volume 2 Issue 1 (USA)"
+  serials:
+    - SCUS-94237
+    - SCUS-94238
+- name: "PlayStation Underground Volume 2 Issue 2"
+  saveName: "PlayStation Underground Volume 2 Issue 2 (USA)"
+  serials:
+    - SCUS-94259
+    - SCUS-94260
+- name: "PlayStation Underground Volume 2 Issue 4"
+  saveName: "PlayStation Underground Volume 2 Issue 4 (USA)"
+  serials:
+    - SCUS-94298
+    - SCUS-94299
+- name: "PlayStation Underground Volume 2.3"
+  saveName: "PlayStation Underground Volume 2.3 (USA)"
+  serials:
+    - SCUS-94269
+    - SCUS-94270
+- name: "PoPoLoCrois Monogatari II"
+  localizedName: "ポポロクロイス物語Ⅱ"
+  saveName: "PoPoLoCrois Monogatari II (Japan)"
+  serials:
+    - SCPS-10112
+    - SCPS-10113
+    - SCPS-10114
+- name: "Policenauts"
+  localizedName: "ポリスノーツ"
+  saveName: "Policenauts (Japan)"
+  serials:
+    - SLPM-86048
+    - SLPM-86049
+- name: "PrePre Plus 001 - 1999 October"
+  saveName: "PrePre Plus 001 - 1999 October (Japan)"
+  serials:
+    - PCPX-96173
+    - PCPX-96174
+- name: "PrePre Plus 002 - 1999 December"
+  saveName: "PrePre Plus 002 - 1999 December (Japan)"
+  serials:
+    - PCPX-96186
+    - PCPX-96187
+- name: "PrePre Vol. 10"
+  saveName: "PrePre Vol. 10 (Japan)"
+  serials:
+    - PCPX-96103
+    - PCPX-96104
+- name: "PrePre Vol. 13"
+  saveName: "PrePre Vol. 13 (Japan)"
+  serials:
+    - PCPX-96118
+    - PCPX-96119
+- name: "PrePre Vol. 14"
+  saveName: "PrePre Vol. 14 (Japan)"
+  serials:
+    - PCPX-96126
+    - PCPX-96127
+- name: "PrePre Vol. 15"
+  saveName: "PrePre Vol. 15 (Japan)"
+  serials:
+    - PCPX-96133
+    - PCPX-96134
+- name: "PrePre Vol. 16"
+  saveName: "PrePre Vol. 16 (Japan)"
+  serials:
+    - PCPX-96142
+    - PCPX-96143
+- name: "PrePre Vol. 17"
+  saveName: "PrePre Vol. 17 (Japan)"
+  serials:
+    - PCPX-96148
+    - PCPX-96149
+- name: "PrePre Vol. 18"
+  saveName: "PrePre Vol. 18 (Japan)"
+  serials:
+    - PCPX-96156
+    - PCPX-96157
+- name: "PrePre Vol. 19"
+  saveName: "PrePre Vol. 19 (Japan)"
+  serials:
+    - PCPX-96167
+    - PCPX-96168
+- name: "PrePre Vol. 5"
+  saveName: "PrePre Vol. 5 (Japan)"
+  serials:
+    - PCPX-96054
+    - PCPX-96055
+- name: "PrePre Vol. 6"
+  saveName: "PrePre Vol. 6 (Japan)"
+  serials:
+    - PCPX-96063
+    - PCPX-96064
+- name: "PrePre Vol. 9"
+  saveName: "PrePre Vol. 9 (Japan)"
+  serials:
+    - PCPX-96093
+    - PCPX-96094
+- name: "Psychic Detective"
+  saveName: "Psychic Detective (Europe)"
+  serials:
+    - SLES-00070
+    - SLES-10070
+    - SLES-20070
+- name: "Psychic Detective"
+  saveName: "Psychic Detective (USA)"
+  serials:
+    - SLUS-00165
+    - SLUS-00166
+    - SLUS-00167
+- name: "Psychic Force - Puzzle Taisen"
+  saveName: "Psychic Force - Puzzle Taisen (Japan)"
+  serials:
+    - SLPS-01018
+    - SLPS-01019
+- name: "Quest for Fame - Be a Virtual Rock Legend"
+  saveName: "Quest for Fame - Be a Virtual Rock Legend (Japan)"
+  serials:
+    - SCPS-18004
+    - SCPS-18005
+- name: "Quiz Show"
+  saveName: "Quiz Show (Italy)"
+  serials:
+    - SLES-03752
+    - SLES-13752
+- name: "R (Shokai Genteiban)"
+  saveName: "R (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-02045
+    - SLPS-02046
+- name: "RMJ - The Mystery Hospital"
+  saveName: "RMJ - The Mystery Hospital (Japan)"
+  serials:
+    - SLPS-01087
+    - SLPS-01088
+- name: "RPG Tkool 4"
+  localizedName: "ＲＰＧツクール４"
+  saveName: "RPG Tkool 4 (Japan)"
+  serials:
+    - SLPS-02861
+    - SLPS-02862
+- name: "The Raven Project"
+  saveName: "Raven Project, The (Europe) (En,Fr,De)"
+  sortName: "Raven Project, The"
+  serials:
+    - SLES-00039
+    - SLES-10039
+- name: "The Raven Project"
+  saveName: "Raven Project, The (France) (En,Fr,De)"
+  sortName: "Raven Project, The"
+  serials:
+    - SLES-00518
+    - SLES-10518
+- name: "The Raven Project"
+  saveName: "Raven Project, The (Germany) (En,Fr,De)"
+  sortName: "Raven Project, The"
+  serials:
+    - SLES-00519
+    - SLES-10519
+- name: "Refrain Love 2"
+  localizedName: "リフレインラブ２"
+  saveName: "Refrain Love 2 (Japan)"
+  serials:
+    - SLPS-01840
+    - SLPS-01841
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (Europe)"
+  serials:
+    - SLES-00972
+    - SLES-10972
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (France)"
+  serials:
+    - SLES-00973
+    - SLES-10973
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (Germany)"
+  serials:
+    - SLES-00974
+    - SLES-10974
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (Italy)"
+  serials:
+    - SLES-00975
+    - SLES-10975
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (Spain)"
+  serials:
+    - SLES-00976
+    - SLES-10976
+- name: "Resident Evil 2"
+  saveName: "Resident Evil 2 (USA)"
+  serials:
+    - SLUS-00421
+    - SLUS-00592
+- name: "Resident Evil 2 - Dual Shock Ver."
+  saveName: "Resident Evil 2 - Dual Shock Ver. (USA)"
+  serials:
+    - SLUS-00748
+    - SLUS-00756
+- name: "Return to Zork"
+  localizedName: "リターン・トゥ・ゾーク"
+  saveName: "Return to Zork (Japan)"
+  serials:
+    - SLPS-00192
+    - SLPS-00193
+- name: "Ridegear Guybrave II"
+  localizedName: "雷弩機兵　ガイブレイブⅡ"
+  saveName: "Ridegear Guybrave II (Japan)"
+  serials:
+    - SLPS-01643
+    - SLPS-01644
+- name: "Rival Schools - United by Fate"
+  saveName: "Rival Schools - United by Fate (Europe)"
+  serials:
+    - SLES-01436
+    - SLES-11436
+- name: "Rival Schools - United by Fate"
+  saveName: "Rival Schools - United by Fate (USA)"
+  serials:
+    - SLUS-00681
+    - SLUS-00771
+- name: "Riven - The Sequel to Myst"
+  saveName: "Riven - The Sequel to Myst (Europe)"
+  serials:
+    - SLES-00963
+    - SLES-10963
+    - SLES-20963
+    - SLES-30963
+    - SLES-40963
+- name: "Riven - The Sequel to Myst"
+  saveName: "Riven - The Sequel to Myst (France)"
+  serials:
+    - SLES-01099
+    - SLES-11099
+    - SLES-21099
+    - SLES-31099
+    - SLES-41099
+- name: "Riven - The Sequel to Myst"
+  saveName: "Riven - The Sequel to Myst (Germany)"
+  serials:
+    - SLES-01100
+    - SLES-11100
+    - SLES-21100
+    - SLES-31100
+    - SLES-41100
+- name: "Riven - The Sequel to Myst"
+  localizedName: "リヴン　ザ　シークェル　トゥー　ミスト"
+  saveName: "Riven - The Sequel to Myst (Japan)"
+  serials:
+    - SLPS-01180
+    - SLPS-01181
+    - SLPS-01182
+    - SLPS-01183
+    - SLPS-01184
+- name: "Riven - The Sequel to Myst"
+  saveName: "Riven - The Sequel to Myst (USA)"
+  serials:
+    - SLUS-00535
+    - SLUS-00563
+    - SLUS-00564
+    - SLUS-00565
+    - SLUS-00580
+- name: "Romance wa Tsurugi no Kagayaki II - Gin no Niji o Sagashite (Shokai Genteiban)"
+  saveName: "Romance wa Tsurugi no Kagayaki II - Gin no Niji o Sagashite (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPM-87111
+    - SLPM-87112
+- name: "SD Gundam - GGeneration-0"
+  localizedName: "ＳＤガンダム ジージェネレーション・ゼロ"
+  saveName: "SD Gundam - GGeneration-0 (Japan)"
+  serials:
+    - SLPS-02200
+    - SLPS-02201
+- name: "SD Gundam - GGeneration-0 (Rev 1)"
+  saveName: "SD Gundam - GGeneration-0 (Japan) (Rev 1)"
+  serials:
+    - SLPS-03206
+    - SLPS-03207
+- name: "SD Gundam - GGeneration-F"
+  localizedName: "ＳＤガンダム ジージェネレーション・エフ"
+  saveName: "SD Gundam - GGeneration-F (Japan)"
+  serials:
+    - SLPS-02900
+    - SLPS-02901
+    - SLPS-02902
+    - SLPS-02915
+    - SLPS-02903
+- name: "SD Gundam - GGeneration-F (Tokubetsu-ban)"
+  saveName: "SD Gundam - GGeneration-F (Japan) (Tokubetsu-ban)"
+  serials:
+    - SLPM-84004
+    - SLPM-84005
+    - SLPM-84006
+    - SLPM-84007
+- name: "Saraba Uchuu Senkan Yamato - Ai no Senshi-tachi"
+  localizedName: "さらば宇宙戦艦ヤマト　愛の戦士たち"
+  saveName: "Saraba Uchuu Senkan Yamato - Ai no Senshi-tachi (Japan)"
+  serials:
+    - SLPS-02761
+    - SLPS-02762
+    - SLPS-02763
+- name: "Serial Experiments Lain"
+  localizedName: "シリアル・エクスペリメンツ・レイン"
+  saveName: "Serial Experiments Lain (Japan)"
+  serials:
+    - SLPS-01603
+    - SLPS-01604
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (Europe)"
+  serials:
+    - SCES-02099
+    - SCES-12099
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (France)"
+  serials:
+    - SCES-02100
+    - SCES-12100
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (Germany)"
+  serials:
+    - SCES-02101
+    - SCES-12101
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (Italy)"
+  serials:
+    - SCES-02102
+    - SCES-12102
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (Spain)"
+  serials:
+    - SCES-02103
+    - SCES-12103
+- name: "Shadow Madness"
+  saveName: "Shadow Madness (USA)"
+  serials:
+    - SLUS-00468
+    - SLUS-00718
+- name: "Shin Seiki Evangelion - Koutetsu no Girlfriend"
+  localizedName: "新世紀エヴァンゲリオン 鋼鉄のガールフレンド"
+  saveName: "Shin Seiki Evangelion - Koutetsu no Girlfriend (Japan)"
+  serials:
+    - SLPS-01377
+    - SLPS-01378
+- name: "Shin Seiki GPX Cyber Formula - Aratanaru Chousensha"
+  saveName: "Shin Seiki GPX Cyber Formula - Aratanaru Chousensha (Japan)"
+  serials:
+    - SLPS-01958
+    - SLPS-01959
+- name: "Shiritsu Justice Gakuen - Legion of Heroes"
+  saveName: "Shiritsu Justice Gakuen - Legion of Heroes (Japan)"
+  serials:
+    - SLPS-01240
+    - SLPS-01241
+- name: "Shockwave Assault"
+  saveName: "Shockwave Assault (Europe)"
+  serials:
+    - SLES-00071
+    - SLES-10071
+- name: "Shockwave Assault"
+  saveName: "Shockwave Assault (USA)"
+  serials:
+    - SLUS-00028
+    - SLUS-00137
+- name: "Shuukan Gallop - Blood Master"
+  localizedName: "週刊Ｇａｌｌｏｐ　ブラッドマスター"
+  saveName: "Shuukan Gallop - Blood Master (Japan)"
+  serials:
+    - SLPS-02401
+    - SLPS-02402
+- name: "Sister Princess"
+  localizedName: "シスター・プリンセス"
+  saveName: "Sister Princess (Japan)"
+  serials:
+    - SLPS-03156
+    - SLPS-03157
+- name: "Sister Princess (Shokai Genteiban)"
+  saveName: "Sister Princess (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-03154
+    - SLPS-03155
+- name: "Sister Princess 2"
+  localizedName: "シスター・プリンセス２"
+  saveName: "Sister Princess 2 (Japan)"
+  serials:
+    - SLPS-03523
+    - SLPS-03524
+- name: "Sister Princess 2 (Shokai Genteiban)"
+  saveName: "Sister Princess 2 (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPS-03521
+    - SLPS-03522
+- name: "Sister Princess 2 - Premium Fan Disc"
+  saveName: "Sister Princess 2 - Premium Fan Disc (Japan)"
+  serials:
+    - SLPS-03556
+    - SLPS-03557
+- name: "Sonata"
+  localizedName: "ソナタ"
+  saveName: "Sonata (Japan)"
+  serials:
+    - SLPS-01843
+    - SLPS-01844
+- name: "Sotsugyou M - Seito Kaichou no Karei naru Inbou"
+  localizedName: "卒業Ｍ　～生徒会長の華麗なる陰謀～"
+  saveName: "Sotsugyou M - Seito Kaichou no Karei naru Inbou (Japan)"
+  serials:
+    - SLPS-01444
+    - SLPS-01445
+- name: "Sougaku Toshi Osaka"
+  saveName: "Sougaku Toshi Osaka (Japan)"
+  serials:
+    - SLPS-01722
+    - SLPS-01723
+- name: "Soukaigi"
+  localizedName: "双界儀"
+  saveName: "Soukaigi (Japan)"
+  serials:
+    - SLPS-01291
+    - SLPS-01292
+    - SLPS-01293
+- name: "Soukuu no Tsubasa - Gotha World"
+  localizedName: "蒼空の翼　－ＧＯＴＨＡ　ＷＯＲＬＤ－"
+  saveName: "Soukuu no Tsubasa - Gotha World (Japan)"
+  serials:
+    - SLPS-01041
+    - SLPS-01042
+- name: "Sound Novel Evolution 3 - Machi - Unmei no Kousaten"
+  localizedName: "サウンドノベル・エボリューション３　街　～運命の交差点～"
+  saveName: "Sound Novel Evolution 3 - Machi - Unmei no Kousaten (Japan)"
+  serials:
+    - SLPS-01845
+    - SLPS-01846
+- name: "Southern All Stars - Space MOSA Space Museum of Southern Art"
+  saveName: "Southern All Stars - Space MOSA Space Museum of Southern Art (Japan)"
+  serials:
+    - SLPM-86408
+    - SLPM-86409
+    - SLPM-86410
+- name: "The Star Bowling DX"
+  localizedName: "ザ・スター・ボーリングＤＸ"
+  saveName: "Star Bowling DX, The (Japan)"
+  sortName: "Star Bowling DX, The"
+  serials:
+    - SLPS-01196
+    - SLPS-01197
+    - SLPS-01198
+    - SLPS-01199
+- name: "Star Ocean - The Second Story"
+  saveName: "Star Ocean - The Second Story (Europe)"
+  serials:
+    - SCES-02159
+    - SCES-12159
+- name: "Star Ocean - The Second Story"
+  saveName: "Star Ocean - The Second Story (France)"
+  serials:
+    - SCES-02160
+    - SCES-12160
+- name: "Star Ocean - The Second Story"
+  saveName: "Star Ocean - The Second Story (Germany)"
+  serials:
+    - SCES-02161
+    - SCES-12161
+- name: "Star Ocean - The Second Story"
+  localizedName: "スターオーシャン　セカンドストーリー"
+  saveName: "Star Ocean - The Second Story (Japan)"
+  serials:
+    - SLPM-86105
+    - SLPM-86106
+- name: "Star Ocean - The Second Story (Rev 1)"
+  saveName: "Star Ocean - The Second Story (Japan) (Rev 1)"
+  serials:
+    - SLPM-87357
+    - SLPM-87358
+- name: "Star Ocean - The Second Story"
+  saveName: "Star Ocean - The Second Story (USA)"
+  serials:
+    - SCUS-94421
+    - SCUS-94422
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (Europe)"
+  serials:
+    - SLES-00654
+    - SLES-10654
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (France)"
+  serials:
+    - SLES-00656
+    - SLES-10656
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (Germany)"
+  serials:
+    - SLES-00584
+    - SLES-10584
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (Italy)"
+  serials:
+    - SLES-00643
+    - SLES-10643
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  localizedName: "スター・ウォーズ　レベルアサルトⅡ　ＴＨＥ　ＨＩＤＤＥＮ　ＥＭＰＩＲＥ"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (Japan)"
+  serials:
+    - SLPS-00638
+    - SLPS-00639
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (Spain)"
+  serials:
+    - SLES-00644
+    - SLES-10644
+- name: "Star Wars - Rebel Assault II - The Hidden Empire"
+  saveName: "Star Wars - Rebel Assault II - The Hidden Empire (USA)"
+  serials:
+    - SLUS-00381
+    - SLUS-00386
+- name: "Street Fighter Collection"
+  saveName: "Street Fighter Collection (Europe)"
+  serials:
+    - SLES-00998
+    - SLES-10998
+- name: "Street Fighter Collection"
+  localizedName: "ストリートファイターコレクション"
+  saveName: "Street Fighter Collection (Japan)"
+  serials:
+    - SLPS-00800
+    - SLPS-00801
+- name: "Street Fighter Collection"
+  saveName: "Street Fighter Collection (USA)"
+  serials:
+    - SLUS-00423
+    - SLUS-00584
+- name: "Street Fighter II Movie"
+  localizedName: "ストリートファイターＩＩ　ムービー"
+  saveName: "Street Fighter II Movie (Japan)"
+  serials:
+    - SLPS-00080
+    - SLPS-00081
+- name: "Strider Hiryuu 1 & 2"
+  saveName: "Strider Hiryuu 1 & 2 (Japan)"
+  serials:
+    - SLPS-02620
+    - SLPS-02621
+- name: "Suchie-Pai Adventure - Doki Doki Nightmare"
+  localizedName: "スーチーパイ・アドベンチャー　～ドキドキナイトメア～"
+  saveName: "Suchie-Pai Adventure - Doki Doki Nightmare (Japan)"
+  serials:
+    - SLPS-01264
+    - SLPS-01265
+- name: "Summon Night 2"
+  localizedName: "サモンナイト２"
+  saveName: "Summon Night 2 (Japan)"
+  serials:
+    - SLPS-03237
+    - SLPS-03238
+- name: "Super Adventure Rockman"
+  saveName: "Super Adventure Rockman (Japan)"
+  serials:
+    - SLPS-01051
+    - SLPS-01052
+    - SLPS-01053
+- name: "Super Robot Taisen - Complete Box"
+  saveName: "Super Robot Taisen - Complete Box (Japan)"
+  serials:
+    - SLPS-02070
+    - SLPS-02071
+- name: "Syphon Filter 2"
+  saveName: "Syphon Filter 2 (Europe)"
+  serials:
+    - SCES-02285
+    - SCES-12285
+- name: "Syphon Filter 2"
+  saveName: "Syphon Filter 2 (France)"
+  serials:
+    - SCES-02286
+    - SCES-12286
+- name: "Syphon Filter 2"
+  saveName: "Syphon Filter 2 (Germany)"
+  serials:
+    - SCES-02287
+    - SCES-12287
+- name: "Syphon Filter 2"
+  saveName: "Syphon Filter 2 (Italy)"
+  serials:
+    - SCES-02288
+    - SCES-12288
+- name: "Syphon Filter 2"
+  saveName: "Syphon Filter 2 (USA)"
+  serials:
+    - SCUS-94451
+    - SCUS-94492
+    - PSRM-017100
+- name: "Syphon Filter 2 - Conspiracion Mortal"
+  saveName: "Syphon Filter 2 - Conspiracion Mortal (Spain)"
+  serials:
+    - SCES-02289
+    - SCES-12289
+- name: "Taiho Shichau zo - You're Under Arrest"
+  localizedName: "逮捕しちゃうぞ　Ｙｏｕ’ｒｅ　Ｕｎｄｅｒ　Ａｒｒｅｓｔ"
+  saveName: "Taiho Shichau zo - You're Under Arrest (Japan)"
+  serials:
+    - SLPM-86782
+    - SLPM-86783
+- name: "Taiho Shichau zo - You're Under Arrest (Shokai Genteiban)"
+  saveName: "Taiho Shichau zo - You're Under Arrest (Japan) (Shokai Genteiban)"
+  serials:
+    - SLPM-86780
+    - SLPM-86781
+- name: "Tales of Destiny II"
+  saveName: "Tales of Destiny II (USA)"
+  serials:
+    - SLUS-01355
+    - SLUS-01367
+    - SLUS-01368
+- name: "Tales of Eternia"
+  localizedName: "テイルズ　オブ　エターニア"
+  saveName: "Tales of Eternia (Japan)"
+  serials:
+    - SLPS-03050
+    - SLPS-03051
+    - SLPS-03052
+- name: "Tales of Eternia (Premium Box)"
+  saveName: "Tales of Eternia (Japan) (Premium Box)"
+  serials:
+    - SLPS-03045
+    - SLPS-03046
+    - SLPS-03047
+- name: "Tenchi Muyou! Toukou Muyou"
+  localizedName: "天地無用！登校無用"
+  saveName: "Tenchi Muyou! Toukou Muyou (Japan)"
+  serials:
+    - SLPS-00451
+    - SLPS-00452
+- name: "Thousand Arms"
+  localizedName: "サウザンドアームズ"
+  saveName: "Thousand Arms (Japan)"
+  serials:
+    - SLPS-01780
+    - SLPS-01781
+- name: "Thousand Arms"
+  saveName: "Thousand Arms (USA)"
+  serials:
+    - SLUS-00845
+    - SLUS-00858
+- name: "Thunder Storm & Road Blaster"
+  saveName: "Thunder Storm & Road Blaster (Japan)"
+  serials:
+    - SLPS-00094
+    - SLPS-00095
+- name: "Time Gal & Ninja Hayate"
+  saveName: "Time Gal & Ninja Hayate (Japan) (En,Ja)"
+  serials:
+    - SLPS-00383
+    - SLPS-00384
+- name: "ToHeart"
+  localizedName: "トゥハート"
+  saveName: "ToHeart (Japan)"
+  serials:
+    - SLPS-01919
+    - SLPS-01920
+- name: "Tokimeki Memorial 2"
+  localizedName: "ときめきメモリアル２"
+  saveName: "Tokimeki Memorial 2 (Japan)"
+  serials:
+    - SLPM-86355 # Original Disc 1
+    - SLPM-86356 # Original Disc 2
+    - SLPM-86357 # Original Disc 3
+    - SLPM-86358 # Original Disc 4
+    - SLPM-86359 # Original Disc 5
+    - SLPM-86350 # Limited Box Disc 1
+    - SLPM-86351 # Limited Box Disc 2
+    - SLPM-86352 # Limited Box Disc 3
+    - SLPM-86353 # Limited Box Disc 4
+    - SLPM-86354 # Limited Box Disc 5
+    - SCPS-45451 # Undumped Revision Disc 1
+    - SCPS-45452 # Undumped Revision Disc 2
+    - SCPS-45453 # Undumped Revision Disc 3
+    - SCPS-45454 # Undumped Revision Disc 4
+    - SCPS-45455 # Undumped Revision Disc 5
+    - SLPM-80527 # Append Disc 1
+    - SLPM-80544 # Append Disc 2
+    - SLPM-80550 # Append Disc 3
+- name: "Tokimeki Memorial 2 Substories - Dancing Summer Vacation"
+  localizedName: "ときめきメモリアル２　Ｓｕｂｓｔｏｒｉｅｓ　～Ｄａｎｃｉｎｇ　Ｓｕｍｍｅｒ　Ｖａｃａｔｉｏｎ～"
+  saveName: "Tokimeki Memorial 2 Substories - Dancing Summer Vacation (Japan)"
+  serials:
+    - SLPM-86549
+    - SLPM-86550
+- name: "Tokimeki Memorial 2 Substories - Leaping School Festival"
+  localizedName: "ときめきメモリアル２　Ｓｕｂｓｔｏｒｉｅｓ　～Ｌｅａｐｉｎｇ　Ｓｃｈｏｏｌ　Ｆｅｓｔｉｖａｌ～"
+  saveName: "Tokimeki Memorial 2 Substories - Leaping School Festival (Japan)"
+  serials:
+    - SLPM-86775
+    - SLPM-86776
+- name: "Tokimeki Memorial 2 Substories - Memories Ringing On"
+  localizedName: "ときめきメモリアル２　Ｓｕｂｓｔｏｒｉｅｓ　～Ｍｅｍｏｒｉｅｓ　Ｒｉｎｇｉｎｇ　Ｏｎ～"
+  saveName: "Tokimeki Memorial 2 Substories - Memories Ringing On (Japan)"
+  serials:
+    - SLPM-86881
+    - SLPM-86882
+- name: "Tokimeki Memorial Drama Series Vol. 2 - Irodori no Love Song"
+  localizedName: "ときめきメモリアル　ドラマシリーズｖｏｌ．２　彩のラブソング"
+  saveName: "Tokimeki Memorial Drama Series Vol. 2 - Irodori no Love Song (Japan)"
+  serials:
+    - SLPM-86070
+    - SLPM-86071
+- name: "Tokimeki Memorial Drama Series Vol. 3 - Tabidachi no Uta"
+  localizedName: "ときめきメモリアル　ドラマ・シリーズ　Ｖｏｌ．３　～旅立ちの詩～"
+  saveName: "Tokimeki Memorial Drama Series Vol. 3 - Tabidachi no Uta (Japan)"
+  serials:
+    - SLPM-86224
+    - SLPM-86225
+- name: "Tokyo Majin Gakuen - Gehouchou"
+  saveName: "Tokyo Majin Gakuen - Gehouchou (Japan)"
+  serials:
+    - SLPS-03333
+    - SLPS-03334
+    - SLPS-03335
+- name: "Tokyo Majin Gakuen - Gehouchou (Genteiban)"
+  saveName: "Tokyo Majin Gakuen - Gehouchou (Japan) (Genteiban)"
+  serials:
+    - SLPS-03330
+    - SLPS-03331
+    - SLPS-03332
+- name: "Tokyo Majin Gakuen - Kenpuuchou"
+  saveName: "Tokyo Majin Gakuen - Kenpuuchou (Japan)"
+  serials:
+    - SLPS-01432
+    - SLPS-01433
+- name: "Tokyo Shadow"
+  localizedName: "東京シャドウ"
+  saveName: "Tokyo Shadow (Japan)"
+  serials:
+    - SLPS-00285
+    - SLPS-00286
+    - SLPS-00287
+- name: "Tokyo Wakusei Planetokio"
+  localizedName: "東京惑星プラネトキオ"
+  saveName: "Tokyo Wakusei Planetokio (Japan)"
+  serials:
+    - SLPS-02182
+    - SLPS-02183
+    - SLPS-02184
+- name: "Tomb Raider III - Adventures of Lara Croft"
+  localizedName: "トゥームレイダー３"
+  saveName: "Tomb Raider III - Adventures of Lara Croft (Asia)"
+  serials:
+    - SCPS-45385
+    - SCPS-45386
+- name: "Tomb Raider III - Adventures of Lara Croft"
+  localizedName: "トゥームレイダー３"
+  saveName: "Tomb Raider III - Adventures of Lara Croft (Japan)"
+  serials:
+    - SLPM-86196
+    - SLPM-86197
+- name: "Tomoyasu Hotei - Stolen Song"
+  localizedName: "布袋寅泰　～ストールンソング～"
+  saveName: "Tomoyasu Hotei - Stolen Song (Japan)"
+  serials:
+    - SCPS-18009
+    - SCPS-18010
+- name: "Tomoyasu Hotei - Stolen Song (VPick Included)"
+  saveName: "Tomoyasu Hotei - Stolen Song (Japan) (VPick Included)"
+  serials:
+    - SCPS-18007
+    - SCPS-18008
+- name: "True Love Story 2"
+  localizedName: "トゥルーラブストーリー２"
+  saveName: "True Love Story 2 (Japan)"
+  serials:
+    - SLPS-01743
+    - SLPS-01744
+    - SLPS-01745
+- name: "Uchuu no Rendezvous - Rama"
+  localizedName: "宇宙のランデヴー～ＲＡＭＡ～"
+  saveName: "Uchuu no Rendezvous - Rama (Japan)"
+  serials:
+    - SLPS-00826
+    - SLPS-00827
+- name: "Unsolved, The - Hyper Science Adventure"
+  localizedName: "ジ　アンソルブド"
+  saveName: "Unsolved, The - Hyper Science Adventure (Japan)"
+  serials:
+    - SLPS-00846
+    - SLPS-00847
+    - SLPS-00848
+- name: "Valkyrie Profile"
+  localizedName: "ヴァルキリープロファイル"
+  saveName: "Valkyrie Profile (Japan)"
+  serials:
+    - SLPM-86379
+    - SLPM-86380
+- name: "Valkyrie Profile (Deluxe Pack)"
+  localizedName: "ヴァルキリープロファイル"
+  saveName: "Valkyrie Profile (Japan) (Deluxe Pack)"
+  serials:
+    - SLPM-86371
+    - SLPM-86372
+- name: "Valkyrie Profile"
+  saveName: "Valkyrie Profile (USA)"
+  serials:
+    - SLUS-01156
+    - SLUS-01179
+- name: "Voice Idol Collection - Pool Bar Story"
+  localizedName: "ボイス・アイドル・コレクション　～プールバーストーリー～"
+  saveName: "Voice Idol Collection - Pool Bar Story (Japan)"
+  serials:
+    - SLPS-00775
+    - SLPS-00776
+- name: "Voice Paradice Excella"
+  localizedName: "ボイスパラダイス　エクセラ"
+  saveName: "Voice Paradice Excella (Japan)"
+  serials:
+    - SLPS-00590
+    - SLPS-00591
+- name: "Wangan Trial"
+  localizedName: "湾岸トライアル"
+  saveName: "Wangan Trial (Japan)"
+  serials:
+    - SLPS-01213
+    - SLPS-01214
+- name: "Wild Arms - 2nd Ignition"
+  localizedName: "ワイルドアームズ　セカンドイグニッション"
+  saveName: "Wild Arms - 2nd Ignition (Japan)"
+  serials:
+    - SCPS-10089
+    - SCPS-10090
+- name: "Wild Arms - 2nd Ignition (Rev 1)"
+  localizedName: "ワイルドアームズ　セカンドイグニッション"
+  saveName: "Wild Arms - 2nd Ignition (Japan) (Rev 1)"
+  serials:
+    - SCPS-91208
+    - SCPS-91209
+- name: "Wild Arms 2"
+  saveName: "Wild Arms 2 (USA)"
+  serials:
+    - SCUS-94484
+    - SCUS-94498
+- name: "Wing Commander III - Heart of the Tiger"
+  saveName: "Wing Commander III - Heart of the Tiger (Europe)"
+  serials:
+    - SLES-00074
+    - SLES-10074
+    - SLES-20074
+    - SLES-30074
+- name: "Wing Commander III - Heart of the Tiger"
+  saveName: "Wing Commander III - Heart of the Tiger (France)"
+  serials:
+    - SLES-00104
+    - SLES-10104
+    - SLES-20104
+    - SLES-30104
+- name: "Wing Commander III - Heart of the Tiger"
+  saveName: "Wing Commander III - Heart of the Tiger (Germany)"
+  serials:
+    - SLES-00105
+    - SLES-10105
+    - SLES-20105
+    - SLES-30105
+- name: "Wing Commander III - Heart of the Tiger"
+  localizedName: "ウイングコマンダーⅢ Ｈｅａｒｔ ｏｆ ｔｈｅ Ｔｉｇｅｒ"
+  saveName: "Wing Commander III - Heart of the Tiger (Japan)"
+  serials:
+    - SLPS-00477
+    - SLPS-00478
+    - SLPS-00479
+    - SLPS-00480
+- name: "Wing Commander III - Heart of the Tiger"
+  saveName: "Wing Commander III - Heart of the Tiger (USA)"
+  serials:
+    - SLUS-00019
+    - SLUS-00134
+    - SLUS-00135
+    - SLUS-00136
+- name: "Wing Commander IV - The Price of Freedom"
+  saveName: "Wing Commander IV - The Price of Freedom (Europe)"
+  serials:
+    - SLES-00659
+    - SLES-10659
+    - SLES-20659
+    - SLES-30659
+- name: "Wing Commander IV - The Price of Freedom"
+  saveName: "Wing Commander IV - The Price of Freedom (France)"
+  serials:
+    - SLES-00660
+    - SLES-10660
+    - SLES-20660
+    - SLES-30660
+- name: "Wing Commander IV - The Price of Freedom"
+  saveName: "Wing Commander IV - The Price of Freedom (Germany)"
+  serials:
+    - SLES-00661
+    - SLES-10661
+    - SLES-20661
+    - SLES-30661
+- name: "Wing Commander IV - The Price of Freedom"
+  saveName: "Wing Commander IV - The Price of Freedom (USA)"
+  serials:
+    - SLUS-00270
+    - SLUS-00271
+    - SLUS-00272
+    - SLUS-00273
+- name: "The X-Files"
+  saveName: "X-Files, The (Europe)"
+  sortName: "X-Files, The"
+  serials:
+    - SCES-01565
+    - SCES-11565
+    - SCES-21565
+    - SCES-31565
+- name: "The X-Files"
+  saveName: "X-Files, The (France)"
+  sortName: "X-Files, The"
+  serials:
+    - SCES-01566
+    - SCES-11566
+    - SCES-21566
+    - SCES-31566
+- name: "The X-Files"
+  saveName: "X-Files, The (Germany)"
+  sortName: "X-Files, The"
+  serials:
+    - SCES-01567
+    - SCES-11567
+    - SCES-21567
+    - SCES-31567
+- name: "The X-Files"
+  saveName: "X-Files, The (Italy)"
+  sortName: "X-Files, The"
+  serials:
+    - SCES-01568
+    - SCES-11568
+    - SCES-21568
+    - SCES-31568
+- name: "The X-Files"
+  saveName: "X-Files, The (Spain)"
+  sortName: "X-Files, The"
+  serials:
+    - SCES-01569
+    - SCES-11569
+    - SCES-21569
+    - SCES-31569
+- name: "The X-Files"
+  saveName: "X-Files, The (USA)"
+  sortName: "X-Files, The"
+  serials:
+    - SLUS-00915
+    - SLUS-00949
+    - SLUS-00950
+    - SLUS-00951
+- name: "Xenogears"
+  localizedName: "ゼノギアス"
+  saveName: "Xenogears (Japan)"
+  serials:
+    - SLPS-01160
+    - SLPS-01161
+- name: "Xenogears"
+  saveName: "Xenogears (USA)"
+  serials:
+    - SLUS-00664
+    - SLUS-00669
+- name: "Yamagata Digital Museum"
+  saveName: "Yamagata Digital Museum (Japan)"
+  serials:
+    - SLPS-02393
+    - SLPS-02394
+    - SLPS-02395
+    - SLPS-02396
+- name: "Yarudora Series Vol. 1 - Double Cast"
+  localizedName: "ダブルキャスト　～やるドラシリーズＶｏｌ．１～"
+  saveName: "Yarudora Series Vol. 1 - Double Cast (Japan)"
+  serials:
+    - SCPS-10053
+    - SCPS-10054
+- name: "Yarudora Series Vol. 2 - Kisetsu o Dakishimete"
+  localizedName: "季節を抱きしめて　～やるドラシリーズＶｏｌ．２～"
+  saveName: "Yarudora Series Vol. 2 - Kisetsu o Dakishimete (Japan)"
+  serials:
+    - SCPS-10056
+    - SCPS-10057
+- name: "Yarudora Series Vol. 3 - Sampaguita"
+  localizedName: "サンパギータ　～やるドラシリーズＶｏｌ．３～"
+  saveName: "Yarudora Series Vol. 3 - Sampaguita (Japan)"
+  serials:
+    - SCPS-10067
+    - SCPS-10068
+- name: "Yarudora Series Vol. 4 - Yukiwari no Hana"
+  localizedName: "雪割りの花　～やるドラシリーズＶｏｌ．４～"
+  saveName: "Yarudora Series Vol. 4 - Yukiwari no Hana (Japan)"
+  serials:
+    - SCPS-10069
+    - SCPS-10070
+- name: "You Don't Know Jack"
+  saveName: "You Don't Know Jack (USA)"
+  serials:
+    - SLUS-00716
+    - SLUS-00762
+- name: "Zen Nihon GT Senshuken Max Rev."
+  localizedName: "全日本ＧＴ選手権　ＭＡＸ　Ｒｅｖ．"
+  saveName: "Zen Nihon GT Senshuken Max Rev. (Japan)"
+  serials:
+    - SLPS-00715
+    - SLPS-00716
+- name: "Zen Super Robot Taisen Denshi Daihyakka"
+  localizedName: "全スーパーロボット大戦　電視大百科"
+  saveName: "Zen Super Robot Taisen Denshi Daihyakka (Japan)"
+  serials:
+    - SLPS-01657
+    - SLPS-01658
+- name: "Zoku Hatsukoi Monogatari - Shuugaku Ryokou"
+  localizedName: "続初恋物語　～修学旅行～"
+  saveName: "Zoku Hatsukoi Monogatari - Shuugaku Ryokou (Japan)"
+  serials:
+    - SLPS-01326
+    - SLPS-01327
+    - SLPS-01328
+    - SLPS-01329
+- name: "Zoku Mikagura Shoujo Tanteidan - Kanketsuhen"
+  localizedName: "続・御神楽少女探偵団　～完結編～"
+  saveName: "Zoku Mikagura Shoujo Tanteidan - Kanketsuhen (Japan)"
+  serials:
+    - SLPS-02266
+    - SLPS-02267
+    - SLPS-02268
+    - SLPS-02269

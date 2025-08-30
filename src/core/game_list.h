@@ -43,7 +43,6 @@ struct Entry
   std::string path;
   std::string serial;
   std::string title;
-  std::string disc_set_name;
 
   const GameDatabase::Entry* dbentry = nullptr;
 
@@ -60,6 +59,12 @@ struct Entry
   u16 unlocked_achievements = 0;
   u16 unlocked_achievements_hc = 0;
 
+  std::string_view GetDisplayTitle(bool localized) const;
+
+  std::string_view GetSortTitle() const;
+
+  std::string_view GetSaveTitle() const;
+
   std::string_view GetLanguageIcon() const;
 
   TinyString GetLanguageIconName() const;
@@ -72,6 +77,10 @@ struct Entry
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
   ALWAYS_INLINE bool HasCustomLanguage() const { return (custom_language != GameDatabase::Language::MaxCount); }
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
+  ALWAYS_INLINE const GameDatabase::DiscSetEntry* GetDiscSetEntry() const
+  {
+    return dbentry ? dbentry->disc_set : nullptr;
+  }
   ALWAYS_INLINE bool AreAchievementsMastered() const
   {
     return (num_achievements > 0 &&
@@ -98,11 +107,13 @@ const Entry* GetEntryByIndex(u32 index);
 const Entry* GetEntryForPath(std::string_view path);
 const Entry* GetEntryBySerial(std::string_view serial);
 const Entry* GetEntryBySerialAndHash(std::string_view serial, u64 hash);
-std::vector<const Entry*> GetDiscSetMembers(std::string_view disc_set_name, bool sort_by_most_recent = false);
-const Entry* GetFirstDiscSetMember(std::string_view disc_set_name);
+std::vector<const Entry*> GetDiscSetMembers(const GameDatabase::DiscSetEntry* dsentry,
+                                            bool sort_by_most_recent = false);
+const Entry* GetFirstDiscSetMember(const GameDatabase::DiscSetEntry* dsentry);
 u32 GetEntryCount();
 
 bool IsGameListLoaded();
+bool ShouldShowLocalizedTitles();
 
 /// Populates the game list with files in the configured directories.
 /// If invalidate_cache is set, all files will be re-scanned.
@@ -137,8 +148,8 @@ std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_fil
 
 /// Returns a list of (title, entry) for entries matching serials. Titles will match the gamedb title,
 /// except when two files have the same serial, in which case the filename will be used instead.
-std::vector<std::pair<std::string_view, const Entry*>>
-GetMatchingEntriesForSerial(const std::span<const std::string_view> serials);
+std::vector<std::pair<std::string_view, const Entry*>> GetEntriesInDiscSet(const GameDatabase::DiscSetEntry* dsentry,
+                                                                           bool localized_titles);
 
 /// Downloads covers using the specified URL templates. By default, covers are saved by title, but this can be changed
 /// with the use_serial parameter. save_callback optionall takes the entry and the path the new cover is saved to.

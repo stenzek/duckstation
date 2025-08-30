@@ -81,6 +81,7 @@
 		<file>icons/black/svg/information-line.svg</file>
 		<file>icons/black/svg/joystick-line.svg</file>
 		<file>icons/black/svg/keyboard-line.svg</file>
+		<file>icons/black/svg/language.svg</file>
 		<file>icons/black/svg/layout-grid-line.svg</file>
 		<file>icons/black/svg/lightbulb-line.svg</file>
 		<file>icons/black/svg/list-check.svg</file>
@@ -300,6 +301,7 @@
 		<file>icons/white/svg/information-line.svg</file>
 		<file>icons/white/svg/joystick-line.svg</file>
 		<file>icons/white/svg/keyboard-line.svg</file>
+		<file>icons/white/svg/language.svg</file>
 		<file>icons/white/svg/layout-grid-line.svg</file>
 		<file>icons/white/svg/lightbulb-line.svg</file>
 		<file>icons/white/svg/list-check.svg</file>

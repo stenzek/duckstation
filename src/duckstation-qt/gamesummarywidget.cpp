@@ -126,7 +126,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
 
   if (entry)
   {
-    m_ui.title->setText(QtUtils::StringViewToQString(entry->title));
+    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
     m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility));
     m_ui.genre->setText(entry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(entry->genre));
     if (!entry->developer.empty() && !entry->publisher.empty() && entry->developer != entry->publisher)
@@ -207,9 +207,9 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }
 
-  if (entry && !entry->disc_set_serials.empty())
+  if (entry && entry->disc_set)
   {
-    if (serial == entry->disc_set_serials.front())
+    if (entry->IsFirstDiscInSet())
     {
       m_ui.separateDiscSettings->setCheckState(
         m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
@@ -266,17 +266,19 @@ void GameSummaryWidget::populateCustomAttributes()
     return;
   }
 
+  if (entry->has_custom_title)
   {
     QSignalBlocker sb(m_ui.title);
-    m_ui.title->setText(QString::fromStdString(entry->title));
-    m_ui.restoreTitle->setEnabled(entry->has_custom_title);
+    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   }
+  m_ui.restoreTitle->setEnabled(entry->has_custom_title);
 
+  if (entry->has_custom_region)
   {
     QSignalBlocker sb(m_ui.region);
     m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-    m_ui.restoreRegion->setEnabled(entry->has_custom_region);
   }
+  m_ui.restoreRegion->setEnabled(entry->has_custom_region);
 
   {
     QSignalBlocker sb(m_ui.customLanguage);

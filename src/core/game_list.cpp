@@ -17,6 +17,7 @@
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
 
+#include "common/assert.h"
 #include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -51,7 +52,7 @@ namespace {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C48,
-  GAME_LIST_CACHE_VERSION = 37,
+  GAME_LIST_CACHE_VERSION = 38,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -170,6 +171,11 @@ const char* GameList::GetEntryTypeDisplayName(EntryType type)
 bool GameList::IsGameListLoaded()
 {
   return s_game_list_loaded;
+}
+
+bool GameList::ShouldShowLocalizedTitles()
+{
+  return Host::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
 }
 
 bool GameList::IsScannableFilename(std::string_view path)
@@ -319,16 +325,14 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   {
     // pull from database
     entry->serial = dentry->serial;
-    entry->title = dentry->title;
     entry->dbentry = dentry;
 
-    if (!cdi->HasSubImages())
+    if (!cdi->HasSubImages() && dentry->disc_set)
     {
-      for (size_t i = 0; i < dentry->disc_set_serials.size(); i++)
+      for (size_t i = 0; i < dentry->disc_set->serials.size(); i++)
       {
-        if (dentry->disc_set_serials[i] == entry->serial)
+        if (dentry->disc_set->serials[i] == entry->serial)
         {
-          entry->disc_set_name = dentry->disc_set_name;
           entry->disc_set_index = static_cast<s8>(i);
           break;
         }
@@ -382,7 +386,6 @@ void GameList::MakeInvalidEntry(Entry* entry)
   entry->path = {};
   entry->serial = {};
   entry->title = {};
-  entry->disc_set_name = {};
   entry->dbentry = nullptr;
   entry->hash = 0;
   entry->file_size = 0;
@@ -443,8 +446,7 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
 
     if (!reader.ReadU8(&type) || !reader.ReadU8(&region) || !reader.ReadSizePrefixedString(&path) ||
         !reader.ReadSizePrefixedString(&ge.serial) || !reader.ReadSizePrefixedString(&ge.title) ||
-        !reader.ReadSizePrefixedString(&ge.disc_set_name) || !reader.ReadU64(&ge.hash) ||
-        !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
+        !reader.ReadU64(&ge.hash) || !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
         !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadS8(&ge.disc_set_index) ||
         !reader.Read(ge.achievements_hash.data(), ge.achievements_hash.size()) ||
         region >= static_cast<u8>(DiscRegion::Count) || type > static_cast<u8>(EntryType::MaxCount))
@@ -474,7 +476,6 @@ bool GameList::WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer)
   writer.WriteSizePrefixedString(entry->path);
   writer.WriteSizePrefixedString(entry->serial);
   writer.WriteSizePrefixedString(entry->title);
-  writer.WriteSizePrefixedString(entry->disc_set_name);
   writer.WriteU64(entry->hash);
   writer.WriteS64(entry->file_size);
   writer.WriteU64(entry->uncompressed_size);
@@ -518,7 +519,7 @@ bool GameList::LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache)
   return true;
 }
 
-static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string& path)
+static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const std::string_view& path)
 {
   return std::find_if(excluded_paths.begin(), excluded_paths.end(),
                       [&path](const std::string& entry) { return path.starts_with(entry); }) != excluded_paths.end();
@@ -929,13 +930,15 @@ const GameList::Entry* GameList::GetEntryBySerialAndHash(std::string_view serial
   return nullptr;
 }
 
-std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(std::string_view disc_set_name,
+std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(const GameDatabase::DiscSetEntry* dsentry,
                                                                 bool sort_by_most_recent)
 {
+  Assert(dsentry);
+
   std::vector<const Entry*> ret;
   for (const Entry& entry : s_entries)
   {
-    if (!entry.disc_set_member || disc_set_name != entry.disc_set_name)
+    if (!entry.disc_set_member || !entry.dbentry || entry.dbentry->disc_set != dsentry)
       continue;
 
     ret.push_back(&entry);
@@ -959,11 +962,13 @@ std::vector<const GameList::Entry*> GameList::GetDiscSetMembers(std::string_view
   return ret;
 }
 
-const GameList::Entry* GameList::GetFirstDiscSetMember(std::string_view disc_set_name)
+const GameList::Entry* GameList::GetFirstDiscSetMember(const GameDatabase::DiscSetEntry* dsentry)
 {
+  Assert(dsentry);
+
   for (const Entry& entry : s_entries)
   {
-    if (!entry.disc_set_member || disc_set_name != entry.disc_set_name)
+    if (!entry.disc_set_member || !entry.dbentry || entry.dbentry->disc_set != dsentry)
       continue;
 
     // Disc set should not have been created without the first disc being present.
@@ -1084,24 +1089,16 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     const Entry& entry = s_entries[i];
 
     // only first discs can create sets
-    if (entry.type != EntryType::Disc || entry.disc_set_member || entry.disc_set_index != 0)
-      continue;
-
-    // already have a disc set by this name?
-    const std::string& disc_set_name = entry.disc_set_name;
-    if (GetEntryForPath(disc_set_name))
-      continue;
-
-    const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(entry.serial);
-    if (!dbentry)
+    if (entry.type != EntryType::Disc || !entry.dbentry || entry.disc_set_member || entry.disc_set_index != 0)
       continue;
 
     // need at least two discs for a set
+    const GameDatabase::DiscSetEntry* dsentry = entry.dbentry->disc_set;
     bool found_another_disc = false;
     for (const Entry& other_entry : s_entries)
     {
-      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member ||
-          other_entry.disc_set_name != disc_set_name || other_entry.disc_set_index == entry.disc_set_index)
+      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member || !other_entry.dbentry ||
+          other_entry.dbentry->disc_set != dsentry || other_entry.disc_set_index == entry.disc_set_index)
       {
         continue;
       }
@@ -1110,7 +1107,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     }
     if (!found_another_disc)
     {
-      DEV_LOG("Not creating disc set {}, only one disc found", disc_set_name);
+      DEV_LOG("Not creating disc set {}, only one disc found", dsentry->title);
       continue;
     }
 
@@ -1118,9 +1115,8 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     set_entry.dbentry = entry.dbentry;
     set_entry.type = EntryType::DiscSet;
     set_entry.region = entry.region;
-    set_entry.path = disc_set_name;
+    set_entry.path = entry.dbentry->disc_set->title;
     set_entry.serial = entry.serial;
-    set_entry.title = entry.disc_set_name;
     set_entry.hash = entry.hash;
     set_entry.file_size = 0;
     set_entry.uncompressed_size = 0;
@@ -1134,7 +1130,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
 
     // figure out play time for all discs, and sum it
     // we do this via lookups, rather than the other entries, because of duplicates
-    for (const std::string_view& set_serial : dbentry->disc_set_serials)
+    for (const std::string_view& set_serial : dsentry->serials)
     {
       const auto it = played_time_map.find(set_serial);
       if (it == played_time_map.end())
@@ -1152,13 +1148,13 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     u32 num_parts = 0;
     for (Entry& other_entry : s_entries)
     {
-      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member ||
-          other_entry.disc_set_name != disc_set_name)
+      if (other_entry.type != EntryType::Disc || other_entry.disc_set_member || !other_entry.dbentry ||
+          other_entry.dbentry->disc_set != dsentry)
       {
         continue;
       }
 
-      DEV_LOG("Adding {} to disc set {}", Path::GetFileName(other_entry.path), disc_set_name);
+      DEV_LOG("Adding {} to disc set {}", Path::GetFileName(other_entry.path), dsentry->title);
       other_entry.disc_set_member = true;
       set_entry.last_modified_time = std::min(set_entry.last_modified_time, other_entry.last_modified_time);
       set_entry.file_size += other_entry.file_size;
@@ -1166,10 +1162,10 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
       num_parts++;
     }
 
-    DEV_LOG("Created disc set {} from {} entries", disc_set_name, num_parts);
+    DEV_LOG("Created disc set {} from {} entries", dsentry->title, num_parts);
 
     // we have to do the exclusion check at the end, because otherwise the individual discs get added
-    if (!IsPathExcluded(excluded_paths, disc_set_name))
+    if (!IsPathExcluded(excluded_paths, dsentry->title))
       s_entries.push_back(std::move(set_entry));
   }
 }
@@ -1244,15 +1240,40 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   }
 
   // Check for illegal characters, use serial instead.
-  const std::string sanitized_name(Path::SanitizeFileName(entry->title));
+  const std::string_view save_title = entry->GetSaveTitle();
+  const std::string sanitized_name = Path::SanitizeFileName(save_title);
 
   std::string name;
-  if (sanitized_name != entry->title || use_serial)
+  if (sanitized_name != save_title || use_serial)
     name = fmt::format("{}{}", entry->serial, extension);
   else
-    name = fmt::format("{}{}", entry->title, extension);
+    name = fmt::format("{}{}", save_title, extension);
 
   return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(name));
+}
+
+std::string_view GameList::Entry::GetDisplayTitle(bool localized) const
+{
+  // if custom title is present, use that for display too
+  return !title.empty() ? std::string_view(title) :
+                          (IsDiscSet() ? dbentry->disc_set->GetDisplayTitle(localized) :
+                                         (dbentry ? dbentry->GetDisplayTitle(localized) : std::string_view()));
+}
+
+std::string_view GameList::Entry::GetSortTitle() const
+{
+  // if custom title is present, use that for sorting too
+  return !title.empty() ?
+           std::string_view(title) :
+           (IsDiscSet() ? dbentry->disc_set->GetSortTitle() : (dbentry ? dbentry->GetSortTitle() : std::string_view()));
+}
+
+std::string_view GameList::Entry::GetSaveTitle() const
+{
+  // if custom title is present, use that for save folder too
+  return !title.empty() ?
+           std::string_view(title) :
+           (IsDiscSet() ? dbentry->disc_set->GetSaveTitle() : (dbentry ? dbentry->GetSaveTitle() : std::string_view()));
 }
 
 std::string_view GameList::Entry::GetLanguageIcon() const
@@ -1457,7 +1478,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
     }
     else if (entry.IsDiscSet())
     {
-      if (!dbentry || entry.path != dbentry->disc_set_name)
+      if (!dbentry || entry.dbentry->disc_set != dbentry->disc_set)
         continue;
 
       // have to add here, because other discs are already included in the sum
@@ -1496,7 +1517,7 @@ void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
 
   if (entry->IsDiscSet())
   {
-    for (const GameList::Entry* member : GetDiscSetMembers(entry->path))
+    for (const GameList::Entry* member : GetDiscSetMembers(entry->dbentry->disc_set))
     {
       if (!member->serial.empty())
         serials.push_back(member->serial);
@@ -1613,12 +1634,12 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
 }
 
 std::vector<std::pair<std::string_view, const GameList::Entry*>>
-GameList::GetMatchingEntriesForSerial(const std::span<const std::string_view> serials)
+GameList::GetEntriesInDiscSet(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles)
 {
   std::vector<std::pair<std::string_view, const GameList::Entry*>> ret;
-  ret.reserve(serials.size());
+  ret.reserve(dsentry->serials.size());
 
-  for (const std::string_view& serial : serials)
+  for (const std::string_view& serial : dsentry->serials)
   {
     const Entry* matching_entry = nullptr;
     bool has_multiple_entries = false;
@@ -1639,7 +1660,7 @@ GameList::GetMatchingEntriesForSerial(const std::span<const std::string_view> se
 
     if (!has_multiple_entries)
     {
-      ret.emplace_back(matching_entry->title, matching_entry);
+      ret.emplace_back(matching_entry->GetDisplayTitle(localized_titles), matching_entry);
       continue;
     }
 
@@ -1663,20 +1684,27 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     progress = ProgressCallback::NullProgressCallback;
 
   bool has_title = false;
+  bool has_localized_title = false;
+  bool has_save_title = false;
   bool has_file_title = false;
   bool has_serial = false;
   for (const std::string& url_template : url_templates)
   {
     if (!has_title && url_template.find("${title}") != std::string::npos)
       has_title = true;
+    if (!has_title && url_template.find("${localizedtitle}") != std::string::npos)
+      has_localized_title = true;
+    if (!has_title && url_template.find("${savetitle}") != std::string::npos)
+      has_save_title = true;
     if (!has_file_title && url_template.find("${filetitle}") != std::string::npos)
       has_file_title = true;
     if (!has_serial && url_template.find("${serial}") != std::string::npos)
       has_serial = true;
   }
-  if (!has_title && !has_file_title && !has_serial)
+  if (!has_title && !has_save_title && !has_file_title && !has_serial)
   {
-    progress->DisplayError("URL template must contain at least one of ${title}, ${filetitle}, or ${serial}.");
+    progress->DisplayError(TRANSLATE_SV(
+      "GameList", "URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}."));
     return false;
   }
 
@@ -1693,7 +1721,11 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
       {
         std::string url(url_template);
         if (has_title)
-          StringUtil::ReplaceAll(&url, "${title}", Path::URLEncode(entry.title));
+          StringUtil::ReplaceAll(&url, "${title}", Path::URLEncode(entry.GetDisplayTitle(false)));
+        if (has_localized_title)
+          StringUtil::ReplaceAll(&url, "${localizedtitle}", Path::URLEncode(entry.GetDisplayTitle(true)));
+        if (has_save_title)
+          StringUtil::ReplaceAll(&url, "${savetitle}", Path::URLEncode(entry.GetSaveTitle()));
         if (has_file_title)
         {
           std::string display_name(FileSystem::GetDisplayNameFromPath(entry.path));
@@ -1708,7 +1740,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
   }
   if (download_urls.empty())
   {
-    progress->DisplayError("No URLs to download enumerated.");
+    progress->DisplayError(TRANSLATE_SV("GameList", "No URLs to download enumerated."));
     return false;
   }
 
@@ -1716,7 +1748,8 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
   std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error));
   if (!downloader)
   {
-    progress->DisplayError(fmt::format("Failed to create HTTP downloader:\n{}", error.GetDescription()));
+    progress->DisplayError(
+      fmt::format(TRANSLATE_FS("GameList", "Failed to create HTTP downloader:\n{}"), error.GetDescription()));
     return false;
   }
 
@@ -1738,7 +1771,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
         continue;
       }
 
-      progress->SetStatusText(entry->title);
+      progress->SetStatusText(entry->GetDisplayTitle(true));
     }
 
     // we could actually do a few in parallel here...

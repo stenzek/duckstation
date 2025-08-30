@@ -101,6 +101,25 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="showLocalizedTitles">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Show Localized Icons</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="showGameIcons">
        <property name="minimumSize">
         <size>
@@ -195,8 +214,8 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>13</width>
-         <height>13</height>
+         <width>0</width>
+         <height>0</height>
         </size>
        </property>
       </spacer>

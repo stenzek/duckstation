@@ -1417,8 +1417,7 @@ std::string System::GetGameSettingsPath(std::string_view game_serial, bool ignor
 {
   // multi-disc games => always use the first disc
   const GameDatabase::Entry* entry = ignore_disc_set ? nullptr : GameDatabase::GetEntryForSerial(game_serial);
-  const std::string_view serial_for_path =
-    (entry && !entry->disc_set_serials.empty()) ? entry->disc_set_serials.front() : game_serial;
+  const std::string_view serial_for_path = (entry && entry->disc_set) ? entry->disc_set->GetFirstSerial() : game_serial;
   return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", Path::SanitizeFileName(serial_for_path)));
 }
 
@@ -1438,14 +1437,14 @@ std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const Gam
     if (ret->Load(&error))
     {
       // Check for separate disc configuration.
-      if (dbentry && !dbentry->disc_set_serials.empty() && dbentry->disc_set_serials.front() != serial)
+      if (dbentry && !dbentry->IsFirstDiscInSet())
       {
         if (ret->GetBoolValue("Main", "UseSeparateConfigForDiscSet", false))
         {
           if (!quiet)
           {
             INFO_COLOR_LOG(StrongCyan, "Using separate disc game settings serial {} for disc set {}", serial,
-                           dbentry->disc_set_serials.front());
+                           dbentry->disc_set->title);
           }
 
           // Load the disc specific ini.
@@ -3445,8 +3444,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
   {
     ctype = CompressHelpers::CompressType::XZ;
     *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::XZ);
-    clevel =
-      ((method == SaveStateCompressionMode::XZLow) ? 1 : ((method == SaveStateCompressionMode::XZHigh) ? 9 : 5));
+    clevel = ((method == SaveStateCompressionMode::XZLow) ? 1 : ((method == SaveStateCompressionMode::XZHigh) ? 9 : 5));
   }
   else
   {
@@ -3808,27 +3806,24 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       }
       else
       {
+        const std::string_view game_title =
+          s_state.running_game_custom_title ? s_state.running_game_title : s_state.running_game_entry->GetSaveTitle();
         std::string card_path;
 
         // Playlist - use title if different.
-        if (HasMediaSubImages() && s_state.running_game_entry &&
-            s_state.running_game_title != s_state.running_game_entry->title)
+        if (HasMediaSubImages() && s_state.running_game_entry && s_state.running_game_title != game_title)
         {
           card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(s_state.running_game_title), slot);
         }
         // Multi-disc game - use disc set name.
-        else if (s_state.running_game_entry && !s_state.running_game_entry->disc_set_name.empty())
+        else if (s_state.running_game_entry && s_state.running_game_entry->disc_set)
         {
-          card_path =
-            g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(s_state.running_game_entry->disc_set_name), slot);
+          card_path = g_settings.GetGameMemoryCardPath(
+            Path::SanitizeFileName(s_state.running_game_entry->disc_set->GetSaveTitle()), slot);
         }
 
         // But prefer a disc-specific card if one already exists.
-        std::string disc_card_path = g_settings.GetGameMemoryCardPath(
-          Path::SanitizeFileName((s_state.running_game_entry && !s_state.running_game_custom_title) ?
-                                   s_state.running_game_entry->title :
-                                   s_state.running_game_title),
-          slot);
+        std::string disc_card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(game_title), slot);
         if (disc_card_path != card_path)
         {
           if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
@@ -4157,9 +4152,14 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         {
           s_state.running_game_entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
           if (s_state.running_game_entry && s_state.running_game_title.empty())
-            s_state.running_game_title = s_state.running_game_entry->title;
+          {
+            s_state.running_game_title =
+              s_state.running_game_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+          }
           else if (s_state.running_game_title.empty())
+          {
             s_state.running_game_title = s_state.running_game_serial;
+          }
         }
       }
     }
@@ -4176,7 +4176,10 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         {
           s_state.running_game_serial = s_state.running_game_entry->serial;
           if (s_state.running_game_title.empty())
-            s_state.running_game_title = s_state.running_game_entry->title;
+          {
+            s_state.running_game_title =
+              s_state.running_game_entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+          }
         }
         else
         {
@@ -4359,7 +4362,7 @@ bool System::SwitchMediaSubImage(u32 index)
 
 bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
 {
-  if (!IsValid() || !s_state.running_game_entry || s_state.running_game_entry->disc_set_serials.empty())
+  if (!IsValid() || !s_state.running_game_entry || !s_state.running_game_entry->disc_set)
   {
     if (display_osd_message)
     {
@@ -4371,17 +4374,17 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
     return false;
   }
 
-  s32 current_index = static_cast<s32>(s_state.running_game_entry->disc_set_serials.size());
-  for (size_t i = 0; i < s_state.running_game_entry->disc_set_serials.size(); i++)
+  s32 current_index = static_cast<s32>(s_state.running_game_entry->disc_set->serials.size());
+  for (size_t i = 0; i < s_state.running_game_entry->disc_set->serials.size(); i++)
   {
-    if (s_state.running_game_entry->disc_set_serials[i] == s_state.running_game_serial)
+    if (s_state.running_game_entry->disc_set->serials[i] == s_state.running_game_serial)
     {
       current_index = static_cast<s32>(i);
       break;
     }
   }
 
-  if (current_index == static_cast<s32>(s_state.running_game_entry->disc_set_serials.size()))
+  if (current_index == static_cast<s32>(s_state.running_game_entry->disc_set->serials.size()))
   {
     if (display_osd_message)
     {
@@ -4394,7 +4397,7 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   }
 
   current_index += direction;
-  if (current_index < 0 || current_index >= static_cast<s32>(s_state.running_game_entry->disc_set_serials.size()))
+  if (current_index < 0 || current_index >= static_cast<s32>(s_state.running_game_entry->disc_set->serials.size()))
   {
     if (display_osd_message)
     {
@@ -4407,7 +4410,7 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
     return false;
   }
 
-  const std::string_view& next_serial = s_state.running_game_entry->disc_set_serials[current_index];
+  const std::string_view& next_serial = s_state.running_game_entry->disc_set->serials[current_index];
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryBySerial(next_serial);
   if (!entry)
@@ -5775,14 +5778,14 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
       if (entry)
       {
-        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->title), slot);
+        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->GetSaveTitle()), slot);
 
         // Use disc set name if there isn't a per-disc card present.
         const bool global_use_playlist_title = Host::GetBaseBoolSettingValue(section, "UsePlaylistTitle", true);
         const bool use_playlist_title =
           ini ? ini->GetBoolValue(section, "UsePlaylistTitle", global_use_playlist_title) : global_use_playlist_title;
-        if (!entry->disc_set_name.empty() && use_playlist_title && !FileSystem::FileExists(ret.c_str()))
-          ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set_name), slot);
+        if (entry->disc_set && use_playlist_title && !FileSystem::FileExists(ret.c_str()))
+          ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->disc_set->GetSaveTitle()), slot);
       }
       else
       {
@@ -6192,10 +6195,9 @@ void System::UpdateRichPresence(bool update_session_time)
   if (IsValidOrInitializing())
   {
     // Use disc set name if it's not a custom title.
-    if (s_state.running_game_entry && !s_state.running_game_entry->disc_set_name.empty() &&
-        s_state.running_game_title == s_state.running_game_entry->title)
+    if (!s_state.running_game_custom_title && s_state.running_game_entry && s_state.running_game_entry->disc_set)
     {
-      game_details = s_state.running_game_entry->disc_set_name;
+      game_details = s_state.running_game_entry->disc_set->GetDisplayTitle(true);
     }
     else
     {
