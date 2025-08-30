@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 28,
+  GAME_DATABASE_CACHE_VERSION = 29,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -358,6 +358,21 @@ SmallString GameDatabase::Entry::GetLanguagesString() const
     ret.append(TRANSLATE_SV("GameDatabase", "Unknown"));
 
   return ret;
+}
+
+std::string_view GameDatabase::Entry::GetDisplayTitle() const
+{
+  return !localized_title.empty() ? localized_title : title;
+}
+
+std::string_view GameDatabase::Entry::GetSortTitle() const
+{
+  return !sort_title.empty() ? sort_title : title;
+}
+
+std::string_view GameDatabase::Entry::GetSaveTitle() const
+{
+  return !save_title.empty() ? save_title : title;
 }
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
@@ -917,8 +932,14 @@ static inline void AppendEnumSetting(SmallStringBase& str, bool& heading, std::s
 std::string GameDatabase::Entry::GenerateCompatibilityReport() const
 {
   LargeString ret;
-  ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Title"), title);
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Serial"), serial);
+  ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Title"), title);
+  if (!sort_title.empty())
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Sort Title"), title);
+  if (!localized_title.empty())
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Localized Title"), title);
+  if (!save_title.empty())
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Save Title"), title);
 
   if (languages.any())
     ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Languages"), GetLanguagesString());
@@ -1052,8 +1073,9 @@ bool GameDatabase::LoadFromCache()
     u32 num_disc_set_serials;
 
     if (!reader.ReadSizePrefixedString(&entry.serial) || !reader.ReadSizePrefixedString(&entry.title) ||
-        !reader.ReadSizePrefixedString(&entry.genre) || !reader.ReadSizePrefixedString(&entry.developer) ||
-        !reader.ReadSizePrefixedString(&entry.publisher) ||
+        !reader.ReadSizePrefixedString(&entry.sort_title) || !reader.ReadSizePrefixedString(&entry.localized_title) ||
+        !reader.ReadSizePrefixedString(&entry.save_title) || !reader.ReadSizePrefixedString(&entry.genre) ||
+        !reader.ReadSizePrefixedString(&entry.developer) || !reader.ReadSizePrefixedString(&entry.publisher) ||
         !reader.ReadSizePrefixedString(&entry.compatibility_version_tested) ||
         !reader.ReadSizePrefixedString(&entry.compatibility_comments) || !reader.ReadU64(&entry.release_date) ||
         !reader.ReadU8(&entry.min_players) || !reader.ReadU8(&entry.max_players) || !reader.ReadU8(&entry.min_blocks) ||
@@ -1145,6 +1167,9 @@ bool GameDatabase::SaveToCache()
   {
     writer.WriteSizePrefixedString(entry.serial);
     writer.WriteSizePrefixedString(entry.title);
+    writer.WriteSizePrefixedString(entry.sort_title);
+    writer.WriteSizePrefixedString(entry.localized_title);
+    writer.WriteSizePrefixedString(entry.save_title);
     writer.WriteSizePrefixedString(entry.genre);
     writer.WriteSizePrefixedString(entry.developer);
     writer.WriteSizePrefixedString(entry.publisher);
@@ -1282,6 +1307,9 @@ bool GameDatabase::LoadGameDBYaml()
 bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
 {
   GetStringFromObject(value, "name", &entry->title);
+  GetStringFromObject(value, "sortName", &entry->sort_title);
+  GetStringFromObject(value, "localizedName", &entry->localized_title);
+  GetStringFromObject(value, "saveName", &entry->save_title);
 
   entry->supported_controllers = static_cast<u16>(~0u);
 

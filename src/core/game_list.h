@@ -60,6 +60,12 @@ struct Entry
   u16 unlocked_achievements = 0;
   u16 unlocked_achievements_hc = 0;
 
+  std::string_view GetDisplayTitle() const;
+
+  std::string_view GetSortTitle() const;
+
+  std::string_view GetSaveTitle() const;
+
   std::string_view GetLanguageIcon() const;
 
   TinyString GetLanguageIconName() const;

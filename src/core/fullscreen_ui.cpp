@@ -7873,7 +7873,7 @@ void FullscreenUI::PopulateGameListEntryList()
               }
 
               // fallback to title when all else is equal
-              const int res = StringUtil::Strcasecmp(lhs->title.c_str(), rhs->title.c_str());
+              const int res = StringUtil::CompareNoCase(lhs->GetSortTitle(), rhs->GetSortTitle());
               return reverse ? (res > 0) : (res < 0);
             });
 }
@@ -8026,7 +8026,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
           summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
       }
 
-      const ImGuiFullscreen::MenuButtonBounds mbb(entry->title, {}, summary, row_left_margin);
+      const ImGuiFullscreen::MenuButtonBounds mbb(entry->GetDisplayTitle(), {}, summary, row_left_margin);
 
       bool visible, hovered;
       bool pressed = MenuButtonFrame(entry->path, true, mbb.frame_bb, &visible, &hovered);
@@ -8042,8 +8042,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
-                                mbb.title_bb.Max, text_color, entry->title, &mbb.title_size, ImVec2(0.0f, 0.0f),
-                                mbb.title_size.x, &mbb.title_bb);
+                                mbb.title_bb.Max, text_color, entry->GetDisplayTitle(), &mbb.title_size,
+                                ImVec2(0.0f, 0.0f), mbb.title_size.x, &mbb.title_bb);
 
       if (!summary.empty())
       {
@@ -8145,12 +8145,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     if (selected_entry)
     {
       const ImVec4 subtitle_text_color = DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+      const std::string_view title = selected_entry->GetDisplayTitle();
 
       // title
       ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
-      text_width = ImGui::CalcTextSize(selected_entry->title.c_str(), nullptr, false, work_width).x;
+      text_width = ImGui::CalcTextSize(IMSTR_START_END(title), false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-      ImGui::TextWrapped("%s", selected_entry->title.c_str());
+      ImGui::TextWrapped("%.*s", static_cast<int>(title.size()), title.data());
       ImGui::PopFont();
 
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
@@ -8388,8 +8389,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       for (size_t row_entry_index = entry_index; row_entry_index < row_entry_index_end; row_entry_index++)
       {
         const GameList::Entry* row_entry = s_state.game_list_sorted_entries[row_entry_index];
+        const std::string_view row_title = row_entry->GetDisplayTitle();
         const ImVec2 this_title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width,
-                                                                   image_width, IMSTR_START_END(row_entry->title));
+                                                                   image_width, IMSTR_START_END(row_title));
         row_item_height = std::max(row_item_height, this_title_size.y);
       }
 
@@ -8399,8 +8401,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     ImVec2 title_size;
     if (s_state.game_grid_show_titles)
     {
+      const std::string_view title = entry->GetDisplayTitle();
       title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width, image_width,
-                                               IMSTR_START_END(entry->title));
+                                               IMSTR_START_END(title));
     }
 
     const ImGuiID id = window->GetID(entry->path.c_str(), entry->path.c_str() + entry->path.length());
@@ -8448,9 +8451,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       if (draw_title)
       {
         const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-        ImGuiFullscreen::RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight,
-                                                            title_bb.Min, title_bb.Max, text_color, entry->title,
-                                                            LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
+        ImGuiFullscreen::RenderMultiLineShadowedTextClipped(
+          dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, text_color,
+          entry->GetDisplayTitle(), LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
       }
 
       if (pressed)
@@ -8517,7 +8520,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     };
 
     OpenChoiceDialog(
-      entry->title.c_str(), false, std::move(options),
+      entry->GetDisplayTitle(), false, std::move(options),
       [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title,
                                                                bool checked) mutable {
         switch (index)

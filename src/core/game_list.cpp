@@ -319,7 +319,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   {
     // pull from database
     entry->serial = dentry->serial;
-    entry->title = dentry->title;
+    entry->title = dentry->GetDisplayTitle();
     entry->dbentry = dentry;
 
     if (!cdi->HasSubImages())
@@ -1253,6 +1253,24 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
     name = fmt::format("{}{}", entry->title, extension);
 
   return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(name));
+}
+
+std::string_view GameList::Entry::GetDisplayTitle() const
+{
+  // if custom title is present, use that for display too
+  return has_custom_title ? title : (dbentry ? dbentry->GetDisplayTitle() : title);
+}
+
+std::string_view GameList::Entry::GetSortTitle() const
+{
+  // if custom title is present, use that for sorting too
+  return has_custom_title ? title : (dbentry ? dbentry->GetSortTitle() : title);
+}
+
+std::string_view GameList::Entry::GetSaveTitle() const
+{
+  // if custom title is present, use that for save folder too
+  return has_custom_title ? title : (dbentry ? dbentry->GetSaveTitle() : title);
 }
 
 std::string_view GameList::Entry::GetLanguageIcon() const

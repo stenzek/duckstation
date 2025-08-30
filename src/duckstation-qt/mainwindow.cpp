@@ -1565,8 +1565,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           if (!entry)
             return;
 
-          SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->hash,
-                                                   entry->region);
+          SettingsWindow::openGamePropertiesDialog(entry->path, std::string(entry->GetDisplayTitle()), entry->serial,
+                                                   entry->hash, entry->region);
         });
 
         connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, qpath]() {
@@ -1644,8 +1644,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(disc_set_name.toStdString());
           if (first_disc)
           {
-            SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->title, first_disc->serial,
-                                                     first_disc->hash, first_disc->region);
+            SettingsWindow::openGamePropertiesDialog(first_disc->path, std::string(first_disc->GetDisplayTitle()),
+                                                     first_disc->serial, first_disc->hash, first_disc->region);
           }
         });
 
@@ -1743,7 +1743,7 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
   if (QMessageBox::question(
         this, tr("Confirm Reset"),
         tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
-          .arg(QString::fromStdString(entry->title))) != QMessageBox::Yes)
+          .arg(QtUtils::StringViewToQString(entry->GetDisplayTitle()))) != QMessageBox::Yes)
   {
     return;
   }

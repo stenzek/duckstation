@@ -1994,7 +1994,8 @@ bool Cheats::ImportOldChtFile(const std::string_view serial)
   if (!dbentry || dbentry->title.empty())
     return false;
 
-  const std::string old_path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, dbentry->title);
+  const std::string old_path =
+    fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, dbentry->GetSaveTitle());
   if (!FileSystem::FileExists(old_path.c_str()))
     return false;
 

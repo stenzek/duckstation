@@ -126,7 +126,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
 
   if (entry)
   {
-    m_ui.title->setText(QtUtils::StringViewToQString(entry->title));
+    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle()));
     m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility));
     m_ui.genre->setText(entry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(entry->genre));
     if (!entry->developer.empty() && !entry->publisher.empty() && entry->developer != entry->publisher)
@@ -268,7 +268,7 @@ void GameSummaryWidget::populateCustomAttributes()
 
   {
     QSignalBlocker sb(m_ui.title);
-    m_ui.title->setText(QString::fromStdString(entry->title));
+    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle()));
     m_ui.restoreTitle->setEnabled(entry->has_custom_title);
   }
 

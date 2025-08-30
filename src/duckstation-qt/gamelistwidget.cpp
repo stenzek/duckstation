@@ -529,7 +529,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(ge->serial);
 
         case Column_Title:
-          return QtUtils::StringViewToQString(ge->title);
+          return QtUtils::StringViewToQString(ge->GetDisplayTitle());
 
         case Column_FileTitle:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -589,7 +589,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         case Column_Cover:
         {
           if (m_show_titles_for_covers)
-            return QString::fromStdString(ge->title);
+            return QtUtils::StringViewToQString(ge->GetDisplayTitle());
           else
             return {};
         }
@@ -665,7 +665,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(ge->serial);
 
         case Column_Title:
-          return QtUtils::StringViewToQString(ge->title);
+          return QtUtils::StringViewToQString(ge->GetDisplayTitle());
 
         case Column_FileTitle:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
@@ -761,7 +761,7 @@ void GameListModel::refresh()
 
 bool GameListModel::titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const
 {
-  return (StringUtil::Strcasecmp(left->title.c_str(), right->title.c_str()) < 0);
+  return (StringUtil::CompareNoCase(left->GetSortTitle(), right->GetSortTitle()) < 0);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
@@ -1070,9 +1070,9 @@ public:
 
     if (!m_filter_name.empty())
     {
-      if (!((!entry->IsDiscSet() && !entry->path.empty() && StringUtil::ContainsNoCase(entry->path, m_filter_name)) ||
-            (!entry->serial.empty() && StringUtil::ContainsNoCase(entry->serial, m_filter_name)) ||
-            (!entry->title.empty() && StringUtil::ContainsNoCase(entry->title, m_filter_name))))
+      if (!((!entry->IsDiscSet() && StringUtil::ContainsNoCase(entry->path, m_filter_name)) ||
+            StringUtil::ContainsNoCase(entry->serial, m_filter_name) ||
+            StringUtil::ContainsNoCase(entry->GetDisplayTitle(), m_filter_name)))
       {
         return false;
       }
@@ -1445,7 +1445,10 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
     if (entry)
-      SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->hash, entry->region);
+    {
+      SettingsWindow::openGamePropertiesDialog(entry->path, std::string(entry->GetDisplayTitle()), entry->serial,
+                                               entry->hash, entry->region);
+    }
   }
   else
   {
@@ -1678,9 +1681,8 @@ void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, i
   const int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
   const int header_width = fm.size(0, m_model->getColumnDisplayName(column)).width() +
                            style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this) + // sort indicator
-                           margin; // space between text and sort indicator
-  const int width = std::max(header_width, str_width) +
-                    2 * margin; // left and right margins
+                           margin;                                  // space between text and sort indicator
+  const int width = std::max(header_width, str_width) + 2 * margin; // left and right margins
   setFixedColumnWidth(column, width);
 }
 
@@ -1703,11 +1705,12 @@ void GameListListView::setFixedColumnWidths()
   // And this is a monstrosity.
   setFixedColumnWidth(
     fm, GameListModel::Column_LastPlayed,
-    std::max(width_for(qApp->translate("GameList", "Today")),
-             std::max(width_for(qApp->translate("GameList", "Yesterday")),
-                      std::max(width_for(qApp->translate("GameList", "Never")),
-                               width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
-                                                              static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))));
+    std::max(
+      width_for(qApp->translate("GameList", "Today")),
+      std::max(width_for(qApp->translate("GameList", "Yesterday")),
+               std::max(width_for(qApp->translate("GameList", "Never")),
+                        width_for(QtHost::FormatNumber(Host::NumberFormatType::ShortDate,
+                                                       static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))));
 
   // Assume 8 is the widest digit.
   int size_width = width_for(QStringLiteral("%1 MB").arg(8888.88, 0, 'f', 2));

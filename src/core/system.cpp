@@ -3445,8 +3445,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
   {
     ctype = CompressHelpers::CompressType::XZ;
     *header_type = static_cast<u32>(SAVE_STATE_HEADER::CompressionType::XZ);
-    clevel =
-      ((method == SaveStateCompressionMode::XZLow) ? 1 : ((method == SaveStateCompressionMode::XZHigh) ? 9 : 5));
+    clevel = ((method == SaveStateCompressionMode::XZLow) ? 1 : ((method == SaveStateCompressionMode::XZHigh) ? 9 : 5));
   }
   else
   {
@@ -3808,11 +3807,12 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       }
       else
       {
+        const std::string_view game_title =
+          s_state.running_game_custom_title ? s_state.running_game_title : s_state.running_game_entry->GetSaveTitle();
         std::string card_path;
 
         // Playlist - use title if different.
-        if (HasMediaSubImages() && s_state.running_game_entry &&
-            s_state.running_game_title != s_state.running_game_entry->title)
+        if (HasMediaSubImages() && s_state.running_game_entry && s_state.running_game_title != game_title)
         {
           card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(s_state.running_game_title), slot);
         }
@@ -3824,11 +3824,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
         }
 
         // But prefer a disc-specific card if one already exists.
-        std::string disc_card_path = g_settings.GetGameMemoryCardPath(
-          Path::SanitizeFileName((s_state.running_game_entry && !s_state.running_game_custom_title) ?
-                                   s_state.running_game_entry->title :
-                                   s_state.running_game_title),
-          slot);
+        std::string disc_card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(game_title), slot);
         if (disc_card_path != card_path)
         {
           if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
@@ -4157,7 +4153,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         {
           s_state.running_game_entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
           if (s_state.running_game_entry && s_state.running_game_title.empty())
-            s_state.running_game_title = s_state.running_game_entry->title;
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle();
           else if (s_state.running_game_title.empty())
             s_state.running_game_title = s_state.running_game_serial;
         }
@@ -4176,7 +4172,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
         {
           s_state.running_game_serial = s_state.running_game_entry->serial;
           if (s_state.running_game_title.empty())
-            s_state.running_game_title = s_state.running_game_entry->title;
+            s_state.running_game_title = s_state.running_game_entry->GetDisplayTitle();
         }
         else
         {
@@ -5775,7 +5771,7 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
       if (entry)
       {
-        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->title), slot);
+        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(entry->GetSaveTitle()), slot);
 
         // Use disc set name if there isn't a per-disc card present.
         const bool global_use_playlist_title = Host::GetBaseBoolSettingValue(section, "UsePlaylistTitle", true);
@@ -6193,7 +6189,7 @@ void System::UpdateRichPresence(bool update_session_time)
   {
     // Use disc set name if it's not a custom title.
     if (s_state.running_game_entry && !s_state.running_game_entry->disc_set_name.empty() &&
-        s_state.running_game_title == s_state.running_game_entry->title)
+        s_state.running_game_title == s_state.running_game_entry->GetDisplayTitle())
     {
       game_details = s_state.running_game_entry->disc_set_name;
     }
