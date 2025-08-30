@@ -118,7 +118,7 @@ QIcon GetIconForLanguage(std::string_view language_name);
 
 /// Scales a Memory Card Icon (QPixmap or QImage) using Sharp Bilinear scaling
 template<typename T>
-void scaleMemoryCardIconWithSharpBilinear(T& pm, int size)
+inline void scaleMemoryCardIconWithSharpBilinear(T& pm, int size)
 {
   const int base_size = 16;
 

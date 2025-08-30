@@ -60,6 +60,7 @@ static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
 static constexpr int MEMORY_CARD_ICON_SIZE = 16;
+static constexpr int MEMORY_CARD_ICON_PADDING = 12;
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
 {
@@ -399,7 +400,6 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        //fixIconPixmapSize(pm);
         const_cast<GameListModel*>(this)->fixIconPixmapSize(pm);
         return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
@@ -1684,7 +1684,8 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 
   QHeaderView* const vertical_header = verticalHeader();
   vertical_header->hide();
-  vertical_header->setDefaultSectionSize(MEMORY_CARD_ICON_SIZE + 12 + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this));
+  vertical_header->setDefaultSectionSize(MEMORY_CARD_ICON_SIZE + MEMORY_CARD_ICON_PADDING +
+                                         style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this));
 
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
