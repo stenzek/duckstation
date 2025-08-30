@@ -1012,6 +1012,7 @@
     - SLUS-01276
     - SLUS-01277
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (Europe)"
   serials:
     - SLES-02965
@@ -1019,6 +1020,7 @@
     - SLES-22965
     - SLES-32965
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (France)"
   serials:
     - SLES-02966
@@ -1026,6 +1028,7 @@
     - SLES-22966
     - SLES-32966
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (Germany)"
   serials:
     - SLES-02967
@@ -1033,6 +1036,7 @@
     - SLES-22967
     - SLES-32967
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (Italy)"
   serials:
     - SLES-02968
@@ -1041,6 +1045,7 @@
     - SLES-32968
 - name: "Final Fantasy IX"
   localizedName: "ファイナルファンタジーⅨ"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (Japan, Asia)"
   serials:
     - SCPS-45500
@@ -1048,6 +1053,7 @@
     - SCPS-45502
     - SCPS-45503
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (Spain)"
   serials:
     - SLES-02969
@@ -1055,6 +1061,7 @@
     - SLES-22969
     - SLES-32969
 - name: "Final Fantasy IX"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy IX (USA)"
   serials:
     - SLUS-01251
@@ -1062,18 +1069,21 @@
     - SLUS-01296
     - SLUS-01297
 - name: "Final Fantasy VII"
+  sortName: "Final Fantasy 9"
   saveName: "Final Fantasy VII (Europe)"
   serials:
     - SCES-00867
     - SCES-10867
     - SCES-20867
 - name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (France)"
   serials:
     - SCES-00868
     - SCES-10868
     - SCES-20868
 - name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (Germany)"
   serials:
     - SCES-00869
@@ -1081,18 +1091,21 @@
     - SCES-20869
 - name: "Final Fantasy VII"
   localizedName: "ファイナルファンタジーⅦ"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (Japan)"
   serials:
     - SLPS-00700
     - SLPS-00701
     - SLPS-00702
 - name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (Spain)"
   serials:
     - SCES-00900
     - SCES-10900
     - SCES-20900
 - name: "Final Fantasy VII"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (USA)"
   serials:
     - SCUS-94163
@@ -1100,6 +1113,7 @@
     - SCUS-94165
 - name: "Final Fantasy VII International"
   localizedName: "ファイナルファンタジーⅦ　インターナショナル"
+  sortName: "Final Fantasy 7 International"
   saveName: "Final Fantasy VII International (Japan)"
   serials:
     - SLPM-84020
@@ -1107,6 +1121,7 @@
     - SLPM-84022
     - SLPM-87383
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (Europe, Australia)"
   serials:
     - SCES-02080
@@ -1114,6 +1129,7 @@
     - SCES-22080
     - SCES-32080
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (France)"
   serials:
     - SLES-02081
@@ -1121,6 +1137,7 @@
     - SLES-22081
     - SLES-32081
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (Germany)"
   serials:
     - SLES-02082
@@ -1128,6 +1145,7 @@
     - SLES-22082
     - SLES-32082
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (Italy)"
   serials:
     - SLES-02083
@@ -1136,6 +1154,7 @@
     - SLES-32083
 - name: "Final Fantasy VIII"
   localizedName: "ファイナルファンタジーⅧ"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (Japan)"
   serials:
     - SLPM-87384
@@ -1143,6 +1162,7 @@
     - SLPM-87386
     - SLPM-87387
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (Spain)"
   serials:
     - SLES-02084
@@ -1150,6 +1170,7 @@
     - SLES-22084
     - SLES-32084
 - name: "Final Fantasy VIII"
+  sortName: "Final Fantasy 8"
   saveName: "Final Fantasy VIII (USA)"
   serials:
     - SLUS-00892
