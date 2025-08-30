@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 30,
+  GAME_DATABASE_CACHE_VERSION = 31,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -1084,19 +1084,21 @@ bool GameDatabase::LoadFromCache()
   }
 
   BinarySpanReader reader(db_data->cspan());
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
+  const u64 gamedb_ts = static_cast<u64>(Host::GetResourceFileTimestamp(GAMEDB_YAML_FILENAME, false).value_or(0));
+  const u64 discsets_ts = static_cast<u64>(Host::GetResourceFileTimestamp(DISCSETS_YAML_FILENAME, false).value_or(0));
 
   u32 signature, version, num_disc_set_entries, num_entries, num_codes;
-  u64 file_gamedb_ts;
+  u64 file_gamedb_ts, file_discsets_ts;
   if (!reader.ReadU32(&signature) || !reader.ReadU32(&version) || !reader.ReadU64(&file_gamedb_ts) ||
-      !reader.ReadU32(&num_disc_set_entries) || !reader.ReadU32(&num_entries) || !reader.ReadU32(&num_codes) ||
-      signature != GAME_DATABASE_CACHE_SIGNATURE || version != GAME_DATABASE_CACHE_VERSION)
+      !reader.ReadU64(&file_discsets_ts) || !reader.ReadU32(&num_disc_set_entries) || !reader.ReadU32(&num_entries) ||
+      !reader.ReadU32(&num_codes) || signature != GAME_DATABASE_CACHE_SIGNATURE ||
+      version != GAME_DATABASE_CACHE_VERSION)
   {
     DEV_LOG("Cache header is corrupted or version mismatch.");
     return false;
   }
 
-  if (gamedb_ts != file_gamedb_ts)
+  if (gamedb_ts != file_gamedb_ts || discsets_ts != file_discsets_ts)
   {
     DEV_LOG("Cache is out of date, recreating.");
     return false;
@@ -1204,7 +1206,8 @@ bool GameDatabase::LoadFromCache()
 
 bool GameDatabase::SaveToCache()
 {
-  const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
+  const u64 gamedb_ts = static_cast<u64>(Host::GetResourceFileTimestamp(GAMEDB_YAML_FILENAME, false).value_or(0));
+  const u64 discsets_ts = static_cast<u64>(Host::GetResourceFileTimestamp(DISCSETS_YAML_FILENAME, false).value_or(0));
 
   Error error;
   FileSystem::AtomicRenamedFile file = FileSystem::CreateAtomicRenamedFile(GetCacheFile(), &error);
@@ -1217,7 +1220,8 @@ bool GameDatabase::SaveToCache()
   BinaryFileWriter writer(file.get());
   writer.WriteU32(GAME_DATABASE_CACHE_SIGNATURE);
   writer.WriteU32(GAME_DATABASE_CACHE_VERSION);
-  writer.WriteU64(static_cast<u64>(gamedb_ts));
+  writer.WriteU64(gamedb_ts);
+  writer.WriteU64(discsets_ts);
 
   writer.WriteU32(static_cast<u32>(s_state.disc_sets.size()));
   writer.WriteU32(static_cast<u32>(s_state.entries.size()));
