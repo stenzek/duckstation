@@ -196,9 +196,6 @@ struct DiscSetEntry
   std::string_view GetFirstSerial() const;
 };
 
-void EnsureLoaded();
-void Unload();
-
 const Entry* GetEntryForDisc(CDImage* image);
 const Entry* GetEntryForGameDetails(const std::string& id, u64 hash);
 const Entry* GetEntryForSerial(std::string_view serial);

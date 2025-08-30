@@ -25,6 +25,7 @@
 #include <bit>
 #include <iomanip>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <sstream>
 #include <type_traits>
@@ -45,6 +46,8 @@ enum : u32
 
 static const Entry* GetEntryForId(std::string_view code);
 
+static void EnsureLoaded();
+static void Load();
 static bool LoadFromCache();
 static bool SaveToCache();
 
@@ -174,6 +177,8 @@ struct ALIGN_TO_CACHE_LINE State
   PreferUnorderedStringMap<u32> code_lookup;
 
   TrackHashesMap track_hashes_map;
+
+  std::once_flag load_once_flag;
 };
 } // namespace
 
@@ -186,9 +191,12 @@ void GameDatabase::EnsureLoaded()
   if (s_state.loaded)
     return;
 
-  Timer timer;
+  std::call_once(s_state.load_once_flag, &GameDatabase::Load);
+}
 
-  s_state.loaded = true;
+void GameDatabase::Load()
+{
+  Timer timer;
 
   if (!LoadFromCache())
   {
@@ -210,14 +218,9 @@ void GameDatabase::EnsureLoaded()
     }
   }
 
-  INFO_LOG("Database load of {} entries took {:.0f}ms.", s_state.entries.size(), timer.GetTimeMilliseconds());
-}
+  s_state.loaded = true;
 
-void GameDatabase::Unload()
-{
-  s_state.entries = {};
-  s_state.code_lookup = {};
-  s_state.loaded = false;
+  INFO_LOG("Database load of {} entries took {:.0f}ms.", s_state.entries.size(), timer.GetTimeMilliseconds());
 }
 
 const GameDatabase::Entry* GameDatabase::GetEntryForId(std::string_view code)
