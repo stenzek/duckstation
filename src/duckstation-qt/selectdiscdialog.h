@@ -9,12 +9,17 @@
 
 #include <string>
 
+namespace GameDatabase {
+struct DiscSetEntry;
+}
+
 class SelectDiscDialog final : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit SelectDiscDialog(const std::string& disc_set_name, QWidget* parent = nullptr);
+  explicit SelectDiscDialog(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles,
+                            QWidget* parent = nullptr);
   ~SelectDiscDialog();
 
   ALWAYS_INLINE const std::string& getSelectedDiscPath() { return m_selected_path; }
@@ -26,7 +31,7 @@ private Q_SLOTS:
   void onCancelClicked();
 
 private:
-  void populateList(const std::string& disc_set_name);
+  void populateList(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles);
 
   Ui::SelectDiscDialog m_ui;
   std::string m_selected_path;

@@ -96,6 +96,8 @@ enum class Language : u8
   MaxCount,
 };
 
+struct DiscSetEntry;
+
 struct Entry
 {
   static constexpr u16 SUPPORTS_MULTITAP_BIT = (1u << static_cast<u8>(ControllerType::Count));
@@ -110,6 +112,7 @@ struct Entry
   std::string_view publisher;                    ///< Publisher of the game.
   std::string_view compatibility_version_tested; ///< Version of the application the game was tested with.
   std::string_view compatibility_comments;       ///< Comments about the game's compatibility.
+  const DiscSetEntry* disc_set;                  ///< Pointer to the disc set entry, if applicable.
   u64 release_date;                              ///< Number of seconds since Epoch.
   u8 min_players;                                ///< Minimum number of players supported.
   u8 max_players;                                ///< Maximum number of players supported.
@@ -138,9 +141,6 @@ struct Entry
   std::optional<float> gpu_pgxp_depth_threshold;                      ///< GPU PGXP depth threshold override.
   std::optional<bool> gpu_pgxp_preserve_proj_fp; ///< GPU PGXP preserve projection precision override.
 
-  std::string_view disc_set_name;                 ///< Name of the disc set, if applicable.
-  std::vector<std::string_view> disc_set_serials; ///< Serials of all discs in the set.
-
   /// Checks if a trait is present.
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
 
@@ -157,7 +157,7 @@ struct Entry
   SmallString GetLanguagesString() const;
 
   /// Returns the title that should be displayed for this game.
-  std::string_view GetDisplayTitle() const;
+  std::string_view GetDisplayTitle(bool localized) const;
 
   /// Returns the sort name if present, otherwise the title.
   std::string_view GetSortTitle() const;
@@ -165,11 +165,35 @@ struct Entry
   /// Returns the name to use when creating memory cards for this game.
   std::string_view GetSaveTitle() const;
 
+  /// Returns true if we are the first disc in a disc set.
+  bool IsFirstDiscInSet() const;
+
   /// Applies any settings overrides to the given settings object.
   void ApplySettings(Settings& settings, bool display_osd_messages) const;
 
   /// Generates a compatibility report in markdown format.
   std::string GenerateCompatibilityReport() const;
+};
+
+struct DiscSetEntry
+{
+  std::string_view title;                ///< Name of the disc set.
+  std::string_view sort_title;           ///< Sort name of the disc set.
+  std::string_view localized_title;      ///< Localized name of the disc set.
+  std::string_view save_title;           ///< Name used for per-game memory cards.
+  std::vector<std::string_view> serials; ///< Serials of all discs in the set.
+
+  /// Returns the title that should be displayed for this game.
+  std::string_view GetDisplayTitle(bool localized) const;
+
+  /// Returns the sort name if present, otherwise the title.
+  std::string_view GetSortTitle() const;
+
+  /// Returns the name to use when creating memory cards for this game.
+  std::string_view GetSaveTitle() const;
+
+  /// Returns the first serial in the set.
+  std::string_view GetFirstSerial() const;
 };
 
 void EnsureLoaded();

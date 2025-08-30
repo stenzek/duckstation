@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -212,6 +212,7 @@
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
     <addaction name="actionMergeDiscSets"/>
+    <addaction name="actionShowLocalizedTitles"/>
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewZoomIn"/>
@@ -1054,6 +1055,17 @@
    </property>
    <property name="text">
     <string>Refresh Achievement &amp;Progress</string>
+   </property>
+  </action>
+  <action name="actionShowLocalizedTitles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="language"/>
+   </property>
+   <property name="text">
+    <string>Show Localized Titles</string>
    </property>
   </action>
  </widget>

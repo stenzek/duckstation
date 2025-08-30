@@ -33,6 +33,10 @@ jobs:
       shell: bash
       run: yamllint -c extras/yamllint-config.yaml -s -f github data/resources/gamedb.yaml
 
+    - name: Check Disc Sets
+      shell: bash
+      run: yamllint -c extras/yamllint-config.yaml -s -f github data/resources/discsets.yaml
+
     - name: Check DiscDB
       shell: bash
       run: yamllint -c extras/yamllint-config.yaml -s -f github data/resources/discdb.yaml

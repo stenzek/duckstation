@@ -428,9 +428,9 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
       {
         // Is this game part of a disc set? Try codes for the other discs.
         const GameDatabase::Entry* gentry = GameDatabase::GetEntryForSerial(serial);
-        if (gentry && gentry->disc_set_serials.size() > 1)
+        if (gentry && gentry->disc_set)
         {
-          for (const std::string_view& set_serial : gentry->disc_set_serials)
+          for (const std::string_view& set_serial : gentry->disc_set->serials)
           {
             if (set_serial == serial)
               continue;

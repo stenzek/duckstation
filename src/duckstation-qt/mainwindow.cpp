@@ -1104,7 +1104,7 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
     return entry;
 
   // disc set... need to figure out the disc we want
-  SelectDiscDialog dlg(entry->path, this);
+  SelectDiscDialog dlg(entry->GetDiscSetEntry(), m_game_list_widget->getModel()->getShowLocalizedTitles(), this);
 
   lock.unlock();
   const int res = dlg.exec();
@@ -1299,10 +1299,11 @@ void MainWindow::onChangeDiscMenuAboutToShow()
       connect(action, &QAction::triggered, [i]() { g_emu_thread->changeDiscFromPlaylist(i); });
     }
   }
-  else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
+  else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
     auto lock = GameList::GetLock();
-    for (const auto& [title, glentry] : GameList::GetMatchingEntriesForSerial(entry->disc_set_serials))
+    for (const auto& [title, glentry] :
+         GameList::GetEntriesInDiscSet(entry->disc_set, m_game_list_widget->getModel()->getShowLocalizedTitles()))
     {
       QAction* action = m_ui.menuChangeDisc->addAction(QtUtils::StringViewToQString(title));
       QString path = QString::fromStdString(glentry->path);
@@ -1562,11 +1563,14 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         connect(menu.addAction(tr("Properties...")), &QAction::triggered, [qpath]() {
           const auto lock = GameList::GetLock();
           const GameList::Entry* entry = GameList::GetEntryForPath(qpath.toStdString());
-          if (!entry)
+          if (!entry || !g_main_window)
             return;
 
-          SettingsWindow::openGamePropertiesDialog(entry->path, std::string(entry->GetDisplayTitle()), entry->serial,
-                                                   entry->hash, entry->region);
+          SettingsWindow::openGamePropertiesDialog(
+            entry->path,
+            std::string(
+              entry->GetDisplayTitle(g_main_window->m_game_list_widget->getModel()->getShowLocalizedTitles())),
+            entry->serial, entry->hash, entry->region);
         });
 
         connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, qpath]() {
@@ -1638,14 +1642,17 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       }
       else
       {
-        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [disc_set_name = qpath]() {
+        connect(menu.addAction(tr("Properties...")), &QAction::triggered, [dsentry = entry->GetDiscSetEntry()]() {
           // resolve path first
           auto lock = GameList::GetLock();
-          const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(disc_set_name.toStdString());
-          if (first_disc)
+          const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(dsentry);
+          if (first_disc && g_main_window)
           {
-            SettingsWindow::openGamePropertiesDialog(first_disc->path, std::string(first_disc->GetDisplayTitle()),
-                                                     first_disc->serial, first_disc->hash, first_disc->region);
+            SettingsWindow::openGamePropertiesDialog(
+              first_disc->path,
+              std::string(
+                first_disc->GetDisplayTitle(g_main_window->m_game_list_widget->getModel()->getShowLocalizedTitles())),
+              first_disc->serial, first_disc->hash, first_disc->region);
           }
         });
 
@@ -1743,7 +1750,8 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
   if (QMessageBox::question(
         this, tr("Confirm Reset"),
         tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
-          .arg(QtUtils::StringViewToQString(entry->GetDisplayTitle()))) != QMessageBox::Yes)
+          .arg(QtUtils::StringViewToQString(
+            entry->GetDisplayTitle(m_game_list_widget->getModel()->getShowLocalizedTitles())))) != QMessageBox::Yes)
   {
     return;
   }
@@ -1779,7 +1787,8 @@ void MainWindow::setupAdditionalUi()
 
   m_game_list_widget = new GameListWidget(m_ui.mainContainer);
   m_game_list_widget->initialize(m_ui.actionViewGameList, m_ui.actionViewGameGrid, m_ui.actionMergeDiscSets,
-                                 m_ui.actionShowGameIcons, m_ui.actionGridViewShowTitles);
+                                 m_ui.actionShowGameIcons, m_ui.actionGridViewShowTitles,
+                                 m_ui.actionShowLocalizedTitles);
   m_ui.mainContainer->addWidget(m_game_list_widget);
 
   m_status_progress_widget = new QProgressBar(m_ui.statusBar);
@@ -2364,6 +2373,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread,
           &EmuThread::reloadTextureReplacements);
   connect(m_ui.actionMergeDiscSets, &QAction::triggered, m_game_list_widget, &GameListWidget::setMergeDiscSets);
+  connect(m_ui.actionShowLocalizedTitles, &QAction::triggered, m_game_list_widget,
+          &GameListWidget::setShowLocalizedTitles);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewZoomIn, &QAction::triggered, this, &MainWindow::onViewGameGridZoomInActionTriggered);

@@ -87,6 +87,9 @@ public:
 
   bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
 
+  bool getShowLocalizedTitles() const { return m_show_localized_titles; }
+  void setShowLocalizedTitles(bool enabled);
+
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
 
@@ -119,17 +122,17 @@ private:
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
                                   float dpr, const std::string& path, const std::string& serial,
-                                  const std::string& title);
+                                  const std::string& save_title, const QString& display_title);
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
-                                     const std::string& title);
+                                     const QString& title);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
   static void fixIconPixmapSize(QPixmap& pm);
-
   std::optional<GameList::EntryList> m_taken_entries;
 
   float m_cover_scale = 0.0f;
+  bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
 
@@ -220,7 +223,7 @@ public:
   ALWAYS_INLINE GameListGridView* getGridView() const { return m_grid_view; }
 
   void initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
-                  QAction* actionListShowIcons, QAction* actionGridShowTitles);
+                  QAction* actionListShowIcons, QAction* actionGridShowTitles, QAction* actionLocalizedTitles);
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();
@@ -259,6 +262,7 @@ public Q_SLOTS:
   void showGameList();
   void showGameGrid();
   void setMergeDiscSets(bool enabled);
+  void setShowLocalizedTitles(bool enabled);
   void setShowGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
