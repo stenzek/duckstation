@@ -38,8 +38,10 @@
 
 LOG_CHANNEL(GameList);
 
-static constexpr float MIN_SCALE = 0.1f;
-static constexpr float MAX_SCALE = 2.0f;
+static constexpr float MIN_ICON_SCALE = 1.0f;
+static constexpr float MAX_ICON_SCALE = 5.0f;
+static constexpr float MIN_COVER_SCALE = 0.1f;
+static constexpr float MAX_COVER_SCALE = 2.0f;
 
 static const char* SUPPORTED_FORMATS_STRING =
   QT_TRANSLATE_NOOP(GameListWidget, ".cue (Cue Sheets)\n"
@@ -128,6 +130,7 @@ GameListModel::GameListModel(QObject* parent)
   : QAbstractTableModel(parent), m_memcard_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
+  m_icon_scale = Host::GetBaseFloatSettingValue("UI", "GameListIconScale", 1.00f);
   m_show_titles_for_covers = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
   m_show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);
 
@@ -475,7 +478,7 @@ void GameListModel::fixIconPixmapSize(QPixmap& pm)
   const float wanted_dpr = qApp->devicePixelRatio();
   pm.setDevicePixelRatio(wanted_dpr);
 
-  const float scale = static_cast<float>(max_dim) / MEMORY_CARD_ICON_SIZE / wanted_dpr * m_icon_scale;
+  const float scale = static_cast<float>(max_dim) / MEMORY_CARD_ICON_SIZE / wanted_dpr / m_icon_scale;
   const int new_width = static_cast<int>(static_cast<float>(width) / scale);
   const int new_height = static_cast<int>(static_cast<float>(height) / scale);
 
@@ -1315,6 +1318,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   actionListShowIcons->setChecked(m_model->getShowGameIcons());
   actionGridShowTitles->setChecked(m_model->getShowCoverTitles());
   onCoverScaleChanged(m_model->getCoverScale());
+  onIconScaleChanged(m_model->getIconScale());
 
   updateView(grid_view);
   updateToolbar(grid_view);
@@ -1616,7 +1620,7 @@ void GameListWidget::onCoverScaleChanged(float scale)
 void GameListWidget::onIconScaleChanged(float scale)
 {
   QSignalBlocker sb(m_ui.listScale);
-  m_ui.listScale->setValue(static_cast<int>(scale * 100.0f));
+  m_ui.listScale->setValue(static_cast<int>(scale * 4.0f));
 }
 
 void GameListWidget::resizeEvent(QResizeEvent* event)
@@ -1889,29 +1893,35 @@ void GameListListView::onIconScaleChanged(float scale)
 
 void GameListListView::adjustZoom(float delta)
 {
-  const float new_scale = std::clamp(m_model->getIconScale() + delta, MIN_SCALE, MAX_SCALE);
+  const float new_scale = std::clamp(m_model->getIconScale() + delta, MIN_ICON_SCALE, MAX_ICON_SCALE);
   m_model->setIconScale(new_scale);
 }
 
 void GameListListView::zoomIn()
 {
-  adjustZoom(0.05f);
+  adjustZoom(0.25f);
 }
 
 void GameListListView::zoomOut()
 {
-  adjustZoom(-0.05f);
+  adjustZoom(-0.25f);
 }
 
 void GameListListView::setZoomPct(int int_scale)
 {
-  const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_SCALE, MAX_SCALE);
+  const float new_scale = std::clamp(static_cast<float>(int_scale) / 4.0f, MIN_ICON_SCALE, MAX_ICON_SCALE);
   m_model->setIconScale(new_scale);
 }
 
 void GameListListView::updateLayout()
 {
-  m_model->refreshIcons();
+  const float row_count = m_model->rowCount();
+  const float icon_scale = m_model->getIconScale();
+  const int height =
+    icon_scale * MEMORY_CARD_ICON_SIZE + 12 + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
+
+  for (int i = 0; i < row_count; i++)
+    setRowHeight(i, height);
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)
@@ -1971,7 +1981,7 @@ void GameListGridView::onCoverScaleChanged(float scale)
 
 void GameListGridView::adjustZoom(float delta)
 {
-  const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_SCALE, MAX_SCALE);
+  const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_COVER_SCALE, MAX_COVER_SCALE);
   m_model->setCoverScale(new_scale);
 }
 
@@ -1987,7 +1997,7 @@ void GameListGridView::zoomOut()
 
 void GameListGridView::setZoomPct(int int_scale)
 {
-  const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_SCALE, MAX_SCALE);
+  const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_COVER_SCALE, MAX_COVER_SCALE);
   m_model->setCoverScale(new_scale);
 }
 
