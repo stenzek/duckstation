@@ -86,7 +86,6 @@ public:
 
       // doing this on the UI thread is a bit ehh, but whatever, they're small images.
       const MemoryCardImage::IconFrame& frame = fi.icon_frames[real_frame_index];
-
       const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width() - 1) * dpr));
       const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height() - 1) * dpr));
       const int icon_size = std::min(pixmap_width, pixmap_height);
@@ -145,8 +144,6 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_card_b.blocks_free_label = m_ui.cardBUsage;
 
   m_file_icon_width = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this);
-  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
-  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
   m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
   QtUtils::SetColumnWidthsForTableView(m_card_a.table, {m_file_icon_width, -1, 155, 45});
   QtUtils::SetColumnWidthsForTableView(m_card_b.table, {m_file_icon_width, -1, 155, 45});
