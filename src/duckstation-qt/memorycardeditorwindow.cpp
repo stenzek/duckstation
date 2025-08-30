@@ -101,12 +101,15 @@ public:
         // Sharp Bilinear scaling
         // First, scale the icon by the largest integer size using nearest-neighbor...
         const float scaled_icon_size = MEMORY_CARD_ICON_SIZE * dpr;
-        const int integer_icon_size = static_cast<int>(scaled_icon_size / MemoryCardImage::ICON_HEIGHT) * MemoryCardImage::ICON_HEIGHT;
-        src_image = src_image.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+        const int integer_icon_size =
+          static_cast<int>(scaled_icon_size / static_cast<float>(MemoryCardImage::ICON_HEIGHT)) *
+          static_cast<int>(MemoryCardImage::ICON_HEIGHT);
+        src_image =
+          src_image.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 
         // ...then scale any remainder using bilinear interpolation.
         if (scaled_icon_size - integer_icon_size > 0)
-            src_image = src_image.scaled(icon_size, icon_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+          src_image = src_image.scaled(icon_size, icon_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
       }
 
       src_image.setDevicePixelRatio(dpr);
