@@ -3806,8 +3806,9 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       }
       else
       {
-        const std::string_view game_title =
-          s_state.running_game_custom_title ? s_state.running_game_title : s_state.running_game_entry->GetSaveTitle();
+        const std::string_view game_title = (s_state.running_game_custom_title || !s_state.running_game_entry) ?
+                                              s_state.running_game_title :
+                                              s_state.running_game_entry->GetSaveTitle();
         std::string card_path;
 
         // Playlist - use title if different.
