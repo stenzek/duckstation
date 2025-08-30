@@ -86,8 +86,8 @@ public:
 
       // doing this on the UI thread is a bit ehh, but whatever, they're small images.
       const MemoryCardImage::IconFrame& frame = fi.icon_frames[real_frame_index];
-      const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width()) * dpr));
-      const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height()) * dpr));
+      const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width() - 1) * dpr));
+      const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height() - 1) * dpr));
       const int icon_size = std::min(pixmap_width, pixmap_height);
       const int xoffs =
         std::max(static_cast<int>((static_cast<qreal>(pixmap_width - icon_size) * static_cast<qreal>(0.5)) / dpr), 0);
@@ -97,20 +97,7 @@ public:
       QImage src_image = QImage(reinterpret_cast<const uchar*>(frame.pixels), MemoryCardImage::ICON_WIDTH,
                                 MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
       if (src_image.width() != icon_size || src_image.height() != icon_size)
-      {
-        // Sharp Bilinear scaling
-        // First, scale the icon by the largest integer size using nearest-neighbor...
-        const float scaled_icon_size = MEMORY_CARD_ICON_SIZE * dpr;
-        const int integer_icon_size =
-          static_cast<int>(scaled_icon_size / static_cast<float>(MemoryCardImage::ICON_HEIGHT)) *
-          static_cast<int>(MemoryCardImage::ICON_HEIGHT);
-        src_image =
-          src_image.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-
-        // ...then scale any remainder using bilinear interpolation.
-        if (scaled_icon_size - integer_icon_size > 0)
-          src_image = src_image.scaled(icon_size, icon_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-      }
+        QtUtils::scaleMemoryCardIconWithSharpBilinear(src_image, icon_size);
 
       src_image.setDevicePixelRatio(dpr);
 
