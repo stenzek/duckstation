@@ -1726,12 +1726,6 @@ void GameListListView::wheelEvent(QWheelEvent* e)
   QTableView::wheelEvent(e);
 }
 
-void GameListListView::resizeEvent(QResizeEvent* e)
-{
-  QTableView::resizeEvent(e);
-  updateLayout();
-}
-
 void GameListListView::setFixedColumnWidth(int column, int width)
 {
   horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);

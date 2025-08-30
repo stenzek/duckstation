@@ -174,7 +174,6 @@ public Q_SLOTS:
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
-  void resizeEvent(QResizeEvent* e) override;
 
 private:
   void onIconScaleChanged(float scale);
