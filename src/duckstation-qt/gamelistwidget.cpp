@@ -683,7 +683,12 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(ge->serial);
 
         case Column_Title:
-          return QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles));
+        {
+          if (!ge->has_custom_title && ge->dbentry && !ge->dbentry->localized_title.empty())
+            return QString::fromStdString(fmt::format("{}\n{}", ge->dbentry->localized_title, ge->dbentry->title));
+          else
+            return QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles));
+        }
 
         case Column_FileTitle:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
