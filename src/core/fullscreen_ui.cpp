@@ -8577,7 +8577,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     };
 
     const GameDatabase::DiscSetEntry* dsentry = entry->dbentry->disc_set;
-    OpenChoiceDialog(entry->GetDisplayTitle(ShouldShowLocalizedTitles()), false, std::move(options),
+    OpenChoiceDialog(dsentry->GetDisplayTitle(ShouldShowLocalizedTitles()), false, std::move(options),
                      [dsentry](s32 index, const std::string& title, bool checked) mutable {
                        switch (index)
                        {
