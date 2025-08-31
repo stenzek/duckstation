@@ -32,7 +32,7 @@ public:
   static bool createMemoryCard(const QString& path, Error* error);
 
 protected:
-  void closeEvent(QCloseEvent* ev);
+  bool event(QEvent* event) override;
 
 private Q_SLOTS:
   void onCardASelectionChanged();

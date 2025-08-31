@@ -44,9 +44,9 @@ namespace {
 class MemoryCardEditorIconStyleDelegate final : public QStyledItemDelegate
 {
 public:
-  explicit MemoryCardEditorIconStyleDelegate(std::vector<MemoryCardImage::FileInfo>& files, u32& current_frame_index,
-                                             QWidget* parent)
-    : QStyledItemDelegate(parent), m_files(files), m_current_frame_index(current_frame_index)
+  explicit MemoryCardEditorIconStyleDelegate(std::vector<MemoryCardImage::FileInfo>& files, qreal dpr,
+                                             u32& current_frame_index, QWidget* parent)
+    : QStyledItemDelegate(parent), m_files(files), m_dpr(dpr), m_current_frame_index(current_frame_index)
   {
   }
   ~MemoryCardEditorIconStyleDelegate() = default;
@@ -55,7 +55,12 @@ public:
   {
     const QRect& rc = option.rect;
     if (const QPixmap* icon_frame = getIconFrame(static_cast<size_t>(index.row()), m_current_frame_index, rc))
-      painter->drawPixmap(rc, *icon_frame);
+    {
+      // center the icon in the available space
+      const int x = std::max((rc.width() - MEMORY_CARD_ICON_SIZE) / 2, 0);
+      const int y = std::max((rc.height() - MEMORY_CARD_ICON_SIZE) / 2, 0);
+      painter->drawPixmap(x, y, *icon_frame);
+    }
   }
 
   void invalidateIconFrames()
@@ -81,45 +86,40 @@ public:
     QPixmap& pixmap = frames[real_frame_index];
     if (pixmap.isNull())
     {
-      const QWidget* pw = qobject_cast<const QWidget*>(parent());
-      const float dpr = pw ? QtUtils::GetDevicePixelRatioForWidget(pw) : 1.0f;
-
       // doing this on the UI thread is a bit ehh, but whatever, they're small images.
       const MemoryCardImage::IconFrame& frame = fi.icon_frames[real_frame_index];
-      const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width() - 1) * dpr));
-      const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height() - 1) * dpr));
-      const int icon_size = std::min(pixmap_width, pixmap_height);
-      const int xoffs =
-        std::max(static_cast<int>((static_cast<qreal>(pixmap_width - icon_size) * static_cast<qreal>(0.5)) / dpr), 0);
-      const int yoffs =
-        std::max(static_cast<int>((static_cast<qreal>(pixmap_height - icon_size) * static_cast<qreal>(0.5)) / dpr), 0);
+      const int pixmap_size = static_cast<int>(std::ceil(static_cast<qreal>(MEMORY_CARD_ICON_SIZE) * m_dpr));
 
-      QImage src_image = QImage(reinterpret_cast<const uchar*>(frame.pixels), MemoryCardImage::ICON_WIDTH,
-                                MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
-      if (src_image.width() != icon_size || src_image.height() != icon_size)
-        QtUtils::ResizeSharpBilinear(src_image, icon_size, MemoryCardImage::ICON_HEIGHT);
+      QImage image = QImage(reinterpret_cast<const uchar*>(frame.pixels), MemoryCardImage::ICON_WIDTH,
+                            MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
+      image.setDevicePixelRatio(m_dpr);
+      if (image.width() != pixmap_size || image.height() != pixmap_size)
+        QtUtils::ResizeSharpBilinear(image, pixmap_size, MemoryCardImage::ICON_HEIGHT);
 
-      src_image.setDevicePixelRatio(dpr);
-
-      pixmap = QPixmap(pixmap_width, pixmap_height);
-      pixmap.setDevicePixelRatio(dpr);
-      pixmap.fill(Qt::transparent);
-
-      QPainter painter;
-      if (painter.begin(&pixmap))
-      {
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.drawImage(xoffs, yoffs, src_image);
-        painter.end();
-      }
+      pixmap = QPixmap::fromImage(image);
     }
 
     return &pixmap;
   }
 
+  void setDevicePixelRatio(qreal dpr)
+  {
+    if (m_dpr == dpr)
+      return;
+
+    m_dpr = dpr;
+    invalidateIconFrames();
+  }
+
+  static MemoryCardEditorIconStyleDelegate* getForView(const QTableView* view)
+  {
+    return static_cast<MemoryCardEditorIconStyleDelegate*>(view->itemDelegateForColumn(0));
+  }
+
 private:
   std::vector<MemoryCardImage::FileInfo>& m_files;
   mutable std::vector<std::vector<QPixmap>> m_icon_frames;
+  qreal m_dpr = 1.0;
   u32& m_current_frame_index;
 };
 } // namespace
@@ -214,10 +214,21 @@ bool MemoryCardEditorWindow::createMemoryCard(const QString& path, Error* error)
   return MemoryCardImage::SaveToFile(*data.get(), path.toUtf8().constData(), error);
 }
 
-void MemoryCardEditorWindow::closeEvent(QCloseEvent* ev)
+bool MemoryCardEditorWindow::event(QEvent* event)
 {
-  m_card_a.path_cb->setCurrentIndex(0);
-  m_card_b.path_cb->setCurrentIndex(0);
+  if (event->type() == QEvent::Close)
+  {
+    m_card_a.path_cb->setCurrentIndex(0);
+    m_card_b.path_cb->setCurrentIndex(0);
+  }
+  else if (event->type() == QEvent::DevicePixelRatioChange)
+  {
+    const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+    MemoryCardEditorIconStyleDelegate::getForView(m_card_a.table)->setDevicePixelRatio(dpr);
+    MemoryCardEditorIconStyleDelegate::getForView(m_card_b.table)->setDevicePixelRatio(dpr);
+  }
+
+  return QWidget::event(event);
 }
 
 void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
@@ -238,10 +249,11 @@ void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonB
 
 void MemoryCardEditorWindow::connectUi()
 {
+  const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
   m_ui.cardA->setItemDelegateForColumn(
-    0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, m_current_frame_index, m_ui.cardA));
+    0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, dpr, m_current_frame_index, m_ui.cardA));
   m_ui.cardB->setItemDelegateForColumn(
-    0, new MemoryCardEditorIconStyleDelegate(m_card_b.files, m_current_frame_index, m_ui.cardB));
+    0, new MemoryCardEditorIconStyleDelegate(m_card_b.files, dpr, m_current_frame_index, m_ui.cardB));
 
   connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardASelectionChanged);
   connect(m_ui.cardA, &QTableWidget::customContextMenuRequested, this,
@@ -377,8 +389,7 @@ void MemoryCardEditorWindow::updateCardTable(Card* card)
 {
   card->table->setRowCount(0);
   card->files = MemoryCardImage::EnumerateFiles(card->data, true);
-
-  static_cast<MemoryCardEditorIconStyleDelegate*>(card->table->itemDelegateForColumn(0))->invalidateIconFrames();
+  MemoryCardEditorIconStyleDelegate::getForView(card->table)->invalidateIconFrames();
 
   for (const MemoryCardImage::FileInfo& fi : card->files)
   {
