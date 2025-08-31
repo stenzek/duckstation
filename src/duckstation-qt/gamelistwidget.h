@@ -91,7 +91,7 @@ public:
   void setShowLocalizedTitles(bool enabled);
 
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
-  void setShowCoverTitles(bool enabled) { m_show_titles_for_covers = enabled; }
+  void setShowCoverTitles(bool enabled);
 
   float getIconScale() const { return m_icon_scale; }
   void setIconScale(float scale);
