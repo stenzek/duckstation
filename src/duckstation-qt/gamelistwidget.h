@@ -291,8 +291,7 @@ protected:
   void resizeEvent(QResizeEvent* event);
 
 private:
-  void updateView(bool grid_view);
-  void updateToolbar(bool grid_view);
+  void setViewMode(int stack_index);
 
   Ui::GameListWidget m_ui;
 

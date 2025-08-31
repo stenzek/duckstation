@@ -38,6 +38,10 @@
 
 LOG_CHANNEL(GameList);
 
+static constexpr int VIEW_MODE_LIST = 0;
+static constexpr int VIEW_MODE_GRID = 1;
+static constexpr int VIEW_MODE_NO_GAMES = 2;
+
 static constexpr float MIN_ICON_SCALE = 1.0f;
 static constexpr float MAX_ICON_SCALE = 5.0f;
 static constexpr float MIN_COVER_SCALE = 0.1f;
@@ -1348,19 +1352,18 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   onCoverScaleChanged(m_model->getCoverScale());
   onIconScaleChanged(m_model->getIconScale());
 
-  updateView(grid_view);
-  updateToolbar(grid_view);
+  setViewMode(VIEW_MODE_LIST);
   updateBackground(true);
 }
 
 bool GameListWidget::isShowingGameList() const
 {
-  return m_ui.stack->currentIndex() == 0;
+  return (m_ui.stack->currentIndex() == VIEW_MODE_LIST);
 }
 
 bool GameListWidget::isShowingGameGrid() const
 {
-  return m_ui.stack->currentIndex() == 1;
+  return (m_ui.stack->currentIndex() == VIEW_MODE_GRID);
 }
 
 void GameListWidget::refresh(bool invalidate_cache)
@@ -1452,12 +1455,8 @@ void GameListWidget::onRefreshProgress(const QString& status, int current, int t
   }
 
   // switch away from the placeholder while we scan, in case we find anything
-  if (m_ui.stack->currentIndex() == 2)
-  {
-    const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
-    updateView(grid_view);
-    updateToolbar(grid_view);
-  }
+  if (m_ui.stack->currentIndex() == VIEW_MODE_NO_GAMES)
+    setViewMode(Host::GetBaseBoolSettingValue("UI", "GameListGridView", false) ? VIEW_MODE_GRID : VIEW_MODE_LIST);
 
   if (!m_model->hasTakenGameList() || time >= SHORT_REFRESH_TIME)
     emit refreshProgress(status, current, total);
@@ -1475,10 +1474,7 @@ void GameListWidget::onRefreshComplete()
 
   // if we still had no games, switch to the helper widget
   if (m_model->rowCount() == 0)
-  {
-    m_ui.stack->setCurrentIndex(2);
-    setFocusProxy(nullptr);
-  }
+    setViewMode(VIEW_MODE_NO_GAMES);
 }
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -1559,32 +1555,26 @@ void GameListWidget::onSearchReturnPressed()
 
 void GameListWidget::showGameList()
 {
-  if (isShowingGameList())
+  // keep showing the placeholder widget if we have no games
+  if (isShowingGameList() || m_model->rowCount() == 0)
     return;
 
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", false);
   Host::CommitBaseSettingChanges();
 
-  // keep showing the placeholder widget if we have no games
-  if (m_model->rowCount() > 0)
-    updateView(false);
-
-  updateToolbar(false);
+  setViewMode(VIEW_MODE_LIST);
 }
 
 void GameListWidget::showGameGrid()
 {
-  if (isShowingGameGrid())
+  // keep showing the placeholder widget if we have no games
+  if (isShowingGameGrid() || m_model->rowCount() == 0)
     return;
 
   Host::SetBaseBoolSettingValue("UI", "GameListGridView", true);
   Host::CommitBaseSettingChanges();
 
-  // keep showing the placeholder widget if we have no games
-  if (m_model->rowCount() > 0)
-    updateView(true);
-
-  updateToolbar(true);
+  setViewMode(VIEW_MODE_GRID);
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)
@@ -1629,26 +1619,30 @@ void GameListWidget::setShowCoverTitles(bool enabled)
   m_grid_view->updateLayout();
 }
 
-void GameListWidget::updateView(bool grid_view)
+void GameListWidget::setViewMode(int stack_index)
 {
-  if (grid_view)
-  {
-    m_ui.stack->setCurrentIndex(1);
-    setFocusProxy(m_grid_view);
-  }
-  else
-  {
-    m_ui.stack->setCurrentIndex(0);
-    setFocusProxy(m_list_view);
-  }
-}
+  m_ui.stack->setCurrentIndex(stack_index);
+  setFocusProxy(m_ui.stack->currentWidget());
 
-void GameListWidget::updateToolbar(bool grid_view)
-{
-  m_ui.showGameIcons->setVisible(!grid_view);
-  m_ui.showGridTitles->setVisible(grid_view);
-  m_ui.gridScale->setVisible(grid_view);
-  m_ui.listScale->setVisible(!grid_view);
+  // this is pretty yuck, because it's a "manual" toolbar we can't just disable the parent
+  const bool has_games = (stack_index != VIEW_MODE_NO_GAMES);
+  m_ui.viewGameList->setEnabled(has_games);
+  m_ui.viewGameGrid->setEnabled(has_games);
+  m_ui.mergeDiscSets->setEnabled(has_games);
+  m_ui.showLocalizedTitles->setEnabled(has_games);
+  m_ui.showGameIcons->setEnabled(has_games);
+  m_ui.showGridTitles->setEnabled(has_games);
+  m_ui.gridScale->setEnabled(has_games);
+  m_ui.listScale->setEnabled(has_games);
+  m_ui.filterType->setEnabled(has_games);
+  m_ui.filterRegion->setEnabled(has_games);
+  m_ui.searchText->setEnabled(has_games);
+
+  const bool is_grid_view = isShowingGameGrid();
+  m_ui.showGameIcons->setVisible(!is_grid_view);
+  m_ui.showGridTitles->setVisible(is_grid_view);
+  m_ui.gridScale->setVisible(is_grid_view);
+  m_ui.listScale->setVisible(!is_grid_view);
 }
 
 void GameListWidget::onCoverScaleChanged(float scale)
