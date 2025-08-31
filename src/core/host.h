@@ -100,9 +100,6 @@ void SetFullscreen(bool enabled);
 
 namespace Internal {
 
-/// Returns true if the host should use portable mode.
-bool ShouldUsePortableMode();
-
 /// Based on the current configuration, determines what the data directory is.
 std::string ComputeDataDirectory();
 

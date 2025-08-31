@@ -30,30 +30,32 @@
 LOG_CHANNEL(Host);
 
 namespace Host {
+
 static std::mutex s_settings_mutex;
 static LayeredSettingsInterface s_layered_settings_interface;
 } // namespace Host
-
-bool Host::Internal::ShouldUsePortableMode()
-{
-#ifndef __ANDROID__
-  // Check whether portable.ini exists in the program directory.
-  return (FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "portable.txt").c_str()) ||
-          FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "settings.ini").c_str()));
-#else
-  return false;
-#endif
-}
 
 std::string Host::Internal::ComputeDataDirectory()
 {
   std::string ret;
 
-  if (ShouldUsePortableMode())
+#ifndef __ANDROID__
+  // This bullshit here because AppImage mounts in /tmp, so we need to check the "real" appimage location.
+  std::string_view real_approot = EmuFolders::AppRoot;
+
+#ifdef __linux__
+  if (const char* appimage_path = std::getenv("APPIMAGE"))
+    real_approot = Path::GetDirectory(appimage_path);
+#endif
+
+  // Check whether portable.ini exists in the program directory.
+  if (FileSystem::FileExists(Path::Combine(real_approot, "portable.txt").c_str()) ||
+      FileSystem::FileExists(Path::Combine(real_approot, "settings.ini").c_str()))
   {
-    ret = EmuFolders::AppRoot;
+    ret = real_approot;
     return ret;
   }
+#endif // __ANDROID__
 
 #if defined(_WIN32)
   // On Windows, use My Documents\DuckStation.
