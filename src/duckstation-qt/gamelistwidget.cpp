@@ -462,7 +462,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
 
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
-  if (!entry || entry->serial.empty() || !entry->IsDisc() && !entry->IsDiscSet())
+  if (!entry || entry->serial.empty() || (!entry->IsDisc() && !entry->IsDiscSet()))
     return ret;
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
