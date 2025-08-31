@@ -116,6 +116,22 @@ QIcon GetIconForEntryType(GameList::EntryType type);
 QIcon GetIconForCompatibility(GameDatabase::CompatibilityRating rating);
 QIcon GetIconForLanguage(std::string_view language_name);
 
+/// Scales a Memory Card Icon (QPixmap or QImage) using Sharp Bilinear scaling
+template<typename T>
+inline void scaleMemoryCardIconWithSharpBilinear(T& pm, int size)
+{
+  const int base_size = 16;
+
+  // Sharp Bilinear scaling
+  // First, scale the icon by the largest integer size using nearest-neighbor...
+  const int integer_icon_size = static_cast<int>(size / base_size) * base_size;
+  pm = pm.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+
+  // ...then scale any remainder using bilinear interpolation.
+  if (size - integer_icon_size > 0)
+   pm = pm.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+}
+
 /// Returns the pixel ratio/scaling factor for a widget.
 qreal GetDevicePixelRatioForWidget(const QWidget* widget);
 
