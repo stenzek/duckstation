@@ -1,5 +1,6 @@
 set(SRCS
     src/gtest.cc
+    src/gtest-assertion-result.cc
     src/gtest-death-test.cc
     src/gtest-filepath.cc
     src/gtest-matchers.cc

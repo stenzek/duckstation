@@ -3,6 +3,7 @@
   <Import Project="..\msvc\vsprops\Configurations.props" />
 
   <ItemGroup>
+    <ClInclude Include="include\gtest\gtest-assertion-result.h" />
     <ClInclude Include="include\gtest\gtest-death-test.h" />
     <ClInclude Include="include\gtest\gtest-matchers.h" />
     <ClInclude Include="include\gtest\gtest-message.h" />
@@ -17,6 +18,7 @@
     <ClInclude Include="src\gtest-internal-inl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\gtest-assertion-result.cc" />
     <ClCompile Include="src\gtest-death-test.cc" />
     <ClCompile Include="src\gtest-filepath.cc" />
     <ClCompile Include="src\gtest-matchers.cc" />

@@ -13,6 +13,7 @@
     <ClInclude Include="include\gtest\gtest-test-part.h" />
     <ClInclude Include="include\gtest\gtest-typed-test.h" />
     <ClInclude Include="src\gtest-internal-inl.h" />
+    <ClInclude Include="include\gtest\gtest-assertion-result.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\gtest.cc" />
@@ -23,5 +24,6 @@
     <ClCompile Include="src\gtest-printers.cc" />
     <ClCompile Include="src\gtest-test-part.cc" />
     <ClCompile Include="src\gtest-typed-test.cc" />
+    <ClCompile Include="src\gtest-assertion-result.cc" />
   </ItemGroup>
 </Project>
