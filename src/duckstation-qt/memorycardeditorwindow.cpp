@@ -37,7 +37,9 @@ static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CAR
   {ConsoleRegion::NTSC_J, "BI"},
   {ConsoleRegion::PAL, "BE"},
 }};
-static constexpr int MEMORY_CARD_ICON_SIZE = MemoryCardImage::ICON_HEIGHT * 2;
+
+// -1: QRect::width() and QRect::height() are inclusive, needs -1 to compensate. Fixes uneven scaling.
+static constexpr int MEMORY_CARD_ICON_SIZE = MemoryCardImage::ICON_HEIGHT * 2 - 1;
 static constexpr int MEMORY_CARD_ICON_FRAME_DURATION_MS = 200;
 
 namespace {
@@ -86,8 +88,8 @@ public:
 
       // doing this on the UI thread is a bit ehh, but whatever, they're small images.
       const MemoryCardImage::IconFrame& frame = fi.icon_frames[real_frame_index];
-      const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width() - 1) * dpr));
-      const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height() - 1) * dpr));
+      const int pixmap_width = static_cast<int>(std::ceil(static_cast<qreal>(rc.width()) * dpr));
+      const int pixmap_height = static_cast<int>(std::ceil(static_cast<qreal>(rc.height()) * dpr));
       const int icon_size = std::min(pixmap_width, pixmap_height);
       const int xoffs =
         std::max(static_cast<int>((static_cast<qreal>(pixmap_width - icon_size) * static_cast<qreal>(0.5)) / dpr), 0);
