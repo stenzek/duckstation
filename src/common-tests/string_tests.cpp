@@ -71,3 +71,59 @@ TEST(StringUtil, Base64EncodeDecode)
     ASSERT_EQ(dbytes.value(), bytes.value());
   }
 }
+
+TEST(StringUtil, CompareNoCase)
+{
+  // Test identical strings
+  ASSERT_EQ(StringUtil::CompareNoCase("hello", "hello"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("", ""), 0);
+
+  // Test case insensitive comparison - should be equal
+  ASSERT_EQ(StringUtil::CompareNoCase("Hello", "hello"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("HELLO", "hello"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("hello", "HELLO"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("HeLLo", "hEllO"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("WoRlD", "world"), 0);
+
+  // Test different strings - first string lexicographically less than second
+  ASSERT_LT(StringUtil::CompareNoCase("apple", "banana"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("Apple", "BANANA"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("APPLE", "banana"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("aaa", "aab"), 0);
+
+  // Test different strings - first string lexicographically greater than second
+  ASSERT_GT(StringUtil::CompareNoCase("zebra", "apple"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("ZEBRA", "apple"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("zebra", "APPLE"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("aab", "aaa"), 0);
+
+  // Test different length strings - shorter vs longer
+  ASSERT_LT(StringUtil::CompareNoCase("abc", "abcd"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("abcd", "abc"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("ABC", "abcd"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("ABCD", "abc"), 0);
+
+  // Test empty string comparisons
+  ASSERT_GT(StringUtil::CompareNoCase("hello", ""), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("", "hello"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("A", ""), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("", "a"), 0);
+
+  // Test strings with numbers and special characters
+  ASSERT_EQ(StringUtil::CompareNoCase("Test123", "test123"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("Hello_World", "hello_world"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("Test1", "Test2"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("Test2", "Test1"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("File.txt", "FILE.TXT"), 0);
+
+  // Test prefix scenarios
+  ASSERT_LT(StringUtil::CompareNoCase("test", "testing"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("testing", "test"), 0);
+  ASSERT_LT(StringUtil::CompareNoCase("TEST", "testing"), 0);
+
+  // Test single character differences
+  ASSERT_LT(StringUtil::CompareNoCase("a", "b"), 0);
+  ASSERT_GT(StringUtil::CompareNoCase("B", "a"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("A", "a"), 0);
+  ASSERT_EQ(StringUtil::CompareNoCase("z", "Z"), 0);
+}

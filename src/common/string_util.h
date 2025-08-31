@@ -89,7 +89,7 @@ inline int CompareNoCase(std::string_view s1, std::string_view s2)
   const size_t s2_len = s2.length();
   const size_t compare_len = std::min(s1_len, s2_len);
   const int compare_res = (compare_len > 0) ? Strncasecmp(s1.data(), s2.data(), compare_len) : 0;
-  return (compare_len != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
+  return (compare_res != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
 }
 inline bool ContainsNoCase(std::string_view s1, std::string_view s2)
 {
