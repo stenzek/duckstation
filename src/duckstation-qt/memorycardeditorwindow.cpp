@@ -97,7 +97,7 @@ public:
       QImage src_image = QImage(reinterpret_cast<const uchar*>(frame.pixels), MemoryCardImage::ICON_WIDTH,
                                 MemoryCardImage::ICON_HEIGHT, QImage::Format_RGBA8888);
       if (src_image.width() != icon_size || src_image.height() != icon_size)
-        QtUtils::scaleMemoryCardIconWithSharpBilinear(src_image, icon_size);
+        QtUtils::ResizeSharpBilinear(src_image, icon_size, MemoryCardImage::ICON_HEIGHT);
 
       src_image.setDevicePixelRatio(dpr);
 

@@ -502,7 +502,7 @@ void GameListModel::fixIconPixmapSize(QPixmap& pm)
   const int new_height = static_cast<int>(static_cast<float>(height) / scale);
 
   if (width != new_width || height != new_height)
-    QtUtils::scaleMemoryCardIconWithSharpBilinear(pm, std::max(new_width, new_height));
+    QtUtils::ResizeSharpBilinear(pm, std::max(new_width, new_height), MEMORY_CARD_ICON_SIZE);
 }
 
 int GameListModel::getCoverArtSize() const

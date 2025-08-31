@@ -325,6 +325,29 @@ QIcon QtUtils::GetIconForLanguage(std::string_view language_name)
     QString::fromStdString(QtHost::GetResourcePath(GameDatabase::GetLanguageFlagResourceName(language_name), true)));
 }
 
+template<typename T>
+static void ResizeSharpBilinearT(T& pm, int size, int base_size)
+{
+  // Sharp Bilinear scaling
+  // First, scale the icon by the largest integer size using nearest-neighbor...
+  const int integer_icon_size = static_cast<int>(size / base_size) * base_size;
+  pm = pm.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+
+  // ...then scale any remainder using bilinear interpolation.
+  if (size - integer_icon_size > 0)
+    pm = pm.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+}
+
+void QtUtils::ResizeSharpBilinear(QPixmap& pm, int size, int base_size)
+{
+  ResizeSharpBilinearT(pm, size, base_size);
+}
+
+void QtUtils::ResizeSharpBilinear(QImage& pm, int size, int base_size)
+{
+  ResizeSharpBilinearT(pm, size, base_size);
+}
+
 qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
 {
   const QScreen* screen_for_ratio = widget->screen();
