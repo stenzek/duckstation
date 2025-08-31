@@ -477,18 +477,9 @@ QIcon GameListModel::getIconForGame(const QString& path)
     }
   }
 
-  // See above.
   const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
   if (!icon_path.empty())
-  {
-    QPixmap newpm;
-    if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
-    {
-      fixIconPixmapSize(newpm);
-      ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
-      return ret;
-    }
-  }
+    ret = QIcon(QString::fromStdString(icon_path));
 
   return ret;
 }
