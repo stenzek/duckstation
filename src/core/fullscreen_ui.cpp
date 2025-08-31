@@ -7878,7 +7878,11 @@ void FullscreenUI::PopulateGameListEntryList()
 
               // fallback to title when all else is equal
               const int res = StringUtil::CompareNoCase(lhs->GetSortTitle(), rhs->GetSortTitle());
-              return reverse ? (res > 0) : (res < 0);
+              if (res != 0)
+                return reverse ? (res > 0) : (res < 0);
+
+              // fallback to path when all else is equal
+              return reverse ? (lhs->path > rhs->path) : (lhs->path < rhs->path);
             });
 }
 

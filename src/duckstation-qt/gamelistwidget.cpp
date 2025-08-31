@@ -814,7 +814,12 @@ void GameListModel::refresh()
 
 bool GameListModel::titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const
 {
-  return (StringUtil::CompareNoCase(left->GetSortTitle(), right->GetSortTitle()) < 0);
+  const s32 res = StringUtil::CompareNoCase(left->GetSortTitle(), right->GetSortTitle());
+  if (res != 0)
+    return (res < 0);
+
+  // Fallback to path compare if titles are the same.
+  return (left->path < right->path);
 }
 
 bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const
