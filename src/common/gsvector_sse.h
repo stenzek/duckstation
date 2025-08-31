@@ -1538,18 +1538,6 @@ public:
   ALWAYS_INLINE GSVector4i srlv64(const GSVector4i& v) const { return GSVector4i(_mm_srlv_epi64(m, v.m)); }
 #endif
 
-  template<s64 i>
-  ALWAYS_INLINE GSVector4i sra64() const
-  {
-    return GSVector4i(_mm_srai_epi64(m, i));
-  }
-
-  ALWAYS_INLINE GSVector4i sra64(s32 i) const { return GSVector4i(_mm_sra_epi64(m, _mm_cvtsi32_si128(i))); }
-
-#ifdef CPU_ARCH_AVX2
-  ALWAYS_INLINE GSVector4i srav64(const GSVector4i& v) const { return GSVector4i(_mm_srav_epi64(m, v.m)); }
-#endif
-
   ALWAYS_INLINE GSVector4i add8(const GSVector4i& v) const { return GSVector4i(_mm_add_epi8(m, v.m)); }
   ALWAYS_INLINE GSVector4i add16(const GSVector4i& v) const { return GSVector4i(_mm_add_epi16(m, v.m)); }
   ALWAYS_INLINE GSVector4i add32(const GSVector4i& v) const { return GSVector4i(_mm_add_epi32(m, v.m)); }
@@ -2527,6 +2515,19 @@ public:
   ALWAYS_INLINE static GSVector4 broadcast32(const void* f)
   {
     return GSVector4(_mm_broadcastss_ps(_mm_load_ss(static_cast<const float*>(f))));
+  }
+
+#else
+
+  ALWAYS_INLINE GSVector4 broadcast32() const { return GSVector4(_mm_shuffle_ps(m, m, _MM_SHUFFLE(0, 0, 0, 0))); }
+  ALWAYS_INLINE static GSVector4 broadcast32(const GSVector4& v)
+  {
+    return GSVector4(_mm_shuffle_ps(v.m, v.m, _MM_SHUFFLE(0, 0, 0, 0)));
+  }
+  ALWAYS_INLINE static GSVector4 broadcast32(const void* f)
+  {
+    const __m128 v = _mm_load_ss(static_cast<const float*>(f));
+    return GSVector4(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0)));
   }
 
 #endif

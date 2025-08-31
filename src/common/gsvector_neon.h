@@ -1847,26 +1847,6 @@ public:
   }
 
   template<int i>
-  ALWAYS_INLINE GSVector4i sra64() const
-  {
-    return GSVector4i(vreinterpretq_s32_s64(vshrq_n_s64(vreinterpretq_s64_s32(v4s), i)));
-  }
-
-  ALWAYS_INLINE GSVector4i sra64(s32 i) const
-  {
-    return GSVector4i(vreinterpretq_s32_s64(vshlq_s64(vreinterpretq_s64_s32(v4s), vdupq_n_s16(-i))));
-  }
-
-#ifdef CPU_ARCH_ARM64
-  // not on arm32, hopefully we can do without
-  ALWAYS_INLINE GSVector4i srav64(const GSVector4i& v) const
-  {
-    return GSVector4i(
-      vreinterpretq_s32_s64(vshlq_s64(vreinterpretq_s64_s32(v4s), vnegq_s64(vreinterpretq_s64_s32(v.v4s)))));
-  }
-#endif
-
-  template<int i>
   ALWAYS_INLINE GSVector4i srl64() const
   {
     return GSVector4i(vreinterpretq_s32_u64(vshrq_n_u64(vreinterpretq_u64_s32(v4s), i)));

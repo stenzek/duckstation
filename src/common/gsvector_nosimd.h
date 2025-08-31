@@ -1377,16 +1377,6 @@ public:
 
   GSVector4i srlv64(const GSVector4i& v) const { ALL_LANES_64(ret.U64[i] = U64[i] >> v.U64[i]); }
 
-  template<s64 v>
-  GSVector4i sra64() const
-  {
-    ALL_LANES_64(ret.S64[i] = S64[i] >> v);
-  }
-
-  GSVector4i sra64(s32 v) const { ALL_LANES_64(ret.S64[i] = S64[i] >> v); }
-
-  GSVector4i srav64(const GSVector4i& v) const { ALL_LANES_64(ret.S64[i] = S64[i] >> v.S64[i]); }
-
   GSVector4i add8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = S8[i] + v.S8[i]); }
 
   GSVector4i add16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] + v.S16[i]); }
