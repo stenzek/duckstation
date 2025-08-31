@@ -93,8 +93,9 @@ public:
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled);
 
-  float getIconScale() const { return m_icon_scale; }
-  void setIconScale(float scale);
+  int calculateRowHeight(const QWidget* const widget) const;
+  int getIconSize() const { return m_icon_size; }
+  void setIconSize(int size);
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
@@ -109,17 +110,16 @@ public:
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
-  void iconScaleChanged(float scale);
+  void iconSizeChanged(int size);
 
 private:
   void rowsChanged(const QList<int>& rows);
   QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
 
   void loadCommonImages();
-  void loadThemeSpecificImages();
+  void loadSizeDependentPixmaps();
   void setColumnDisplayNames();
   void updateCoverScale();
-  void updateIconScale();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
@@ -137,7 +137,7 @@ private:
   std::optional<GameList::EntryList> m_taken_entries;
 
   float m_cover_scale = 0.0f;
-  float m_icon_scale = 0.0f;
+  int m_icon_size = 0;
   bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
@@ -169,19 +169,12 @@ public:
   ~GameListListView() override;
 
   void setAndSaveColumnHidden(int column, bool hidden);
-  void updateLayout();
-
-public Q_SLOTS:
-  void zoomOut();
-  void zoomIn();
-  void setZoomPct(int int_scale);
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
 private:
-  void onIconScaleChanged(float scale);
-  void adjustZoom(float delta);
+  void adjustIconSize(int delta);
 
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
@@ -267,8 +260,9 @@ private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
 
-  void onCoverScaleChanged(float scale);
-  void onIconScaleChanged(float scale);
+  void onScaleSliderChanged(int value);
+  void onScaleChanged();
+  void onIconSizeChanged(int size);
 
   void onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous);
   void onListViewItemActivated(const QModelIndex& index);
