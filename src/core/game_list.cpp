@@ -103,21 +103,22 @@ static bool GetGameListEntryFromCache(const std::string& path, Entry* entry,
                                       const INISettingsInterface& custom_attributes_ini,
                                       const Achievements::ProgressDatabase& achievements_progress);
 static Entry* GetMutableEntryForPath(std::string_view path);
-static void ScanDirectory(const char* path, bool recursive, bool only_cache,
+static void ScanDirectory(const std::string& path, bool recursive, bool only_cache,
                           const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
                           const INISettingsInterface& custom_attributes_ini,
                           const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer,
                           ProgressCallback* progress);
-static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
-                             const INISettingsInterface& custom_attributes_ini,
+static bool AddFileFromCache(const std::string& path, const std::string& path_in_cache, std::time_t timestamp,
+                             const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                              const Achievements::ProgressDatabase& achievements_progress);
 static void ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
                      const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
-                     const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer);
+                     const Achievements::ProgressDatabase& achievements_progress, const std::string& path_for_cache,
+                     BinaryFileWriter& cache_writer);
 
 static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
 static bool LoadEntriesFromCache(BinaryFileReader& reader);
-static bool WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer);
+static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer);
 static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map);
 
 static std::string GetPlayedTimeFile();
@@ -469,11 +470,11 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
   return true;
 }
 
-bool GameList::WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer)
+bool GameList::WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer)
 {
   writer.WriteU8(static_cast<u8>(entry->type));
   writer.WriteU8(static_cast<u8>(entry->region));
-  writer.WriteSizePrefixedString(entry->path);
+  writer.WriteSizePrefixedString(entry_path);
   writer.WriteSizePrefixedString(entry->serial);
   writer.WriteSizePrefixedString(entry->title);
   writer.WriteU64(entry->hash);
@@ -525,7 +526,7 @@ static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const
                       [&path](const std::string& entry) { return path.starts_with(entry); }) != excluded_paths.end();
 }
 
-void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
+void GameList::ScanDirectory(const std::string& path, bool recursive, bool only_cache,
                              const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map,
                              const INISettingsInterface& custom_attributes_ini,
                              const Achievements::ProgressDatabase& achievements_progress,
@@ -535,10 +536,17 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
 
   progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning directory '{}'..."), path));
 
+  // relative paths require extra care
+  std::string relative_full_path;
+  const bool is_relative_scan = !Path::IsAbsolute(path);
+  if (is_relative_scan)
+    relative_full_path = Path::Combine(EmuFolders::DataRoot, path);
+
   FileSystem::FindResultsArray files;
-  FileSystem::FindFiles(path, "*",
-                        recursive ? (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE) :
-                                    (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES),
+  FileSystem::FindFiles(is_relative_scan ? relative_full_path.c_str() : path.c_str(), "*",
+                        (FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES) |
+                          (recursive ? FILESYSTEM_FIND_RECURSIVE : 0) |
+                          (is_relative_scan ? FILESYSTEM_FIND_RELATIVE_PATHS : 0),
                         &files);
   if (files.empty())
     return;
@@ -555,9 +563,18 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
     if (progress->IsCancelled() || !IsScannableFilename(ffd.FileName) || IsPathExcluded(excluded_paths, ffd.FileName))
       continue;
 
+    // scan dir = games, subdir/file => /root/games/subdir/file, cache path games/subdir/file
+    std::string path_in_cache;
+    if (is_relative_scan)
+    {
+      // need to prefix the relative directory
+      path_in_cache = Path::Combine(path, ffd.FileName);
+      ffd.FileName = Path::Combine(EmuFolders::DataRoot, path_in_cache);
+    }
+
     std::unique_lock lock(s_mutex);
     if (GetEntryForPath(ffd.FileName) ||
-        AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map, custom_attributes_ini,
+        AddFileFromCache(ffd.FileName, path_in_cache, ffd.ModificationTime, played_time_map, custom_attributes_ini,
                          achievements_progress) ||
         only_cache)
     {
@@ -567,7 +584,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
     progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning '{}'..."),
                                                      FileSystem::GetDisplayNameFromPath(ffd.FileName)));
     ScanFile(std::move(ffd.FileName), ffd.ModificationTime, lock, played_time_map, custom_attributes_ini,
-             achievements_progress, cache_writer);
+             achievements_progress, path_in_cache, cache_writer);
     progress->SetProgressValue(files_scanned);
   }
 
@@ -575,12 +592,13 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
   progress->PopState();
 }
 
-bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
-                                const INISettingsInterface& custom_attributes_ini,
+bool GameList::AddFileFromCache(const std::string& path, const std::string& path_in_cache, std::time_t timestamp,
+                                const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                                 const Achievements::ProgressDatabase& achievements_progress)
 {
   Entry entry;
-  if (!GetGameListEntryFromCache(path, &entry, custom_attributes_ini, achievements_progress) ||
+  if (!GetGameListEntryFromCache(path_in_cache.empty() ? path : path_in_cache, &entry, custom_attributes_ini,
+                                 achievements_progress) ||
       entry.last_modified_time != timestamp)
   {
     return false;
@@ -597,13 +615,18 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
     entry.total_played_time = iter->second.total_played_time;
   }
 
+  // for relative paths, we need to restore the full path
+  if (!path_in_cache.empty())
+    entry.path = path;
+
   s_entries.push_back(std::move(entry));
   return true;
 }
 
 void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
                         const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
-                        const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer)
+                        const Achievements::ProgressDatabase& achievements_progress, const std::string& path_for_cache,
+                        BinaryFileWriter& cache_writer)
 {
   // don't block UI while scanning
   lock.unlock();
@@ -620,7 +643,7 @@ void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
       entry.total_played_time = iter->second.total_played_time;
     }
 
-    ApplyCustomAttributes(entry.path, &entry, custom_attributes_ini);
+    ApplyCustomAttributes(path_for_cache.empty() ? path : path_for_cache, &entry, custom_attributes_ini);
 
     if (entry.IsDisc())
       PopulateEntryAchievements(&entry, achievements_progress);
@@ -633,8 +656,12 @@ void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   entry.path = std::move(path);
   entry.last_modified_time = timestamp;
 
-  if (cache_writer.IsOpen() && !WriteEntryToCache(&entry, cache_writer)) [[unlikely]]
+  // write the relative path to the cache if this is a relative scan
+  if (cache_writer.IsOpen() &&
+      !WriteEntryToCache(&entry, path_for_cache.empty() ? entry.path : path_for_cache, cache_writer)) [[unlikely]]
+  {
     WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
+  }
 
   lock.lock();
 
@@ -1021,7 +1048,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   }
 
   const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
-  const std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
+  std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
   std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
   const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
@@ -1050,8 +1077,8 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir.c_str(), false, only_cache, excluded_paths, played_time, custom_attributes_ini,
-                    achievements_progress, cache_writer, progress);
+      ScanDirectory(dir, false, only_cache, excluded_paths, played_time, custom_attributes_ini, achievements_progress,
+                    cache_writer, progress);
       progress->SetProgressValue(++directory_counter);
     }
     for (const std::string& dir : recursive_dirs)
@@ -1059,8 +1086,8 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
       if (progress->IsCancelled())
         break;
 
-      ScanDirectory(dir.c_str(), true, only_cache, excluded_paths, played_time, custom_attributes_ini,
-                    achievements_progress, cache_writer, progress);
+      ScanDirectory(dir, true, only_cache, excluded_paths, played_time, custom_attributes_ini, achievements_progress,
+                    cache_writer, progress);
       progress->SetProgressValue(++directory_counter);
     }
   }
