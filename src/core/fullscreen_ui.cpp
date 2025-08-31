@@ -419,7 +419,6 @@ static void DrawResumeStateSelector();
 //////////////////////////////////////////////////////////////////////////
 // Game List
 //////////////////////////////////////////////////////////////////////////
-static bool ShouldShowLocalizedTitles();
 static void DrawGameListWindow();
 static void DrawGameList(const ImVec2& heading_size);
 static void DrawGameGrid(const ImVec2& heading_size);
@@ -578,6 +577,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   float game_list_current_selection_timeout = 0.0f;
   bool game_list_show_trophy_icons = true;
   bool game_grid_show_titles = true;
+  bool show_localized_titles = true;
 };
 
 } // namespace
@@ -693,6 +693,8 @@ bool FullscreenUI::Initialize()
   // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
   if (s_state.tried_to_initialize || !ImGuiManager::IsInitialized())
     return false;
+
+  s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
 
   ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
@@ -1687,7 +1689,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
   if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
   {
     const auto lock = GameList::GetLock();
-    auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, ShouldShowLocalizedTitles());
+    auto matches = GameList::GetEntriesInDiscSet(entry->disc_set, s_state.show_localized_titles);
     if (matches.size() > 1)
     {
       options.reserve(matches.size() + 1);
@@ -3902,7 +3904,7 @@ void FullscreenUI::DrawSettingsWindow()
       ReturnToPreviousWindow();
 
     NavTitle(s_state.game_settings_entry ?
-               std::string_view(s_state.game_settings_entry->title) :
+               s_state.game_settings_entry->GetDisplayTitle(s_state.show_localized_titles) :
                Host::TranslateToStringView(FSUI_TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count);
@@ -7880,11 +7882,6 @@ void FullscreenUI::PopulateGameListEntryList()
             });
 }
 
-bool FullscreenUI::ShouldShowLocalizedTitles()
-{
-  return Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
-}
-
 void FullscreenUI::DrawGameListWindow()
 {
   auto game_list_lock = GameList::GetLock();
@@ -8000,7 +7997,6 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (!AreAnyDialogsOpen() && WantsToCloseMenu())
     BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
-  const bool localized_titles = ShouldShowLocalizedTitles();
   auto game_list_lock = GameList::GetLock();
   const GameList::Entry* selected_entry = nullptr;
   PopulateGameListEntryList();
@@ -8034,7 +8030,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
           summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
       }
 
-      const ImGuiFullscreen::MenuButtonBounds mbb(entry->GetDisplayTitle(localized_titles), {}, summary,
+      const ImGuiFullscreen::MenuButtonBounds mbb(entry->GetDisplayTitle(s_state.show_localized_titles), {}, summary,
                                                   row_left_margin);
 
       bool visible, hovered;
@@ -8051,8 +8047,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
-                                mbb.title_bb.Max, text_color, entry->GetDisplayTitle(localized_titles), &mbb.title_size,
-                                ImVec2(0.0f, 0.0f), mbb.title_size.x, &mbb.title_bb);
+                                mbb.title_bb.Max, text_color, entry->GetDisplayTitle(s_state.show_localized_titles),
+                                &mbb.title_size, ImVec2(0.0f, 0.0f), mbb.title_size.x, &mbb.title_bb);
 
       if (!summary.empty())
       {
@@ -8154,7 +8150,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     if (selected_entry)
     {
       const ImVec4 subtitle_text_color = DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      const std::string_view title = selected_entry->GetDisplayTitle(localized_titles);
+      const std::string_view title = selected_entry->GetDisplayTitle(s_state.show_localized_titles);
 
       // title
       ImGui::PushFont(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight);
@@ -8357,7 +8353,6 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
   const ImGuiStyle& style = ImGui::GetStyle();
 
-  const bool localized_titles = ShouldShowLocalizedTitles();
   const float title_font_size = UIStyle.MediumFontSize;
   const float title_font_weight = UIStyle.BoldFontWeight;
   const float avail_width = ImGui::GetContentRegionAvail().x;
@@ -8399,7 +8394,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       for (size_t row_entry_index = entry_index; row_entry_index < row_entry_index_end; row_entry_index++)
       {
         const GameList::Entry* row_entry = s_state.game_list_sorted_entries[row_entry_index];
-        const std::string_view row_title = row_entry->GetDisplayTitle(localized_titles);
+        const std::string_view row_title = row_entry->GetDisplayTitle(s_state.show_localized_titles);
         const ImVec2 this_title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width,
                                                                    image_width, IMSTR_START_END(row_title));
         row_item_height = std::max(row_item_height, this_title_size.y);
@@ -8411,7 +8406,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
     ImVec2 title_size;
     if (s_state.game_grid_show_titles)
     {
-      const std::string_view title = entry->GetDisplayTitle(localized_titles);
+      const std::string_view title = entry->GetDisplayTitle(s_state.show_localized_titles);
       title_size = UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, image_width, image_width,
                                                IMSTR_START_END(title));
     }
@@ -8464,7 +8459,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
         ImGuiFullscreen::RenderMultiLineShadowedTextClipped(
           dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, text_color,
-          entry->GetDisplayTitle(localized_titles), LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
+          entry->GetDisplayTitle(s_state.show_localized_titles), LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
       }
 
       if (pressed)
@@ -8531,7 +8526,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     };
 
     OpenChoiceDialog(
-      entry->GetDisplayTitle(ShouldShowLocalizedTitles()), false, std::move(options),
+      entry->GetDisplayTitle(s_state.show_localized_titles), false, std::move(options),
       [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title,
                                                                bool checked) mutable {
         switch (index)
@@ -8579,7 +8574,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     };
 
     const GameDatabase::DiscSetEntry* dsentry = entry->dbentry->disc_set;
-    OpenChoiceDialog(dsentry->GetDisplayTitle(ShouldShowLocalizedTitles()), false, std::move(options),
+    OpenChoiceDialog(dsentry->GetDisplayTitle(s_state.show_localized_titles), false, std::move(options),
                      [dsentry](s32 index, const std::string& title, bool checked) mutable {
                        switch (index)
                        {
@@ -8627,17 +8622,17 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
   }
   options.emplace_back(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
-  OpenChoiceDialog(fmt::format(FSUI_FSTR("Select Disc for {}"), dsentry->GetDisplayTitle(ShouldShowLocalizedTitles())),
-                   false, std::move(options),
-                   [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
-                     if (static_cast<u32>(index) >= paths.size())
-                       return;
+  OpenChoiceDialog(
+    fmt::format(FSUI_FSTR("Select Disc for {}"), dsentry->GetDisplayTitle(s_state.show_localized_titles)), false,
+    std::move(options), [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
+      if (static_cast<u32>(index) >= paths.size())
+        return;
 
-                     auto lock = GameList::GetLock();
-                     const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
-                     if (entry)
-                       HandleGameListActivate(entry);
-                   });
+      auto lock = GameList::GetLock();
+      const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
+      if (entry)
+        HandleGameListActivate(entry);
+    });
 }
 
 void FullscreenUI::DrawGameListSettingsPage()
@@ -8675,9 +8670,12 @@ void FullscreenUI::DrawGameListSettingsPage()
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RECTANGLE_LIST, "Merge Multi-Disc Games"),
                       FSUI_VSTR("Merges multi-disc games into one item in the game list."), "Main",
                       "FullscreenUIMergeDiscSets", true);
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Show Localized Titles"),
-                      FSUI_VSTR("Uses localized (native language) titles in the game list."), "Main",
-                      "FullscreenUIShowLocalizedTitles", true);
+    if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LANGUAGE, "Show Localized Titles"),
+                          FSUI_VSTR("Uses localized (native language) titles in the game list."), "Main",
+                          "FullscreenUIShowLocalizedTitles", true))
+    {
+      s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
+    }
     if (DrawToggleSetting(
           bsi, FSUI_ICONVSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
           FSUI_VSTR("Shows trophy icons in game grid when games have achievements or have been mastered."), "Main",
