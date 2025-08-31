@@ -138,7 +138,7 @@ Q_SIGNALS:
   void systemDestroyed();
   void systemPaused();
   void systemResumed();
-  void systemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void systemGameChanged(const QString& path, const QString& game_serial, const QString& game_title);
   void systemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void gameListRefreshed();
   void gameListRowsChanged(const QList<int>& rows_changed);

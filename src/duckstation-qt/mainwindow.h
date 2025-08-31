@@ -153,7 +153,7 @@ private Q_SLOTS:
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
-  void onSystemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title);
+  void onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title);
   void onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void onMediaCaptureStarted();
   void onMediaCaptureStopped();

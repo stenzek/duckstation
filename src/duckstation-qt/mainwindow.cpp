@@ -641,12 +641,12 @@ void MainWindow::onSystemDestroyed()
     switchToGameListView();
 }
 
-void MainWindow::onSystemGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)
+void MainWindow::onSystemGameChanged(const QString& path, const QString& game_serial, const QString& game_title)
 {
-  s_current_game_path = filename;
+  s_current_game_path = path;
   s_current_game_title = game_title;
   s_current_game_serial = game_serial;
-  s_current_game_icon = m_game_list_widget->getModel()->getIconForGame(filename);
+  s_current_game_icon = m_game_list_widget->getModel()->getIconForGame(path);
 
   updateWindowTitle();
 }

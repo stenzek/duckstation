@@ -457,36 +457,36 @@ QIcon GameListModel::getIconForGame(const QString& path)
 {
   QIcon ret;
 
-  if (m_show_game_icons && !path.isEmpty())
-  {
-    const auto lock = GameList::GetLock();
-    const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
-    if (!entry)
-      return ret;
+  if (!m_show_game_icons || path.isEmpty())
+    return ret;
 
+  const auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
+  if (!entry || entry->serial.empty() || !entry->IsDisc() && !entry->IsDiscSet())
+    return ret;
+
+  // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
+  // Provides a small performance boost when using default size icons.
+  if (m_icon_size == MEMORY_CARD_ICON_SIZE)
+  {
     if (const QPixmap* pm = m_memcard_pixmap_cache.Lookup(entry->serial))
     {
       // If we already have the icon cached, return it.
       ret = QIcon(*pm);
       return ret;
     }
-    else
+  }
+
+  // See above.
+  const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+  if (!icon_path.empty())
+  {
+    QPixmap newpm;
+    if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
     {
-      // See above.
-      if (!entry->serial.empty() && (entry->IsDisc() || entry->IsDiscSet()))
-      {
-        const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
-        if (!icon_path.empty())
-        {
-          QPixmap newpm;
-          if (!icon_path.empty() && newpm.load(QString::fromStdString(icon_path)))
-          {
-            fixIconPixmapSize(newpm);
-            ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
-            return ret;
-          }
-        }
-      }
+      fixIconPixmapSize(newpm);
+      ret = QIcon(*m_memcard_pixmap_cache.Insert(entry->serial, std::move(newpm)));
+      return ret;
     }
   }
 
