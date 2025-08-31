@@ -31,7 +31,7 @@ static std::string DecodeUTF16StringImpl(const void* bytes, size_t size);
 
 bool StringUtil::WildcardMatch(const char* subject, const char* mask, bool case_sensitive /*= true*/)
 {
-  if (case_sensitive)
+  if (!case_sensitive)
   {
     const char* cp = nullptr;
     const char* mp = nullptr;
@@ -417,7 +417,7 @@ std::string StringUtil::ReplaceAll(const std::string_view subject, const std::st
 
 void StringUtil::ReplaceAll(std::string* subject, const std::string_view search, const std::string_view replacement)
 {
-  if (!subject->empty())
+  if (!subject->empty() && !search.empty())
   {
     std::string::size_type start_pos = 0;
     while ((start_pos = subject->find(search, start_pos)) != std::string::npos)

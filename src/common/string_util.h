@@ -141,7 +141,7 @@ inline std::optional<T> FromCharsWithOptionalBase(std::string_view str, std::str
   else if (str.starts_with("0b"))
   {
     base = 2;
-    str = str.substr(1);
+    str = str.substr(2);
   }
   else if (str.starts_with("0") && str.length() > 1)
   {
