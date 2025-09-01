@@ -132,8 +132,9 @@ const char* GameListModel::getColumnName(Column col)
   return s_column_names[static_cast<int>(col)];
 }
 
-GameListModel::GameListModel(QObject* parent)
-  : QAbstractTableModel(parent), m_memcard_pixmap_cache(MIN_COVER_CACHE_SIZE)
+GameListModel::GameListModel(GameListWidget* parent)
+  : QAbstractTableModel(parent), m_device_pixel_ratio(QtUtils::GetDevicePixelRatioForWidget(parent)),
+    m_memcard_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
   m_icon_size = Host::GetBaseFloatSettingValue("UI", "GameListIconSize", MIN_ICON_SIZE);
@@ -222,18 +223,16 @@ void GameListModel::updateCoverScale()
 {
   m_cover_pixmap_cache.Clear();
 
-  const qreal dpr = qApp->devicePixelRatio();
-
   QImage loading_image;
   if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
-    loading_image.setDevicePixelRatio(dpr);
+    loading_image.setDevicePixelRatio(m_device_pixel_ratio);
     resizeAndPadImage(&loading_image, getCoverArtSize(), getCoverArtSize(), false);
   }
   else
   {
     loading_image = QImage(getCoverArtSize(), getCoverArtSize(), QImage::Format_RGB32);
-    loading_image.setDevicePixelRatio(dpr);
+    loading_image.setDevicePixelRatio(m_device_pixel_ratio);
     loading_image.fill(QColor(0, 0, 0, 0));
   }
   m_loading_pixmap = QPixmap::fromImage(loading_image);
@@ -241,13 +240,13 @@ void GameListModel::updateCoverScale()
   m_placeholder_image = QImage();
   if (m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
-    m_placeholder_image.setDevicePixelRatio(dpr);
+    m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
     resizeAndPadImage(&m_placeholder_image, getCoverArtSize(), getCoverArtSize(), false);
   }
   else
   {
     m_placeholder_image = QImage(getCoverArtSize(), getCoverArtSize(), QImage::Format_RGB32);
-    m_placeholder_image.setDevicePixelRatio(dpr);
+    m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
     m_placeholder_image.fill(QColor(0, 0, 0, 0));
   }
 
@@ -270,6 +269,20 @@ void GameListModel::updateCacheSize(int num_rows, int num_columns)
   m_cover_pixmap_cache.SetMaxCapacity(static_cast<int>(std::max(num_items, MIN_COVER_CACHE_SIZE)));
 }
 
+void GameListModel::setDevicePixelRatio(qreal dpr)
+{
+  if (m_device_pixel_ratio == dpr)
+    return;
+
+  WARNING_LOG("NEW DPR {}", dpr);
+  m_device_pixel_ratio = dpr;
+  m_placeholder_image.setDevicePixelRatio(dpr);
+  m_loading_pixmap.setDevicePixelRatio(dpr);
+  loadCommonImages();
+  refreshCovers();
+  refreshIcons();
+}
+
 void GameListModel::reloadThemeSpecificImages()
 {
   loadSizeDependentPixmaps();
@@ -281,8 +294,7 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
   QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
                              display_title = QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles)),
                              placeholder_image = m_placeholder_image, list = this, width = getCoverArtSize(),
-                             height = getCoverArtSize(), scale = m_cover_scale,
-                             dpr = qApp->devicePixelRatio()]() mutable {
+                             height = getCoverArtSize(), scale = m_cover_scale, dpr = m_device_pixel_ratio]() mutable {
     QImage image;
     loadOrGenerateCover(image, placeholder_image, width, height, scale, dpr, path, serial, save_title, display_title);
     return [path = std::move(path), image = std::move(image), list, scale]() { list->coverLoaded(path, image, scale); };
@@ -425,7 +437,19 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        const_cast<GameListModel*>(this)->fixIconPixmapSize(pm);
+        const int pm_width = pm.width();
+        const int pm_height = pm.height();
+
+        const qreal scale =
+          (static_cast<qreal>(m_icon_size) / static_cast<qreal>(MEMORY_CARD_ICON_SIZE)) * m_device_pixel_ratio;
+        const int scaled_pm_width = static_cast<int>(static_cast<qreal>(pm_width) * scale);
+        const int scaled_pm_height = static_cast<int>(static_cast<qreal>(pm_height) * scale);
+
+        if (pm_width != scaled_pm_width || pm_height != scaled_pm_height)
+          QtUtils::ResizeSharpBilinear(pm, std::max(scaled_pm_width, scaled_pm_height), MEMORY_CARD_ICON_SIZE);
+
+        pm.setDevicePixelRatio(m_device_pixel_ratio);
+
         return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
@@ -482,22 +506,6 @@ QIcon GameListModel::getIconForGame(const QString& path)
     ret = QIcon(QString::fromStdString(icon_path));
 
   return ret;
-}
-
-void GameListModel::fixIconPixmapSize(QPixmap& pm)
-{
-  const float dpr = qApp->devicePixelRatio();
-  const int width = static_cast<int>(static_cast<qreal>(pm.width()));
-  const int height = static_cast<int>(static_cast<qreal>(pm.height()));
-
-  const qreal scale = (static_cast<float>(m_icon_size) / static_cast<float>(MEMORY_CARD_ICON_SIZE)) * dpr;
-  const int new_width = static_cast<int>(static_cast<float>(width) * scale);
-  const int new_height = static_cast<int>(static_cast<float>(height) * scale);
-
-  if (width != new_width || height != new_height)
-    QtUtils::ResizeSharpBilinear(pm, std::max(new_width, new_height), MEMORY_CARD_ICON_SIZE);
-
-  pm.setDevicePixelRatio(dpr);
 }
 
 int GameListModel::getCoverArtSize() const
@@ -1009,9 +1017,12 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 void GameListModel::loadSizeDependentPixmaps()
 {
   // nasty magic number here, +8 gets us a height of 24 at 16 icon size, which looks good.
-  const int icon_height = m_icon_size + 8;
+  const QSize icon_size = QSize(m_icon_size + 8, m_icon_size + 8);
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
-    m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(icon_height);
+  {
+    m_type_pixmaps[i] =
+      QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(icon_size, m_device_pixel_ratio);
+  }
 }
 
 void GameListModel::loadCommonImages()
@@ -1020,18 +1031,18 @@ void GameListModel::loadCommonImages()
 
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
   {
-    m_compatibility_pixmaps[i] =
-      QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
+    m_compatibility_pixmaps[i] = QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i))
+                                   .pixmap(QSize(96, 24), m_device_pixel_ratio);
   }
 
-  constexpr int ACHIEVEMENT_ICON_SIZE = 16;
+  constexpr QSize ACHIEVEMENT_ICON_SIZE(16, 16);
   m_no_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-gray.svg", true)))
-                               .pixmap(ACHIEVEMENT_ICON_SIZE);
+                               .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
   m_has_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon.svg", true)))
-                                .pixmap(ACHIEVEMENT_ICON_SIZE);
+                                .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
   m_mastered_achievements_pixmap =
     QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-star.svg", true)))
-      .pixmap(ACHIEVEMENT_ICON_SIZE);
+      .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
 }
 
 void GameListModel::setColumnDisplayNames()
@@ -1679,10 +1690,15 @@ void GameListWidget::onIconSizeChanged(int size)
   onScaleChanged();
 }
 
-void GameListWidget::resizeEvent(QResizeEvent* event)
+bool GameListWidget::event(QEvent* e)
 {
-  QWidget::resizeEvent(event);
-  updateBackground(false);
+  const QEvent::Type type = e->type();
+  if (type == QEvent::Resize)
+    updateBackground(false);
+  else if (type == QEvent::DevicePixelRatioChange)
+    m_model->setDevicePixelRatio(QtUtils::GetDevicePixelRatioForWidget(this));
+
+  return QWidget::event(e);
 }
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const

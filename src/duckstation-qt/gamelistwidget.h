@@ -62,7 +62,7 @@ public:
   static std::optional<Column> getColumnIdForName(std::string_view name);
   static const char* getColumnName(Column col);
 
-  explicit GameListModel(QObject* parent);
+  explicit GameListModel(GameListWidget* parent);
   ~GameListModel();
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -108,6 +108,8 @@ public:
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns);
 
+  void setDevicePixelRatio(qreal dpr);
+
 Q_SIGNALS:
   void coverScaleChanged(float scale);
   void iconSizeChanged(int size);
@@ -132,7 +134,8 @@ private:
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
-  void fixIconPixmapSize(QPixmap& pm);
+
+  qreal m_device_pixel_ratio = 1.0;
 
   std::optional<GameList::EntryList> m_taken_entries;
 
@@ -282,7 +285,7 @@ public Q_SLOTS:
   void focusSearchWidget();
 
 protected:
-  void resizeEvent(QResizeEvent* event);
+  bool event(QEvent* e) override;
 
 private:
   void setViewMode(int stack_index);
