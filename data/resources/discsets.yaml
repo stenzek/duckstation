@@ -3002,12 +3002,14 @@
     - SLPS-02184
 - name: "Tomb Raider III - Adventures of Lara Croft"
   localizedName: "トゥームレイダー３"
+  sortName: "Tomb Raider 3"
   saveName: "Tomb Raider III - Adventures of Lara Croft (Asia)"
   serials:
     - SCPS-45385
     - SCPS-45386
 - name: "Tomb Raider III - Adventures of Lara Croft"
   localizedName: "トゥームレイダー３"
+  sortName: "Tomb Raider 3"
   saveName: "Tomb Raider III - Adventures of Lara Croft (Japan)"
   serials:
     - SLPM-86196
