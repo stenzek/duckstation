@@ -1199,7 +1199,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
 
 std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 {
-  return GetCoverImagePath(entry->path, entry->serial, entry->title);
+  return GetCoverImagePath(entry->path, entry->serial, entry->GetSaveTitle());
 }
 
 static std::string GetFullCoverPath(std::string_view filename, std::string_view extension)
@@ -1207,7 +1207,8 @@ static std::string GetFullCoverPath(std::string_view filename, std::string_view 
   return fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Covers, filename, extension);
 }
 
-std::string GameList::GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title)
+std::string GameList::GetCoverImagePath(const std::string_view path, const std::string_view serial,
+                                        const std::string_view title)
 {
   static constexpr const std::array extensions = {"jpg", "jpeg", "png", "webp"};
   std::string ret;

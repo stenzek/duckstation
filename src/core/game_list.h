@@ -143,7 +143,7 @@ std::string FormatTimestamp(std::time_t timestamp);
 TinyString FormatTimespan(std::time_t timespan, bool long_format = false);
 
 std::string GetCoverImagePathForEntry(const Entry* entry);
-std::string GetCoverImagePath(const std::string& path, const std::string& serial, const std::string& title);
+std::string GetCoverImagePath(const std::string_view path, const std::string_view serial, const std::string_view title);
 std::string GetNewCoverImagePathForEntry(const Entry* entry, const char* new_filename, bool use_serial);
 
 /// Returns a list of (title, entry) for entries matching serials. Titles will match the gamedb title,
