@@ -201,6 +201,8 @@ static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
   BUTTON("RightGreen", TRANSLATE_NOOP("PopnController", "Right Green"), ICON_PF_POPN_GR, DigitalController::Button::R2, GenericInputBinding::R2),
   BUTTON("RightYellow", TRANSLATE_NOOP("PopnController", "Right Yellow"), ICON_PF_POPN_YR, DigitalController::Button::Up, GenericInputBinding::DPadUp),
   BUTTON("RightWhite", TRANSLATE_NOOP("PopnController", "Right White"), ICON_PF_POPN_WR, DigitalController::Button::L2, GenericInputBinding::L2),
+  BUTTON("Select", TRANSLATE_NOOP("PopnController", "Select"), ICON_PF_SELECT_SHARE, DigitalController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("PopnController", "Start"), ICON_PF_START, DigitalController::Button::Start, GenericInputBinding::Start),
 // clang-format on
 
 #undef BUTTON
