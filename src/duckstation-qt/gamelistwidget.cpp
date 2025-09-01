@@ -1781,7 +1781,7 @@ void GameListListView::wheelEvent(QWheelEvent* e)
     const int dy = e->angleDelta().y();
     if (dy != 0)
     {
-      adjustIconSize((dy < 0) ? ICON_SIZE_STEP : ICON_SIZE_STEP);
+      adjustIconSize((dy < 0) ? -ICON_SIZE_STEP : ICON_SIZE_STEP);
       return;
     }
   }
