@@ -57,8 +57,8 @@ public:
     if (const QPixmap* icon_frame = getIconFrame(static_cast<size_t>(index.row()), m_current_frame_index, rc))
     {
       // center the icon in the available space
-      const int x = std::max((rc.width() - MEMORY_CARD_ICON_SIZE) / 2, 0);
-      const int y = std::max((rc.height() - MEMORY_CARD_ICON_SIZE) / 2, 0);
+      const int x = rc.x() + std::max((rc.width() - MEMORY_CARD_ICON_SIZE) / 2, 0);
+      const int y = rc.y() + std::max((rc.height() - MEMORY_CARD_ICON_SIZE) / 2, 0);
       painter->drawPixmap(x, y, *icon_frame);
     }
   }
@@ -143,8 +143,8 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
 
-  m_file_icon_width = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this);
-  m_file_icon_height = MEMORY_CARD_ICON_SIZE + style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, this);
+  m_file_icon_width = MEMORY_CARD_ICON_SIZE + (m_card_a.table->showGrid() ? 1 : 0);
+  m_file_icon_height = MEMORY_CARD_ICON_SIZE + (m_card_a.table->showGrid() ? 1 : 0);
   QtUtils::SetColumnWidthsForTableView(m_card_a.table, {m_file_icon_width, -1, 155, 45});
   QtUtils::SetColumnWidthsForTableView(m_card_b.table, {m_file_icon_width, -1, 155, 45});
 
