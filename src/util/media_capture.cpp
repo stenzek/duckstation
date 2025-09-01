@@ -2139,7 +2139,12 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
     }
 
     // Default to VP9, because there's no LGPL H.264 encoder.
+    // Except on MacOS, where we get it through VideoToolbox.
+#ifndef __APPLE__
     constexpr AVCodecID default_video_codec = AV_CODEC_ID_VP9;
+#else
+    constexpr AVCodecID default_video_codec = AV_CODEC_ID_H264;
+#endif
 
     // Use container default if available.
     if (!vcodec && wrap_avformat_query_codec(output_format, default_video_codec, FF_COMPLIANCE_NORMAL))
