@@ -1727,7 +1727,6 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   setContextMenuPolicy(Qt::CustomContextMenu);
   setAlternatingRowColors(true);
   setShowGrid(false);
-  setCurrentIndex({});
 
   QHeaderView* const horizontal_header = horizontalHeader();
   horizontal_header->setHighlightSections(false);
@@ -1737,6 +1736,8 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::Stretch);
   horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::Stretch);
   horizontal_header->setSectionResizeMode(GameListModel::Column_Icon, QHeaderView::ResizeToContents);
+
+  verticalHeader()->hide();
 
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
@@ -1819,7 +1820,6 @@ void GameListListView::setFixedColumnWidths()
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_UncompressedSize, size_width);
 
-  setFixedColumnWidth(GameListModel::Column_Icon, 45);
   setFixedColumnWidth(GameListModel::Column_Region, 55);
   setFixedColumnWidth(GameListModel::Column_Achievements, 100);
   setFixedColumnWidth(GameListModel::Column_Compatibility, 100);
