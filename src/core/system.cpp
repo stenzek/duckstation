@@ -1223,6 +1223,10 @@ void System::LoadSettings(bool display_osd_messages)
   if (g_settings.gpu_automatic_resolution_scale && IsValid())
     g_settings.gpu_resolution_scale = g_gpu.CalculateAutomaticResolutionScale();
 
+  // show safe mode warning if it's toggled on, or on startup
+  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
+    WarnAboutUnsafeSettings();
+
   // safe mode, cheevos hardcore mode, etc.
   g_settings.ApplySettingRestrictions();
 
@@ -1230,10 +1234,6 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
-
-  // show safe mode warning if it's toggled on, or on startup
-  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
-    WarnAboutUnsafeSettings();
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
