@@ -2028,22 +2028,19 @@ void GameListGridView::setZoomPct(int int_scale)
 
 void GameListGridView::updateLayout()
 {
-  const QScrollBar* const vertical_scrollbar = verticalScrollBar();
-  const int scrollbar_width = vertical_scrollbar->isVisible() ? vertical_scrollbar->width() : 0;
   const int icon_width = m_model->getCoverArtSize();
   const int item_spacing = m_model->getCoverArtSpacing();
-  const int item_margin = style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this);
-
-  // Split margin+spacing evenly across both sides of each item.
-  // I hate this +2. Not sure what's not being accounted for, but without it the calculation is off by 2 pixels...
-  const int item_width = icon_width + item_margin + item_spacing + 2;
+  const int item_margin = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, this) * 2;
+  const int item_width = icon_width + item_margin + item_spacing;
 
   // one line of text
   const int item_height = item_width + (m_model->getShowCoverTitles() ? fontMetrics().height() : 0);
 
-  const int available_width = width() - scrollbar_width;
-  const int num_columns = available_width / item_width;
-  const int num_rows = (height() + (item_height - 1)) / item_height;
+  // the -1 here seems to be necessary otherwise we calculate too many columns..
+  // can't see where in qlistview.cpp it's coming from though.
+  const int available_width = viewport()->width();
+  const int num_columns = (available_width - 1) / item_width;
+  const int num_rows = (viewport()->height() + (item_height - 1)) / item_height;
   const int margin = (available_width - (num_columns * item_width)) / 2;
 
   setGridSize(QSize(item_width, item_height));

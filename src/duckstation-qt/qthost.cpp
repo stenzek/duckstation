@@ -534,7 +534,7 @@ bool QtHost::SetCriticalFolders()
       !FileSystem::DirectoryExists(EmuFolders::Resources.c_str())
 #ifdef __linux__
       // Broken packages that won't stop distributing my application.
-      || StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr/lib")
+      || StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr""/lib")
 #endif
   )
   {
