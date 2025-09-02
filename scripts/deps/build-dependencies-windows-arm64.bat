@@ -45,50 +45,35 @@ echo INSTALLDIR=%INSTALLDIR%
 
 cd "%BUILDDIR%"
 
-set FREETYPE=2.13.3
-set HARFBUZZ=11.2.1
-set LIBJPEGTURBO=3.1.1
-set LIBPNG=1650
-set QT=6.9.1
-set QTMINOR=6.9
-set SDL3=3.2.20
-set WEBP=1.6.0
-set LIBZIP=1.11.4
-set ZLIBNG=2.2.4
-set ZSTD=1.5.7
+REM Read each line from the file and set as environment variable
+for /f "usebackq tokens=1,2 delims==" %%a in ("%SCRIPTDIR%\versions") do (
+    if not "%%a"=="" if not "%%b"=="" (
+        set "%%a=%%b"
+        rem echo Set %%a=%%b
+    )
+)
 
-set CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
-set DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
-set PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
-set SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
-set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-set SPIRV_CROSS=vulkan-sdk-1.4.321.0
-set SPIRV_CROSS_SHA=d8e3e2b141b8c8a167b2e3984736a6baacff316c
-set DXCOMPILER=1.8.2407.12
-set DXAGILITY=1.614.1
+call :downloadfile "freetype-%FREETYPE%.tar.gz" "https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz" "%FREETYPE_GZ_HASH%" || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.tar.gz" "%HARFBUZZ_GZ_HASH%" || goto error
+call :downloadfile "libpng-%LIBPNG%.tar.gz" "https://download.sourceforge.net/libpng/libpng-%LIBPNG%.tar.gz" "%LIBPNG_GZ_HASH%" || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "%LIBJPEGTURBO_GZ_HASH%" || goto error
+call :downloadfile "SDL3-%SDL3%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL3%/SDL3-%SDL3%.zip" "%SDL3_ZIP_HASH%" || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" "%QTBASE_ZIP_HASH%" || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" "%QTIMAGEFORMATS_ZIP_HASH%" || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" "%QTSVG_ZIP_HASH%" || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" "%QTTOOLS_ZIP_HASH%" || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" "%QTTRANSLATIONS_ZIP_HASH%" || goto error
+call :downloadfile "libwebp-%LIBWEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%LIBWEBP%.tar.gz" "%LIBWEBP_GZ_HASH%" || goto error
+call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/releases/download/v%LIBZIP%/libzip-%LIBZIP%.tar.gz" "%LIBZIP_GZ_HASH%" || goto error
+call :downloadfile "zlib-ng-%ZLIBNG%.tar.gz" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/%ZLIBNG%.tar.gz" "%ZLIBNG_GZ_HASH%" || goto error
+call :downloadfile "zstd-%ZSTD%.tar.gz" "https://github.com/facebook/zstd/releases/download/v%ZSTD%/zstd-%ZSTD%.tar.gz" "%ZSTD_GZ_HASH%" || goto error
 
-call :downloadfile "freetype-%FREETYPE%.tar.gz" "https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz" 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
-call :downloadfile "harfbuzz-%HARFBUZZ%.zip" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip" b1efe6f6114a02d7eb4a0e8e4fa1bc540daf6299c66d4cbef344bf59849c5aa4 || goto error
-call :downloadfile "lpng%LIBPNG%.zip" "https://download.sourceforge.net/libpng/lpng%LIBPNG%.zip" 4be6938313b08d5921f9dede13f2789b653c96f4f8595d92ff3f09c9320e51c7 || goto error
-call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c || goto error
-call :downloadfile "SDL3-%SDL3%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL3%/SDL3-%SDL3%.zip" d76454913ea6f5f38856fbf00578d8e39daf842887f3396c95608414680250f7 || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" efa6d8ef9f7ae0fd9f7d280fbff574d71882b60a357ae639e516dc173cf26986 || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 8439d3394bc380fd17a920ee96df1d2272bf8d3490871d948ef750f95e0ded06 || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" a8f90c768b54e28d61e02c1229b74a2b834e9852af523e5c70bcd2ae4c34a772 || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 38db91c4a8044c395eac89e325ecc25edbda12606fc28812491ef5e5b6b53dd6 || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" fd2e776164751fb486495efeee336d26d85fe1ca1f6a7b9eb6aafca2e3d333aa || goto error
-call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 || goto error
-call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/releases/download/v%LIBZIP%/libzip-%LIBZIP%.tar.gz" 82e9f2f2421f9d7c2466bbc3173cd09595a88ea37db0d559a9d0a2dc60dc722e || goto error
-call :downloadfile "zlib-ng-%ZLIBNG%.zip" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/%ZLIBNG%.zip" 5e78f0ebbe507fe294bf756c741a8af4766d3838c54460a087e906b3f20346e4 || goto error
-call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 7897bc5d620580d9b7cd3539c44b59d78f3657d33663fe97a145e07b4ebd69a4 || goto error
-
-call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO%.zip" 3430f8bae57623347b2b30a8ff041b0288f90ad99b4c2487c3d520863ce4a4e3 || goto error
-call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 4492cbe690a16546da9a9d89f14340352cad3b0ac5484b969749d6ab6f1ee836 || goto error
-call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/stenzek/plutosvg/archive/%PLUTOSVG%.zip" ae6c6bd93a9ea0451b853545595b2c6c99104b22c193afd8e00cfbc0f3e27298 || goto error
-call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" cafd87502d799060d2b6bbf9c885226f75f6e0b21e8cd87a43806da019412811 || goto error
-call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
-call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" eb4f6a3bb6b08aaa62f435b3dbf26b180702ca52398d3650d0dd538f56742cdc || goto error
-call :downloadfile "dxagility-%DXAGILITY%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%DXAGILITY%" 9880aa91602dd51dd6cf7911a2bca7a2323513b15338573cde014b3356eeaff2 || goto error
+call :downloadfile "cpuinfo-%CPUINFO%.tar.gz" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO%.tar.gz" "%CPUINFO_GZ_HASH%" || goto error
+call :downloadfile "discord-rpc-%DISCORD_RPC%.tar.gz" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.tar.gz" "%DISCORD_RPC_GZ_HASH%" || goto error
+call :downloadfile "plutosvg-%PLUTOSVG%.tar.gz" "https://github.com/stenzek/plutosvg/archive/%PLUTOSVG%.tar.gz" "%PLUTOSVG_GZ_HASH%" || goto error
+call :downloadfile "shaderc-%SHADERC%.tar.gz" "https://github.com/stenzek/shaderc/archive/%SHADERC%.tar.gz" "%SHADERC_GZ_HASH%" || goto error
+call :downloadfile "soundtouch-%SOUNDTOUCH%.tar.gz" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.tar.gz" "%SOUNDTOUCH_GZ_HASH%" || goto error
+call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" "%DXCOMPILER_ZIP_HASH%" || goto error
 
 if not exist SPIRV-Cross\ (
   git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b %SPIRV_CROSS% --depth 1 || goto error
@@ -108,7 +93,7 @@ set ARM64TOOLCHAIN=-DCMAKE_TOOLCHAIN_FILE="%SCRIPTDIR%\cmake-toolchain-windows-a
 
 echo Building zlib-ng...
 rmdir /S /Q "zlib-ng-%ZLIBNG%"
-%SEVENZIP% x "zlib-ng-%ZLIBNG%.zip" || goto error
+tar -xf "zlib-ng-%ZLIBNG%.tar.gz" || goto error
 cd "zlib-ng-%ZLIBNG%" || goto error
 rem BUILD_SHARED_LIBS deliberately ommitted so that both shared and static libraries are built, we need static for the updater.
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja || goto error
@@ -117,9 +102,9 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building libpng...
-rmdir /S /Q "lpng%LIBPNG%"
-%SEVENZIP% x "lpng%LIBPNG%.zip" || goto error
-cd "lpng%LIBPNG%" || goto error
+rmdir /S /Q "libpng-%LIBPNG%"
+tar -xf "libpng-%LIBPNG%.tar.gz" || goto error
+cd "libpng-%LIBPNG%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -136,7 +121,7 @@ cd .. || goto error
 
 echo Building Zstandard...
 rmdir /S /Q "zstd-%ZSTD%"
-%SEVENZIP% x "-x^!zstd-%ZSTD%\tests\cli-tests\bin" "zstd-%ZSTD%.zip" || goto error
+tar -xf "zstd-%ZSTD%.tar.gz" || goto error
 cd "zstd-%ZSTD%"
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
 cmake --build build --parallel || goto error
@@ -144,9 +129,9 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building WebP...
-rmdir /S /Q "libwebp-%WEBP%"
-tar -xf "libwebp-%WEBP%.tar.gz" || goto error
-cd "libwebp-%WEBP%" || goto error
+rmdir /S /Q "libwebp-%LIBWEBP%"
+tar -xf "libwebp-%LIBWEBP%.tar.gz" || goto error
+cd "libwebp-%LIBWEBP%" || goto error
 cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -172,7 +157,7 @@ cd .. || goto error
 
 echo Building HarfBuzz...
 rmdir /S /Q "harfbuzz-%HARFBUZZ%"
-%SEVENZIP% x "-x^!harfbuzz-%HARFBUZZ%\README" "harfbuzz-%HARFBUZZ%.zip" || goto error
+tar -xf "harfbuzz-%HARFBUZZ%.tar.gz" || goto error
 cd "harfbuzz-%HARFBUZZ%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
@@ -208,11 +193,7 @@ echo Building Qt base...
 rmdir /S /Q "qtbase-everywhere-src-%QT%"
 %SEVENZIP% x "qtbase-everywhere-src-%QT%.zip" || goto error
 cd "qtbase-everywhere-src-%QT%" || goto error
-
-rem Disable the PCRE2 JIT, it doesn't properly verify AVX2 support.
-%PATCH% -p1 < "%SCRIPTDIR%\qtbase-disable-pcre2-jit.patch" || goto error
-
-cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" %FORCEPDB% -DINPUT_gui=yes -DINPUT_widgets=yes -DINPUT_ssl=yes -DINPUT_openssl=no -DINPUT_schannel=yes -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON %QTBUILDSPEC% || goto error
+cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DQT_HOST_PATH="%X64INSTALLDIR%" %FORCEPDB% -DQT_GENERATE_SBOM=OFF -DINPUT_ssl=yes -DINPUT_openssl=no -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
@@ -263,7 +244,7 @@ cd ..\.. || goto error
 
 echo Building shaderc...
 rmdir /S /Q "shaderc-%SHADERC%"
-%SEVENZIP% x "shaderc-%SHADERC%.zip" || goto error
+tar -xf "shaderc-%SHADERC%.tar.gz" || goto error
 cd "shaderc-%SHADERC%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
@@ -280,7 +261,7 @@ cd .. || goto error
 
 echo Building cpuinfo...
 rmdir /S /Q "cpuinfo-%CPUINFO%"
-%SEVENZIP% x "cpuinfo-%CPUINFO%.zip" || goto error
+tar -xf "cpuinfo-%CPUINFO%.tar.gz" || goto error
 cd "cpuinfo-%CPUINFO%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build -G Ninja
 cmake --build build --parallel || goto error
@@ -289,7 +270,7 @@ cd .. || goto error
 
 echo Building discord-rpc...
 rmdir /S /Q "discord-rpc-%DISCORD_RPC%"
-%SEVENZIP% x "discord-rpc-%DISCORD_RPC%.zip" || goto error
+tar -xf "discord-rpc-%DISCORD_RPC%.tar.gz" || goto error
 cd "discord-rpc-%DISCORD_RPC%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
 cmake --build build --parallel || goto error
@@ -298,7 +279,7 @@ cd .. || goto error
 
 echo Building plutosvg...
 rmdir /S /Q "plutosvg-%PLUTOSVG%"
-%SEVENZIP% x "plutosvg-%PLUTOSVG%.zip" || goto error
+tar -xf "plutosvg-%PLUTOSVG%.tar.gz" || goto error
 cd "plutosvg-%PLUTOSVG%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel || goto error
@@ -308,7 +289,7 @@ cd .. || goto error
 rem This currently isn't using clang-cl. It probably should, might be losing a little speed.
 echo Building soundtouch...
 rmdir /S /Q "soundtouch-%SOUNDTOUCH%"
-%SEVENZIP% x "soundtouch-%SOUNDTOUCH%.zip" || goto error
+tar -xf "soundtouch-%SOUNDTOUCH%.tar.gz" || goto error
 cd "soundtouch-%SOUNDTOUCH%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
@@ -328,15 +309,6 @@ cd "dxcompiler-%DXCOMPILER%" || goto error
 copy build\native\include\* "%INSTALLDIR%\include" || goto error
 copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
 copy build\native\lib\arm64\*.lib "%INSTALLDIR%\lib" || goto error
-cd .. || goto error
-
-echo Extracting DXAgility...
-rmdir /S /Q "dxagility-%DXAGILITY%"
-mkdir "dxagility-%DXAGILITY%"
-cd "dxagility-%DXAGILITY%" || goto error
-%SEVENZIP% x "..\dxagility-%DXAGILITY%.zip" || goto error
-xcopy /S /Y build\native\include\* "%INSTALLDIR%\include" || goto error
-copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
 
 echo Cleaning up...

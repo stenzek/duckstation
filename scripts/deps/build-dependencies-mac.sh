@@ -36,25 +36,8 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-FREETYPE=2.13.3
-HARFBUZZ=11.2.1
-SDL3=3.2.20
-ZSTD=1.5.7
-LIBPNG=1.6.50
-LIBJPEGTURBO=3.1.1
-LIBWEBP=1.6.0
-LIBZIP=1.11.4
-FFMPEG=7.1.1
+source "$SCRIPTDIR/versions"
 MOLTENVK=1.2.9
-QT=6.9.1
-
-CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
-DISCORD_RPC=cc59d26d1d628fbd6527aac0ac1d6301f4978b92
-PLUTOSVG=bc845bb6b6511e392f9e1097b26f70cf0b3c33be
-SHADERC=4daf9d466ad00897f755163dd26f528d14e1db44
-SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-SPIRV_CROSS=vulkan-sdk-1.4.321.0
-SPIRV_CROSS_SHA=d8e3e2b141b8c8a167b2e3984736a6baacff316c
 
 mkdir -p deps-build
 cd deps-build
@@ -81,35 +64,35 @@ CMAKE_COMMON_QT=(
 )
 
 cat > SHASUMS <<EOF
-0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289  freetype-$FREETYPE.tar.xz
-057d5754c3ac0c499bbf4d729d52acf134c7bb4ba8868ba22e84ae96bc272816  harfbuzz-$HARFBUZZ.tar.gz
-4df396518620a7aa3651443e87d1b2862e4e88cad135a8b93423e01706232307  libpng-$LIBPNG.tar.xz
-aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
-e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564  libwebp-$LIBWEBP.tar.gz
-8a247f57d1e3e6f6d11413b12a6f28a9d388de110adc0ec608d893180ed7097b  libzip-$LIBZIP.tar.xz
-467600ae090dd28616fa37369faf4e3143198ff1da37729b552137e47f751a67  SDL3-$SDL3.tar.gz
-eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3  zstd-$ZSTD.tar.gz
-733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1  ffmpeg-$FFMPEG.tar.xz
+$FREETYPE_GZ_HASH  freetype-$FREETYPE.tar.gz
+$HARFBUZZ_GZ_HASH  harfbuzz-$HARFBUZZ.tar.gz
+$LIBPNG_GZ_HASH  libpng-$LIBPNG.tar.gz
+$LIBJPEGTURBO_GZ_HASH  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+$LIBWEBP_GZ_HASH  libwebp-$LIBWEBP.tar.gz
+$LIBZIP_GZ_HASH  libzip-$LIBZIP.tar.gz
+$SDL3_GZ_HASH  SDL3-$SDL3.tar.gz
+$ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
+$FFMPEG_XZ_HASH  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
-40caedbf83cc9a1959610830563565889878bc95f115868bbf545d1914acf28e  qtbase-everywhere-src-$QT.tar.xz
-ebe9f238daaf9bb752c7233edadf4af33fc4fa30d914936812b6410d3af1577c  qtimageformats-everywhere-src-$QT.tar.xz
-2dfc5de5fd891ff2afd9861e519bf1a26e6deb729b3133f68a28ba763c9abbd5  qtsvg-everywhere-src-$QT.tar.xz
-90c4a562f4ccfd043fd99f34c600853e0b5ba9babc6ec616c0f306f2ce3f4b4c  qttools-everywhere-src-$QT.tar.xz
-9761a1a555f447cdeba79fdec6a705dee8a7882ac10c12e85f49467ddd01a741  qttranslations-everywhere-src-$QT.tar.xz
-b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
-297cd48a287a9113eec44902574084c6ab3b6a8b28d02606765a7fded431d7d8  discord-rpc-$DISCORD_RPC.tar.gz
-cc8eed38daf68aaaaa96e904f68f5524c02f10b5d42062b91cdc93f93445f68a  plutosvg-$PLUTOSVG.tar.gz
-167109d52b65f6eedd66103971b869a71632fe27a63efc2ba5b0e5a1912a094c  shaderc-$SHADERC.tar.gz
-fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
+$QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
+$QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
+$QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
+$QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
+$QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
+$CPUINFO_GZ_HASH  cpuinfo-$CPUINFO.tar.gz
+$DISCORD_RPC_GZ_HASH  discord-rpc-$DISCORD_RPC.tar.gz
+$PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG.tar.gz
+$SHADERC_GZ_HASH  shaderc-$SHADERC.tar.gz
+$SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
 curl -L \
-	-o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download" \
+	-o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
-	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
+	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.gz" \
 	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
-	-O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.xz" \
+	-O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.gz" \
 	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
@@ -138,7 +121,7 @@ fi
 
 echo "Installing libpng..."
 rm -fr "libpng-$LIBPNG"
-tar xf "libpng-$LIBPNG.tar.xz"
+tar xf "libpng-$LIBPNG.tar.gz"
 cd "libpng-$LIBPNG"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_FRAMEWORK=OFF -B build
 make -C build "-j$NPROCS"
@@ -190,7 +173,7 @@ cd ..
 
 echo "Installing libzip..."
 rm -fr "libzip-$LIBZIP"
-tar xf "libzip-$LIBZIP.tar.xz"
+tar xf "libzip-$LIBZIP.tar.gz"
 cd "libzip-$LIBZIP"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -B build \
 	-DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF \
@@ -202,7 +185,7 @@ cd ..
 
 echo "Building FreeType without HarfBuzz..."
 rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
+tar xf "freetype-$FREETYPE.tar.gz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build
 cmake --build build --parallel
@@ -220,7 +203,7 @@ cd ..
 
 echo "Building FreeType with HarfBuzz..."
 rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.xz"
+tar xf "freetype-$FREETYPE.tar.gz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
 cmake --build build --parallel

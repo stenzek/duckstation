@@ -27,6 +27,8 @@ modules:
     sources:
       - type: file
         path: ../../deps/build-dependencies-linux.sh
+      - type: file
+        path: ../../deps/versions
     build-options:
       # Don't need debug info for deps, match AppImage.
       strip: true
