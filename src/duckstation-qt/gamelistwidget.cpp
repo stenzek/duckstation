@@ -1407,15 +1407,18 @@ void GameListWidget::reloadThemeSpecificImages()
 
 void GameListWidget::updateBackground(bool reload_image)
 {
-  std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
-  if (!Path::IsAbsolute(path))
-    path = Path::Combine(EmuFolders::DataRoot, path);
-
   if (reload_image)
   {
     m_background_image = QImage();
-    if (!path.empty() && m_background_image.load(path.c_str()))
-      m_background_image.setDevicePixelRatio(devicePixelRatio());
+
+    if (std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath"); !path.empty())
+    {
+      if (!Path::IsAbsolute(path))
+        path = Path::Combine(EmuFolders::DataRoot, path);
+
+      if (m_background_image.load(path.c_str()))
+        m_background_image.setDevicePixelRatio(devicePixelRatio());
+    }
   }
 
   if (m_background_image.isNull())
