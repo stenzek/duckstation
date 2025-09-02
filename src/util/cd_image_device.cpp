@@ -1596,7 +1596,6 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
     }
 
     IOObjectRelease(iter);
-    CFRelease(classes);
   };
 
   append_list(kIOCDMediaClass);
