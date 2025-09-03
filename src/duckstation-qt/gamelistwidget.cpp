@@ -186,6 +186,15 @@ void GameListModel::setShowGameIcons(bool enabled)
   refreshIcons();
 }
 
+void GameListModel::refreshIcon(int row)
+{
+  const GameList::Entry* entry = GameList::GetEntryByIndex(row);
+
+  m_memcard_pixmap_cache.Clear();
+  m_memcard_pixmap_cache.Remove(entry->serial);
+  emit dataChanged(index(row, Column_Icon), index(row, Column_Icon), {Qt::DecorationRole});
+}
+
 void GameListModel::refreshIcons()
 {
   m_icon_pixmap_cache.Clear();
@@ -444,8 +453,13 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
+      std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
       QPixmap pm;
+
+      // TODO: CANNOT BE SIMPLY 3, SOME ICONS HAVE 2 FRAMES OF ANIMATION
+      if (!path.empty())
+        path.erase(path.length() - 4).append(std::format("_{}.png", m_current_frame_index % 3 + 1));
+
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
         const int pm_width = pm.width();
@@ -1383,9 +1397,9 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
   updateBackground(true);
 
-  m_animation_timer = new QTimer(this);
-  m_animation_timer->setInterval(200);
-  connect(m_animation_timer, &QTimer::timeout, this, &GameListWidget::incrementAnimationFrame);
+  m_model->m_animation_timer = new QTimer(this);
+  m_model->m_animation_timer->setInterval(200);
+  connect(m_model->m_animation_timer, &QTimer::timeout, this, &GameListWidget::incrementAnimationFrame);
 }
 
 
@@ -1403,27 +1417,33 @@ void GameListWidget::updateAnimationTimerActive(int row)
   // at least 2 frames
   has_animation_frames = FileSystem::FileExists(frame1_path.c_str()) && FileSystem::FileExists(frame2_path.c_str());
 
-  if (m_animation_timer->isActive() != has_animation_frames)
+  m_model->m_current_frame_index = 0;
+  if (m_model->m_animation_timer->isActive() != has_animation_frames)
   {
     INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
 
-    m_current_frame_index = 0;
     if (has_animation_frames)
-      m_animation_timer->start();
+      m_model->m_animation_timer->start();
     else
-      m_animation_timer->stop();
+      m_model->m_animation_timer->stop();
   }
 }
 
 void GameListWidget::incrementAnimationFrame()
 {
-  m_current_frame_index++;
+  INFO_LOG("current frame: {}", m_model->m_current_frame_index);
+  m_model->m_current_frame_index++;
 
   const int row_count = GameList::GetEntryCount();
   if (row_count == 0)
     return;
 
-  INFO_LOG("current frame: {}", m_current_frame_index);
+  // TODO: maybe can be extracted into getSelectedEntryIndex()
+  const QItemSelectionModel* selection_model = m_list_view->selectionModel();
+  const QModelIndexList selected_rows = selection_model->selectedRows();
+  const QModelIndex source_index = m_sort_model->mapToSource(selected_rows[0]);
+
+  m_model->refreshIcon(source_index.row());
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1552,8 +1572,13 @@ void GameListWidget::onRefreshComplete()
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
 {
+  m_model->m_current_frame_index = 0;
+  const QModelIndex previous_index = m_sort_model->mapToSource(previous);
+  m_model->refreshIcon(previous_index.row());
+
   const QModelIndex source_index = m_sort_model->mapToSource(current);
   INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
+
   updateAnimationTimerActive(source_index.row());
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;

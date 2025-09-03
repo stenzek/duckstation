@@ -101,6 +101,7 @@ public:
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
+  void refreshIcon(int row);
   void refreshIcons();
 
   float getCoverScale() const { return m_cover_scale; }
@@ -164,6 +165,9 @@ private:
   mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
+
+  u32 m_current_frame_index = 0;
+  QTimer* m_animation_timer = nullptr;
 };
 
 class GameListListView final : public QTableView
@@ -310,6 +314,6 @@ private:
   GameListRefreshThread* m_refresh_thread = nullptr;
   int m_refresh_last_entry_count = 0;
 
-  u32 m_current_frame_index = 0;
-  QTimer* m_animation_timer = nullptr;
+  //u32 m_current_frame_index = 0;
+  //QTimer* m_animation_timer = nullptr;
 };
