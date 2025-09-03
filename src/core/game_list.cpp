@@ -1142,7 +1142,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     set_entry.dbentry = entry.dbentry;
     set_entry.type = EntryType::DiscSet;
     set_entry.region = entry.region;
-    set_entry.path = entry.dbentry->disc_set->title;
+    set_entry.path = entry.dbentry->disc_set->GetSaveTitle();
     set_entry.serial = entry.serial;
     set_entry.hash = entry.hash;
     set_entry.file_size = 0;
