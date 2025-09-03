@@ -347,7 +347,7 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
 void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
 {
   // old request before cover scale change?
-  if (m_cover_scale != scale)
+  if (m_cover_scale != scale || !m_cover_pixmap_cache.Lookup(path))
     return;
 
   if (!image.isNull())
