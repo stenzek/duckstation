@@ -1,0 +1,19 @@
+--- qtbase/src/widgets/styles/qfusionstyle.cpp	2025-09-03 17:32:08
++++ qtbase/src/widgets/styles/qfusionstyle.cpp	2025-09-03 17:56:20
+@@ -588,11 +588,12 @@
+ 
+             painter->setBrush((state & State_Sunken) ? QBrush(pressedColor) : gradient);
+ 
+-            if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
++            if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange) {
+                 painter->setPen(highlightedOutline);
+-            else
+-                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(240)
+-                                                                       : outline.lighter(110));
++            } else {
++                const bool isDark = (option->palette.windowText().color().value() > option->palette.window().color().value());
++                painter->setPen(isDark ? outline.lighter(155) : outline.lighter(110));
++            }
+             painter->drawRect(rect);
+ 
+             QColor checkMarkColor = option->palette.text().color().darker(120);

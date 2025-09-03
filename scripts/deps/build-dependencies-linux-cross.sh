@@ -396,6 +396,7 @@ if [ "$SKIP_QT" != true ]; then
 	rm -fr "qtbase-everywhere-src-$QT"
 	tar xf "qtbase-everywhere-src-$QT.tar.xz"
 	cd "qtbase-everywhere-src-$QT"
+	patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
 	mkdir build
 	cd build
 	../configure -prefix "$INSTALLDIR" -extprefix "$INSTALLDIR" -qt-host-path "$HOSTDIR" -release -dbus runtime -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAINFILE" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_dbus_linked=OFF -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON

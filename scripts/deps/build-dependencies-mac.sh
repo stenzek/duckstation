@@ -269,6 +269,9 @@ rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
 cd "qtbase-everywhere-src-$QT"
 
+# Stop checkboxes in Fusion theme having such bright outlines.
+patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
+
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
