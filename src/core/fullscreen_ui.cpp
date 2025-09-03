@@ -8678,7 +8678,7 @@ void FullscreenUI::DrawGameListSettingsPage()
                           FSUI_VSTR("Uses localized (native language) titles in the game list."), "Main",
                           "FullscreenUIShowLocalizedTitles", true))
     {
-      s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
+      s_state.show_localized_titles = bsi->GetBoolValue("Main", "FullscreenUIShowLocalizedTitles", true);
     }
     if (DrawToggleSetting(
           bsi, FSUI_ICONVSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
