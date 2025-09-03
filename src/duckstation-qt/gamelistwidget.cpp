@@ -203,6 +203,11 @@ void GameListModel::setIconSize(int size)
   Host::CommitBaseSettingChanges();
 
   emit iconSizeChanged(m_icon_size);
+
+  // Might look odd, but this is needed to force the section sizes to invalidate
+  // after we change them in the list view in the iconSizeChanged() handler.
+  emit headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
+
   loadSizeDependentPixmaps();
   refreshIcons();
 }
