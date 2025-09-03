@@ -208,6 +208,9 @@ static void AbortSignalHandler(int signal)
     WriteMinidumpAndCallstack(nullptr, "Pure call handler invoked");
   }
 
+  if (IsDebuggerPresent())
+    __debugbreak();
+
   TerminateProcess(GetCurrentProcess(), 0xFAFAFAFAu);
 }
 
