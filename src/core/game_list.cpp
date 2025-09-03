@@ -39,6 +39,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <format>
 
 LOG_CHANNEL(GameList);
 
@@ -2156,6 +2157,21 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
         std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
                     MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
+
+
+        std::string anim_path;
+        for (int idx = 1; auto& frame : fi.icon_frames)
+        {
+          anim_path = ret;
+          anim_path.erase(anim_path.length() - 4); // .png
+          anim_path.append(std::format("_{}.png", idx++));
+
+          Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
+          std::memcpy(image.GetPixels(), &frame.pixels,
+                      MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
+          image.SaveToFile(anim_path.c_str());
+        }
+
         serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
         if (serial_entry->icon_was_extracted)
         {

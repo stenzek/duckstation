@@ -1382,6 +1382,48 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
   setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
   updateBackground(true);
+
+  m_animation_timer = new QTimer(this);
+  m_animation_timer->setInterval(200);
+  connect(m_animation_timer, &QTimer::timeout, this, &GameListWidget::incrementAnimationFrame);
+}
+
+
+void GameListWidget::updateAnimationTimerActive(int row)
+{
+  bool has_animation_frames = false;
+
+  const GameList::Entry* entry = GameList::GetEntryByIndex(row);
+  std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+
+  std::string frame1_path = icon_path.substr(0, icon_path.length() - 4).append("_1.png");
+  std::string frame2_path = icon_path.substr(0, icon_path.length() - 4).append("_2.png");
+  std::string frame3_path = icon_path.substr(0, icon_path.length() - 4).append("_3.png");
+
+  // at least 2 frames
+  has_animation_frames = FileSystem::FileExists(frame1_path.c_str()) && FileSystem::FileExists(frame2_path.c_str());
+
+  if (m_animation_timer->isActive() != has_animation_frames)
+  {
+    INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
+
+    m_current_frame_index = 0;
+    if (has_animation_frames)
+      m_animation_timer->start();
+    else
+      m_animation_timer->stop();
+  }
+}
+
+void GameListWidget::incrementAnimationFrame()
+{
+  m_current_frame_index++;
+
+  const int row_count = GameList::GetEntryCount();
+  if (row_count == 0)
+    return;
+
+  INFO_LOG("current frame: {}", m_current_frame_index);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1511,6 +1553,8 @@ void GameListWidget::onRefreshComplete()
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
 {
   const QModelIndex source_index = m_sort_model->mapToSource(current);
+  INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
+  updateAnimationTimerActive(source_index.row());
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
 

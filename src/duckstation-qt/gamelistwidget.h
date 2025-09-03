@@ -276,6 +276,7 @@ private Q_SLOTS:
   void onGridViewItemActivated(const QModelIndex& index);
   void onGridViewContextMenuRequested(const QPoint& point);
   void onSearchReturnPressed();
+  void incrementAnimationFrame();
 
 public Q_SLOTS:
   void showGameList();
@@ -292,6 +293,7 @@ protected:
 
 private:
   void setViewMode(int stack_index);
+  void updateAnimationTimerActive(int row);
 
   Ui::GameListWidget m_ui;
 
@@ -307,4 +309,7 @@ private:
 
   GameListRefreshThread* m_refresh_thread = nullptr;
   int m_refresh_last_entry_count = 0;
+
+  u32 m_current_frame_index = 0;
+  QTimer* m_animation_timer = nullptr;
 };
