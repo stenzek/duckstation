@@ -22,7 +22,7 @@ namespace PerformanceCounters {
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   Timer::Value last_update_time;
   Timer::Value last_frame_time;
@@ -63,7 +63,7 @@ struct ALIGN_TO_CACHE_LINE State
 
 static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
 
-State s_state = {};
+ALIGN_TO_CACHE_LINE State s_state = {};
 
 } // namespace PerformanceCounters
 

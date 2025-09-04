@@ -164,7 +164,7 @@ static constexpr const char* DISCDB_YAML_FILENAME = "discdb.yaml";
 static DisplayDeinterlacingMode DEFAULT_DEINTERLACING_MODE = DisplayDeinterlacingMode::Adaptive;
 
 namespace {
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   bool loaded;
   bool track_hashes_loaded;
@@ -182,7 +182,7 @@ struct ALIGN_TO_CACHE_LINE State
 };
 } // namespace
 
-static State s_state;
+ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace GameDatabase
 
