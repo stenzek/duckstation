@@ -6192,7 +6192,7 @@ void System::UpdateRichPresence(bool update_session_time)
   rp.largeImageText = "DuckStation PS1/PSX Emulator";
   rp.startTimestamp = s_state.discord_presence_time_epoch;
 
-  TinyString game_details = "No Game Running";
+  TinyString game_details("No Game Running");
   if (IsValidOrInitializing())
   {
     // Use disc set name if it's not a custom title.

@@ -3815,7 +3815,7 @@ static TinyString GetLoginEncryptionMachineKey()
   {
     WARNING_LOG("Get MachineGuid failed: {}", error);
     RegCloseKey(hKey);
-    return 0;
+    return ret;
   }
 
   ret.resize(machine_guid_length);
@@ -3826,7 +3826,7 @@ static TinyString GetLoginEncryptionMachineKey()
     WARNING_LOG("Read MachineGuid failed: {}", error);
     ret = {};
     RegCloseKey(hKey);
-    return 0;
+    return ret;
   }
 
   ret.resize(machine_guid_length);

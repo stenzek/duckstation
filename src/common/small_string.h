@@ -266,13 +266,13 @@ class SmallStackString : public SmallStringBase
 public:
   ALWAYS_INLINE SmallStackString() { init(); }
 
-  ALWAYS_INLINE SmallStackString(const char* str)
+  ALWAYS_INLINE explicit SmallStackString(const char* str)
   {
     init();
     assign(str);
   }
 
-  ALWAYS_INLINE SmallStackString(const char* str, u32 length)
+  ALWAYS_INLINE explicit SmallStackString(const char* str, u32 length)
   {
     init();
     assign(str, length);
@@ -290,19 +290,25 @@ public:
     assign(move);
   }
 
-  ALWAYS_INLINE SmallStackString(const SmallStackString& copy)
+  ALWAYS_INLINE explicit SmallStackString(const SmallStackString& copy)
   {
     init();
     assign(copy);
   }
 
-  ALWAYS_INLINE SmallStackString(SmallStackString&& move)
+  ALWAYS_INLINE explicit SmallStackString(SmallStackString&& move)
   {
     init();
     assign(move);
   }
 
-  ALWAYS_INLINE SmallStackString(const std::string_view sv)
+  ALWAYS_INLINE explicit SmallStackString(const std::string& str)
+  {
+    init();
+    assign(str);
+  }
+
+  ALWAYS_INLINE explicit SmallStackString(const std::string_view sv)
   {
     init();
     assign(sv);
@@ -329,6 +335,12 @@ public:
   ALWAYS_INLINE SmallStackString& operator=(SmallStackString&& move)
   {
     assign(move);
+    return *this;
+  }
+
+  ALWAYS_INLINE SmallStackString& operator=(const std::string& str)
+  {
+    assign(str);
     return *this;
   }
 

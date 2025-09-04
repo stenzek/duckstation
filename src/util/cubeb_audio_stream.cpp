@@ -59,7 +59,8 @@ static TinyString GetCubebErrorString(int rv)
     C(CUBEB_ERROR_DEVICE_UNAVAILABLE);
 
     default:
-      return "CUBEB_ERROR_UNKNOWN";
+      ret = "CUBEB_ERROR_UNKNOWN";
+      break;
 
 #undef C
   }

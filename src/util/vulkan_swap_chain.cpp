@@ -249,7 +249,7 @@ std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkPhysica
       return VkSurfaceFormatKHR{format, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
   }
 
-  SmallString errormsg = "Failed to find a suitable format for swap chain buffers. Available formats were:";
+  SmallString errormsg("Failed to find a suitable format for swap chain buffers. Available formats were:");
   for (const VkSurfaceFormatKHR& sf : surface_formats)
     errormsg.append_format(" {}", static_cast<unsigned>(sf.format));
   Error::SetStringView(error, errormsg);
