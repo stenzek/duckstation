@@ -93,9 +93,11 @@ public:
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled);
 
-  int calculateRowHeight(const QWidget* const widget) const;
+  void updateRowHeight(const QWidget* const widget);
+  int getRowHeight() const { return m_row_height; }
   int getIconSize() const { return m_icon_size; }
   void setIconSize(int size);
+  int getIconColumnWidth() const;
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
@@ -141,6 +143,7 @@ private:
 
   float m_cover_scale = 0.0f;
   int m_icon_size = 0;
+  int m_row_height = 0;
   bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
@@ -158,9 +161,9 @@ private:
 
   mutable PreferUnorderedStringMap<QPixmap> m_flag_pixmap_cache;
 
-  mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
+  mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 
-  mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
+  mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 };
 
 class GameListListView final : public QTableView
@@ -171,6 +174,7 @@ public:
   GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
 
+  void setFixedColumnWidth(int column, int width);
   void setAndSaveColumnHidden(int column, bool hidden);
 
 protected:
@@ -182,7 +186,6 @@ private:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
 
-  void setFixedColumnWidth(int column, int width);
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setFixedColumnWidths();
 

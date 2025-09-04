@@ -134,7 +134,7 @@ const char* GameListModel::getColumnName(Column col)
 
 GameListModel::GameListModel(GameListWidget* parent)
   : QAbstractTableModel(parent), m_device_pixel_ratio(QtUtils::GetDevicePixelRatioForWidget(parent)),
-    m_memcard_pixmap_cache(MIN_COVER_CACHE_SIZE)
+    m_icon_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
   m_icon_size = Host::GetBaseFloatSettingValue("UI", "GameListIconSize", MIN_ICON_SIZE);
@@ -171,10 +171,10 @@ void GameListModel::setShowCoverTitles(bool enabled)
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DisplayRole});
 }
 
-int GameListModel::calculateRowHeight(const QWidget* const widget) const
+void GameListModel::updateRowHeight(const QWidget* const widget)
 {
-  return m_icon_size + MEMORY_CARD_ICON_PADDING +
-         widget->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, widget);
+  m_row_height = m_icon_size + MEMORY_CARD_ICON_PADDING +
+                 widget->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, widget);
 }
 
 void GameListModel::setShowGameIcons(bool enabled)
@@ -188,7 +188,7 @@ void GameListModel::setShowGameIcons(bool enabled)
 
 void GameListModel::refreshIcons()
 {
-  m_memcard_pixmap_cache.Clear();
+  m_icon_pixmap_cache.Clear();
   emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
 }
 
@@ -210,6 +210,11 @@ void GameListModel::setIconSize(int size)
 
   loadSizeDependentPixmaps();
   refreshIcons();
+}
+
+int GameListModel::getIconColumnWidth() const
+{
+  return m_icon_size + MEMORY_CARD_ICON_PADDING * 2;
 }
 
 void GameListModel::setCoverScale(float scale)
@@ -430,7 +435,7 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
   // We only do this for discs/disc sets for now.
   if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
   {
-    QPixmap* item = m_memcard_pixmap_cache.Lookup(ge->serial);
+    QPixmap* item = m_icon_pixmap_cache.Lookup(ge->serial);
     if (item)
     {
       if (!item->isNull())
@@ -456,11 +461,11 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
 
         pm.setDevicePixelRatio(m_device_pixel_ratio);
 
-        return *m_memcard_pixmap_cache.Insert(ge->serial, std::move(pm));
+        return *m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
       // Stop it trying again in the future.
-      m_memcard_pixmap_cache.Insert(ge->serial, {});
+      m_icon_pixmap_cache.Insert(ge->serial, {});
     }
   }
 
@@ -499,7 +504,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
   // Provides a small performance boost when using default size icons.
   if (m_icon_size == MEMORY_CARD_ICON_SIZE)
   {
-    if (const QPixmap* pm = m_memcard_pixmap_cache.Lookup(entry->serial))
+    if (const QPixmap* pm = m_icon_pixmap_cache.Lookup(entry->serial))
     {
       // If we already have the icon cached, return it.
       ret = QIcon(*pm);
@@ -679,6 +684,17 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         return Qt::AscendingOrder;
     }
 
+    case Qt::SizeHintRole:
+    {
+      switch (index.column())
+      {
+        case Column_Icon:
+          return QSize(getIconColumnWidth(), m_row_height);
+        default:
+          return {};
+      }
+    }
+
     case Qt::DecorationRole:
     {
       switch (index.column())
@@ -812,7 +828,7 @@ void GameListModel::refresh()
   m_taken_entries.reset();
 
   // Invalidate memcard LRU cache, forcing a re-query of the memcard timestamps.
-  m_memcard_pixmap_cache.Clear();
+  m_icon_pixmap_cache.Clear();
 
   endResetModel();
 }
@@ -1695,7 +1711,9 @@ void GameListWidget::onScaleChanged()
 void GameListWidget::onIconSizeChanged(int size)
 {
   // update size of rows
-  m_list_view->verticalHeader()->setDefaultSectionSize(m_model->calculateRowHeight(m_list_view));
+  m_model->updateRowHeight(m_list_view);
+  m_list_view->setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
+  m_list_view->verticalHeader()->setDefaultSectionSize(m_model->getRowHeight());
   onScaleChanged();
 }
 
@@ -1760,7 +1778,6 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
 
   horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::Stretch);
   horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::Stretch);
-  horizontal_header->setSectionResizeMode(GameListModel::Column_Icon, QHeaderView::ResizeToContents);
 
   verticalHeader()->hide();
 
@@ -1845,6 +1862,7 @@ void GameListListView::setFixedColumnWidths()
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_UncompressedSize, size_width);
 
+  setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
   setFixedColumnWidth(GameListModel::Column_Region, 55);
   setFixedColumnWidth(GameListModel::Column_Achievements, 100);
   setFixedColumnWidth(GameListModel::Column_Compatibility, 100);
