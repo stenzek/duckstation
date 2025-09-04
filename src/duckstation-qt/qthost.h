@@ -140,7 +140,6 @@ Q_SIGNALS:
   void systemResumed();
   void systemGameChanged(const QString& path, const QString& game_serial, const QString& game_title);
   void systemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
-  void gameListRefreshed();
   void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
                                                            bool exclusive_fullscreen, bool surfaceless, Error* error);
