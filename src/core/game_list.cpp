@@ -2085,15 +2085,51 @@ void GameList::ReloadMemcardTimestampCache()
     entry.serial[sizeof(entry.serial) - 1] = 0;
 }
 
+std::vector<std::string> GameList::GetGameAnimatedIconPaths(std::string_view serial, std::string_view path)
+{
+  const std::string frame_suffix = "_1";
+  const std::string dot_file_extension = ".png";
+
+  std::vector<std::string> frame_paths;
+  std::string icon_path = GameList::GetGameIconPath(serial, path);
+
+  // static icon
+  if (icon_path.find("_1") == std::string::npos)
+  {
+    frame_paths.emplace_back(icon_path);
+    return frame_paths;
+  }
+
+  // animated icon
+  for (int i = 1; i <= 3; i++)
+  {
+    std::string frame_path =
+      icon_path.substr(0, icon_path.length() - frame_suffix.length() - dot_file_extension.length())
+               .append(std::format("_{}{}", i, dot_file_extension));
+
+    if (FileSystem::FileExists(frame_path.c_str()))
+      frame_paths.emplace_back(frame_path);
+  }
+
+  return frame_paths;
+}
+
 std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path)
 {
+  const std::string dot_file_extension = ".png";
   std::string ret;
 
   if (serial.empty())
     return ret;
 
+  // animated icon might exist already
+  ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}_1{}", serial, dot_file_extension));
+  if (FileSystem::FileExists(ret.c_str()))
+    return ret;
+
+  // static icon
   // might exist already, or the user used a custom icon
-  ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
+  ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}{}", serial, dot_file_extension));
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
 
@@ -2154,25 +2190,34 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
                  Path::GetFileTitle(ret));
 
-        Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
-        std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
-                    MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
-
-
-        std::string anim_path;
-        for (int idx = 1; auto& frame : fi.icon_frames)
+        // static icon
+        if (fi.icon_frames.size() == 1)
         {
-          anim_path = ret;
-          anim_path.erase(anim_path.length() - 4); // .png
-          anim_path.append(std::format("_{}.png", idx++));
-
           Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
-          std::memcpy(image.GetPixels(), &frame.pixels,
+          std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
                       MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
-          image.SaveToFile(anim_path.c_str());
+
+          serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
+        }
+        // animated icon
+        else
+        {
+          bool extracted = true;
+
+          for (int idx = 1; auto& frame : fi.icon_frames)
+          {
+            std::string frame_path =
+              ret.substr(0, ret.length() - dot_file_extension.length()).append(std::format("_{}{}", idx++, dot_file_extension));
+
+            Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
+            std::memcpy(image.GetPixels(), &frame.pixels,
+                        MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
+            extracted &= image.SaveToFile(frame_path.c_str());
+          }
+
+          serial_entry->icon_was_extracted = extracted;
         }
 
-        serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
         if (serial_entry->icon_was_extracted)
         {
           return ret;

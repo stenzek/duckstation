@@ -255,6 +255,7 @@ public:
   bool isShowingGameGrid() const;
 
   const GameList::Entry* getSelectedEntry() const;
+  const QModelIndex getSelectedEntryIndex() const;
 
 Q_SIGNALS:
   void refreshProgress(const QString& status, int current, int total);
