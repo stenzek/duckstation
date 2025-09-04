@@ -138,7 +138,6 @@ static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)
 
 struct State
 {
-  ;
   EntryList entries;
   std::recursive_mutex mutex;
   CacheMap cache_map;
@@ -898,7 +897,7 @@ std::span<const GameList::Entry> GameList::GetEntries()
   return s_state.entries;
 }
 
-const GameList::Entry* GameList::GetEntryByIndex(u32 index)
+const GameList::Entry* GameList::GetEntryByIndex(size_t index)
 {
   return (index < s_state.entries.size()) ? &s_state.entries[index] : nullptr;
 }
@@ -1012,9 +1011,9 @@ const GameList::Entry* GameList::GetFirstDiscSetMember(const GameDatabase::DiscS
   return nullptr;
 }
 
-u32 GameList::GetEntryCount()
+size_t GameList::GetEntryCount()
 {
-  return static_cast<u32>(s_state.entries.size());
+  return s_state.entries.size();
 }
 
 void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback* progress /* = nullptr */)

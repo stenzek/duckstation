@@ -848,15 +848,14 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
   if (!left_index.isValid() || !right_index.isValid())
     return false;
 
-  const int left_row = left_index.row();
-  const int right_row = right_index.row();
+  const size_t left_row = static_cast<u32>(left_index.row());
+  const size_t right_row = static_cast<u32>(right_index.row());
 
   if (m_taken_entries.has_value()) [[unlikely]]
   {
-    const GameList::Entry* left =
-      (static_cast<u32>(left_row) < m_taken_entries->size()) ? &m_taken_entries.value()[left_row] : nullptr;
+    const GameList::Entry* left = (left_row < m_taken_entries->size()) ? &m_taken_entries.value()[left_row] : nullptr;
     const GameList::Entry* right =
-      (static_cast<u32>(right_row) < m_taken_entries->size()) ? &m_taken_entries.value()[right_row] : nullptr;
+      (right_row < m_taken_entries->size()) ? &m_taken_entries.value()[right_row] : nullptr;
     if (!left || !right)
       return false;
 
@@ -1744,7 +1743,7 @@ const GameList::Entry* GameListWidget::getSelectedEntry() const
     if (!source_index.isValid())
       return nullptr;
 
-    return GameList::GetEntryByIndex(source_index.row());
+    return GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
   }
   else
   {
@@ -1756,7 +1755,7 @@ const GameList::Entry* GameListWidget::getSelectedEntry() const
     if (!source_index.isValid())
       return nullptr;
 
-    return GameList::GetEntryByIndex(source_index.row());
+    return GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
   }
 }
 

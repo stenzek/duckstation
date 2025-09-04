@@ -7760,24 +7760,22 @@ void FullscreenUI::PopulateGameListEntryList()
   const bool reverse = Host::GetBaseBoolSettingValue("Main", "FullscreenUIGameSortReverse", false);
   const bool merge_disc_sets = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMergeDiscSets", true);
 
-  const u32 count = GameList::GetEntryCount();
   s_state.game_list_sorted_entries.clear();
-  s_state.game_list_sorted_entries.reserve(count);
-  for (u32 i = 0; i < count; i++)
+  s_state.game_list_sorted_entries.reserve(GameList::GetEntryCount());
+  for (const GameList::Entry& entry : GameList::GetEntries())
   {
-    const GameList::Entry* entry = GameList::GetEntryByIndex(i);
     if (merge_disc_sets)
     {
-      if (entry->disc_set_member)
+      if (entry.disc_set_member)
         continue;
     }
     else
     {
-      if (entry->IsDiscSet())
+      if (entry.IsDiscSet())
         continue;
     }
 
-    s_state.game_list_sorted_entries.push_back(entry);
+    s_state.game_list_sorted_entries.push_back(&entry);
   }
 
   std::sort(s_state.game_list_sorted_entries.begin(), s_state.game_list_sorted_entries.end(),

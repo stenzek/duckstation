@@ -103,14 +103,14 @@ bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 // Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.
 std::unique_lock<std::recursive_mutex> GetLock();
 std::span<const Entry> GetEntries();
-const Entry* GetEntryByIndex(u32 index);
+const Entry* GetEntryByIndex(size_t index);
 const Entry* GetEntryForPath(std::string_view path);
 const Entry* GetEntryBySerial(std::string_view serial);
 const Entry* GetEntryBySerialAndHash(std::string_view serial, u64 hash);
 std::vector<const Entry*> GetDiscSetMembers(const GameDatabase::DiscSetEntry* dsentry,
                                             bool sort_by_most_recent = false);
 const Entry* GetFirstDiscSetMember(const GameDatabase::DiscSetEntry* dsentry);
-u32 GetEntryCount();
+size_t GetEntryCount();
 
 bool IsGameListLoaded();
 bool ShouldShowLocalizedTitles();
