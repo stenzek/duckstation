@@ -314,7 +314,4 @@ private:
 
   GameListRefreshThread* m_refresh_thread = nullptr;
   int m_refresh_last_entry_count = 0;
-
-  //u32 m_current_frame_index = 0;
-  //QTimer* m_animation_timer = nullptr;
 };

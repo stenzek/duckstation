@@ -188,6 +188,9 @@ void GameListModel::setShowGameIcons(bool enabled)
 
 void GameListModel::refreshIcon(int row)
 {
+  if (row < 0)
+    return;
+
   if (const GameList::Entry* entry = GameList::GetEntryByIndex(row))
     m_memcard_pixmap_cache.Remove(entry->serial);
 
@@ -453,7 +456,6 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
     else
     {
       // Assumes game list lock is held.
-      //std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
       QPixmap pm;
       std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(ge->serial, ge->path);
       std::string path = frame_paths.size() > 1 ? frame_paths[m_current_frame_index % frame_paths.size()] : frame_paths[0];
@@ -1364,8 +1366,11 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   connect(m_ui.filterRegion, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterRegion((index == 0) ? DiscRegion::Count : static_cast<DiscRegion>(index - 1));
   });
-  connect(m_ui.searchText, &QLineEdit::textChanged, this,
-          [this](const QString& text) { m_sort_model->setFilterName(text.toStdString()); });
+  connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
+    updateAnimationTimerActive(-1);
+    m_model->refreshIcons();
+    m_sort_model->setFilterName(text.toStdString());
+  });
   connect(m_ui.searchText, &QLineEdit::returnPressed, this, &GameListWidget::onSearchReturnPressed);
 
   connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
@@ -1402,6 +1407,8 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
 void GameListWidget::updateAnimationTimerActive(int row)
 {
+  m_model->m_current_frame_index = 0;
+
   if (isShowingGameGrid())
   {
     m_model->m_animation_timer->stop();
@@ -1411,18 +1418,22 @@ void GameListWidget::updateAnimationTimerActive(int row)
 
   bool has_animation_frames = false;
   const GameList::Entry* entry = GameList::GetEntryByIndex(row);
-  std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(entry->serial, entry->path);
-
-  has_animation_frames = frame_paths.size() > 1;
-  m_model->m_current_frame_index = 0;
-
-  if (m_model->m_animation_timer->isActive() != has_animation_frames)
+  if (entry)
   {
-    INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
-    if (has_animation_frames)
-      m_model->m_animation_timer->start();
-    else
-      m_model->m_animation_timer->stop();
+    std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(entry->serial, entry->path);
+    has_animation_frames = frame_paths.size() > 1;
+  }
+
+  if (QTimer* timer = m_model->m_animation_timer)
+  {
+    if (timer->isActive() != has_animation_frames)
+    {
+      INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
+      if (has_animation_frames)
+        timer->start();
+      else
+        timer->stop();
+    }
   }
 }
 
@@ -1434,7 +1445,8 @@ void GameListWidget::incrementAnimationFrame()
   if (GameList::GetEntryCount() == 0)
     return;
 
-  m_model->refreshIcon(getSelectedEntryIndex().row());
+  if (QModelIndex index = getSelectedEntryIndex(); index.isValid())
+    m_model->refreshIcon(index.row());
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1566,23 +1578,21 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
   const QModelIndex source_index = m_sort_model->mapToSource(current);
   const QModelIndex previous_index = m_sort_model->mapToSource(previous);
 
-  m_model->m_current_frame_index = 0;
-  m_model->refreshIcon(previous_index.row());
-
-  updateAnimationTimerActive(source_index.row());
-
-  INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
-
+  //m_model->m_current_frame_index = 0;
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
+
+  updateAnimationTimerActive(source_index.row());
+  m_model->refreshIcon(previous_index.row());
+
+  INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
 
   emit selectionChanged();
 }
 
 void GameListWidget::onListViewItemActivated(const QModelIndex& index)
 {
-  // TODO: consolidate timer invocations
-  m_model->m_animation_timer->stop();
+  updateAnimationTimerActive(index.row());
 
   const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
@@ -1632,6 +1642,8 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::focusSearchWidget()
 {
+  updateAnimationTimerActive(-1);
+
   m_ui.searchText->setFocus(Qt::ShortcutFocusReason);
 }
 
@@ -1651,6 +1663,9 @@ void GameListWidget::onSearchReturnPressed()
 
 void GameListWidget::showGameList()
 {
+  //updateAnimationTimerActive(-1);
+  //m_model->refreshIcons();
+
   // keep showing the placeholder widget if we have no games
   if (isShowingGameList() || m_model->rowCount() == 0)
     return;
@@ -1663,6 +1678,9 @@ void GameListWidget::showGameList()
 
 void GameListWidget::showGameGrid()
 {
+  updateAnimationTimerActive(-1);
+  m_model->refreshIcons();
+
   // keep showing the placeholder widget if we have no games
   if (isShowingGameGrid() || m_model->rowCount() == 0)
     return;
@@ -1671,7 +1689,6 @@ void GameListWidget::showGameGrid()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_GRID);
-  updateAnimationTimerActive(0);
   this->getSelectedEntry();
 }
 
@@ -1698,6 +1715,8 @@ void GameListWidget::setShowLocalizedTitles(bool enabled)
 
 void GameListWidget::setShowGameIcons(bool enabled)
 {
+  updateAnimationTimerActive(-1);
+
   if (m_model->getShowGameIcons() == enabled)
     return;
 
@@ -1756,6 +1775,8 @@ void GameListWidget::setViewMode(int stack_index)
 
 void GameListWidget::onScaleSliderChanged(int value)
 {
+  updateAnimationTimerActive(-1);
+
   if (isShowingGameGrid())
     m_model->setCoverScale(static_cast<float>(value) / 100.0f);
   else if (isShowingGameList())
@@ -1776,6 +1797,8 @@ void GameListWidget::onScaleChanged()
 
 void GameListWidget::onIconSizeChanged(int size)
 {
+  updateAnimationTimerActive(-1);
+
   // update size of rows
   m_model->updateRowHeight(m_list_view);
   m_list_view->setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());

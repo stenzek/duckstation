@@ -2122,7 +2122,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   if (serial.empty())
     return ret;
 
-  // animated icon might exist already
+  // animated icon might exist already, grab first frame
   ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}_1{}", serial, dot_file_extension));
   if (FileSystem::FileExists(ret.c_str()))
     return ret;
