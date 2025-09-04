@@ -1453,23 +1453,7 @@ void GameListWidget::updateAnimationTimerActive(bool enabled)
 void GameListWidget::incrementAnimationFrame()
 {
   m_model->m_current_frame_index++;
-
-  auto lock = GameList::GetLock();
-  if (GameList::GetEntryCount() == 0)
-    return;
-
-  const QItemSelectionModel* selection_model = m_list_view->selectionModel();
-  if (!selection_model->hasSelection())
-    return;
-
-  const QModelIndexList selected_rows = selection_model->selectedRows();
-  if (selected_rows.empty())
-    return;
-
-  const QModelIndex source_index = m_sort_model->mapToSource(selected_rows[0]);
-
-  if (source_index.isValid())
-    m_model->refreshIcon(source_index.row());
+  m_model->refreshIcon(m_model->m_newly_selected_row);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1615,9 +1599,12 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
           m_model->refreshIcon(prev_row);
       },
       Qt::QueuedConnection);
+
+
+    m_model->m_newly_selected_row = source_index.row();
+    m_model->m_newly_selected_entry = GameList::GetEntryByIndex(source_index.row());
+    updateAnimationTimerActive(true);
   }
-  m_model->m_newly_selected_entry = GameList::GetEntryByIndex(source_index.row());
-  updateAnimationTimerActive(true);
 
   emit selectionChanged();
 }

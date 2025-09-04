@@ -168,7 +168,8 @@ private:
 
   u32 m_current_frame_index = 0;
   QTimer* m_animation_timer = nullptr;
-  const GameList::Entry* m_newly_selected_entry;
+  int m_newly_selected_row = -1;
+  const GameList::Entry* m_newly_selected_entry = nullptr;
 };
 
 class GameListListView final : public QTableView
