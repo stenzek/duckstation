@@ -1442,7 +1442,6 @@ void GameListWidget::updateAnimationTimerActive(int row)
 
 void GameListWidget::incrementAnimationFrame()
 {
-  INFO_LOG("current frame: {}", m_model->m_current_frame_index);
   m_model->m_current_frame_index++;
 
   auto lock = GameList::GetLock();
@@ -1587,12 +1586,13 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
 
   updateAnimationTimerActive(source_index.row());
 
-  // !!! This crashes when searching !!!
   if (previous_index.isValid() && previous_index.row() < static_cast<int>(GameList::GetEntryCount()))
-    m_model->refreshIcon(previous_index.row());
-  // !!! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ !!!
-
-  INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
+  {
+    int prev_row = previous_index.row();
+    QMetaObject::invokeMethod(this,
+                              [this, prev_row] { if (m_model) m_model->refreshIcon(prev_row); },
+                              Qt::QueuedConnection);
+  }
 
   emit selectionChanged();
 }
