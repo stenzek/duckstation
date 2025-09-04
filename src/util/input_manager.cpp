@@ -232,6 +232,28 @@ static constexpr const std::array s_key_code_data = {
 #undef KEY_ENTRY
 };
 
+static constexpr const std::array s_legacy_key_names = {
+#define KEY_ENTRY(old, new) std::pair<std::string_view, std::string_view>(old, new)
+  KEY_ENTRY("Alt", "LeftAlt"),
+  KEY_ENTRY("Apostrophe", "Quote"),
+  KEY_ENTRY("Control", "LeftControl"),
+  KEY_ENTRY("Down", "DownArrow"),
+  KEY_ENTRY("Left", "LeftArrow"),
+  KEY_ENTRY("Menu", "ContextMenu"),
+  KEY_ENTRY("NumpadAsterisk", "NumpadMultiply"),
+  KEY_ENTRY("NumpadMinus", "NumpadSubtract"),
+  KEY_ENTRY("NumpadPeriod", "NumpadDecimal"),
+  KEY_ENTRY("NumpadPlus", "NumpadAdd"),
+  KEY_ENTRY("NumpadReturn", "NumpadEnter"),
+  KEY_ENTRY("NumpadSlash", "NumpadDivide"),
+  KEY_ENTRY("QuoteLeft", "Backquote"),
+  KEY_ENTRY("Return", "Enter"),
+  KEY_ENTRY("Right", "RightArrow"),
+  KEY_ENTRY("Shift", "LeftShift"),
+  KEY_ENTRY("Up", "UpArrow"),
+#undef KEY_ENTRY
+};
+
 } // namespace InputManager
 
 // ------------------------------------------------------------------------
@@ -643,6 +665,15 @@ InputBindingKey InputManager::MakeSensorAxisKey(InputSubclass sensor, u32 axis)
 
 std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_view str)
 {
+  // Check legacy names first
+  const auto legacy_iter = std::lower_bound(s_legacy_key_names.begin(), s_legacy_key_names.end(), str,
+                                            [](const auto& it, const auto& value) { return (it.first < value); });
+  if (legacy_iter != s_legacy_key_names.end() && legacy_iter->first == str)
+  {
+    DEV_LOG("Mapping legacy key name: '{}' -> '{}'", legacy_iter->first, legacy_iter->second);
+    str = legacy_iter->second;
+  }
+
   for (const KeyCodeData& name : s_key_code_data)
   {
     if (str == name.name)
