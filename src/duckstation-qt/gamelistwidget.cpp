@@ -331,7 +331,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
 }
 
 void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height,
-                                        float scale, float dpr, const std::string& path, const std::string& serial,
+                                        float scale, qreal dpr, const std::string& path, const std::string& serial,
                                         const std::string& save_title, const QString& display_title)
 {
   const std::string cover_path(GameList::GetCoverImagePath(path, serial, save_title));
@@ -352,13 +352,14 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
 void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
 {
   // old request before cover scale change?
-  if (m_cover_scale != scale || !m_cover_pixmap_cache.Lookup(path))
+  QPixmap* pm;
+  if (m_cover_scale != scale || !(pm = m_cover_pixmap_cache.Lookup(path)))
     return;
 
   if (!image.isNull())
-    m_cover_pixmap_cache.Insert(path, QPixmap::fromImage(image));
+    *pm = QPixmap::fromImage(image);
   else
-    m_cover_pixmap_cache.Insert(path, QPixmap());
+    *pm = QPixmap();
 
   invalidateCoverForPath(path);
 }

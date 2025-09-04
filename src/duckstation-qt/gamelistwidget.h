@@ -127,7 +127,7 @@ private:
   void coverLoaded(const std::string& path, const QImage& image, float scale);
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
-                                  float dpr, const std::string& path, const std::string& serial,
+                                  qreal dpr, const std::string& path, const std::string& serial,
                                   const std::string& save_title, const QString& display_title);
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
                                      const QString& title);
