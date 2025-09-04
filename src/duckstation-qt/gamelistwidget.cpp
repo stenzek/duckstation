@@ -458,7 +458,12 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
       // Assumes game list lock is held.
       QPixmap pm;
       std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(ge->serial, ge->path);
-      std::string path = frame_paths.size() > 1 ? frame_paths[m_current_frame_index % frame_paths.size()] : frame_paths[0];
+      std::string path;
+
+      if (!frame_paths.empty())
+        path = frame_paths.size() > 1 ? frame_paths[m_current_frame_index % frame_paths.size()] : frame_paths[0];
+      else
+        path = "";
 
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
@@ -1366,11 +1371,8 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   connect(m_ui.filterRegion, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterRegion((index == 0) ? DiscRegion::Count : static_cast<DiscRegion>(index - 1));
   });
-  connect(m_ui.searchText, &QLineEdit::textChanged, this, [this](const QString& text) {
-    updateAnimationTimerActive(-1);
-    m_model->refreshIcons();
-    m_sort_model->setFilterName(text.toStdString());
-  });
+  connect(m_ui.searchText, &QLineEdit::textChanged, this,
+          [this](const QString& text) { m_sort_model->setFilterName(text.toStdString()); });
   connect(m_ui.searchText, &QLineEdit::returnPressed, this, &GameListWidget::onSearchReturnPressed);
 
   connect(m_list_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
@@ -1417,6 +1419,7 @@ void GameListWidget::updateAnimationTimerActive(int row)
   }
 
   bool has_animation_frames = false;
+  auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryByIndex(row);
   if (entry)
   {
@@ -1442,6 +1445,7 @@ void GameListWidget::incrementAnimationFrame()
   INFO_LOG("current frame: {}", m_model->m_current_frame_index);
   m_model->m_current_frame_index++;
 
+  auto lock = GameList::GetLock();
   if (GameList::GetEntryCount() == 0)
     return;
 
@@ -1578,12 +1582,15 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
   const QModelIndex source_index = m_sort_model->mapToSource(current);
   const QModelIndex previous_index = m_sort_model->mapToSource(previous);
 
-  //m_model->m_current_frame_index = 0;
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
 
   updateAnimationTimerActive(source_index.row());
-  m_model->refreshIcon(previous_index.row());
+
+  // !!! This crashes when searching !!!
+  if (previous_index.isValid() && previous_index.row() < static_cast<int>(GameList::GetEntryCount()))
+    m_model->refreshIcon(previous_index.row());
+  // !!! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ !!!
 
   INFO_LOG("currently selected: row: {}, column: {}", source_index.row(), source_index.column());
 
@@ -1592,7 +1599,7 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
 
 void GameListWidget::onListViewItemActivated(const QModelIndex& index)
 {
-  updateAnimationTimerActive(index.row());
+  updateAnimationTimerActive(-1);
 
   const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
@@ -1642,8 +1649,6 @@ void GameListWidget::refreshGridCovers()
 
 void GameListWidget::focusSearchWidget()
 {
-  updateAnimationTimerActive(-1);
-
   m_ui.searchText->setFocus(Qt::ShortcutFocusReason);
 }
 
@@ -1663,9 +1668,6 @@ void GameListWidget::onSearchReturnPressed()
 
 void GameListWidget::showGameList()
 {
-  //updateAnimationTimerActive(-1);
-  //m_model->refreshIcons();
-
   // keep showing the placeholder widget if we have no games
   if (isShowingGameList() || m_model->rowCount() == 0)
     return;
