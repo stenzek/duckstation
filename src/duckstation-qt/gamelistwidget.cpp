@@ -1421,14 +1421,7 @@ void GameListWidget::updateAnimationTimerActive(bool enabled)
 
   if (QTimer* timer = m_model->m_animation_timer)
   {
-    if (timer->isActive() && !enabled)
-    {
-      m_model->m_animation_timer->stop();
-      INFO_LOG("Animation timer is now inactive");
-      return;
-    }
-
-    if (isShowingGameGrid())
+    if (!enabled || !m_model->getShowGameIcons() || isShowingGameGrid())
     {
       if (timer->isActive())
       {
@@ -1631,8 +1624,6 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
 
 void GameListWidget::onListViewItemActivated(const QModelIndex& index)
 {
-  updateAnimationTimerActive(false);
-
   const QModelIndex source_index = m_sort_model->mapToSource(index);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
@@ -1650,6 +1641,8 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
   }
   else
   {
+    updateAnimationTimerActive(false);
+    m_model->refreshIcon(source_index.row());
     emit entryActivated();
   }
 }
@@ -1809,8 +1802,6 @@ void GameListWidget::setViewMode(int stack_index)
 
 void GameListWidget::onScaleSliderChanged(int value)
 {
-  updateAnimationTimerActive(false);
-
   if (isShowingGameGrid())
     m_model->setCoverScale(static_cast<float>(value) / 100.0f);
   else if (isShowingGameList())
@@ -1831,8 +1822,6 @@ void GameListWidget::onScaleChanged()
 
 void GameListWidget::onIconSizeChanged(int size)
 {
-  updateAnimationTimerActive(false);
-
   // update size of rows
   m_model->updateRowHeight(m_list_view);
   m_list_view->setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
