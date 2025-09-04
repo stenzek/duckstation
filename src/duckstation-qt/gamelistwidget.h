@@ -168,6 +168,7 @@ private:
 
   u32 m_current_frame_index = 0;
   QTimer* m_animation_timer = nullptr;
+  const GameList::Entry* m_newly_selected_entry;
 };
 
 class GameListListView final : public QTableView
@@ -255,7 +256,6 @@ public:
   bool isShowingGameGrid() const;
 
   const GameList::Entry* getSelectedEntry() const;
-  const QModelIndex getSelectedEntryIndex() const;
 
 Q_SIGNALS:
   void refreshProgress(const QString& status, int current, int total);
@@ -298,7 +298,7 @@ protected:
 
 private:
   void setViewMode(int stack_index);
-  void updateAnimationTimerActive(int row);
+  void updateAnimationTimerActive(bool enabled);
 
   Ui::GameListWidget m_ui;
 

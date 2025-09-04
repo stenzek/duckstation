@@ -2098,7 +2098,7 @@ std::vector<std::string> GameList::GetGameAnimatedIconPaths(std::string_view ser
   {
     std::string frame_path =
       icon_path.substr(0, icon_path.length() - frame_suffix.length() - dot_file_extension.length())
-               .append(std::format("_{}{}", i, dot_file_extension));
+        .append(std::format("_{}{}", i, dot_file_extension));
 
     if (FileSystem::FileExists(frame_path.c_str()))
       frame_paths.emplace_back(frame_path);
@@ -2175,34 +2175,28 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
       const MemoryCardImage::FileInfo& fi = files.front();
       if (!fi.icon_frames.empty())
       {
-        INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
-                 Path::GetFileTitle(ret));
-
         bool extracted = true;
-
-        for (int idx = 1; auto& frame : fi.icon_frames)
+        for (int i = 1; auto& frame : fi.icon_frames)
         {
-          std::string frame_path =
-            ret.substr(0, ret.length() - frame_suffix.length() - dot_file_extension.length())
-               .append(std::format("_{}{}", idx++, dot_file_extension));
+          std::string frame_path = ret.substr(0, ret.length() - frame_suffix.length() - dot_file_extension.length())
+                                     .append(std::format("_{}{}", i++, dot_file_extension));
+
+          INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
+                   Path::GetFileTitle(frame_path));
 
           Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
           std::memcpy(image.GetPixels(), &frame.pixels,
                       MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
 
           extracted &= image.SaveToFile(frame_path.c_str());
+
+          if (!extracted)
+            ERROR_LOG("Failed to save memory card icon to {}.", frame_path);
         }
 
         serial_entry->icon_was_extracted = extracted;
-
-        if (serial_entry->icon_was_extracted)
-        {
+        if (extracted)
           return ret;
-        }
-        else
-        {
-          ERROR_LOG("Failed to save memory card icon to {}.", ret);
-        }
       }
     }
   }
