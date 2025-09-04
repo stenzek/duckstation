@@ -149,7 +149,7 @@ struct ALIGN_TO_CACHE_LINE State
   // mapping of host key -> imgui key
   ALIGN_TO_CACHE_LINE std::unordered_map<u32, ImGuiKey> imgui_key_map;
 
-  TextFontOrder text_font_order = {};
+  TextFontOrder text_font_order = ImGuiManager::GetDefaultTextFontOrder();
 
   std::array<DynamicHeapArray<u8>, static_cast<size_t>(TextFont::MaxCount)> text_fonts_data;
   DynamicHeapArray<u8> fixed_font_data;
