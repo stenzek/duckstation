@@ -192,7 +192,7 @@ void GameListModel::refreshIcon(int row)
     return;
 
   if (const GameList::Entry* entry = GameList::GetEntryByIndex(row))
-    m_memcard_pixmap_cache.Remove(entry->serial);
+    m_icon_pixmap_cache.Remove(entry->serial);
 
   emit dataChanged(index(row, Column_Icon), index(row, Column_Icon), {Qt::DecorationRole});
 }
