@@ -1418,35 +1418,35 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 void GameListWidget::updateAnimationTimerActive(bool enabled)
 {
   m_model->m_current_frame_index = 0;
+  QTimer* timer = m_model->m_animation_timer;
 
-  if (QTimer* timer = m_model->m_animation_timer)
+  if (!timer)
+    return;
+
+  if (!enabled || !m_model->getShowGameIcons() || isShowingGameGrid())
   {
-    if (!enabled || !m_model->getShowGameIcons() || isShowingGameGrid())
+    if (timer->isActive())
     {
-      if (timer->isActive())
-      {
-        m_model->m_animation_timer->stop();
-        INFO_LOG("Animation timer is now inactive");
-      }
-      return;
+      m_model->m_animation_timer->stop();
+      INFO_LOG("Animation timer is now inactive");
     }
+    return;
+  }
 
-    bool has_animation_frames = false;
-    auto lock = GameList::GetLock();
-    if (const GameList::Entry* entry = m_model->m_newly_selected_entry)
-    {
-      std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(entry->serial, entry->path);
-      has_animation_frames = frame_paths.size() > 1;
-    }
+  bool has_animation_frames = false;
+  if (const GameList::Entry* entry = m_model->m_newly_selected_entry)
+  {
+    std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(entry->serial, entry->path);
+    has_animation_frames = frame_paths.size() > 1;
+  }
 
-    if (timer->isActive() != has_animation_frames)
-    {
-      INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
-      if (has_animation_frames)
-        timer->start();
-      else
-        timer->stop();
-    }
+  if (timer->isActive() != has_animation_frames)
+  {
+    INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
+    if (has_animation_frames)
+      timer->start();
+    else
+      timer->stop();
   }
 }
 
@@ -1688,6 +1688,7 @@ void GameListWidget::showGameList()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_LIST);
+  updateAnimationTimerActive(true);
 }
 
 void GameListWidget::showGameGrid()
