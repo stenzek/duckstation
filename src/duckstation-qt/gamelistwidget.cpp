@@ -1742,14 +1742,13 @@ void GameListWidget::setShowLocalizedTitles(bool enabled)
 
 void GameListWidget::setShowGameIcons(bool enabled)
 {
-  updateAnimationTimerActive(false);
-
   if (m_model->getShowGameIcons() == enabled)
     return;
 
   Host::SetBaseBoolSettingValue("UI", "GameListShowGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowGameIcons(enabled);
+  updateAnimationTimerActive(enabled);
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
