@@ -330,12 +330,12 @@ template<typename T>
 static void ResizeSharpBilinearT(T& pm, int size, int base_size)
 {
   // Sharp Bilinear scaling
-  // First, scale the icon by the largest integer size using nearest-neighbor...
-  const int integer_icon_size = static_cast<int>(size / base_size) * base_size;
+  // First, scale the icon by the next largest integer size using nearest-neighbor...
+  const int integer_icon_size = std::ceilf(static_cast<float>(size) / base_size) * base_size;
   pm = pm.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 
-  // ...then scale any remainder using bilinear interpolation.
-  if (size - integer_icon_size > 0)
+  // ...then scale down any remainder using bilinear interpolation.
+  if (integer_icon_size - size > 0)
     pm = pm.scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
