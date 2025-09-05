@@ -39,7 +39,6 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-#include <format>
 
 LOG_CHANNEL(GameList);
 
@@ -2098,7 +2097,7 @@ std::vector<std::string> GameList::GetGameAnimatedIconPaths(std::string_view ser
   {
     std::string frame_path =
       icon_path.substr(0, icon_path.length() - frame_suffix.length() - dot_file_extension.length())
-        .append(std::format("_{}{}", i, dot_file_extension));
+        .append(fmt::format("_{}{}", i, dot_file_extension));
 
     if (FileSystem::FileExists(frame_path.c_str()))
       frame_paths.emplace_back(frame_path);
@@ -2179,7 +2178,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         for (int i = 1; auto& frame : fi.icon_frames)
         {
           std::string frame_path = ret.substr(0, ret.length() - frame_suffix.length() - dot_file_extension.length())
-                                     .append(std::format("_{}{}", i++, dot_file_extension));
+                                     .append(fmt::format("_{}{}", i++, dot_file_extension));
 
           INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
                    Path::GetFileTitle(frame_path));
