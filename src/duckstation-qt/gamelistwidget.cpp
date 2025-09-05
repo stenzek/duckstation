@@ -463,6 +463,7 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
 
       if (!frame_paths.empty())
       {
+        // Grab current animation frame if current entry is the selected one, otherwise grab the 1st frame
         if (m_newly_selected_entry == ge)
           path = frame_paths.size() > 1 ? frame_paths[m_current_frame_index % frame_paths.size()] : frame_paths[0];
         else
@@ -1423,11 +1424,12 @@ void GameListWidget::updateAnimationTimerActive(bool enabled)
   if (!timer)
     return;
 
+  // Stop animation timer if it's been disabled, icons are hidden, or the grid view is being shown.
   if (!enabled || !m_model->getShowGameIcons() || isShowingGameGrid())
   {
     if (timer->isActive())
     {
-      m_model->m_animation_timer->stop();
+      timer->stop();
       INFO_LOG("Animation timer is now inactive");
     }
     return;
@@ -1588,10 +1590,16 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
 
-  if (previous_index.isValid() && previous_index.row() < static_cast<int>(GameList::GetEntryCount()))
+  // Only refresh previous icon, update selections, and enable animations if we're in the list view
+  // and the user has already made a previous selection.
+  // Avoids animating the first row icon before clicking any row and stops processing when in the grid view
+  if (isShowingGameList() && previous_index.isValid() &&
+      previous_index.row() < static_cast<int>(GameList::GetEntryCount()))
   {
     int prev_row = previous_index.row();
 
+    // When selecting a new row, reset the previous row icon back to its 1st frame.
+    // Needs an invokeMethod call to avoid crashing when using the search bar.
     QMetaObject::invokeMethod(
       this,
       [this, prev_row] {
@@ -1628,6 +1636,7 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
   }
   else
   {
+    // Stop animation and reset icon to its 1st frame before grabbing it for the window icon
     updateAnimationTimerActive(false);
     m_model->refreshIcon(source_index.row());
     emit entryActivated();
@@ -1688,13 +1697,17 @@ void GameListWidget::showGameList()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_LIST);
+
+  // Resume animation when switching back from grid view
   updateAnimationTimerActive(true);
 }
 
 void GameListWidget::showGameGrid()
 {
+  // Stop animation and reset icon back to its 1st frame
+  // so it plays from the beginning when switching back to the list view
   updateAnimationTimerActive(false);
-  m_model->refreshIcons();
+  m_model->refreshIcon(m_model->m_newly_selected_row);
 
   // keep showing the placeholder widget if we have no games
   if (isShowingGameGrid() || m_model->rowCount() == 0)
@@ -1704,7 +1717,6 @@ void GameListWidget::showGameGrid()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_GRID);
-  this->getSelectedEntry();
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)
@@ -1736,6 +1748,8 @@ void GameListWidget::setShowGameIcons(bool enabled)
   Host::SetBaseBoolSettingValue("UI", "GameListShowGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowGameIcons(enabled);
+
+  // Start/stop animation according to icon visibility.
   updateAnimationTimerActive(enabled);
 }
 

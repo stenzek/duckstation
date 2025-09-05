@@ -2093,6 +2093,7 @@ std::vector<std::string> GameList::GetGameAnimatedIconPaths(std::string_view ser
   std::vector<std::string> frame_paths;
   std::string icon_path = GameList::GetGameIconPath(serial, path);
 
+  // Check for animation frames with filenames ending in "_1.png", "_2.png", and "_3.png"
   for (int i = 1; i <= MAX_FRAMES; i++)
   {
     std::string frame_path =
@@ -2175,6 +2176,8 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
       if (!fi.icon_frames.empty())
       {
         bool extracted = true;
+
+        // Save each animation frame with a filename ending in "_1.png", "_2.png", and "_3.png", respectively.
         for (int i = 1; auto& frame : fi.icon_frames)
         {
           std::string frame_path = ret.substr(0, ret.length() - frame_suffix.length() - dot_file_extension.length())
