@@ -324,7 +324,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
   if (painter.begin(&image))
   {
     QFont font;
-    font.setPointSize(std::max(static_cast<int>(32.0f * scale), 1));
+    font.setPixelSize(std::max(static_cast<int>(64.0f * scale), 1));
     painter.setFont(font);
     painter.setPen(Qt::white);
 
@@ -2026,7 +2026,7 @@ void GameListGridView::resizeEvent(QResizeEvent* e)
 void GameListGridView::onCoverScaleChanged(float scale)
 {
   QFont font;
-  font.setPointSizeF(20.0f * scale);
+  font.setPixelSize(std::max(static_cast<int>(30.0f * scale), 1));
   setFont(font);
 
   updateLayout();

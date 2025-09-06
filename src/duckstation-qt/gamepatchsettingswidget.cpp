@@ -23,7 +23,7 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
   m_ui.setupUi(this);
 
   QFont title_font(m_ui.name->font());
-  title_font.setPointSizeF(title_font.pointSizeF() + 4.0f);
+  title_font.setPixelSize(17);
   title_font.setBold(true);
   m_ui.name->setFont(title_font);
   m_ui.name->setText(QString::fromStdString(m_name));
@@ -120,7 +120,7 @@ void GamePatchSettingsWidget::reloadList()
   {
     QLabel* label = new QLabel(tr("No patches are available for this game."), container);
     QFont font(label->font());
-    font.setPointSizeF(font.pointSizeF() + 2.0f);
+    font.setPixelSize(15);
     font.setBold(true);
     label->setFont(font);
     layout->addWidget(label);

@@ -353,7 +353,8 @@ void PostProcessingShaderConfigWidget::createUi()
       {
         QLabel* label = new QLabel(QString::fromStdString(option.category), this);
         QFont label_font(label->font());
-        label_font.setPointSizeF(12.0f);
+        label_font.setPixelSize(16);
+        label_font.setBold(true);
         label->setFont(label_font);
         m_layout->addWidget(label, row++, 0, 1, 3, Qt::AlignLeft);
       }
