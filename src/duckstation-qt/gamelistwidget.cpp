@@ -409,12 +409,12 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   {
     // This isn't ideal, but not sure how else we can get the row, when it might change while scanning...
     auto lock = GameList::GetLock();
-    const u32 count = GameList::GetEntryCount();
-    for (u32 i = 0; i < count; i++)
+    const size_t count = GameList::GetEntryCount();
+    for (size_t i = 0; i < count; i++)
     {
       if (GameList::GetEntryByIndex(i)->path == path)
       {
-        row = i;
+        row = static_cast<int>(i);
         break;
       }
     }
