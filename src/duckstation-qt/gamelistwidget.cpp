@@ -1993,6 +1993,7 @@ GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort
   verticalScrollBar()->setSingleStep(15);
 
   connect(m_model, &GameListModel::coverScaleChanged, this, &GameListGridView::onCoverScaleChanged);
+  onCoverScaleChanged(m_model->getCoverScale());
 }
 
 GameListGridView::~GameListGridView() = default;
