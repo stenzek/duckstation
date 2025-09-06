@@ -459,7 +459,6 @@ void System::LogStartupInformation()
   INFO_LOG("DuckStation for {} ({}){}", TARGET_OS_STR, CPU_ARCH_STR, suffix);
   INFO_LOG("Version: {} [{}]", g_scm_tag_str, g_scm_branch_str);
   INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
-  INFO_LOG("Build Timestamp: {} {}", __DATE__, __TIME__);
   if (const cpuinfo_package* package = cpuinfo_initialize() ? cpuinfo_get_package(0) : nullptr) [[likely]]
   {
     INFO_LOG("Host CPU: {}", package->name);
