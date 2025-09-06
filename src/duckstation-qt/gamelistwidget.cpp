@@ -1711,7 +1711,8 @@ void GameListWidget::onIconSizeChanged(int size)
 {
   // update size of rows
   m_model->updateRowHeight(m_list_view);
-  m_list_view->setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
+  m_list_view->setFixedColumnWidth(m_list_view->fontMetrics(), GameListModel::Column_Icon,
+                                   m_model->getIconColumnWidth());
   m_list_view->verticalHeader()->setDefaultSectionSize(m_model->getRowHeight());
   onScaleChanged();
 }

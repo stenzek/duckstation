@@ -174,7 +174,7 @@ public:
   GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
 
-  void setFixedColumnWidth(int column, int width);
+  void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
 
 protected:
@@ -186,7 +186,7 @@ private:
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
 
-  void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
+  void setFixedColumnWidth(int column, int width);
   void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
