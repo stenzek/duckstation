@@ -38,10 +38,13 @@
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang))">/clang:-fno-rtti %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="!$(Configuration.Contains(Clang))">/d1trimfile:&quot;$(SolutionDir)\&quot; %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang))">/clang:-fmacro-prefix-map=&quot;$(SolutionDir)\&quot;=. /clang:-ffile-prefix-map=&quot;$(SolutionDir)\&quot;=. %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(DepsLibDir)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/PDBALTPATH:%_PDB% /Brepro %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
 
