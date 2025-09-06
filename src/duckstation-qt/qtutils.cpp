@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <cmath>
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
@@ -331,7 +332,7 @@ static void ResizeSharpBilinearT(T& pm, int size, int base_size)
 {
   // Sharp Bilinear scaling
   // First, scale the icon by the next largest integer size using nearest-neighbor...
-  const int integer_icon_size = std::ceilf(static_cast<float>(size) / base_size) * base_size;
+  const int integer_icon_size = std::ceil(static_cast<float>(size) / base_size) * base_size;
   pm = pm.scaled(integer_icon_size, integer_icon_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 
   // ...then scale down any remainder using bilinear interpolation.
