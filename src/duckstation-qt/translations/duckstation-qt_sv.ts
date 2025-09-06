@@ -116,7 +116,7 @@ Vill du aktivera kontrollen nu?</translation>
 However, hardcore mode also prevents the usage of save states, cheats and slowdown functionality.
 
 Do you want to enable hardcore mode?</source>
-        <translation>Hardcore-läget är inte aktivt just nu. Aktivering avhardcore-läget låter dig tävla på tid, poäng och delta i spelspecifika topplistor.
+        <translation>Hardcore-läget är inte aktivt just nu. Aktivering avhardcore-läget låter dig tävla på tid, poäng och delta i spelspecifika ledartavlor.
 
 Dock förhindrar även Hardcore-läget att man kan spara tillstånd, använda fusk och funktioner för att spela långsamt.
 
@@ -191,11 +191,11 @@ Vill du aktivera hardcore-läget?</translation>
     </message>
     <message>
         <source>Show Leaderboard Notifications</source>
-        <translation>Visa aviseringar om topplistor</translation>
+        <translation>Visa aviseringar om ledartavlor</translation>
     </message>
     <message>
         <source>Enable In-Game Overlays</source>
-        <translation>Aktivera överlägg i spelet</translation>
+        <translation type="vanished">Aktivera överlägg i spelet</translation>
     </message>
     <message>
         <source>Username:
@@ -217,7 +217,7 @@ Inloggningstoken genererades:</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>&quot;Challenge&quot;-läget för prestationer, inklusive koll på topplistor. Inaktiverar sparat tillstånd, fusk och funktioner för sakta körning.</translation>
+        <translation>&quot;Challenge&quot;-läget för prestationer, inklusive koll på ledartavlor. Inaktiverar sparat tillstånd, fusk och funktioner för sakta körning.</translation>
     </message>
     <message>
         <source>Checked</source>
@@ -225,11 +225,11 @@ Inloggningstoken genererades:</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Spelar upp ljudeffekter för händelser såsom en prestation låses upp och insändningar till topplistor.</translation>
+        <translation>Spelar upp ljudeffekter för händelser såsom en prestation låses upp och insändningar till ledartavlor.</translation>
     </message>
     <message>
         <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation>Visar ikoner i nedre högra hörnet av skärmen när en utmatning/primed prestation är aktiv.</translation>
+        <translation type="vanished">Visar ikoner i nedre högra hörnet av skärmen när en utmatning/primed prestation är aktiv.</translation>
     </message>
     <message>
         <source>When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.</source>
@@ -245,7 +245,7 @@ Inloggningstoken genererades:</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en topplisteutmaning.</translation>
+        <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en ledartavleutmaning.</translation>
     </message>
     <message>
         <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
@@ -291,6 +291,42 @@ Inloggningstoken genererades %2.</translation>
     <message>
         <source>Refresh Progress</source>
         <translation>Uppdatera framsteg</translation>
+    </message>
+    <message>
+        <source>Show Leaderboard Trackers</source>
+        <translation>Visa ledartavlor</translation>
+    </message>
+    <message>
+        <source>Progress Tracking</source>
+        <translation>Framstegsspårning</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators:</source>
+        <translation>Utmaningsindikatorer:</translation>
+    </message>
+    <message>
+        <source>Show Progress Indicators</source>
+        <translation>Visa förloppsindikatorer</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active.</source>
+        <translation>Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators</source>
+        <translation>Utmaningsindikatorer</translation>
+    </message>
+    <message>
+        <source>Show Persistent Icons</source>
+        <translation>Visa bestående ikoner</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
+        <translation>Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes.</source>
+        <translation>Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
     </message>
 </context>
 <context>
@@ -357,11 +393,11 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Leaderboard attempt started.</source>
-        <translation>Topplisteförsök startat.</translation>
+        <translation>Ledartavleförsök startat.</translation>
     </message>
     <message>
         <source>Leaderboard attempt failed.</source>
-        <translation>Topplisteförsök misslyckades.</translation>
+        <translation>Ledartavleförsök misslyckades.</translation>
     </message>
     <message>
         <source>Your Score: {}{}</source>
@@ -387,7 +423,7 @@ Inloggningstoken genererades %2.</translation>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
-Position på topplistan: {} av {}</translation>
+Position på ledartavlan: {} av {}</translation>
     </message>
     <message>
         <source>Server error in {}:
@@ -488,13 +524,13 @@ Olästa meddelanden: {}</translation>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
-            <numerusform>Detta spel har %n topplista.</numerusform>
-            <numerusform>Detta spel har %n topplistor.</numerusform>
+            <numerusform>Detta spel har %n ledartavla.</numerusform>
+            <numerusform>Detta spel har %n ledartavlor.</numerusform>
         </translation>
     </message>
     <message>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
-        <translation>Skicka in poäng är inaktiverat därför att hardcore-läget är av. Topplistor är endast läsbara.</translation>
+        <translation>Skicka in poäng är inaktiverat därför att hardcore-läget är av. Ledartavlor är endast läsbara.</translation>
     </message>
     <message>
         <source>Show Nearby</source>
@@ -514,11 +550,11 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Open Leaderboard</source>
-        <translation>Öppna topplistan</translation>
+        <translation>Öppna ledartavla</translation>
     </message>
     <message>
         <source>Downloading leaderboard data, please wait...</source>
-        <translation>Hämtar data från topplistan. Vänta...</translation>
+        <translation>Hämtar data från ledartavlan. Vänta...</translation>
     </message>
     <message>
         <source>Change Page</source>
@@ -530,7 +566,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Leaderboard download failed</source>
-        <translation>Hämtning av topplistan misslyckades</translation>
+        <translation>Hämtning av ledartavlan misslyckades</translation>
     </message>
     <message>
         <source>Your Time: {}{}</source>
@@ -662,7 +698,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation>Hardcore-läget är inaktiverat. Topplistor kommer inte att kontrolleras.</translation>
+        <translation>Hardcore-läget är inaktiverat. Ledartavlor kommer inte att följas.</translation>
     </message>
     <message>
         <source>Game complete.
@@ -704,6 +740,42 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Unsynchronized</source>
         <translation>Inte synkroniserad</translation>
+    </message>
+    <message>
+        <source>Unsupported Achievements</source>
+        <translation>Prestationer som inte stöds</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n achievements are not supported by DuckStation.</source>
+        <comment>Achievement popup</comment>
+        <translation>
+            <numerusform>%n prestation stöds inte av DuckStation.</numerusform>
+            <numerusform>%n prestationer stöds inte av DuckStation.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Challenge Started: {}</source>
+        <translation>Utmaning startad: {}</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
+        <comment>Unsupported achievement count</comment>
+        <translation>
+            <numerusform>%n prestation stöds inte av DuckStation och kan inte låsas upp.</numerusform>
+            <numerusform>%n prestationer stöds inte av DuckStation och kan inte låsas upp.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Game was beaten on {0}, and completed on {1}.</source>
+        <translation>Spelet klarades av den {0} och färdigställdes den {1}.</translation>
+    </message>
+    <message>
+        <source>Game was beaten on {0}.</source>
+        <translation>Spelet klarades av den {0}.</translation>
+    </message>
+    <message>
+        <source>Game was completed on {0}.</source>
+        <translation>Spelet färdigställdes den {0}.</translation>
     </message>
 </context>
 <context>
@@ -959,6 +1031,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Redirect SIO to TTY</source>
         <translation>Omdirigera SIO till TTY</translation>
+    </message>
+    <message>
+        <source>CD-ROM Disable Speedup on MDEC</source>
+        <translation>Inaktivera CD-ROM-hastighetsökning på MDEC</translation>
     </message>
 </context>
 <context>
@@ -1601,6 +1677,22 @@ Olästa meddelanden: {}</translation>
         <source>Reset Output Volume</source>
         <translation>Återställ utmatningsvolym</translation>
     </message>
+    <message>
+        <source>Buffer Size</source>
+        <translation>Buffertstorlek</translation>
+    </message>
+    <message>
+        <source>Determines how much latency there is between the audio being picked up by the host API, and played through speakers.</source>
+        <translation>Bestämmer hur stor fördröjning det är mellan det att ljudet plockas upp av värd-API:et och spelas upp i högtalarna.</translation>
+    </message>
+    <message>
+        <source>Minimal Output Latency</source>
+        <translation>Minimal utdatalatens</translation>
+    </message>
+    <message>
+        <source>When enabled, the minimum supported output latency will be used for the host API.</source>
+        <translation>När den är aktiverad används den minsta stödda utmatningslatensen för värd-API:et.</translation>
+    </message>
 </context>
 <context>
     <name>AudioStream</name>
@@ -1724,7 +1816,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
-        <translation>&lt;h4&gt;Installation av denna uppdatering kommer att hämta %1 MB genom din internetanslutning.&lt;/h4&gt;</translation>
+        <translation type="vanished">&lt;h4&gt;Installation av denna uppdatering kommer att hämta %1 MB genom din internetanslutning.&lt;/h4&gt;</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update:
@@ -1739,6 +1831,14 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Do not show again</source>
         <translation>Visa inte igen</translation>
+    </message>
+    <message>
+        <source>Download Size:</source>
+        <translation>Hämtningsstorlek:</translation>
+    </message>
+    <message>
+        <source>Download Size: %1 MB</source>
+        <translation>Hämtningsstorlek: %1 MB</translation>
     </message>
 </context>
 <context>
@@ -3013,7 +3113,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode.</source>
-        <translation>SDL-inmatningskällan har stöd för de flesta handkontroller och ger avancerad funktionalitet för DualShock 4 / DualSense-kontroller i Bluetooth-läge (Vibration / LED-kontroll).</translation>
+        <translation type="vanished">SDL-inmatningskällan har stöd för de flesta handkontroller och ger avancerad funktionalitet för DualShock 4 / DualSense-kontroller i Bluetooth-läge (Vibration / LED-kontroll).</translation>
     </message>
     <message>
         <source>Enable Touchpad</source>
@@ -3093,11 +3193,11 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Enable IOKit Driver</source>
-        <translation>Aktivera IOKit-drivrutin</translation>
+        <translation type="vanished">Aktivera IOKit-drivrutin</translation>
     </message>
     <message>
         <source>Enable MFI Driver</source>
-        <translation>Aktivera MFI-drivrutin</translation>
+        <translation type="vanished">Aktivera MFI-drivrutin</translation>
     </message>
     <message>
         <source>Controller Multitap</source>
@@ -3122,6 +3222,14 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The XInput source provides support for controllers that use the XInput protocol. This source should &lt;span style=&quot; font-weight:700;&quot;&gt;only&lt;/span&gt; be used if you are using a XInput wrapper library.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;XInput-källan ger stöd för styrenheter som använder XInput-protokollet. Denna källa bör &lt;span style=&quot; font-weight:700;&quot;&gt;endast&lt;/span&gt; användas om du använder ett XInput-wrapperbibliotek.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;advanced options&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-inmatningskällan stöder de flesta kontroller och erbjuder vibrations-/LED-funktionalitet för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;avancerade alternativ&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Advanced SDL Options</source>
+        <translation>Avancerade SDL-alternativ</translation>
     </message>
 </context>
 <context>
@@ -3419,11 +3527,58 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <name>CoverDownloadDialog</name>
     <message>
         <source>Download Covers</source>
+        <translation type="vanished">Hämta omslagsbilder</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <translation type="vanished">DuckStation kan automatiskt hämta omslagsbilder för spel som du för närvarande inte har ett omslag för. Vi tillhandahåller inte några omslagsbilder och användaren måste tillhandahålla sin egna källa för bilder.</translation>
+    </message>
+    <message>
+        <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
+        <translation type="vanished">Som standard kommer hämtade omslagsbilder att sparas med spelets titel. Om detta inte är önskvärt så kan du välja &quot;Använd filnamn för serienummer&quot; nedan. Använda serienummer istället för speltitlar förhindrar konflikter när flera regioner av samma spel används.</translation>
+    </message>
+    <message>
+        <source>Use Serial File Names</source>
+        <translation type="vanished">Använd filnamn för serienummer</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Följande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exempel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Waiting to start...</source>
+        <translation type="vanished">Väntar på att starta...</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation type="vanished">Starta</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="vanished">Stäng</translation>
+    </message>
+    <message>
+        <source>Download complete.</source>
+        <translation type="vanished">Hämtningen är färdig.</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="vanished">Stoppa</translation>
+    </message>
+</context>
+<context>
+    <name>CoverDownloadWindow</name>
+    <message>
+        <source>Download Covers</source>
         <translation>Hämta omslagsbilder</translation>
     </message>
     <message>
         <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <translation>DuckStation kan automatiskt hämta omslagsbilder för spel som du för närvarande inte har ett omslag för. Vi tillhandahåller inte några omslagsbilder och användaren måste tillhandahålla sin egna källa för bilder.</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Title of the game including the region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Localized (native language) title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;I rutan nedan anger du URL-adresserna från vilka omslagen ska hämtas, med en mall-URL per rad. Följande variabler är tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${savetitle}:&lt;/span&gt; Spelets titel inklusive region.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${localizedtitle}:&lt;/span&gt; Spelets lokaliserade titel (modersmål).&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten i spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Spelets serienummer.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>By default, the downloaded covers will be saved with the game&apos;s title. If this is not desired, you can check the &quot;Use Serial File Names&quot; box below. Using serials instead of game titles will prevent conflicts when multiple regions of the same game are used.</source>
@@ -3432,10 +3587,6 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Use Serial File Names</source>
         <translation>Använd filnamn för serienummer</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Följande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exempel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Waiting to start...</source>
@@ -3616,23 +3767,23 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <name>DebuggerCodeModel</name>
     <message>
         <source>&lt;invalid&gt;</source>
-        <translation>&lt;ogiltig&gt;</translation>
+        <translation type="vanished">&lt;ogiltig&gt;</translation>
     </message>
     <message>
         <source>Address</source>
-        <translation>Adress</translation>
+        <translation type="vanished">Adress</translation>
     </message>
     <message>
         <source>Bytes</source>
-        <translation>Bytes</translation>
+        <translation type="vanished">Bytes</translation>
     </message>
     <message>
         <source>Instruction</source>
-        <translation>Instruktion</translation>
+        <translation type="vanished">Instruktion</translation>
     </message>
     <message>
         <source>Comment</source>
-        <translation>Kommentar</translation>
+        <translation type="vanished">Kommentar</translation>
     </message>
 </context>
 <context>
@@ -4538,7 +4689,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>{:%H:%M}</source>
-        <translation>{:%H:%M}</translation>
+        <translation type="vanished">{:%H:%M}</translation>
     </message>
     <message>
         <source>Change Selection</source>
@@ -5722,11 +5873,11 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Displays popup messages on events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Visar popup-meddelanden vid händelser som t.ex. upplåsning av prestationer och insändning av topplistor.</translation>
+        <translation>Visar popup-meddelanden vid händelser som t.ex. upplåsning av prestationer och insändning av ledartavlor.</translation>
     </message>
     <message>
         <source>Displays popup messages when starting, submitting, or failing a leaderboard challenge.</source>
-        <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en topplisteutmaning.</translation>
+        <translation>Visar popupmeddelanden vid start, insändning eller misslyckanden av en ledartavleutmaning.</translation>
     </message>
     <message>
         <source>Double-Click Toggles Fullscreen</source>
@@ -5786,7 +5937,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Enable In-Game Overlays</source>
-        <translation>Aktivera överlägg i spelet</translation>
+        <translation type="vanished">Aktivera överlägg i spelet</translation>
     </message>
     <message>
         <source>Enable Overclocking</source>
@@ -6184,11 +6335,11 @@ Felet var:</translation>
     </message>
     <message>
         <source>Leaderboard Notifications</source>
-        <translation>Aviseringar för topplistor</translation>
+        <translation>Aviseringar för ledartavlor</translation>
     </message>
     <message>
         <source>Leaderboards</source>
-        <translation>Topplistor</translation>
+        <translation>Ledartavlor</translation>
     </message>
     <message>
         <source>Leaderboards are not enabled.</source>
@@ -6552,7 +6703,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Plays sound effects for events such as achievement unlocks and leaderboard submissions.</source>
-        <translation>Spelar upp ljudeffekter för händelser såsom en prestation låses upp och insändningar till topplistor.</translation>
+        <translation>Spelar upp ljudeffekter för händelser såsom en prestation låses upp och insändningar till ledartavlor.</translation>
     </message>
     <message>
         <source>Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.</source>
@@ -6980,7 +7131,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
-        <translation>Visar ikoner i nedre högra hörnet av skärmen när en utmatning/primed prestation är aktiv.</translation>
+        <translation type="vanished">Visar ikoner i nedre högra hörnet av skärmen när en utmatning/primed prestation är aktiv.</translation>
     </message>
     <message>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
@@ -7152,7 +7303,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>This game has no leaderboards.</source>
-        <translation>Detta spel har inga topplistor.</translation>
+        <translation>Detta spel har inga ledartavlor.</translation>
     </message>
     <message>
         <source>Threaded Rendering</source>
@@ -7372,7 +7523,7 @@ Vill du {0} ändå?</translation>
     </message>
     <message>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>&quot;Challenge&quot;-läget för prestationer, inklusive koll på topplistor. Inaktiverar sparat tillstånd, fusk och funktioner för sakta körning.</translation>
+        <translation>&quot;Challenge&quot;-läget för prestationer, inklusive följa ledartavlor. Inaktiverar sparat tillstånd, fusk och funktioner för sakta körning.</translation>
     </message>
     <message>
         <source>&quot;PlayStation&quot; and &quot;PSX&quot; are registered trademarks of Sony Interactive Entertainment Europe Limited. This software is not affiliated in any way with Sony Interactive Entertainment.</source>
@@ -7392,7 +7543,7 @@ Vill du {0} ändå?</translation>
     </message>
     <message>
         <source>{:%Y-%m-%d %H:%M:%S}</source>
-        <translation>{:%Y-%m-%d %H:%M:%S}</translation>
+        <translation type="vanished">{:%Y-%m-%d %H:%M:%S}</translation>
     </message>
     <message>
         <source>A cover already exists for this game. Are you sure that you want to overwrite it?</source>
@@ -7782,6 +7933,126 @@ Du kan inte ångra den här åtgärden.</translation>
     <message>
         <source>Top: </source>
         <translation>Överst: </translation>
+    </message>
+    <message>
+        <source>${title}: Title of the game.
+${filetitle}: Name component of the game&apos;s filename.
+${serial}: Serial of the game.</source>
+        <translation>${title}: Titel på spelet.
+${filetitle}: Namnkomponenten för spelets filnamn.
+${serial}: Serienumret för spelet.</translation>
+    </message>
+    <message>
+        <source>&lt;Parent Directory&gt;</source>
+        <translation>&lt;överordnad katalog&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;Use This Directory&gt;</source>
+        <translation>&lt;Använd denna katalog&gt;</translation>
+    </message>
+    <message>
+        <source>Challenge Indicators</source>
+        <translation>Utmaningsindikatorer</translation>
+    </message>
+    <message>
+        <source>Cover Downloader</source>
+        <translation>Hämta omslagsbilder</translation>
+    </message>
+    <message>
+        <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
+        <translation>Bestämmer skalningsalgoritmen som används när 24-bitarsinnehåll är aktivt, vanligtvis FMV.</translation>
+    </message>
+    <message>
+        <source>Disable Speedup on MDEC</source>
+        <translation>Inaktivera hastighetsökning på MDEC</translation>
+    </message>
+    <message>
+        <source>DuckStation can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
+        <translation>DuckStation kan automatiskt hämta omslagsbilder för spel som du för närvarande inte har ett omslag för. Vi tillhandahåller inte några omslagsbilder och användaren måste tillhandahålla sin egna källa för bilder.</translation>
+    </message>
+    <message>
+        <source>Example: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</source>
+        <translation>Exempel: https://www.example-not-a-real-domain.com/covers/${serial}.jpg</translation>
+    </message>
+    <message>
+        <source>FMV Scaling</source>
+        <translation>FMV-skalning</translation>
+    </message>
+    <message>
+        <source>Ignore Drive Subcode</source>
+        <translation>Ignorera enhetens underkod</translation>
+    </message>
+    <message>
+        <source>Ignores the subchannel provided by the drive when using physical discs, instead always generating subchannel data. Can improve read reliability on some drives.</source>
+        <translation>Ignorerar den underkanal som tillhandahålls av enheten vid användning av fysiska skivor och genererar istället alltid underkanaldata. Kan förbättra läsningssäkerheten på vissa enheter.</translation>
+    </message>
+    <message>
+        <source>In the form below, specify the URLs to download covers from, with one template URL per line. The following variables are available:</source>
+        <translation>I formuläret nedan anger du de URL-adresser som omslagen ska hämtas ner från, med en mall-URL per rad. Följande variabler är tillgängliga:</translation>
+    </message>
+    <message>
+        <source>Leaderboard Trackers</source>
+        <translation>Följ ledartavla</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation>Nej</translation>
+    </message>
+    <message>
+        <source>Prefer OpenGL ES Context</source>
+        <translation>Föredra OpenGL ES Context</translation>
+    </message>
+    <message>
+        <source>Progress Indicators</source>
+        <translation>Förloppsindikatorer</translation>
+    </message>
+    <message>
+        <source>Save as Serial File Names</source>
+        <translation>Spara som filnamn med serienummer</translation>
+    </message>
+    <message>
+        <source>Show Grid View Titles</source>
+        <translation>Visa titlar på rutnätsvy</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <translation>Visa lokalanpassade titlar</translation>
+    </message>
+    <message>
+        <source>Shows a notification or icons in the lower-right corner of the screen when a challenge/primed achievement is active.</source>
+        <translation>Visar en avisering eller ikoner i det nedre högra hörnet av skärmen när en utmaning/förberedd prestation är aktiv.</translation>
+    </message>
+    <message>
+        <source>Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes.</source>
+        <translation>Visar ett popup-fönster i det nedre högra hörnet av skärmen när framstegen mot en uppmätt prestation förändras.</translation>
+    </message>
+    <message>
+        <source>Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active.</source>
+        <translation>Visar en timer i det nedre högra hörnet av skärmen när ledartavlans-utmaningar är aktiva.</translation>
+    </message>
+    <message>
+        <source>Shows titles underneath the images in the game grid view.</source>
+        <translation>Visar titlar under bilderna i spelrutnätets vy.</translation>
+    </message>
+    <message>
+        <source>Start Download</source>
+        <translation>Starta hämtning</translation>
+    </message>
+    <message>
+        <source>Tries to detect FMVs and disable read speedup during games that don&apos;t use XA streaming audio.</source>
+        <translation>Försöker upptäcka FMV och inaktiverar läsningshastigheten under spel som inte använder XA-strömningsljud.</translation>
+    </message>
+    <message>
+        <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
+        <translation>Använder OpenGL ES även när OpenGL för stationära datorer stöds. Kan förbättra prestandan på vissa SBC-drivrutiner.</translation>
+    </message>
+    <message>
+        <source>Uses localized (native language) titles in the game list.</source>
+        <translation>Använder lokalanpassade (modersmål) titlar i spellistan.</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation>Ja</translation>
     </message>
 </context>
 <context>
@@ -8633,6 +8904,31 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
         <source>PGXP Preserve Projection Precision</source>
         <translation>PGXP Bevara projektionsprecision</translation>
     </message>
+    <message>
+        <source>Disable CD-ROM Speedup on MDEC</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Inaktivera CD-ROM-hastighetsökning på MDEC</translation>
+    </message>
+    <message>
+        <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
+        <translation>Inaktivera CD-ROM-hastighetsökning på MDEC är aktiverat, men det krävs inte för detta spel.</translation>
+    </message>
+    <message>
+        <source>Sort Title</source>
+        <translation>Sortera titel</translation>
+    </message>
+    <message>
+        <source>Localized Title</source>
+        <translation>Lokalanpassad titel</translation>
+    </message>
+    <message>
+        <source>Save Title</source>
+        <translation>Spara titel</translation>
+    </message>
+    <message>
+        <source>CPU Overclock Percent</source>
+        <translation>Överklockningsprocent för CPU</translation>
+    </message>
 </context>
 <context>
     <name>GameList</name>
@@ -8726,6 +9022,20 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
             <numerusform>%n sekunder</numerusform>
         </translation>
     </message>
+    <message>
+        <source>URL template must contain at least one of ${title}, ${savetitle}, ${filetitle}, or ${serial}.</source>
+        <translation>URL-mallen måste innehålla minst ett av följande: ${title}, ${savetitle}, ${filetitle} eller ${serial}.</translation>
+    </message>
+    <message>
+        <source>No URLs to download enumerated.</source>
+        <translation>Inga URLer för att hämta ner uppräknat.</translation>
+    </message>
+    <message>
+        <source>Failed to create HTTP downloader:
+{}</source>
+        <translation>Misslyckades med att skapa HTTP-hämtare:
+{}</translation>
+    </message>
 </context>
 <context>
     <name>GameListModel</name>
@@ -8796,6 +9106,18 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <source>Raw Size</source>
         <translation>Råstorlek</translation>
+    </message>
+    <message>
+        <source>No Achievements</source>
+        <translation>Inga prestationer</translation>
+    </message>
+    <message>
+        <source>%1/%2 achievements unlocked</source>
+        <translation>%1/%2 prestationer upplåsta</translation>
+    </message>
+    <message>
+        <source>%1 unlocked in hardcore mode</source>
+        <translation>%1 upplåst i hardcore-läget</translation>
     </message>
 </context>
 <context>
@@ -8898,6 +9220,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Search...</source>
         <translation>Sök...</translation>
+    </message>
+    <message>
+        <source>Show Localized Icons</source>
+        <translation>Visa lokalanpassade ikoner</translation>
+    </message>
+    <message>
+        <source>Show Game Icons</source>
+        <translation>Visa spelikoner</translation>
     </message>
 </context>
 <context>
@@ -10340,6 +10670,26 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>128 kbps</source>
         <translation>128 kbps</translation>
     </message>
+    <message>
+        <source>FMV Scaling:</source>
+        <translation>FMV-skalning:</translation>
+    </message>
+    <message>
+        <source>Prefer OpenGL ES Context</source>
+        <translation>Föredra OpenGL ES Context</translation>
+    </message>
+    <message>
+        <source>FMV Scaling</source>
+        <translation>FMV-skalning</translation>
+    </message>
+    <message>
+        <source>Determines the scaling algorithm used when 24-bit content is active, typically FMVs.</source>
+        <translation>Bestämmer skalningsalgoritmen som används när 24-bitarsinnehåll är aktivt, vanligtvis FMV.</translation>
+    </message>
+    <message>
+        <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
+        <translation>Använder OpenGL ES även när OpenGL för stationära datorer stöds. Kan förbättra prestandan på vissa SBC-drivrutiner.</translation>
+    </message>
 </context>
 <context>
     <name>GunCon</name>
@@ -10491,7 +10841,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Open Leaderboard List</source>
-        <translation>Öppna topplistan</translation>
+        <translation>Öppna ledartavlelistan</translation>
     </message>
     <message>
         <source>Reset System</source>
@@ -12517,6 +12867,38 @@ Detta går inte att ångra.</translation>
         <source>Log File Timestamps</source>
         <translation>Tidsstämplar för loggfil</translation>
     </message>
+    <message>
+        <source>Show Titles</source>
+        <translation>Visa titlar</translation>
+    </message>
+    <message>
+        <source>Show Game Icons</source>
+        <translation>Visa spelikoner</translation>
+    </message>
+    <message>
+        <source>Show Localized Titles</source>
+        <translation>Visa lokalanpassade titlar</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Överst</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Nederst</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Vänster</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Höger</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
 </context>
 <context>
     <name>MediaCapture</name>
@@ -12654,7 +13036,7 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     </message>
     <message>
         <source>Memory Card:</source>
-        <translation>Minneskort:</translation>
+        <translation type="vanished">Minneskort:</translation>
     </message>
     <message>
         <source>New...</source>
@@ -12663,6 +13045,18 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <source>Open...</source>
         <translation>Öppna...</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Ikon</translation>
+    </message>
+    <message>
+        <source>Memory Card 2:</source>
+        <translation>Minneskort 2:</translation>
+    </message>
+    <message>
+        <source>Memory Card 1:</source>
+        <translation>Minneskort 1:</translation>
     </message>
 </context>
 <context>
@@ -13194,6 +13588,22 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <source>%1 (only showing first %2)</source>
         <translation>%1 (visar endast första %2)</translation>
+    </message>
+    <message>
+        <source>First Value</source>
+        <translation>Första värdet</translation>
+    </message>
+    <message>
+        <source>Failed to create watches directory: %1</source>
+        <translation>Misslyckades med att skapa katalog för watches: %1</translation>
+    </message>
+    <message>
+        <source>Failed to save watches to file: %1</source>
+        <translation>Misslyckades med att spara watches till fil: %1</translation>
+    </message>
+    <message>
+        <source>Failed to load watches from file: %1</source>
+        <translation>Misslyckades med att läsa in watches från fil: %1</translation>
     </message>
 </context>
 <context>
@@ -14195,6 +14605,14 @@ URLen var: %1</translation>
 
 {}</translation>
     </message>
+    <message>
+        <source>System Language</source>
+        <translation>Systemspråk</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Okänt</translation>
+    </message>
 </context>
 <context>
     <name>QtModalProgressCallback</name>
@@ -14217,6 +14635,81 @@ URLen var: %1</translation>
     <message>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
+    </message>
+</context>
+<context>
+    <name>SDLInputSource</name>
+    <message>
+        <source>Enable XBox HIDAPI Driver</source>
+        <translation>Aktivera XBox HIDAPI-drivrutin</translation>
+    </message>
+    <message>
+        <source>Enables the HIDAPI driver for XBox controllers.</source>
+        <translation>Aktiverar HIDAPI-drivrutinen för XBox-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable Raw Input Drivers</source>
+        <translation>Aktivera drivrutiner för råinmatning</translation>
+    </message>
+    <message>
+        <source>Enables raw input joystick drivers which can improve handling of XInput-capable devices.</source>
+        <translation>Aktiverar råa styrenhetsdrivrutiner som kan förbättra hanteringen av XInput-kompatibla enheter.</translation>
+    </message>
+    <message>
+        <source>Enable DirectInput Driver</source>
+        <translation>Aktivera DirectInput-drivrutin</translation>
+    </message>
+    <message>
+        <source>Enables compatibility with DirectInput controllers.</source>
+        <translation>Aktiverar kompatibilitet med DirectInput-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable XInput Driver</source>
+        <translation>Aktivera XInput-drivrutin</translation>
+    </message>
+    <message>
+        <source>Enables compatibility with XInput controllers.</source>
+        <translation>Aktiverar kompatibilitet med XInput-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable WGI Driver</source>
+        <translation>Aktivera WGI-drivrutin</translation>
+    </message>
+    <message>
+        <source>Enables compatibility with Windows.Gaming.Input controllers.</source>
+        <translation>Aktiverar kompatibilitet med Windows.Gaming.Input-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable GameInput Driver</source>
+        <translation>Aktivera GameInput-drivrutin</translation>
+    </message>
+    <message>
+        <source>Enables compatibility with GameInput controllers.</source>
+        <translation>Aktiverar kompatibilitet med GameInput-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable IOKit Driver</source>
+        <translation>Aktivera IOKit-drivrutin</translation>
+    </message>
+    <message>
+        <source>Allows the use of IOKit for controller handling.</source>
+        <translation>Tillåter användning av IOKit för hantering av styrenheter.</translation>
+    </message>
+    <message>
+        <source>Enable MFI Driver</source>
+        <translation>Aktivera MFI-drivrutin</translation>
+    </message>
+    <message>
+        <source>Allows the use of GCController/MFI for controller handling.</source>
+        <translation>Tillåter användning av GCController/MFI för hantering av kontroller.</translation>
+    </message>
+    <message>
+        <source>Force Digital Hat Inputs</source>
+        <translation>Tvinga digitala hatt-inmatningar</translation>
+    </message>
+    <message>
+        <source>Forces joysticks to always treat &apos;hat&apos; axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking whether they may be analog.</source>
+        <translation>Tvingar styrenheter att alltid behandla ”hat”-axelinmatningar (ABS_HAT0X - ABS_HAT3Y) som 8-vägs digitala hats utan att kontrollera om de kan vara analoga.</translation>
     </message>
 </context>
 <context>
@@ -14358,11 +14851,15 @@ Vill du skapa denna katalog?</translation>
     </message>
     <message>
         <source>Incompatible with this game.</source>
-        <translation>Inte kompatibel med detta spel.</translation>
+        <translation type="vanished">Inte kompatibel med detta spel.</translation>
     </message>
     <message>
         <source> [incompatible]</source>
         <translation> [inte kompatibel]</translation>
+    </message>
+    <message>
+        <source>Incompatible with this game</source>
+        <translation>Inkompatibelt med detta spel</translation>
     </message>
 </context>
 <context>
@@ -15017,6 +15514,41 @@ Vill du skapa denna katalog?</translation>
         <comment>GPUTextureFilter</comment>
         <translation>MMPX förbättrad (Långsam)</translation>
     </message>
+    <message>
+        <source>Disabled</source>
+        <comment>AchievementChallengeIndicatorMode</comment>
+        <translation>Inaktiverad</translation>
+    </message>
+    <message>
+        <source>Show Persistent Icons</source>
+        <comment>AchievementChallengeIndicatorMode</comment>
+        <translation>Visa bestående ikoner</translation>
+    </message>
+    <message>
+        <source>Show Temporary Icons</source>
+        <comment>AchievementChallengeIndicatorMode</comment>
+        <translation>Visa temporära ikoner</translation>
+    </message>
+    <message>
+        <source>Show Notifications</source>
+        <comment>AchievementChallengeIndicatorMode</comment>
+        <translation>Visa notifieringar</translation>
+    </message>
+    <message>
+        <source>XZ (Low)</source>
+        <comment>SaveStateCompressionMode</comment>
+        <translation>XZ (låg)</translation>
+    </message>
+    <message>
+        <source>XZ (Default)</source>
+        <comment>SaveStateCompressionMode</comment>
+        <translation>XZ (standard)</translation>
+    </message>
+    <message>
+        <source>XZ (High)</source>
+        <comment>SaveStateCompressionMode</comment>
+        <translation>XZ (hög)</translation>
+    </message>
 </context>
 <context>
     <name>SettingsDialog</name>
@@ -15488,7 +16020,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Renderer:</source>
-        <translation>Renderare:</translation>
+        <translation type="vanished">Renderare:</translation>
     </message>
     <message>
         <source>Internal Resolution:</source>
@@ -15528,7 +16060,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation har stöd för att tjäna prestationer och spårning av topplistan med RetroAchievements.&lt;/p&gt;&lt;p&gt;Om du har ett RetroAchievements-konto kan du använda formuläret nedan för att logga in. Om inte, kan du registrera dig på &lt;a href=”https://retroachievements.org/createaccount.php”&gt;&lt;span style=” text-decoration: underline; color:#99ebff;”&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Ett RetroAchievements-konto är &lt;span style=” font-weight:700;”&gt;inte&lt;/span&gt; nödvändigt för att använda DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation har stöd för att tjäna prestationer och följa ledartavlor med RetroAchievements.&lt;/p&gt;&lt;p&gt;Om du har ett RetroAchievements-konto kan du använda formuläret nedan för att logga in. Om inte, kan du registrera dig på &lt;a href=”https://retroachievements.org/createaccount.php”&gt;&lt;span style=” text-decoration: underline; color:#99ebff;”&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Ett RetroAchievements-konto är &lt;span style=” font-weight:700;”&gt;inte&lt;/span&gt; nödvändigt för att använda DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Settings</source>
@@ -15576,7 +16108,7 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Selects the backend to use for rendering the console/game visuals.</source>
-        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelvisualiseringar.</translation>
+        <translation type="vanished">Väljer den bakände som ska användas för att rendera konsol- och spelvisualiseringar.</translation>
     </message>
     <message>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
@@ -15622,6 +16154,10 @@ Inloggningstoken genererades %2.</translation>
         <source>RetroAchievements</source>
         <comment>Header text</comment>
         <translation>RetroAchievements</translation>
+    </message>
+    <message>
+        <source>FMV Scaling:</source>
+        <translation>FMV-skalning:</translation>
     </message>
 </context>
 <context>
