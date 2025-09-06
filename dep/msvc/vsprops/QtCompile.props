@@ -163,15 +163,17 @@
   <!--Copies base translation files, and combines split into one -->
   <ItemGroup>
     <AllQmFiles Include="$(QtTranslationsDir)qt*.qm">
-    <Language>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').IndexOf('_')), 1))))</Language>
+      <Language>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').IndexOf('_')), 1))))</Language>
     </AllQmFiles>
     <BaseQmFiles Include="$(QtTranslationsDir)qtbase_*.qm" />
     <SourceMergeQmFileNames Include="@(BaseQmFiles -> '%(Filename)%(Extension)'->Replace('qtbase_', 'qt_'))" />
     <SourceMergeQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTranslationsDir)%(Filename)%(Extension)')" />
     <MergedQmFiles Include="@(SourceMergeQmFileNames -> '$(QtTsOutDir)%(Filename)%(Extension)')">
-    <Language>$([System.String]::Copy('%(Filename)').Replace('qt_', ''))</Language>
+      <Language>$([System.String]::Copy('%(Filename)').Replace('qt_', ''))</Language>
     </MergedQmFiles>
-    <CopyTsFilesSource Include="$(QtTranslationsDir)qt_*.qm" Exclude="@(SourceMergeQmFiles);$(QtTranslationsDir)\qt_help_*.qm" />
+    <!-- Create list of qt_*.qm files in source directory that correspond to qtbase_*.qm files -->
+    <QtFilesToExcludeFromCopy Include="@(BaseQmFiles -> '%(Filename)%(Extension)'->Replace('qtbase_', '$(QtTranslationsDir)qt_'))" />
+    <CopyTsFilesSource Include="$(QtTranslationsDir)qt_*.qm" Exclude="@(QtFilesToExcludeFromCopy);$(QtTranslationsDir)\qt_help_*.qm" />
     <CopyTsFilesDest Include="@(CopyTsFilesSource -> '$(QtTsOutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
   <Target Name="QtGenerateBaseTranslations" AfterTargets="Build" Inputs="@(SourceMergeQmFiles)" Outputs="%(MergedQmFiles.FullPath)">
@@ -180,11 +182,12 @@
     </PropertyGroup>
     <Message Text="Generate Base Translation qt_$(Language).qm" Importance="High" />
     <ItemGroup>
-      <SourceQmFiles Include="%(AllQmFiles.FullPath)" Condition="'%(AllQmFiles.Language)' == '$(Language)'" />
+      <!-- Exclude qt_*.qm files from source files to prevent circular inclusion -->
+      <SourceQmFiles Include="%(AllQmFiles.FullPath)" Condition="'%(AllQmFiles.Language)' == '$(Language)' And !$([System.String]::Copy('%(AllQmFiles.Filename)').StartsWith('qt_'))" />
     </ItemGroup>
     <Error Condition="!$(DSQTDIRValid)" Text="Qt directory non-existent (download/extract the zip)" />
     <MakeDir Directories="$(QtTsOutDir)" />
-    <Exec Command="&quot;$(QtHostBinDir)lconvert.exe&quot; -verbose -of qm -o &quot;$(QtTsOutDir)qt_$(Language).qm&quot; @(SourceQmFiles -> '&quot;%(FullPath)&quot;', ' ')" />
+    <Exec Command="&quot;$(QtHostBinDir)lconvert.exe&quot; -verbose -of qm -o &quot;$(QtTsOutDir)qt_$(Language).qm&quot; @(SourceQmFiles -> '&quot;%(FullPath)&quot;', ' ')" EchoOff="false" />
   </Target>
   <Target Name="QtCopyBaseTranslations"
     AfterTargets="Build"
