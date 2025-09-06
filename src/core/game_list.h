@@ -168,6 +168,7 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
 /// timestamp of the memory card has changed.
 std::string GetGameIconPath(std::string_view serial, std::string_view path);
+std::vector<std::string> GetGameAnimatedIconPaths(std::string_view serial, std::string_view path);
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.

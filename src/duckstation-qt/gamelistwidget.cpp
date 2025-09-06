@@ -66,6 +66,8 @@ static constexpr int MIN_COVER_CACHE_SIZE = 256;
 static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
 static constexpr int MEMORY_CARD_ICON_SIZE = 16;
 static constexpr int MEMORY_CARD_ICON_PADDING = 12;
+static constexpr int MEMORY_CARD_ICON_FRAME_DURATION_MS = 200;
+static constexpr int MEMORY_CARD_ICON_ANIMATION_CYCLES = 8;
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
 {
@@ -186,6 +188,22 @@ void GameListModel::setShowGameIcons(bool enabled)
   refreshIcons();
 }
 
+void GameListModel::refreshSelectedIcon()
+{
+  refreshIcon(m_selected_row);
+}
+
+void GameListModel::refreshIcon(int row)
+{
+  if (row < 0)
+    return;
+
+  if (const GameList::Entry* entry = GameList::GetEntryByIndex(row))
+    m_icon_pixmap_cache.Remove(entry->serial);
+
+  emit dataChanged(index(row, Column_Icon), index(row, Column_Icon), {Qt::DecorationRole});
+}
+
 void GameListModel::refreshIcons()
 {
   m_icon_pixmap_cache.Clear();
@@ -291,6 +309,44 @@ void GameListModel::setDevicePixelRatio(qreal dpr)
   loadCommonImages();
   refreshCovers();
   refreshIcons();
+}
+
+void GameListModel::incrementCurrentFrameIndex()
+{
+  m_current_frame_index++;
+  refreshSelectedIcon();
+}
+
+void GameListModel::resetCurrentFrameIndex()
+{
+  m_current_frame_index = 0;
+  refreshSelectedIcon();
+}
+
+void GameListModel::setAnimationTimer(bool active)
+{
+  if (!m_animation_timer)
+    return;
+
+  if (active)
+    m_animation_timer->start();
+  else
+    m_animation_timer->stop();
+}
+
+void GameListModel::setSelectedRow(int row)
+{
+  m_selected_row = row;
+}
+
+void GameListModel::setSelectedEntry(const GameList::Entry* entry)
+{
+  m_selected_entry = entry;
+}
+
+void GameListModel::setSelectedEntryAnimationFrames(std::vector<std::string> frame_paths)
+{
+  m_selected_entry_animation_frames = frame_paths;
 }
 
 void GameListModel::reloadThemeSpecificImages()
@@ -432,6 +488,7 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
 
 const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
 {
+  const std::string dot_file_extension = ".png";
   // We only do this for discs/disc sets for now.
   if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
   {
@@ -444,8 +501,23 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
       QPixmap pm;
+      std::vector<std::string> frame_paths = GameList::GetGameAnimatedIconPaths(ge->serial, ge->path);
+      std::string path;
+
+      if (!frame_paths.empty())
+      {
+        // Grab current animation frame if current entry is the selected one, otherwise grab the 1st frame
+        if (m_selected_entry == ge)
+          path = frame_paths.size() > 1 ? frame_paths[m_current_frame_index % frame_paths.size()] : frame_paths[0];
+        else
+          path = frame_paths[0];
+      }
+      else
+      {
+        path = "";
+      }
+
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
         const int pm_width = pm.width();
@@ -1382,6 +1454,59 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
   setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
   updateBackground(true);
+
+  m_model->m_animation_timer = new QTimer(this);
+  m_model->m_animation_timer->setInterval(MEMORY_CARD_ICON_FRAME_DURATION_MS);
+  connect(m_model->m_animation_timer, &QTimer::timeout, this, &GameListWidget::incrementAnimationFrame);
+}
+
+void GameListWidget::updateAnimationTimerActive(bool enabled)
+{
+  // Always reset the frame index so the animation plays from the beginning
+  m_model->resetCurrentFrameIndex();
+  QTimer* timer = m_model->getAnimationTimer();
+
+  if (!timer)
+    return;
+
+  // Stop animation timer if it's been disabled, icons are hidden, or the grid view is being shown.
+  if (!enabled || !m_model->getShowGameIcons() || isShowingGameGrid())
+  {
+    if (timer->isActive())
+    {
+      timer->stop();
+      INFO_LOG("Animation timer is now inactive");
+    }
+    return;
+  }
+
+  bool has_animation_frames = false;
+  if (m_model->getSelectedEntry())
+  {
+    std::vector<std::string> frame_paths = m_model->getSelectedEntryAnimationFrames();
+    has_animation_frames = frame_paths.size() > 1;
+  }
+
+  if (timer->isActive() != has_animation_frames)
+  {
+    INFO_LOG("Animation timer is now {}", has_animation_frames ? "active" : "inactive");
+    if (has_animation_frames)
+      timer->start();
+    else
+      timer->stop();
+  }
+}
+
+void GameListWidget::incrementAnimationFrame()
+{
+  if (m_model->getCurrentFrameIndex() >=
+      MEMORY_CARD_ICON_ANIMATION_CYCLES * m_model->getSelectedEntryAnimationFrames().size())
+  {
+    updateAnimationTimerActive(false);
+    return;
+  }
+
+  m_model->incrementCurrentFrameIndex();
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1510,10 +1635,42 @@ void GameListWidget::onRefreshComplete()
 
 void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
 {
+  // Workaround to make animations work for the first selection after launching the program
+  static bool list_initialized = false;
+
   const QModelIndex source_index = m_sort_model->mapToSource(current);
+  const QModelIndex previous_index = m_sort_model->mapToSource(previous);
+
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
 
+  // Only refresh previous icon, update selections, and enable animations if
+  // we're in the list view and the user has already made a previous selection.
+  // Avoids animating the first row icon before clicking any row and stops processing when in the grid view
+  if (isShowingGameList() && (previous_index.isValid() || list_initialized) &&
+      previous_index.row() < static_cast<int>(GameList::GetEntryCount()))
+  {
+    int previous_row = previous_index.row();
+
+    // When selecting a new row, reset the previous row icon back to its 1st frame.
+    // Needs an invokeMethod call to avoid crashing when using the search bar.
+    QMetaObject::invokeMethod(
+      this,
+      [this, previous_row] {
+        if (m_model)
+          m_model->refreshIcon(previous_row);
+      },
+      Qt::QueuedConnection);
+
+
+    m_model->setSelectedRow(source_index.row());
+    m_model->setSelectedEntry(GameList::GetEntryByIndex(source_index.row()));
+    m_model->setSelectedEntryAnimationFrames(
+      GameList::GetGameAnimatedIconPaths(m_model->m_selected_entry->serial, m_model->m_selected_entry->path));
+    updateAnimationTimerActive(true);
+  }
+
+  list_initialized = true;
   emit selectionChanged();
 }
 
@@ -1536,6 +1693,8 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
   }
   else
   {
+    // Stop animation and reset icon to its 1st frame before grabbing it for the window icon
+    updateAnimationTimerActive(false);
     emit entryActivated();
   }
 }
@@ -1594,10 +1753,17 @@ void GameListWidget::showGameList()
   Host::CommitBaseSettingChanges();
 
   setViewMode(VIEW_MODE_LIST);
+
+  // Resume animation when switching back from grid view
+  updateAnimationTimerActive(true);
 }
 
 void GameListWidget::showGameGrid()
 {
+  // Stop animation and reset icon back to its 1st frame
+  // so it plays from the beginning when switching back to the list view
+  updateAnimationTimerActive(false);
+
   // keep showing the placeholder widget if we have no games
   if (isShowingGameGrid() || m_model->rowCount() == 0)
     return;
@@ -1637,6 +1803,9 @@ void GameListWidget::setShowGameIcons(bool enabled)
   Host::SetBaseBoolSettingValue("UI", "GameListShowGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowGameIcons(enabled);
+
+  // Start/stop animation according to icon visibility.
+  updateAnimationTimerActive(enabled);
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)

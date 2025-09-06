@@ -101,6 +101,8 @@ public:
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
+  void refreshIcon(int row);
+  void refreshSelectedIcon();
   void refreshIcons();
 
   float getCoverScale() const { return m_cover_scale; }
@@ -111,6 +113,23 @@ public:
   void updateCacheSize(int num_rows, int num_columns);
 
   void setDevicePixelRatio(qreal dpr);
+
+  void incrementCurrentFrameIndex();
+  void resetCurrentFrameIndex();
+  u32 getCurrentFrameIndex() { return m_current_frame_index; }
+
+  void setAnimationTimer(bool active);
+
+  QTimer* getAnimationTimer() { return m_animation_timer; }
+
+  const int getSelectedRow() { return m_selected_row; }
+  void setSelectedRow(int row);
+
+  const GameList::Entry* getSelectedEntry() { return m_selected_entry; }
+  void setSelectedEntry(const GameList::Entry* entry);
+
+  std::vector<std::string> getSelectedEntryAnimationFrames() { return m_selected_entry_animation_frames; }
+  void setSelectedEntryAnimationFrames(std::vector<std::string> frame_paths);
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
@@ -164,6 +183,12 @@ private:
   mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
+
+  u32 m_current_frame_index = 0;
+  QTimer* m_animation_timer = nullptr;
+  int m_selected_row = -1;
+  const GameList::Entry* m_selected_entry = nullptr;
+  std::vector<std::string> m_selected_entry_animation_frames;
 };
 
 class GameListListView final : public QTableView
@@ -276,6 +301,7 @@ private Q_SLOTS:
   void onGridViewItemActivated(const QModelIndex& index);
   void onGridViewContextMenuRequested(const QPoint& point);
   void onSearchReturnPressed();
+  void incrementAnimationFrame();
 
 public Q_SLOTS:
   void showGameList();
@@ -292,6 +318,7 @@ protected:
 
 private:
   void setViewMode(int stack_index);
+  void updateAnimationTimerActive(bool enabled);
 
   Ui::GameListWidget m_ui;
 
