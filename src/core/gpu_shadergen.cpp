@@ -74,6 +74,41 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
   return std::move(ss).str();
 }
 
+std::string GPUShaderGen::GenerateDisplayHybridBilinearFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteDisplayUniformBuffer(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+
+  // Based on
+  // https://github.com/rsn8887/Sharp-Bilinear-Shaders/blob/master/Copy_To_RetroPie/shaders/sharp-bilinear-simple.glsl
+  // and
+  // https://30fps.net/pages/pixelart-scaling/
+  DeclareFragmentEntryPoint(ss, 0, 1);
+  ss << R"(
+{
+  float2 scale = u_params.xy;
+  float2 region_range = u_params.zw;
+
+  float2 texel = v_tex0 * u_src_size.xy;
+  float2 texel_floored = floor(texel);
+  float2 s = frac(texel);
+
+  float f_x = s.x;
+
+  float center_dist_y = s.y - 0.5;
+  float f_y = (center_dist_y - clamp(center_dist_y, -region_range.y, region_range.y)) * scale.y + 0.5;
+
+  float2 f = float2(f_x, f_y);
+  float2 mod_texel = texel_floored + f;
+
+  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(mod_texel * u_src_size.zw)).rgb, 1.0f);
+})";
+
+  return std::move(ss).str();
+}
+
 std::string GPUShaderGen::GenerateDisplayLanczosFragmentShader() const
 {
   std::stringstream ss;

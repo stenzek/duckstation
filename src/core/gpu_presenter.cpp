@@ -130,6 +130,9 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
         case DisplayScalingMode::BilinearSharp:
           fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
           break;
+        case DisplayScalingMode::BilinearHybrid:
+          fs = shadergen.GenerateDisplayHybridBilinearFragmentShader();
+          break;
 
         case DisplayScalingMode::BilinearSmooth:
         case DisplayScalingMode::BilinearInteger:
@@ -717,6 +720,7 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
     }
     break;
 
+    case DisplayScalingMode::BilinearHybrid:
     case DisplayScalingMode::BilinearSharp:
     {
       texture_filter_linear = true;
