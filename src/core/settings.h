@@ -617,7 +617,7 @@ struct Settings : public GPUSettings
   static constexpr PIODeviceType DEFAULT_PIO_DEVICE_TYPE = PIODeviceType::None;
 
   static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
-    AchievementChallengeIndicatorMode::PersistentIcon;
+    AchievementChallengeIndicatorMode::Notification;
   static constexpr u8 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr u8 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 
