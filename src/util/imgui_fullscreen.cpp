@@ -4148,7 +4148,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   const float vertical_spacing = ImGuiFullscreen::LayoutScale(4.0f);
   const float badge_size = ImGuiFullscreen::LayoutScale(48.0f);
   const float min_width = ImGuiFullscreen::LayoutScale(200.0f);
-  const float max_width = ImGuiFullscreen::LayoutScale(800.0f);
+  const float max_width = ImGuiFullscreen::LayoutScale(600.0f);
   const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
   const float min_height = (vertical_padding * 2.0f) + badge_size;
   const float shadow_size = ImGuiFullscreen::LayoutScale(2.0f);

@@ -79,6 +79,8 @@ static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC = 10.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME = 12.0f;
 static constexpr float GAME_COMPLETE_NOTIFICATION_TIME = 20.0f;
+static constexpr float CHALLENGE_STARTED_NOTIFICATION_TIME = 5.0f;
+static constexpr float CHALLENGE_FAILED_NOTIFICATION_TIME = 5.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 
@@ -1729,16 +1731,18 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   // we still track these even if the option is disabled, so that they can be displayed in the pause menu
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification)
   {
-    std::string description = fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
-                                          event->achievement->description ? event->achievement->description : "");
-    GPUThread::RunOnThread([title = std::string(event->achievement->title), description = std::move(description),
-                            badge_path, id = event->achievement->id]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
+    std::string title = fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
+                                    event->achievement->title ? event->achievement->title : "");
+    GPUThread::RunOnThread(
+      [title = std::move(title),
+       description = std::string(event->achievement->description ? event->achievement->description : ""), badge_path,
+       id = event->achievement->id]() mutable {
+        if (!FullscreenUI::Initialize())
+          return;
 
-      ImGuiFullscreen::AddNotification(fmt::format("AchievementChallenge{}", id), LEADERBOARD_STARTED_NOTIFICATION_TIME,
-                                       std::move(title), std::move(description), std::move(badge_path));
-    });
+        ImGuiFullscreen::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_STARTED_NOTIFICATION_TIME,
+                                         std::move(title), std::move(description), std::move(badge_path));
+      });
   }
 
   s_state.active_challenge_indicators.push_back(
@@ -1761,6 +1765,23 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
 
   DEV_LOG("Hide challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
 
+  if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification &&
+      event->achievement->state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
+  {
+    std::string title = fmt::format(TRANSLATE_FS("Achievements", "Challenge Failed: {}"),
+                                    event->achievement->title ? event->achievement->title : "");
+    std::string badge_path = GetAchievementBadgePath(event->achievement, false);
+    GPUThread::RunOnThread(
+      [title = std::move(title),
+       description = std::string(event->achievement->description ? event->achievement->description : ""),
+       badge_path = std::move(badge_path), id = event->achievement->id]() mutable {
+        if (!FullscreenUI::Initialize())
+          return;
+
+        ImGuiFullscreen::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_FAILED_NOTIFICATION_TIME,
+                                         std::move(title), std::move(description), std::move(badge_path));
+      });
+  }
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification ||
       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Disabled)
   {
