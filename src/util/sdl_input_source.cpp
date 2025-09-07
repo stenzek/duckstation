@@ -1168,7 +1168,7 @@ std::optional<float> SDLInputSource::GetCurrentValue(InputBindingKey key)
     {
       ret = BoolToFloat(SDL_GetGamepadButton(cd->gamepad, static_cast<SDL_GamepadButton>(key.data)));
     }
-    else if (key.data >= std::size(s_sdl_axis_names))
+    else if (key.data >= std::size(s_sdl_button_names))
     {
       ret =
         BoolToFloat(SDL_GetJoystickButton(cd->joystick, static_cast<int>(key.data - std::size(s_sdl_button_names))));
