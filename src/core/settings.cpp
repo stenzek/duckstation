@@ -2032,12 +2032,13 @@ const char* Settings::GetForceVideoTimingDisplayName(ForceVideoTimingMode mode)
 }
 
 static constexpr const std::array s_display_scaling_names = {
-  "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger", "Lanczos",
+  "Nearest", "NearestInteger", "BilinearSmooth", "BilinearHybrid", "BilinearSharp", "BilinearInteger", "Lanczos",
 };
 static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Nearest-Neighbor", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Nearest-Neighbor (Integer)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Smooth)", "DisplayScalingMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Hybrid)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Sharp)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Integer)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Lanczos (Sharp)", "DisplayScalingMode"),
