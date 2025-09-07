@@ -7079,7 +7079,7 @@ void FullscreenUI::DrawPauseMenu()
   // background
   dl->AddRectFilled(ImVec2(0.0f, scaled_top_bar_height),
                     ImVec2(display_size.x, display_size.x - scaled_top_bar_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
-                    ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.85f)));
+                    ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.825f)));
 
   Achievements::DrawPauseMenuOverlays(scaled_top_bar_height);
 

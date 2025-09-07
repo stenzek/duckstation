@@ -41,7 +41,8 @@ inline constexpr float LAYOUT_SCREEN_HEIGHT = 720.0f;
 inline constexpr float LAYOUT_LARGE_FONT_SIZE = 26.0f;
 inline constexpr float LAYOUT_MEDIUM_FONT_SIZE = 16.0f;
 inline constexpr float LAYOUT_MEDIUM_LARGE_FONT_SIZE = 21.0f;
-inline constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
+inline constexpr float LAYOUT_MEDIUM_SMALL_FONT_SIZE = 14.0f;
+inline constexpr float LAYOUT_SMALL_FONT_SIZE = 14.0f;
 inline constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 inline constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
 inline constexpr float LAYOUT_MENU_BUTTON_SPACING = 6.0f;
@@ -95,6 +96,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   float LargeFontSize;
   float MediumFontSize;
   float MediumLargeFontSize;
+  float MediumSmallFontSize;
 
   static constexpr float NormalFontWeight = 0.0f;
   static constexpr float BoldFontWeight = 500.0f;

@@ -638,6 +638,7 @@ bool ImGuiFullscreen::UpdateLayoutScale()
   UIStyle.LargeFontSize = LayoutScale(LAYOUT_LARGE_FONT_SIZE);
   UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
   UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
+  UIStyle.MediumSmallFontSize = LayoutScale(LAYOUT_MEDIUM_SMALL_FONT_SIZE);
 
   return (UIStyle.LayoutScale != old_scale);
 
@@ -652,6 +653,7 @@ bool ImGuiFullscreen::UpdateLayoutScale()
   UIStyle.LargeFontSize = LayoutScale(LAYOUT_LARGE_FONT_SIZE);
   UIStyle.MediumFontSize = LayoutScale(LAYOUT_MEDIUM_FONT_SIZE);
   UIStyle.MediumLargeFontSize = LayoutScale(LAYOUT_MEDIUM_LARGE_FONT_SIZE);
+  UIStyle.MediumSmallFontSize = LayoutScale(LAYOUT_MEDIUM_SMALL_FONT_SIZE);
   return (UIStyle.LayoutScale != old_scale);
 
 #endif
