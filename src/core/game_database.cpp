@@ -981,11 +981,11 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Serial"), serial);
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Title"), title);
   if (!sort_title.empty())
-    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Sort Title"), title);
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Sort Title"), sort_title);
   if (!localized_title.empty())
     ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Localized Title"), localized_title);
   if (!save_title.empty())
-    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Save Title"), title);
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Save Title"), save_title);
 
   if (languages.any())
     ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Languages"), GetLanguagesString());
