@@ -6991,7 +6991,8 @@ void FullscreenUI::DrawPauseMenu()
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
   const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor);
-  const ImU32 text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor));
+  const ImU32 text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.85f));
+  const ImU32 last_text_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.BackgroundTextColor, 0.85f)));
 
   // top bar
   const float scaled_top_bar_height = LayoutScale(top_bar_height);
@@ -7029,13 +7030,13 @@ void FullscreenUI::DrawPauseMenu()
       if (const std::string& rp = Achievements::GetRichPresenceString(); !rp.empty())
       {
         RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos,
-                                  display_size, title_text_color, rp);
+                                  display_size, text_color, rp);
         text_pos.y += UIStyle.MediumFontSize + scaled_text_spacing;
       }
     }
 
     RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos,
-                              display_size, text_color, buffer);
+                              display_size, last_text_color, buffer);
 
     // current time / play time
     UpdateCurrentTimeString();

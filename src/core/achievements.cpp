@@ -2598,8 +2598,8 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
   const u32 box_background_color = ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.8f));
-  const ImU32 box_title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
-  const ImU32 title_text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
+  const ImU32 box_title_text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
+  const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
   const ImU32 text_color =
     ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.BackgroundTextColor, 0.9f))) | IM_COL32_A_MASK;
   const float paragraph_spacing = LayoutScale(10.0f);
@@ -2637,7 +2637,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
                                             IMSTR_START_END(buffer));
     dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight,
-                ImVec2(text_pos.x + (box_content_width - text_size.x), text_pos.y), title_text_color,
+                ImVec2(text_pos.x + (box_content_width - text_size.x), text_pos.y), text_color,
                 IMSTR_START_END(buffer));
     text_pos.y += UIStyle.MediumFontSize + paragraph_spacing;
 
