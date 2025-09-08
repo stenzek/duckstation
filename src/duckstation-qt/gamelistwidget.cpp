@@ -69,6 +69,10 @@ static constexpr int MEMORY_CARD_ICON_PADDING = 12;
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
 {
+  // Get source image in RGB32 format for QPainter.
+  if (image->format() != QImage::Format_RGB32)
+    *image = image->convertToFormat(QImage::Format_RGB32);
+
   const qreal dpr = image->devicePixelRatio();
   const int dpr_expected_width = static_cast<int>(static_cast<qreal>(expected_width) * dpr);
   const int dpr_expected_height = static_cast<int>(static_cast<qreal>(expected_height) * dpr);
@@ -98,7 +102,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if (image_height < dpr_expected_height)
     yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
 
-  QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_ARGB32);
+  QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_RGB32);
   padded_image.setDevicePixelRatio(dpr);
   if (fill_with_top_left)
     padded_image.fill(image->pixel(0, 0));
