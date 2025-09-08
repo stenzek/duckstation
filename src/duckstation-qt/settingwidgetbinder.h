@@ -1544,4 +1544,16 @@ inline void SetAvailability(WidgetType* widget, bool available, QLabel* widget_l
   widget->setEnabled(false);
 }
 
+inline void SetForceEnabled(QCheckBox* widget, bool forced)
+{
+  if (!forced)
+    return;
+
+  DisconnectWidget(widget);
+
+  widget->setText(widget->text() + qApp->translate("SettingWidgetBinder", " [forced]"));
+  widget->setCheckState(Qt::Checked);
+  widget->setEnabled(false);
+}
+
 } // namespace SettingWidgetBinder

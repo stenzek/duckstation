@@ -163,15 +163,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
-  connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
 
+  connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
+
   SettingWidgetBinder::SetAvailability(m_ui.scaledInterlacing,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
+  SettingWidgetBinder::SetForceEnabled(m_ui.useSoftwareRendererForReadbacks,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::ForceSoftwareRendererForReadbacks));
+  SettingWidgetBinder::SetForceEnabled(
+    m_ui.forceRoundedTexcoords, m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
 
   // PGXP Tab
 
@@ -203,6 +208,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision,
                                        !m_dialog->hasDatabaseEntry() ||
                                          m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.value_or(true));
+  SettingWidgetBinder::SetForceEnabled(m_ui.pgxpCPU, m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPCPUMode));
+  SettingWidgetBinder::SetForceEnabled(m_ui.pgxpVertexCache,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPVertexCache));
+  SettingWidgetBinder::SetForceEnabled(m_ui.pgxpDisableOn2DPolygons,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
 
   // OSD Tab
 
@@ -772,8 +782,10 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.gpuWireframeModeLabel->setEnabled(is_hardware);
   m_ui.scaledInterlacing->setEnabled(is_hardware &&
                                      !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
-  m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
-  m_ui.forceRoundedTexcoords->setEnabled(is_hardware);
+  m_ui.useSoftwareRendererForReadbacks->setEnabled(
+    is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::ForceSoftwareRendererForReadbacks));
+  m_ui.forceRoundedTexcoords->setEnabled(
+    is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
 
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
 
@@ -967,13 +979,14 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpPreserveProjPrecision->setEnabled(
     enabled &&
     (!m_dialog->hasDatabaseEntry() || m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.value_or(true)));
-  m_ui.pgxpCPU->setEnabled(enabled);
-  m_ui.pgxpVertexCache->setEnabled(enabled);
+  m_ui.pgxpCPU->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPCPUMode));
+  m_ui.pgxpVertexCache->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPVertexCache));
   m_ui.pgxpGeometryTolerance->setEnabled(enabled);
   m_ui.pgxpGeometryToleranceLabel->setEnabled(enabled);
   m_ui.pgxpDepthClearThreshold->setEnabled(depth_enabled);
   m_ui.pgxpDepthClearThresholdLabel->setEnabled(depth_enabled);
-  m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled);
+  m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
+                                           !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
 }
 
@@ -1005,7 +1018,9 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
                                   Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER))
         .c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  m_ui.forceRoundedTexcoords->setEnabled(is_hardware && scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
+  m_ui.forceRoundedTexcoords->setEnabled(
+    is_hardware && scale > 1 && texture_filtering == GPUTextureFilter::Nearest &&
+    !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRoundUpscaledTextureCoordinates));
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()
