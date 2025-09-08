@@ -1428,6 +1428,7 @@ void GameListWidget::reloadThemeSpecificImages()
 
 void GameListWidget::updateBackground(bool reload_image)
 {
+  const bool had_image = !m_background_image.isNull();
   if (reload_image)
   {
     m_background_image = QImage();
@@ -1444,8 +1445,13 @@ void GameListWidget::updateBackground(bool reload_image)
 
   if (m_background_image.isNull())
   {
-    m_ui.stack->setPalette(palette());
-    m_list_view->setAlternatingRowColors(true);
+    if (had_image)
+    {
+      m_ui.stack->setPalette(qApp->palette(m_ui.stack));
+      m_ui.stack->setAutoFillBackground(false);
+      m_list_view->setAlternatingRowColors(true);
+    }
+
     return;
   }
 
@@ -1458,8 +1464,10 @@ void GameListWidget::updateBackground(bool reload_image)
         return;
 
       QPalette new_palette(m_ui.stack->palette());
-      new_palette.setBrush(QPalette::Base, QPixmap::fromImage(image));
+      new_palette.setBrush(QPalette::Window, QPixmap::fromImage(image));
+      new_palette.setBrush(QPalette::Base, Qt::transparent);
       m_ui.stack->setPalette(new_palette);
+      m_ui.stack->setAutoFillBackground(true);
       m_list_view->setAlternatingRowColors(false);
     };
   });

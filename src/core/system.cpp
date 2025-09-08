@@ -496,6 +496,12 @@ bool System::ProcessStartup(Error* error)
   // Initialize rapidyaml before anything can use it.
   SetRymlCallbacks();
 
+#ifdef __linux__
+  // Running DuckStation out of /usr/lib is not supported and makes no sense.
+  if (std::memcmp(EmuFolders::AppRoot.data(), "/usr/""lib", 8) == 0)
+    return false;
+#endif
+
   return true;
 }
 

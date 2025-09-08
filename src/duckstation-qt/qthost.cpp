@@ -531,12 +531,7 @@ bool QtHost::SetCriticalFolders()
   // the resources directory should exist, bail out if not
   const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
   if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)) ||
-      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str())
-#ifdef __linux__
-      // Broken packages that won't stop distributing my application.
-      || StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr""/lib")
-#endif
-  )
+      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
     QMessageBox::critical(nullptr, QStringLiteral("Error"),
                           QStringLiteral("Resources are missing, your installation is incomplete."));
