@@ -142,7 +142,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   connect(m_ui.cpuClockSpeed, &QSlider::valueChanged, this, &ConsoleSettingsWidget::onCPUClockSpeedValueChanged);
 
   SettingWidgetBinder::SetAvailability(m_ui.fastBoot, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
-  SettingWidgetBinder::SetAvailability(m_ui.fastForwardBoot, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
+  SettingWidgetBinder::SetAvailability(m_ui.fastForwardBoot,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
   SettingWidgetBinder::SetAvailability(
     m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
   SettingWidgetBinder::SetAvailability(m_ui.cdromReadSpeedup,
@@ -151,6 +152,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::SetAvailability(m_ui.cdromSeekSpeedup,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableCDROMSeekSpeedup),
                                        m_ui.cdromSeekSpeedupLabel);
+  SettingWidgetBinder::SetForceEnabled(m_ui.recompilerICache,
+                                       m_dialog->hasGameTrait(GameDatabase::Trait::ForceRecompilerICache));
 
   calculateCPUClockValue();
 }
@@ -173,7 +176,8 @@ void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
                                   Settings::GetCPUExecutionModeName(Settings::DEFAULT_CPU_EXECUTION_MODE))
         .c_str())
       .value_or(Settings::DEFAULT_CPU_EXECUTION_MODE);
-  m_ui.recompilerICache->setEnabled(mode != CPUExecutionMode::Interpreter);
+  m_ui.recompilerICache->setEnabled(mode != CPUExecutionMode::Interpreter &&
+                                    !m_dialog->hasGameTrait(GameDatabase::Trait::ForceRecompilerICache));
 }
 
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
