@@ -67,7 +67,7 @@ static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
 static constexpr int MEMORY_CARD_ICON_SIZE = 16;
 static constexpr int MEMORY_CARD_ICON_PADDING = 12;
 
-static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
+static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left, bool expand_to_fill)
 {
   // Get source image in RGB32 format for QPainter.
   if (image->format() != QImage::Format_RGB32)
@@ -79,8 +79,8 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if (image->width() == dpr_expected_width && image->height() == dpr_expected_height)
     return;
 
-  if ((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
-      (static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height)))
+  if (((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
+       (static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height))) != expand_to_fill)
   {
     *image = image->scaledToWidth(dpr_expected_width, Qt::SmoothTransformation);
   }
@@ -97,9 +97,9 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   int yoffs = 0;
   const int image_width = image->width();
   const int image_height = image->height();
-  if (image_width < dpr_expected_width)
+  if ((image_width < dpr_expected_width) != expand_to_fill)
     xoffs = static_cast<int>(static_cast<qreal>((dpr_expected_width - image_width) / 2) / dpr);
-  if (image_height < dpr_expected_height)
+  if ((image_height < dpr_expected_height) != expand_to_fill)
     yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
 
   QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_RGB32);
@@ -241,7 +241,7 @@ void GameListModel::updateCoverScale()
   if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     loading_image.setDevicePixelRatio(m_device_pixel_ratio);
-    resizeAndPadImage(&loading_image, getCoverArtSize(), getCoverArtSize(), false);
+    resizeAndPadImage(&loading_image, getCoverArtSize(), getCoverArtSize(), false, false);
   }
   else
   {
@@ -255,7 +255,7 @@ void GameListModel::updateCoverScale()
   if (m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
-    resizeAndPadImage(&m_placeholder_image, getCoverArtSize(), getCoverArtSize(), false);
+    resizeAndPadImage(&m_placeholder_image, getCoverArtSize(), getCoverArtSize(), false, false);
   }
   else
   {
@@ -322,7 +322,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
   if (image.isNull())
     return;
 
-  resizeAndPadImage(&image, width, height, false);
+  resizeAndPadImage(&image, width, height, false, false);
 
   QPainter painter;
   if (painter.begin(&image))
@@ -350,7 +350,7 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
     if (!image.isNull())
     {
       image.setDevicePixelRatio(dpr);
-      resizeAndPadImage(&image, width, height, false);
+      resizeAndPadImage(&image, width, height, false, false);
     }
   }
 
@@ -1461,7 +1461,7 @@ void GameListWidget::updateBackground(bool reload_image)
 
   QtAsyncTask::create(this, [image = m_background_image, this, widget_width = m_ui.stack->width(),
                              widget_height = m_ui.stack->height()]() mutable {
-    resizeAndPadImage(&image, widget_width, widget_height, true);
+    resizeAndPadImage(&image, widget_width, widget_height, true, true);
     return [image = std::move(image), this, widget_width, widget_height]() {
       // check for dimensions change
       if (widget_width != m_ui.stack->width() || widget_height != m_ui.stack->height())
