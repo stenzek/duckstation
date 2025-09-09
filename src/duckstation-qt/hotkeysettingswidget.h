@@ -12,7 +12,6 @@
 class QLabel;
 class QLineEdit;
 class QScrollArea;
-class QGridLayout;
 class QVBoxLayout;
 
 class ControllerSettingsWindow;
@@ -28,9 +27,10 @@ public:
 private:
   struct CategoryWidgets
   {
+    QWidget* heading;
     QLabel* label;
     QLabel* line;
-    QGridLayout* layout;
+    QVBoxLayout* layout;
   };
 
   class Container final : public QWidget

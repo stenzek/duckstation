@@ -212,9 +212,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPVertexCache));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpDisableOn2DPolygons,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
-  if (auto dbentry = m_dialog->getDatabaseEntry(); dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value())
+  if (const GameDatabase::Entry* dbentry = m_dialog->getDatabaseEntry();
+      dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value())
   {
-    if (*dbentry->gpu_pgxp_preserve_proj_fp)
+    if (dbentry->gpu_pgxp_preserve_proj_fp.value())
       SettingWidgetBinder::SetForceEnabled(m_ui.pgxpPreserveProjPrecision, true);
     else
       SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision, false);
