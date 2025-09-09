@@ -589,15 +589,6 @@ std::string_view Path::GetExtension(std::string_view path)
     return path.substr(pos + 1);
 }
 
-std::string_view Path::StripExtension(std::string_view path)
-{
-  const std::string_view::size_type pos = path.rfind('.');
-  if (pos == std::string_view::npos)
-    return path;
-
-  return path.substr(0, pos);
-}
-
 std::string Path::ReplaceExtension(std::string_view path, std::string_view new_extension)
 {
   const std::string_view::size_type pos = path.rfind('.');

@@ -53,9 +53,6 @@ std::string MakeRelative(std::string_view path, std::string_view relative_to);
 /// Returns a view of the extension of a filename.
 std::string_view GetExtension(std::string_view path);
 
-/// Removes the extension of a filename.
-std::string_view StripExtension(std::string_view path);
-
 /// Replaces the extension of a filename with another.
 std::string ReplaceExtension(std::string_view path, std::string_view new_extension);
 
