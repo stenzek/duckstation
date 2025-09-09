@@ -334,11 +334,18 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
     QFont font;
     font.setPixelSize(std::max(static_cast<int>(64.0f * scale), 1));
     painter.setFont(font);
-    painter.setPen(Qt::white);
 
-    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(width)),
-                        static_cast<int>(static_cast<float>(height)));
+    const int margin = static_cast<int>(30.0f * scale);
+    const QRect text_rc(margin, margin, static_cast<int>(static_cast<float>(width - margin - margin)),
+                        static_cast<int>(static_cast<float>(height - margin - margin)));
+
+    // draw shadow first
+    painter.setPen(QColor(0, 0, 0, 160)); // semi-transparent black
+    painter.drawText(text_rc.translated(1, 1), Qt::AlignCenter | Qt::TextWordWrap, title);
+
+    painter.setPen(Qt::white);
     painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, title);
+
     painter.end();
   }
 }
