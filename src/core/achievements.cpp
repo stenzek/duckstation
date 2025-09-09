@@ -1182,12 +1182,6 @@ void Achievements::GameChanged(CDImage* image)
 
 bool Achievements::IdentifyGame(CDImage* image)
 {
-  if (s_state.game_path == (image ? std::string_view(image->GetPath()) : std::string_view()))
-  {
-    WARNING_LOG("Game path is unchanged.");
-    return false;
-  }
-
   std::optional<GameHash> game_hash;
   if (image)
   {

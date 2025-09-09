@@ -323,9 +323,6 @@ u32 GetMediaSubImageCount();
 /// Returns the current image from the media/disc playlist.
 u32 GetMediaSubImageIndex();
 
-/// Returns the index of the specified path in the playlist, or UINT32_MAX if it does not exist.
-u32 GetMediaSubImageIndexForTitle(std::string_view title);
-
 /// Returns the path to the specified playlist index.
 std::string GetMediaSubImageTitle(u32 index);
 

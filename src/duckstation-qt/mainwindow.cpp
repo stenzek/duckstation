@@ -1287,6 +1287,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
   if (!s_system_valid)
     return;
 
+  // NOTE: This is terrible and a race condition. But nobody should be using m3u files anyway.
   if (System::HasMediaSubImages())
   {
     const u32 count = System::GetMediaSubImageCount();

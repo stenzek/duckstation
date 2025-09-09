@@ -33,7 +33,7 @@ public:
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
-  std::string GetSubImageMetadata(u32 index, std::string_view type) const override;
+  std::string GetSubImageTitle(u32 index) const override;
   bool SwitchSubImage(u32 index, Error* error) override;
 
 protected:
@@ -159,17 +159,13 @@ bool CDImageM3u::SwitchSubImage(u32 index, Error* error)
   return true;
 }
 
-std::string CDImageM3u::GetSubImageMetadata(u32 index, std::string_view type) const
+std::string CDImageM3u::GetSubImageTitle(u32 index) const
 {
-  if (index >= m_entries.size())
-    return {};
+  std::string ret;
+  if (index < m_entries.size())
+    ret = m_entries[index].title;
 
-  if (type == "title")
-    return m_entries[index].title;
-  else if (type == "file_title")
-    return std::string(Path::GetFileTitle(m_entries[index].filename));
-
-  return CDImage::GetSubImageMetadata(index, type);
+  return ret;
 }
 
 bool CDImageM3u::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

@@ -139,8 +139,7 @@ public:
   u32 GetSubImageCount() const override;
   u32 GetCurrentSubImage() const override;
   bool SwitchSubImage(u32 index, Error* error) override;
-  std::string GetMetadata(std::string_view type) const override;
-  std::string GetSubImageMetadata(u32 index, std::string_view type) const override;
+  std::string GetSubImageTitle(u32 index) const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -336,7 +335,8 @@ bool CDImagePBP::LoadSFOTable(Error* error)
     }
     else
     {
-      Error::SetStringFmt(error, "Unhandled SFO data type 0x{:04X} found in SFO table for entry {}", m_sfo_index_table[i].data_type, i);
+      Error::SetStringFmt(error, "Unhandled SFO data type 0x{:04X} found in SFO table for entry {}",
+                          m_sfo_index_table[i].data_type, i);
       return false;
     }
   }
@@ -871,18 +871,6 @@ bool CDImagePBP::HasSubImages() const
   return m_disc_offsets.size() > 1;
 }
 
-std::string CDImagePBP::GetMetadata(std::string_view type) const
-{
-  if (type == "title")
-  {
-    const std::string* title = LookupStringSFOTableEntry("TITLE", m_sfo_table);
-    if (title && !title->empty())
-      return *title;
-  }
-
-  return CDImage::GetMetadata(type);
-}
-
 u32 CDImagePBP::GetSubImageCount() const
 {
   return static_cast<u32>(m_disc_offsets.size());
@@ -909,16 +897,15 @@ bool CDImagePBP::SwitchSubImage(u32 index, Error* error)
   return true;
 }
 
-std::string CDImagePBP::GetSubImageMetadata(u32 index, std::string_view type) const
+std::string CDImagePBP::GetSubImageTitle(u32 index) const
 {
-  if (type == "title")
-  {
-    const std::string* title = LookupStringSFOTableEntry("TITLE", m_sfo_table);
-    if (title && !title->empty())
-      return fmt::format("{} (Disc {})", *title, index + 1);
-  }
+  std::string ret;
 
-  return CDImage::GetSubImageMetadata(index, type);
+  const std::string* title = LookupStringSFOTableEntry("TITLE", m_sfo_table);
+  if (title && !title->empty())
+    ret = fmt::format("{} (Disc {})", *title, index + 1);
+
+  return ret;
 }
 
 s64 CDImagePBP::GetSizeOnDisk() const

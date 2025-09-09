@@ -35,8 +35,7 @@ public:
   bool HasSubchannelData() const override;
   s64 GetSizeOnDisk() const override;
 
-  std::string GetMetadata(std::string_view type) const override;
-  std::string GetSubImageMetadata(u32 index, std::string_view type) const override;
+  std::string GetSubImageTitle(u32 index) const override;
 
   PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback) override;
 
@@ -420,19 +419,10 @@ bool CDImagePPF::HasSubchannelData() const
   return m_parent_image->HasSubchannelData();
 }
 
-std::string CDImagePPF::GetMetadata(std::string_view type) const
-{
-  return m_parent_image->GetMetadata(type);
-}
-
-std::string CDImagePPF::GetSubImageMetadata(u32 index, std::string_view type) const
+std::string CDImagePPF::GetSubImageTitle(u32 index) const
 {
   // We only support a single sub-image for patched games.
-  std::string ret;
-  if (index == 0)
-    ret = m_parent_image->GetSubImageMetadata(index, type);
-
-  return ret;
+  return (index == 0) ? m_parent_image->GetSubImageTitle(index) : std::string();
 }
 
 CDImage::PrecacheResult CDImagePPF::Precache(ProgressCallback* progress /*= ProgressCallback::NullProgressCallback*/)

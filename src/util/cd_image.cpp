@@ -304,18 +304,6 @@ bool CDImage::HasSubchannelData() const
   return false;
 }
 
-std::string CDImage::GetMetadata(std::string_view type) const
-{
-  std::string result;
-  if (type == "title")
-  {
-    const std::string display_name(FileSystem::GetDisplayNameFromPath(m_filename));
-    result = Path::StripExtension(display_name);
-  }
-
-  return result;
-}
-
 bool CDImage::HasSubImages() const
 {
   return false;
@@ -336,7 +324,7 @@ bool CDImage::SwitchSubImage(u32 index, Error* error)
   return false;
 }
 
-std::string CDImage::GetSubImageMetadata(u32 index, std::string_view type) const
+std::string CDImage::GetSubImageTitle(u32 index) const
 {
   return {};
 }

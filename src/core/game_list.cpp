@@ -358,10 +358,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   if (cdi->HasSubImages())
   {
     entry->type = EntryType::Playlist;
-
-    std::string image_title(cdi->GetMetadata("title"));
-    if (!image_title.empty())
-      entry->title = std::move(image_title);
+    entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
 
     // get the size of all the subimages
     const u32 subimage_count = cdi->GetSubImageCount();
