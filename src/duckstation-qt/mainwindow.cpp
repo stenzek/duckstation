@@ -1567,11 +1567,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           if (!entry || !g_main_window)
             return;
 
-          SettingsWindow::openGamePropertiesDialog(
-            entry->path,
-            std::string(
-              entry->GetDisplayTitle(g_main_window->m_game_list_widget->getModel()->getShowLocalizedTitles())),
-            entry->serial, entry->hash, entry->region);
+          SettingsWindow::openGamePropertiesDialog(entry);
         });
 
         connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, qpath]() {
@@ -1648,13 +1644,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           auto lock = GameList::GetLock();
           const GameList::Entry* first_disc = GameList::GetFirstDiscSetMember(dsentry);
           if (first_disc && g_main_window)
-          {
-            SettingsWindow::openGamePropertiesDialog(
-              first_disc->path,
-              std::string(
-                first_disc->GetDisplayTitle(g_main_window->m_game_list_widget->getModel()->getShowLocalizedTitles())),
-              first_disc->serial, first_disc->hash, first_disc->region);
-          }
+            SettingsWindow::openGamePropertiesDialog(first_disc);
         });
 
         connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered, [this, qpath]() {
@@ -2619,18 +2609,22 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
   if (!s_system_valid)
     return;
 
-  Host::RunOnCPUThread([category]() {
-    const std::string& path = System::GetGamePath();
-    const std::string& serial = System::GetGameSerial();
-    if (path.empty() || serial.empty())
-      return;
+  auto lock = GameList::GetLock();
+  const GameList::Entry* entry = GameList::GetEntryForPath(s_current_game_path.toStdString());
+  if (entry && entry->disc_set_member && !entry->dbentry->IsFirstDiscInSet() &&
+      !System::ShouldUseSeparateDiscSettingsForSerial(entry->serial))
+  {
+    // show for first disc instead
+    entry = GameList::GetFirstDiscSetMember(entry->dbentry->disc_set);
+  }
+  if (!entry)
+  {
+    lock.unlock();
+    QMessageBox::critical(this, tr("Error"), tr("Game properties is only available for scanned games."));
+    return;
+  }
 
-    Host::RunOnUIThread([title = std::string(System::GetGameTitle()), path = std::string(path),
-                         serial = std::string(serial), hash = System::GetGameHash(), region = System::GetDiscRegion(),
-                         category]() {
-      SettingsWindow::openGamePropertiesDialog(path, title, std::move(serial), hash, region, category);
-    });
-  });
+  SettingsWindow::openGamePropertiesDialog(entry);
 }
 
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()

@@ -293,7 +293,6 @@ void GameListModel::setDevicePixelRatio(qreal dpr)
   if (m_device_pixel_ratio == dpr)
     return;
 
-  WARNING_LOG("NEW DPR {}", dpr);
   m_device_pixel_ratio = dpr;
   m_placeholder_image.setDevicePixelRatio(dpr);
   m_loading_pixmap.setDevicePixelRatio(dpr);
@@ -1545,11 +1544,7 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
     if (entry)
-    {
-      SettingsWindow::openGamePropertiesDialog(entry->path,
-                                               std::string(entry->GetDisplayTitle(m_model->getShowLocalizedTitles())),
-                                               entry->serial, entry->hash, entry->region);
-    }
+      SettingsWindow::openGamePropertiesDialog(entry);
   }
   else
   {

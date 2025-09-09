@@ -27,8 +27,7 @@
 
 #include "moc_gamesummarywidget.cpp"
 
-GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
-                                     const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent)
+GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
   : m_dialog(dialog)
 {
   m_ui.setupUi(this);
@@ -56,7 +55,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
 
   // I hate this so much.
   const std::string_view default_language =
-    entry ? entry->GetLanguageFlagName(region) : Settings::GetDiscRegionName(region);
+    entry->dbentry ? entry->dbentry->GetLanguageFlagName(entry->region) : Settings::GetDiscRegionName(entry->region);
   m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(default_language), tr("Show Default Flag"));
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::Language::MaxCount); i++)
   {
@@ -64,7 +63,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
     m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(language_name), QString::fromUtf8(language_name));
   }
 
-  populateUi(path, serial, region, entry);
+  populateUi(entry);
 
   connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
@@ -115,69 +114,77 @@ void GameSummaryWidget::reloadGameSettings()
   m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
 }
 
-void GameSummaryWidget::populateUi(const std::string& path, const std::string& serial, DiscRegion region,
-                                   const GameDatabase::Entry* entry)
+void GameSummaryWidget::populateUi(const GameList::Entry* entry)
 {
-  m_path = path;
+  m_path = entry->path;
 
-  m_ui.path->setText(QString::fromStdString(path));
-  m_ui.serial->setText(QString::fromStdString(serial));
-  m_ui.region->setCurrentIndex(static_cast<int>(region));
+  m_ui.path->setText(QString::fromStdString(entry->path));
+  m_ui.serial->setText(QString::fromStdString(entry->serial));
+  m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
+  m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
+  m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
 
-  if (entry)
+  m_ui.restoreTitle->setEnabled(entry->has_custom_title);
+  m_ui.restoreRegion->setEnabled(entry->has_custom_region);
+
+  // can't set languages on disc set entries
+  m_ui.customLanguage->setCurrentIndex(entry->HasCustomLanguage() ? (static_cast<u32>(entry->custom_language) + 1) : 0);
+  if (entry->IsDiscSet())
+    m_ui.customLanguage->setEnabled(false);
+
+  if (const GameDatabase::Entry* dbentry = entry->dbentry)
   {
-    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
-    m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility));
-    m_ui.genre->setText(entry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(entry->genre));
-    if (!entry->developer.empty() && !entry->publisher.empty() && entry->developer != entry->publisher)
+    m_ui.compatibility->setCurrentIndex(static_cast<int>(dbentry->compatibility));
+    m_ui.genre->setText(dbentry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(dbentry->genre));
+    if (!dbentry->developer.empty() && !dbentry->publisher.empty() && dbentry->developer != dbentry->publisher)
       m_ui.developer->setText(tr("%1 (Published by %2)")
-                                .arg(QtUtils::StringViewToQString(entry->developer))
-                                .arg(QtUtils::StringViewToQString(entry->publisher)));
-    else if (!entry->developer.empty())
-      m_ui.developer->setText(QtUtils::StringViewToQString(entry->developer));
-    else if (!entry->publisher.empty())
-      m_ui.developer->setText(tr("Published by %1").arg(QtUtils::StringViewToQString(entry->publisher)));
+                                .arg(QtUtils::StringViewToQString(dbentry->developer))
+                                .arg(QtUtils::StringViewToQString(dbentry->publisher)));
+    else if (!dbentry->developer.empty())
+      m_ui.developer->setText(QtUtils::StringViewToQString(dbentry->developer));
+    else if (!dbentry->publisher.empty())
+      m_ui.developer->setText(tr("Published by %1").arg(QtUtils::StringViewToQString(dbentry->publisher)));
     else
       m_ui.developer->setText(tr("Unknown"));
 
     QString release_info;
-    if (entry->release_date != 0)
+    if (dbentry->release_date != 0)
     {
-      const QString date = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(entry->release_date), QTimeZone::utc())
+      const QString date = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(dbentry->release_date), QTimeZone::utc())
                              .toString(QtHost::GetApplicationLocale().dateFormat());
       release_info = tr("Released %1").arg(date);
     }
-    if (entry->min_players != 0)
+    if (dbentry->min_players != 0)
     {
       if (!release_info.isEmpty())
         release_info.append(", ");
-      if (entry->min_players != entry->max_players)
-        release_info.append(tr("%1-%2 players").arg(entry->min_players).arg(entry->max_players));
+      if (dbentry->min_players != dbentry->max_players)
+        release_info.append(tr("%1-%2 players").arg(dbentry->min_players).arg(dbentry->max_players));
       else
-        release_info.append(tr("%1 players").arg(entry->min_players));
+        release_info.append(tr("%1 players").arg(dbentry->min_players));
     }
-    if (entry->min_blocks != 0)
+    if (dbentry->min_blocks != 0)
     {
       if (!release_info.isEmpty())
         release_info.append(", ");
-      if (entry->min_blocks != entry->max_blocks)
-        release_info.append(tr("%1-%2 memory card blocks").arg(entry->min_blocks).arg(entry->max_blocks));
+      if (dbentry->min_blocks != dbentry->max_blocks)
+        release_info.append(tr("%1-%2 memory card blocks").arg(dbentry->min_blocks).arg(dbentry->max_blocks));
       else
-        release_info.append(tr("%1 memory card blocks").arg(entry->min_blocks));
+        release_info.append(tr("%1 memory card blocks").arg(dbentry->min_blocks));
     }
     if (!release_info.isEmpty())
       m_ui.releaseInfo->setText(release_info);
     else
       m_ui.releaseInfo->setText(tr("Unknown"));
 
-    m_ui.languages->setText(QtUtils::StringViewToQString(entry->GetLanguagesString()));
+    m_ui.languages->setText(QtUtils::StringViewToQString(dbentry->GetLanguagesString()));
 
     QString controllers;
-    if (entry->supported_controllers != 0 && entry->supported_controllers != static_cast<u16>(-1))
+    if (dbentry->supported_controllers != 0 && dbentry->supported_controllers != static_cast<u16>(-1))
     {
       for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
       {
-        if ((entry->supported_controllers & static_cast<u16>(1u << i)) != 0)
+        if ((dbentry->supported_controllers & static_cast<u16>(1u << i)) != 0)
         {
           if (!controllers.isEmpty())
             controllers.append(", ");
@@ -189,27 +196,19 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       controllers = tr("Unknown");
     m_ui.controllers->setText(controllers);
 
-    m_compatibility_comments = QString::fromStdString(entry->GenerateCompatibilityReport());
+    m_compatibility_comments = QString::fromStdString(dbentry->GenerateCompatibilityReport());
   }
   else
   {
-    m_ui.title->setText(tr("Unknown"));
     m_ui.genre->setText(tr("Unknown"));
     m_ui.developer->setText(tr("Unknown"));
     m_ui.releaseInfo->setText(tr("Unknown"));
     m_ui.controllers->setText(tr("Unknown"));
   }
 
+  if (entry->dbentry && entry->dbentry->disc_set)
   {
-    auto lock = GameList::GetLock();
-    const GameList::Entry* gentry = GameList::GetEntryForPath(path);
-    if (gentry)
-      m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
-  }
-
-  if (entry && entry->disc_set)
-  {
-    if (entry->IsFirstDiscInSet())
+    if (entry->dbentry->IsFirstDiscInSet())
     {
       m_ui.separateDiscSettings->setCheckState(
         m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
@@ -238,9 +237,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
   reloadGameSettings();
-  populateCustomAttributes();
   populateTracksInfo();
-  updateWindowTitle();
 }
 
 void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
@@ -251,57 +248,52 @@ void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
     m_dialog->removeSettingValue("Main", "UseSeparateConfigForDiscSet");
 }
 
-void GameSummaryWidget::updateWindowTitle()
-{
-  m_dialog->setGameTitle(m_ui.title->text().toStdString());
-}
-
-void GameSummaryWidget::populateCustomAttributes()
-{
-  auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
-  if (!entry || entry->IsDiscSet())
-  {
-    m_ui.customLanguage->setEnabled(false);
-    return;
-  }
-
-  {
-    QSignalBlocker sb(m_ui.title);
-    m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
-  }
-  m_ui.restoreTitle->setEnabled(entry->has_custom_title);
-
-  {
-    QSignalBlocker sb(m_ui.region);
-    m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-  }
-  m_ui.restoreRegion->setEnabled(entry->has_custom_region);
-
-  {
-    QSignalBlocker sb(m_ui.customLanguage);
-    m_ui.customLanguage->setCurrentIndex(entry->HasCustomLanguage() ? (static_cast<u32>(entry->custom_language) + 1) :
-                                                                      0);
-  }
-}
-
 void GameSummaryWidget::setCustomTitle(const std::string& text)
 {
-  m_ui.restoreTitle->setEnabled(!text.empty());
-
   GameList::SaveCustomTitleForPath(m_path, text);
-  populateCustomAttributes();
-  updateWindowTitle();
+
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+    if (entry)
+    {
+      const std::string_view title = entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+      m_dialog->setGameTitle(title);
+
+      {
+        const QSignalBlocker sb(m_ui.title);
+        m_ui.title->setText(QtUtils::StringViewToQString(title));
+      }
+
+      m_ui.restoreTitle->setEnabled(entry->has_custom_title);
+    }
+  }
+
   g_main_window->refreshGameListModel();
 }
 
 void GameSummaryWidget::setCustomRegion(int region)
 {
-  m_ui.restoreRegion->setEnabled(region >= 0);
-
   GameList::SaveCustomRegionForPath(m_path, (region >= 0) ? std::optional<DiscRegion>(static_cast<DiscRegion>(region)) :
                                                             std::optional<DiscRegion>());
-  populateCustomAttributes();
+
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
+    if (entry)
+    {
+      const std::string_view title = entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
+      m_dialog->setGameTitle(title);
+
+      {
+        const QSignalBlocker sb(m_ui.region);
+        m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
+      }
+
+      m_ui.restoreRegion->setEnabled(entry->has_custom_region);
+    }
+  }
+
   g_main_window->refreshGameListModel();
 }
 
@@ -310,7 +302,7 @@ void GameSummaryWidget::onCustomLanguageChanged(int language)
   GameList::SaveCustomLanguageForPath(
     m_path, (language > 0) ? std::optional<GameDatabase::Language>(static_cast<GameDatabase::Language>(language - 1)) :
                              std::optional<GameDatabase::Language>());
-  populateCustomAttributes();
+
   g_main_window->refreshGameListModel();
 }
 

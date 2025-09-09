@@ -23,6 +23,10 @@ enum class Trait : u32;
 struct Entry;
 } // namespace GameDatabase
 
+namespace GameList {
+struct Entry;
+} // namespace GameList
+
 class GameSummaryWidget;
 class InterfaceSettingsWidget;
 class BIOSSettingsWidget;
@@ -45,12 +49,10 @@ class SettingsWindow final : public QWidget
 
 public:
   SettingsWindow();
-  SettingsWindow(const std::string& path, std::string title, std::string serial, GameHash hash, DiscRegion region,
-                 const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
+  SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
-  static SettingsWindow* openGamePropertiesDialog(const std::string& path, std::string title, std::string serial,
-                                                  GameHash hash, DiscRegion region, const char* category = nullptr);
+  static SettingsWindow* openGamePropertiesDialog(const GameList::Entry* entry, const char* category = nullptr);
   static void closeGamePropertiesDialogs();
 
   // Helper for externally setting fields in game settings ini.
@@ -103,7 +105,7 @@ public:
   void removeSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
 
-  void setGameTitle(std::string title);
+  void setGameTitle(std::string_view title);
   bool hasGameTrait(GameDatabase::Trait trait);
 
 Q_SIGNALS:

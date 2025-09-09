@@ -50,17 +50,15 @@ SettingsWindow::SettingsWindow() : QWidget()
   connectUi();
 }
 
-SettingsWindow::SettingsWindow(const std::string& path, std::string title, std::string serial, GameHash hash,
-                               DiscRegion region, const GameDatabase::Entry* entry,
-                               std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_serial(std::move(serial)), m_hash(hash)
+SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_serial(entry->serial), m_hash(entry->hash)
 {
   m_ui.setupUi(this);
-  setGameTitle(std::move(title));
+  setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  addWidget(m_game_summary = new GameSummaryWidget(path, m_serial, region, entry, this, m_ui.settingsContainer),
-            tr("Summary"), QStringLiteral("file-list-line"),
+  addWidget(m_game_summary = new GameSummaryWidget(entry, this, m_ui.settingsContainer), tr("Summary"),
+            QStringLiteral("file-list-line"),
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
   addPages();
@@ -647,13 +645,13 @@ void SettingsWindow::saveAndReloadGameSettings()
   g_emu_thread->reloadGameSettings(false);
 }
 
-void SettingsWindow::setGameTitle(std::string title)
+void SettingsWindow::setGameTitle(std::string_view title)
 {
-  m_title = std::move(title);
+  m_title = title;
 
   const QString window_title =
     tr("%1 [%2]")
-      .arg(QString::fromStdString(m_title))
+      .arg(QtUtils::StringViewToQString(title))
       .arg(QtUtils::StringViewToQString(m_sif ? Path::GetFileName(m_sif->GetPath()) : std::string_view(m_serial)));
   setWindowTitle(window_title);
 }
@@ -664,53 +662,30 @@ bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
           m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
 }
 
-SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path, std::string title, std::string serial,
-                                                         GameHash hash, DiscRegion region,
+SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,
                                                          const char* category /* = nullptr */)
 {
-  const GameDatabase::Entry* dentry = nullptr;
-  if (!System::IsExePath(path) && !System::IsPsfPath(path))
-  {
-    // Need to resolve hash games.
-    Error error;
-    std::unique_ptr<CDImage> image = CDImage::Open(path.c_str(), false, &error);
-    if (image)
-      dentry = GameDatabase::GetEntryForDisc(image.get());
-    else
-      ERROR_LOG("Failed to open '{}' for game properties: {}", path, error.GetDescription());
-
-    if (!dentry)
-    {
-      // Use the serial and hope for the best...
-      dentry = GameDatabase::GetEntryForSerial(serial);
-    }
-  }
-
-  std::string real_serial = dentry ? std::string(dentry->serial) : std::move(serial);
-  std::unique_ptr<INISettingsInterface> sif = System::GetGameSettingsInterface(dentry, real_serial, true, false);
+  std::unique_ptr<INISettingsInterface> sif =
+    System::GetGameSettingsInterface(entry->dbentry, entry->serial, true, false);
 
   // check for an existing dialog with this serial
-  for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+  SettingsWindow* sif_window = nullptr;
+  for (SettingsWindow* window : s_open_game_properties_dialogs)
   {
-    if (dialog->isPerGameSettings() &&
-        static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetPath() == sif->GetPath())
+    if (window->isPerGameSettings() && window->getSettingsInterface()->GetPath() == sif->GetPath())
     {
-      dialog->show();
-      dialog->raise();
-      dialog->activateWindow();
-      dialog->setFocus();
-      if (category)
-        dialog->setCategory(category);
-      return dialog;
+      sif_window = window;
+      break;
     }
   }
 
-  SettingsWindow* dialog =
-    new SettingsWindow(path, std::move(title), std::move(real_serial), hash, region, dentry, std::move(sif));
-  dialog->show();
+  if (!sif_window)
+    sif_window = new SettingsWindow(entry, std::move(sif));
+
+  QtUtils::ShowOrRaiseWindow(sif_window);
   if (category)
-    dialog->setCategory(category);
-  return dialog;
+    sif_window->setCategory(category);
+  return sif_window;
 }
 
 void SettingsWindow::closeGamePropertiesDialogs()

@@ -1429,6 +1429,14 @@ std::string System::GetGameSettingsPath(std::string_view game_serial, bool ignor
   return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", Path::SanitizeFileName(serial_for_path)));
 }
 
+bool System::ShouldUseSeparateDiscSettingsForSerial(std::string_view game_serial)
+{
+  const std::string path = GetGameSettingsPath(game_serial, false);
+  INISettingsInterface ini(path);
+  ini.Load();
+  return ini.GetBoolValue("Main", "UseSeparateConfigForDiscSet", false);
+}
+
 std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
                                                                        std::string_view serial, bool create, bool quiet)
 {

@@ -9,7 +9,7 @@
 
 enum class DiscRegion : u8;
 
-namespace GameDatabase {
+namespace GameList {
 struct Entry;
 }
 
@@ -20,8 +20,7 @@ class GameSummaryWidget : public QWidget
   Q_OBJECT
 
 public:
-  GameSummaryWidget(const std::string& path, const std::string& serial, DiscRegion region,
-                    const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent);
+  GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent);
   ~GameSummaryWidget();
 
   void reloadGameSettings();
@@ -35,10 +34,7 @@ private Q_SLOTS:
   void onComputeHashClicked();
 
 private:
-  void populateUi(const std::string& path, const std::string& serial, DiscRegion region,
-                  const GameDatabase::Entry* entry);
-  void populateCustomAttributes();
-  void updateWindowTitle();
+  void populateUi(const GameList::Entry* entry);
   void setCustomTitle(const std::string& text);
   void setCustomRegion(int region);
   void setRevisionText(const QString& text);
