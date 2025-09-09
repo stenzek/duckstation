@@ -127,6 +127,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering) ||
                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableSpriteTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
+  SettingWidgetBinder::SetAvailability(m_ui.pgxpDepthBuffer,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPDepthBuffer));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
 
@@ -205,14 +207,18 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpCulling,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPCulling));
-  SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision,
-                                       !m_dialog->hasDatabaseEntry() ||
-                                         m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.value_or(true));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpCPU, m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPCPUMode));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpVertexCache,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPVertexCache));
   SettingWidgetBinder::SetForceEnabled(m_ui.pgxpDisableOn2DPolygons,
                                        m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
+  if (auto dbentry = m_dialog->getDatabaseEntry(); dbentry && dbentry->gpu_pgxp_preserve_proj_fp.has_value())
+  {
+    if (*dbentry->gpu_pgxp_preserve_proj_fp)
+      SettingWidgetBinder::SetForceEnabled(m_ui.pgxpPreserveProjPrecision, true);
+    else
+      SettingWidgetBinder::SetAvailability(m_ui.pgxpPreserveProjPrecision, false);
+  }
 
   // OSD Tab
 
@@ -977,8 +983,7 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPColorCorrection));
   m_ui.pgxpDepthBuffer->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPDepthBuffer));
   m_ui.pgxpPreserveProjPrecision->setEnabled(
-    enabled &&
-    (!m_dialog->hasDatabaseEntry() || m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.value_or(true)));
+    enabled && (!m_dialog->hasDatabaseEntry() || !m_dialog->getDatabaseEntry()->gpu_pgxp_preserve_proj_fp.has_value()));
   m_ui.pgxpCPU->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPCPUMode));
   m_ui.pgxpVertexCache->setEnabled(enabled && !m_dialog->hasGameTrait(GameDatabase::Trait::ForcePGXPVertexCache));
   m_ui.pgxpGeometryTolerance->setEnabled(enabled);
