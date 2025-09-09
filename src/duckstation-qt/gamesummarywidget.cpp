@@ -266,14 +266,12 @@ void GameSummaryWidget::populateCustomAttributes()
     return;
   }
 
-  if (entry->has_custom_title)
   {
     QSignalBlocker sb(m_ui.title);
     m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   }
   m_ui.restoreTitle->setEnabled(entry->has_custom_title);
 
-  if (entry->has_custom_region)
   {
     QSignalBlocker sb(m_ui.region);
     m_ui.region->setCurrentIndex(static_cast<int>(entry->region));

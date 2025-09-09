@@ -52,7 +52,7 @@ namespace {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C48,
-  GAME_LIST_CACHE_VERSION = 38,
+  GAME_LIST_CACHE_VERSION = 39,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -478,7 +478,7 @@ bool GameList::WriteEntryToCache(const Entry* entry, const std::string& entry_pa
   writer.WriteU8(static_cast<u8>(entry->region));
   writer.WriteSizePrefixedString(entry_path);
   writer.WriteSizePrefixedString(entry->serial);
-  writer.WriteSizePrefixedString(entry->title);
+  writer.WriteSizePrefixedString(entry->has_custom_title ? std::string_view() : std::string_view(entry->title));
   writer.WriteU64(entry->hash);
   writer.WriteS64(entry->file_size);
   writer.WriteU64(entry->uncompressed_size);
