@@ -205,7 +205,6 @@ public:
   GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;
 
-  void updateLayout();
   int horizontalOffset() const override;
   int verticalOffset() const override;
 
@@ -213,13 +212,13 @@ public Q_SLOTS:
   void zoomOut();
   void zoomIn();
   void setZoomPct(int int_scale);
+  void updateLayout();
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
   void resizeEvent(QResizeEvent* e) override;
 
 private:
-  void onCoverScaleChanged(float scale);
   void adjustZoom(float delta);
 
   GameListModel* m_model = nullptr;

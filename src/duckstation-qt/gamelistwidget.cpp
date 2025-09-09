@@ -270,7 +270,7 @@ void GameListModel::updateCoverScale()
   }
 
   emit coverScaleChanged(m_cover_scale);
-  refresh();
+  emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DecorationRole, Qt::FontRole});
 }
 
 void GameListModel::refreshCovers()
@@ -671,6 +671,17 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         default:
           return {};
       }
+    }
+
+    case Qt::FontRole:
+    {
+      if (index.column() != Column_Cover || !m_show_titles_for_covers)
+        return {};
+
+      QFont font;
+      font.setPixelSize(std::max(static_cast<int>(30.0f * m_cover_scale), 1));
+      font.setFamilies(QtHost::GetRobotoFontFamilies());
+      return font;
     }
 
     case Qt::TextAlignmentRole:
@@ -2011,9 +2022,8 @@ GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   verticalScrollBar()->setSingleStep(15);
-
-  connect(m_model, &GameListModel::coverScaleChanged, this, &GameListGridView::onCoverScaleChanged);
-  onCoverScaleChanged(m_model->getCoverScale());
+  connect(m_model, &GameListModel::coverScaleChanged, this, &GameListGridView::updateLayout);
+  updateLayout();
 }
 
 GameListGridView::~GameListGridView() = default;
@@ -2040,15 +2050,6 @@ void GameListGridView::wheelEvent(QWheelEvent* e)
 void GameListGridView::resizeEvent(QResizeEvent* e)
 {
   QListView::resizeEvent(e);
-  updateLayout();
-}
-
-void GameListGridView::onCoverScaleChanged(float scale)
-{
-  QFont font;
-  font.setPixelSize(std::max(static_cast<int>(30.0f * scale), 1));
-  setFont(font);
-
   updateLayout();
 }
 
