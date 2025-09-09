@@ -67,11 +67,43 @@ static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
 static constexpr int MEMORY_CARD_ICON_SIZE = 16;
 static constexpr int MEMORY_CARD_ICON_PADDING = 12;
 
-static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left, bool expand_to_fill)
+static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left,
+                              bool expand_to_fill)
 {
   // Get source image in RGB32 format for QPainter.
-  if (image->format() != QImage::Format_RGB32)
-    *image = image->convertToFormat(QImage::Format_RGB32);
+  QImage::Format format;
+  switch (image->format())
+  {
+    case QImage::Format_ARGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+    case QImage::Format_ARGB6666_Premultiplied:
+    case QImage::Format_ARGB8555_Premultiplied:
+    case QImage::Format_ARGB4444_Premultiplied:
+    case QImage::Format_RGBA8888:
+    case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_A2RGB30_Premultiplied:
+    case QImage::Format_Alpha8:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_RGBA16FPx4:
+    case QImage::Format_RGBA16FPx4_Premultiplied:
+    case QImage::Format_RGBA32FPx4:
+    case QImage::Format_RGBA32FPx4_Premultiplied:
+      format = QImage::Format_ARGB32_Premultiplied;
+      break;
+
+    default:
+      format = QImage::Format_RGB32;
+      break;
+  }
+
+  // fill_with_top_left is used for the game list background, which cannot be transparent.
+  format = fill_with_top_left ? QImage::Format_RGB32 : format;
+
+  if (image->format() != format)
+    *image = image->convertToFormat(format);
 
   const qreal dpr = image->devicePixelRatio();
   const int dpr_expected_width = static_cast<int>(static_cast<qreal>(expected_width) * dpr);
@@ -102,7 +134,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if ((image_height < dpr_expected_height) != expand_to_fill)
     yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
 
-  QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_RGB32);
+  QImage padded_image(dpr_expected_width, dpr_expected_height, format);
   padded_image.setDevicePixelRatio(dpr);
   if (fill_with_top_left)
     padded_image.fill(image->pixel(0, 0));
