@@ -134,16 +134,23 @@ static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
                                                           std::shared_ptr<SystemBootParameters>& boot_params);
 } // namespace QtHost
 
-static INISettingsInterface s_base_settings_interface;
-static std::unique_ptr<QTimer> s_settings_save_timer;
-static std::vector<QTranslator*> s_translators;
-static QLocale s_app_locale;
-static bool s_batch_mode = false;
-static bool s_nogui_mode = false;
-static bool s_start_fullscreen_ui = false;
-static bool s_start_fullscreen_ui_fullscreen = false;
-static bool s_run_setup_wizard = false;
-static bool s_cleanup_after_update = false;
+namespace {
+struct State
+{
+  INISettingsInterface base_settings_interface;
+  std::unique_ptr<QTimer> settings_save_timer;
+  std::vector<QTranslator*> translators;
+  QLocale app_locale;
+  bool batch_mode = false;
+  bool nogui_mode = false;
+  bool start_fullscreen_ui = false;
+  bool start_fullscreen_ui_fullscreen = false;
+  bool run_setup_wizard = false;
+  bool cleanup_after_update = false;
+};
+} // namespace
+
+ALIGN_TO_CACHE_LINE static State s_state;
 
 EmuThread* g_emu_thread;
 
@@ -266,12 +273,12 @@ void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& cont
 
 bool QtHost::InBatchMode()
 {
-  return s_batch_mode;
+  return s_state.batch_mode;
 }
 
 bool QtHost::InNoGUIMode()
 {
-  return s_nogui_mode;
+  return s_state.nogui_mode;
 }
 
 bool QtHost::IsRunningOnWayland()
@@ -309,7 +316,7 @@ QString QtHost::GetResourcesBasePath()
 
 INISettingsInterface* QtHost::GetBaseSettingsInterface()
 {
-  return &s_base_settings_interface;
+  return &s_state.base_settings_interface;
 }
 
 bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
@@ -461,53 +468,53 @@ bool QtHost::InitializeConfig()
   std::string settings_path = Path::Combine(EmuFolders::DataRoot, "settings.ini");
   const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
   INFO_LOG("Loading config from {}.", settings_path);
-  s_base_settings_interface.SetPath(std::move(settings_path));
-  Host::Internal::SetBaseSettingsLayer(&s_base_settings_interface);
+  s_state.base_settings_interface.SetPath(std::move(settings_path));
+  Host::Internal::SetBaseSettingsLayer(&s_state.base_settings_interface);
 
   uint settings_version;
-  if (!settings_exists || !s_base_settings_interface.Load() ||
-      !s_base_settings_interface.GetUIntValue("Main", "SettingsVersion", &settings_version) ||
+  if (!settings_exists || !s_state.base_settings_interface.Load() ||
+      !s_state.base_settings_interface.GetUIntValue("Main", "SettingsVersion", &settings_version) ||
       settings_version != SETTINGS_VERSION)
   {
-    if (s_base_settings_interface.ContainsValue("Main", "SettingsVersion"))
+    if (s_state.base_settings_interface.ContainsValue("Main", "SettingsVersion"))
     {
       // NOTE: No point translating this, because there's no config loaded, so no language loaded.
       Host::ReportErrorAsync("Error", fmt::format("Settings version {} does not match expected version {}, resetting.",
                                                   settings_version, SETTINGS_VERSION));
     }
 
-    s_base_settings_interface.SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
-    SetDefaultSettings(s_base_settings_interface, true, true);
+    s_state.base_settings_interface.SetUIntValue("Main", "SettingsVersion", SETTINGS_VERSION);
+    SetDefaultSettings(s_state.base_settings_interface, true, true);
 
     // Flag for running the setup wizard if this is our first run. We want to run it next time if they don't finish it.
-    s_base_settings_interface.SetBoolValue("Main", "SetupWizardIncomplete", true);
+    s_state.base_settings_interface.SetBoolValue("Main", "SetupWizardIncomplete", true);
 
     // Make sure we can actually save the config, and the user doesn't have some permission issue.
     Error error;
-    if (!s_base_settings_interface.Save(&error))
+    if (!s_state.base_settings_interface.Save(&error))
     {
       QMessageBox::critical(
         nullptr, QStringLiteral("DuckStation"),
         QStringLiteral(
           "Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
           "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.")
-          .arg(QString::fromStdString(s_base_settings_interface.GetPath()))
+          .arg(QString::fromStdString(s_state.base_settings_interface.GetPath()))
           .arg(QString::fromStdString(error.GetDescription())));
       return false;
     }
   }
 
   // Setup wizard was incomplete last time?
-  s_run_setup_wizard =
-    s_run_setup_wizard || s_base_settings_interface.GetBoolValue("Main", "SetupWizardIncomplete", false);
+  s_state.run_setup_wizard =
+    s_state.run_setup_wizard || s_state.base_settings_interface.GetBoolValue("Main", "SetupWizardIncomplete", false);
 
-  EmuFolders::LoadConfig(s_base_settings_interface);
+  EmuFolders::LoadConfig(s_state.base_settings_interface);
   EmuFolders::EnsureFoldersExist();
   MigrateSettings();
 
   // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() && s_base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
-    Log::SetConsoleOutputParams(true, s_base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
+  if (!Log::IsConsoleOutputEnabled() && s_state.base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
+    Log::SetConsoleOutputParams(true, s_state.base_settings_interface.GetBoolValue("Logging", "LogTimestamps", true));
 
   UpdateApplicationLanguage(nullptr);
   return true;
@@ -608,7 +615,7 @@ void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* 
 
   {
     auto lock = Host::GetSettingsLock();
-    QtHost::SetDefaultSettings(s_base_settings_interface, system, controller);
+    QtHost::SetDefaultSettings(s_state.base_settings_interface, system, controller);
     QtHost::QueueSettingsSave();
   }
 
@@ -638,15 +645,15 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
 void QtHost::MigrateSettings()
 {
   SmallString value;
-  if (s_base_settings_interface.GetStringValue("Display", "SyncMode", &value))
+  if (s_state.base_settings_interface.GetStringValue("Display", "SyncMode", &value))
   {
-    s_base_settings_interface.SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
-    s_base_settings_interface.SetBoolValue(
+    s_state.base_settings_interface.SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
+    s_state.base_settings_interface.SetBoolValue(
       "Display", "OptimalFramePacing",
-      (value == "VRR" || s_base_settings_interface.GetBoolValue("Display", "DisplayAllFrames", false)));
-    s_base_settings_interface.DeleteValue("Display", "SyncMode");
-    s_base_settings_interface.DeleteValue("Display", "DisplayAllFrames");
-    s_base_settings_interface.Save();
+      (value == "VRR" || s_state.base_settings_interface.GetBoolValue("Display", "DisplayAllFrames", false)));
+    s_state.base_settings_interface.DeleteValue("Display", "SyncMode");
+    s_state.base_settings_interface.DeleteValue("Display", "DisplayAllFrames");
+    s_state.base_settings_interface.Save();
   }
 }
 
@@ -744,7 +751,7 @@ void EmuThread::startFullscreenUI()
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
-    (s_start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
+    (s_state.start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
 
   m_is_fullscreen_ui_started = true;
   emit fullscreenUIStartedOrStopped(true);
@@ -792,7 +799,7 @@ void EmuThread::exitFullscreenUI()
     return;
   }
 
-  const bool was_in_nogui_mode = std::exchange(s_nogui_mode, false);
+  const bool was_in_nogui_mode = std::exchange(s_state.nogui_mode, false);
 
   stopFullscreenUI();
 
@@ -1922,9 +1929,9 @@ void EmuThread::stop()
   QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_emu_thread->isRunning()); });
 
   // Ensure settings are saved.
-  if (s_settings_save_timer)
+  if (s_state.settings_save_timer)
   {
-    s_settings_save_timer.reset();
+    s_state.settings_save_timer.reset();
     QtHost::SaveSettings();
   }
 }
@@ -2201,24 +2208,24 @@ QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
       case Host::NumberFormatType::ShortDate:
       case Host::NumberFormatType::LongDate:
       {
-        format = s_app_locale.dateFormat((type == Host::NumberFormatType::LongDate) ? QLocale::LongFormat :
-                                                                                      QLocale::ShortFormat);
+        format = s_state.app_locale.dateFormat((type == Host::NumberFormatType::LongDate) ? QLocale::LongFormat :
+                                                                                            QLocale::ShortFormat);
       }
       break;
 
       case Host::NumberFormatType::ShortTime:
       case Host::NumberFormatType::LongTime:
       {
-        format = s_app_locale.timeFormat((type == Host::NumberFormatType::LongTime) ? QLocale::LongFormat :
-                                                                                      QLocale::ShortFormat);
+        format = s_state.app_locale.timeFormat((type == Host::NumberFormatType::LongTime) ? QLocale::LongFormat :
+                                                                                            QLocale::ShortFormat);
       }
       break;
 
       case Host::NumberFormatType::ShortDateTime:
       case Host::NumberFormatType::LongDateTime:
       {
-        format = s_app_locale.dateTimeFormat((type == Host::NumberFormatType::LongDateTime) ? QLocale::LongFormat :
-                                                                                              QLocale::ShortFormat);
+        format = s_state.app_locale.dateTimeFormat(
+          (type == Host::NumberFormatType::LongDateTime) ? QLocale::LongFormat : QLocale::ShortFormat);
 
         // Remove time zone specifiers 't', 'tt', 'ttt', 'tttt'.
         format.remove(QRegularExpression("\\s*t+\\s*"));
@@ -2232,7 +2239,7 @@ QString QtHost::FormatNumber(Host::NumberFormatType type, s64 value)
   }
   else
   {
-    ret = s_app_locale.toString(value);
+    ret = s_state.app_locale.toString(value);
   }
 
   return ret;
@@ -2251,7 +2258,7 @@ QString QtHost::FormatNumber(Host::NumberFormatType type, double value)
   {
     case Host::NumberFormatType::Number:
     default:
-      ret = s_app_locale.toString(value);
+      ret = s_state.app_locale.toString(value);
       break;
   }
 
@@ -2265,12 +2272,12 @@ std::string Host::FormatNumber(NumberFormatType type, double value)
 
 void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 {
-  for (QTranslator* translator : s_translators)
+  for (QTranslator* translator : s_state.translators)
   {
     qApp->removeTranslator(translator);
     translator->deleteLater();
   }
-  s_translators.clear();
+  s_state.translators.clear();
 
   // Fixup automatic language.
   std::string language = Host::GetBaseStringSettingValue("Main", "Language", "");
@@ -2311,7 +2318,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     }
     else
     {
-      s_translators.push_back(base_translator);
+      s_state.translators.push_back(base_translator);
       qApp->installTranslator(base_translator);
     }
   }
@@ -2337,7 +2344,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
 
   INFO_LOG("Loaded translation file for language {}", qlanguage.toUtf8().constData());
   qApp->installTranslator(translator);
-  s_translators.push_back(translator);
+  s_state.translators.push_back(translator);
 
   // We end up here both on language change, and on startup.
   UpdateFontOrder(language);
@@ -2490,7 +2497,7 @@ void QtHost::UpdateFontOrder(std::string_view language)
 
 const QLocale& QtHost::GetApplicationLocale()
 {
-  return s_app_locale;
+  return s_state.app_locale;
 }
 
 void QtHost::UpdateApplicationLocale(std::string_view language)
@@ -2503,9 +2510,9 @@ void QtHost::UpdateApplicationLocale(std::string_view language)
 
   // If the system locale is using the same language, then use the system locale.
   // Otherwise we'll be using that ugly US date format in Straya mate.
-  s_app_locale = QLocale::system();
-  const std::string system_locale_name = s_app_locale.name().toStdString();
-  if (s_app_locale.name().startsWith(QLatin1StringView(language), Qt::CaseInsensitive))
+  s_state.app_locale = QLocale::system();
+  const std::string system_locale_name = s_state.app_locale.name().toStdString();
+  if (s_state.app_locale.name().startsWith(QLatin1StringView(language), Qt::CaseInsensitive))
   {
     INFO_LOG("Using system locale for {}.", language);
     return;
@@ -2515,7 +2522,7 @@ void QtHost::UpdateApplicationLocale(std::string_view language)
   {
     if (language == code)
     {
-      s_app_locale = QLocale(qlanguage, qcountry);
+      s_state.app_locale = QLocale(qlanguage, qcountry);
       return;
     }
   }
@@ -2897,14 +2904,14 @@ void QtHost::SaveSettings()
   {
     Error error;
     auto lock = Host::GetSettingsLock();
-    if (s_base_settings_interface.IsDirty() && !s_base_settings_interface.Save(&error))
+    if (s_state.base_settings_interface.IsDirty() && !s_state.base_settings_interface.Save(&error))
       ERROR_LOG("Failed to save settings: {}", error.GetDescription());
   }
 
-  if (s_settings_save_timer)
+  if (s_state.settings_save_timer)
   {
-    s_settings_save_timer->deleteLater();
-    s_settings_save_timer.release();
+    s_state.settings_save_timer->deleteLater();
+    s_state.settings_save_timer.release();
   }
 }
 
@@ -2916,13 +2923,13 @@ void QtHost::QueueSettingsSave()
     return;
   }
 
-  if (s_settings_save_timer)
+  if (s_state.settings_save_timer)
     return;
 
-  s_settings_save_timer = std::make_unique<QTimer>();
-  s_settings_save_timer->connect(s_settings_save_timer.get(), &QTimer::timeout, SaveSettings);
-  s_settings_save_timer->setSingleShot(true);
-  s_settings_save_timer->start(SETTINGS_SAVE_DELAY);
+  s_state.settings_save_timer = std::make_unique<QTimer>();
+  s_state.settings_save_timer->connect(s_state.settings_save_timer.get(), &QTimer::timeout, SaveSettings);
+  s_state.settings_save_timer->setSingleShot(true);
+  s_state.settings_save_timer->start(SETTINGS_SAVE_DELAY);
 }
 
 bool QtHost::ShouldShowDebugOptions()
@@ -3135,13 +3142,13 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       else if (CHECK_ARG("-batch"))
       {
         INFO_LOG("Command Line: Using batch mode.");
-        s_batch_mode = true;
+        s_state.batch_mode = true;
         continue;
       }
       else if (CHECK_ARG("-nogui"))
       {
         INFO_LOG("Command Line: Using NoGUI mode.");
-        s_nogui_mode = true;
+        s_state.nogui_mode = true;
         continue;
       }
       else if (CHECK_ARG("-bios"))
@@ -3191,7 +3198,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       {
         INFO_LOG("Command Line: Using fullscreen.");
         AutoBoot(autoboot)->override_fullscreen = true;
-        s_start_fullscreen_ui_fullscreen = true;
+        s_state.start_fullscreen_ui_fullscreen = true;
         continue;
       }
       else if (CHECK_ARG("-nofullscreen"))
@@ -3203,12 +3210,12 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       else if (CHECK_ARG("-bigpicture"))
       {
         INFO_LOG("Command Line: Starting big picture mode.");
-        s_start_fullscreen_ui = true;
+        s_state.start_fullscreen_ui = true;
         continue;
       }
       else if (CHECK_ARG("-setupwizard"))
       {
-        s_run_setup_wizard = true;
+        s_state.run_setup_wizard = true;
         continue;
       }
       else if (CHECK_ARG("-earlyconsole"))
@@ -3218,7 +3225,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (CHECK_ARG("-updatecleanup"))
       {
-        s_cleanup_after_update = AutoUpdaterWindow::isSupported();
+        s_state.cleanup_after_update = AutoUpdaterWindow::isSupported();
         continue;
       }
       else if (CHECK_ARG("--"))
@@ -3292,16 +3299,17 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
     autoboot.reset();
 
   // nogui implies batch mode if not running big picture mode
-  s_batch_mode = (s_batch_mode || (s_nogui_mode && !s_start_fullscreen_ui));
+  s_state.batch_mode = (s_state.batch_mode || (s_state.nogui_mode && !s_state.start_fullscreen_ui));
 
   // if we don't have autoboot, we definitely don't want batch mode (because that'll skip
   // scanning the game list).
-  if (s_batch_mode && !autoboot && !s_start_fullscreen_ui)
+  if (s_state.batch_mode && !autoboot && !s_state.start_fullscreen_ui)
   {
     QMessageBox::critical(
       nullptr, qApp->translate("QtHost", "Error"),
-      s_nogui_mode ? qApp->translate("QtHost", "Cannot use no-gui mode, because no boot filename was specified.") :
-                     qApp->translate("QtHost", "Cannot use batch mode, because no boot filename was specified."));
+      s_state.nogui_mode ?
+        qApp->translate("QtHost", "Cannot use no-gui mode, because no boot filename was specified.") :
+        qApp->translate("QtHost", "Cannot use batch mode, because no boot filename was specified."));
     return false;
   }
 
@@ -3341,7 +3349,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   // Remove any previous-version remanants.
-  if (s_cleanup_after_update)
+  if (s_state.cleanup_after_update)
     AutoUpdaterWindow::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
@@ -3364,27 +3372,27 @@ int main(int argc, char* argv[])
 
   // Optionally run setup wizard.
   int result;
-  if (s_run_setup_wizard && !QtHost::RunSetupWizard())
+  if (s_state.run_setup_wizard && !QtHost::RunSetupWizard())
   {
     result = EXIT_FAILURE;
     goto shutdown_and_exit;
   }
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!s_batch_mode)
+  if (!s_state.batch_mode)
     g_main_window->refreshGameList(false);
   else
     GameList::Refresh(false, true);
 
   // Don't bother showing the window in no-gui mode.
-  if (!s_nogui_mode)
+  if (!s_state.nogui_mode)
     g_main_window->show();
 
   // Initialize big picture mode if requested.
-  if (s_start_fullscreen_ui)
+  if (s_state.start_fullscreen_ui)
     g_emu_thread->startFullscreenUI();
   else
-    s_start_fullscreen_ui_fullscreen = false;
+    s_state.start_fullscreen_ui_fullscreen = false;
 
   // Always kick off update check. It'll take over if the user is booting a game fullscreen.
   g_main_window->startupUpdateCheck();
