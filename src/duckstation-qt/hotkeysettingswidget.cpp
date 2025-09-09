@@ -114,12 +114,20 @@ void HotkeySettingsWidget::createButtons()
     QGridLayout* layout = iter->layout;
 
     QLabel* label = new QLabel(qApp->translate("Hotkeys", hotkey->display_name), m_container);
-    layout->addWidget(label, target_row, 0);
 
     InputBindingWidget* bind = new InputBindingWidget(m_container, m_dialog->getEditingSettingsInterface(),
                                                       InputBindingInfo::Type::Button, "Hotkeys", hotkey->name);
     bind->setMinimumWidth(300);
-    layout->addWidget(bind, target_row, 1);
+
+    QWidget* row = new QWidget(m_container);
+    row->setAutoFillBackground(true);
+    row->setBackgroundRole(target_row % 2 == 0 ? QPalette::Base : QPalette::AlternateBase);
+
+    QHBoxLayout* h_box = new QHBoxLayout(row);
+    h_box->setContentsMargins(0, 0, 0, 0);
+    h_box->addWidget(label);
+    h_box->addWidget(bind);
+    layout->addWidget(row, target_row, 0, 1, 2);
   }
 }
 
@@ -131,15 +139,18 @@ void HotkeySettingsWidget::setFilter(const QString& filter)
     int visible_row_count = 0;
     for (int i = 0; i < row_count; i++)
     {
-      QLabel* label = qobject_cast<QLabel*>(cw.layout->itemAtPosition(i, 0)->widget());
-      InputBindingWidget* bind = qobject_cast<InputBindingWidget*>(cw.layout->itemAtPosition(i, 1)->widget());
-      if (!label || !bind)
+      QWidget* row = qobject_cast<QWidget*>(cw.layout->itemAtPosition(i, 0)->widget());
+      if (!row)
         continue;
 
+      QLabel* label = row->findChild<QLabel*>(Qt::FindDirectChildrenOnly);
       const bool visible = (filter.isEmpty() || label->text().indexOf(filter, 0, Qt::CaseInsensitive) >= 0);
-      label->setVisible(visible);
-      bind->setVisible(visible);
+      row->setVisible(visible);
       visible_row_count += static_cast<int>(visible);
+
+      // Keep alternating row colors in the same relative position when filtering
+      if (visible)
+        row->setBackgroundRole((visible_row_count - 1) % 2 == 0 ? QPalette::Base : QPalette::AlternateBase);
     }
 
     const bool heading_visible = (visible_row_count > 0);
