@@ -141,6 +141,8 @@ struct State
   std::unique_ptr<QTimer> settings_save_timer;
   std::vector<QTranslator*> translators;
   QLocale app_locale;
+  std::once_flag roboto_font_once_flag;
+  QStringList roboto_font_families;
   bool batch_mode = false;
   bool nogui_mode = false;
   bool start_fullscreen_ui = false;
@@ -2729,6 +2731,28 @@ std::string QtHost::GetResourcePath(std::string_view filename, bool allow_overri
 {
   return allow_override ? EmuFolders::GetOverridableResourcePath(filename) :
                           Path::Combine(EmuFolders::Resources, filename);
+}
+
+const QStringList& QtHost::GetRobotoFontFamilies()
+{
+  std::call_once(s_state.roboto_font_once_flag, []() {
+    const int font_id = QFontDatabase::addApplicationFont(
+      QString::fromStdString(Path::Combine(EmuFolders::Resources, "fonts/Roboto-VariableFont_wdth,wght.ttf")));
+    if (font_id < 0)
+    {
+      ERROR_LOG("Failed to load Roboto font.");
+      return;
+    }
+
+    s_state.roboto_font_families = QFontDatabase::applicationFontFamilies(font_id);
+    if (s_state.roboto_font_families.isEmpty())
+    {
+      ERROR_LOG("Failed to get Roboto font family.");
+      return;
+    }
+  });
+
+  return s_state.roboto_font_families;
 }
 
 bool Host::ResourceFileExists(std::string_view filename, bool allow_override)

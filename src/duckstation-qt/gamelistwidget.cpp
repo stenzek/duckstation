@@ -333,6 +333,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
   {
     QFont font;
     font.setPixelSize(std::max(static_cast<int>(64.0f * scale), 1));
+    font.setFamilies(QtHost::GetRobotoFontFamilies());
     painter.setFont(font);
 
     const int margin = static_cast<int>(30.0f * scale);
