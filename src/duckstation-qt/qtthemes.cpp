@@ -9,17 +9,28 @@
 
 #include <QtCore/QFile>
 #include <QtGui/QPalette>
+#include <QtGui/QStyleHints>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QStyleFactory>
 
 namespace QtHost {
 static void SetStyleFromSettings();
-} // namespace QtHost
 
-static QString s_unthemed_style_name;
-static QPalette s_unthemed_palette;
-static bool s_unthemed_style_name_set;
+namespace {
+struct State
+{
+  std::string current_theme_name;
+  QString unthemed_style_name;
+  QPalette unthemed_palette;
+  bool unthemed_style_name_set = false;
+  bool is_variable_color_style = false;
+};
+} // namespace
+
+static State s_state;
+
+} // namespace QtHost
 
 const char* QtHost::GetDefaultThemeName()
 {
@@ -28,11 +39,11 @@ const char* QtHost::GetDefaultThemeName()
 
 void QtHost::UpdateApplicationTheme()
 {
-  if (!s_unthemed_style_name_set)
+  if (!s_state.unthemed_style_name_set)
   {
-    s_unthemed_style_name_set = true;
-    s_unthemed_style_name = QApplication::style()->objectName();
-    s_unthemed_palette = QApplication::palette();
+    s_state.unthemed_style_name_set = true;
+    s_state.unthemed_style_name = QApplication::style()->objectName();
+    s_state.unthemed_palette = QApplication::palette();
   }
 
   SetStyleFromSettings();
@@ -42,11 +53,12 @@ void QtHost::UpdateApplicationTheme()
 void QtHost::SetStyleFromSettings()
 {
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
+  s_state.is_variable_color_style = false;
 
   if (theme == "qdarkstyle")
   {
-    qApp->setStyle(s_unthemed_style_name);
-    qApp->setPalette(s_unthemed_palette);
+    qApp->setStyle(s_state.unthemed_style_name);
+    qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
@@ -55,8 +67,9 @@ void QtHost::SetStyleFromSettings()
   }
   else if (theme == "fusion")
   {
+    s_state.is_variable_color_style = true;
     qApp->setStyle(QStyleFactory::create("Fusion"));
-    qApp->setPalette(s_unthemed_palette);
+    qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusion")
@@ -370,31 +383,39 @@ void QtHost::SetStyleFromSettings()
   else if (theme == "windowsvista")
   {
     qApp->setStyle(QStyleFactory::create("windowsvista"));
-    qApp->setPalette(s_unthemed_palette);
+    qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
   }
 #endif
   else
   {
-    qApp->setStyle(s_unthemed_style_name);
-    qApp->setPalette(s_unthemed_palette);
+    s_state.is_variable_color_style = true;
+    qApp->setStyle(s_state.unthemed_style_name);
+    qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
 
 #ifdef __APPLE__
     // This is super jank. The native theme on MacOS does not set AlternateBase like the Windows/Fusion themes do, but
     // instead overrides it in QAbstractItemView. Since this is the only place that AlteranteBase is used, just copy it
     // across. Why do we need this? Because we're using AlternateBase in hotkey bindings dialog to draw rows manually.
-    s_unthemed_palette.setColor(QPalette::AlternateBase,
-                                qApp->palette("QAbstractItemView").color(QPalette::AlternateBase));
-    qApp->setPalette(s_unthemed_palette);
+    s_state.unthemed_palette.setColor(QPalette::AlternateBase,
+                                      qApp->palette("QAbstractItemView").color(QPalette::AlternateBase));
+    qApp->setPalette(s_state.unthemed_palette);
 #endif
   }
 }
 
 bool QtHost::IsDarkApplicationTheme()
 {
-  QPalette palette = qApp->palette();
-  return (palette.windowText().color().value() > palette.window().color().value());
+  if (s_state.is_variable_color_style)
+  {
+    return (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
+  }
+  else
+  {
+    const QPalette palette = qApp->palette();
+    return (palette.windowText().color().value() > palette.window().color().value());
+  }
 }
 
 void QtHost::SetIconThemeFromStyle()
