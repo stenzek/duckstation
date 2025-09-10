@@ -265,6 +265,8 @@ private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
 
+  bool eventFilter(QObject* obj, QEvent* ev) override;
+  void showScaleToolTip();
   void onScaleSliderChanged(int value);
   void onScaleChanged();
   void onIconSizeChanged(int size);
