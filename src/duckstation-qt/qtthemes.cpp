@@ -379,6 +379,15 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(s_unthemed_style_name);
     qApp->setPalette(s_unthemed_palette);
     qApp->setStyleSheet(QString());
+
+#ifdef __APPLE__
+    // This is super jank. The native theme on MacOS does not set AlternateBase like the Windows/Fusion themes do, but
+    // instead overrides it in QAbstractItemView. Since this is the only place that AlteranteBase is used, just copy it
+    // across. Why do we need this? Because we're using AlternateBase in hotkey bindings dialog to draw rows manually.
+    s_unthemed_palette.setColor(QPalette::AlternateBase,
+                                qApp->palette("QAbstractItemView").color(QPalette::AlternateBase));
+    qApp->setPalette(s_unthemed_palette);
+#endif
   }
 }
 
