@@ -1373,13 +1373,8 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   m_ui.showGridTitles->setDefaultAction(actionGridShowTitles);
   m_ui.showLocalizedTitles->setDefaultAction(actionShowLocalizedTitles);
 
-  // Configure scale slider for hover events
-  m_ui.scale->setAttribute(Qt::WA_Hover, true);
-  m_ui.scale->installEventFilter(this);
-
   connect(m_ui.scale, &QSlider::sliderPressed, this, &GameListWidget::showScaleToolTip);
   connect(m_ui.scale, &QSlider::valueChanged, this, &GameListWidget::onScaleSliderChanged);
-
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
                                                static_cast<GameList::EntryType>(index - 1));
@@ -1726,34 +1721,13 @@ void GameListWidget::setViewMode(int stack_index)
   }
 }
 
-// Handles scale slider hover events
-bool GameListWidget::eventFilter(QObject* obj, QEvent* ev)
-{
-  if (obj != m_ui.scale)
-    return false;
-
-  switch (ev->type())
-  {
-    case QEvent::HoverEnter:
-      showScaleToolTip();
-      return true;
-    case QEvent::HoverLeave:
-      QToolTip::hideText();
-      return true;
-    default:
-      return false;
-  }
-}
-
 void GameListWidget::showScaleToolTip()
 {
   const int value = m_ui.scale->value();
   if (isShowingGameGrid())
-    QToolTip::showText(QCursor::pos(),
-                       QString("Cover scale: %1%").arg(static_cast<float>(value) / DEFAULT_COVER_SCALE, 0, 'f', 0));
+    QToolTip::showText(QCursor::pos(), tr("Cover scale: %1%").arg(value));
   else if (isShowingGameList())
-    QToolTip::showText(QCursor::pos(),
-                       QString("Icon size: %1%").arg((value * 100) / ICON_SIZE_STEP));
+    QToolTip::showText(QCursor::pos(), tr("Icon size: %1%").arg((value * 100) / ICON_SIZE_STEP));
 }
 
 void GameListWidget::onScaleSliderChanged(int value)
@@ -2044,6 +2018,16 @@ void GameListListView::adjustIconSize(int delta)
 {
   const int new_size = std::clamp(m_model->getIconSize() + delta, MIN_ICON_SIZE, MAX_ICON_SIZE);
   m_model->setIconSize(new_size);
+}
+
+void GameListListView::zoomIn()
+{
+  adjustIconSize(ICON_SIZE_STEP);
+}
+
+void GameListListView::zoomOut()
+{
+  adjustIconSize(-ICON_SIZE_STEP);
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)

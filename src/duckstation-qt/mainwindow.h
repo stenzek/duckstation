@@ -198,8 +198,8 @@ private Q_SLOTS:
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
-  void onViewGameGridZoomInActionTriggered();
-  void onViewGameGridZoomOutActionTriggered();
+  void onViewZoomInActionTriggered();
+  void onViewZoomOutActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
@@ -328,8 +328,8 @@ private:
     QShortcut* open_file = nullptr;
     QShortcut* game_list_refresh = nullptr;
     QShortcut* game_list_search = nullptr;
-    QShortcut* game_grid_zoom_in = nullptr;
-    QShortcut* game_grid_zoom_out = nullptr;
+    QShortcut* game_list_zoom_in = nullptr;
+    QShortcut* game_list_zoom_out = nullptr;
   } m_shortcuts;
 
   SettingsWindow* m_settings_window = nullptr;

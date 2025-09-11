@@ -177,6 +177,10 @@ public:
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
 
+public Q_SLOTS:
+  void zoomOut();
+  void zoomIn();
+
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
@@ -265,7 +269,6 @@ private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
 
-  bool eventFilter(QObject* obj, QEvent* ev) override;
   void showScaleToolTip();
   void onScaleSliderChanged(int value);
   void onScaleChanged();
