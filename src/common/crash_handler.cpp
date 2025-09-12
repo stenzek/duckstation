@@ -15,6 +15,7 @@
 
 #include "thirdparty/StackWalker.h"
 #include <DbgHelp.h>
+#include <exception>
 
 namespace {
 class CrashHandlerStackWalker : public StackWalker
@@ -181,6 +182,19 @@ static void InvalidParameterHandler(const wchar_t* expression, const wchar_t* fu
   __fastfail(FAST_FAIL_INVALID_ARG);
 }
 
+static void RaiseHandler(const std::exception& ex)
+{
+  // if the debugger is attached, or we're recursively crashing, let it take care of it.
+  if (!s_in_crash_handler && !IsDebuggerPresent())
+  {
+    s_in_crash_handler = true;
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
+    WriteMinidumpAndCallstack(nullptr, ex.what());
+  }
+}
+
 static void PureCallHandler()
 {
   // if the debugger is attached, or we're recursively crashing, let it take care of it.
@@ -194,6 +208,23 @@ static void PureCallHandler()
   }
 
   __fastfail(FAST_FAIL_INVALID_ARG);
+}
+
+static void TerminateHandler()
+{
+  if (!s_in_crash_handler && !IsDebuggerPresent())
+  {
+    s_in_crash_handler = true;
+    if (s_cleanup_handler)
+      s_cleanup_handler();
+
+    WriteMinidumpAndCallstack(nullptr, "Terminate handler invoked");
+  }
+
+  if (IsDebuggerPresent())
+    __debugbreak();
+
+  TerminateProcess(GetCurrentProcess(), 0xFBFBFBFBu);
 }
 
 static void AbortSignalHandler(int signal)
@@ -227,6 +258,8 @@ bool CrashHandler::Install(CleanupHandler cleanup_handler)
   SetUnhandledExceptionFilter(ExceptionHandler);
   _set_invalid_parameter_handler(InvalidParameterHandler);
   _set_purecall_handler(PureCallHandler);
+  std::exception::_Set_raise_handler(RaiseHandler);
+  std::set_terminate(TerminateHandler);
 #ifdef _DEBUG
   _set_abort_behavior(_WRITE_ABORT_MSG, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 #else
