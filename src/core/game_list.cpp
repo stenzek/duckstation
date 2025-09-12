@@ -1270,16 +1270,12 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   }
 
   // Check for illegal characters, use serial instead.
-  const std::string_view save_title = entry->GetSaveTitle();
-  const std::string sanitized_name = Path::SanitizeFileName(save_title);
+  std::string filename =
+    fmt::format("{}{}", use_serial ? std::string_view(entry->serial) : entry->GetSaveTitle(), extension);
+  if (!Path::IsFileNameValid(filename))
+    filename = fmt::format("{}{}", entry->serial, extension);
 
-  std::string name;
-  if (sanitized_name != save_title || use_serial)
-    name = fmt::format("{}{}", entry->serial, extension);
-  else
-    name = fmt::format("{}{}", save_title, extension);
-
-  return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(name));
+  return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(filename));
 }
 
 std::string_view GameList::Entry::GetDisplayTitle(bool localized) const
