@@ -6,6 +6,10 @@
 
 #include <gtest/gtest.h>
 
+#include <string_view>
+
+using namespace std::string_view_literals;
+
 TEST(Path, ToNativePath)
 {
   ASSERT_EQ(Path::ToNativePath(""), "");
@@ -234,6 +238,7 @@ TEST(Path, SanitizeFileName)
   ASSERT_EQ(Path::SanitizeFileName("abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}"),
             "abcdefghijlkmnopqrstuvwxyz-0123456789+&=_[]{}");
   ASSERT_EQ(Path::SanitizeFileName("some*path**with*asterisks"), "some_path__with_asterisks");
+  ASSERT_EQ(Path::SanitizeFileName("foo\0bar"sv), "foo_bar");
 #ifdef _WIN32
   ASSERT_EQ(Path::SanitizeFileName("foo:"), "foo_");
   ASSERT_EQ(Path::SanitizeFileName("foo:bar."), "foo_bar_");
@@ -242,6 +247,31 @@ TEST(Path, SanitizeFileName)
   ASSERT_EQ(Path::SanitizeFileName("foo\\bar", false), "foo\\bar");
 #endif
   ASSERT_EQ(Path::SanitizeFileName("foo/bar", false), "foo/bar");
+}
+
+TEST(Path, IsFileNameValid)
+{
+  ASSERT_TRUE(Path::IsFileNameValid("foo"sv));
+  ASSERT_TRUE(Path::IsFileNameValid("foo_bar-0123456789+&=_[]{}"sv));
+  ASSERT_TRUE(Path::IsFileNameValid("f🙃o"sv));
+  ASSERT_TRUE(Path::IsFileNameValid("ŻąłóРстуぬねのはen🍪⟑η∏☉ⴤℹ︎∩₲ ₱⟑♰⫳🐱"sv));
+  ASSERT_TRUE(Path::IsFileNameValid("foo/bar"sv, true));
+  ASSERT_TRUE(Path::IsFileNameValid("foo\\bar"sv, true));
+  ASSERT_FALSE(Path::IsFileNameValid("foo/bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo\0bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo\nbar"sv));
+#ifdef _WIN32
+  ASSERT_FALSE(Path::IsFileNameValid("foo\\bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo:bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo*bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo?bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo\"bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo<bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo>bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foo|bar"sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foobar.txt."sv));
+  ASSERT_FALSE(Path::IsFileNameValid("foobar."sv));
+#endif
 }
 
 TEST(Path, RemoveLengthLimits)

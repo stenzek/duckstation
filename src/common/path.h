@@ -36,6 +36,9 @@ void Canonicalize(std::string* path);
 std::string SanitizeFileName(std::string_view str, bool strip_slashes = true);
 void SanitizeFileName(std::string* str, bool strip_slashes = true);
 
+/// Returns true if the given filename contains any invalid characters.
+bool IsFileNameValid(std::string_view str, bool allow_slashes = false);
+
 /// Mutates the path to remove any MAX_PATH limits (for Windows).
 std::string RemoveLengthLimits(std::string_view str);
 void RemoveLengthLimits(std::string* path);
