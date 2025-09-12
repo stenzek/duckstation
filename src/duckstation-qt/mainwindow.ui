@@ -37,6 +37,9 @@
     <property name="title">
      <string>&amp;System</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <widget class="QMenu" name="menuChangeDisc">
      <property name="title">
       <string>Change Disc</string>
@@ -93,6 +96,9 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionViewGameProperties"/>
     <addaction name="separator"/>
     <addaction name="actionInterfaceSettings"/>
@@ -120,6 +126,9 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionGitHubRepository"/>
     <addaction name="actionDiscordServer"/>
     <addaction name="separator"/>
@@ -132,6 +141,9 @@
    <widget class="QMenu" name="menuDebug">
     <property name="title">
      <string>&amp;Debug</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <widget class="QMenu" name="menuRenderer">
      <property name="title">
@@ -192,6 +204,9 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
     <widget class="QMenu" name="menuWindowSize">
      <property name="title">
       <string>&amp;Window Size</string>
@@ -226,6 +241,9 @@
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
      <string>&amp;Tools</string>
+    </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
     </property>
     <addaction name="actionOpenDataDirectory"/>
     <addaction name="separator"/>
