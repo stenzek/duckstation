@@ -274,6 +274,7 @@ private:
   void destroyDisplayWidget(bool show_game_list);
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool fullscreen);
+  void updateGameListRelatedActions(bool running);
   void exitFullscreen(bool wait_for_completion);
 
   void doSettings(const char* category = nullptr);

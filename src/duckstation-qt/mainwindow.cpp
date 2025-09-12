@@ -528,6 +528,26 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool fullscreen)
   m_ui.menuWindowSize->setEnabled(s_system_valid && !s_system_starting && has_surface && !fullscreen);
   m_ui.actionFullscreen->setEnabled(has_surface && !s_system_starting);
   m_ui.actionFullscreen->setChecked(fullscreen);
+
+  updateGameListRelatedActions(has_surface);
+}
+
+void MainWindow::updateGameListRelatedActions(bool running)
+{
+  bool game_grid = m_game_list_widget->isShowingGameGrid();
+  bool game_list = m_game_list_widget->isShowingGameList();
+  bool has_background = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath") != "";
+  bool starting_or_running = (s_system_starting || running);
+
+  m_ui.actionMergeDiscSets->setDisabled(starting_or_running);
+  m_ui.actionShowLocalizedTitles->setDisabled(starting_or_running);
+  m_ui.actionShowGameIcons->setDisabled(starting_or_running || !game_list);
+  m_ui.actionGridViewShowTitles->setDisabled(starting_or_running || !game_grid);
+  m_ui.actionViewZoomIn->setDisabled(starting_or_running);
+  m_ui.actionViewZoomOut->setDisabled(starting_or_running);
+  m_ui.actionGridViewRefreshCovers->setDisabled(starting_or_running || !game_grid);
+  m_ui.actionChangeGameListBackground->setDisabled(starting_or_running);
+  m_ui.actionClearGameListBackground->setDisabled(starting_or_running || !has_background);
 }
 
 void MainWindow::focusDisplayWidget()
@@ -1441,12 +1461,14 @@ void MainWindow::onViewStatusBarActionToggled(bool checked)
 void MainWindow::onViewGameListActionTriggered()
 {
   m_game_list_widget->showGameList();
+  updateGameListRelatedActions(false);
   switchToGameListView();
 }
 
 void MainWindow::onViewGameGridActionTriggered()
 {
   m_game_list_widget->showGameGrid();
+  updateGameListRelatedActions(false);
   switchToGameListView();
 }
 
@@ -2659,6 +2681,7 @@ void MainWindow::onViewChangeGameListBackgroundTriggered()
   Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
   Host::CommitBaseSettingChanges();
   m_game_list_widget->updateBackground(true);
+  m_ui.actionClearGameListBackground->setEnabled(true);
 }
 
 void MainWindow::onViewClearGameListBackgroundTriggered()
@@ -2666,6 +2689,7 @@ void MainWindow::onViewClearGameListBackgroundTriggered()
   Host::DeleteBaseSettingValue("UI", "GameListBackgroundPath");
   Host::CommitBaseSettingChanges();
   m_game_list_widget->updateBackground(true);
+  m_ui.actionClearGameListBackground->setEnabled(false);
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()
