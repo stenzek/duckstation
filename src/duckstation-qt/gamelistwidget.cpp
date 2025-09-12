@@ -312,9 +312,11 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
   QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, save_title = std::string(ge->GetSaveTitle()),
                              display_title = QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles)),
                              placeholder_image = m_placeholder_image, list = this, width = getCoverArtSize(),
-                             height = getCoverArtSize(), scale = m_cover_scale, dpr = m_device_pixel_ratio]() mutable {
+                             height = getCoverArtSize(), scale = m_cover_scale, dpr = m_device_pixel_ratio,
+                             is_custom_title = ge->has_custom_title]() mutable {
     QImage image;
-    loadOrGenerateCover(image, placeholder_image, width, height, scale, dpr, path, serial, save_title, display_title);
+    loadOrGenerateCover(image, placeholder_image, width, height, scale, dpr, path, serial, save_title, display_title,
+                        is_custom_title);
     return [path = std::move(path), image = std::move(image), list, scale]() { list->coverLoaded(path, image, scale); };
   });
 }
@@ -353,9 +355,10 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
 
 void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height,
                                         float scale, qreal dpr, const std::string& path, const std::string& serial,
-                                        const std::string& save_title, const QString& display_title)
+                                        const std::string& save_title, const QString& display_title,
+                                        bool is_custom_title)
 {
-  const std::string cover_path(GameList::GetCoverImagePath(path, serial, save_title));
+  const std::string cover_path = GameList::GetCoverImagePath(path, serial, save_title, is_custom_title);
   if (!cover_path.empty())
   {
     image.load(QString::fromStdString(cover_path));

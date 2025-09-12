@@ -130,7 +130,7 @@ private:
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
                                   qreal dpr, const std::string& path, const std::string& serial,
-                                  const std::string& save_title, const QString& display_title);
+                                  const std::string& save_title, const QString& display_title, bool is_custom_title);
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
                                      const QString& title);
 
