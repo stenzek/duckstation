@@ -1253,7 +1253,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    INFO_LOG("Unknown game '{}', disabling achievements.", GameHashToString(s_state.game_hash.value()));
+    INFO_LOG("Unknown game '{}', disabling achievements.", GameHashToString(s_state.game_hash.value_or(GameHash{})));
     if (was_disc_change)
       ClearGameInfo();
 
