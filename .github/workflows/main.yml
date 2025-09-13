@@ -30,6 +30,7 @@ jobs:
     uses: "./.github/workflows/linux-cross-appimage-build.yml"
   linux-flatpak:
     name: 📦 Linux Flatpak
+    needs: [linux-appimage, linux-cross-appimage]
     uses: "./.github/workflows/linux-flatpak-build.yml"
   macos:
     name: 🍎 MacOS
