@@ -1378,6 +1378,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   m_ui.showLocalizedTitles->setDefaultAction(actionShowLocalizedTitles);
 
   connect(m_ui.scale, &QSlider::sliderPressed, this, &GameListWidget::showScaleToolTip);
+  connect(m_ui.scale, &QSlider::sliderReleased, this, &QToolTip::hideText);
   connect(m_ui.scale, &QSlider::valueChanged, this, &GameListWidget::onScaleSliderChanged);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
@@ -1756,6 +1757,9 @@ void GameListWidget::onScaleSliderChanged(int value)
     m_model->setCoverScale(static_cast<float>(value) / 100.0f);
   else if (isShowingGameList())
     m_model->setIconSize(value * ICON_SIZE_STEP);
+
+  if (m_ui.scale->isSliderDown())
+    showScaleToolTip();
 }
 
 void GameListWidget::onScaleChanged()
@@ -1768,7 +1772,6 @@ void GameListWidget::onScaleChanged()
 
   QSignalBlocker sb(m_ui.scale);
   m_ui.scale->setValue(value);
-  showScaleToolTip();
 }
 
 void GameListWidget::onIconSizeChanged(int size)
