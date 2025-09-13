@@ -529,26 +529,28 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool fullscreen)
   m_ui.actionFullscreen->setEnabled(has_surface && !s_system_starting);
   m_ui.actionFullscreen->setChecked(fullscreen);
 
-  updateGameListRelatedActions(has_surface);
+  updateGameListRelatedActions();
 }
 
-void MainWindow::updateGameListRelatedActions(bool running)
+void MainWindow::updateGameListRelatedActions()
 {
-  bool game_grid = m_game_list_widget->isShowingGameGrid();
-  bool game_list = m_game_list_widget->isShowingGameList();
-  bool has_background = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath") != "";
-  bool starting_or_running = (s_system_starting || running);
+  const bool running = !isShowingGameList();
+  const bool disable = (s_system_starting || (running && isRenderingToMain()));
 
-  m_ui.menuSortBy->setDisabled(starting_or_running);
-  m_ui.actionMergeDiscSets->setDisabled(starting_or_running);
-  m_ui.actionShowLocalizedTitles->setDisabled(starting_or_running);
-  m_ui.actionShowGameIcons->setDisabled(starting_or_running || !game_list);
-  m_ui.actionGridViewShowTitles->setDisabled(starting_or_running || !game_grid);
-  m_ui.actionViewZoomIn->setDisabled(starting_or_running);
-  m_ui.actionViewZoomOut->setDisabled(starting_or_running);
-  m_ui.actionGridViewRefreshCovers->setDisabled(starting_or_running || !game_grid);
-  m_ui.actionChangeGameListBackground->setDisabled(starting_or_running);
-  m_ui.actionClearGameListBackground->setDisabled(starting_or_running || !has_background);
+  const bool game_grid = m_game_list_widget->isShowingGameGrid();
+  const bool game_list = m_game_list_widget->isShowingGameList();
+  const bool has_background = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath") != "";
+
+  m_ui.menuSortBy->setDisabled(disable);
+  m_ui.actionMergeDiscSets->setDisabled(disable);
+  m_ui.actionShowLocalizedTitles->setDisabled(disable);
+  m_ui.actionShowGameIcons->setDisabled(disable || !game_list);
+  m_ui.actionGridViewShowTitles->setDisabled(disable || !game_grid);
+  m_ui.actionViewZoomIn->setDisabled(disable);
+  m_ui.actionViewZoomOut->setDisabled(disable);
+  m_ui.actionGridViewRefreshCovers->setDisabled(disable || !game_grid);
+  m_ui.actionChangeGameListBackground->setDisabled(disable);
+  m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
 
 void MainWindow::focusDisplayWidget()
@@ -1462,14 +1464,14 @@ void MainWindow::onViewStatusBarActionToggled(bool checked)
 void MainWindow::onViewGameListActionTriggered()
 {
   m_game_list_widget->showGameList();
-  updateGameListRelatedActions(false);
+  updateGameListRelatedActions();
   switchToGameListView();
 }
 
 void MainWindow::onViewGameGridActionTriggered()
 {
   m_game_list_widget->showGameGrid();
-  updateGameListRelatedActions(false);
+  updateGameListRelatedActions();
   switchToGameListView();
 }
 
