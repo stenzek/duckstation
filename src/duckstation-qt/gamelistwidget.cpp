@@ -49,6 +49,7 @@ static constexpr int MAX_ICON_SIZE = 80;
 static constexpr float MIN_COVER_SCALE = 0.1f;
 static constexpr float DEFAULT_COVER_SCALE = 0.45f;
 static constexpr float MAX_COVER_SCALE = 2.0f;
+static constexpr float COVER_SCALE_STEP = 0.05f;
 
 static const char* SUPPORTED_FORMATS_STRING =
   QT_TRANSLATE_NOOP(GameListWidget, ".cue (Cue Sheets)\n"
@@ -1427,6 +1428,22 @@ bool GameListWidget::isShowingGameGrid() const
   return (m_ui.stack->currentIndex() == VIEW_MODE_GRID);
 }
 
+void GameListWidget::zoomOut()
+{
+  if (isShowingGameList())
+    m_list_view->adjustIconSize(-ICON_SIZE_STEP);
+  else if (isShowingGameGrid())
+    m_grid_view->adjustZoom(-COVER_SCALE_STEP);
+}
+
+void GameListWidget::zoomIn()
+{
+  if (isShowingGameList())
+    m_list_view->adjustIconSize(ICON_SIZE_STEP);
+  else if (isShowingGameGrid())
+    m_grid_view->adjustZoom(COVER_SCALE_STEP);
+}
+
 void GameListWidget::refresh(bool invalidate_cache)
 {
   cancelRefresh();
@@ -2023,16 +2040,6 @@ void GameListListView::adjustIconSize(int delta)
   m_model->setIconSize(new_size);
 }
 
-void GameListListView::zoomIn()
-{
-  adjustIconSize(ICON_SIZE_STEP);
-}
-
-void GameListListView::zoomOut()
-{
-  adjustIconSize(-ICON_SIZE_STEP);
-}
-
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)
   : QListView(parent), m_model(model)
 {
@@ -2062,9 +2069,9 @@ void GameListGridView::wheelEvent(QWheelEvent* e)
     if (dy != 0)
     {
       if (dy < 0)
-        zoomOut();
+        adjustZoom(-COVER_SCALE_STEP);
       else
-        zoomIn();
+        adjustZoom(COVER_SCALE_STEP);
 
       return;
     }
@@ -2082,22 +2089,6 @@ void GameListGridView::resizeEvent(QResizeEvent* e)
 void GameListGridView::adjustZoom(float delta)
 {
   const float new_scale = std::clamp(m_model->getCoverScale() + delta, MIN_COVER_SCALE, MAX_COVER_SCALE);
-  m_model->setCoverScale(new_scale);
-}
-
-void GameListGridView::zoomIn()
-{
-  adjustZoom(0.05f);
-}
-
-void GameListGridView::zoomOut()
-{
-  adjustZoom(-0.05f);
-}
-
-void GameListGridView::setZoomPct(int int_scale)
-{
-  const float new_scale = std::clamp(static_cast<float>(int_scale) / 100.0f, MIN_COVER_SCALE, MAX_COVER_SCALE);
   m_model->setCoverScale(new_scale);
 }
 

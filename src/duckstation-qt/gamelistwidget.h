@@ -177,16 +177,12 @@ public:
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
 
-public Q_SLOTS:
-  void zoomOut();
-  void zoomIn();
+  void adjustIconSize(int delta);
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
 private:
-  void adjustIconSize(int delta);
-
   void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
   void onHeaderContextMenuRequested(const QPoint& point);
 
@@ -212,10 +208,9 @@ public:
   int horizontalOffset() const override;
   int verticalOffset() const override;
 
+  void adjustZoom(float delta);
+
 public Q_SLOTS:
-  void zoomOut();
-  void zoomIn();
-  void setZoomPct(int int_scale);
   void updateLayout();
 
 protected:
@@ -223,8 +218,6 @@ protected:
   void resizeEvent(QResizeEvent* e) override;
 
 private:
-  void adjustZoom(float delta);
-
   GameListModel* m_model = nullptr;
   int m_horizontal_offset = 0;
   int m_vertical_offset = 0;
@@ -252,6 +245,9 @@ public:
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
+
+  void zoomOut();
+  void zoomIn();
 
   const GameList::Entry* getSelectedEntry() const;
 

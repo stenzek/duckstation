@@ -1460,10 +1460,7 @@ void MainWindow::onViewZoomInActionTriggered()
   if (!isShowingGameList())
     return;
 
-  if (m_game_list_widget->isShowingGameList())
-    m_game_list_widget->getListView()->zoomIn();
-  else if (m_game_list_widget->isShowingGameGrid())
-    m_game_list_widget->getGridView()->zoomIn();
+  m_game_list_widget->zoomIn();
 }
 
 void MainWindow::onViewZoomOutActionTriggered()
@@ -1471,10 +1468,7 @@ void MainWindow::onViewZoomOutActionTriggered()
   if (!isShowingGameList())
     return;
 
-  if (m_game_list_widget->isShowingGameList())
-    m_game_list_widget->getListView()->zoomOut();
-  else if (m_game_list_widget->isShowingGameGrid())
-    m_game_list_widget->getGridView()->zoomOut();
+  m_game_list_widget->zoomOut();
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
