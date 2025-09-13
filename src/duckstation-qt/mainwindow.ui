@@ -214,7 +214,7 @@
     </widget>
     <widget class="QMenu" name="menuSortBy">
      <property name="title">
-      <string>S&amp;ort By</string>
+      <string>Sort B&amp;y</string>
      </property>
     </widget>
     <addaction name="actionViewToolbar"/>
@@ -454,7 +454,7 @@
     <iconset theme="fullscreen-line"/>
    </property>
    <property name="text">
-    <string>Fullscreen</string>
+    <string>&amp;Fullscreen</string>
    </property>
   </action>
   <action name="actionResolution_Scale">
@@ -773,7 +773,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Lock Toolbar</string>
+    <string>Loc&amp;k Toolbar</string>
    </property>
   </action>
   <action name="actionViewSmallToolbarIcons">
@@ -781,7 +781,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Small Toolbar Icons</string>
+    <string>S&amp;mall Toolbar Icons</string>
    </property>
   </action>
   <action name="actionViewToolbarLabels">
@@ -789,7 +789,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar Labels</string>
+    <string>Toolbar L&amp;abels</string>
    </property>
   </action>
   <action name="actionViewToolbarLabelsBesideIcons">
@@ -797,7 +797,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Toolbar Labels Beside Icons</string>
+    <string>Toolbar Labels &amp;Beside Icons</string>
    </property>
   </action>
   <action name="actionViewStatusBar">
@@ -879,7 +879,7 @@
     <iconset theme="play-list-2-line"/>
    </property>
    <property name="text">
-    <string>Merge Multi-Disc Games</string>
+    <string>&amp;Merge Multi-Disc Games</string>
    </property>
   </action>
   <action name="actionGridViewShowTitles">
@@ -893,6 +893,9 @@
     <iconset theme="price-tag-3-line"/>
    </property>
    <property name="text">
+    <string>Show Titl&amp;es (Grid View)</string>
+   </property>
+   <property name="iconText">
     <string>Show Titles (Grid View)</string>
    </property>
    <property name="toolTip">
@@ -900,11 +903,17 @@
    </property>
   </action>
   <action name="actionViewZoomIn">
+   <property name="icon">
+    <iconset theme="zoom-in"/>
+   </property>
    <property name="text">
     <string>Zoom &amp;In</string>
    </property>
   </action>
   <action name="actionViewZoomOut">
+   <property name="icon">
+    <iconset theme="zoom-out"/>
+   </property>
    <property name="text">
     <string>Zoom &amp;Out</string>
    </property>
@@ -969,7 +978,7 @@
     <iconset theme="image-fill"/>
    </property>
    <property name="text">
-    <string>Show Game Icons (List View)</string>
+    <string>Show Game Ico&amp;ns (List View)</string>
    </property>
    <property name="toolTip">
     <string>Show Game Icons</string>
@@ -1066,12 +1075,12 @@
   </action>
   <action name="actionChangeGameListBackground">
    <property name="text">
-    <string>Change List Background...</string>
+    <string>&amp;Change List Background...</string>
    </property>
   </action>
   <action name="actionClearGameListBackground">
    <property name="text">
-    <string>Clear List Background</string>
+    <string>Clea&amp;r List Background</string>
    </property>
   </action>
   <action name="actionViewRefreshAchievementProgress">
@@ -1090,7 +1099,7 @@
     <iconset theme="language"/>
    </property>
    <property name="text">
-    <string>Show Localized Titles</string>
+    <string>Show Locali&amp;zed Titles</string>
    </property>
   </action>
  </widget>
