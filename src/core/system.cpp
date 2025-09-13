@@ -960,10 +960,15 @@ GameHash System::GetGameHashFromBuffer(const std::string_view path, const std::s
 
 std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories)
 {
+  std::string code;
+
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
   if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data, IsoReader::ReadMode::Data))
-    return FALLBACK_EXE_NAME;
+  {
+    code = FALLBACK_EXE_NAME;
+    return code;
+  }
 
   // Parse lines
   std::vector<std::pair<std::string, std::string>> lines;
@@ -1007,10 +1012,11 @@ std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdire
   if (iter == lines.end())
   {
     // Fallback to PSX.EXE
-    return FALLBACK_EXE_NAME;
+    code = FALLBACK_EXE_NAME;
+    return code;
   }
 
-  std::string code = iter->second;
+  code = iter->second;
   std::string::size_type pos;
   if (strip_subdirectories)
   {
