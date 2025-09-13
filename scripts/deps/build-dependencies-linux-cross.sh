@@ -10,48 +10,12 @@
 set -e
 
 if [ "$#" -lt 4 ]; then
-    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zlib] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] [-only-download] <host directory> <cross architecture> <cross chroot> <output directory>"
+    echo "Syntax: $0 [-skip-download] [-skip-cleanup] [-only-download] <host directory> <cross architecture> <cross chroot> <output directory>"
     exit 1
 fi
 
 for arg in "$@"; do
-	if [ "$arg" == "-system-freetype" ]; then
-		echo "Skipping building FreeType."
-		SKIP_FREETYPE=true
-		shift
-	elif [ "$arg" == "-system-harfbuzz" ]; then
-		echo "Skipping building HarfBuzz."
-		SKIP_HARFBUZZ=true
-		shift
-	elif [ "$arg" == "-system-libjpeg" ]; then
-		echo "Skipping building libjpeg."
-		SKIP_LIBJPEG=true
-		shift
-	elif [ "$arg" == "-system-libpng" ]; then
-		echo "Skipping building libpng."
-		SKIP_LIBPNG=true
-		shift
-	elif [ "$arg" == "-system-libwebp" ]; then
-		echo "Skipping building libwebp."
-		SKIP_LIBWEBP=true
-		shift
-	elif [ "$arg" == "-system-libzip" ]; then
-		echo "Skipping building libzip."
-		SKIP_LIBZIP=true
-		shift
-	elif [ "$arg" == "-system-zlib" ]; then
-		echo "Skipping building zlib-ng."
-		SKIP_ZLIBNG=true
-		shift
-	elif [ "$arg" == "-system-zstd" ]; then
-		echo "Skipping building zstd."
-		SKIP_ZSTD=true
-		shift
-	elif [ "$arg" == "-system-qt" ]; then
-		echo "Skipping building Qt."
-		SKIP_QT=true
-		shift
-	elif [ "$arg" == "-skip-download" ]; then
+	if [ "$arg" == "-skip-download" ]; then
 		echo "Not downloading sources."
 		SKIP_DOWNLOAD=true
 		shift
@@ -111,6 +75,20 @@ cd deps-build
 
 if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; then
 	curl -C - -L \
+		-o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download" \
+		-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
+		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
+		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.gz" \
+		-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
+		-O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.gz" \
+		-o "zlib-ng-$ZLIBNG.tar.gz" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/$ZLIBNG.tar.gz" \
+		-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
+		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz"  \
 		-o "libbacktrace-$LIBBACKTRACE.tar.gz" "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
 		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
@@ -121,6 +99,20 @@ if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; t
 fi
 
 cat > SHASUMS <<EOF
+$FREETYPE_GZ_HASH  freetype-$FREETYPE.tar.gz
+$HARFBUZZ_GZ_HASH  harfbuzz-$HARFBUZZ.tar.gz
+$LIBJPEGTURBO_GZ_HASH  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+$LIBPNG_GZ_HASH  libpng-$LIBPNG.tar.gz
+$LIBWEBP_GZ_HASH  libwebp-$LIBWEBP.tar.gz
+$LIBZIP_GZ_HASH  libzip-$LIBZIP.tar.gz
+$ZLIBNG_GZ_HASH  zlib-ng-$ZLIBNG.tar.gz
+$ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
+$QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
+$QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
+$QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
+$QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
+$QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
+$QTWAYLAND_XZ_HASH  qtwayland-everywhere-src-$QT.tar.xz
 $LIBBACKTRACE_GZ_HASH  libbacktrace-$LIBBACKTRACE.tar.gz
 $SDL3_GZ_HASH  SDL3-$SDL3.tar.gz
 $CPUINFO_GZ_HASH  cpuinfo-$CPUINFO.tar.gz
@@ -129,90 +121,6 @@ $PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG.tar.gz
 $SHADERC_GZ_HASH  shaderc-$SHADERC.tar.gz
 $SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
-
-if [ "$SKIP_FREETYPE" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "freetype-$FREETYPE.tar.gz" ]]; then
-		curl -C - -L -o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download"
-	fi
-	cat >> SHASUMS <<EOF
-$FREETYPE_GZ_HASH  freetype-$FREETYPE.tar.gz
-EOF
-fi
-if [ "$SKIP_HARFBUZZ" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "harfbuzz-$HARFBUZZ.tar.gz" ]]; then
-		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$HARFBUZZ_GZ_HASH  harfbuzz-$HARFBUZZ.tar.gz
-EOF
-fi
-if [ "$SKIP_LIBJPEG" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libjpeg-turbo-$LIBJPEGTURBO.tar.gz" ]]; then
-		curl -C - -L -O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$LIBJPEGTURBO_GZ_HASH  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
-EOF
-fi
-if [ "$SKIP_LIBPNG" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libpng-$LIBPNG.tar.gz" ]]; then
-		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$LIBPNG_GZ_HASH  libpng-$LIBPNG.tar.gz
-EOF
-fi
-if [ "$SKIP_LIBWEBP" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libwebp-$LIBWEBP.tar.gz" ]]; then
-		curl -C - -L -O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$LIBWEBP_GZ_HASH  libwebp-$LIBWEBP.tar.gz
-EOF
-fi
-if [ "$SKIP_LIBZIP" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libzip-$LIBZIP.tar.gz" ]]; then
-		curl -C - -L -O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$LIBZIP_GZ_HASH  libzip-$LIBZIP.tar.gz
-EOF
-fi
-if [ "$SKIP_ZLIBNG" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "zlib-ng-$ZLIBNG.tar.gz" ]]; then
-		curl -C - -L -o "zlib-ng-$ZLIBNG.tar.gz" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/$ZLIBNG.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$ZLIBNG_GZ_HASH  zlib-ng-$ZLIBNG.tar.gz
-EOF
-fi
-if [ "$SKIP_ZSTD" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "zstd-$ZSTD.tar.gz" ]]; then
-		curl -C - -L -O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz"
-	fi
-	cat >> SHASUMS <<EOF
-$ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
-EOF
-fi
-if [ "$SKIP_QT" != true ]; then
-	if [[ "$SKIP_DOWNLOAD" != true && ! -f "qtbase-everywhere-src-$QT.tar.xz" ]]; then
-		curl -C - -L \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" 
-	fi
-	cat >> SHASUMS <<EOF
-$QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
-$QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
-$QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
-$QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
-$QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
-$QTWAYLAND_XZ_HASH  qtwayland-everywhere-src-$QT.tar.xz
-EOF
-fi
 
 shasum -a 256 --check SHASUMS
 
@@ -264,16 +172,14 @@ EOF
 
 # Build zlib first because of the things that depend on it.
 # Disabled because it currently causes crashes on armhf.
-#if [ "$SKIP_ZLIBNG" != true ]; then
-#	echo "Building zlib-ng..."
-#	rm -fr "zlib-ng-$ZLIBNG"
-#	tar xf "zlib-ng-$ZLIBNG.tar.gz"
-#	cd "zlib-ng-$ZLIBNG"
-#	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
-#	cmake --build build --parallel
-#	ninja -C build install
-#	cd ..
-#fi
+#echo "Building zlib-ng..."
+#rm -fr "zlib-ng-$ZLIBNG"
+#tar xf "zlib-ng-$ZLIBNG.tar.gz"
+#cd "zlib-ng-$ZLIBNG"
+#cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
+#cmake --build build --parallel
+#ninja -C build install
+#cd ..
 
 # NOTE: Must be a shared library because otherwise aarch64 libgcc symbols are missing when building with clang.
 echo "Building libbacktrace..."
@@ -285,96 +191,82 @@ make
 make install
 cd ..
 
-if [ "$SKIP_LIBPNG" != true ]; then
-	echo "Building libpng..."
-	rm -fr "libpng-$LIBPNG"
-	tar xf "libpng-$LIBPNG.tar.gz"
-	cd "libpng-$LIBPNG"
-	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building libpng..."
+rm -fr "libpng-$LIBPNG"
+tar xf "libpng-$LIBPNG.tar.gz"
+cd "libpng-$LIBPNG"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-if [ "$SKIP_LIBJPEG" != true ]; then
-	echo "Building libjpeg..."
-	rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
-	tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
-	cd "libjpeg-turbo-$LIBJPEGTURBO"
-	cmake "${CMAKE_COMMON[@]}" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building libjpeg..."
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
+tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
+cd "libjpeg-turbo-$LIBJPEGTURBO"
+cmake "${CMAKE_COMMON[@]}" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-if [ "$SKIP_ZSTD" != true ]; then
-	echo "Building Zstandard..."
-	rm -fr "zstd-$ZSTD"
-	tar xf "zstd-$ZSTD.tar.gz"
-	cd "zstd-$ZSTD"
-	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building Zstandard..."
+rm -fr "zstd-$ZSTD"
+tar xf "zstd-$ZSTD.tar.gz"
+cd "zstd-$ZSTD"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-if [ "$SKIP_LIBWEBP" != true ]; then
-	echo "Building WebP..."
-	rm -fr "libwebp-$LIBWEBP"
-	tar xf "libwebp-$LIBWEBP.tar.gz"
-	cd "libwebp-$LIBWEBP"
-	cmake "${CMAKE_COMMON[@]}" -B build -G Ninja \
-		-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
-		-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building WebP..."
+rm -fr "libwebp-$LIBWEBP"
+tar xf "libwebp-$LIBWEBP.tar.gz"
+cd "libwebp-$LIBWEBP"
+cmake "${CMAKE_COMMON[@]}" -B build -G Ninja \
+	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
+	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-if [ "$SKIP_LIBZIP" != true ]; then
-	echo "Building libzip..."
-	rm -fr "libzip-$LIBZIP"
-	tar xf "libzip-$LIBZIP.tar.gz"
-	cd "libzip-$LIBZIP"
-	cmake "${CMAKE_COMMON[@]}" -B build -G Ninja \
-		-DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF \
-		-DENABLE_BZIP2=OFF -DENABLE_LZMA=OFF -DENABLE_ZSTD=ON -DBUILD_SHARED_LIBS=ON -DLIBZIP_DO_INSTALL=ON \
-		-DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF -DBUILD_OSSFUZZ=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building libzip..."
+rm -fr "libzip-$LIBZIP"
+tar xf "libzip-$LIBZIP.tar.gz"
+cd "libzip-$LIBZIP"
+cmake "${CMAKE_COMMON[@]}" -B build -G Ninja \
+	-DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF \
+	-DENABLE_BZIP2=OFF -DENABLE_LZMA=OFF -DENABLE_ZSTD=ON -DBUILD_SHARED_LIBS=ON -DLIBZIP_DO_INSTALL=ON \
+	-DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF -DBUILD_OSSFUZZ=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-if [ "$SKIP_FREETYPE" != true ]; then
-	if [ "$SKIP_HARFBUZZ" != true ]; then
-		echo "Building FreeType without HarfBuzz..."
-		rm -fr "freetype-$FREETYPE"
-		tar xf "freetype-$FREETYPE.tar.gz"
-		cd "freetype-$FREETYPE"
-		cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
-		cmake --build build --parallel
-		ninja -C build install
-		cd ..
+echo "Building FreeType without HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.gz"
+cd "freetype-$FREETYPE"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-		echo "Building HarfBuzz..."
-		rm -fr "harfbuzz-$HARFBUZZ"
-		tar xf "harfbuzz-$HARFBUZZ.tar.gz"
-		cd "harfbuzz-$HARFBUZZ"
-		cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja
-		cmake --build build --parallel
-		ninja -C build install
-		cd ..
-	fi
+echo "Building HarfBuzz..."
+rm -fr "harfbuzz-$HARFBUZZ"
+tar xf "harfbuzz-$HARFBUZZ.tar.gz"
+cd "harfbuzz-$HARFBUZZ"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
-	echo "Building FreeType with HarfBuzz..."
-	rm -fr "freetype-$FREETYPE"
-	tar xf "freetype-$FREETYPE.tar.gz"
-	cd "freetype-$FREETYPE"
-	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+echo "Building FreeType with HarfBuzz..."
+rm -fr "freetype-$FREETYPE"
+tar xf "freetype-$FREETYPE.tar.gz"
+cd "freetype-$FREETYPE"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
 echo "Building SDL..."
 rm -fr "SDL3-$SDL3"
@@ -385,65 +277,64 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-if [ "$SKIP_QT" != true ]; then
-	# Couple notes:
-	# -fontconfig is needed otherwise Qt Widgets render only boxes.
-	# -qt-doubleconversion avoids a dependency on libdouble-conversion.
-	# ICU avoids pulling in a bunch of large libraries, and hopefully we can get away without it.
-	# OpenGL is needed to render window decorations in Wayland, apparently.
-	# dbus-runtime and linked off to avoid a relocation error (different to host.. probably should change that).
-	echo "Building Qt Base..."
-	rm -fr "qtbase-everywhere-src-$QT"
-	tar xf "qtbase-everywhere-src-$QT.tar.xz"
-	cd "qtbase-everywhere-src-$QT"
-	patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
-	mkdir build
-	cd build
-	../configure -prefix "$INSTALLDIR" -extprefix "$INSTALLDIR" -qt-host-path "$HOSTDIR" -release -dbus runtime -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAINFILE" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_dbus_linked=OFF -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
-	cmake --build . --parallel
-	ninja install
-	cd ../../
+# Couple notes:
+# -fontconfig is needed otherwise Qt Widgets render only boxes.
+# -qt-doubleconversion avoids a dependency on libdouble-conversion.
+# ICU avoids pulling in a bunch of large libraries, and hopefully we can get away without it.
+# OpenGL is needed to render window decorations in Wayland, apparently.
+# dbus-runtime and linked off to avoid a relocation error (different to host.. probably should change that).
+echo "Building Qt Base..."
+rm -fr "qtbase-everywhere-src-$QT"
+tar xf "qtbase-everywhere-src-$QT.tar.xz"
+cd "qtbase-everywhere-src-$QT"
+patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
+mkdir build
+cd build
+../configure -prefix "$INSTALLDIR" -extprefix "$INSTALLDIR" -qt-host-path "$HOSTDIR" -release -dbus runtime -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAINFILE" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_dbus_linked=OFF -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake --build . --parallel
+ninja install
+cd ../../
 
-	echo "Building Qt SVG..."
-	rm -fr "qtsvg-everywhere-src-$QT"
-	tar xf "qtsvg-everywhere-src-$QT.tar.xz"
-	cd "qtsvg-everywhere-src-$QT"
-	mkdir build
-	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
-	cmake --build . --parallel
-	ninja install
-	cd ../../
+echo "Building Qt SVG..."
+rm -fr "qtsvg-everywhere-src-$QT"
+tar xf "qtsvg-everywhere-src-$QT.tar.xz"
+cd "qtsvg-everywhere-src-$QT"
+mkdir build
+cd build
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
+cmake --build . --parallel
+ninja install
+cd ../../
 
-	echo "Building Qt Image Formats..."
-	rm -fr "qtimageformats-everywhere-src-$QT"
-	tar xf "qtimageformats-everywhere-src-$QT.tar.xz"
-	cd "qtimageformats-everywhere-src-$QT"
-	mkdir build
-	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_system_webp=ON
-	cmake --build . --parallel
-	ninja install
-	cd ../../
+echo "Building Qt Image Formats..."
+rm -fr "qtimageformats-everywhere-src-$QT"
+tar xf "qtimageformats-everywhere-src-$QT.tar.xz"
+cd "qtimageformats-everywhere-src-$QT"
+mkdir build
+cd build
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_system_webp=ON
+cmake --build . --parallel
+ninja install
+cd ../../
 
-	echo "Building Qt Wayland..."
-	rm -fr "qtwayland-everywhere-src-$QT"
-	tar xf "qtwayland-everywhere-src-$QT.tar.xz"
-	cd "qtwayland-everywhere-src-$QT"
-	mkdir build
-	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_wayland_server=OFF
-	cmake --build . --parallel
-	ninja install
-	cd ../../
+echo "Building Qt Wayland..."
+rm -fr "qtwayland-everywhere-src-$QT"
+tar xf "qtwayland-everywhere-src-$QT.tar.xz"
+cd "qtwayland-everywhere-src-$QT"
+mkdir build
+cd build
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_wayland_server=OFF
+cmake --build . --parallel
+ninja install
+cd ../../
 
-	echo "Installing Qt Tools..."
-	rm -fr "qttools-everywhere-src-$QT"
-	tar xf "qttools-everywhere-src-$QT.tar.xz"
-	cd "qttools-everywhere-src-$QT"
+echo "Installing Qt Tools..."
+rm -fr "qttools-everywhere-src-$QT"
+tar xf "qttools-everywhere-src-$QT.tar.xz"
+cd "qttools-everywhere-src-$QT"
 
-	# Force disable clang scanning, it gets very confused.
-	patch -u configure.cmake <<EOF
+# Force disable clang scanning, it gets very confused.
+patch -u configure.cmake <<EOF
 --- configure.cmake
 +++ configure.cmake
 @@ -3,11 +3,11 @@
@@ -465,24 +356,23 @@ if [ "$SKIP_QT" != true ]; then
 
 EOF
 
-	mkdir build
-	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
-	cmake --build . --parallel
-	ninja install
-	cd ../../
+mkdir build
+cd build
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
+cmake --build . --parallel
+ninja install
+cd ../../
 
-	echo "Installing Qt Translations..."
-	rm -fr "qttranslations-everywhere-src-$QT"
-	tar xf "qttranslations-everywhere-src-$QT.tar.xz"
-	cd "qttranslations-everywhere-src-$QT"
-	mkdir build
-	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
-	cmake --build . --parallel
-	ninja install
-	cd ../../
-fi
+echo "Installing Qt Translations..."
+rm -fr "qttranslations-everywhere-src-$QT"
+tar xf "qttranslations-everywhere-src-$QT.tar.xz"
+cd "qttranslations-everywhere-src-$QT"
+mkdir build
+cd build
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
+cmake --build . --parallel
+ninja install
+cd ../../
 
 echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC"
