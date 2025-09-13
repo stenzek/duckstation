@@ -215,8 +215,8 @@
     <addaction name="actionShowLocalizedTitles"/>
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionGridViewShowTitles"/>
-    <addaction name="actionGridViewZoomIn"/>
-    <addaction name="actionGridViewZoomOut"/>
+    <addaction name="actionViewZoomIn"/>
+    <addaction name="actionViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
     <addaction name="actionViewRefreshAchievementProgress"/>
     <addaction name="separator"/>
@@ -874,14 +874,14 @@
     <string>Show Titles</string>
    </property>
   </action>
-  <action name="actionGridViewZoomIn">
+  <action name="actionViewZoomIn">
    <property name="text">
-    <string>Zoom &amp;In (Grid View)</string>
+    <string>Zoom &amp;In</string>
    </property>
   </action>
-  <action name="actionGridViewZoomOut">
+  <action name="actionViewZoomOut">
    <property name="text">
-    <string>Zoom &amp;Out (Grid View)</string>
+    <string>Zoom &amp;Out</string>
    </property>
   </action>
   <action name="actionGridViewRefreshCovers">

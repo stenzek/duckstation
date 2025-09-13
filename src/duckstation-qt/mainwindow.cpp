@@ -1455,15 +1455,25 @@ void MainWindow::onViewSystemDisplayTriggered()
   switchToEmulationView();
 }
 
-void MainWindow::onViewGameGridZoomInActionTriggered()
+void MainWindow::onViewZoomInActionTriggered()
 {
-  if (isShowingGameList())
+  if (!isShowingGameList())
+    return;
+
+  if (m_game_list_widget->isShowingGameList())
+    m_game_list_widget->getListView()->zoomIn();
+  else if (m_game_list_widget->isShowingGameGrid())
     m_game_list_widget->getGridView()->zoomIn();
 }
 
-void MainWindow::onViewGameGridZoomOutActionTriggered()
+void MainWindow::onViewZoomOutActionTriggered()
 {
-  if (isShowingGameList())
+  if (!isShowingGameList())
+    return;
+
+  if (m_game_list_widget->isShowingGameList())
+    m_game_list_widget->getListView()->zoomOut();
+  else if (m_game_list_widget->isShowingGameGrid())
     m_game_list_widget->getGridView()->zoomOut();
 }
 
@@ -1826,10 +1836,10 @@ void MainWindow::setupAdditionalUi()
   m_shortcuts.game_list_search->setKeys(QKeySequence::keyBindings(QKeySequence::Find) +
                                         QKeySequence::keyBindings(QKeySequence::FindNext));
   connect(m_shortcuts.game_list_search, &QShortcut::activated, m_game_list_widget, &GameListWidget::focusSearchWidget);
-  m_shortcuts.game_grid_zoom_in =
-    new QShortcut(QKeySequence::ZoomIn, this, this, &MainWindow::onViewGameGridZoomInActionTriggered);
-  m_shortcuts.game_grid_zoom_out =
-    new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
+  m_shortcuts.game_list_zoom_in =
+    new QShortcut(QKeySequence::ZoomIn, this, this, &MainWindow::onViewZoomInActionTriggered);
+  m_shortcuts.game_list_zoom_out =
+    new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewZoomOutActionTriggered);
 
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
@@ -2096,8 +2106,8 @@ void MainWindow::updateShortcutActions(bool starting)
   m_shortcuts.open_file->setEnabled(!starting_or_running);
   m_shortcuts.game_list_refresh->setEnabled(is_showing_game_list);
   m_shortcuts.game_list_search->setEnabled(is_showing_game_list);
-  m_shortcuts.game_grid_zoom_in->setEnabled(is_showing_game_list);
-  m_shortcuts.game_grid_zoom_out->setEnabled(is_showing_game_list);
+  m_shortcuts.game_list_zoom_in->setEnabled(is_showing_game_list);
+  m_shortcuts.game_list_zoom_out->setEnabled(is_showing_game_list);
 }
 
 void MainWindow::updateStatusBarWidgetVisibility()
@@ -2368,8 +2378,8 @@ void MainWindow::connectSignals()
           &GameListWidget::setShowLocalizedTitles);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
-  connect(m_ui.actionGridViewZoomIn, &QAction::triggered, this, &MainWindow::onViewGameGridZoomInActionTriggered);
-  connect(m_ui.actionGridViewZoomOut, &QAction::triggered, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
+  connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);
+  connect(m_ui.actionViewZoomOut, &QAction::triggered, this, &MainWindow::onViewZoomOutActionTriggered);
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
   connect(m_ui.actionViewRefreshAchievementProgress, &QAction::triggered, g_emu_thread,

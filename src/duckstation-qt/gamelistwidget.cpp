@@ -31,6 +31,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
+#include <QtWidgets/QToolTip>
 #include <algorithm>
 #include <limits>
 
@@ -46,6 +47,7 @@ static constexpr int ICON_SIZE_STEP = 4;
 static constexpr int MIN_ICON_SIZE = 16;
 static constexpr int MAX_ICON_SIZE = 80;
 static constexpr float MIN_COVER_SCALE = 0.1f;
+static constexpr float DEFAULT_COVER_SCALE = 0.45f;
 static constexpr float MAX_COVER_SCALE = 2.0f;
 
 static const char* SUPPORTED_FORMATS_STRING =
@@ -145,7 +147,7 @@ GameListModel::GameListModel(GameListWidget* parent)
   : QAbstractTableModel(parent), m_device_pixel_ratio(QtUtils::GetDevicePixelRatioForWidget(parent)),
     m_icon_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
-  m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", 0.45f);
+  m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", DEFAULT_COVER_SCALE);
   m_icon_size = Host::GetBaseFloatSettingValue("UI", "GameListIconSize", MIN_ICON_SIZE);
   m_show_localized_titles = GameList::ShouldShowLocalizedTitles();
   m_show_titles_for_covers = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
@@ -1374,6 +1376,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   m_ui.showGridTitles->setDefaultAction(actionGridShowTitles);
   m_ui.showLocalizedTitles->setDefaultAction(actionShowLocalizedTitles);
 
+  connect(m_ui.scale, &QSlider::sliderPressed, this, &GameListWidget::showScaleToolTip);
   connect(m_ui.scale, &QSlider::valueChanged, this, &GameListWidget::onScaleSliderChanged);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
     m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
@@ -1721,6 +1724,15 @@ void GameListWidget::setViewMode(int stack_index)
   }
 }
 
+void GameListWidget::showScaleToolTip()
+{
+  const int value = m_ui.scale->value();
+  if (isShowingGameGrid())
+    QToolTip::showText(QCursor::pos(), tr("Cover scale: %1%").arg(value));
+  else if (isShowingGameList())
+    QToolTip::showText(QCursor::pos(), tr("Icon size: %1%").arg((value * 100) / ICON_SIZE_STEP));
+}
+
 void GameListWidget::onScaleSliderChanged(int value)
 {
   if (isShowingGameGrid())
@@ -1739,6 +1751,7 @@ void GameListWidget::onScaleChanged()
 
   QSignalBlocker sb(m_ui.scale);
   m_ui.scale->setValue(value);
+  showScaleToolTip();
 }
 
 void GameListWidget::onIconSizeChanged(int size)
@@ -2008,6 +2021,16 @@ void GameListListView::adjustIconSize(int delta)
 {
   const int new_size = std::clamp(m_model->getIconSize() + delta, MIN_ICON_SIZE, MAX_ICON_SIZE);
   m_model->setIconSize(new_size);
+}
+
+void GameListListView::zoomIn()
+{
+  adjustIconSize(ICON_SIZE_STEP);
+}
+
+void GameListListView::zoomOut()
+{
+  adjustIconSize(-ICON_SIZE_STEP);
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)
