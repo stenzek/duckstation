@@ -6,6 +6,8 @@ Keep in mind that **rcheevos** does *not* provide HTTP network connections. Clie
 
 Not all structures defined by **rcheevos** can be created via the public API, but are exposed to allow interactions beyond just creation, destruction, and testing, such as the ones required by UI code that helps to create them.
 
+**NOTE**: development occurs on the _develop_ branch, which is set as the default branch in GitHub so newly opened PRs will request to be merged into the _develop_ branch. When integrating **rcheevos** into your project, we recommend using the _master_ branch, which corresponds to the last official release, and minimizes the risk of encountering a bug that has been introduced since the last official release.
+
 ## API
 
 An understanding about how achievements are developed may be useful, you can read more about it [here](https://docs.retroachievements.org/developer-docs/).
@@ -27,9 +29,7 @@ Platforms supported by RetroAchievements are enumerated in `rc_consoles.h`. Note
 
 ## Runtime support
 
-Provides a set of functions for managing an active game - initializing and processing achievements, leaderboards, and rich presence. When important things occur, events are raised for the caller via a callback.
-
-The `rc_client_t` functions wrap a `rc_runtime_t` and manage the API calls and other common functionality (like managing the user information, identifying/loading a game, and building the active/inactive achievements list for the UI). Please see [the wiki](https://github.com/RetroAchievements/rcheevos/wiki/rc_client-integration) for details on using the `rc_client_t` functions.
+A set of functions for managing an active game is provided by the library. If you are considering adding achievement support to your emulator, you should look at the `rc_client_t` functions which will prepare the API calls and other implement other common functionality (like managing the user information, identifying/loading a game, and building the active/inactive achievements list for the UI). It has several callback functions which allow the client to implement dependent functionality (UI and HTTP calls). Please see [the wiki](https://github.com/RetroAchievements/rcheevos/wiki/rc_client-integration) for details on using the `rc_client_t` functions.
 
 ## Server Communication
 
@@ -37,11 +37,9 @@ The `rc_client_t` functions wrap a `rc_runtime_t` and manage the API calls and o
 
 **rapi** does *not* make HTTP requests.
 
-NOTE: **rapi** is a replacement for **rurl**. **rurl** has been deprecated.
-
 NOTE: `rc_client` is the preferred way to have a client interact with the server.
 
-These are in `rc_api_user.h`, `rc_api_runtime.h` and `rc_api_common.h`.
+**rapi** headers are `rc_api_user.h`, `rc_api_runtime.h` and `rc_api_common.h`.
 
 The basic process of making an **rapi** call is to initialize a params object, call a function to convert it to a URL, send that to the server, then pass the response to a function to convert it into a response object, and handle the response values.
 
@@ -63,3 +61,7 @@ These are in `rc_hash.h`.
   int rc_hash_iterate(char hash[33], rc_hash_iterator_t* iterator);
   void rc_hash_destroy_iterator(rc_hash_iterator_t* iterator);
 ```
+
+### Custom file handling
+
+**rhash** (and by extension **rc_client**) support custom handlers for opening/reading files. This allows the client to redirect file reads to support custom file formats (like ZIP or CHD).

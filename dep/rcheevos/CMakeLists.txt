@@ -11,7 +11,6 @@ add_library(rcheevos
   include/rc_hash.h
   include/rc_runtime.h
   include/rc_runtime_types.h
-  include/rc_url.h
   include/rc_util.h
   src/rapi/rc_api_common.c
   src/rapi/rc_api_common.h
@@ -41,7 +40,6 @@ add_library(rcheevos
   src/rc_version.h
   src/rhash/md5.c
   src/rhash/md5.h
-  src/rurl/url.c
 )
 
 target_include_directories(rcheevos PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")

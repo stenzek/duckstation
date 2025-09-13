@@ -30,7 +30,6 @@
     <ClCompile Include="src\rc_compat.c" />
     <ClCompile Include="src\rc_util.c" />
     <ClCompile Include="src\rhash\md5.c" />
-    <ClCompile Include="src\rurl\url.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\rcheevos.h" />
@@ -45,7 +44,6 @@
     <ClInclude Include="include\rc_hash.h" />
     <ClInclude Include="include\rc_runtime.h" />
     <ClInclude Include="include\rc_runtime_types.h" />
-    <ClInclude Include="include\rc_url.h" />
     <ClInclude Include="include\rc_util.h" />
     <ClInclude Include="src\rapi\rc_api_common.h" />
     <ClInclude Include="src\rcheevos\rc_internal.h" />
