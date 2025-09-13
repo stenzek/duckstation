@@ -10,7 +10,6 @@ option(DISABLE_SSE4 "Build with SSE4 instructions disabled, reduces performance"
 if(LINUX OR BSD)
   option(ENABLE_X11 "Support X11 window system" ON)
   option(ENABLE_WAYLAND "Support Wayland window system" ON)
-  option(ALLOW_INSTALL "Allow installation to CMAKE_INSTALL_PREFIX" OFF)
 endif()
 if(APPLE)
   option(SKIP_POSTPROCESS_BUNDLE "Disable bundle post-processing, including Qt additions" OFF)

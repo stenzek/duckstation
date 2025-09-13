@@ -221,12 +221,6 @@ function(add_core_resources target)
     endif()
     add_resources(${target} ${path} ${CMAKE_SOURCE_DIR}/data/resources/)
   endforeach()
-  if(ALLOW_INSTALL)
-    install_imported_dep_library(cpuinfo::cpuinfo)
-    install_imported_dep_library(DiscordRPC::discord-rpc)
-    install_imported_dep_library(libzip::zip)
-    install(DIRECTORY "$<TARGET_FILE_DIR:${target}>/resources" DESTINATION "${CMAKE_INSTALL_BINDIR}")
-  endif()
 
   # Linux platforms need a copy of the .desktop and icon file because Wayland stupidity.
   # See QtHost::EarlyProcessStartup() for where this is used and why. We still need to set it when running

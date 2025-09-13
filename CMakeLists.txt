@@ -105,12 +105,6 @@ endif()
 # Write binaries to a seperate directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
-# Installation directories. Everything goes into one directory.
-if(ALLOW_INSTALL)
-  set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}")
-  set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}")
-endif()
-
 # Enable large file support on Linux 32-bit platforms.
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
   add_definitions("-D_FILE_OFFSET_BITS=64")

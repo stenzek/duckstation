@@ -13,9 +13,9 @@ find_package(SDL3 3.2.22 REQUIRED)
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
-find_package(PNG 1.6.44 REQUIRED) # 1.6.48, but Flatpak is out of date.
+find_package(PNG 1.6.50 REQUIRED)
 find_package(JPEG REQUIRED)
-find_package(Freetype 2.13.2 REQUIRED) # 2.13.3, but flatpak is still on 2.13.2.
+find_package(Freetype 2.13.3 REQUIRED) # 2.13.3, but flatpak is still on 2.13.2.
 find_package(plutosvg 0.0.6 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
@@ -40,14 +40,13 @@ if(ENABLE_WAYLAND)
 endif()
 
 if(BUILD_QT_FRONTEND)
-  # 6.9.1, but flatpak stuck on 6.9.0 because they love to ship vulnerable software.
-  find_package(Qt6 6.9.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  find_package(Qt6 6.9.2 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 endif()
 
 find_package(Shaderc REQUIRED)
 find_package(spirv_cross_c_shared REQUIRED)
 
-if(LINUX AND NOT ALLOW_INSTALL)
+if(LINUX)
   # We need to add the rpath for shaderc to the executable.
   get_target_property(SHADERC_LIBRARY Shaderc::shaderc_shared IMPORTED_LOCATION)
   get_filename_component(SHADERC_LIBRARY_DIRECTORY ${SHADERC_LIBRARY} DIRECTORY)

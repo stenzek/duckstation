@@ -42,8 +42,6 @@ function(copy_base_translations target)
     target_sources(${target} PRIVATE ${path})
     if(APPLE)
       set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations)
-    elseif(ALLOW_INSTALL)
-      install(FILES "${path}" DESTINATION "${CMAKE_INSTALL_BINDIR}/translations")
     else()
       add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/translations")
