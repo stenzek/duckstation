@@ -212,6 +212,11 @@
       <string>&amp;Window Size</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuSortBy">
+     <property name="title">
+      <string>S&amp;ort By</string>
+     </property>
+    </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
     <addaction name="actionViewSmallToolbarIcons"/>
@@ -225,6 +230,8 @@
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
+    <addaction name="separator"/>
+    <addaction name="menuSortBy"/>
     <addaction name="separator"/>
     <addaction name="actionMergeDiscSets"/>
     <addaction name="actionShowLocalizedTitles"/>
