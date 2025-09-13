@@ -560,8 +560,17 @@ static int rc_runtime_progress_read_variables(rc_runtime_progress_t* progress)
     }
   }
 
+  /* VS raises a C6385 warning here because it thinks count can exceed the size of the local_pending_variables array.
+   * When count is larger, pending_variables points to allocated memory, so the warning is wrong. */
+#if defined (_MSC_VER)
+ #pragma warning(push)
+ #pragma warning(disable:6385)
+#endif
   while (count > 0)
     rc_reset_value(pending_variables[--count].variable);
+#if defined (_MSC_VER)
+ #pragma warning(pop)
+#endif
 
   if (pending_variables != local_pending_variables)
     free(pending_variables);
@@ -911,7 +920,7 @@ uint32_t rc_runtime_progress_size(const rc_runtime_t* runtime, void* unused_L)
 
 int rc_runtime_serialize_progress(void* buffer, const rc_runtime_t* runtime, void* unused_L)
 {
-  return rc_runtime_serialize_progress_sized(buffer, 0xFFFFFFFF, runtime, unused_L);
+  return rc_runtime_serialize_progress_sized((uint8_t*)buffer, 0xFFFFFFFF, runtime, unused_L);
 }
 
 int rc_runtime_serialize_progress_sized(uint8_t* buffer, uint32_t buffer_size, const rc_runtime_t* runtime, void* unused_L)

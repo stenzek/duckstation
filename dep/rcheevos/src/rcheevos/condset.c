@@ -101,6 +101,11 @@ static int32_t rc_classify_conditions(rc_condset_t* self, const char* memaddr, c
     chain_length = 1;
   } while (*memaddr++ == '_');
 
+  /* any combining conditions that don't actually feed into a non-combining condition
+   * need to still have space allocated for them. put them in "other" to match the
+   * logic in rc_find_next_classification */
+  self->num_other_conditions += chain_length - 1;
+
   return index;
 }
 
@@ -338,8 +343,12 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
     if (parse->buffer) {
       classification = rc_classify_condition(&condition);
       if (classification == RC_CONDITION_CLASSIFICATION_COMBINING) {
-        if (combining_classification == RC_CONDITION_CLASSIFICATION_COMBINING)
-          combining_classification = rc_find_next_classification(&(*memaddr)[1]); /* skip over '_' */
+        if (combining_classification == RC_CONDITION_CLASSIFICATION_COMBINING) {
+          if (**memaddr == '_')
+            combining_classification = rc_find_next_classification(&(*memaddr)[1]); /* skip over '_' */
+          else
+            combining_classification = RC_CONDITION_CLASSIFICATION_OTHER;
+        }
 
         classification = combining_classification;
       }

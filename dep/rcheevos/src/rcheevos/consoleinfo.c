@@ -724,10 +724,11 @@ static const rc_memory_regions_t rc_memory_regions_nes = { _rc_memory_regions_ne
 
 /* ===== Nintendo 64 ===== */
 /* https://raw.githubusercontent.com/mikeryan/n64dev/master/docs/n64ops/n64ops%23h.txt */
+/* https://n64brew.dev/wiki/Memory_map#Virtual_Memory_Map */
 static const rc_memory_region_t _rc_memory_regions_n64[] = {
-    { 0x000000U, 0x1FFFFFU, 0x00000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RDRAM 1 */
-    { 0x200000U, 0x3FFFFFU, 0x00200000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RDRAM 2 */
-    { 0x400000U, 0x7FFFFFU, 0x80000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }  /* expansion pak - cannot find any details for real address */
+    { 0x000000U, 0x1FFFFFU, 0x80000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RDRAM 1 */
+    { 0x200000U, 0x3FFFFFU, 0x80200000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }, /* RDRAM 2 */
+    { 0x400000U, 0x7FFFFFU, 0x80400000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }  /* expansion pak */
 };
 static const rc_memory_regions_t rc_memory_regions_n64 = { _rc_memory_regions_n64, 3 };
 

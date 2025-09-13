@@ -273,17 +273,17 @@ static int rc_json_extract_html_error(rc_api_response_t* response, const rc_api_
   iterator.json = server_response->body;
   iterator.end = server_response->body + server_response->body_length;
 
-  /* if the title contains an HTTP status code(i.e "404 Not Found"), return the title */
+  /* assume the title contains the most appropriate message to display to the user */
   if (rc_json_find_substring(&iterator, "<title>")) {
     const char* title_start = iterator.json + 7;
-    if (isdigit((int)*title_start) && rc_json_find_substring(&iterator, "</title>")) {
+    if (rc_json_find_substring(&iterator, "</title>")) {
       response->error_message = rc_buffer_strncpy(&response->buffer, title_start, iterator.json - title_start);
       response->succeeded = 0;
       return RC_INVALID_JSON;
     }
   }
 
-  /* title not found, or did not start with an error code, return the first line of the response */
+  /* title not found, return the first line of the response (up to 200 characters) */
   iterator.json = server_response->body;
 
   while (iterator.json < iterator.end && *iterator.json != '\n' &&
@@ -317,6 +317,13 @@ static int rc_json_convert_error_code(const char* server_error_code)
     case 'i':
       if (strcmp(server_error_code, "invalid_credentials") == 0)
         return RC_INVALID_CREDENTIALS;
+      if (strcmp(server_error_code, "invalid_parameter") == 0)
+        return RC_INVALID_STATE;
+      break;
+
+    case 'm':
+      if (strcmp(server_error_code, "missing_parameter") == 0)
+        return RC_INVALID_STATE;
       break;
 
     case 'n':
@@ -698,6 +705,57 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
   *dst++ = '\0';
   rc_buffer_consume(buffer, (uint8_t*)(*out), (uint8_t*)dst);
   return 1;
+}
+
+int rc_json_field_string_matches(const rc_json_field_t* field, const char* text) {
+  int is_quoted = 0;
+  const char* ptr = field->value_start;
+  if (!ptr)
+    return 0;
+
+  if (*ptr == '"') {
+    is_quoted = 1;
+    ++ptr;
+  }
+
+  while (ptr < field->value_end) {
+    if (*ptr != *text) {
+      if (*ptr != '\\') {
+        if (*ptr == '"' && is_quoted && (*text == '\0')) {
+          is_quoted = 0;
+          ++ptr;
+          continue;
+        }
+
+        return 0;
+      }
+
+      ++ptr;
+      switch (*ptr) {
+        case 'n':
+          if (*text != '\n')
+            return 0;
+          break;
+        case 'r':
+          if (*text != '\r')
+            return 0;
+          break;
+        case 't':
+          if (*text != '\t')
+            return 0;
+          break;
+        default:
+          if (*text != *ptr)
+            return 0;
+          break;
+      }
+    }
+
+    ++text;
+    ++ptr;
+  }
+
+  return !is_quoted && (*text == '\0');
 }
 
 void rc_json_get_optional_string(const char** out, rc_api_response_t* response, const rc_json_field_t* field, const char* field_name, const char* default_value) {

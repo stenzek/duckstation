@@ -379,6 +379,8 @@
         <DisplayString Condition="value==RC_FORMAT_TENS">{RC_FORMAT_TENS}</DisplayString>
         <DisplayString Condition="value==RC_FORMAT_HUNDREDS">{RC_FORMAT_HUNDREDS}</DisplayString>
         <DisplayString Condition="value==RC_FORMAT_THOUSANDS">{RC_FORMAT_THOUSANDS}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_UNSIGNED_VALUE">{RC_FORMAT_UNSIGNED_VALUE}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_UNFORMATTED">{RC_FORMAT_UNFORMATTED}</DisplayString>
         <DisplayString Condition="value==101">RC_FORMAT_STRING (101)</DisplayString>
         <DisplayString Condition="value==102">RC_FORMAT_LOOKUP (102)</DisplayString>
         <DisplayString Condition="value==103">RC_FORMAT_UNKNOWN_MACRO (103)</DisplayString>

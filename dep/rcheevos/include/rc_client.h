@@ -217,8 +217,9 @@ typedef struct rc_client_user_game_summary_t {
   uint32_t points_core;
   uint32_t points_unlocked;
 
-  time_t beaten_time; /* 0 if not beaten, otherwise the time the game was beaten */
-  time_t completed_time;  /* 0 if not mastered, otherwise the time the game was mastered */
+  /* minimum version: 12.1 */
+  time_t beaten_time;
+  time_t completed_time;
 } rc_client_user_game_summary_t;
 
 /**
@@ -272,6 +273,12 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_identify_and_load_g
     uint32_t console_id, const char* file_path,
     const uint8_t* data, size_t data_size,
     rc_client_callback_t callback, void* callback_userdata);
+
+struct rc_hash_callbacks;
+/**
+ * Provide callback functions for interacting with the file system and processing disc-based files when generating hashes.
+ */
+RC_EXPORT void rc_client_set_hash_callbacks(rc_client_t* client, const struct rc_hash_callbacks* callbacks);
 #endif
 
 /**
@@ -286,9 +293,9 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_load_game(rc_client
 RC_EXPORT int RC_CCONV rc_client_get_load_game_state(const rc_client_t* client);
 enum {
   RC_CLIENT_LOAD_GAME_STATE_NONE,
-  RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME,
   RC_CLIENT_LOAD_GAME_STATE_AWAIT_LOGIN,
-  RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA,
+  RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME,
+  RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA, /* [deprecated] - game data is now returned by identify call */
   RC_CLIENT_LOAD_GAME_STATE_STARTING_SESSION,
   RC_CLIENT_LOAD_GAME_STATE_DONE,
   RC_CLIENT_LOAD_GAME_STATE_ABORTED
@@ -330,15 +337,17 @@ RC_EXPORT int RC_CCONV rc_client_game_get_image_url(const rc_client_game_t* game
 /**
  * Changes the active disc in a multi-disc game.
  */
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media(rc_client_t* client, const char* file_path,
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_identify_and_change_media(rc_client_t* client, const char* file_path,
     const uint8_t* data, size_t data_size, rc_client_callback_t callback, void* callback_userdata);
 #endif
 
 /**
  * Changes the active disc in a multi-disc game.
  */
-RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media_from_hash(rc_client_t* client, const char* hash,
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_change_media(rc_client_t* client, const char* hash,
     rc_client_callback_t callback, void* callback_userdata);
+/* this function was renamed in rcheevos 12.0 */
+#define rc_client_begin_change_media_from_hash rc_client_begin_change_media
 
 /*****************************************************************************\
 | Subsets                                                                     |
@@ -357,6 +366,8 @@ typedef struct rc_client_subset_t {
 } rc_client_subset_t;
 
 RC_EXPORT const rc_client_subset_t* RC_CCONV rc_client_get_subset_info(rc_client_t* client, uint32_t subset_id);
+
+RC_EXPORT void RC_CCONV rc_client_get_user_subset_summary(const rc_client_t* client, uint32_t subset_id, rc_client_user_game_summary_t* summary);
 
 /*****************************************************************************\
 | Fetch Game Hashes                                                           |
@@ -587,7 +598,7 @@ enum {
 RC_EXPORT rc_client_leaderboard_list_t* RC_CCONV rc_client_create_leaderboard_list(rc_client_t* client, int grouping);
 
 /**
- * Destroys a list allocated by rc_client_get_leaderboard_list.
+ * Destroys a list allocated by rc_client_create_leaderboard_list.
  */
 RC_EXPORT void RC_CCONV rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list);
 
@@ -752,6 +763,11 @@ RC_EXPORT void RC_CCONV rc_client_set_event_handler(rc_client_t* client, rc_clie
  * Provides a callback for reading memory.
  */
 RC_EXPORT void RC_CCONV rc_client_set_read_memory_function(rc_client_t* client, rc_client_read_memory_func_t handler);
+
+/**
+ * Specifies whether rc_client is allowed to read memory outside of rc_client_do_frame/rc_client_idle.
+ */
+RC_EXPORT void RC_CCONV rc_client_set_allow_background_memory_reads(rc_client_t* client, int allowed);
 
 /**
  * Determines if there are any active achievements/leaderboards/rich presence that need processing.

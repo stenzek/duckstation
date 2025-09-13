@@ -289,7 +289,6 @@
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_NONE">{RC_CLIENT_LOAD_GAME_STATE_NONE}</DisplayString>
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME">{RC_CLIENT_LOAD_GAME_STATE_IDENTIFYING_GAME}</DisplayString>
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_AWAIT_LOGIN">{RC_CLIENT_LOAD_GAME_STATE_AWAIT_LOGIN}</DisplayString>
-        <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA">{RC_CLIENT_LOAD_GAME_STATE_FETCHING_GAME_DATA}</DisplayString>
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_STARTING_SESSION">{RC_CLIENT_LOAD_GAME_STATE_STARTING_SESSION}</DisplayString>
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_DONE">{RC_CLIENT_LOAD_GAME_STATE_DONE}</DisplayString>
         <DisplayString Condition="value==RC_CLIENT_LOAD_GAME_STATE_ABORTED">{RC_CLIENT_LOAD_GAME_STATE_ABORTED}</DisplayString>
