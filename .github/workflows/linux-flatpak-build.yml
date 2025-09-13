@@ -11,7 +11,6 @@ on:
         required: false
         type: string
         default: "stable"
-  workflow_dispatch:
 
 jobs:
   linux-flatpak-build:
@@ -19,11 +18,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        setup: [{arch: "x86_64", runner: "ubuntu-22.04"}, {arch: "aarch64", runner: "ubuntu-24.04-arm"}]
+        setup: [{arch: "x86_64", ainame: "x64", runner: "ubuntu-22.04"}, {arch: "aarch64", ainame: "arm64", runner: "ubuntu-24.04-arm"}]
 
     runs-on: ${{ matrix.setup.runner }}
     container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.9
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
       options: --privileged
     timeout-minutes: 60
     steps:
@@ -37,28 +36,16 @@ jobs:
       shell: bash
       run: git config --global --add safe.directory "*"
 
-    - name: Set Build Tags
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: "linux-${{ matrix.setup.ainame }}-appimage"
+        path: ./artifacts/
 
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
-      run: |
-        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
-
-    - name: Tag as Rolling Release
-      if: github.ref == 'refs/heads/dev'
-      run: |
-        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
-
-    - name: Download Patch Archives
+    - name: Move AppImage
       shell: bash
       run: |
-        cd data/resources
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        mv "./artifacts/DuckStation-${{ matrix.setup.ainame }}.AppImage" "scripts/packaging/flatpak/DuckStation.AppImage"
 
     - name: Generate AppStream XML
       run: |
@@ -84,7 +71,7 @@ jobs:
         branch: stable
         cache: true
         restore-cache: true
-        cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/org.duckstation.DuckStation.yaml', 'scripts/deps/build-dependencies-linux.sh') }}
+        cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/org.duckstation.DuckStation.yaml') }}
 
     - name: Validate Build
       run: |

@@ -13,8 +13,15 @@ on:
           - "beta"
 
 jobs:
+  linux-appimage:
+    name: 🐧 Linux AppImage
+    uses: "./.github/workflows/linux-appimage-build.yml"
+  linux-cross-appimage:
+    name: 🐧 Linux Cross-Compiled AppImage
+    uses: "./.github/workflows/linux-cross-appimage-build.yml"
   linux-flatpak:
-    name: Build Flatpak
+    name: 📦 Build Flatpak
+    needs: [linux-appimage, linux-cross-appimage]
     uses: "./.github/workflows/linux-flatpak-build.yml"
     with:
       flathub_publish: true

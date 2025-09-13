@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 app-id: "org.duckstation.DuckStation"
-runtime: "org.kde.Platform"
-runtime-version: "6.9"
-sdk: "org.kde.Sdk"
+runtime: "org.freedesktop.Platform"
+runtime-version: "24.08"
+sdk: "org.freedesktop.Sdk"
 sdk-extensions:
   - "org.freedesktop.Sdk.Extension.llvm19"
 
@@ -21,91 +21,17 @@ finish-args:
   - "--socket=fallback-x11"
 
 modules:
-  # Dependencies.
-  - name: duckstation-deps
+  - name: duckstation
     buildsystem: simple
     sources:
       - type: file
-        path: ../../deps/build-dependencies-linux.sh
-      - type: file
-        path: ../../deps/versions
+        path: DuckStation.AppImage
     build-options:
-      # Don't need debug info for deps, match AppImage.
-      strip: true
-      no-debuginfo: true
-
-      # Prevent flatpak defaults of fortify etc from creeping in.
-      cflags: ""
-      cflags-override: true
-      cxxflags: ""
-      cxxflags-override: true
-
-      # Need network access to download sources.
-      build-args:
-        - "--share=network"
-    build-commands:
-      - "./build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-zlib -system-zstd -system-qt /app/deps"
-    cleanup:
-      - "*"
-
-  # Main module.
-  - name: duckstation
-    buildsystem: cmake-ninja
-    builddir: true
-    build-options:
-      # Preserve debug information, it is needed for backtraces.
+      # Don't mess with binaries.
       strip: false
       no-debuginfo: true
-
-      # Prevent flatpak defaults of fortify etc from creeping in.
-      cflags: ""
-      cflags-override: true
-      cxxflags: ""
-      cxxflags-override: true
-
-      config-opts:
-        # Flatpak build does not appear to default to Release.
-        - "-DCMAKE_BUILD_TYPE=Release"
-
-        # Dependencies path.
-        - "-DCMAKE_PREFIX_PATH=/app/deps"
-
-        # Self-contained install, need to change the directory.
-        # Typical flatpak garbage makes it a pain to change the path from /app/bin...
-        - "-DCMAKE_INSTALL_PREFIX=/app/bin"
-        - "-DALLOW_INSTALL=ON"
-
-        # We're not running tests as part of the flatpak build.
-        - "-DBUILD_TESTS=OFF"
-
-        # Set the page range to 4K-16K. This has no effect on X86, but is required for
-        # ARM builds, as some devices are now shipping with 16K kernels.
-        - "-DHOST_MIN_PAGE_SIZE=4096"
-        - "-DHOST_MAX_PAGE_SIZE=16384"
-
-        # Make sure we're using ThinLTO.
-        - "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
-        - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm19/bin/clang"
-        - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm19/bin/clang++"
-        - "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld"
-        - "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld"
-        - "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"
-    sources:
-      - type: dir
-        path: ../../..
-
-    post-install:
-      # Manually copy desktop file/metadata, it's not done as part of the regular build.
-      - >-
-        install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/org.duckstation.DuckStation.png"
-        "${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png"
-      - >-
-        install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/org.duckstation.DuckStation.desktop"
-        "${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop"
-      - >-
-        install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml"
-        "${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"
-
+    build-commands:
+      - "chmod +x DuckStation.AppImage"
+      - "./DuckStation.AppImage --appimage-extract"
+      - "mv squashfs-root/usr/* \"${FLATPAK_DEST}/\""
+      - "rm -fr squashfs-root"
