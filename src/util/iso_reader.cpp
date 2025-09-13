@@ -204,12 +204,6 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(std::string_vi
                                                                   u32 directory_record_lba, u32 directory_record_size,
                                                                   Error* error)
 {
-  if (directory_record_size == 0)
-  {
-    Error::SetString(error, fmt::format("Directory entry record size 0 while looking for '{}'", path));
-    return std::nullopt;
-  }
-
   // strip any leading slashes
   size_t path_component_start = 0;
   while (path_component_start < path.length() &&
@@ -229,12 +223,13 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(std::string_vi
   const std::string_view path_component = path.substr(path_component_start, path_component_length);
   if (path_component.empty())
   {
-    Error::SetString(error, fmt::format("Empty path component in {}", path));
+    Error::SetStringFmt(error, "Empty path component in {}", path);
     return std::nullopt;
   }
 
   // start reading directory entries
-  const u32 num_sectors = (directory_record_size + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
+  const u32 num_sectors =
+    (directory_record_size == 0) ? SECTOR_SIZE : ((directory_record_size + (SECTOR_SIZE - 1)) / SECTOR_SIZE);
   for (u32 i = 0; i < num_sectors; i++)
   {
     if (!ReadSector(sector_buffer, directory_record_lba + i, error))
@@ -272,12 +267,12 @@ std::optional<IsoReader::ISODirectoryEntry> IsoReader::LocateFile(std::string_vi
       }
 
       // we're looking for a directory but got a file
-      Error::SetString(error, fmt::format("Looking for directory '{}' but got file", path_component));
+      Error::SetStringFmt(error, "Looking for directory '{}' but got file", path_component);
       return std::nullopt;
     }
   }
 
-  Error::SetString(error, fmt::format("Path component '{}' not found", path_component));
+  Error::SetStringFmt(error, "Path component '{}' not found", path_component);
   return std::nullopt;
 }
 
@@ -301,7 +296,7 @@ std::vector<std::string> IsoReader::GetFilesInDirectory(std::string_view path, E
 
     if ((directory_de->flags & ISODirectoryEntryFlag_Directory) == 0)
     {
-      Error::SetString(error, fmt::format("Path '{}' is not a directory, can't list", path));
+      Error::SetStringFmt(error, "Path '{}' is not a directory, can't list", path);
       return {};
     }
 
@@ -363,7 +358,7 @@ IsoReader::GetEntriesInDirectory(std::string_view path, Error* error /*= nullptr
 
     if ((directory_de->flags & ISODirectoryEntryFlag_Directory) == 0)
     {
-      Error::SetString(error, fmt::format("Path '{}' is not a directory, can't list", path));
+      Error::SetStringFmt(error, "Path '{}' is not a directory, can't list", path);
       return {};
     }
 
