@@ -64,9 +64,8 @@ private:
 std::unique_lock<std::recursive_mutex> GetLock();
 
 /// Returns the achievements game hash for a given disc.
-std::optional<GameHash> GetGameHash(CDImage* image, u32* bytes_hashed = nullptr);
-std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data,
-                                    u32* bytes_hashed = nullptr);
+std::optional<GameHash> GetGameHash(CDImage* image);
+std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data);
 
 /// Returns the number of achievements for a given hash.
 const HashDatabaseEntry* LookupGameHash(const GameHash& hash);

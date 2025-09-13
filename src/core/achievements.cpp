@@ -153,7 +153,7 @@ struct PauseMenuTimedMeasuredAchievementInfo : PauseMenuMeasuredAchievementInfo
 
 } // namespace
 
-static TinyString GameHashToString(const GameHash& hash);
+static TinyString GameHashToString(const std::optional<GameHash>& hash);
 
 static void ReportError(std::string_view sv);
 template<typename... T>
@@ -334,12 +334,24 @@ ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace Achievements
 
-TinyString Achievements::GameHashToString(const GameHash& hash)
+TinyString Achievements::GameHashToString(const std::optional<GameHash>& hash)
 {
-  return TinyString::from_format(
-    "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", hash[0],
-    hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12],
-    hash[13], hash[14], hash[15]);
+  TinyString ret;
+
+  // Use a hash that will never match if we removed the disc. See rc_client_begin_change_media().
+  if (!hash.has_value())
+  {
+    ret = "[NO HASH]";
+  }
+  else
+  {
+    ret.format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+               hash.value()[0], hash.value()[1], hash.value()[2], hash.value()[3], hash.value()[4], hash.value()[5],
+               hash.value()[6], hash.value()[7], hash.value()[8], hash.value()[9], hash.value()[10], hash.value()[11],
+               hash.value()[12], hash.value()[13], hash.value()[14], hash.value()[15]);
+  }
+
+  return ret;
 }
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
@@ -380,7 +392,7 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
   ReportError(str);
 }
 
-std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image, u32* bytes_hashed)
+std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image)
 {
   std::optional<GameHash> ret;
 
@@ -389,12 +401,11 @@ std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image, 
   if (!System::ReadExecutableFromImage(image, &executable_name, &executable_data))
     return ret;
 
-  return GetGameHash(executable_name, executable_data, bytes_hashed);
+  return GetGameHash(executable_name, executable_data);
 }
 
 std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::string_view executable_name,
-                                                                std::span<const u8> executable_data,
-                                                                u32* bytes_hashed /* = nullptr */)
+                                                                std::span<const u8> executable_data)
 {
   std::optional<GameHash> ret;
 
@@ -413,11 +424,11 @@ std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::strin
   if (hash_size > 0)
     digest.Update(executable_data.data(), hash_size);
 
-  ret = GameHash();
+  ret.emplace();
   digest.Final(ret.value());
 
-  if (bytes_hashed)
-    *bytes_hashed = hash_size;
+  INFO_COLOR_LOG(StrongOrange, "RA Hash for '{}': {} ({} bytes hashed)", executable_name, GameHashToString(ret),
+                 hash_size);
 
   return ret;
 }
@@ -1169,36 +1180,24 @@ void Achievements::GameChanged(CDImage* image)
     s_state.load_game_request = nullptr;
   }
 
-  // Use a hash that will never match if we removed the disc. See rc_client_begin_change_media().
-  TinyString game_hash_str;
-  if (s_state.game_hash.has_value())
-    game_hash_str = GameHashToString(s_state.game_hash.value());
-  else
-    game_hash_str = "[NO HASH]";
-
-  s_state.load_game_request = rc_client_begin_change_media_from_hash(
-    s_state.client, game_hash_str.c_str(), ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+  s_state.load_game_request =
+    rc_client_begin_change_media_from_hash(s_state.client, GameHashToString(s_state.game_hash).c_str(),
+                                           ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
 }
 
 bool Achievements::IdentifyGame(CDImage* image)
 {
   std::optional<GameHash> game_hash;
   if (image)
+    game_hash = GetGameHash(image);
+
+  if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
   {
-    u32 bytes_hashed;
-    game_hash = GetGameHash(image, &bytes_hashed);
-    if (game_hash.has_value())
-    {
-      INFO_COLOR_LOG(StrongOrange, "RA Hash: {} ({} bytes hashed)", GameHashToString(game_hash.value()), bytes_hashed);
-    }
-    else
-    {
-      // If we are starting with this game and it's bad, notify the user that this is why.
-      Host::AddIconOSDWarning(
-        "AchievementsHashFailed", ICON_EMOJI_WARNING,
-        TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
-        Host::OSD_ERROR_DURATION);
-    }
+    // If we are starting with this game and it's bad, notify the user that this is why.
+    Host::AddIconOSDWarning(
+      "AchievementsHashFailed", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
+      Host::OSD_ERROR_DURATION);
   }
 
   s_state.game_path = image ? image->GetPath() : std::string();
@@ -1240,7 +1239,7 @@ void Achievements::BeginLoadGame()
     return;
   }
 
-  s_state.load_game_request = rc_client_begin_load_game(s_state.client, GameHashToString(s_state.game_hash.value()),
+  s_state.load_game_request = rc_client_begin_load_game(s_state.client, GameHashToString(s_state.game_hash).c_str(),
                                                         ClientLoadGameCallback, nullptr);
 }
 
@@ -1253,7 +1252,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    INFO_LOG("Unknown game '{}', disabling achievements.", GameHashToString(s_state.game_hash.value_or(GameHash{})));
+    INFO_LOG("Unknown game '{}', disabling achievements.", GameHashToString(s_state.game_hash));
     if (was_disc_change)
       ClearGameInfo();
 
@@ -2592,7 +2591,8 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   const float box_content_width = box_width - box_padding - box_padding;
   const float box_rounding = LayoutScale(20.0f);
   const u32 box_background_color = ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.8f));
-  const ImU32 box_title_text_color = ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
+  const ImU32 box_title_text_color =
+    ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundTextColor, 0.9f)) | IM_COL32_A_MASK;
   const ImU32 title_text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
   const ImU32 text_color =
     ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.BackgroundTextColor, 0.9f))) | IM_COL32_A_MASK;
