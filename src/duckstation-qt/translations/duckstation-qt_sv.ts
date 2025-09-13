@@ -777,6 +777,15 @@ Olästa meddelanden: {}</translation>
         <source>Game was completed on {0}.</source>
         <translation>Spelet färdigställdes den {0}.</translation>
     </message>
+    <message>
+        <source>Challenge Failed: {}</source>
+        <translation>Utmaning misslyckades: {}</translation>
+    </message>
+    <message>
+        <source>Last Progress Update</source>
+        <comment>Pause Menu</comment>
+        <translation>Senaste framstegsuppdatering</translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -9229,6 +9238,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>Show Game Icons</source>
         <translation>Visa spelikoner</translation>
     </message>
+    <message>
+        <source>Cover scale: %1%</source>
+        <translation>Omslagsskala: %1%</translation>
+    </message>
+    <message>
+        <source>Icon size: %1%</source>
+        <translation>Ikonstorlek: %1%</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchDetailsWidget</name>
@@ -12357,7 +12374,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Zoom &amp;In (Grid View)</source>
-        <translation>Zooma &amp;in (rutnätsvy)</translation>
+        <translation type="vanished">Zooma &amp;in (rutnätsvy)</translation>
     </message>
     <message>
         <source>Log Timestamps</source>
@@ -12393,7 +12410,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Zoom &amp;Out (Grid View)</source>
-        <translation>Zooma &amp;ut (rutnätsvy)</translation>
+        <translation type="vanished">Zooma &amp;ut (rutnätsvy)</translation>
     </message>
     <message>
         <source>Refresh &amp;Covers (Grid View)</source>
@@ -12898,6 +12915,18 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Position</source>
         <translation>Position</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;In</source>
+        <translation>Zooma &amp;in</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;Out</source>
+        <translation>Zooma &amp;ut</translation>
+    </message>
+    <message>
+        <source>Game properties is only available for scanned games.</source>
+        <translation>Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
     </message>
 </context>
 <context>
@@ -14213,6 +14242,14 @@ Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
         <source>Right White</source>
         <translation>Höger vit</translation>
     </message>
+    <message>
+        <source>Select</source>
+        <translation>Select</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
 </context>
 <context>
     <name>PostProcessing</name>
@@ -14860,6 +14897,10 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Incompatible with this game</source>
         <translation>Inkompatibelt med detta spel</translation>
+    </message>
+    <message>
+        <source> [forced]</source>
+        <translation> [tvingad]</translation>
     </message>
 </context>
 <context>
@@ -15548,6 +15589,11 @@ Vill du skapa denna katalog?</translation>
         <source>XZ (High)</source>
         <comment>SaveStateCompressionMode</comment>
         <translation>XZ (hög)</translation>
+    </message>
+    <message>
+        <source>Bilinear (Hybrid)</source>
+        <comment>DisplayScalingMode</comment>
+        <translation>Bilinjär (Hybrid)</translation>
     </message>
 </context>
 <context>
