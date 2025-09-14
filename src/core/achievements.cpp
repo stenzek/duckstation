@@ -589,6 +589,7 @@ bool Achievements::Initialize()
     return false;
 
   rc_client_set_event_handler(s_state.client, ClientEventHandler);
+  rc_client_set_allow_background_memory_reads(s_state.client, true);
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   if (g_settings.achievements_use_raintegration)
