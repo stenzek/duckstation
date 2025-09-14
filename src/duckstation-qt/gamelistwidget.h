@@ -174,6 +174,7 @@ public:
   GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
 
+  QFontMetrics fontMetricsForHorizontalHeader() const;
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
 

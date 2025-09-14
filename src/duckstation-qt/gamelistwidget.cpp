@@ -1778,7 +1778,7 @@ void GameListWidget::onIconSizeChanged(int size)
 {
   // update size of rows
   m_model->updateRowHeight(m_list_view);
-  m_list_view->setFixedColumnWidth(m_list_view->fontMetrics(), GameListModel::Column_Icon,
+  m_list_view->setFixedColumnWidth(m_list_view->fontMetricsForHorizontalHeader(), GameListModel::Column_Icon,
                                    m_model->getIconColumnWidth());
   m_list_view->verticalHeader()->setDefaultSectionSize(m_model->getRowHeight());
   onScaleChanged();
@@ -1882,6 +1882,14 @@ void GameListListView::wheelEvent(QWheelEvent* e)
   QTableView::wheelEvent(e);
 }
 
+QFontMetrics GameListListView::fontMetricsForHorizontalHeader() const
+{
+  // https://github.com/qt/qtbase/blob/9cc32c2490813b81ce36fc97f959078bf5c2fbf5/src/widgets/itemviews/qheaderview.cpp#L3148
+  QFont font = horizontalHeader()->font();
+  font.setBold(true);
+  return QFontMetrics(font);
+}
+
 void GameListListView::setFixedColumnWidth(int column, int width)
 {
   horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);
@@ -1900,7 +1908,7 @@ void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, i
 
 void GameListListView::setFixedColumnWidths()
 {
-  const QFontMetrics fm(fontMetrics());
+  const QFontMetrics fm = fontMetricsForHorizontalHeader();
   const auto width_for = [&fm](const QString& text) { return fm.size(0, text).width(); };
 
   setFixedColumnWidth(fm, GameListModel::Column_Serial, width_for(QStringLiteral("SWWW-00000")));
