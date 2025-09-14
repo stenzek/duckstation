@@ -2139,6 +2139,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionDumpRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpVRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpSPURAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
+  m_ui.actionCaptureGPUFrame->setDisabled(starting_or_not_running);
 
   m_ui.actionLoadState->setDisabled(starting);
   m_ui.menuLoadState->setDisabled(starting);
