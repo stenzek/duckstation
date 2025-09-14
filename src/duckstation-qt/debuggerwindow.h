@@ -33,7 +33,25 @@ Q_SIGNALS:
 protected:
   void closeEvent(QCloseEvent* event);
 
-private Q_SLOTS:
+private:
+  void setupAdditionalUi();
+  void connectSignals();
+  void disconnectSignals();
+  void createModels();
+  void setUIEnabled(bool enabled, bool allow_pause);
+  void saveCurrentState();
+  void setMemoryViewRegion(Bus::MemoryRegion region);
+  void toggleBreakpoint(VirtualMemoryAddress address);
+  void clearBreakpoints();
+  bool tryFollowLoadStore(VirtualMemoryAddress address);
+  void scrollToPC(bool center);
+  void scrollToCodeAddress(VirtualMemoryAddress address, bool center);
+  bool scrollToMemoryAddress(VirtualMemoryAddress address);
+  void refreshBreakpointList();
+  void refreshBreakpointList(const CPU::BreakpointList& bps);
+  void addBreakpoint(CPU::BreakpointType type, u32 address);
+  void removeBreakpoint(CPU::BreakpointType type, u32 address);
+
   void onSystemStarted();
   void onSystemDestroyed();
   void onSystemPaused();
@@ -63,25 +81,6 @@ private Q_SLOTS:
   void onCodeViewContextMenuRequested(const QPoint& pt);
   void onMemorySearchTriggered();
   void onMemorySearchStringChanged(const QString&);
-
-private:
-  void setupAdditionalUi();
-  void connectSignals();
-  void disconnectSignals();
-  void createModels();
-  void setUIEnabled(bool enabled, bool allow_pause);
-  void saveCurrentState();
-  void setMemoryViewRegion(Bus::MemoryRegion region);
-  void toggleBreakpoint(VirtualMemoryAddress address);
-  void clearBreakpoints();
-  bool tryFollowLoadStore(VirtualMemoryAddress address);
-  void scrollToPC(bool center);
-  void scrollToCodeAddress(VirtualMemoryAddress address, bool center);
-  bool scrollToMemoryAddress(VirtualMemoryAddress address);
-  void refreshBreakpointList();
-  void refreshBreakpointList(const CPU::BreakpointList& bps);
-  void addBreakpoint(CPU::BreakpointType type, u32 address);
-  void removeBreakpoint(CPU::BreakpointType type, u32 address);
 
   Ui::DebuggerWindow m_ui;
 

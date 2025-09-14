@@ -43,7 +43,7 @@ public:
   bool hasCodeWithName(const std::string_view name) const;
   void disableAllCheats();
 
-private Q_SLOTS:
+private:
   void onEnableCheatsChanged(Qt::CheckState state);
   void onSortCheatsToggled(bool checked);
   void onSearchFilterChanged(const QString& text);
@@ -60,7 +60,6 @@ private Q_SLOTS:
   void onClearClicked();
   void reloadList();
 
-private:
   bool shouldLoadFromDatabase() const;
   void checkForMasterDisable();
 
@@ -97,7 +96,7 @@ public:
   CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo* code, const QStringList& group_names);
   ~CheatCodeEditorDialog() override;
 
-private Q_SLOTS:
+private:
   void onGroupSelectedIndexChanged(int index);
   void saveClicked();
 
@@ -106,7 +105,6 @@ private Q_SLOTS:
   void onRangeMaxChanged(int value);
   void onEditChoiceClicked();
 
-private:
   void setupAdditionalUi(const QStringList& group_names);
   void fillUi();
 
@@ -127,11 +125,10 @@ public:
 
   Cheats::CodeOptionList getNewOptions() const;
 
-private Q_SLOTS:
+private:
   void onAddClicked();
   void onRemoveClicked();
   void onSaveClicked();
 
-private:
   Ui::GameCheatCodeChoiceEditorDialog m_ui;
 };

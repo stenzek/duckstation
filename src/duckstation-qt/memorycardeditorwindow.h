@@ -34,15 +34,6 @@ public:
 protected:
   bool event(QEvent* event) override;
 
-private Q_SLOTS:
-  void onCardASelectionChanged();
-  void onCardBSelectionChanged();
-  void onCardContextMenuRequested(const QPoint& pos);
-  void doCopyFile();
-  void doDeleteFile();
-  void doUndeleteFile();
-  void incrementAnimationFrame();
-
 private:
   struct Card
   {
@@ -88,6 +79,14 @@ private:
 
   void updateAnimationTimerActive();
 
+  void onCardASelectionChanged();
+  void onCardBSelectionChanged();
+  void onCardContextMenuRequested(const QPoint& pos);
+  void doCopyFile();
+  void doDeleteFile();
+  void doUndeleteFile();
+  void incrementAnimationFrame();
+
   Ui::MemoryCardEditorDialog m_ui;
   QPushButton* m_deleteFile;
   QPushButton* m_undeleteFile;
@@ -114,12 +113,11 @@ public:
 
   static std::string promptForNewName(QWidget* parent, std::string_view old_name);
 
-private Q_SLOTS:
-  void updateSimplifiedFieldsFromFullName();
-  void updateFullNameFromSimplifiedFields();
-
 private:
   void setupAdditionalUi();
+
+  void updateSimplifiedFieldsFromFullName();
+  void updateFullNameFromSimplifiedFields();
 
   Ui::MemoryCardRenameFileDialog m_ui;
 };

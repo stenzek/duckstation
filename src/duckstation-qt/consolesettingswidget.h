@@ -17,15 +17,14 @@ public:
   explicit ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~ConsoleSettingsWidget();
 
-private Q_SLOTS:
+private:
+  void calculateCPUClockValue();
+
   void onFastBootChanged();
   void updateRecompilerICacheEnabled();
   void onEnableCPUClockSpeedControlChecked(int state);
   void onCPUClockSpeedValueChanged(int value);
   void updateCPUClockSpeedLabel();
-
-private:
-  void calculateCPUClockValue();
 
   Ui::ConsoleSettingsWidget m_ui;
 

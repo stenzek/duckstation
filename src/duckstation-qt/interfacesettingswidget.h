@@ -22,12 +22,11 @@ public:
 Q_SIGNALS:
   void themeChanged();
 
-private Q_SLOTS:
-  void onRenderToSeparateWindowChanged();
-  void onLanguageChanged();
-
 private:
   void setupAdditionalUi();
+
+  void onRenderToSeparateWindowChanged();
+  void onLanguageChanged();
 
   Ui::InterfaceSettingsWidget m_ui;
 

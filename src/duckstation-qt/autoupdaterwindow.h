@@ -29,6 +29,9 @@ public:
   explicit AutoUpdaterWindow(QWidget* parent = nullptr);
   ~AutoUpdaterWindow();
 
+  void queueUpdateCheck(bool display_errors);
+  void queueGetLatestRelease();
+
   static bool isSupported();
   static bool canInstallUpdate();
   static QStringList getTagList();
@@ -40,21 +43,16 @@ public:
 Q_SIGNALS:
   void updateCheckCompleted();
 
-public Q_SLOTS:
-  void queueUpdateCheck(bool display_errors);
-  void queueGetLatestRelease();
+protected:
+  void closeEvent(QCloseEvent* event) override;
 
-private Q_SLOTS:
+private:
   void httpPollTimerPoll();
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
   void remindMeLaterClicked();
 
-protected:
-  void closeEvent(QCloseEvent* event) override;
-
-private:
   void reportError(const std::string_view msg);
 
   bool ensureHttpReady();

@@ -9,12 +9,12 @@
 
 #include "core/types.h"
 
+#include <QtCore/QAbstractListModel>
 #include <QtCore/QList>
 #include <QtCore/QPair>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
-#include <QtCore/QAbstractListModel>
 
 #include <array>
 #include <string>
@@ -67,6 +67,8 @@ public:
 
   void switchProfile(const std::string_view name);
 
+  void setCategory(Category category);
+
   // Helper functions for updating setting values globally or in the profile.
   bool getBoolValue(const char* section, const char* key, bool default_value) const;
   s32 getIntValue(const char* section, const char* key, s32 default_value) const;
@@ -81,20 +83,6 @@ Q_SIGNALS:
   void windowClosed();
   void inputProfileSwitched();
 
-public Q_SLOTS:
-  void setCategory(Category category);
-
-private Q_SLOTS:
-  void onCategoryCurrentRowChanged(int row);
-  void onCurrentProfileChanged(int index);
-  void onNewProfileClicked();
-  void onApplyProfileClicked();
-  void onDeleteProfileClicked();
-  void onRestoreDefaultsClicked();
-  void onCopyGlobalSettingsClicked();
-
-  void createWidgets();
-
 protected:
   void closeEvent(QCloseEvent* event) override;
 
@@ -103,6 +91,16 @@ private:
   void refreshProfileList();
 
   std::array<bool, 2> getEnabledMultitaps() const;
+
+  void createWidgets();
+
+  void onCategoryCurrentRowChanged(int row);
+  void onCurrentProfileChanged(int index);
+  void onNewProfileClicked();
+  void onApplyProfileClicked();
+  void onDeleteProfileClicked();
+  void onRestoreDefaultsClicked();
+  void onCopyGlobalSettingsClicked();
 
   Ui::ControllerSettingsWindow m_ui;
 

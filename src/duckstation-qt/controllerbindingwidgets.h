@@ -40,15 +40,6 @@ public:
 
   static bool doMultipleDeviceAutomaticBinding(QWidget* parent, ControllerSettingsWindow* parent_dialog, u32 port);
 
-private Q_SLOTS:
-  void onTypeChanged();
-  void onAutomaticBindingClicked();
-  void onClearBindingsClicked();
-  void onBindingsClicked();
-  void onSettingsClicked();
-  void onMacrosClicked();
-  void onMultipleDeviceAutomaticBindingTriggered();
-
 private:
   void populateControllerTypes();
   void populateWidgets();
@@ -57,6 +48,14 @@ private:
   void updateHeaderToolButtons();
   void doDeviceAutomaticBinding(const QString& device);
   void saveAndRefresh();
+
+  void onTypeChanged();
+  void onAutomaticBindingClicked();
+  void onClearBindingsClicked();
+  void onBindingsClicked();
+  void onSettingsClicked();
+  void onMacrosClicked();
+  void onMultipleDeviceAutomaticBindingTriggered();
 
   Ui::ControllerBindingWidget m_ui;
 
@@ -106,16 +105,15 @@ public:
 
   QString getSummary() const;
 
-private Q_SLOTS:
-  void onPressureChanged();
-  void onDeadzoneChanged();
-  void onSetFrequencyClicked();
-  void updateBinds();
-
 private:
   void modFrequency(s32 delta);
   void updateFrequency();
   void updateFrequencyText();
+
+  void onPressureChanged();
+  void onDeadzoneChanged();
+  void onSetFrequencyClicked();
+  void updateBinds();
 
   Ui::ControllerMacroEditWidget m_ui;
 
@@ -137,10 +135,9 @@ public:
   explicit ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
   ~ControllerCustomSettingsWidget();
 
-private Q_SLOTS:
+private:
   void restoreDefaults();
 
-private:
   ControllerBindingWidget* m_parent;
 };
 

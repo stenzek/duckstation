@@ -17,7 +17,9 @@ public:
   explicit EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~EmulationSettingsWidget();
 
-private Q_SLOTS:
+private:
+  void fillComboBoxWithEmulationSpeeds(QComboBox* cb, float global_value);
+
   void onEmulationSpeedIndexChanged(int index);
   void onFastForwardSpeedIndexChanged(int index);
   void onTurboSpeedIndexChanged(int index);
@@ -25,9 +27,6 @@ private Q_SLOTS:
   void onPreFrameSleepChanged();
   void updateSkipDuplicateFramesEnabled();
   void updateRewind();
-
-private:
-  void fillComboBoxWithEmulationSpeeds(QComboBox* cb, float global_value);
 
   Ui::EmulationSettingsWidget m_ui;
 

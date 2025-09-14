@@ -182,16 +182,15 @@ public:
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
-private Q_SLOTS:
-  void onHeaderContextMenuRequested(const QPoint& point);
-  void saveColumnSortSettings();
-
 private:
   void setFixedColumnWidth(int column, int width);
   void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
+
+  void onHeaderContextMenuRequested(const QPoint& point);
+  void saveColumnSortSettings();
 
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
@@ -210,7 +209,6 @@ public:
 
   void adjustZoom(float delta);
 
-public Q_SLOTS:
   void updateLayout();
 
 protected:
@@ -252,6 +250,15 @@ public:
 
   const GameList::Entry* getSelectedEntry() const;
 
+  void showGameList();
+  void showGameGrid();
+  void setMergeDiscSets(bool enabled);
+  void setShowLocalizedTitles(bool enabled);
+  void setShowGameIcons(bool enabled);
+  void setShowCoverTitles(bool enabled);
+  void refreshGridCovers();
+  void focusSearchWidget();
+
 Q_SIGNALS:
   void refreshProgress(const QString& status, int current, int total);
   void refreshComplete();
@@ -262,7 +269,13 @@ Q_SIGNALS:
 
   void addGameDirectoryRequested();
 
-private Q_SLOTS:
+protected:
+  bool event(QEvent* e) override;
+
+private:
+  void setViewMode(int stack_index);
+  void updateBackground(bool reload_image);
+
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
 
@@ -277,23 +290,6 @@ private Q_SLOTS:
   void onGridViewItemActivated(const QModelIndex& index);
   void onGridViewContextMenuRequested(const QPoint& point);
   void onSearchReturnPressed();
-
-public Q_SLOTS:
-  void showGameList();
-  void showGameGrid();
-  void setMergeDiscSets(bool enabled);
-  void setShowLocalizedTitles(bool enabled);
-  void setShowGameIcons(bool enabled);
-  void setShowCoverTitles(bool enabled);
-  void refreshGridCovers();
-  void focusSearchWidget();
-
-protected:
-  bool event(QEvent* e) override;
-
-private:
-  void setViewMode(int stack_index);
-  void updateBackground(bool reload_image);
 
   Ui::GameListWidget m_ui;
 

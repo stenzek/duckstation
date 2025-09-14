@@ -167,7 +167,7 @@ Q_SIGNALS:
   /// Big Picture UI requests.
   void onCoverDownloaderOpenRequested();
 
-public Q_SLOTS:
+public:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);
   void reloadGameSettings(bool display_osd_messages = false);
@@ -217,8 +217,12 @@ public Q_SLOTS:
   void startControllerTest();
   void setGPUThreadRunIdle(bool active);
   void updateFullscreenUITheme();
+  void runOnEmuThread(const std::function<void()>& callback);
 
-private Q_SLOTS:
+protected:
+  void run() override;
+
+private:
   void stopInThread();
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(float dx, float dy);
@@ -228,13 +232,7 @@ private Q_SLOTS:
   void doBackgroundControllerPoll();
   void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                               quint32 param3);
-public Q_SLOTS:
-  void runOnEmuThread(const std::function<void()>& callback);
 
-protected:
-  void run() override;
-
-private:
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
   void confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
@@ -295,15 +293,13 @@ public:
   // NOTE: Should only be called on EmuThread.
   void enumerateDevices();
 
-public Q_SLOTS:
   void onDeviceConnected(const InputBindingKey& key, const QString& identifier, const QString& device_name,
                          const QStringList& vibration_motors);
   void onDeviceDisconnected(const InputBindingKey& key, const QString& identifier);
 
-private Q_SLOTS:
+private:
   void resetLists(const DeviceList& devices, const QStringList& motors);
 
-private:
   DeviceList m_devices;
   QStringList m_vibration_motors;
 };

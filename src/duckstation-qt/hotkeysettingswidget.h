@@ -52,10 +52,8 @@ private:
   void createUi();
   void createButtons();
 
-private Q_SLOTS:
   void setFilter(const QString& filter);
 
-private:
   ControllerSettingsWindow* m_dialog;
   QScrollArea* m_scroll_area = nullptr;
   Container* m_container = nullptr;

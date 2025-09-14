@@ -27,19 +27,15 @@ public:
   void scrollToAddress(size_t address);
   void setFont(const QFont& font);
 
+  void saveCurrentData();
+  void forceRefresh();
+
 protected:
   void paintEvent(QPaintEvent* event);
   void resizeEvent(QResizeEvent* event);
   void mousePressEvent(QMouseEvent* event);
   void mouseMoveEvent(QMouseEvent* event);
   void keyPressEvent(QKeyEvent* event);
-
-public Q_SLOTS:
-  void saveCurrentData();
-  void forceRefresh();
-
-private Q_SLOTS:
-  void adjustContent();
 
 private:
   static constexpr size_t INVALID_SELECTED_ADDRESS = ~static_cast<size_t>(0);
@@ -52,6 +48,7 @@ private:
   void setSelection(size_t new_selection, bool new_ascii);
   void expandCurrentDataToInclude(size_t offset);
   void adjustScrollToInclude(size_t offset);
+  void adjustContent();
 
   void* m_data;
   size_t m_data_size;

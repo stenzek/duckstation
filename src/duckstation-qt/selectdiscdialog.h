@@ -24,14 +24,13 @@ public:
 
   ALWAYS_INLINE const std::string& getSelectedDiscPath() { return m_selected_path; }
 
-private Q_SLOTS:
+private:
+  void populateList(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles);
+
   void onListItemActivated(const QTreeWidgetItem* item);
   void updateStartEnabled();
   void onSelectClicked();
   void onCancelClicked();
-
-private:
-  void populateList(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles);
 
   Ui::SelectDiscDialog m_ui;
   std::string m_selected_path;

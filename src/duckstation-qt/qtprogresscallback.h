@@ -33,15 +33,14 @@ public:
 
   void MakeVisible();
 
-private Q_SLOTS:
-  void dialogCancelled();
-
 private:
   static constexpr int MINIMUM_WIDTH = 500;
   static constexpr int MINIMUM_HEIGHT_WITHOUT_CANCEL = 70;
   static constexpr int MINIMUM_HEIGHT_WITH_CANCEL = 100;
 
   void checkForDelayedShow();
+
+  void dialogCancelled();
 
   QProgressDialog m_dialog;
   Timer m_show_timer;
@@ -68,16 +67,15 @@ public:
   bool ModalConfirmation(const std::string_view message) override;
   void ModalInformation(const std::string_view message) override;
 
+  void start();
+  void join();
+
 Q_SIGNALS:
   void titleUpdated(const QString& title);
   void statusUpdated(const QString& status);
   void progressUpdated(int value, int range);
   void threadStarting();
   void threadFinished();
-
-public Q_SLOTS:
-  void start();
-  void join();
 
 protected:
   virtual void runAsync() = 0;

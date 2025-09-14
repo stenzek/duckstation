@@ -20,10 +20,14 @@ public:
   bool addExcludedPath(const QString& path);
   void refreshExclusionList();
 
-public Q_SLOTS:
   void addSearchDirectory(QWidget* parent_widget);
 
-private Q_SLOTS:
+private:
+  void addPathToTable(const std::string& path, bool recursive);
+  void refreshDirectoryList();
+  void addSearchDirectory(const QString& path, bool recursive);
+  void removeSearchDirectory(const QString& path);
+
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
@@ -34,12 +38,6 @@ private Q_SLOTS:
   void onExcludedPathsSelectionChanged();
   void onScanForNewGamesClicked();
   void onRescanAllGamesClicked();
-
-private:
-  void addPathToTable(const std::string& path, bool recursive);
-  void refreshDirectoryList();
-  void addSearchDirectory(const QString& path, bool recursive);
-  void removeSearchDirectory(const QString& path);
 
   Ui::GameListSettingsWidget m_ui;
 };

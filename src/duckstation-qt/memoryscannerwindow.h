@@ -29,7 +29,13 @@ Q_SIGNALS:
 protected:
   void closeEvent(QCloseEvent* event);
 
-private Q_SLOTS:
+private:
+  enum : int
+  {
+    MAX_DISPLAYED_SCAN_RESULTS = 5000,
+    SCAN_INTERVAL = 100,
+  };
+
   void onSystemStarted();
   void onSystemDestroyed();
 
@@ -47,13 +53,6 @@ private Q_SLOTS:
   void watchItemChanged(QTableWidgetItem* item);
   void updateScanValue();
   void updateScanUi();
-
-private:
-  enum : int
-  {
-    MAX_DISPLAYED_SCAN_RESULTS = 5000,
-    SCAN_INTERVAL = 100,
-  };
 
   void setupAdditionalUi();
   void connectUi();

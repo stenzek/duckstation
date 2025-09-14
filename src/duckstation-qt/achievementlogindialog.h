@@ -18,15 +18,14 @@ public:
   AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason);
   ~AchievementLoginDialog();
 
-private Q_SLOTS:
-  void loginClicked();
-  void cancelClicked();
-  void processLoginResult(bool result, const QString& message);
-
 private:
   void connectUi();
   void enableUI(bool enabled);
   bool canEnableLoginButton() const;
+
+  void loginClicked();
+  void cancelClicked();
+  void processLoginResult(bool result, const QString& message);
 
   Ui::AchievementLoginDialog m_ui;
   QPushButton* m_login;

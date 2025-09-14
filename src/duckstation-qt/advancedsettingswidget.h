@@ -20,11 +20,6 @@ public:
 Q_SIGNALS:
   void onShowDebugOptionsChanged(bool enabled);
 
-private Q_SLOTS:
-  void onLogChannelsButtonClicked();
-  void onAnyLogSinksChanged();
-  void onShowDebugOptionsStateChanged();
-
 private:
   struct TweakOption
   {
@@ -55,12 +50,16 @@ private:
     };
   };
 
+  void addTweakOptions();
+  void onResetToDefaultClicked();
+
+  void onLogChannelsButtonClicked();
+  void onAnyLogSinksChanged();
+  void onShowDebugOptionsStateChanged();
+
   SettingsWindow* m_dialog;
 
   Ui::AdvancedSettingsWidget m_ui;
 
   QVector<TweakOption> m_tweak_options;
-
-  void addTweakOptions();
-  void onResetToDefaultClicked();
 };

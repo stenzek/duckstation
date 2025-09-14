@@ -25,14 +25,6 @@ public:
 
   void reloadGameSettings();
 
-private Q_SLOTS:
-  void onSeparateDiscSettingsChanged(Qt::CheckState state);
-  void onCustomLanguageChanged(int language);
-  void onCompatibilityCommentsClicked();
-  void onInputProfileChanged(int index);
-  void onEditInputProfileClicked();
-  void onComputeHashClicked();
-
 private:
   void populateUi(const GameList::Entry* entry);
   void setCustomTitle(const std::string& text);
@@ -40,6 +32,13 @@ private:
   void setRevisionText(const QString& text);
 
   void populateTracksInfo();
+
+  void onSeparateDiscSettingsChanged(Qt::CheckState state);
+  void onCustomLanguageChanged(int language);
+  void onCompatibilityCommentsClicked();
+  void onInputProfileChanged(int index);
+  void onEditInputProfileClicked();
+  void onComputeHashClicked();
 
   Ui::GameSummaryWidget m_ui;
   SettingsWindow* m_dialog;

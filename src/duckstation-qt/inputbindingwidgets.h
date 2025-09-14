@@ -27,14 +27,8 @@ public:
   void initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
                   std::string key_name);
 
-public Q_SLOTS:
   void clearBinding();
   void reloadBinding();
-
-protected Q_SLOTS:
-  void onClicked();
-  void onInputListenTimerTimeout();
-  void inputManagerHookCallback(InputBindingKey key, float value);
 
 protected:
   enum : u32
@@ -57,6 +51,10 @@ protected:
 
   void hookInputManager();
   void unhookInputManager();
+
+  void onClicked();
+  void onInputListenTimerTimeout();
+  void inputManagerHookCallback(InputBindingKey key, float value);
 
   SettingsInterface* m_sif = nullptr;
   InputBindingInfo::Type m_bind_type = InputBindingInfo::Type::Unknown;
@@ -83,14 +81,12 @@ public:
 
   void setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
 
-public Q_SLOTS:
   void clearBinding();
-
-protected Q_SLOTS:
-  void onClicked();
 
 protected:
   virtual void mouseReleaseEvent(QMouseEvent* e) override;
+
+  void onClicked();
 
 private:
   std::string m_section_name;

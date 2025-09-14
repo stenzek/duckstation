@@ -108,18 +108,11 @@ public:
   void setGameTitle(std::string_view title);
   bool hasGameTrait(GameDatabase::Trait trait);
 
-Q_SIGNALS:
-  void settingsResetToDefaults();
-
-public Q_SLOTS:
   void setCategory(const char* category);
   void setCategoryRow(int index);
 
-private Q_SLOTS:
-  void onCategoryCurrentRowChanged(int row);
-  void onRestoreDefaultsClicked();
-  void onCopyGlobalSettingsClicked();
-  void onClearSettingsClicked();
+Q_SIGNALS:
+  void settingsResetToDefaults();
 
 protected:
   void closeEvent(QCloseEvent* event) override;
@@ -137,6 +130,11 @@ private:
 
   void addWidget(QWidget* widget, QString title, QString icon, QString help_text);
   bool handleWheelEvent(QWheelEvent* event);
+
+  void onCategoryCurrentRowChanged(int row);
+  void onRestoreDefaultsClicked();
+  void onCopyGlobalSettingsClicked();
+  void onClearSettingsClicked();
 
   Ui::SettingsWindow m_ui;
 

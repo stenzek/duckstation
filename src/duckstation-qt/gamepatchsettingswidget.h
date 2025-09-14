@@ -23,10 +23,9 @@ public:
                          bool disallowed_for_achievements, bool enabled, SettingsWindow* dialog, QWidget* parent);
   ~GamePatchDetailsWidget();
 
-private Q_SLOTS:
+private:
   void onEnabledStateChanged(Qt::CheckState state);
 
-private:
   Ui::GamePatchDetailsWidget m_ui;
   SettingsWindow* m_dialog;
   std::string m_name;
@@ -40,14 +39,12 @@ public:
   GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GamePatchSettingsWidget();
 
-public Q_SLOTS:
   void disableAllPatches();
-
-private Q_SLOTS:
-  void onReloadClicked();
 
 private:
   void reloadList();
+
+  void onReloadClicked();
 
   Ui::GamePatchSettingsWidget m_ui;
   SettingsWindow* m_dialog;

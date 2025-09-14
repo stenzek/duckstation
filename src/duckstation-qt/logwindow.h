@@ -29,23 +29,9 @@ public:
 
   static void populateFilterMenu(QMenu* menu);
 
-private:
-  void createUi();
-  void updateLogLevelUi();
-  void setLogLevel(Log::Level level);
-
-  static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
-                          std::string_view message);
-
 protected:
   void closeEvent(QCloseEvent* event);
   void changeEvent(QEvent* event);
-
-private Q_SLOTS:
-  void onClearTriggered();
-  void onSaveTriggered();
-  void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
-  void realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
 
 private:
   static constexpr int DEFAULT_WIDTH = 750;
@@ -53,8 +39,20 @@ private:
   static constexpr int MAX_LINES = 1000;
   static constexpr int BLOCK_UPDATES_THRESHOLD = 100;
 
+  void createUi();
+  void updateLogLevelUi();
+  void setLogLevel(Log::Level level);
+
+  void onClearTriggered();
+  void onSaveTriggered();
+  void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
+  void realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
+
   void saveSize();
   void restoreSize();
+
+  static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
+                          std::string_view message);
 
   QPlainTextEdit* m_text;
   QMenu* m_level_menu;

@@ -21,7 +21,10 @@ public:
   AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AudioSettingsWidget();
 
-private Q_SLOTS:
+private:
+  AudioBackend getEffectiveBackend() const;
+  void resetVolume(bool fast_forward);
+
   void onStretchModeChanged();
 
   void updateDriverNames();
@@ -34,10 +37,6 @@ private Q_SLOTS:
   void onOutputMutedChanged(int new_state);
 
   void onStretchSettingsClicked();
-
-private:
-  AudioBackend getEffectiveBackend() const;
-  void resetVolume(bool fast_forward);
 
   Ui::AudioSettingsWidget m_ui;
   SettingsWindow* m_dialog;

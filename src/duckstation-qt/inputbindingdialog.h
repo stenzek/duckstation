@@ -21,13 +21,6 @@ public:
                      std::string key_name, std::vector<std::string> bindings, QWidget* parent);
   ~InputBindingDialog();
 
-protected Q_SLOTS:
-  void onAddBindingButtonClicked();
-  void onRemoveBindingButtonClicked();
-  void onClearBindingsButtonClicked();
-  void onInputListenTimerTimeout();
-  void inputManagerHookCallback(InputBindingKey key, float value);
-
 protected:
   enum : u32
   {
@@ -52,6 +45,12 @@ protected:
   void onResetDeadzoneClicked();
   void onDeadzoneChanged(int value);
   void onResetSensitivityClicked();
+
+  void onAddBindingButtonClicked();
+  void onRemoveBindingButtonClicked();
+  void onClearBindingsButtonClicked();
+  void onInputListenTimerTimeout();
+  void inputManagerHookCallback(InputBindingKey key, float value);
 
   Ui::InputBindingDialog m_ui;
 

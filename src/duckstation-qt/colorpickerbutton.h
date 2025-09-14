@@ -12,18 +12,16 @@ class ColorPickerButton : public QPushButton
 public:
   ColorPickerButton(QWidget* parent);
 
-Q_SIGNALS:
-  void colorChanged(quint32 new_color);
-
-public Q_SLOTS:
   quint32 color();
   void setColor(quint32 rgb);
 
-private Q_SLOTS:
-  void onClicked();
+Q_SIGNALS:
+  void colorChanged(quint32 new_color);
 
 private:
   void updateBackgroundColor();
+
+  void onClicked();
 
   u32 m_color = 0;
 };

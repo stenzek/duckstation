@@ -63,10 +63,9 @@ public:
   u32 getAddress() const { return m_address; }
   CPU::BreakpointType getType() const { return m_type; }
 
-private Q_SLOTS:
+private:
   void okClicked();
 
-private:
   Ui::DebuggerAddBreakpointDialog m_ui;
   u32 m_address = 0;
   CPU::BreakpointType m_type = CPU::BreakpointType::Execute;

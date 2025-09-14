@@ -30,14 +30,6 @@ Q_SIGNALS:
 protected:
   void closeEvent(QCloseEvent* ev);
 
-private Q_SLOTS:
-  void onDownloadStatus(const QString& text);
-  void onDownloadProgress(int value, int range);
-  void onDownloadComplete();
-  void onStartClicked();
-  void onCloseClicked();
-  void updateEnabled();
-
 private:
   class CoverDownloadThread : public QtAsyncProgressThread
   {
@@ -55,6 +47,13 @@ private:
 
   void startThread();
   void cancelThread();
+
+  void onDownloadStatus(const QString& text);
+  void onDownloadProgress(int value, int range);
+  void onDownloadComplete();
+  void onStartClicked();
+  void onCloseClicked();
+  void updateEnabled();
 
   Ui::CoverDownloadWindow m_ui;
   std::unique_ptr<CoverDownloadThread> m_thread;

@@ -33,16 +33,6 @@ public:
   PostProcessingChainConfigWidget(SettingsWindow* dialog, QWidget* parent, const char* section);
   ~PostProcessingChainConfigWidget();
 
-private Q_SLOTS:
-  void onAddButtonClicked();
-  void onRemoveButtonClicked();
-  void onClearButtonClicked();
-  void onMoveUpButtonClicked();
-  void onMoveDownButtonClicked();
-  void onReloadButtonClicked();
-  void onSelectedShaderChanged();
-  void triggerSettingsReload();
-
 private:
   SettingsInterface& getSettingsInterfaceToUpdate();
   void commitSettingsUpdate();
@@ -53,6 +43,15 @@ private:
   void selectIndex(s32 index);
   void updateList(const SettingsInterface& si);
   void updateList();
+
+  void onAddButtonClicked();
+  void onRemoveButtonClicked();
+  void onClearButtonClicked();
+  void onMoveUpButtonClicked();
+  void onMoveDownButtonClicked();
+  void onReloadButtonClicked();
+  void onSelectedShaderChanged();
+  void triggerSettingsReload();
 
   SettingsWindow* m_dialog;
 
@@ -72,12 +71,11 @@ public:
                                    u32 stage_index, std::vector<PostProcessing::ShaderOption> options);
   ~PostProcessingShaderConfigWidget();
 
-private Q_SLOTS:
-  void onResetDefaultsClicked();
-
 private:
   void createUi();
   void updateConfigForOption(const PostProcessing::ShaderOption& option);
+
+  void onResetDefaultsClicked();
 
   QGridLayout* m_layout;
 
@@ -97,13 +95,12 @@ public:
   PostProcessingOverlayConfigWidget(SettingsWindow* dialog, QWidget* parent);
   ~PostProcessingOverlayConfigWidget();
 
-private Q_SLOTS:
+private:
   void triggerSettingsReload();
   void onOverlayNameCurrentIndexChanged(int index);
   void onImagePathBrowseClicked();
   void onExportCustomConfigClicked();
 
-private:
   Ui::PostProcessingOverlayConfigWidget m_ui;
   SettingsWindow* m_dialog;
 };

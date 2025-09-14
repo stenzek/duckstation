@@ -23,10 +23,17 @@ public:
 
   static void populateUpscalingModes(QComboBox* cb, int max_scale);
 
-public Q_SLOTS:
   void onShowDebugSettingsChanged(bool enabled);
 
-private Q_SLOTS:
+private:
+  static constexpr int TAB_INDEX_RENDERING = 0;
+  static constexpr int TAB_INDEX_ADVANCED = 1;
+  static constexpr int TAB_INDEX_PGXP = 2;
+  static constexpr int TAB_INDEX_OSD = 3;
+  static constexpr int TAB_INDEX_CAPTURE = 4;
+  static constexpr int TAB_INDEX_TEXTURE_REPLACEMENTS = 5;
+  static constexpr int TAB_INDEX_DEBUGGING = 6;
+
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
 
@@ -46,15 +53,6 @@ private Q_SLOTS:
   void onTextureReplacementOptionsClicked();
 
   void onGPUThreadChanged();
-
-private:
-  static constexpr int TAB_INDEX_RENDERING = 0;
-  static constexpr int TAB_INDEX_ADVANCED = 1;
-  static constexpr int TAB_INDEX_PGXP = 2;
-  static constexpr int TAB_INDEX_OSD = 3;
-  static constexpr int TAB_INDEX_CAPTURE = 4;
-  static constexpr int TAB_INDEX_TEXTURE_REPLACEMENTS = 5;
-  static constexpr int TAB_INDEX_DEBUGGING = 6;
 
   void setupAdditionalUi();
   void removePlatformSpecificUi();
