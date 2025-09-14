@@ -128,6 +128,13 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   *image = std::move(padded_image);
 }
 
+static QString sizeToString(s64 size)
+{
+  static constexpr s64 one_mb = 1024 * 1024;
+  return (size >= 0) ? QStringLiteral("%1 MB").arg((size + (one_mb - 1)) / one_mb) :
+                       qApp->translate("GameListModel", "Unknown");
+}
+
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
 {
   for (int column = 0; column < Column_Count; column++)
@@ -645,12 +652,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         }
 
         case Column_FileSize:
-          return (ge->file_size >= 0) ?
-                   QStringLiteral("%1 MB").arg(static_cast<double>(ge->file_size) / 1048576.0, 0, 'f', 2) :
-                   tr("Unknown");
+          return sizeToString(ge->file_size);
 
         case Column_UncompressedSize:
-          return QStringLiteral("%1 MB").arg(static_cast<double>(ge->uncompressed_size) / 1048576.0, 0, 'f', 2);
+          return sizeToString(ge->file_size);
 
         case Column_Achievements:
           return {};
@@ -1933,7 +1938,7 @@ void GameListListView::setFixedColumnWidths()
                                                        static_cast<s64>(QDateTime::currentSecsSinceEpoch())))))));
 
   // Assume 8 is the widest digit.
-  int size_width = width_for(QStringLiteral("%1 MB").arg(8888.88, 0, 'f', 2));
+  const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)), width_for(tr("Unknown")));
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_UncompressedSize, size_width);
 
