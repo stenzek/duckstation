@@ -76,8 +76,6 @@ private:
 
 class DisplayContainer final : public QStackedWidget
 {
-  Q_OBJECT
-
 public:
   DisplayContainer();
   ~DisplayContainer();
@@ -96,8 +94,6 @@ private:
 
 class AuxiliaryDisplayWidget final : public QWidget
 {
-  Q_OBJECT
-
 public:
   explicit AuxiliaryDisplayWidget(QWidget* parent, u32 width, u32 height, const QString& title, void* userdata);
   ~AuxiliaryDisplayWidget();

@@ -11,8 +11,6 @@ class SettingsWindow;
 
 class AchievementSettingsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   explicit AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AchievementSettingsWidget();

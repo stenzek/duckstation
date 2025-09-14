@@ -8,8 +8,6 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-#include "moc_foldersettingswidget.cpp"
-
 FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

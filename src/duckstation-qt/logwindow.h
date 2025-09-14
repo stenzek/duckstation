@@ -13,8 +13,6 @@
 
 class ALIGN_TO_CACHE_LINE LogWindow : public QMainWindow
 {
-  Q_OBJECT
-
 public:
   LogWindow(bool attach_to_main);
   ~LogWindow();

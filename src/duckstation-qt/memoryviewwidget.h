@@ -9,8 +9,6 @@
 
 class MemoryViewWidget : public QAbstractScrollArea
 {
-  Q_OBJECT
-
 public:
   using EditCallback = void (*)(size_t offset, size_t bytes);
 

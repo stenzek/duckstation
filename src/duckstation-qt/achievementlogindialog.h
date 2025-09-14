@@ -12,8 +12,6 @@ enum class LoginRequestReason;
 
 class AchievementLoginDialog : public QDialog
 {
-  Q_OBJECT
-
 public:
   AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason);
   ~AchievementLoginDialog();

@@ -17,8 +17,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollArea>
 
-#include "moc_hotkeysettingswidget.cpp"
-
 HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
   : QWidget(parent), m_dialog(dialog)
 {

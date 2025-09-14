@@ -22,8 +22,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 
-#include "moc_postprocessingsettingswidget.cpp"
-
 PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QTabWidget(parent)
 {
   addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::DISPLAY_CHAIN_SECTION),

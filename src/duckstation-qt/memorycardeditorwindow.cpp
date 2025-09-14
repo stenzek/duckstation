@@ -21,8 +21,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyledItemDelegate>
 
-#include "moc_memorycardeditorwindow.cpp"
-
 LOG_CHANNEL(Host);
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =

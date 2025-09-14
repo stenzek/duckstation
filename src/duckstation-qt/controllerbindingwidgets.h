@@ -26,8 +26,6 @@ class ControllerMacroEditWidget;
 
 class ControllerBindingWidget final : public QWidget
 {
-  Q_OBJECT
-
 public:
   ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port);
   ~ControllerBindingWidget();
@@ -75,8 +73,6 @@ private:
 
 class ControllerMacroWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   explicit ControllerMacroWidget(ControllerBindingWidget* parent);
   ~ControllerMacroWidget();
@@ -97,8 +93,6 @@ private:
 
 class ControllerMacroEditWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   ControllerMacroEditWidget(ControllerMacroWidget* parent, ControllerBindingWidget* bwidget, u32 index);
   ~ControllerMacroEditWidget();
@@ -129,8 +123,6 @@ private:
 
 class ControllerCustomSettingsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   explicit ControllerCustomSettingsWidget(ControllerBindingWidget* parent);
   ~ControllerCustomSettingsWidget();
@@ -145,8 +137,6 @@ private:
 
 class ControllerCustomSettingsDialog : public QDialog
 {
-  Q_OBJECT
-
 public:
   explicit ControllerCustomSettingsDialog(QWidget* parent, SettingsInterface* sif, const std::string& section,
                                           std::span<const SettingInfo> settings, const char* tr_context,

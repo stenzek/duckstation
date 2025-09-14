@@ -14,8 +14,6 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QScrollBar>
 
-#include "moc_logwindow.cpp"
-
 // TODO: Since log callbacks are synchronized, no mutex is needed here.
 // But once I get rid of that, there will be.
 LogWindow* g_log_window;

@@ -13,8 +13,6 @@
 
 class QtModalProgressCallback final : public QObject, public ProgressCallback
 {
-  Q_OBJECT
-
 public:
   explicit QtModalProgressCallback(QWidget* parent_widget, float show_delay = 0.0f);
   ~QtModalProgressCallback();

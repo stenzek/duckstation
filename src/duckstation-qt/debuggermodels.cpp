@@ -16,8 +16,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
-#include "moc_debuggermodels.cpp"
-
 static constexpr int STACK_RANGE = 128;
 static constexpr u32 STACK_VALUE_SIZE = sizeof(u32);
 

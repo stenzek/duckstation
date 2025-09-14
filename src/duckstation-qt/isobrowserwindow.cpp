@@ -18,8 +18,6 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 
-#include "moc_isobrowserwindow.cpp"
-
 LOG_CHANNEL(Host);
 
 ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)

@@ -16,8 +16,6 @@ class SettingsWindow;
 
 class GamePatchDetailsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   GamePatchDetailsWidget(std::string name, const std::string& author, const std::string& description,
                          bool disallowed_for_achievements, bool enabled, SettingsWindow* dialog, QWidget* parent);
@@ -33,8 +31,6 @@ private:
 
 class GamePatchSettingsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GamePatchSettingsWidget();

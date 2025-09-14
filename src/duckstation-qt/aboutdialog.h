@@ -8,8 +8,6 @@
 
 class AboutDialog final : public QDialog
 {
-  Q_OBJECT
-
 public:
   explicit AboutDialog(QWidget* parent = nullptr);
   ~AboutDialog();
@@ -18,5 +16,4 @@ public:
 
 private:
   Ui::AboutDialog m_ui;
-
 };

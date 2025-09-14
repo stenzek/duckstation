@@ -14,8 +14,6 @@ class SettingsInterface;
 
 class InputBindingDialog : public QDialog
 {
-  Q_OBJECT
-
 public:
   InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
                      std::string key_name, std::vector<std::string> bindings, QWidget* parent);

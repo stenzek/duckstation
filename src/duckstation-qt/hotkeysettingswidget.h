@@ -18,8 +18,6 @@ class ControllerSettingsWindow;
 
 class HotkeySettingsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   HotkeySettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog);
   ~HotkeySettingsWidget();

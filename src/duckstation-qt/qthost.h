@@ -266,8 +266,6 @@ private:
 
 class InputDeviceListModel final : public QAbstractListModel
 {
-  Q_OBJECT
-
 public:
   struct Device
   {

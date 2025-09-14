@@ -16,8 +16,6 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
-#include "moc_achievementsettingswidget.cpp"
-
 AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {

@@ -11,8 +11,6 @@ class SettingsWindow;
 
 class ConsoleSettingsWidget : public QWidget
 {
-  Q_OBJECT
-
 public:
   explicit ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~ConsoleSettingsWidget();
