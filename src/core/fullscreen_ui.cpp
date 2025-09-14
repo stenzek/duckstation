@@ -1379,7 +1379,12 @@ GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_nam
   const u32 svg_height = static_cast<u32>(svg_size.y);
   tex = ImGuiFullscreen::FindCachedTexture(svg_name, svg_width, svg_height);
   if (tex)
+  {
+    if (is_colorable)
+      *is_colorable = true;
+
     return tex;
+  }
 
   // slow path, check filesystem for override
   if (EmuFolders::Resources != EmuFolders::UserResources &&

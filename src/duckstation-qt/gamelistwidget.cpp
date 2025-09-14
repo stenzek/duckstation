@@ -1874,7 +1874,7 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   loadColumnVisibilitySettings();
   loadColumnSortSettings();
 
-  connect(horizontal_header, &QHeaderView::sortIndicatorChanged, this, &GameListListView::onHeaderSortIndicatorChanged);
+  connect(horizontal_header, &QHeaderView::sortIndicatorChanged, this, &GameListListView::saveColumnSortSettings);
   connect(horizontal_header, &QHeaderView::customContextMenuRequested, this,
           &GameListListView::onHeaderContextMenuRequested);
 }
@@ -2034,11 +2034,6 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
   setColumnHidden(column, hidden);
   Host::SetBaseBoolSettingValue("GameListTableView", getColumnVisibilitySettingsKeyName(column), !hidden);
   Host::CommitBaseSettingChanges();
-}
-
-void GameListListView::onHeaderSortIndicatorChanged(int, Qt::SortOrder)
-{
-  saveColumnSortSettings();
 }
 
 void GameListListView::onHeaderContextMenuRequested(const QPoint& point)

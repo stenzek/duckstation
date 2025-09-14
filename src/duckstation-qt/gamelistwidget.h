@@ -182,16 +182,16 @@ public:
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
-private:
-  void onHeaderSortIndicatorChanged(int, Qt::SortOrder);
+private Q_SLOTS:
   void onHeaderContextMenuRequested(const QPoint& point);
+  void saveColumnSortSettings();
 
+private:
   void setFixedColumnWidth(int column, int width);
   void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
-  void saveColumnSortSettings();
 
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;

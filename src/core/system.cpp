@@ -5384,15 +5384,7 @@ void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, Displa
 
   std::string auto_path;
   if (!path || path[0] == '\0')
-  {
     path = (auto_path = GetScreenshotPath(Settings::GetDisplayScreenshotFormatExtension(format))).c_str();
-  }
-  else
-  {
-    // If the user chose a specific format, use that.
-    format =
-      Settings::GetDisplayScreenshotFormatFromFileName(FileSystem::GetDisplayNameFromPath(path)).value_or(format);
-  }
 
   GPUBackend::RenderScreenshotToFile(path, mode, quality, true);
 }
