@@ -30,6 +30,7 @@ public:
   ~AutoUpdaterWindow();
 
   static bool isSupported();
+  static bool canInstallUpdate();
   static QStringList getTagList();
   static std::string getDefaultTag();
   static void cleanupAfterUpdate();

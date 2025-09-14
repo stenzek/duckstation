@@ -65,13 +65,12 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 static const char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
 static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/{}";
 static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/{}...{}";
+static const char* DOWNLOAD_PAGE_URL = "https://github.com/stenzek/duckstation/releases/tag/{}";
 static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
 static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #ifdef AUTO_UPDATER_SUPPORTED
 static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
-#else
-static const char* DOWNLOAD_PAGE_URL = "https://github.com/stenzek/duckstation/releases/tag/{}";
 #endif
 
 #endif
@@ -102,6 +101,19 @@ bool AutoUpdaterWindow::isSupported()
   return true;
 #else
   return false;
+#endif
+}
+
+bool AutoUpdaterWindow::canInstallUpdate()
+{
+#ifndef AUTO_UPDATER_SUPPORTED
+  return false;
+#elif defined(__linux__)
+  // Linux Flatpak is a wrapper of the AppImage, which will have the AUTO_UPDATER_SUPPORTED flag set.
+  // Redirect to the download page instead if not running under an AppImage.
+  return (std::getenv("APPIMAGE") != nullptr);
+#else
+  return true;
 #endif
 }
 
@@ -432,10 +444,11 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
       m_ui.downloadSize->setText(
         tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
-#ifndef AUTO_UPDATER_SUPPORTED
-      // Just display the version and a download link.
-      m_ui.downloadAndInstall->setText(tr("Download..."));
-#endif
+      if (!canInstallUpdate())
+      {
+        // Just display the version and a download link.
+        m_ui.downloadAndInstall->setText(tr("Download..."));
+      }
 
       m_ui.downloadAndInstall->setEnabled(true);
       m_ui.updateNotes->setText(tr("Loading..."));
@@ -542,6 +555,13 @@ void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, 
 
 void AutoUpdaterWindow::downloadUpdateClicked()
 {
+#ifdef UPDATE_CHECKER_SUPPORTED
+  if (!canInstallUpdate())
+  {
+    QtUtils::OpenURL(this, fmt::format(fmt::runtime(DOWNLOAD_PAGE_URL), getCurrentUpdateTag()));
+    return;
+  }
+#endif
 #ifdef AUTO_UPDATER_SUPPORTED
   // Prevent multiple clicks of the button.
   if (!m_ui.downloadAndInstall->isEnabled())
@@ -604,8 +624,6 @@ void AutoUpdaterWindow::downloadUpdateClicked()
     // update failed, re-enable download button
     m_ui.downloadAndInstall->setEnabled(true);
   }
-#elif defined(UPDATE_CHECKER_SUPPORTED)
-  QtUtils::OpenURL(this, fmt::format(fmt::runtime(DOWNLOAD_PAGE_URL), getCurrentUpdateTag()));
 #endif
 }
 
