@@ -3809,7 +3809,7 @@ std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardTyp
       else
       {
         Host::RemoveKeyedOSDMessage(std::move(message_key));
-        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_state.running_game_serial.c_str(), slot));
+        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_state.running_game_serial, slot));
       }
     }
 
