@@ -56,7 +56,6 @@ private:
   QScrollArea* m_scroll_area = nullptr;
   Container* m_container = nullptr;
   QVBoxLayout* m_layout = nullptr;
-  QLineEdit* m_search = nullptr;
 
   QMap<QString, CategoryWidgets> m_categories;
 };

@@ -85,7 +85,6 @@ private:
   void createWidgets(ControllerBindingWidget* parent);
 
   Ui::ControllerMacroWidget m_ui;
-  ControllerSettingsWindow* m_dialog;
   std::array<ControllerMacroEditWidget*, NUM_MACROS> m_macros;
 };
 
