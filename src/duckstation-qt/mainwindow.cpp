@@ -1842,68 +1842,56 @@ void MainWindow::setupAdditionalUi()
 
   // View > Sort By
   {
-    const GameListModel::Column DEFAULT_SORT_COLUMN = GameListModel::Column_Icon;
-    const bool DEFAULT_SORT_DESCENDING = false;
+    const int current_sort_column = m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorSection();
+    const Qt::SortOrder current_sort_order =
+      m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorOrder();
 
-    const GameListModel::Column sort_column =
-      GameListModel::getColumnIdForName(Host::GetBaseStringSettingValue("GameListTableView", "SortColumn"))
-        .value_or(DEFAULT_SORT_COLUMN);
+    QActionGroup* const column_group = new QActionGroup(this);
+    QActionGroup* const order_group = new QActionGroup(this);
 
-    const bool sort_descending =
-      Host::GetBaseBoolSettingValue("GameListTableView", "SortDescending", DEFAULT_SORT_DESCENDING);
-    const Qt::SortOrder sort_order = sort_descending ? Qt::DescendingOrder : Qt::AscendingOrder;
-
-    QAction* action;
-    GameListModel* model = m_game_list_widget->getModel();
-    GameListListView* list_view = m_game_list_widget->getListView();
-
-    QActionGroup* column_group = new QActionGroup(this);
-    QActionGroup* order_group = new QActionGroup(this);
-
-    for (int i = 0; i < model->Column_Count - 1; i++)
+    for (int i = 0; i <= GameListModel::Column_LastVisible; i++)
     {
-      const QString& column_name = model->getColumnDisplayName(i);
-
-      action = new QAction(column_name);
+      QAction* const action =
+        new QAction(m_game_list_widget->getModel()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString());
       action->setCheckable(true);
-      action->setChecked(sort_column == i);
+      action->setChecked(current_sort_column == i);
       column_group->addAction(action);
       m_ui.menuSortBy->addAction(action);
 
-      connect(action, &QAction::triggered, [list_view, i] {
-        const Qt::SortOrder order = list_view->horizontalHeader()->sortIndicatorOrder();
-        list_view->horizontalHeader()->setSortIndicator(i, order);
+      connect(action, &QAction::triggered, [this, i] {
+        const Qt::SortOrder order = m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorOrder();
+        m_game_list_widget->getListView()->horizontalHeader()->setSortIndicator(i, order);
       });
     }
 
     m_ui.menuSortBy->addSeparator();
 
-    action = new QAction(tr("&Ascending"));
-    action->setIcon(QIcon::fromTheme(QStringLiteral("go-up")));
-    action->setCheckable(true);
-    action->setChecked(sort_order == Qt::AscendingOrder);
-    order_group->addAction(action);
-    m_ui.menuSortBy->addAction(action);
-    connect(action, &QAction::triggered, [list_view] {
-      const int section = list_view->horizontalHeader()->sortIndicatorSection();
-      list_view->horizontalHeader()->setSortIndicator(section, Qt::AscendingOrder);
+    QAction* const ascending_action = new QAction(tr("&Ascending"));
+    ascending_action->setIcon(QIcon::fromTheme(QStringLiteral("go-up")));
+    ascending_action->setCheckable(true);
+    ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
+    order_group->addAction(ascending_action);
+    m_ui.menuSortBy->addAction(ascending_action);
+    connect(ascending_action, &QAction::triggered, [this] {
+      const int section = m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorSection();
+      m_game_list_widget->getListView()->horizontalHeader()->setSortIndicator(section, Qt::AscendingOrder);
     });
 
-    action = new QAction(tr("&Descending"));
-    action->setIcon(QIcon::fromTheme(QStringLiteral("go-down")));
-    action->setCheckable(true);
-    action->setChecked(sort_order == Qt::DescendingOrder);
-    order_group->addAction(action);
-    m_ui.menuSortBy->addAction(action);
-    connect(action, &QAction::triggered, [list_view] {
-      const int section = list_view->horizontalHeader()->sortIndicatorSection();
-      list_view->horizontalHeader()->setSortIndicator(section, Qt::DescendingOrder);
+    QAction* const descending_action = new QAction(tr("&Descending"));
+    descending_action->setIcon(QIcon::fromTheme(QStringLiteral("go-down")));
+    descending_action->setCheckable(true);
+    descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
+    order_group->addAction(descending_action);
+    m_ui.menuSortBy->addAction(descending_action);
+    connect(descending_action, &QAction::triggered, [this] {
+      const int section = m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorSection();
+      m_game_list_widget->getListView()->horizontalHeader()->setSortIndicator(section, Qt::DescendingOrder);
     });
   }
 
   for (u32 scale = 1; scale <= 10; scale++)
   {
-    QAction* action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
+    QAction* const action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
     connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(scale); });
   }
 

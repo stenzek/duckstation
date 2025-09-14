@@ -59,9 +59,17 @@ static const char* SUPPORTED_FORMATS_STRING =
                                     ".chd (Compressed Hunks of Data)\n"
                                     ".pbp (PlayStation Portable, Only Decrypted)");
 
-static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
-  {"Icon", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
-   "Last Played", "Size", "File Size", "Region", "Achievements", "Compatibility", "Cover"}};
+static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {{
+  QT_TRANSLATE_NOOP("GameListModel", "Icon"), QT_TRANSLATE_NOOP("GameListModel", "Serial"),
+  QT_TRANSLATE_NOOP("GameListModel", "Title"), QT_TRANSLATE_NOOP("GameListModel", "File Title"),
+  QT_TRANSLATE_NOOP("GameListModel", "Developer"), QT_TRANSLATE_NOOP("GameListModel", "Publisher"),
+  QT_TRANSLATE_NOOP("GameListModel", "Genre"), QT_TRANSLATE_NOOP("GameListModel", "Year"),
+  QT_TRANSLATE_NOOP("GameListModel", "Players"), QT_TRANSLATE_NOOP("GameListModel", "Time Played"),
+  QT_TRANSLATE_NOOP("GameListModel", "Last Played"), QT_TRANSLATE_NOOP("GameListModel", "Size"),
+  QT_TRANSLATE_NOOP("GameListModel", "File Size"), QT_TRANSLATE_NOOP("GameListModel", "Region"),
+  QT_TRANSLATE_NOOP("GameListModel", "Achievements"), QT_TRANSLATE_NOOP("GameListModel", "Compatibility"),
+  "Cover", // Do not translate.
+}};
 
 static constexpr int COVER_ART_SIZE = 512;
 static constexpr int COVER_ART_SPACING = 32;
@@ -162,7 +170,6 @@ GameListModel::GameListModel(GameListWidget* parent)
   m_show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);
 
   loadCommonImages();
-  setColumnDisplayNames();
   updateCoverScale();
 
   if (m_show_game_icons)
@@ -833,10 +840,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
 QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-  if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= Column_Count)
-    return {};
+  QVariant ret;
+  if (orientation == Qt::Horizontal && role == Qt::DisplayRole && section >= 0 && section < Column_Count)
+    ret = qApp->translate("GameListModel", s_column_names[static_cast<u32>(section)]);
 
-  return m_column_display_names[section];
+  return ret;
 }
 
 const GameList::Entry* GameListModel::getTakenGameListEntry(u32 index) const
@@ -1102,26 +1110,6 @@ void GameListModel::loadCommonImages()
   m_mastered_achievements_pixmap =
     QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-star.svg", true)))
       .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
-}
-
-void GameListModel::setColumnDisplayNames()
-{
-  m_column_display_names[Column_Icon] = tr("Icon");
-  m_column_display_names[Column_Serial] = tr("Serial");
-  m_column_display_names[Column_Title] = tr("Title");
-  m_column_display_names[Column_FileTitle] = tr("File Title");
-  m_column_display_names[Column_Developer] = tr("Developer");
-  m_column_display_names[Column_Publisher] = tr("Publisher");
-  m_column_display_names[Column_Genre] = tr("Genre");
-  m_column_display_names[Column_Year] = tr("Year");
-  m_column_display_names[Column_Players] = tr("Players");
-  m_column_display_names[Column_Achievements] = tr("Achievements");
-  m_column_display_names[Column_TimePlayed] = tr("Time Played");
-  m_column_display_names[Column_LastPlayed] = tr("Last Played");
-  m_column_display_names[Column_FileSize] = tr("Size");
-  m_column_display_names[Column_UncompressedSize] = tr("Raw Size");
-  m_column_display_names[Column_Region] = tr("Region");
-  m_column_display_names[Column_Compatibility] = tr("Compatibility");
 }
 
 class GameListSortModel final : public QSortFilterProxyModel
@@ -1925,7 +1913,7 @@ void GameListListView::setFixedColumnWidth(int column, int width)
 void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width)
 {
   const int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
-  const int header_width = fm.size(0, m_model->getColumnDisplayName(column)).width() +
+  const int header_width = fm.size(0, m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString()).width() +
                            style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this) + // sort indicator
                            margin;                                  // space between text and sort indicator
   const int width = std::max(header_width, str_width) + 2 * margin; // left and right margins
@@ -2062,7 +2050,7 @@ void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
     if (column == GameListModel::Column_Cover)
       continue;
 
-    QAction* action = menu.addAction(m_model->getColumnDisplayName(column));
+    QAction* const action = menu.addAction(m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString());
     action->setCheckable(true);
     action->setChecked(!isColumnHidden(column));
     connect(action, &QAction::triggered, [this, column](bool enabled) { setAndSaveColumnHidden(column, !enabled); });

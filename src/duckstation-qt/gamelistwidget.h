@@ -56,7 +56,9 @@ public:
     Column_Compatibility,
     Column_Cover,
 
-    Column_Count
+    Column_Count,
+
+    Column_LastVisible = Column_Compatibility,
   };
 
   static std::optional<Column> getColumnIdForName(std::string_view name);
@@ -70,7 +72,6 @@ public:
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-  ALWAYS_INLINE const QString& getColumnDisplayName(int column) const { return m_column_display_names[column]; }
   ALWAYS_INLINE const QPixmap& getNoAchievementsPixmap() const { return m_no_achievements_pixmap; }
   ALWAYS_INLINE const QPixmap& getHasAchievementsPixmap() const { return m_has_achievements_pixmap; }
   ALWAYS_INLINE const QPixmap& getMasteredAchievementsPixmap() const { return m_mastered_achievements_pixmap; }
@@ -122,7 +123,6 @@ private:
 
   void loadCommonImages();
   void loadSizeDependentPixmaps();
-  void setColumnDisplayNames();
   void updateCoverScale();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
@@ -148,7 +148,6 @@ private:
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
 
-  std::array<QString, Column_Count> m_column_display_names;
   std::array<QPixmap, static_cast<int>(GameList::EntryType::MaxCount)> m_type_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
 
