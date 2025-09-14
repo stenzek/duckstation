@@ -941,6 +941,7 @@ void FullscreenUI::OnSystemStarting()
       return;
 
     BeginTransition(LONG_TRANSITION_TIME, []() {
+      ClearSaveStateEntryList();
       s_state.current_main_window = MainWindowType::None;
       QueueResetFocus(FocusResetType::ViewChanged);
       UpdateRunIdleState();
@@ -1467,6 +1468,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
 
         OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
                               fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
+        ClearSaveStateEntryList();
         UpdateRunIdleState();
       });
     }
@@ -7372,10 +7374,9 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
 void FullscreenUI::DrawSaveStateSelector()
 {
   static constexpr auto do_load_state = [](std::string game_path, std::string state_path) {
-    ClearSaveStateEntryList();
-
     if (GPUThread::HasGPUBackend())
     {
+      ClearSaveStateEntryList();
       ReturnToMainWindow(LONG_TRANSITION_TIME);
 
       Host::RunOnCPUThread([game_path = std::move(game_path), state_path = std::move(state_path)]() mutable {
