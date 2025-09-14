@@ -200,6 +200,8 @@ private Q_SLOTS:
   void onViewSystemDisplayTriggered();
   void onViewZoomInActionTriggered();
   void onViewZoomOutActionTriggered();
+  void onViewSortByActionTriggered();
+  void onViewSortOrderActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
@@ -220,6 +222,7 @@ private Q_SLOTS:
   void onGameListSelectionChanged();
   void onGameListEntryActivated();
   void onGameListEntryContextMenuRequested(const QPoint& point);
+  void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
   void onUpdateCheckComplete();
   void onRAIntegrationMenuChanged();
