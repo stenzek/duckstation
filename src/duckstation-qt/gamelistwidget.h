@@ -242,7 +242,8 @@ public:
   void refresh(bool invalidate_cache);
   void cancelRefresh();
   void reloadThemeSpecificImages();
-  void updateBackground(bool reload_image);
+  void setBackgroundPath(const std::string_view path);
+  bool hasBackground() const;
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
@@ -293,6 +294,7 @@ protected:
 
 private:
   void setViewMode(int stack_index);
+  void updateBackground(bool reload_image);
 
   Ui::GameListWidget m_ui;
 

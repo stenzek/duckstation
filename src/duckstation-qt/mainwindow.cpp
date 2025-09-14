@@ -539,7 +539,7 @@ void MainWindow::updateGameListRelatedActions()
 
   const bool game_grid = m_game_list_widget->isShowingGameGrid();
   const bool game_list = m_game_list_widget->isShowingGameList();
-  const bool has_background = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath") != "";
+  const bool has_background = m_game_list_widget->hasBackground();
 
   m_ui.menuSortBy->setDisabled(disable);
   m_ui.actionMergeDiscSets->setDisabled(disable);
@@ -2741,18 +2741,13 @@ void MainWindow::onViewChangeGameListBackgroundTriggered()
   if (path.isEmpty())
     return;
 
-  std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
-  Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
-  Host::CommitBaseSettingChanges();
-  m_game_list_widget->updateBackground(true);
+  m_game_list_widget->setBackgroundPath(QDir::toNativeSeparators(path).toStdString());
   m_ui.actionClearGameListBackground->setEnabled(true);
 }
 
 void MainWindow::onViewClearGameListBackgroundTriggered()
 {
-  Host::DeleteBaseSettingValue("UI", "GameListBackgroundPath");
-  Host::CommitBaseSettingChanges();
-  m_game_list_widget->updateBackground(true);
+  m_game_list_widget->setBackgroundPath({});
   m_ui.actionClearGameListBackground->setEnabled(false);
 }
 

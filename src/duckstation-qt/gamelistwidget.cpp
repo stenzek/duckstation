@@ -1482,6 +1482,22 @@ void GameListWidget::reloadThemeSpecificImages()
   m_model->reloadThemeSpecificImages();
 }
 
+void GameListWidget::setBackgroundPath(const std::string_view path)
+{
+  if (!path.empty())
+  {
+    Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath",
+                                    Path::MakeRelative(path, EmuFolders::DataRoot).c_str());
+  }
+  else
+  {
+    Host::DeleteBaseSettingValue("UI", "GameListBackgroundPath");
+  }
+
+  Host::CommitBaseSettingChanges();
+  updateBackground(true);
+}
+
 void GameListWidget::updateBackground(bool reload_image)
 {
   const bool had_image = !m_background_image.isNull();
@@ -1527,6 +1543,11 @@ void GameListWidget::updateBackground(bool reload_image)
       m_list_view->setAlternatingRowColors(false);
     };
   });
+}
+
+bool GameListWidget::hasBackground() const
+{
+  return !m_background_image.isNull();
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total, int entry_count, float time)
