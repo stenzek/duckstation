@@ -60,6 +60,7 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
@@ -71,6 +72,7 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
   }
   else if (theme == "darkfusion")
   {
@@ -106,6 +108,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "darkfusionblue")
   {
@@ -142,6 +145,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "cobaltsky")
   {
@@ -179,6 +183,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "greymatter")
   {
@@ -212,6 +217,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "greengiant")
   {
@@ -246,6 +252,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(greenGiantPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Light);
   }
   else if (theme == "pinkypals")
   {
@@ -279,6 +286,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(PinkyPalsPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Light);
   }
   else if (theme == "AMOLED")
   {
@@ -315,6 +323,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(AMOLEDPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "darkruby")
   {
@@ -346,6 +355,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
   else if (theme == "purplerain")
   {
@@ -378,6 +388,7 @@ void QtHost::SetStyleFromSettings()
 
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #505a70; border: 1px solid white; }");
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
 #ifdef _WIN32
   else if (theme == "windowsvista")
@@ -385,6 +396,7 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(QStyleFactory::create("windowsvista"));
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Light);
   }
 #endif
   else
@@ -393,6 +405,7 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
 
 #ifdef __APPLE__
     // This is super jank. The native theme on MacOS does not set AlternateBase like the Windows/Fusion themes do, but
