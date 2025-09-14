@@ -2579,6 +2579,16 @@ void MainWindow::connectSignals()
                                                false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowMDECState, "DebugWindows", "MDEC", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowDMAState, "DebugWindows", "DMA", false);
+
+  // Set status tip to the same as tooltip for accessibility.
+  for (QAction* action : findChildren<QAction*>())
+  {
+    if (action->menu())
+      continue;
+
+    if (const QString tip = action->toolTip(); !tip.isEmpty())
+      action->setStatusTip(tip);
+  }
 }
 
 void MainWindow::updateTheme()
