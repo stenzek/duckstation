@@ -399,8 +399,7 @@ void InputBindingDialog::onResetSensitivityClicked()
 void InputBindingDialog::hookInputManager()
 {
   InputManager::SetHook([this](InputBindingKey key, float value) {
-    QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key),
-                              Q_ARG(float, value));
+    QMetaObject::invokeMethod(this, &InputBindingDialog::inputManagerHookCallback, Qt::QueuedConnection, key, value);
     return InputInterceptHook::CallbackResult::StopProcessingEvent;
   });
 }

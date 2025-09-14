@@ -616,7 +616,7 @@ void AutoUpdaterWindow::downloadUpdateClicked()
   if (download_result.value_or(false))
   {
     // updater started. since we're a modal on the main window, we have to queue this.
-    QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, false));
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, false);
     close();
   }
   else

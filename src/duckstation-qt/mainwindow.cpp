@@ -3550,7 +3550,7 @@ void MainWindow::notifyRAIntegrationOfWindowChange()
 
 void Host::OnRAIntegrationMenuChanged()
 {
-  QMetaObject::invokeMethod(g_main_window, "onRAIntegrationMenuChanged", Qt::QueuedConnection);
+  QMetaObject::invokeMethod(g_main_window, &MainWindow::onRAIntegrationMenuChanged, Qt::QueuedConnection);
 }
 
 #else // RC_CLIENT_SUPPORTS_RAINTEGRATION

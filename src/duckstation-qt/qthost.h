@@ -188,19 +188,19 @@ public Q_SLOTS:
   void shutdownSystem(bool save_state, bool check_memcard_busy);
   void resetSystem(bool check_memcard_busy);
   void setSystemPaused(bool paused, bool wait_until_paused = false);
-  void changeDisc(const QString& new_disc_filename, bool reset_system, bool check_memcard_busy);
+  void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy);
   void changeDiscFromPlaylist(quint32 index);
-  void loadState(const QString& filename);
+  void loadState(const QString& path);
   void loadState(bool global, qint32 slot);
-  void saveState(const QString& filename, bool block_until_done = false);
+  void saveState(const QString& path, bool block_until_done = false);
   void saveState(bool global, qint32 slot, bool block_until_done = false);
   void undoLoadState();
   void setAudioOutputVolume(int volume, int fast_forward_volume);
   void setAudioOutputMuted(bool muted);
   void singleStepCPU();
-  void dumpRAM(const QString& filename);
-  void dumpVRAM(const QString& filename);
-  void dumpSPURAM(const QString& filename);
+  void dumpRAM(const QString& path);
+  void dumpVRAM(const QString& path);
+  void dumpSPURAM(const QString& path);
   void saveScreenshot();
   void redrawDisplayWindow();
   void toggleFullscreen();
@@ -226,9 +226,10 @@ private Q_SLOTS:
   void onDisplayWindowKeyEvent(int key, bool pressed);
   void onDisplayWindowTextEntered(const QString& text);
   void doBackgroundControllerPoll();
-  void runOnEmuThread(const std::function<void()>& callback);
   void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                               quint32 param3);
+public Q_SLOTS:
+  void runOnEmuThread(const std::function<void()>& callback);
 
 protected:
   void run() override;

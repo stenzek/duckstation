@@ -134,11 +134,13 @@ public Q_SLOTS:
 
   void* getNativeWindowId();
 
-private Q_SLOTS:
   void reportError(const QString& title, const QString& message);
   bool confirmMessage(const QString& title, const QString& message);
   void onStatusMessage(const QString& message);
 
+  void onRAIntegrationMenuChanged();
+
+private Q_SLOTS:
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                 bool surfaceless, Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
@@ -225,7 +227,6 @@ private Q_SLOTS:
   void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
   void onUpdateCheckComplete();
-  void onRAIntegrationMenuChanged();
 
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();

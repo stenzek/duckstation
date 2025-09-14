@@ -51,8 +51,7 @@ void AchievementLoginDialog::loginClicked()
     Error error;
     const bool result = Achievements::Login(username.toUtf8().constData(), password.toUtf8().constData(), &error);
     const QString message = QString::fromStdString(error.GetDescription());
-    QMetaObject::invokeMethod(this, "processLoginResult", Qt::QueuedConnection, Q_ARG(bool, result),
-                              Q_ARG(const QString&, message));
+    QMetaObject::invokeMethod(this, &AchievementLoginDialog::processLoginResult, Qt::QueuedConnection, result, message);
   });
 }
 

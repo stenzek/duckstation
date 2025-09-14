@@ -389,8 +389,7 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
 void InputBindingWidget::hookInputManager()
 {
   InputManager::SetHook([this](InputBindingKey key, float value) {
-    QMetaObject::invokeMethod(this, "inputManagerHookCallback", Qt::QueuedConnection, Q_ARG(InputBindingKey, key),
-                              Q_ARG(float, value));
+    QMetaObject::invokeMethod(this, &InputBindingWidget::inputManagerHookCallback, Qt::QueuedConnection, key, value);
     return InputInterceptHook::CallbackResult::StopProcessingEvent;
   });
 }

@@ -141,13 +141,12 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
   // rather than just the game.
   if ((QtHost::IsSystemValidOrStarting() || QtHost::IsFullscreenUIStarted()) && !isActuallyFullscreen())
   {
-    QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, true),
-                              Q_ARG(bool, true), Q_ARG(bool, false), Q_ARG(bool, true), Q_ARG(bool, true),
-                              Q_ARG(bool, true), Q_ARG(bool, false));
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::requestShutdown, Qt::QueuedConnection, true, true, false,
+                              true, true, true, false);
   }
   else
   {
-    QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, true);
   }
 }
 
