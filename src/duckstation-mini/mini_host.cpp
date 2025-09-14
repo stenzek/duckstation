@@ -37,6 +37,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
+#include "common/time_helpers.h"
 
 #include "IconsEmoji.h"
 #include "fmt/format.h"
@@ -1415,15 +1416,8 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
         DefaultCaseIsUnreachable();
     }
 
-    struct tm ttime = {};
-    const std::time_t tvalue = static_cast<std::time_t>(value);
-#ifdef _MSC_VER
-    localtime_s(&ttime, &tvalue);
-#else
-    localtime_r(&tvalue, &ttime);
-#endif
-
     char buf[128];
+    const std::tm ttime = Common::LocalTime(static_cast<std::time_t>(value));
     std::strftime(buf, std::size(buf), format, &ttime);
     ret.assign(buf);
   }

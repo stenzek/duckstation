@@ -23,6 +23,7 @@
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
+    <ClInclude Include="time_helpers.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="log_channels.h" />
     <ClInclude Include="lru_cache.h" />
@@ -104,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="thirdparty\usb_key_code_data.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\marmasm.targets" />

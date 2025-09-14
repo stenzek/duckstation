@@ -27,6 +27,7 @@
 #include "common/progress_callback.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/time_helpers.h"
 #include "common/timer.h"
 
 #include "fmt/format.h"
@@ -1592,17 +1593,8 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
   }
   else
   {
-    struct tm ctime = {};
-    struct tm ttime = {};
-    const std::time_t ctimestamp = std::time(nullptr);
-#ifdef _MSC_VER
-    localtime_s(&ctime, &ctimestamp);
-    localtime_s(&ttime, &timestamp);
-#else
-    localtime_r(&ctimestamp, &ctime);
-    localtime_r(&timestamp, &ttime);
-#endif
-
+    const std::tm ctime = Common::LocalTime(std::time(nullptr));
+    const std::tm ttime = Common::LocalTime(timestamp);
     if (ctime.tm_year == ttime.tm_year && ctime.tm_yday == ttime.tm_yday)
     {
       ret = TRANSLATE_STR("GameList", "Today");

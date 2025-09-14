@@ -34,6 +34,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
+#include "common/time_helpers.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
@@ -44,7 +45,6 @@
 
 #include <array>
 #include <atomic>
-#include <chrono>
 #include <cmath>
 #include <deque>
 #include <mutex>
@@ -1157,7 +1157,8 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
   if (global)
     li->game_details = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "{} ({})"), ssi->title, ssi->serial);
 
-  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), fmt::localtime(ssi->timestamp));
+  li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT),
+                            Common::LocalTime(static_cast<std::time_t>(ssi->timestamp)));
   li->filename = Path::GetFileName(path);
   li->slot = slot;
   li->global = global;
@@ -1440,7 +1441,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   FILESYSTEM_STAT_DATA sd;
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
-    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), fmt::localtime(sd.ModificationTime));
+    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), Common::LocalTime(sd.ModificationTime));
   else
     date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
 

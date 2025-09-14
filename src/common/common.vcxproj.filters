@@ -57,6 +57,7 @@
     <ClInclude Include="thirdparty\usb_key_code_data.h">
       <Filter>thirdparty</Filter>
     </ClInclude>
+    <ClInclude Include="time_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -111,5 +112,8 @@
     <None Include="thirdparty\usb_key_code_data.inl">
       <Filter>thirdparty</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

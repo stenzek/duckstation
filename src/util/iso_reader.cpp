@@ -10,6 +10,7 @@
 #include "common/file_system.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
+#include "common/time_helpers.h"
 
 #include "fmt/format.h"
 
@@ -572,14 +573,8 @@ std::string IsoReader::ISODirectoryEntryDateTime::GetFormattedTime() const
   const s32 uts_offset = static_cast<s32>(gmt_offset) * 3600;
   const time_t uts = std::mktime(&utime) + uts_offset;
 
-  struct tm ltime;
-#ifdef _MSC_VER
-  localtime_s(&ltime, &uts);
-#else
-  localtime_r(&uts, &ltime);
-#endif
-
   char buf[128];
+  const std::tm ltime = Common::LocalTime(uts);
   const size_t len = std::strftime(buf, std::size(buf), "%c", &ltime);
   return std::string(buf, len);
 }

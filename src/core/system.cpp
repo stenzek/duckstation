@@ -67,6 +67,7 @@
 #include "common/ryml_helpers.h"
 #include "common/string_util.h"
 #include "common/task_queue.h"
+#include "common/time_helpers.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
@@ -80,6 +81,7 @@
 #include "xxhash.h"
 
 #include <cctype>
+#include <chrono>
 #include <cinttypes>
 #include <cmath>
 #include <cstdio>
@@ -351,7 +353,7 @@ static StateVars s_state;
 
 static TinyString GetTimestampStringForFileName()
 {
-  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
+  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", Common::LocalTime(std::time(nullptr)));
 }
 
 bool System::PerformEarlyHardwareChecks(Error* error)
