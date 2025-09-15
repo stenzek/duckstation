@@ -5,6 +5,7 @@
 #include "host.h"
 #include "system.h"
 
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
@@ -26,16 +27,26 @@ NeGcon::NeGcon(u32 index) : Controller(index)
   m_axis_state[static_cast<u8>(Axis::Steering)] = 0x80;
 }
 
-NeGcon::~NeGcon() = default;
+NeGcon::~NeGcon()
+{
+  InputManager::SetGamepadAnalogLED(m_index, false);
+}
 
 ControllerType NeGcon::GetType() const
 {
   return ControllerType::NeGcon;
 }
 
+bool NeGcon::InAnalogMode() const
+{
+  // NeGcon is always analog
+  return true;
+}
+
 void NeGcon::Reset()
 {
   m_transfer_state = TransferState::Idle;
+  InputManager::SetGamepadAnalogLED(m_index, true);
 }
 
 bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)

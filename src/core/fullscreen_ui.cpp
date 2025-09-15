@@ -4862,6 +4862,10 @@ void FullscreenUI::DrawControllerSettingsPage()
                     FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
                     "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDLControllerEnhancedMode", true),
                     false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Mic Mute LED for Analog Mode"),
+                    FSUI_VSTR("Enable/Disable using the DualSense controller's Mic Mute LED to indicate when Analog Mode is active."), "InputSources",
+                    "SDLPS5MicMuteLEDForAnalogMode", false, bsi->GetBoolValue("InputSources", "SDLControllerEnhancedMode", true),
+                    false);
 #ifdef _WIN32
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
                     FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
@@ -9684,6 +9688,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
 TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense controllers.");
+TRANSLATE_NOOP("FullscreenUI", "Enable/Disable using the DualSense controller's Mic Mute LED to indicate when Analog Mode is active.");
 TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
@@ -9972,6 +9977,7 @@ TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
 TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
+TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Mic Mute LED for Analog Mode");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
 TRANSLATE_NOOP("FullscreenUI", "Save Controller Preset");

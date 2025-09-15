@@ -29,7 +29,10 @@ AnalogController::AnalogController(u32 index) : Controller(index)
   m_rumble_config.fill(0xFF);
 }
 
-AnalogController::~AnalogController() = default;
+AnalogController::~AnalogController()
+{
+  InputManager::SetGamepadAnalogLED(m_index, false);
+}
 
 ControllerType AnalogController::GetType() const
 {
@@ -334,6 +337,8 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
     return;
 
   m_analog_mode = enabled;
+
+  InputManager::SetGamepadAnalogLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)

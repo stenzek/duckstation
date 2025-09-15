@@ -36,7 +36,10 @@ NeGconRumble::NeGconRumble(u32 index) : Controller(index)
   m_rumble_config.fill(0xFF);
 }
 
-NeGconRumble::~NeGconRumble() = default;
+NeGconRumble::~NeGconRumble()
+{
+  InputManager::SetGamepadAnalogLED(m_index, false);
+}
 
 ControllerType NeGconRumble::GetType() const
 {
@@ -234,6 +237,8 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
 {
   if (m_analog_mode == enabled)
     return;
+
+  InputManager::SetGamepadAnalogLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)

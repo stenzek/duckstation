@@ -5,6 +5,10 @@
 #include "imgui_manager.h"
 #include "input_source.h"
 
+#ifdef ENABLE_SDL
+#include "sdl_input_source.h"
+#endif
+
 #include "core/controller.h"
 #include "core/host.h"
 #include "core/system.h"
@@ -1542,6 +1546,7 @@ void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
   si.SetBoolValue("InputSources", "SDL", true);
   si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
   si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+  si.SetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode", false);
   si.SetBoolValue("InputSources", "XInput", false);
   si.SetBoolValue("InputSources", "RawInput", false);
 }
@@ -1763,7 +1768,9 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   Host::OnInputDeviceConnected(key, identifier, device_name);
+  SyncInputDeviceAnalogLEDOnConnection(identifier);
 }
+
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
@@ -1782,6 +1789,71 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
   Error::SetStringFmt(error, "No input source matched device '{}'", device);
   return {};
+}
+
+// ------------------------------------------------------------------------
+// Analog LED
+// ------------------------------------------------------------------------
+
+void InputManager::SetGamepadAnalogLED(u32 player_index, bool enabled)
+{
+#ifdef ENABLE_SDL
+  auto si = Host::GetSettingsInterface();
+  if (!si)
+    return;
+
+  bool sdl = si->GetBoolValue("InputSources", "SDL");
+  bool sdl_ps5_mic_mute_led_for_analog_mode = si->GetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode");
+  if (!sdl || !sdl_ps5_mic_mute_led_for_analog_mode)
+    return;
+
+  SDL_Gamepad* gamepad = SDL_GetGamepadFromPlayerIndex(player_index);
+  if (!gamepad)
+  {
+    ERROR_LOG("Could not get Gamepad for the player index {}: {}", player_index, SDL_GetError());
+    return;
+  }
+
+  if (SDLInputSource::isPS5Controller(gamepad))
+    SDLInputSource::EnablePS5MicMuteLED(gamepad, enabled);
+#endif
+}
+
+void InputManager::SyncInputDeviceAnalogLEDOnConnection(std::string_view identifier)
+{
+#ifdef ENABLE_SDL
+  // This should reenable the Mic Mute LED for the DualSense on connection if Analog mode is ON.
+  //
+  // When reconnecting the controller, it works fine for both USB and Bluetooth.
+  //
+  // However, when toggling the "Use DualSense Mic Mute LED as Analog LED" from OFF to ON,
+  // when a game is running and Analog mode is ON:
+  // - It works fine for USB.
+  // - On Bluetooth this kinda works for a brief moment. The Mic Mute LED turns ON for a split
+  //   second before turning OFF.
+  //
+  // SDL Bug? Is it getting overriden somewhere after this function? Where?
+  //
+  // Nonetheless, after the connection is complete over Bluetooth, manually toggling Analog mode ON/OFF
+  // updates the Mic Mute LED ON/OFF just fine.
+  SDLInputSource* sdl_source = static_cast<SDLInputSource*>(GetInputSourceInterface(InputSourceType::SDL));
+  if (!sdl_source)
+    return;
+
+  SDL_Joystick* joystick = sdl_source->GetJoystickForDevice(identifier);
+  if (!joystick)
+    return;
+
+  int player_index = SDL_GetJoystickPlayerIndex(joystick);
+  if (player_index == -1)
+    return;
+
+  Controller* controller = System::GetController(player_index);
+  if (controller)
+  {
+    SetGamepadAnalogLED(player_index, controller->InAnalogMode());
+  }
+#endif
 }
 
 // ------------------------------------------------------------------------

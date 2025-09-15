@@ -339,6 +339,9 @@ void RemoveHook();
 /// Returns true if there is an interception hook present.
 bool HasHook();
 
+void SetGamepadAnalogLED(u32 player_index, bool enabled);
+void SyncInputDeviceAnalogLEDOnConnection(std::string_view identifier);
+
 /// Internal method used by pads to dispatch vibration updates to input sources.
 /// Intensity is normalized from 0 to 1.
 void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity, float small_motor_intensity);

@@ -29,6 +29,8 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
                                                               "SDLTouchpadAsPointer", false);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
                                                               "SDLPS5PlayerLED", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5MicMuteLEDForAnalogMode, "InputSources",
+                                                              "SDLPS5MicMuteLEDForAnalogMode", false);
   connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
@@ -120,6 +122,8 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
     m_ui.enableTouchPadAsPointer->setEnabled(enabled);
   if (m_ui.enableSDLPS5PlayerLED)
     m_ui.enableSDLPS5PlayerLED->setEnabled(enabled);
+  if (m_ui.enableSDLPS5MicMuteLEDForAnalogMode)
+    m_ui.enableSDLPS5MicMuteLEDForAnalogMode->setEnabled(enabled);
   if (m_ui.ledSettings)
     m_ui.ledSettings->setEnabled(enabled);
 }

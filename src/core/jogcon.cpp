@@ -24,17 +24,32 @@ JogCon::JogCon(u32 index) : Controller(index)
 {
 }
 
-JogCon::~JogCon() = default;
+JogCon::~JogCon()
+{
+  InputManager::SetGamepadAnalogLED(m_index, false);
+}
 
 ControllerType JogCon::GetType() const
 {
   return ControllerType::JogCon;
 }
 
+bool JogCon::InAnalogMode() const
+{
+  // JogCon uses JogCon mode
+  return InJogConMode();
+}
+
+bool JogCon::InJogConMode() const
+{
+  return m_jogcon_mode;
+}
+
 void JogCon::Reset()
 {
   // Reset starts in jogcon mode?
   m_jogcon_mode = true;
+  InputManager::SetGamepadAnalogLED(m_index, m_jogcon_mode);
   ResetTransferState();
   ResetMotorConfig();
 }
@@ -183,6 +198,8 @@ void JogCon::SetJogConMode(bool enabled, bool show_message)
 
   m_jogcon_mode = enabled;
   m_configuration_mode = enabled && m_configuration_mode;
+
+  InputManager::SetGamepadAnalogLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_jogcon_mode ? "JogCon" : "Digital");
   if (show_message)

@@ -6,6 +6,7 @@
 #include "system.h"
 
 #include "util/imgui_manager.h"
+#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/bitutils.h"
@@ -25,7 +26,10 @@ AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
   Reset();
 }
 
-AnalogJoystick::~AnalogJoystick() = default;
+AnalogJoystick::~AnalogJoystick()
+{
+  InputManager::SetGamepadAnalogLED(m_index, false);
+}
 
 ControllerType AnalogJoystick::GetType() const
 {
@@ -40,6 +44,7 @@ bool AnalogJoystick::InAnalogMode() const
 void AnalogJoystick::Reset()
 {
   m_transfer_state = TransferState::Idle;
+  InputManager::SetGamepadAnalogLED(m_index, m_analog_mode);
 }
 
 bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
@@ -239,6 +244,8 @@ u16 AnalogJoystick::GetID() const
 void AnalogJoystick::ToggleAnalogMode()
 {
   m_analog_mode = !m_analog_mode;
+
+  InputManager::SetGamepadAnalogLED(m_index, m_analog_mode);
 
   INFO_LOG("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddIconOSDMessage(
