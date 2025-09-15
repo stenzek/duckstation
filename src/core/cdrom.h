@@ -31,7 +31,7 @@ bool IsMediaAudioCD();
 bool DoesMediaRegionMatchConsole();
 
 bool InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial, std::string_view title,
-                 Error* error);
+                 std::string_view save_title, Error* error);
 std::unique_ptr<CDImage> RemoveMedia(bool for_disc_swap);
 bool PrecacheMedia();
 bool HasNonStandardOrReplacementSubQ();

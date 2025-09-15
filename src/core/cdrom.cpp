@@ -934,12 +934,15 @@ bool CDROM::CanReadMedia()
 }
 
 bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial,
-                        std::string_view title, Error* error)
+                        std::string_view title, std::string_view save_title, Error* error)
 {
   // Load SBI/LSD first.
   std::unique_ptr<CDROMSubQReplacement> subq;
-  if (!media->HasSubchannelData() && !CDROMSubQReplacement::LoadForImage(&subq, media.get(), serial, title, error))
+  if (!media->HasSubchannelData() &&
+      !CDROMSubQReplacement::LoadForImage(&subq, media.get(), serial, title, save_title, error))
+  {
     return false;
+  }
 
   if (CanReadMedia())
     RemoveMedia(true);

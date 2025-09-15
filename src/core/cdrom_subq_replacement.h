@@ -16,7 +16,7 @@ public:
 
   // NOTE: Can return true if no sbi is available, false means load/parse error.
   static bool LoadForImage(std::unique_ptr<CDROMSubQReplacement>* ret, CDImage* image, std::string_view serial,
-                           std::string_view title, Error* error);
+                           std::string_view title, std::string_view save_title, Error* error);
 
   size_t GetReplacementSectorCount() const { return m_replacement_subq.size(); }
 

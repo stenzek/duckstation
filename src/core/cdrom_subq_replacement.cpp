@@ -118,7 +118,8 @@ std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadLSD(const std::s
 }
 
 bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* ret, CDImage* image,
-                                        std::string_view serial, std::string_view title, Error* error)
+                                        std::string_view serial, std::string_view title, std::string_view save_title,
+                                        Error* error)
 {
   struct FileLoader
   {
@@ -131,25 +132,49 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   };
 
   const std::string& image_path = image->GetPath();
+  std::string display_name;
   std::string path;
+  bool result = true;
+
+  const auto try_path = [&path, &ret, &error, &result](const FileLoader& loader) -> bool {
+    if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
+    {
+      *ret = loader.func(path, fp.get(), error);
+      result = static_cast<bool>(*ret);
+      if (!result)
+        Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+      return true;
+    }
+
+    return false;
+  };
+
+  const auto search_in_subchannels = [&path, &image_path, &display_name, &ret, &error,
+                                      &try_path](std::string_view base_name) -> bool {
+    if (base_name.empty())
+      return false;
+
+    for (const FileLoader& loader : loaders)
+    {
+      path = Path::Combine(EmuFolders::Subchannels, TinyString::from_format("{}.{}", base_name, loader.extension));
+      if (try_path(loader))
+        return true;
+    }
+
+    return false;
+  };
 
   // Try sbi/lsd in the directory first.
   if (!CDImage::IsDeviceName(image_path.c_str()))
   {
-    std::string display_name = FileSystem::GetDisplayNameFromPath(image_path);
+    display_name = FileSystem::GetDisplayNameFromPath(image_path);
 
     for (const FileLoader& loader : loaders)
     {
       path = Path::BuildRelativePath(
         image_path, SmallString::from_format("{}.{}", Path::GetFileTitle(display_name), loader.extension));
-      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
-      {
-        *ret = loader.func(path, fp.get(), error);
-        if (!static_cast<bool>(*ret))
-          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
-
-        return static_cast<bool>(*ret);
-      }
+      if (try_path(loader))
+        return result;
     }
 
     // For subimages, we need to check the suffix too.
@@ -160,49 +185,25 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
         path = Path::BuildRelativePath(image_path,
                                        SmallString::from_format("{}_{}.{}", Path::GetFileTitle(display_name),
                                                                 image->GetCurrentSubImage() + 1, loader.extension));
-        if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
-        {
-          *ret = loader.func(path, fp.get(), error);
-          if (!static_cast<bool>(*ret))
-            Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
-
-          return static_cast<bool>(*ret);
-        }
+        if (try_path(loader))
+          return result;
       }
     }
+
+    // Try the file title first inside subchannels (most specific).
+    if (!display_name.empty() && search_in_subchannels(Path::GetFileTitle(display_name)))
+      return result;
   }
 
   // If this fails, try the subchannel directory with serial/title.
-  if (!serial.empty())
+  if (search_in_subchannels(serial) || search_in_subchannels(title))
+    return result;
+
+  // Try save title next if it's different from title.
+  if (!save_title.empty() && save_title != title)
   {
-    for (const FileLoader& loader : loaders)
-    {
-      path = Path::Combine(EmuFolders::Subchannels, TinyString::from_format("{}.{}", serial, loader.extension));
-      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
-      {
-        *ret = loader.func(path, fp.get(), error);
-        if (!static_cast<bool>(*ret))
-          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
-
-        return static_cast<bool>(*ret);
-      }
-    }
-  }
-
-  if (!title.empty())
-  {
-    for (const FileLoader& loader : loaders)
-    {
-      path = Path::Combine(EmuFolders::Subchannels, TinyString::from_format("{}.{}", title, loader.extension));
-      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
-      {
-        *ret = loader.func(path, fp.get(), error);
-        if (!static_cast<bool>(*ret))
-          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
-
-        return static_cast<bool>(*ret);
-      }
-    }
+    if (search_in_subchannels(save_title))
+      return result;
   }
 
   // Nothing.

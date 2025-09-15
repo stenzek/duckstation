@@ -199,6 +199,7 @@ static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique
 static void UpdateRunningGame(const std::string& path, CDImage* image, bool booting);
 static bool CheckForRequiredSubQ(Error* error);
 static bool SwitchDiscFromSet(s32 direction, bool show_osd_message);
+static std::string_view GetCurrentGameSaveTitle();
 
 static void UpdateControllers();
 static void ResetControllers();
@@ -312,7 +313,7 @@ struct ALIGN_TO_CACHE_LINE StateVars
   std::string running_game_title;
   std::string exe_override;
   const GameDatabase::Entry* running_game_entry = nullptr;
-  GameHash running_game_hash;
+  GameHash running_game_hash = 0;
   bool running_game_custom_title = false;
 
   std::atomic_bool startup_cancelled{false};
@@ -1948,8 +1949,11 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
     return false;
 
   // CDROM before GPU, that way we don't modeswitch.
-  if (disc && !CDROM::InsertMedia(disc, disc_region, s_state.running_game_serial, s_state.running_game_title, error))
+  if (disc && !CDROM::InsertMedia(disc, disc_region, s_state.running_game_serial, s_state.running_game_title,
+                                  GetCurrentGameSaveTitle(), error))
+  {
     return false;
+  }
 
   // TODO: Drop class
   g_gpu.Initialize();
@@ -2972,7 +2976,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
            !new_disc->SwitchSubImage(media_subimage_index, error ? error : &local_error)) ||
           (UpdateRunningGame(buffer.media_path, new_disc.get(), false),
            !CDROM::InsertMedia(new_disc, new_disc_region, s_state.running_game_serial, s_state.running_game_title,
-                               error ? error : &local_error)))
+                               GetCurrentGameSaveTitle(), error ? error : &local_error)))
       {
         if (CDROM::HasMedia())
         {
@@ -4097,7 +4101,8 @@ bool System::InsertMedia(const char* path)
   const DiscRegion region =
     image ? GameList::GetCustomRegionForPath(path).value_or(GetRegionForImage(image.get())) : DiscRegion::NonPS1;
   if (!image || (UpdateRunningGame(path, image.get(), false),
-                 !CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, &error)))
+                 !CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
+                                     GetCurrentGameSaveTitle(), &error)))
   {
     Host::AddIconOSDWarning(
       "DiscInserted", ICON_FA_COMPACT_DISC,
@@ -4326,7 +4331,8 @@ bool System::SwitchMediaSubImage(u32 index)
     title = FileSystem::GetDisplayNameFromPath(image->GetPath());
     UpdateRunningGame(image->GetPath(), image.get(), false);
     ReloadMemoryCardsFromGameChange();
-    okay = CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, &error);
+    okay = CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
+                              GetCurrentGameSaveTitle(), &error);
   }
   if (!okay)
   {
@@ -4340,7 +4346,8 @@ bool System::SwitchMediaSubImage(u32 index)
     const DiscRegion region =
       GameList::GetCustomRegionForPath(image->GetPath()).value_or(GetRegionForImage(image.get()));
     UpdateRunningGame(image->GetPath(), image.get(), false);
-    CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, nullptr);
+    CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
+                       GetCurrentGameSaveTitle(), nullptr);
     return false;
   }
 
@@ -4417,6 +4424,17 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   }
 
   return InsertMedia(entry->path.c_str());
+}
+
+std::string_view System::GetCurrentGameSaveTitle()
+{
+  std::string_view ret;
+  if (s_state.running_game_custom_title || !s_state.running_game_entry)
+    ret = s_state.running_game_title;
+  else
+    ret = s_state.running_game_entry->GetSaveTitle();
+
+  return ret;
 }
 
 bool System::SwitchToPreviousDisc(bool display_osd_message)
