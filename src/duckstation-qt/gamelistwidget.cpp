@@ -118,7 +118,8 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if ((image_height < dpr_expected_height) != expand_to_fill)
     yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
 
-  QImage padded_image(dpr_expected_width, dpr_expected_height, expected_format);
+  QImage padded_image(dpr_expected_width, dpr_expected_height,
+                      fill_with_top_left ? expected_format : QImage::Format_ARGB32_Premultiplied);
   padded_image.setDevicePixelRatio(dpr);
   if (fill_with_top_left)
     padded_image.fill(image->pixel(0, 0));
