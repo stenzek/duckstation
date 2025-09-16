@@ -391,7 +391,7 @@
     <string>&amp;Save State</string>
    </property>
    <property name="toolTip">
-    <string>Saves the session state from the selected slot.</string>
+    <string>Saves the session state to the selected slot.</string>
    </property>
   </action>
   <action name="actionExit">
