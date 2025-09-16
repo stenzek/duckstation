@@ -9047,6 +9047,13 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     </message>
 </context>
 <context>
+    <name>GameListListView</name>
+    <message>
+        <source>Unknown</source>
+        <translation>Okänt</translation>
+    </message>
+</context>
+<context>
     <name>GameListModel</name>
     <message>
         <source>Title</source>
@@ -9114,7 +9121,7 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     </message>
     <message>
         <source>Raw Size</source>
-        <translation>Råstorlek</translation>
+        <translation type="vanished">Råstorlek</translation>
     </message>
     <message>
         <source>No Achievements</source>
@@ -9127,6 +9134,10 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 upplåst i hardcore-läget</translation>
+    </message>
+    <message>
+        <source>File Size</source>
+        <translation>Filstorlek</translation>
     </message>
 </context>
 <context>
@@ -12110,7 +12121,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Resume State</source>
-        <translation>Återuppta tillstånd</translation>
+        <translation type="vanished">Återuppta tillstånd</translation>
     </message>
     <message>
         <source>Show VRAM</source>
@@ -12166,7 +12177,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Resumes the last save state created.</source>
-        <translation type="vanished">Återupptar senaste sparade tillståndet som skapats.</translation>
+        <translation>Återupptar senaste sparade tillståndet som skapats.</translation>
     </message>
     <message>
         <source>Memory &amp;Card Editor</source>
@@ -12178,7 +12189,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Merge Multi-Disc Games</source>
-        <translation>Slå samman spel på flera skivor</translation>
+        <translation type="vanished">Slå samman spel på flera skivor</translation>
     </message>
     <message>
         <source>Power Off &amp;Without Saving</source>
@@ -12198,7 +12209,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Show Game Icons (List View)</source>
-        <translation>Visa spelikoner (listvy)</translation>
+        <translation type="vanished">Visa spelikoner (listvy)</translation>
     </message>
     <message>
         <source>Media Ca&amp;pture</source>
@@ -12274,11 +12285,11 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Fullscreen</source>
-        <translation>Helskärm</translation>
+        <translation type="vanished">Helskärm</translation>
     </message>
     <message>
         <source>Resolution Scale</source>
-        <translation>Upplösningsskala</translation>
+        <translation type="vanished">Upplösningsskala</translation>
     </message>
     <message>
         <source>&amp;GitHub Repository...</source>
@@ -12326,7 +12337,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Global State</source>
-        <translation>Globalt tillstånd</translation>
+        <translation type="vanished">Globalt tillstånd</translation>
     </message>
     <message>
         <source>Enable Safe Mode</source>
@@ -12418,7 +12429,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Open Memory Card Directory...</source>
-        <translation>Öppna katalog för minnekort...</translation>
+        <translation type="vanished">Öppna katalog för minnekort...</translation>
     </message>
     <message>
         <source>Open Data Directory...</source>
@@ -12814,11 +12825,11 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Change List Background...</source>
-        <translation>Ändra listbakgrund...</translation>
+        <translation type="vanished">Ändra listbakgrund...</translation>
     </message>
     <message>
         <source>Clear List Background</source>
-        <translation>Töm listbakgrund</translation>
+        <translation type="vanished">Töm listbakgrund</translation>
     </message>
     <message>
         <source>Green Giant</source>
@@ -12842,19 +12853,19 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Resumes the last save state created</source>
-        <translation>Återupptar det senast sparade tillståndet</translation>
+        <translation type="vanished">Återupptar det senast sparade tillståndet</translation>
     </message>
     <message>
         <source>Small Toolbar Icons</source>
-        <translation>Små ikoner på verktygsraden</translation>
+        <translation type="vanished">Små ikoner på verktygsraden</translation>
     </message>
     <message>
         <source>Toolbar Labels</source>
-        <translation>Etiketter för verktygsrad</translation>
+        <translation type="vanished">Etiketter för verktygsrad</translation>
     </message>
     <message>
         <source>Toolbar Labels Beside Icons</source>
-        <translation>Verktygsradsetiketter bredvid ikoner</translation>
+        <translation type="vanished">Verktygsradsetiketter bredvid ikoner</translation>
     </message>
     <message>
         <source>Delete Save States</source>
@@ -12886,15 +12897,15 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Show Titles</source>
-        <translation>Visa titlar</translation>
+        <translation type="vanished">Visa titlar</translation>
     </message>
     <message>
         <source>Show Game Icons</source>
-        <translation>Visa spelikoner</translation>
+        <translation type="vanished">Visa spelikoner</translation>
     </message>
     <message>
         <source>Show Localized Titles</source>
-        <translation>Visa lokalanpassade titlar</translation>
+        <translation type="vanished">Visa lokalanpassade titlar</translation>
     </message>
     <message>
         <source>Top</source>
@@ -12927,6 +12938,366 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Game properties is only available for scanned games.</source>
         <translation>Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
+    </message>
+    <message>
+        <source>Sort B&amp;y</source>
+        <translation>Sortera e&amp;fter</translation>
+    </message>
+    <message>
+        <source>Starts a new session using the selected file.</source>
+        <translation>Startar en ny session med den valda filen.</translation>
+    </message>
+    <message>
+        <source>Starts a new session from a physical disc.</source>
+        <translation>Startar en ny session från en fysisk skiva.</translation>
+    </message>
+    <message>
+        <source>Starts a new session without any disc inserted.</source>
+        <translation>Startar en ny session utan att någon skiva är isatt.</translation>
+    </message>
+    <message>
+        <source>Searches for new games added since the last refresh.</source>
+        <translation>Söker efter nya spel som lagts till sedan senaste uppdateringen.</translation>
+    </message>
+    <message>
+        <source>Rescans all games, discarding any cached information.</source>
+        <translation>Söker igenom alla spel igen och raderar all cachad information.</translation>
+    </message>
+    <message>
+        <source>Ends the current session.</source>
+        <translation>Avslutar den aktuella sessionen.</translation>
+    </message>
+    <message>
+        <source>Restarts the emulated system.</source>
+        <translation>Startar om det emulerade systemet.</translation>
+    </message>
+    <message>
+        <source>Pauses/resumes the session.</source>
+        <translation>Pausar/återupptar sessionen.</translation>
+    </message>
+    <message>
+        <source>Restores the session state from the selected slot.</source>
+        <translation>Återställer sessionens tillstånd från den valda platsen.</translation>
+    </message>
+    <message>
+        <source>Saves the session state from the selected slot.</source>
+        <translation>Sparar sessionens tillstånd till den valda platsen.</translation>
+    </message>
+    <message>
+        <source>Exits the application.</source>
+        <translation>Avslutar applikationen.</translation>
+    </message>
+    <message>
+        <source>Configures where the system firmware is located.</source>
+        <translation>Konfigurerar var systemets fasta programvara finns.</translation>
+    </message>
+    <message>
+        <source>Configures options related to the simulated console.</source>
+        <translation>Konfigurerar alternativ relaterade till den simulerade konsolen.</translation>
+    </message>
+    <message>
+        <source>Configures options related to the simulation.</source>
+        <translation>Konfigurerar alternativ relaterade till simuleringen.</translation>
+    </message>
+    <message>
+        <source>Configures options and bindings for the emulated controllers.</source>
+        <translation>Konfigurerar alternativ och bindningar för de emulerade kontrollerna.</translation>
+    </message>
+    <message>
+        <source>Configures shortcut keys for actions related to the session.</source>
+        <translation>Konfigurerar genvägstangenter för åtgärder relaterade till sessionen.</translation>
+    </message>
+    <message>
+        <source>Configures options related to how the session content is displayed.</source>
+        <translation>Konfigurerar alternativ relaterade till hur sessionens innehåll visas.</translation>
+    </message>
+    <message>
+        <source>Configures post-processing effects applied after rendering the content.</source>
+        <translation>Konfigurerar efterbearbetningseffekter som tillämpas efter rendering av innehållet.</translation>
+    </message>
+    <message>
+        <source>&amp;Fullscreen</source>
+        <translation>&amp;Helskärm</translation>
+    </message>
+    <message>
+        <source>Switches between fullscreen and windowed modes.</source>
+        <translation>Växlar mellan helskärm och fönsterlägen.</translation>
+    </message>
+    <message>
+        <source>Opens a link to the GitHub repository for the application.</source>
+        <translation>Öppnar en länk till GitHub-arkivet för applikationen.</translation>
+    </message>
+    <message>
+        <source>Opens a link to the Discord server for the application.</source>
+        <translation>Öppnar en länk till Discord-servern för applikationen.</translation>
+    </message>
+    <message>
+        <source>Checks if any application updates are available for download.</source>
+        <translation>Kontrollerar om det finns några programuppdateringar tillgängliga att hämta ner.</translation>
+    </message>
+    <message>
+        <source>Shows copyright and license notices for third-party libraries included with the application.</source>
+        <translation>Visar upphovsrätts- och licensmeddelanden för tredjepartsbibliotek som ingår i applikationen.</translation>
+    </message>
+    <message>
+        <source>Displays copyright and license notices for Qt.</source>
+        <translation>Visar upphovsrätts- och licensmeddelanden för Qt.</translation>
+    </message>
+    <message>
+        <source>Displays copyright and license notices for the application.</source>
+        <translation>Visar upphovsrätts- och licensmeddelanden för applikationen.</translation>
+    </message>
+    <message>
+        <source>Swaps the currently-inserted disc with another disc or game.</source>
+        <translation>Byter ut den skiva som för närvarande är isatt mot en annan skiva eller ett annat spel.</translation>
+    </message>
+    <message>
+        <source>Shows the list of cheats available for this game.</source>
+        <translation>Visar listan över fusk tillgängliga för detta spel.</translation>
+    </message>
+    <message>
+        <source>Configures options related to how audio from the content is played.</source>
+        <translation>Konfigurerar alternativ relaterade till hur ljud från innehållet spelas upp.</translation>
+    </message>
+    <message>
+        <source>Configures options related to RetroAchievements.</source>
+        <translation>Konfigurerar alternativ relaterade till RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>Configures the locations where various types of data are saved.</source>
+        <translation>Konfigurerar platserna där olika typer av data sparas.</translation>
+    </message>
+    <message>
+        <source>Configures the locations where the application will search for game files.</source>
+        <translation>Konfigurerar de platser där programmet ska söka efter spelfiler.</translation>
+    </message>
+    <message>
+        <source>Configures options related to the apperance and behavior of the application.</source>
+        <translation>Konfigurerar alternativ relaterade till applikationens utseende och beteende.</translation>
+    </message>
+    <message>
+        <source>Configures advanced options for the application.</source>
+        <translation>Konfigurerar avancerade alternativ för applikationen.</translation>
+    </message>
+    <message>
+        <source>Adds a new directory that will be searched for game files.</source>
+        <translation>Lägger till en ny katalog som kommer att sökas igenom efter spelfiler.</translation>
+    </message>
+    <message>
+        <source>Opens the settings window.</source>
+        <translation>Öppnar inställningsfönstret.</translation>
+    </message>
+    <message>
+        <source>Manually selects the disc image file to switch to.</source>
+        <translation>Väljer manuellt den skivavbildningsfil som ska växlas till.</translation>
+    </message>
+    <message>
+        <source>Switches to a physical disc.</source>
+        <translation>Växlar till en fysisk skiva.</translation>
+    </message>
+    <message>
+        <source>Switches to a disc in the game list.</source>
+        <translation>Växlar till en skiva i spellistan.</translation>
+    </message>
+    <message>
+        <source>Removes the disc from the emulated system.</source>
+        <translation>Tar bort skivan från det emulerade systemet.</translation>
+    </message>
+    <message>
+        <source>Takes a screenshot of the current content.</source>
+        <translation>Tar en skärmbild på aktuellt innehåll.</translation>
+    </message>
+    <message>
+        <source>Configures options related to the emulated memory cards.</source>
+        <translation>Konfigurerar alternativ relaterade till emulerade minneskort.</translation>
+    </message>
+    <message>
+        <source>Controls whether the toolbar is visible.</source>
+        <translation>Kontrollerar om verktygsfältet ska visas.</translation>
+    </message>
+    <message>
+        <source>Loc&amp;k Toolbar</source>
+        <translation>Lå&amp;s verktygsrad</translation>
+    </message>
+    <message>
+        <source>Controls whether the toolbar can be moved.</source>
+        <translation>Kontrollerar om verktygsfältet kan flyttas.</translation>
+    </message>
+    <message>
+        <source>S&amp;mall Toolbar Icons</source>
+        <translation>S&amp;må ikoner på verktygsrad</translation>
+    </message>
+    <message>
+        <source>Controls whether the smaller toolbar icons are displayed.</source>
+        <translation>Kontrollerar om de mindre verktygsfältikonerna visas.</translation>
+    </message>
+    <message>
+        <source>Toolbar L&amp;abels</source>
+        <translation>Eti&amp;ketter för verktygsrad</translation>
+    </message>
+    <message>
+        <source>Controls whether labels are displayed alongside toolbar icons.</source>
+        <translation>Kontrollerar om etiketter visas bredvid verktygsfältets ikoner.</translation>
+    </message>
+    <message>
+        <source>Toolbar Labels &amp;Beside Icons</source>
+        <translation>Verkty&amp;gsfältetiketter bredvid ikoner</translation>
+    </message>
+    <message>
+        <source>Controls whether labels are displayed next to or under toolbar icons.</source>
+        <translation>Kontrollerar om etiketter visas bredvid eller under verktygsfältets ikoner.</translation>
+    </message>
+    <message>
+        <source>Controls whether the status bar is visible.</source>
+        <translation>Kontrollerar om statusfältet är synligt.</translation>
+    </message>
+    <message>
+        <source>Switches to the list of available games in table view.</source>
+        <translation>Växlar till listan över tillgängliga spel i tabellvy.</translation>
+    </message>
+    <message>
+        <source>Switches back to the game currently running.</source>
+        <translation>Växlar tillbaka till det spel som för närvarande körs.</translation>
+    </message>
+    <message>
+        <source>Opens the configuration for the game currently running.</source>
+        <translation>Öppnar konfigurationen för spelet som körs för närvarande.</translation>
+    </message>
+    <message>
+        <source>Opens the memory card editor.</source>
+        <translation>Öppnar minneskortsredigeraren.</translation>
+    </message>
+    <message>
+        <source>Opens the debugger for the emulated CPU.</source>
+        <translation>Öppnar felsökaren för den emulerade CPU:n.</translation>
+    </message>
+    <message>
+        <source>Switches to the list of available games in grid/cover view.</source>
+        <translation>Växlar till listan över tillgängliga spel i rutnät-/omslagsvy.</translation>
+    </message>
+    <message>
+        <source>&amp;Merge Multi-Disc Games</source>
+        <translation>Slå samman spel &amp;på flera skivor</translation>
+    </message>
+    <message>
+        <source>Merges multiple discs that belong to the same game into a single item in the game list.</source>
+        <translation>Slår samman flera skivor som tillhör samma spel till ett enda objekt i spellistan.</translation>
+    </message>
+    <message>
+        <source>Show Titl&amp;es (Grid View)</source>
+        <translation>Visa tit&amp;lar (rutnätsvy)</translation>
+    </message>
+    <message>
+        <source>Shows captions under the game cover in grid view.</source>
+        <translation>Visar bildtexter under spelomslaget i rutnätvy.</translation>
+    </message>
+    <message>
+        <source>Increases the size of game icons or covers.</source>
+        <translation>Ökar storleken på spelikonerna eller omslag.</translation>
+    </message>
+    <message>
+        <source>Decreases the size of game icons or covers.</source>
+        <translation>Minskar storleken på spelikonerna eller omslag.</translation>
+    </message>
+    <message>
+        <source>Invalidates the cache of game covers, allowing new images to be discovered.</source>
+        <translation>Invaliderar cachen för spelomslag, vilket gör det möjligt att upptäcka nya bilder.</translation>
+    </message>
+    <message>
+        <source>Opens the directory containing application data in your file browser.</source>
+        <translation>Öppnar katalogen som innehåller programdata i din filbläddrare.</translation>
+    </message>
+    <message>
+        <source>Ends the current session without the option to save state.</source>
+        <translation>Avslutar den aktuella sessionen utan möjlighet att spara tillståndet.</translation>
+    </message>
+    <message>
+        <source>Opens or closes the controller-based &quot;big picture&quot; mode.</source>
+        <translation>Öppnar eller stänger det kontrollerbaserade ”storbildsläget”.</translation>
+    </message>
+    <message>
+        <source>Opens the cover downloader window.</source>
+        <translation>Öppnar fönstret för hämtningar av omslag.</translation>
+    </message>
+    <message>
+        <source>Opens the memory scanner window.</source>
+        <translation>Öppnar fönstret för minnesskanner.</translation>
+    </message>
+    <message>
+        <source>Show Game Ico&amp;ns (List View)</source>
+        <translation>Visa speliko&amp;ner (listvy)</translation>
+    </message>
+    <message>
+        <source>Shows icons from the memory card of each game in list view.</source>
+        <translation>Visar ikoner från minneskortet för varje spel i listvy.</translation>
+    </message>
+    <message>
+        <source>Starts or stops capture of video and audio from the content.</source>
+        <translation>Startar eller stoppar inspelning av video och ljud från innehållet.</translation>
+    </message>
+    <message>
+        <source>Opens the directory used to store texture replacements.</source>
+        <translation>Öppnar katalogen som används för att lagra texturersättningar.</translation>
+    </message>
+    <message>
+        <source>Invalidates the cache of available replacement textures.</source>
+        <translation>Invaliderar cachen med tillgängliga ersättningstexturer.</translation>
+    </message>
+    <message>
+        <source>Saves the emulated GPU commands to a file that can be later replayed.</source>
+        <translation>Sparar emulerade GPU-kommandona i en fil som senare kan spelas upp igen.</translation>
+    </message>
+    <message>
+        <source>Opens the ISO browser window.</source>
+        <translation>Öppnar fönstret för ISO-bläddraren.</translation>
+    </message>
+    <message>
+        <source>Allows you to freely move the camera in supported games.</source>
+        <translation>Gör det möjligt att fritt flytta kameran i spel som stöder denna funktion.</translation>
+    </message>
+    <message>
+        <source>Allows you to test emulated controller mappings.</source>
+        <translation>Gör det möjligt att testa emulerade kontrollermappningar.</translation>
+    </message>
+    <message>
+        <source>Creates or edits controller presets that can be applied to games.</source>
+        <translation>Skapar eller redigerar förval för kontroller som kan användas i spel.</translation>
+    </message>
+    <message>
+        <source>&amp;Change List Background...</source>
+        <translation>Ä&amp;ndra listbakgrund...</translation>
+    </message>
+    <message>
+        <source>Changes the background image shown in the game list/grid.</source>
+        <translation>Ändrar bakgrundsbilden som visas i spellistan/rutnätet.</translation>
+    </message>
+    <message>
+        <source>Clea&amp;r List Background</source>
+        <translation>Tö&amp;m listbakgrund</translation>
+    </message>
+    <message>
+        <source>Removes the background image shown in the game list/grid.</source>
+        <translation>Tar bort bakgrundsbilden som visas i spellistan/rutnätet.</translation>
+    </message>
+    <message>
+        <source>Refreshes the list of unlocked achievements.</source>
+        <translation>Uppdaterar listan över upplåsta prestationer.</translation>
+    </message>
+    <message>
+        <source>Show Locali&amp;zed Titles</source>
+        <translation>Visa lokalan&amp;passade titlar</translation>
+    </message>
+    <message>
+        <source>Shows titles for games in their native language.</source>
+        <translation>Visar titlar på spel på deras ursprungliga språk.</translation>
+    </message>
+    <message>
+        <source>&amp;Ascending</source>
+        <translation>S&amp;tigande</translation>
+    </message>
+    <message>
+        <source>&amp;Descending</source>
+        <translation>&amp;Fallande</translation>
     </message>
 </context>
 <context>
