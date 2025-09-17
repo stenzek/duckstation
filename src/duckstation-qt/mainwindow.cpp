@@ -2828,6 +2828,7 @@ void MainWindow::changeEvent(QEvent* event)
   {
     QtHost::SetIconThemeFromStyle();
     reloadThemeSpecificImages();
+    emit themeChanged(QtHost::IsDarkApplicationTheme());
   }
 
   QMainWindow::changeEvent(event);

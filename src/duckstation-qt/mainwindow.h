@@ -140,6 +140,9 @@ public:
 
   void onRAIntegrationMenuChanged();
 
+Q_SIGNALS:
+  void themeChanged(bool is_dark_theme);
+
 protected:
   void closeEvent(QCloseEvent* event) override;
   void changeEvent(QEvent* event) override;

@@ -4,6 +4,7 @@
 #include "hotkeysettingswidget.h"
 #include "controllersettingswindow.h"
 #include "inputbindingwidgets.h"
+#include "mainwindow.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
@@ -23,6 +24,7 @@ HotkeySettingsWidget::HotkeySettingsWidget(QWidget* parent, ControllerSettingsWi
   : QWidget(parent), m_dialog(dialog)
 {
   createUi();
+  connect(g_main_window, &MainWindow::themeChanged, this, &HotkeySettingsWidget::onThemeChanged);
 }
 
 HotkeySettingsWidget::~HotkeySettingsWidget() = default;
@@ -49,6 +51,24 @@ void HotkeySettingsWidget::Container::repositionSearchBox()
   const int x = std::max(width() - box_width - box_padding, 0);
   const int h = m_search->height();
   m_search->setGeometry(x, box_padding, box_width, h);
+}
+
+QPalette HotkeySettingsWidget::getLabelPalette(bool is_dark_theme) const
+{
+  QPalette pal = qApp->palette("QLabel");
+  const QColor label_default_color = pal.color(QPalette::Text);
+  const QColor label_color = is_dark_theme ? label_default_color.darker(120) : label_default_color.lighter();
+  pal.setColor(QPalette::Text, label_color);
+  return pal;
+}
+
+QPalette HotkeySettingsWidget::getRowPalette() const
+{
+  // This is super jank. The native theme on MacOS does not set AlternateBase like the Windows/Fusion themes do, but
+  // instead overrides it in QAbstractItemView.
+  QPalette pal = qApp->palette("QWidget");
+  pal.setColor(QPalette::AlternateBase, qApp->palette("QAbstractItemView").color(QPalette::AlternateBase));
+  return pal;
 }
 
 void HotkeySettingsWidget::createUi()
@@ -81,6 +101,8 @@ void HotkeySettingsWidget::createButtons()
   static constexpr int LR_MARGIN = 8;
   static constexpr int TB_MARGIN = 4;
 
+  const QPalette label_palette = getLabelPalette(QtHost::IsDarkApplicationTheme());
+  const QPalette row_palette = getRowPalette();
   const std::vector<const HotkeyInfo*> hotkeys(InputManager::GetHotkeyList());
   for (const HotkeyInfo* hotkey : hotkeys)
   {
@@ -100,11 +122,6 @@ void HotkeySettingsWidget::createButtons()
       label_font.setPixelSize(19);
       label_font.setBold(true);
       cw.label->setFont(label_font);
-      QPalette label_palette = cw.label->palette();
-      const QColor label_default_color = label_palette.color(QPalette::Text);
-      const QColor label_color =
-        QtHost::IsDarkApplicationTheme() ? label_default_color.darker(120) : label_default_color.lighter();
-      label_palette.setColor(QPalette::Text, label_color);
       cw.label->setPalette(label_palette);
       row_layout->addWidget(cw.label);
 
@@ -124,6 +141,7 @@ void HotkeySettingsWidget::createButtons()
     QWidget* const row = new QWidget(m_container);
     row->setAutoFillBackground(true);
     row->setBackgroundRole((((iter->layout->count()) % 2) == 0) ? QPalette::Base : QPalette::AlternateBase);
+    row->setPalette(row_palette);
     iter->layout->addWidget(row);
 
     QHBoxLayout* row_layout = new QHBoxLayout(row);
@@ -161,5 +179,23 @@ void HotkeySettingsWidget::setFilter(const QString& filter)
     }
 
     cw.heading->setVisible(visible_row_count > 0);
+  }
+}
+
+void HotkeySettingsWidget::onThemeChanged(bool is_dark_theme)
+{
+  const QPalette label_palette = getLabelPalette(is_dark_theme);
+  const QPalette row_palette = getRowPalette();
+  for (const CategoryWidgets& cw : m_categories)
+  {
+    cw.label->setPalette(label_palette);
+    cw.line->setPalette(label_palette);
+
+    const int count = cw.layout->count();
+    for (int i = 0; i < count; i++)
+    {
+      if (QWidget* const row = qobject_cast<QWidget*>(cw.layout->itemAt(i)->widget()))
+        row->setPalette(row_palette);
+    }
   }
 }
