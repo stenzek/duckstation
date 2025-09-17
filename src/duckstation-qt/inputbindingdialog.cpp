@@ -16,6 +16,8 @@
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWheelEvent>
 
+#include "moc_inputbindingdialog.cpp"
+
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,
                                        std::vector<std::string> bindings, QWidget* parent)

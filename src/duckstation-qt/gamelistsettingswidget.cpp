@@ -22,6 +22,8 @@
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 
+#include "moc_gamelistsettingswidget.cpp"
+
 GameListSettingsWidget::GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent)
 {
   m_ui.setupUi(this);

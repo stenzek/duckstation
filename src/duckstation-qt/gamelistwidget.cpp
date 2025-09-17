@@ -1466,9 +1466,12 @@ void GameListWidget::cancelRefresh()
   AssertMsg(!m_refresh_thread, "Game list thread should be unreferenced by now");
 }
 
-void GameListWidget::reloadThemeSpecificImages()
+void GameListWidget::onThemeChanged()
 {
   m_model->reloadThemeSpecificImages();
+
+  // Resize columns, since the text size can change with themes.
+  m_list_view->updateFixedColumnWidths();
 }
 
 void GameListWidget::setBackgroundPath(const std::string_view path)
@@ -1856,7 +1859,7 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   QHeaderView* const horizontal_header = horizontalHeader();
   horizontal_header->setHighlightSections(false);
   horizontal_header->setContextMenuPolicy(Qt::CustomContextMenu);
-  setFixedColumnWidths();
+  updateFixedColumnWidths();
 
   horizontal_header->setSectionResizeMode(GameListModel::Column_Title, QHeaderView::Stretch);
   horizontal_header->setSectionResizeMode(GameListModel::Column_FileTitle, QHeaderView::Stretch);
@@ -1921,7 +1924,7 @@ void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, i
   setFixedColumnWidth(column, width);
 }
 
-void GameListListView::setFixedColumnWidths()
+void GameListListView::updateFixedColumnWidths()
 {
   const QFontMetrics fm = fontMetricsForHorizontalHeader();
   const auto width_for = [&fm](const QString& text) { return fm.size(0, text).width(); };

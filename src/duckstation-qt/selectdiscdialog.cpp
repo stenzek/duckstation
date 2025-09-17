@@ -11,6 +11,8 @@
 
 #include <QtWidgets/QTreeWidget>
 
+#include "moc_selectdiscdialog.cpp"
+
 SelectDiscDialog::SelectDiscDialog(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles,
                                    QWidget* parent /* = nullptr */)
   : QDialog(parent)

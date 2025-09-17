@@ -19,6 +19,8 @@
 
 class SetupWizardDialog final : public QDialog
 {
+  Q_OBJECT
+
 public:
   SetupWizardDialog();
   ~SetupWizardDialog();
@@ -74,6 +76,7 @@ private:
 
   void onGraphicsAspectRatioChanged();
   void onAchievementsLoginLogoutClicked();
+  void onAchievementsLoginCompleted();
   void onAchievementsViewProfileClicked();
   void updateAchievementsEnableState();
   void updateAchievementsLoginState();

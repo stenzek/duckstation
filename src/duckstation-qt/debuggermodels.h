@@ -17,6 +17,8 @@
 
 class DebuggerRegistersModel final : public QAbstractListModel
 {
+  Q_OBJECT
+
 public:
   explicit DebuggerRegistersModel(QObject* parent = nullptr);
   ~DebuggerRegistersModel() override;
@@ -36,6 +38,8 @@ private:
 
 class DebuggerStackModel final : public QAbstractListModel
 {
+  Q_OBJECT
+
 public:
   explicit DebuggerStackModel(QObject* parent = nullptr);
   ~DebuggerStackModel() override;
@@ -50,6 +54,8 @@ public:
 
 class DebuggerAddBreakpointDialog final : public QDialog
 {
+  Q_OBJECT
+
 public:
   explicit DebuggerAddBreakpointDialog(QWidget* parent = nullptr);
   ~DebuggerAddBreakpointDialog() override;

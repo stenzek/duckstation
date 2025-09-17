@@ -9,6 +9,8 @@
 
 class ISOBrowserWindow : public QWidget
 {
+  Q_OBJECT
+
 public:
   explicit ISOBrowserWindow(QWidget* parent = nullptr);
   ~ISOBrowserWindow();

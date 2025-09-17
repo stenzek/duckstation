@@ -11,6 +11,8 @@ class SettingsWindow;
 
 class AchievementSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   explicit AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AchievementSettingsWidget();
@@ -23,6 +25,7 @@ private:
   void onAchievementsNotificationDurationSliderChanged();
   void onLeaderboardsNotificationDurationSliderChanged();
   void onLoginLogoutPressed();
+  void onLoginCompleted();
   void onViewProfilePressed();
   void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
 

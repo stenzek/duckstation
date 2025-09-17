@@ -16,6 +16,8 @@ struct ImageInfo;
 
 class BIOSSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   explicit BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~BIOSSettingsWidget();

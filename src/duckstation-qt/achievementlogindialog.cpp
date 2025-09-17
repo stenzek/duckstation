@@ -10,6 +10,8 @@
 
 #include <QtWidgets/QMessageBox>
 
+#include "moc_achievementlogindialog.cpp"
+
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
   : QDialog(parent), m_reason(reason)
 {
@@ -20,6 +22,7 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
   title_font.setPixelSize(20);
   m_ui.titleLabel->setFont(title_font);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+  setAttribute(Qt::WA_DeleteOnClose, true);
 
   // Adjust text if needed based on reason.
   if (reason == Achievements::LoginRequestReason::TokenInvalid)

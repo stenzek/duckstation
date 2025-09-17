@@ -14,6 +14,8 @@
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
+#include "moc_biossettingswidget.cpp"
+
 BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) : QWidget(parent), m_dialog(dialog)
 {
   SettingsInterface* sif = dialog->getSettingsInterface();

@@ -15,6 +15,8 @@ struct DiscSetEntry;
 
 class SelectDiscDialog final : public QDialog
 {
+  Q_OBJECT
+
 public:
   explicit SelectDiscDialog(const GameDatabase::DiscSetEntry* dsentry, bool localized_titles,
                             QWidget* parent = nullptr);

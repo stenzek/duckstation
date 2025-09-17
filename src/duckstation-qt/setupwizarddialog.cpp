@@ -24,6 +24,8 @@
 
 #include <QtWidgets/QMessageBox>
 
+#include "moc_setupwizarddialog.cpp"
+
 SetupWizardDialog::SetupWizardDialog()
 {
   setupUi();
@@ -651,11 +653,13 @@ void SetupWizardDialog::onAchievementsLoginLogoutClicked()
     return;
   }
 
-  AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
-  int res = login.exec();
-  if (res == QDialog::Rejected)
-    return;
+  AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
+  connect(login, &AchievementLoginDialog::accepted, this, &SetupWizardDialog::onAchievementsLoginCompleted);
+  login->show();
+}
 
+void SetupWizardDialog::onAchievementsLoginCompleted()
+{
   updateAchievementsEnableState();
   updateAchievementsLoginState();
 

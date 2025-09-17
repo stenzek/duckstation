@@ -11,6 +11,8 @@ class SettingsWindow;
 
 class FolderSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   FolderSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~FolderSettingsWidget();

@@ -401,10 +401,11 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-  InputBindingDialog binding_dialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings,
-                                    QtUtils::GetRootWidget(this));
-  binding_dialog.exec();
-  reloadBinding();
+  InputBindingDialog* dlg =
+    new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
+  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
+  connect(dlg, &InputBindingDialog::finished, this, &InputBindingWidget::reloadBinding);
+  dlg->show();
 }
 
 InputVibrationBindingWidget::InputVibrationBindingWidget(QWidget* parent)

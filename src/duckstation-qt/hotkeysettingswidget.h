@@ -18,6 +18,8 @@ class ControllerSettingsWindow;
 
 class HotkeySettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   HotkeySettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog);
   ~HotkeySettingsWidget();
@@ -47,10 +49,15 @@ private:
     QLineEdit* m_search;
   };
 
+  QPalette getLabelPalette(bool is_dark_theme) const;
+  QPalette getRowPalette() const;
+
   void createUi();
   void createButtons();
 
   void setFilter(const QString& filter);
+
+  void onThemeChanged(bool is_dark_theme);
 
   ControllerSettingsWindow* m_dialog;
   QScrollArea* m_scroll_area = nullptr;

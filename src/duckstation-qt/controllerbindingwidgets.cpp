@@ -40,6 +40,8 @@
 #include <QtWidgets/QSpinBox>
 #include <algorithm>
 
+#include "moc_controllerbindingwidgets.cpp"
+
 LOG_CHANNEL(Host);
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)

@@ -17,6 +17,8 @@ class SettingsWindow;
 
 class GameSummaryWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent);
   ~GameSummaryWidget();

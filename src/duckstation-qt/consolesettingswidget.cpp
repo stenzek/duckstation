@@ -14,6 +14,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
+#include "moc_consolesettingswidget.cpp"
+
 static constexpr const int CDROM_SPEEDUP_VALUES[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0};
 
 ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent)
@@ -189,15 +191,14 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
          "system requirements.\n\nBy enabling this option you are agreeing to not create any bug reports unless you "
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
 
-    QMessageBox mb(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
-    mb.setWindowModality(Qt::WindowModal);
-    const QAbstractButton* const yes_button =
-      mb.addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
-    mb.addButton(tr("No, take me back to safety."), QMessageBox::NoRole);
-    mb.exec();
-
-    if (mb.clickedButton() != yes_button)
-    {
+    QMessageBox* mb =
+      new QMessageBox(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
+    mb->setAttribute(Qt::WA_DeleteOnClose, true);
+    mb->setWindowModality(Qt::WindowModal);
+    const QPushButton* const yes_button =
+      mb->addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
+    const QPushButton* const no_button = mb->addButton(tr("No, take me back to safety."), QMessageBox::NoRole);
+    connect(no_button, &QPushButton::clicked, this, [this]() {
       QSignalBlocker sb(m_ui.enableCPUClockSpeedControl);
       if (m_dialog->isPerGameSettings())
       {
@@ -210,11 +211,14 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
         m_dialog->setBoolSettingValue("CPU", "OverclockEnable", false);
       }
 
-      return;
-    }
-
-    Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
-    Host::CommitBaseSettingChanges();
+      m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));
+      updateCPUClockSpeedLabel();
+    });
+    connect(yes_button, &QPushButton::clicked, this, []() {
+      Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
+      Host::CommitBaseSettingChanges();
+    });
+    mb->show();
   }
 
   m_ui.cpuClockSpeed->setEnabled(m_dialog->getEffectiveBoolValue("CPU", "OverclockEnable", false));

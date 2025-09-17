@@ -15,6 +15,8 @@ class SettingsWindow;
 
 class GraphicsSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GraphicsSettingsWidget();

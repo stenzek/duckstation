@@ -167,6 +167,8 @@ private:
 
 class GameListListView final : public QTableView
 {
+  Q_OBJECT
+
 public:
   GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
@@ -174,6 +176,7 @@ public:
   QFontMetrics fontMetricsForHorizontalHeader() const;
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
+  void updateFixedColumnWidths();
 
   void adjustIconSize(int delta);
 
@@ -182,7 +185,6 @@ protected:
 
 private:
   void setFixedColumnWidth(int column, int width);
-  void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
@@ -196,6 +198,8 @@ private:
 
 class GameListGridView final : public QListView
 {
+  Q_OBJECT
+
 public:
   GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;
@@ -234,7 +238,6 @@ public:
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();
-  void reloadThemeSpecificImages();
   void setBackgroundPath(const std::string_view path);
   bool hasBackground() const;
 
@@ -274,6 +277,8 @@ private:
 
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
+
+  void onThemeChanged();
 
   void showScaleToolTip();
   void onScaleSliderChanged(int value);

@@ -17,6 +17,8 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTextBrowser>
 
+#include "moc_aboutdialog.cpp"
+
 AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
 {
   m_ui.setupUi(this);

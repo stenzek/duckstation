@@ -16,6 +16,8 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 
+#include "moc_achievementsettingswidget.cpp"
+
 AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
@@ -237,10 +239,13 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
     return;
   }
 
-  AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
-  if (login.exec() == QDialog::Rejected)
-    return;
+  AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
+  connect(login, &AchievementLoginDialog::accepted, this, &AchievementSettingsWidget::onLoginCompleted);
+  login->show();
+}
 
+void AchievementSettingsWidget::onLoginCompleted()
+{
   updateLoginState();
 
   // Login can enable achievements/hardcore.

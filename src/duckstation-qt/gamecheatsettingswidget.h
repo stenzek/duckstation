@@ -30,6 +30,8 @@ class QStandardItemModel;
 
 class GameCheatSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GameCheatSettingsWidget() override;
@@ -88,6 +90,8 @@ private:
 
 class CheatCodeEditorDialog : public QDialog
 {
+  Q_OBJECT
+
 public:
   CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo* code, const QStringList& group_names);
   ~CheatCodeEditorDialog() override;
@@ -113,6 +117,8 @@ private:
 
 class GameCheatCodeChoiceEditorDialog : public QDialog
 {
+  Q_OBJECT
+
 public:
   GameCheatCodeChoiceEditorDialog(QWidget* parent, const Cheats::CodeOptionList& options);
   ~GameCheatCodeChoiceEditorDialog() override;

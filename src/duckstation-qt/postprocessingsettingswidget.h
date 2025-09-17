@@ -16,6 +16,8 @@ class PostProcessingShaderConfigWidget;
 
 class PostProcessingSettingsWidget final : public QTabWidget
 {
+  Q_OBJECT
+
 public:
   PostProcessingSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~PostProcessingSettingsWidget();
@@ -23,6 +25,8 @@ public:
 
 class PostProcessingChainConfigWidget : public QWidget
 {
+  Q_OBJECT
+
   friend PostProcessingShaderConfigWidget;
 
 public:
@@ -60,6 +64,8 @@ private:
 
 class PostProcessingShaderConfigWidget final : public QWidget
 {
+  Q_OBJECT
+
 public:
   PostProcessingShaderConfigWidget(QWidget* parent, PostProcessingChainConfigWidget* widget, const char* section,
                                    u32 stage_index, std::vector<PostProcessing::ShaderOption> options);
@@ -83,6 +89,8 @@ private:
 
 class PostProcessingOverlayConfigWidget final : public QWidget
 {
+  Q_OBJECT
+
 public:
   PostProcessingOverlayConfigWidget(SettingsWindow* dialog, QWidget* parent);
   ~PostProcessingOverlayConfigWidget();

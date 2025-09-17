@@ -20,6 +20,8 @@ class Error;
 
 class MemoryCardEditorWindow : public QWidget
 {
+  Q_OBJECT
+
 public:
   MemoryCardEditorWindow();
   ~MemoryCardEditorWindow();
@@ -104,6 +106,7 @@ private:
 
 class MemoryCardRenameFileDialog final : public QDialog
 {
+  Q_OBJECT
 public:
   MemoryCardRenameFileDialog(QWidget* parent, std::string_view old_name);
   ~MemoryCardRenameFileDialog() override;

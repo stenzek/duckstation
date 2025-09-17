@@ -13,6 +13,8 @@
 
 #include <algorithm>
 
+#include "moc_gamepatchsettingswidget.cpp"
+
 GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::string& author,
                                                const std::string& description, bool disallowed_for_achievements,
                                                bool enabled, SettingsWindow* dialog, QWidget* parent)
