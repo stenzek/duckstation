@@ -48,6 +48,8 @@ struct Entry;
 
 class MainWindow final : public QMainWindow
 {
+  Q_OBJECT
+
 public:
   /// This class is a scoped lock on the system, which prevents it from running while
   /// the object exists. Its purpose is to be used for blocking/modal popup boxes,

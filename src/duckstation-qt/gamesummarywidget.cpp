@@ -25,6 +25,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextBrowser>
 
+#include "moc_gamesummarywidget.cpp"
+
 GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindow* dialog, QWidget* parent)
   : m_dialog(dialog)
 {

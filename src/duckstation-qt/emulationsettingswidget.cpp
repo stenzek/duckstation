@@ -10,6 +10,8 @@
 #include <QtWidgets/QMessageBox>
 #include <limits>
 
+#include "moc_emulationsettingswidget.cpp"
+
 EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {

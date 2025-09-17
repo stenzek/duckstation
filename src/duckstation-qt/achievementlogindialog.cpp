@@ -10,6 +10,8 @@
 
 #include <QtWidgets/QMessageBox>
 
+#include "moc_achievementlogindialog.cpp"
+
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
   : QDialog(parent), m_reason(reason)
 {

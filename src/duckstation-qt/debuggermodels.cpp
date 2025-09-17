@@ -16,6 +16,8 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
+#include "moc_debuggermodels.cpp"
+
 static constexpr int STACK_RANGE = 128;
 static constexpr u32 STACK_VALUE_SIZE = sizeof(u32);
 
@@ -199,9 +201,8 @@ void DebuggerAddBreakpointDialog::okClicked()
 
     if (!ok)
     {
-      QMessageBox::critical(
-        this, qApp->translate("DebuggerWindow", "Error"),
-        qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      QMessageBox::critical(this, tr("Error"),
+                            tr("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
       return;
     }
 

@@ -15,6 +15,8 @@ class SettingsWindow;
 
 class AudioSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~AudioSettingsWidget();

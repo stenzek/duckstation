@@ -55,32 +55,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="emulationsettingswidget.h" />
-    <ClInclude Include="setupwizarddialog.h" />
-    <ClInclude Include="aboutdialog.h" />
-    <ClInclude Include="audiosettingswidget.h" />
-    <ClInclude Include="biossettingswidget.h" />
-    <ClInclude Include="memorycardsettingswidget.h" />
-    <ClInclude Include="hotkeysettingswidget.h" />
-    <ClInclude Include="achievementsettingswidget.h" />
-    <ClInclude Include="foldersettingswidget.h" />
-    <ClInclude Include="gamecheatsettingswidget.h" />
-    <ClInclude Include="gamelistsettingswidget.h" />
-    <ClInclude Include="gamesummarywidget.h" />
-    <ClInclude Include="graphicssettingswidget.h" />
-    <ClInclude Include="inputbindingdialog.h" />
-    <ClInclude Include="isobrowserwindow.h" />
-    <ClInclude Include="logwindow.h" />
-    <ClInclude Include="mainwindow.h" />
-    <ClInclude Include="memorycardeditorwindow.h" />
     <ClInclude Include="memoryviewwidget.h" />
-    <ClInclude Include="postprocessingsettingswidget.h" />
-    <ClInclude Include="selectdiscdialog.h" />
-    <ClInclude Include="debuggermodels.h" />
-    <ClInclude Include="controllerbindingwidgets.h" />
-    <ClInclude Include="achievementlogindialog.h" />
-    <ClInclude Include="gamepatchsettingswidget.h" />
-    <ClInclude Include="consolesettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -91,22 +66,47 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="consolesettingswidget.h" />
+    <QtMoc Include="gamelistsettingswidget.h" />
     <QtMoc Include="gamelistwidget.h" />
+    <QtMoc Include="mainwindow.h" />
     <QtMoc Include="qthost.h" />
     <QtMoc Include="settingswindow.h" />
+    <QtMoc Include="hotkeysettingswidget.h" />
     <QtMoc Include="inputbindingwidgets.h" />
+    <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="displaywidget.h" />
     <QtMoc Include="interfacesettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="advancedsettingswidget.h" />
+    <QtMoc Include="aboutdialog.h" />
+    <QtMoc Include="memorycardsettingswidget.h" />
+    <QtMoc Include="inputbindingdialog.h" />
     <QtMoc Include="autoupdaterwindow.h" />
+    <QtMoc Include="biossettingswidget.h" />
+    <QtMoc Include="memorycardeditorwindow.h" />
+    <QtMoc Include="postprocessingsettingswidget.h" />
+    <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
+    <QtMoc Include="emulationsettingswidget.h" />
+    <QtMoc Include="achievementsettingswidget.h" />
+    <QtMoc Include="achievementlogindialog.h" />
+    <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="gamelistrefreshthread.h" />
+    <QtMoc Include="gamesummarywidget.h" />
+    <QtMoc Include="foldersettingswidget.h" />
     <QtMoc Include="coverdownloadwindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
+    <QtMoc Include="setupwizarddialog.h" />
+    <QtMoc Include="logwindow.h" />
+    <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
+    <QtMoc Include="selectdiscdialog.h" />
+    <QtMoc Include="gamecheatsettingswidget.h" />
+    <QtMoc Include="gamepatchsettingswidget.h" />
+    <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
   </ItemGroup>
   <ItemGroup>

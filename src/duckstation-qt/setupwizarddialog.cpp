@@ -24,6 +24,8 @@
 
 #include <QtWidgets/QMessageBox>
 
+#include "moc_setupwizarddialog.cpp"
+
 SetupWizardDialog::SetupWizardDialog()
 {
   setupUi();

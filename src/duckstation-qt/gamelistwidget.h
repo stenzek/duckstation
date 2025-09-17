@@ -167,6 +167,8 @@ private:
 
 class GameListListView final : public QTableView
 {
+  Q_OBJECT
+
 public:
   GameListListView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListListView() override;
@@ -196,6 +198,8 @@ private:
 
 class GameListGridView final : public QListView
 {
+  Q_OBJECT
+
 public:
   GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;

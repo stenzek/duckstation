@@ -27,6 +27,8 @@
 
 #include <functional>
 
+#include "moc_memorycardsettingswidget.cpp"
+
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
 

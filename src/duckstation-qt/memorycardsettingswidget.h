@@ -21,6 +21,8 @@ class SettingsWindow;
 
 class MemoryCardSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   MemoryCardSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~MemoryCardSettingsWidget();

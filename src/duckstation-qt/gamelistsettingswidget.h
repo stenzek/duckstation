@@ -11,6 +11,8 @@ class SettingsWindow;
 
 class GameListSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   GameListSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GameListSettingsWidget();

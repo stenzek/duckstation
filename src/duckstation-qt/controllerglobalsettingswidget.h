@@ -39,6 +39,8 @@ private:
 
 class ControllerLEDSettingsDialog : public QDialog
 {
+  Q_OBJECT
+
 public:
   ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog);
   ~ControllerLEDSettingsDialog();

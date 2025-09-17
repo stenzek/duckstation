@@ -19,6 +19,8 @@
 
 class SetupWizardDialog final : public QDialog
 {
+  Q_OBJECT
+
 public:
   SetupWizardDialog();
   ~SetupWizardDialog();

@@ -23,6 +23,8 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QStyledItemDelegate>
 
+#include "moc_gamecheatsettingswidget.cpp"
+
 LOG_CHANNEL(Cheats);
 
 namespace {

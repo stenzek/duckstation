@@ -11,6 +11,8 @@ class SettingsWindow;
 
 class EmulationSettingsWidget : public QWidget
 {
+  Q_OBJECT
+
 public:
   explicit EmulationSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~EmulationSettingsWidget();

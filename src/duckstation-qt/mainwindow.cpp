@@ -54,6 +54,8 @@
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
 
+#include "moc_mainwindow.cpp"
+
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <Dbt.h>
