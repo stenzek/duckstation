@@ -176,6 +176,7 @@ public:
   QFontMetrics fontMetricsForHorizontalHeader() const;
   void setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width);
   void setAndSaveColumnHidden(int column, bool hidden);
+  void updateFixedColumnWidths();
 
   void adjustIconSize(int delta);
 
@@ -184,7 +185,6 @@ protected:
 
 private:
   void setFixedColumnWidth(int column, int width);
-  void setFixedColumnWidths();
 
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
