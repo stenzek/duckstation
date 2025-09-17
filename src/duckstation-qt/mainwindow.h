@@ -73,6 +73,7 @@ public:
     QWidget* m_dialog_parent;
     bool m_was_paused;
     bool m_was_fullscreen;
+    bool m_valid;
   };
 
 public:
@@ -214,9 +215,9 @@ private:
   const GameList::Entry* resolveDiscSetEntry(const GameList::Entry* entry,
                                              std::unique_lock<std::recursive_mutex>& lock);
   std::shared_ptr<SystemBootParameters> getSystemBootParameters(std::string file);
-  std::optional<bool> promptForResumeState(const std::string& save_state_path);
+  bool openResumeStateDialog(const std::string& path, const std::string& serial);
   void startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot);
-  void startFileOrChangeDisc(const QString& path);
+  void startFileOrChangeDisc(const QString& qpath);
   void promptForDiscChange(const QString& path);
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,

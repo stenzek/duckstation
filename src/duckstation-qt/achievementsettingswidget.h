@@ -23,6 +23,7 @@ private:
   void onAchievementsNotificationDurationSliderChanged();
   void onLeaderboardsNotificationDurationSliderChanged();
   void onLoginLogoutPressed();
+  void onLoginCompleted();
   void onViewProfilePressed();
   void onAchievementsRefreshed(quint32 id, const QString& game_info_string);
 

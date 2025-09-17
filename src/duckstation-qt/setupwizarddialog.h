@@ -74,6 +74,7 @@ private:
 
   void onGraphicsAspectRatioChanged();
   void onAchievementsLoginLogoutClicked();
+  void onAchievementsLoginCompleted();
   void onAchievementsViewProfileClicked();
   void updateAchievementsEnableState();
   void updateAchievementsLoginState();

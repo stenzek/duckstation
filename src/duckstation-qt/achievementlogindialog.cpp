@@ -20,6 +20,7 @@ AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::Lo
   title_font.setPixelSize(20);
   m_ui.titleLabel->setFont(title_font);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+  setAttribute(Qt::WA_DeleteOnClose, true);
 
   // Adjust text if needed based on reason.
   if (reason == Achievements::LoginRequestReason::TokenInvalid)

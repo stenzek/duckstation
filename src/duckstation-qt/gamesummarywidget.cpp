@@ -373,22 +373,23 @@ void GameSummaryWidget::populateTracksInfo()
 
 void GameSummaryWidget::onCompatibilityCommentsClicked()
 {
-  QDialog dlg(QtUtils::GetRootWidget(this));
-  dlg.resize(QSize(700, 400));
-  dlg.setWindowModality(Qt::WindowModal);
-  dlg.setWindowTitle(tr("Compatibility Report"));
+  QDialog* dlg = new QDialog(QtUtils::GetRootWidget(this));
+  dlg->resize(QSize(700, 400));
+  dlg->setWindowModality(Qt::WindowModal);
+  dlg->setWindowTitle(tr("Compatibility Report"));
+  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
 
-  QVBoxLayout* layout = new QVBoxLayout(&dlg);
+  QVBoxLayout* layout = new QVBoxLayout(dlg);
 
-  QTextBrowser* tb = new QTextBrowser(&dlg);
+  QTextBrowser* tb = new QTextBrowser(dlg);
   tb->setMarkdown(m_compatibility_comments);
   layout->addWidget(tb, 1);
 
-  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
-  connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
+  connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
   layout->addWidget(bb);
 
-  dlg.exec();
+  dlg->show();
 }
 
 void GameSummaryWidget::onInputProfileChanged(int index)

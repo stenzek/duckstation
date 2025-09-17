@@ -1141,51 +1141,47 @@ std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::s
   return ret;
 }
 
-std::optional<bool> MainWindow::promptForResumeState(const std::string& save_state_path)
+bool MainWindow::openResumeStateDialog(const std::string& path, const std::string& serial)
 {
   System::FlushSaveStates();
 
   FILESYSTEM_STAT_DATA sd;
+  std::string save_state_path = System::GetGameSaveStatePath(serial, -1);
   if (save_state_path.empty() || !FileSystem::StatFile(save_state_path.c_str(), &sd))
     return false;
 
-  QMessageBox msgbox(this);
-  msgbox.setIcon(QMessageBox::Question);
-  msgbox.setWindowTitle(tr("Load Resume State"));
-  msgbox.setWindowModality(Qt::WindowModal);
-  msgbox.setText(
+  QMessageBox* msgbox = new QMessageBox(this);
+  msgbox->setIcon(QMessageBox::Question);
+  msgbox->setWindowTitle(tr("Load Resume State"));
+  msgbox->setWindowModality(Qt::WindowModal);
+  msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
+  msgbox->setText(
     tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, "
        "or start from a fresh boot?")
       .arg(QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(sd.ModificationTime))));
 
-  QPushButton* load = msgbox.addButton(tr("Load State"), QMessageBox::AcceptRole);
-  QPushButton* boot = msgbox.addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
-  QPushButton* delboot = msgbox.addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
-  msgbox.addButton(QMessageBox::Cancel);
-  msgbox.setDefaultButton(load);
-  msgbox.exec();
+  QPushButton* load = msgbox->addButton(tr("Load State"), QMessageBox::AcceptRole);
+  QPushButton* boot = msgbox->addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
+  QPushButton* delboot = msgbox->addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
+  msgbox->addButton(QMessageBox::Cancel);
+  msgbox->setDefaultButton(load);
 
-  QAbstractButton* clicked = msgbox.clickedButton();
-  if (load == clicked)
-  {
-    return true;
-  }
-  else if (boot == clicked)
-  {
-    return false;
-  }
-  else if (delboot == clicked)
-  {
+  connect(load, &QPushButton::clicked, [this, path, save_state_path]() mutable {
+    startFile(std::move(path), std::move(save_state_path), std::nullopt);
+  });
+  connect(boot, &QPushButton::clicked,
+          [this, path]() mutable { startFile(std::move(path), std::nullopt, std::nullopt); });
+  connect(delboot, &QPushButton::clicked, [this, path, save_state_path]() mutable {
     if (!FileSystem::DeleteFile(save_state_path.c_str()))
     {
       QMessageBox::critical(this, tr("Error"),
                             tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
     }
+    startFile(std::move(path), std::nullopt, std::nullopt);
+  });
 
-    return false;
-  }
-
-  return std::nullopt;
+  msgbox->show();
+  return true;
 }
 
 void MainWindow::startFile(std::string path, std::optional<std::string> save_path, std::optional<bool> fast_boot)
@@ -1198,34 +1194,24 @@ void MainWindow::startFile(std::string path, std::optional<std::string> save_pat
   g_emu_thread->bootSystem(std::move(params));
 }
 
-void MainWindow::startFileOrChangeDisc(const QString& path)
+void MainWindow::startFileOrChangeDisc(const QString& qpath)
 {
   if (s_system_valid)
   {
     // this is a disc change
-    promptForDiscChange(path);
+    promptForDiscChange(qpath);
     return;
   }
 
-  // try to find the serial for the game
-  std::string path_str(path.toStdString());
-  std::string serial(GameDatabase::GetSerialForPath(path_str.c_str()));
-  std::optional<std::string> save_path;
-  if (!serial.empty())
+  std::string path = qpath.toStdString();
   {
-    std::string resume_path(System::GetGameSaveStatePath(serial.c_str(), -1));
-    std::optional<bool> resume = promptForResumeState(resume_path);
-    if (!resume.has_value())
-    {
-      // cancelled
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryForPath(path);
+    if (entry && !entry->serial.empty() && openResumeStateDialog(entry->path, entry->serial))
       return;
-    }
-    else if (resume.value())
-      save_path = std::move(resume_path);
   }
 
-  // only resume if the option is enabled, and we have one for this game
-  startFile(std::move(path_str), std::move(save_path), std::nullopt);
+  startFile(std::move(path), std::nullopt, std::nullopt);
 }
 
 void MainWindow::promptForDiscChange(const QString& path)
@@ -1557,22 +1543,11 @@ void MainWindow::onGameListEntryActivated()
     return;
   }
 
-  std::optional<std::string> save_path;
-  if (!entry->serial.empty())
-  {
-    std::string resume_path(System::GetGameSaveStatePath(entry->serial.c_str(), -1));
-    std::optional<bool> resume = promptForResumeState(resume_path);
-    if (!resume.has_value())
-    {
-      // cancelled
-      return;
-    }
-    else if (resume.value())
-      save_path = std::move(resume_path);
-  }
+  if (!entry->serial.empty() && openResumeStateDialog(entry->path, entry->serial))
+    return;
 
   // only resume if the option is enabled, and we have one for this game
-  startFile(entry->path, std::move(save_path), std::nullopt);
+  startFile(entry->path, std::nullopt, std::nullopt);
 }
 
 void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
@@ -2991,27 +2966,36 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
     SystemLock lock(pauseAndLockSystem());
 
-    QMessageBox msgbox(lock.getDialogParent());
-    msgbox.setIcon(QMessageBox::Question);
-    msgbox.setWindowTitle(tr("Confirm Shutdown"));
-    msgbox.setWindowModality(Qt::WindowModal);
-    msgbox.setText(tr("Are you sure you want to shut down the virtual machine?"));
+    QMessageBox* msgbox = new QMessageBox(lock.getDialogParent());
+    msgbox->setWindowTitle(tr("Confirm Shutdown"));
+    msgbox->setWindowModality(Qt::WindowModal);
+    msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
+    msgbox->setIcon(QMessageBox::Question);
+    msgbox->setText(tr("Are you sure you want to shut down the virtual machine?"));
 
-    QCheckBox* save_cb = new QCheckBox(tr("Save State For Resume"), &msgbox);
+    QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);
     save_cb->setEnabled(allow_save_to_state);
-    msgbox.setCheckBox(save_cb);
-    msgbox.addButton(QMessageBox::Yes);
-    msgbox.addButton(QMessageBox::No);
-    msgbox.setDefaultButton(QMessageBox::Yes);
-    if (msgbox.exec() != QMessageBox::Yes)
-      return;
+    msgbox->setCheckBox(save_cb);
+    msgbox->addButton(QMessageBox::Yes);
+    msgbox->addButton(QMessageBox::No);
+    msgbox->setDefaultButton(QMessageBox::Yes);
+    connect(msgbox, &QMessageBox::finished, this,
+            [this, lock = std::move(lock), save_cb, allow_save_to_state, check_safety, check_pause, exit_fullscreen_ui,
+             quit_afterwards](int result) mutable {
+              if (result != QMessageBox::Yes)
+                return;
 
-    save_state = save_cb->isChecked();
+              // Don't switch back to fullscreen when we're shutting down anyway.
+              if (!QtHost::IsFullscreenUIStarted())
+                lock.cancelResume();
 
-    // Don't switch back to fullscreen when we're shutting down anyway.
-    if (!QtHost::IsFullscreenUIStarted())
-      lock.cancelResume();
+              const bool save_state = save_cb->isChecked();
+              requestShutdown(false, allow_save_to_state, save_state, check_safety, check_pause, exit_fullscreen_ui,
+                              quit_afterwards);
+            });
+    msgbox->show();
+    return;
   }
 
   // If we're running in batch mode, don't show the main window after shutting down.
@@ -3134,10 +3118,11 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
 
 void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
-  const auto lock = pauseAndLockSystem();
+  auto lock = pauseAndLockSystem();
 
-  AchievementLoginDialog dlg(lock.getDialogParent(), reason);
-  dlg.exec();
+  AchievementLoginDialog* dlg = new AchievementLoginDialog(lock.getDialogParent(), reason);
+  connect(dlg, &AchievementLoginDialog::finished, this, [lock = std::move(lock)]() {});
+  dlg->show();
 }
 
 void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points,
@@ -3335,7 +3320,6 @@ void MainWindow::checkForUpdates(bool display_message)
     {
       QMessageBox mbox(this);
       mbox.setWindowTitle(tr("Updater Error"));
-      mbox.setWindowModality(Qt::WindowModal);
       mbox.setTextFormat(Qt::RichText);
 
       QString message;
@@ -3440,20 +3424,26 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 }
 
 MainWindow::SystemLock::SystemLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
-  : m_dialog_parent(dialog_parent), m_was_paused(was_paused), m_was_fullscreen(was_fullscreen)
+  : m_dialog_parent(dialog_parent), m_was_paused(was_paused), m_was_fullscreen(was_fullscreen), m_valid(true)
 {
 }
 
 MainWindow::SystemLock::SystemLock(SystemLock&& lock)
-  : m_dialog_parent(lock.m_dialog_parent), m_was_paused(lock.m_was_paused), m_was_fullscreen(lock.m_was_fullscreen)
+  : m_dialog_parent(lock.m_dialog_parent), m_was_paused(lock.m_was_paused), m_was_fullscreen(lock.m_was_fullscreen),
+    m_valid(true)
 {
+  Assert(lock.m_valid);
   lock.m_dialog_parent = nullptr;
   lock.m_was_paused = true;
   lock.m_was_fullscreen = false;
+  lock.m_valid = false;
 }
 
 MainWindow::SystemLock::~SystemLock()
 {
+  if (!m_valid)
+    return;
+
   DebugAssert(s_system_locked.load(std::memory_order_relaxed) > 0);
   s_system_locked.fetch_sub(1, std::memory_order_release);
   if (m_was_fullscreen)
