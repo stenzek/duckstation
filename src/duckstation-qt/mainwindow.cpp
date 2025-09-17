@@ -3047,7 +3047,10 @@ void MainWindow::checkForSettingChanges()
   }
 
   LogWindow::updateSettings();
-  updateWindowState();
+
+  // don't refresh window state while setup wizard is running, i.e. no game and hidden
+  if (isVisible() || s_system_valid || s_system_starting)
+    updateWindowState();
 }
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
