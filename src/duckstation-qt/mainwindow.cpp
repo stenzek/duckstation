@@ -2507,6 +2507,7 @@ void MainWindow::connectSignals()
           Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
+  connect(this, &MainWindow::themeChanged, g_emu_thread, &EmuThread::updateFullscreenUITheme);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2595,25 +2596,13 @@ void MainWindow::connectSignals()
   }
 }
 
-void MainWindow::updateTheme()
-{
-  QtHost::UpdateApplicationTheme();
-  g_emu_thread->updateFullscreenUITheme();
-  reloadThemeSpecificImages();
-}
-
-void MainWindow::reloadThemeSpecificImages()
-{
-  m_game_list_widget->reloadThemeSpecificImages();
-}
-
 void MainWindow::onSettingsThemeChanged()
 {
 #ifdef _WIN32
   const QString old_style_name = qApp->style()->name();
 #endif
 
-  updateTheme();
+  QtHost::UpdateApplicationTheme();
 
 #ifdef _WIN32
   // Work around a bug where the background colour of menus is broken when changing to/from the windowsvista theme.
@@ -2827,7 +2816,6 @@ void MainWindow::changeEvent(QEvent* event)
   if (event->type() == QEvent::StyleChange)
   {
     QtHost::SetIconThemeFromStyle();
-    reloadThemeSpecificImages();
     emit themeChanged(QtHost::IsDarkApplicationTheme());
   }
 

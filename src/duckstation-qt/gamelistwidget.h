@@ -238,7 +238,6 @@ public:
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();
-  void reloadThemeSpecificImages();
   void setBackgroundPath(const std::string_view path);
   bool hasBackground() const;
 
@@ -278,6 +277,8 @@ private:
 
   void onRefreshProgress(const QString& status, int current, int total, int entry_count, float time);
   void onRefreshComplete();
+
+  void onThemeChanged();
 
   void showScaleToolTip();
   void onScaleSliderChanged(int value);

@@ -202,8 +202,6 @@ private:
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
-  void updateTheme();
-  void reloadThemeSpecificImages();
   void onSettingsThemeChanged();
   void destroySubWindows();
 

@@ -1466,7 +1466,7 @@ void GameListWidget::cancelRefresh()
   AssertMsg(!m_refresh_thread, "Game list thread should be unreferenced by now");
 }
 
-void GameListWidget::reloadThemeSpecificImages()
+void GameListWidget::onThemeChanged()
 {
   m_model->reloadThemeSpecificImages();
 }
