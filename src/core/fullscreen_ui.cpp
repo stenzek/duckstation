@@ -4050,9 +4050,10 @@ void FullscreenUI::DrawSummarySettingsPage()
 
   if (s_state.game_settings_entry)
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"), s_state.game_settings_entry->title.c_str(), true))
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"),
+                   s_state.game_settings_entry->GetDisplayTitle(s_state.show_localized_titles), true))
       CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_state.game_settings_entry->title);
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), s_state.game_settings_entry->serial.c_str(), true))
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), s_state.game_settings_entry->serial, true))
       CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_state.game_settings_entry->serial);
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Type"),
                    GameList::GetEntryTypeDisplayName(s_state.game_settings_entry->type), true))
@@ -4077,7 +4078,7 @@ void FullscreenUI::DrawSummarySettingsPage()
                             s_state.game_settings_entry->dbentry ? s_state.game_settings_entry->dbentry->compatibility :
                                                                    GameDatabase::CompatibilityRating::Unknown));
     }
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE, "Path"), s_state.game_settings_entry->path.c_str(), true))
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FILE, "Path"), s_state.game_settings_entry->path, true))
     {
       CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_state.game_settings_entry->path);
     }
