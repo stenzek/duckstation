@@ -79,11 +79,11 @@ void QtHost::SetStyleFromSettings()
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor lighterGray(75, 75, 75);
-    const QColor darkGray(53, 53, 53);
-    const QColor gray(128, 128, 128);
-    const QColor black(25, 25, 25);
-    const QColor blue(198, 238, 255);
+    static constexpr QColor lighterGray(75, 75, 75);
+    static constexpr QColor darkGray(53, 53, 53);
+    static constexpr QColor gray(128, 128, 128);
+    static constexpr QColor black(25, 25, 25);
+    static constexpr QColor blue(198, 238, 255);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkGray);
@@ -115,12 +115,12 @@ void QtHost::SetStyleFromSettings()
     // adapted from https://gist.github.com/QuantumCD/6245215
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    // const QColor lighterGray(75, 75, 75);
-    const QColor darkGray(53, 53, 53);
-    const QColor gray(128, 128, 128);
-    const QColor black(25, 25, 25);
-    const QColor blue(198, 238, 255);
-    const QColor blue2(0, 88, 208);
+    // static constexpr QColor lighterGray(75, 75, 75);
+    static constexpr QColor darkGray(53, 53, 53);
+    static constexpr QColor gray(128, 128, 128);
+    static constexpr QColor black(25, 25, 25);
+    static constexpr QColor blue(198, 238, 255);
+    static constexpr QColor blue2(0, 88, 208);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkGray);
@@ -154,12 +154,12 @@ void QtHost::SetStyleFromSettings()
     // Alternative dark theme.
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor gray(150, 150, 150);
-    const QColor royalBlue(29, 41, 81);
-    const QColor darkishBlue(17, 30, 108);
-    const QColor lighterBlue(25, 32, 130);
-    const QColor highlight(36, 93, 218);
-    const QColor link(0, 202, 255);
+    static constexpr QColor gray(150, 150, 150);
+    static constexpr QColor royalBlue(29, 41, 81);
+    static constexpr QColor darkishBlue(17, 30, 108);
+    static constexpr QColor lighterBlue(25, 32, 130);
+    static constexpr QColor highlight(36, 93, 218);
+    static constexpr QColor link(0, 202, 255);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, royalBlue);
@@ -189,10 +189,10 @@ void QtHost::SetStyleFromSettings()
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor darkGray(46, 52, 64);
-    const QColor lighterGray(59, 66, 82);
-    const QColor gray(111, 111, 111);
-    const QColor blue(198, 238, 255);
+    static constexpr QColor darkGray(46, 52, 64);
+    static constexpr QColor lighterGray(59, 66, 82);
+    static constexpr QColor gray(111, 111, 111);
+    static constexpr QColor blue(198, 238, 255);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkGray);
@@ -225,11 +225,11 @@ void QtHost::SetStyleFromSettings()
     // Alternative white theme.
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor black(25, 25, 25);
-    const QColor gray(111, 111, 111);
-    const QColor limerick(176, 196, 0);
-    const QColor brown(135, 100, 50);
-    const QColor pear(213, 222, 46);
+    static constexpr QColor black(25, 25, 25);
+    static constexpr QColor gray(111, 111, 111);
+    static constexpr QColor limerick(176, 196, 0);
+    static constexpr QColor brown(135, 100, 50);
+    static constexpr QColor pear(213, 222, 46);
 
     QPalette greenGiantPalette;
     greenGiantPalette.setColor(QPalette::Window, pear);
@@ -258,11 +258,11 @@ void QtHost::SetStyleFromSettings()
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor black(25, 25, 25);
-    const QColor pink(255, 174, 201);
-    const QColor darkerPink(214, 145, 168);
-    const QColor brightPink(224, 88, 133);
-    const QColor congoPink(255, 127, 121);
+    static constexpr QColor black(25, 25, 25);
+    static constexpr QColor pink(255, 174, 201);
+    static constexpr QColor darkerPink(214, 145, 168);
+    static constexpr QColor brightPink(224, 88, 133);
+    static constexpr QColor congoPink(255, 127, 121);
 
     QPalette PinkyPalsPalette;
     PinkyPalsPalette.setColor(QPalette::Window, pink);
@@ -295,10 +295,10 @@ void QtHost::SetStyleFromSettings()
     // OLED screens.
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor black(0, 0, 0);
-    const QColor gray(25, 25, 25);
-    const QColor lighterGray(75, 75, 75);
-    const QColor blue(198, 238, 255);
+    static constexpr QColor black(0, 0, 0);
+    static constexpr QColor gray(25, 25, 25);
+    static constexpr QColor lighterGray(75, 75, 75);
+    static constexpr QColor blue(198, 238, 255);
 
     QPalette AMOLEDPalette;
     AMOLEDPalette.setColor(QPalette::Window, black);
@@ -329,9 +329,9 @@ void QtHost::SetStyleFromSettings()
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor gray(128, 128, 128);
-    const QColor slate(18, 18, 18);
-    const QColor rubyish(172, 21, 31);
+    static constexpr QColor gray(128, 128, 128);
+    static constexpr QColor slate(18, 18, 18);
+    static constexpr QColor rubyish(172, 21, 31);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, slate);
@@ -361,9 +361,9 @@ void QtHost::SetStyleFromSettings()
   {
     qApp->setStyle(QStyleFactory::create("Fusion"));
 
-    const QColor darkPurple(73, 41, 121);
-    const QColor darkerPurple(53, 29, 87);
-    const QColor gold(250, 207, 0);
+    static constexpr QColor darkPurple(73, 41, 121);
+    static constexpr QColor darkerPurple(53, 29, 87);
+    static constexpr QColor gold(250, 207, 0);
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, darkPurple);
