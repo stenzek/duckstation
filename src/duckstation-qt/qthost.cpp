@@ -2315,7 +2315,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     {
       QMessageBox::warning(
         dialog_parent, QStringLiteral("Translation Error"),
-        QStringLiteral("Failed to find load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
+        QStringLiteral("Failed to load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
       delete base_translator;
     }
     else
@@ -2421,7 +2421,7 @@ const char* Host::GetLanguageName(std::string_view language_code)
 
 std::string_view QtHost::GetSystemLanguage()
 {
-  std::string locname = QLocale::system().name().toStdString();
+  std::string locname = QLocale::system().name(QLocale::TagSeparator::Dash).toStdString();
 
   // Does this match any of our translations?
   for (const auto& [lname, lcode] : Host::GetAvailableLanguageList())
@@ -2513,8 +2513,8 @@ void QtHost::UpdateApplicationLocale(std::string_view language)
   // If the system locale is using the same language, then use the system locale.
   // Otherwise we'll be using that ugly US date format in Straya mate.
   s_state.app_locale = QLocale::system();
-  const std::string system_locale_name = s_state.app_locale.name().toStdString();
-  if (s_state.app_locale.name().startsWith(QLatin1StringView(language), Qt::CaseInsensitive))
+  const QString system_locale_name = s_state.app_locale.name(QLocale::TagSeparator::Dash);
+  if (system_locale_name.startsWith(QLatin1StringView(language), Qt::CaseInsensitive))
   {
     INFO_LOG("Using system locale for {}.", language);
     return;
