@@ -488,13 +488,12 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
         const int pm_width = pm.width();
         const int pm_height = pm.height();
 
-        const qreal scale =
-          (static_cast<qreal>(m_icon_size) / static_cast<qreal>(MEMORY_CARD_ICON_SIZE)) * m_device_pixel_ratio;
+        const qreal scale = (static_cast<qreal>(m_icon_size) / static_cast<qreal>(pm_width)) * m_device_pixel_ratio;
         const int scaled_pm_width = static_cast<int>(static_cast<qreal>(pm_width) * scale);
         const int scaled_pm_height = static_cast<int>(static_cast<qreal>(pm_height) * scale);
 
         if (pm_width != scaled_pm_width || pm_height != scaled_pm_height)
-          QtUtils::ResizeSharpBilinear(pm, std::max(scaled_pm_width, scaled_pm_height), MEMORY_CARD_ICON_SIZE);
+          QtUtils::ResizeSharpBilinear(pm, std::max(scaled_pm_width, scaled_pm_height), pm_width);
 
         pm.setDevicePixelRatio(m_device_pixel_ratio);
 
