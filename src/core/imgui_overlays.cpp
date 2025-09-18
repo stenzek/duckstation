@@ -1089,7 +1089,7 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
   auto format_legend_entry = [](SmallString binding, std::string_view caption) {
     InputManager::PrettifyInputBinding(binding, &ImGuiFullscreen::GetControllerIconMapping);
-    return fmt::format("{} - {}", binding, caption);
+    return fmt::format("{} {}", binding, caption);
   };
 
   s_state.load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
@@ -1189,25 +1189,27 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const st
 void SaveStateSelectorUI::Draw()
 {
   using ImGuiFullscreen::DarkerColor;
+  using ImGuiFullscreen::LayoutScale;
   using ImGuiFullscreen::UIStyle;
 
   static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
   static constexpr float BG_ANIMATION_TIME = 0.15f;
 
   const auto& io = ImGui::GetIO();
-  const float scale = ImGuiManager::GetGlobalScale();
-  const float width = (640.0f * scale);
-  const float height = (450.0f * scale);
+  const float width = LayoutScale(640.0f);
+  const float height = LayoutScale(480.0f);
 
-  const float padding_and_rounding = 18.0f * scale;
+  const float padding_and_rounding = LayoutScale(18.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, LayoutScale(14.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(8.0f, 4.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, LayoutScale(4.0f, 2.0f));
   ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIStyle.PrimaryColor);
   ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
-  ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiManager::GetOSDFontSize(), 0.0f);
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
@@ -1217,8 +1219,10 @@ void SaveStateSelectorUI::Draw()
                      ImGuiWindowFlags_NoScrollbar))
   {
     // Leave 2 lines for the legend
-    const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
-    const float padding = 12.0f * scale;
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float padding = LayoutScale(12.0f);
+    const float legend_margin =
+      UIStyle.MediumFontSize * 2.0f + padding + style.ItemSpacing.y * 2.0f + style.CellPadding.y * 2.0f;
 
     ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
@@ -1226,8 +1230,8 @@ void SaveStateSelectorUI::Draw()
     {
       const s32 current_slot = GetCurrentSlot();
       const bool current_slot_global = IsCurrentSlotGlobal();
-      const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
-      const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
+      const ImVec2 image_size = LayoutScale(128.0f, (128.0f / (4.0f / 3.0f)));
+      const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - style.ScrollbarSize);
       const float item_height = std::floor(image_size.y + padding * 2.0f);
       const float text_indent = image_size.x + padding + padding;
 
@@ -1292,17 +1296,27 @@ void SaveStateSelectorUI::Draw()
 
         ImGui::Indent(text_indent);
 
+        ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
+
         ImGui::TextUnformatted(TinyString::from_format(entry.global ?
                                                          TRANSLATE_FS("SaveStateSelectorUI", "Global Slot {}") :
                                                          TRANSLATE_FS("SaveStateSelectorUI", "Game Slot {}"),
                                                        entry.slot)
                                  .c_str());
-        if (entry.global)
-          ImGui::TextUnformatted(entry.game_details.c_str(), entry.game_details.c_str() + entry.game_details.length());
-        ImGui::TextUnformatted(entry.summary.c_str(), entry.summary.c_str() + entry.summary.length());
-        ImGui::PushFont(ImGuiManager::GetFixedFont(), 0.0f, 0.0f);
-        ImGui::TextUnformatted(entry.filename.data(), entry.filename.data() + entry.filename.length());
         ImGui::PopFont();
+
+        ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.NormalFontWeight);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+
+        if (entry.global)
+          ImGui::TextUnformatted(IMSTR_START_END(entry.game_details));
+
+        ImGui::TextUnformatted(IMSTR_START_END(entry.summary));
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+        ImGui::TextUnformatted(IMSTR_START_END(entry.filename));
+        ImGui::PopFont();
+        ImGui::PopStyleColor(2);
 
         ImGui::Unindent(text_indent);
         ImGui::SetCursorPosY(y_start);
@@ -1316,10 +1330,13 @@ void SaveStateSelectorUI::Draw()
     }
     ImGui::EndChild();
 
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding);
+
     ImGui::BeginChild("##legend", ImVec2(0, 0), false,
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
     {
+      ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
       ImGui::SetCursorPosX(padding);
       if (ImGui::BeginTable("table", 2))
       {
@@ -1334,13 +1351,13 @@ void SaveStateSelectorUI::Draw()
 
         ImGui::EndTable();
       }
+      ImGui::PopFont();
     }
     ImGui::EndChild();
   }
   ImGui::End();
 
-  ImGui::PopFont();
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(6);
   ImGui::PopStyleColor(4);
 
   // auto-close
