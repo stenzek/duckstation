@@ -22,6 +22,11 @@ ToggleButton::ToggleButton(QWidget* parent) : QAbstractButton(parent), m_offset_
 
 ToggleButton::~ToggleButton() = default;
 
+Qt::CheckState ToggleButton::checkState() const
+{
+  return isChecked() ? Qt::Checked : Qt::Unchecked;
+}
+
 QSize ToggleButton::sizeHint() const
 {
   return QSize(50, 25);
@@ -117,6 +122,7 @@ void ToggleButton::leaveEvent(QEvent* event)
 void ToggleButton::checkStateSet()
 {
   QAbstractButton::checkStateSet();
+  emit checkStateChanged(checkState());
   animateToggle(isChecked());
 }
 
@@ -131,6 +137,7 @@ void ToggleButton::animateToggle(bool checked)
 void ToggleButton::nextCheckState()
 {
   QAbstractButton::nextCheckState();
+  emit checkStateChanged(checkState());
   animateToggle(isChecked());
   update();
 }

@@ -15,6 +15,8 @@ public:
   explicit ToggleButton(QWidget* parent = nullptr);
   ~ToggleButton() override;
 
+  Qt::CheckState checkState() const;
+
   QSize sizeHint() const override;
 
 Q_SIGNALS:
