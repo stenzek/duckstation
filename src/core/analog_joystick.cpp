@@ -28,7 +28,7 @@ AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
 
 AnalogJoystick::~AnalogJoystick()
 {
-  InputManager::SetGamepadAnalogLED(m_index, false);
+  InputManager::SetPadModeLED(m_index, false);
 }
 
 ControllerType AnalogJoystick::GetType() const
@@ -44,7 +44,7 @@ bool AnalogJoystick::InAnalogMode() const
 void AnalogJoystick::Reset()
 {
   m_transfer_state = TransferState::Idle;
-  InputManager::SetGamepadAnalogLED(m_index, m_analog_mode);
+  InputManager::SetPadModeLED(m_index, m_analog_mode);
 }
 
 bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
@@ -245,7 +245,7 @@ void AnalogJoystick::ToggleAnalogMode()
 {
   m_analog_mode = !m_analog_mode;
 
-  InputManager::SetGamepadAnalogLED(m_index, m_analog_mode);
+  InputManager::SetPadModeLED(m_index, m_analog_mode);
 
   INFO_LOG("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddIconOSDMessage(
@@ -356,6 +356,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(AnalogJoystick::Button::Count) + static_cast<u32>(halfaxis),                                       \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
+#define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogJoystick", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogJoystick::Button::Up, GenericInputBinding::DPadUp),
@@ -384,10 +386,13 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("RRight", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, AnalogJoystick::HalfAxis::RRight, GenericInputBinding::RightStickRight),
   AXIS("RDown", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, AnalogJoystick::HalfAxis::RDown, GenericInputBinding::RightStickDown),
   AXIS("RUp", TRANSLATE_NOOP("AnalogJoystick", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, AnalogJoystick::HalfAxis::RUp, GenericInputBinding::RightStickUp),
+
+  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogJoystick", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef AXIS
 #undef BUTTON
+#undef MODE_LED
 };
 
 static constexpr const char* s_invert_settings[] = {

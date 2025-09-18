@@ -38,7 +38,7 @@ NeGconRumble::NeGconRumble(u32 index) : Controller(index)
 
 NeGconRumble::~NeGconRumble()
 {
-  InputManager::SetGamepadAnalogLED(m_index, false);
+  InputManager::SetPadModeLED(m_index, false);
 }
 
 ControllerType NeGconRumble::GetType() const
@@ -238,7 +238,7 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
   if (m_analog_mode == enabled)
     return;
 
-  InputManager::SetGamepadAnalogLED(m_index, enabled);
+  InputManager::SetPadModeLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)
@@ -730,6 +730,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    genb}
 #define MOTOR(name, display_name, icon_name, index, genb)                                                              \
   {name, display_name, icon_name, index, InputBindingInfo::Type::Motor, genb}
+#define MODE_LED(name, display_name, icon_name, index, genb)                                                                  \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
@@ -749,6 +751,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   
   MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, 0, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, 1, GenericInputBinding::SmallMotor),
+
+  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogController", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef MOTOR

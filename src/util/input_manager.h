@@ -53,6 +53,7 @@ enum class InputSubclass : u32
   ControllerHat = 2,
   ControllerMotor = 3,
   ControllerHaptic = 4,
+  ControllerModeLED = 5,
 
   SensorAccelerometer = 0,
 };
@@ -339,8 +340,8 @@ void RemoveHook();
 /// Returns true if there is an interception hook present.
 bool HasHook();
 
-void SetGamepadAnalogLED(u32 player_index, bool enabled);
-void SyncInputDeviceAnalogLEDOnConnection(std::string_view identifier);
+void SetPadModeLED(u32 pad_index, bool enabled);
+void SyncInputDeviceModeLEDOnConnection(std::string_view identifier);
 
 /// Internal method used by pads to dispatch vibration updates to input sources.
 /// Intensity is normalized from 0 to 1.

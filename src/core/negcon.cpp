@@ -29,7 +29,7 @@ NeGcon::NeGcon(u32 index) : Controller(index)
 
 NeGcon::~NeGcon()
 {
-  InputManager::SetGamepadAnalogLED(m_index, false);
+  InputManager::SetPadModeLED(m_index, false);
 }
 
 ControllerType NeGcon::GetType() const
@@ -46,7 +46,7 @@ bool NeGcon::InAnalogMode() const
 void NeGcon::Reset()
 {
   m_transfer_state = TransferState::Idle;
-  InputManager::SetGamepadAnalogLED(m_index, true);
+  InputManager::SetPadModeLED(m_index, true);
 }
 
 bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
@@ -281,6 +281,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(NeGcon::Button::Count) + static_cast<u32>(halfaxis),                                               \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
+#define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, NeGcon::Button::Up, GenericInputBinding::DPadUp),
@@ -296,10 +298,13 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, NeGcon::Button::R, GenericInputBinding::R1),
   AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
   AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
+
+  MODE_LED("ModeLED", TRANSLATE_NOOP("NeGcon", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef AXIS
 #undef BUTTON
+#undef MODE_LED
 };
 
 static const SettingInfo s_settings[] = {

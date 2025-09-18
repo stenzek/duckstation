@@ -5,10 +5,6 @@
 #include "imgui_manager.h"
 #include "input_source.h"
 
-#ifdef ENABLE_SDL
-#include "sdl_input_source.h"
-#endif
-
 #include "core/controller.h"
 #include "core/host.h"
 #include "core/system.h"
@@ -90,6 +86,19 @@ struct PadVibrationBinding
   {
     return std::max(motors[0].last_intensity, motors[1].last_intensity);
   }
+};
+
+struct PadModeLEDBinding
+{
+  struct ModeLED
+  {
+    InputBindingKey binding;
+    InputSource* source;
+    bool enabled;
+  };
+
+  ModeLED led;
+  u32 pad_index = 0;
 };
 
 struct MacroButton
@@ -183,6 +192,9 @@ using BindingMap = std::unordered_multimap<InputBindingKey, std::shared_ptr<Inpu
 /// This is an array of all the pad vibration bindings, indexed by pad index.
 using VibrationBindingArray = std::vector<PadVibrationBinding>;
 
+/// This is an array of all the pad Mode LED bindings, indexed by pad index.
+using ModeLEDBindingArray = std::vector<PadModeLEDBinding>;
+
 /// Callback for pointer movement events. The key is the pointer key, and the value is the axis value.
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 
@@ -192,6 +204,7 @@ struct ALIGN_TO_CACHE_LINE State
 {
   BindingMap binding_map;
   VibrationBindingArray pad_vibration_array;
+  ModeLEDBindingArray pad_mode_led_array;
   std::vector<MacroButton> macro_buttons;
   std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
   std::recursive_mutex mutex;
@@ -956,6 +969,8 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
   bool vibration_binding_valid = false;
   PadVibrationBinding vibration_binding = {};
   vibration_binding.pad_index = pad_index;
+  PadModeLEDBinding led_binding = {};
+  led_binding.pad_index = pad_index;
 
   for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
   {
@@ -1030,6 +1045,14 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
                                    &vibration_binding.motors[bi.bind_index].source);
       }
       break;
+
+      case InputBindingInfo::Type::ModeLED:
+        if (bindings.empty())
+          continue;
+
+        if (ParseBindingAndGetSource(bindings.front(), &led_binding.led.binding, &led_binding.led.source))
+          s_state.pad_mode_led_array.push_back(std::move(led_binding));
+        break;
 
       case InputBindingInfo::Type::Pointer:
       case InputBindingInfo::Type::Device:
@@ -1768,9 +1791,8 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   Host::OnInputDeviceConnected(key, identifier, device_name);
-  SyncInputDeviceAnalogLEDOnConnection(identifier);
+  SyncInputDeviceModeLEDOnConnection(identifier);
 }
-
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
@@ -1792,68 +1814,49 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 }
 
 // ------------------------------------------------------------------------
-// Analog LED
+// Analog Mode LED
 // ------------------------------------------------------------------------
 
-void InputManager::SetGamepadAnalogLED(u32 player_index, bool enabled)
+void InputManager::SetPadModeLED(u32 pad_index, bool enabled)
 {
-#ifdef ENABLE_SDL
-  auto si = Host::GetSettingsInterface();
-  if (!si)
-    return;
-
-  bool sdl = si->GetBoolValue("InputSources", "SDL");
-  bool sdl_ps5_mic_mute_led_for_analog_mode = si->GetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode");
-  if (!sdl || !sdl_ps5_mic_mute_led_for_analog_mode)
-    return;
-
-  SDL_Gamepad* gamepad = SDL_GetGamepadFromPlayerIndex(player_index);
-  if (!gamepad)
+  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
   {
-    ERROR_LOG("Could not get Gamepad for the player index {}: {}", player_index, SDL_GetError());
-    return;
-  }
+    if (pad.pad_index != pad_index)
+      continue;
 
-  if (SDLInputSource::IsPS5Controller(gamepad))
-    SDLInputSource::EnablePS5MicMuteLED(gamepad, enabled);
-#endif
+    PadModeLEDBinding::ModeLED& led = pad.led;
+
+    if (led.enabled == enabled)
+      continue;
+
+    led.enabled = enabled;
+    led.source->UpdateModeLEDState(led.binding, enabled);
+  }
 }
 
-void InputManager::SyncInputDeviceAnalogLEDOnConnection(std::string_view identifier)
+void InputManager::SyncInputDeviceModeLEDOnConnection(std::string_view identifier)
 {
-#ifdef ENABLE_SDL
-  // This should reenable the Mic Mute LED for the DualSense on connection if Analog mode is ON.
-  //
-  // When reconnecting the controller, it works fine for both USB and Bluetooth.
-  //
-  // However, when toggling the "Use DualSense Mic Mute LED as Analog LED" from OFF to ON,
-  // when a game is running and Analog mode is ON:
-  // - It works fine for USB.
-  // - On Bluetooth this kinda works for a brief moment. The Mic Mute LED turns ON for a split
-  //   second before turning OFF.
-  //
-  // SDL Bug? Is it getting overriden somewhere after this function? Where?
-  //
-  // Nonetheless, after the connection is complete over Bluetooth, manually toggling Analog mode ON/OFF
-  // updates the Mic Mute LED ON/OFF just fine.
-  SDLInputSource* sdl_source = static_cast<SDLInputSource*>(GetInputSourceInterface(InputSourceType::SDL));
-  if (!sdl_source)
+  const std::optional<s32> player_id = StringUtil::FromChars<s32>(identifier.substr(identifier.find('-') + 1));
+  if (!player_id.has_value() || player_id.value() < 0)
     return;
 
-  SDL_Joystick* joystick = sdl_source->GetJoystickForDevice(identifier);
-  if (!joystick)
-    return;
-
-  int player_index = SDL_GetJoystickPlayerIndex(joystick);
-  if (player_index == -1)
-    return;
-
-  Controller* controller = System::GetController(player_index);
-  if (controller)
+  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
   {
-    SetGamepadAnalogLED(player_index, controller->InAnalogMode());
+    PadModeLEDBinding::ModeLED& led = pad.led;
+
+    if (!led.source->ContainsDevice(identifier))
+      continue;
+
+    if (led.binding.source_index == static_cast<u32>(player_id.value()))
+    {
+      Controller* controller = System::GetController(pad.pad_index);
+      if (!controller)
+        return;
+
+      led.enabled = controller->InAnalogMode();
+      led.source->UpdateModeLEDState(led.binding, led.enabled);
+    }
   }
-#endif
 }
 
 // ------------------------------------------------------------------------
@@ -2174,6 +2177,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
+  s_state.pad_mode_led_array.clear();
   s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
 

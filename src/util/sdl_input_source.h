@@ -38,6 +38,8 @@ public:
   void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                         float small_intensity) override;
 
+  void UpdateModeLEDState(InputBindingKey key, bool enabled) override;
+
   bool ContainsDevice(std::string_view device) const override;
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;
   TinyString ConvertKeyToString(InputBindingKey key) override;
@@ -75,6 +77,8 @@ private:
     float last_touch_y;
     bool use_gamepad_rumble : 1;
     bool has_led : 1;
+    bool mode_led : 1;
+    bool has_mode_led : 1;
 
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
     std::vector<bool> joy_button_used_in_gc;
@@ -105,6 +109,7 @@ private:
   bool HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev);
   bool HandleJoystickHatEvent(const SDL_JoyHatEvent* ev);
   void SendRumbleUpdate(ControllerData* cd);
+  void SendModeLEDUpdate(ControllerData* cd);
 
   ControllerDataVector m_controllers;
 
