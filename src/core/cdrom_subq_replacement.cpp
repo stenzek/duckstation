@@ -149,8 +149,7 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
     return false;
   };
 
-  const auto search_in_subchannels = [&path, &image_path, &display_name, &ret, &error,
-                                      &try_path](std::string_view base_name) -> bool {
+  const auto search_in_subchannels = [&path, &try_path](std::string_view base_name) -> bool {
     if (base_name.empty())
       return false;
 
