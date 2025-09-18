@@ -147,6 +147,80 @@ void QtHost::SetStyleFromSettings()
     qApp->setStyleSheet(QString());
     qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
   }
+  else if (theme == "darkerfusion")
+  {
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
+    static constexpr QColor window_color(36, 36, 36);
+    static constexpr QColor base_color(43, 43, 43);
+    static constexpr QColor button_color(40, 40, 40); // qt makes this lighter
+    static constexpr QColor text(255, 255, 255);
+    static constexpr QColor highlight_background(65, 65, 65);
+    static constexpr QColor highlight_text(255, 255, 255);
+    static constexpr QColor disabled_text(200, 200, 200);
+    static constexpr QColor placeholder_text(200, 200, 200);
+    static constexpr QColor link_text(198, 238, 255);
+
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, window_color);
+    darkPalette.setColor(QPalette::WindowText, text);
+    darkPalette.setColor(QPalette::Base, base_color);
+    darkPalette.setColor(QPalette::AlternateBase, window_color);
+    darkPalette.setColor(QPalette::ToolTipBase, window_color);
+    darkPalette.setColor(QPalette::ToolTipText, text);
+    darkPalette.setColor(QPalette::Text, text);
+    darkPalette.setColor(QPalette::Button, button_color);
+    darkPalette.setColor(QPalette::ButtonText, text);
+    darkPalette.setColor(QPalette::Link, link_text);
+    darkPalette.setColor(QPalette::Highlight, highlight_background);
+    darkPalette.setColor(QPalette::HighlightedText, highlight_text);
+    darkPalette.setColor(QPalette::PlaceholderText, placeholder_text);
+
+    darkPalette.setColor(QPalette::Active, QPalette::Button, button_color);
+    darkPalette.setColor(QPalette::Disabled, QPalette::ButtonText, disabled_text);
+    darkPalette.setColor(QPalette::Disabled, QPalette::WindowText, disabled_text);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Text, disabled_text);
+    darkPalette.setColor(QPalette::Disabled, QPalette::Light, window_color);
+
+    qApp->setPalette(darkPalette);
+    qApp->setStyleSheet(QString());
+    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+
+    // menus are by far the ugliest part of fusion, so we style them manually
+    const QString stylesheet = QStringLiteral(R"(
+QMenu {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 6px 10px;
+    background-color: #232323;
+}
+QMenu::item {
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+QMenu::item:selected {
+    background-color: #414141;
+}
+QMenuBar::item {
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+QMenuBar::item:selected, QMenuBar::item:pressed {
+    background: #414141;
+    border-radius: 4px;
+}
+QToolTip {
+    color: #ffffff;
+    background-color: #232323;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 2px;
+}
+    )");
+
+    qApp->setStyleSheet(stylesheet);
+
+  }
   else if (theme == "cobaltsky")
   {
     // Custom palette by KamFretoZ, A soothing deep royal blue

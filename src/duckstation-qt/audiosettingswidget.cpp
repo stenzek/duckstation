@@ -138,7 +138,7 @@ void AudioSettingsWidget::updateDriverNames()
   const AudioBackend backend = getEffectiveBackend();
   std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
 
-  m_ui.driver->disconnect();
+  SettingWidgetBinder::DisconnectWidget(m_ui.driver);
   m_ui.driver->clear();
   if (names.empty())
   {
