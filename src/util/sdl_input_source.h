@@ -52,7 +52,7 @@ public:
   static u32 GetRGBForPlayerId(const SettingsInterface& si, u32 player_id);
   static u32 ParseRGBForPlayerId(std::string_view str, u32 player_id);
 
-  static bool isPS5Controller(SDL_Gamepad* gp);
+  static bool IsPS5Controller(SDL_Gamepad* gp);
   static void EnablePS5MicMuteLED(SDL_Gamepad* gp, bool enabled);
 
   static std::span<const SettingInfo> GetAdvancedSettingsInfo();

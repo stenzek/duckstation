@@ -1814,7 +1814,7 @@ void InputManager::SetGamepadAnalogLED(u32 player_index, bool enabled)
     return;
   }
 
-  if (SDLInputSource::isPS5Controller(gamepad))
+  if (SDLInputSource::IsPS5Controller(gamepad))
     SDLInputSource::EnablePS5MicMuteLED(gamepad, enabled);
 #endif
 }

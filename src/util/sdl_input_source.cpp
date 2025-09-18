@@ -340,14 +340,15 @@ u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id)
   return color;
 }
 
-bool SDLInputSource::isPS5Controller(SDL_Gamepad* gp)
+bool SDLInputSource::IsPS5Controller(SDL_Gamepad* gp)
 {
   const char* supported_controllers[] = {"DualSense Wireless Controller", "DualSense Edge Wireless Controller"};
+  const char* gamepad_name = SDL_GetGamepadName(gp);
 
   bool supported = false;
   for (auto& supported_controller : supported_controllers)
   {
-    supported |= (strcmp(supported_controller, SDL_GetGamepadName(gp)) == 0);
+    supported |= (strcmp(supported_controller, gamepad_name) == 0);
     if (supported)
       break;
   }
