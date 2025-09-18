@@ -40,14 +40,15 @@ p, li { white-space: pre-wrap; }
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">%1</p>
 <p style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-weight:600;">%2</span>:</p>
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  Connor McLaughlin &lt;stenzek@gmail.com&gt;</p>
-<p style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  and other <a href="https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md">contributors</a></p>
-<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">%3 <a href="https://icons8.com/icon/74847/platforms.undefined.short-title"><span style=" text-decoration: underline; color:#0057ae;">icons8</span></a></p>
-<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><a href="https://github.com/stenzek/duckstation/blob/master/LICENSE"><span style=" text-decoration: underline; color:#0057ae;">%4</span></a> | <a href="https://github.com/stenzek/duckstation"><span style=" text-decoration: underline; color:#0057ae;">GitHub</span></a> | <a href="https://www.duckstation.org/discord.html"><span style=" text-decoration: underline; color:#0057ae;">Discord</span></a></p></body></html>
+<p style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  <a href="https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md"><span style=" text-decoration: none;">%3</span></a></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">%4 <a href="https://icons8.com/icon/74847/platforms.undefined.short-title"><span style=" text-decoration: none;">icons8</span></a></p>
+<p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><a href="https://github.com/stenzek/duckstation/blob/master/LICENSE"><span style=" text-decoration: none;">%5</span></a> | <a href="https://github.com/stenzek/duckstation"><span style=" text-decoration: none;">GitHub</span></a> | <a href="https://www.duckstation.org/discord.html"><span style=" text-decoration: none;">Discord</span></a></p></body></html>
 )")
                               .arg(tr("DuckStation is a free simulator/emulator of the Sony PlayStation<span "
                                       "style=\"vertical-align:super;\">TM</span> console, focusing on playability, "
                                       "speed, and long-term maintainability."))
                               .arg(tr("Authors"))
+                              .arg(tr("and other contributors"))
                               .arg(tr("Icon by"))
                               .arg(tr("License")));
 }
