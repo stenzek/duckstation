@@ -58,17 +58,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="fastForwardBoot">
-          <property name="text">
-           <string>Fast Forward Boot</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="fastForwardMemoryCardAccess">
           <property name="text">
            <string>Fast Forward Memory Card Access</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="fastForwardBoot">
+          <property name="text">
+           <string>Fast Forward Boot</string>
           </property>
          </widget>
         </item>
@@ -90,15 +90,15 @@
       <string>CPU Emulation</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cpuExecutionMode"/>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="recompilerICache">
+      <item row="0" column="0">
+       <widget class="QLabel" name="cpuExecutionModeLabel">
         <property name="text">
-         <string>Enable Recompiler ICache</string>
+         <string>Execution Mode:</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cpuExecutionMode"/>
       </item>
       <item row="1" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout">
@@ -134,13 +134,6 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="cpuExecutionModeLabel">
-        <property name="text">
-         <string>Execution Mode:</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0" colspan="2">
        <widget class="QSlider" name="cpuClockSpeed">
         <property name="minimum">
@@ -160,6 +153,13 @@
         </property>
         <property name="tickInterval">
          <number>50</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="recompilerICache">
+        <property name="text">
+         <string>Enable Recompiler ICache</string>
         </property>
        </widget>
       </item>

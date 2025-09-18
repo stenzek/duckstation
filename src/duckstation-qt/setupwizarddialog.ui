@@ -258,6 +258,13 @@
          <item row="1" column="1">
           <widget class="QComboBox" name="theme"/>
          </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QCheckBox" name="autoUpdateEnabled">
+           <property name="text">
+            <string>Enable Automatic Updates</string>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="1">
           <spacer name="verticalSpacer_3">
            <property name="orientation">
@@ -270,13 +277,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QCheckBox" name="autoUpdateEnabled">
-           <property name="text">
-            <string>Enable Automatic Updates</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -576,6 +576,13 @@
           <string>Controller Port 1</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Controller Type:</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="controller1Type"/>
           </item>
@@ -583,13 +590,6 @@
            <widget class="QLabel" name="label_12">
             <property name="text">
              <string>Controller Mapped To:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>Controller Type:</string>
             </property>
            </widget>
           </item>
@@ -881,6 +881,16 @@
            </property>
           </widget>
          </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_22">
+           <property name="text">
+            <string>FMV Scaling:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="displayScaling24Bit"/>
+         </item>
          <item row="8" column="0" colspan="2">
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
@@ -904,16 +914,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-         <item row="7" column="0">
-          <widget class="QLabel" name="label_22">
-           <property name="text">
-            <string>FMV Scaling:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="1">
-          <widget class="QComboBox" name="displayScaling24Bit"/>
          </item>
         </layout>
        </item>

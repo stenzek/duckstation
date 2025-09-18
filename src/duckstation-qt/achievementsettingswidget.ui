@@ -29,13 +29,6 @@
       <string>Settings</string>
      </property>
      <layout class="QGridLayout" name="settingsLayout">
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="spectatorMode">
-        <property name="text">
-         <string>Enable Spectator Mode</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="enable">
         <property name="text">
@@ -43,10 +36,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="unofficialAchievements">
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="hardcoreMode">
         <property name="text">
-         <string>Test Unofficial Achievements</string>
+         <string>Enable Hardcore Mode</string>
         </property>
        </widget>
       </item>
@@ -57,10 +50,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="hardcoreMode">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="spectatorMode">
         <property name="text">
-         <string>Enable Hardcore Mode</string>
+         <string>Enable Spectator Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="unofficialAchievements">
+        <property name="text">
+         <string>Test Unofficial Achievements</string>
         </property>
        </widget>
       </item>
@@ -80,10 +80,10 @@
       <string>Notifications</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,1">
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="leaderboardNotifications">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="achievementNotifications">
         <property name="text">
-         <string>Show Leaderboard Notifications</string>
+         <string>Show Achievement Notifications</string>
         </property>
        </widget>
       </item>
@@ -126,10 +126,10 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="achievementNotifications">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="leaderboardNotifications">
         <property name="text">
-         <string>Show Achievement Notifications</string>
+         <string>Show Leaderboard Notifications</string>
         </property>
        </widget>
       </item>
@@ -172,17 +172,17 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="soundEffects">
-        <property name="text">
-         <string>Enable Sound Effects</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="leaderboardTrackers">
         <property name="text">
          <string>Show Leaderboard Trackers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="soundEffects">
+        <property name="text">
+         <string>Enable Sound Effects</string>
         </property>
        </widget>
       </item>
@@ -202,15 +202,15 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="challengeIndicatorMode"/>
+      </item>
       <item row="1" column="0">
        <widget class="QCheckBox" name="progressIndicators">
         <property name="text">
          <string>Show Progress Indicators</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="challengeIndicatorMode"/>
       </item>
      </layout>
     </widget>

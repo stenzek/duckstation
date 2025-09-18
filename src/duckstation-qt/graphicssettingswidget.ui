@@ -207,15 +207,15 @@
             </item>
            </layout>
           </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="displayCropMode"/>
-          </item>
           <item row="7" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Crop:</string>
             </property>
            </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="displayCropMode"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel" name="label_8">
@@ -239,7 +239,21 @@
           </item>
           <item row="10" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="2" column="0">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="pgxpEnable">
+              <property name="text">
+               <string>PGXP Geometry Correction</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="pgxpDepthBuffer">
+              <property name="text">
+               <string>PGXP Depth Buffer (Low Compatibility)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
              <widget class="QCheckBox" name="force43For24Bit">
               <property name="text">
                <string>Force 4:3 For FMVs</string>
@@ -247,27 +261,13 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QCheckBox" name="pgxpDepthBuffer">
-              <property name="text">
-               <string>PGXP Depth Buffer (Low Compatibility)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
              <widget class="QCheckBox" name="chromaSmoothingFor24Bit">
               <property name="text">
                <string>FMV Chroma Smoothing</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="pgxpEnable">
-              <property name="text">
-               <string>PGXP Geometry Correction</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
+            <item row="2" column="0">
              <widget class="QCheckBox" name="widescreenHack">
               <property name="text">
                <string>Widescreen Rendering</string>
@@ -554,20 +554,6 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="pgxpColorCorrection">
-              <property name="text">
-               <string>Perspective Correct Colors</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="pgxpVertexCache">
-              <property name="text">
-               <string>Vertex Cache</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="pgxpTextureCorrection">
               <property name="text">
@@ -575,10 +561,17 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="pgxpCPU">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="pgxpColorCorrection">
               <property name="text">
-               <string>CPU Mode</string>
+               <string>Perspective Correct Colors</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="pgxpCulling">
+              <property name="text">
+               <string>Culling Correction</string>
               </property>
              </widget>
             </item>
@@ -589,10 +582,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="pgxpCulling">
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="pgxpCPU">
               <property name="text">
-               <string>Culling Correction</string>
+               <string>CPU Mode</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="pgxpVertexCache">
+              <property name="text">
+               <string>Vertex Cache</string>
               </property>
              </widget>
             </item>
@@ -705,52 +705,10 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="showFPS">
-              <property name="text">
-               <string>Show FPS</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="showOSDMessages">
               <property name="text">
                <string>Show OSD Messages</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="showCPU">
-              <property name="text">
-               <string>Show CPU Usage</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="showGPUStatistics">
-              <property name="text">
-               <string>Show GPU Statistics</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="showSpeed">
-              <property name="text">
-               <string>Show Emulation Speed</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="showGPU">
-              <property name="text">
-               <string>Show GPU Usage</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QCheckBox" name="showSettings">
-              <property name="text">
-               <string>Show Settings</string>
               </property>
              </widget>
             </item>
@@ -761,17 +719,38 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="QCheckBox" name="showInput">
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="showSpeed">
               <property name="text">
-               <string>Show Controller Input</string>
+               <string>Show Emulation Speed</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="showFrameTimes">
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="showFPS">
               <property name="text">
-               <string>Show Frame Times</string>
+               <string>Show FPS</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="showCPU">
+              <property name="text">
+               <string>Show CPU Usage</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="showGPU">
+              <property name="text">
+               <string>Show GPU Usage</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="showGPUStatistics">
+              <property name="text">
+               <string>Show GPU Statistics</string>
               </property>
              </widget>
             </item>
@@ -782,10 +761,31 @@
               </property>
              </widget>
             </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="showFrameTimes">
+              <property name="text">
+               <string>Show Frame Times</string>
+              </property>
+             </widget>
+            </item>
             <item row="4" column="1">
              <widget class="QCheckBox" name="showLatencyStatistics">
               <property name="text">
                <string>Show Latency Statistics</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="showInput">
+              <property name="text">
+               <string>Show Controller Input</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="showSettings">
+              <property name="text">
+               <string>Show Settings</string>
               </property>
              </widget>
             </item>
@@ -1249,19 +1249,15 @@
           <string>Textures Directory</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="1" column="2">
-           <widget class="QPushButton" name="texturesDirectoryOpen">
-            <property name="text">
-             <string>Open...</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0" colspan="4">
            <widget class="QLabel" name="texturesDirectoryLabel">
             <property name="text">
              <string>Directory to load replacement textures from, and save dumps to.</string>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="texturesDirectory"/>
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="texturesDirectoryBrowse">
@@ -1270,8 +1266,12 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="texturesDirectory"/>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="texturesDirectoryOpen">
+            <property name="text">
+             <string>Open...</string>
+            </property>
+           </widget>
           </item>
           <item row="1" column="3">
            <widget class="QPushButton" name="texturesDirectoryReset">
