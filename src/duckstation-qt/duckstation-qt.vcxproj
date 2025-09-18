@@ -50,9 +50,11 @@
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
+    <ClCompile Include="togglebutton.cpp" />
     <ClCompile Include="vcruntimecheck.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="togglebutton.h" />
     <QtMoc Include="setupwizarddialog.h" />
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />

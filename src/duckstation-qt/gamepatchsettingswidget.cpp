@@ -36,7 +36,7 @@ GamePatchDetailsWidget::GamePatchDetailsWidget(std::string name, const std::stri
 
   DebugAssert(dialog->getSettingsInterface());
   m_ui.enabled->setChecked(enabled);
-  connect(m_ui.enabled, &QCheckBox::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
+  connect(m_ui.enabled, &ToggleButton::checkStateChanged, this, &GamePatchDetailsWidget::onEnabledStateChanged);
 }
 
 GamePatchDetailsWidget::~GamePatchDetailsWidget() = default;

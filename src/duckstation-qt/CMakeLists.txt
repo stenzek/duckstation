@@ -149,6 +149,8 @@ set(SRCS
   setupwizarddialog.h
   setupwizarddialog.ui
   texturereplacementsettingsdialog.ui
+  togglebutton.cpp
+  togglebutton.h
 )
 
 set(TS_FILES
