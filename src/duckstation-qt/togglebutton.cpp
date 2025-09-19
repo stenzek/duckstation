@@ -85,19 +85,21 @@ void ToggleButton::paintEvent(QPaintEvent* event)
   }
 
   // Draw background
-  const int track_width = width() - 2;
-  const int track_height = height() - 2;
+  constexpr int track_margin = 1;
+  const int track_width = width() - (track_margin * 2);
+  const int track_height = height() - (track_margin * 2);
   const int corner_radius = track_height / 2;
 
   QPainterPath path;
-  path.addRoundedRect(1, 1, track_width, track_height, corner_radius, corner_radius);
+  path.addRoundedRect(track_margin, track_margin, track_width, track_height, corner_radius, corner_radius);
 
   painter.fillPath(path, background_color);
 
   // Draw thumb
-  const int thumb_size = track_height - 4;
-  const int thumb_x = m_offset + 2;
-  const int thumb_y = 2;
+  constexpr int thumb_margin = 2;
+  const int thumb_size = track_height - (thumb_margin * 2);
+  const int thumb_x = m_offset + thumb_margin;
+  const int thumb_y = track_margin + thumb_margin;
 
   QPainterPath thumbPath;
   thumbPath.addEllipse(thumb_x, thumb_y, thumb_size, thumb_size);
