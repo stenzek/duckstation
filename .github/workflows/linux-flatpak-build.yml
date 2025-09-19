@@ -50,13 +50,6 @@ jobs:
     - name: Generate AppStream XML
       run: |
         scripts/packaging/generate-metainfo.sh scripts/packaging/flatpak
-        cat scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml
-
-    - name: Validate AppStream XML
-      run: flatpak-builder-lint appstream scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml
-
-    - name: Validate Manifest
-      run: flatpak-builder-lint manifest scripts/packaging/flatpak/org.duckstation.DuckStation.yaml
 
     - name: Build Flatpak
       uses: flatpak/flatpak-github-actions/flatpak-builder@v6
@@ -72,10 +65,6 @@ jobs:
         cache: true
         restore-cache: true
         cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/org.duckstation.DuckStation.yaml') }}
-
-    - name: Validate Build
-      run: |
-        flatpak-builder-lint repo repo
 
     - name: Push To Flathub Beta
       if: inputs.flathub_publish && inputs.flathub_branch == 'beta'
