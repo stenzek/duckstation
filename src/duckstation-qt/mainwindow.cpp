@@ -2717,7 +2717,7 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
     return;
   }
 
-  SettingsWindow::openGamePropertiesDialog(entry);
+  SettingsWindow::openGamePropertiesDialog(entry, category);
 }
 
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
