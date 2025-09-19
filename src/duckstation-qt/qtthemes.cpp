@@ -24,7 +24,6 @@ struct State
   QString unthemed_style_name;
   QPalette unthemed_palette;
   bool unthemed_style_name_set = false;
-  bool is_variable_color_style = false;
 };
 } // namespace
 
@@ -53,7 +52,6 @@ void QtHost::UpdateApplicationTheme()
 void QtHost::SetStyleFromSettings()
 {
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
-  s_state.is_variable_color_style = false;
 
   if (theme == "qdarkstyle")
   {
@@ -68,11 +66,10 @@ void QtHost::SetStyleFromSettings()
   }
   else if (theme == "fusion")
   {
-    s_state.is_variable_color_style = true;
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
-    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
+    qApp->styleHints()->unsetColorScheme();
   }
   else if (theme == "darkfusion")
   {
@@ -479,35 +476,27 @@ QToolTip {
 #endif
   else
   {
-    s_state.is_variable_color_style = true;
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
     qApp->setStyleSheet(QString());
-    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
+    qApp->styleHints()->unsetColorScheme();
   }
 }
 
 bool QtHost::IsDarkApplicationTheme()
 {
-  if (s_state.is_variable_color_style)
-  {
-    return (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
-  }
-  else
-  {
-    const QPalette palette = qApp->palette();
-    return (palette.windowText().color().value() > palette.window().color().value());
-  }
+  return (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark);
 }
 
 void QtHost::SetIconThemeFromStyle()
 {
-  const bool dark = IsDarkApplicationTheme();
-  QIcon::setThemeName(dark ? QStringLiteral("white") : QStringLiteral("black"));
+  QIcon::setThemeName(IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black"));
 }
 
 const char* Host::GetDefaultFullscreenUITheme()
 {
+  using namespace QtHost;
+
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   if (theme == "cobaltsky")
@@ -524,8 +513,6 @@ const char* Host::GetDefaultFullscreenUITheme()
     return "DarkRuby";
   else if (theme == "AMOLED")
     return "AMOLED";
-  else if (theme == "windowsvista")
-    return "Light";
-  else // if (theme == "fusion" || theme == "darkfusion" || theme == "darkfusionblue" || theme == "darkruby")
-    return "Dark";
+  else
+    return IsDarkApplicationTheme() ? "Dark" : "Light";
 }
