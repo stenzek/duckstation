@@ -194,8 +194,12 @@ QMenu {
     padding: 6px 10px;
     background-color: #232323;
 }
+QMenu::icon,
+QMenu::indicator {
+    left: 8px;
+}
 QMenu::item {
-    padding: 6px 10px;
+    padding: 6px 18px;
     border-radius: 8px;
 }
 QMenu::item:selected {
