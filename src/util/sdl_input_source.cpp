@@ -287,6 +287,7 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
 
   m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
   m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+  m_controller_ps5_mic_mute_led_for_analog_mode = si.GetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode");
   m_controller_touchpad_as_pointer = si.GetBoolValue("InputSources", "SDLTouchpadAsPointer", false);
   m_sdl_hints = si.GetKeyValueList("SDLHints");
 
@@ -312,6 +313,7 @@ void InputSource::CopySDLSourceSettings(SettingsInterface* dest_si, const Settin
 
   dest_si->CopyBoolValue(src_si, "InputSources", "SDLControllerEnhancedMode");
   dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5PlayerLED");
+  dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5MicMuteLEDForAnalogMode");
   dest_si->CopyBoolValue(src_si, "InputSources", "SDLTouchpadAsPointer");
   dest_si->CopySection(src_si, "SDLHints");
 
@@ -335,6 +337,92 @@ u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id)
   const u32 color = StringUtil::FromChars<u32>(str, 16).value_or(default_color);
 
   return color;
+}
+
+bool SDLInputSource::IsPS5Controller(SDL_Gamepad* gp)
+{
+  typedef struct
+  {
+    u16 vendor;
+    u16 product;
+  } ControllerDescriptor_t;
+
+  // https://github.com/libsdl-org/SDL/blob/4b93e7488f10f5d713cb12ef04deb2bec4c55481/src/joystick/controller_list.h#L153,L154
+  const ControllerDescriptor_t supported_controllers[] = {
+    {0x054c, 0x0ce6}, // Sony DualSense Controller
+    {0x054c, 0x0df2}  // Sony DualSense Edge Controller
+  };
+  const u16 gamepad_vendor = SDL_GetGamepadVendor(gp);
+  const u16 gamepad_product = SDL_GetGamepadProduct(gp);
+
+  bool supported = false;
+  for (auto& supported_controller : supported_controllers)
+  {
+    supported |= (supported_controller.vendor == gamepad_vendor && supported_controller.product == gamepad_product);
+    if (supported)
+      break;
+  }
+
+  return supported;
+}
+
+void SDLInputSource::UpdateModeLEDState(InputBindingKey key, bool enabled)
+{
+  if (key.source_subtype != InputSubclass::ControllerModeLED)
+    return;
+
+  auto it = GetControllerDataForPlayerId(key.source_index);
+  if (it == m_controllers.end())
+    return;
+
+  it->mode_led = enabled;
+
+  SendModeLEDUpdate(&(*it));
+}
+
+void SDLInputSource::SendModeLEDUpdate(ControllerData* cd)
+{
+  if (cd->has_mode_led &&  m_controller_ps5_mic_mute_led_for_analog_mode)
+    EnablePS5MicMuteLED(cd->gamepad, cd->mode_led);
+}
+
+void SDLInputSource::EnablePS5MicMuteLED(SDL_Gamepad* gp, bool enabled)
+{
+  // https://github.com/libsdl-org/SDL/blob/1aba421bd301fa663e5bc83dc8af97caf6a6968a/src/joystick/hidapi/SDL_hidapi_ps5.c#L169
+  typedef struct
+  {
+    Uint8 ucEnableBits1;              // 0
+    Uint8 ucEnableBits2;              // 1
+    Uint8 ucRumbleRight;              // 2
+    Uint8 ucRumbleLeft;               // 3
+    Uint8 ucHeadphoneVolume;          // 4
+    Uint8 ucSpeakerVolume;            // 5
+    Uint8 ucMicrophoneVolume;         // 6
+    Uint8 ucAudioEnableBits;          // 7
+    Uint8 ucMicLightMode;             // 8
+    Uint8 ucAudioMuteBits;            // 9
+    Uint8 rgucRightTriggerEffect[11]; // 10
+    Uint8 rgucLeftTriggerEffect[11];  // 21
+    Uint8 rgucUnknown1[6];            // 32
+    Uint8 ucEnableBits3;              // 38
+    Uint8 rgucUnknown2[2];            // 39
+    Uint8 ucLedAnim;                  // 41
+    Uint8 ucLedBrightness;            // 42
+    Uint8 ucPadLights;                // 43
+    Uint8 ucLedRed;                   // 44
+    Uint8 ucLedGreen;                 // 45
+    Uint8 ucLedBlue;                  // 46
+  } DS5EffectsState_t;
+
+  DS5EffectsState_t effects;
+  SDL_zero(effects);
+
+  // https://github.com/libsdl-org/SDL/blob/1aba421bd301fa663e5bc83dc8af97caf6a6968a/src/joystick/hidapi/SDL_hidapi_ps5.c#749
+  effects.ucEnableBits2 |= 0x01;                        // 0x00: Block Mute LED, 0x01: Allow Mute LED
+  effects.ucMicLightMode = static_cast<int>(enabled);   // 0x00: Disable Mute LED, 0x01: Enable Mute LED, 0x02: Enable Mute LED (Pulsing)
+
+  if (!SDL_SendGamepadEffect(gp, &effects, sizeof(effects)))
+    ERROR_LOG("Error {} Mic Mute LED: {}", (enabled ? "enabling" : "disabling"), SDL_GetError());
 }
 
 std::span<const SettingInfo> SDLInputSource::GetAdvancedSettingsInfo()
@@ -568,6 +656,12 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
         }
       }
     }
+  }
+  else if (binding.starts_with("ModeLED"))
+  {
+    key.source_subtype = InputSubclass::ControllerModeLED;
+    key.data = 0;
+    return key;
   }
   else
   {
@@ -973,6 +1067,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (!cd.haptic && !cd.use_gamepad_rumble)
     VERBOSE_LOG("Rumble is not supported on '{}'", name);
 
+  cd.has_mode_led = IsPS5Controller(gamepad);
+
   cd.has_led = (gamepad && SDL_GetBooleanProperty(properties, SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN, false));
   if (cd.has_led && player_id >= 0 && static_cast<u32>(player_id) < MAX_LED_COLORS)
     SetControllerRGBLED(gamepad, m_led_colors[player_id]);
@@ -1267,6 +1363,9 @@ bool SDLInputSource::GetGenericBindingMapping(std::string_view device, GenericIn
       mapping->emplace_back(GenericInputBinding::SmallMotor, fmt::format("SDL-{}/Haptic", pid));
       mapping->emplace_back(GenericInputBinding::LargeMotor, fmt::format("SDL-{}/Haptic", pid));
     }
+
+    if (it->has_mode_led)
+      mapping->emplace_back(GenericInputBinding::ModeLED, fmt::format("SDL-{}/ModeLED", pid));
 
     return true;
   }

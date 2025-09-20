@@ -29,6 +29,13 @@
       <string>SDL Input Source</string>
      </property>
      <layout class="QGridLayout" name="sdlGridLayout">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="enableSDLPS5MicMuteLEDForAnalogMode">
+        <property name="text">
+         <string>Use DualSense Mic Mute LED for Analog Mode</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
