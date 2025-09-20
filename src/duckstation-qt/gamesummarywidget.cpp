@@ -282,14 +282,8 @@ void GameSummaryWidget::setCustomRegion(int region)
     const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
     if (entry)
     {
-      const std::string_view title = entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles());
-      m_dialog->setGameTitle(title);
-
-      {
-        const QSignalBlocker sb(m_ui.region);
-        m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
-      }
-
+      const QSignalBlocker sb(m_ui.region);
+      m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
       m_ui.restoreRegion->setEnabled(entry->has_custom_region);
     }
   }
