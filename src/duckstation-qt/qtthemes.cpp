@@ -33,7 +33,7 @@ static State s_state;
 
 const char* QtHost::GetDefaultThemeName()
 {
-  return "darkfusion";
+  return "darkerfusion";
 }
 
 void QtHost::UpdateApplicationTheme()
