@@ -66,7 +66,7 @@ static constexpr std::array<const char*, GameListModel::Column_Count> s_column_n
   QT_TRANSLATE_NOOP("GameListModel", "Genre"), QT_TRANSLATE_NOOP("GameListModel", "Year"),
   QT_TRANSLATE_NOOP("GameListModel", "Players"), QT_TRANSLATE_NOOP("GameListModel", "Time Played"),
   QT_TRANSLATE_NOOP("GameListModel", "Last Played"), QT_TRANSLATE_NOOP("GameListModel", "Size"),
-  QT_TRANSLATE_NOOP("GameListModel", "File Size"), QT_TRANSLATE_NOOP("GameListModel", "Region"),
+  QT_TRANSLATE_NOOP("GameListModel", "Data Size"), QT_TRANSLATE_NOOP("GameListModel", "Region"),
   QT_TRANSLATE_NOOP("GameListModel", "Achievements"), QT_TRANSLATE_NOOP("GameListModel", "Compatibility"),
   "Cover", // Do not translate.
 }};
@@ -661,8 +661,8 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         case Column_FileSize:
           return sizeToString(ge->file_size);
 
-        case Column_UncompressedSize:
-          return sizeToString(ge->file_size);
+        case Column_DataSize:
+          return sizeToString(ge->uncompressed_size);
 
         case Column_Achievements:
           return {};
@@ -707,7 +707,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       switch (index.column())
       {
         case Column_FileSize:
-        case Column_UncompressedSize:
+        case Column_DataSize:
           return (Qt::AlignRight | Qt::AlignVCenter).toInt();
 
         case Column_Serial:
@@ -983,7 +983,7 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
       return (left->file_size < right->file_size);
     }
 
-    case Column_UncompressedSize:
+    case Column_DataSize:
     {
       if (left->uncompressed_size == right->uncompressed_size)
         return titlesLessThan(left, right);
@@ -1952,7 +1952,7 @@ void GameListListView::updateFixedColumnWidths()
   // Assume 8 is the widest digit.
   const int size_width = std::max(width_for(QStringLiteral("%1 MB").arg(8888)), width_for(tr("Unknown")));
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
-  setFixedColumnWidth(fm, GameListModel::Column_UncompressedSize, size_width);
+  setFixedColumnWidth(fm, GameListModel::Column_DataSize, size_width);
 
   setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
   setFixedColumnWidth(GameListModel::Column_Region, 55);

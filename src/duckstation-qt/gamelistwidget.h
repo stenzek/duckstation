@@ -50,7 +50,7 @@ public:
     Column_TimePlayed,
     Column_LastPlayed,
     Column_FileSize,
-    Column_UncompressedSize,
+    Column_DataSize,
     Column_Region,
     Column_Achievements,
     Column_Compatibility,
