@@ -1005,7 +1005,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="play-list-2-line"/>
+    <iconset theme="multi-discs"/>
    </property>
    <property name="text">
     <string>&amp;Merge Multi-Disc Games</string>
