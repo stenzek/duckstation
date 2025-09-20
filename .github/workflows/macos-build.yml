@@ -17,11 +17,6 @@ jobs:
     - name: Use Xcode 16.1
       run: sudo xcode-select -s /Applications/Xcode_16.1.app
 
-    - name: Install packages
-      shell: bash
-      run: |
-        brew install ninja
-
     - name: Cache Dependencies
       id: cache-deps-mac
       uses: actions/cache@v4
