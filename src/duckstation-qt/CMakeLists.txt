@@ -206,6 +206,9 @@ if(WIN32)
     vcruntimecheck.cpp
   )
 
+  # Needed to enable RAIntegration.
+  target_link_libraries(duckstation-qt PRIVATE rcheevos)
+
   # We want a Windows subsystem application not console.
   set_target_properties(duckstation-qt PROPERTIES
     WIN32_EXECUTABLE TRUE
@@ -233,7 +236,7 @@ if(WIN32)
 
   set(DEPS_TO_COPY cpuinfo.dll discord-rpc.dll dxcompiler.dll dxil.dll freetype.dll harfbuzz.dll jpeg62.dll libpng16.dll
                    libsharpyuv.dll libwebp.dll libwebpdemux.dll libwebpmux.dll plutosvg.dll SDL3.dll shaderc_shared.dll
-                   soundtouch.dll spirv-cross-c-shared.dll zlib1.dll zstd.dll)
+                   soundtouch.dll spirv-cross-c-shared.dll zip.dll zlib1.dll zstd.dll)
   foreach(DEP ${DEPS_TO_COPY})
     list(APPEND DEP_BINS "${CMAKE_PREFIX_PATH}/bin/${DEP}")
   endforeach()
