@@ -202,6 +202,11 @@ QMenu::item {
 QMenu::item:selected {
     background-color: #414141;
 }
+QMenu::icon:checked {
+    background: #414141;
+    border: 1px solid #777;
+    border-radius: 4px;
+}
 QMenuBar::item {
     padding: 4px 6px;
     border-radius: 6px;
@@ -216,6 +221,9 @@ QToolTip {
     border: 1px solid #444;
     border-radius: 6px;
     padding: 2px;
+}
+QToolBar {
+    border: none;
 }
     )");
 
