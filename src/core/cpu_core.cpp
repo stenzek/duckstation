@@ -1498,8 +1498,8 @@ restart_instruction:
       const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
       if constexpr (debug)
       {
-        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
-        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(aligned_addr);
       }
 
       u32 aligned_value;
