@@ -142,7 +142,7 @@ private:
   Xbyak::Reg32 MoveTToD(CompileFlags cf);
   void MoveSToReg(const Xbyak::Reg32& dst, CompileFlags cf);
   void MoveTToReg(const Xbyak::Reg32& dst, CompileFlags cf);
-  void MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg);
+  void MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg, bool ignore_load_delays = false);
 
   std::unique_ptr<Xbyak::CodeGenerator> m_emitter;
   std::unique_ptr<Xbyak::CodeGenerator> m_far_emitter;

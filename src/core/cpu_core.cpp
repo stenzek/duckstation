@@ -1508,6 +1508,9 @@ restart_instruction:
 
       // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
       const u32 existing_value = (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
+        PGXP::CPU_LWx(inst, addr, existing_value);
+
       const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 new_value;
       if (inst.op == InstructionOp::lwl)
@@ -1522,9 +1525,6 @@ restart_instruction:
       }
 
       WriteRegDelayed(inst.i.rt, new_value);
-
-      if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_LW(inst, addr, new_value);
     }
     break;
 
@@ -1591,11 +1591,14 @@ restart_instruction:
       }
 
       const u32 reg_value = ReadReg(inst.i.rt);
-      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 mem_value;
       if (!ReadMemoryWord(aligned_addr, &mem_value))
         return;
 
+      if constexpr (pgxp_mode >= PGXPMode::Memory)
+        PGXP::CPU_SWx(inst, addr, reg_value);
+
+      const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
       u32 new_value;
       if (inst.op == InstructionOp::swl)
       {
@@ -1609,9 +1612,6 @@ restart_instruction:
       }
 
       WriteMemoryWord(aligned_addr, new_value);
-
-      if constexpr (pgxp_mode >= PGXPMode::Memory)
-        PGXP::CPU_SW(inst, aligned_addr, new_value);
     }
     break;
 

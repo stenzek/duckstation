@@ -858,15 +858,28 @@ void CPU::X64Recompiler::MoveTToReg(const Xbyak::Reg32& dst, CompileFlags cf)
   }
 }
 
-void CPU::X64Recompiler::MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg)
+void CPU::X64Recompiler::MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg, bool ignore_load_delays)
 {
   DebugAssert(reg < Reg::count);
-  if (const std::optional<u32> hreg = CheckHostReg(0, Recompiler::HR_TYPE_CPU_REG, reg))
+  if (ignore_load_delays && m_load_delay_register == reg)
+  {
+    if (m_load_delay_value_register == NUM_HOST_REGS)
+      cg->mov(dst, cg->dword[PTR(&g_state.load_delay_value)]);
+    else
+      cg->mov(dst, Reg32(m_load_delay_value_register));
+  }
+  else if (const std::optional<u32> hreg = CheckHostReg(0, HR_TYPE_CPU_REG, reg))
+  {
     cg->mov(dst, Reg32(hreg.value()));
+  }
   else if (HasConstantReg(reg))
+  {
     cg->mov(dst, GetConstantRegU32(reg));
+  }
   else
+  {
     cg->mov(dst, MipsPtr(reg));
+  }
 }
 
 void CPU::X64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val, Reg arg2reg /* = Reg::count */,
@@ -1891,6 +1904,17 @@ void CPU::X64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, boo
 
   // We'd need to be careful here if we weren't overwriting it..
   ComputeLoadStoreAddressArg(cf, address, addr);
+
+  // Do PGXP first, it does its own load.
+  if (g_settings.gpu_pgxp_enable && inst->r.rt != Reg::zero)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    cg->mov(RWARG1, inst->bits);
+    cg->mov(RWARG2, addr);
+    MoveMIPSRegToReg(RWARG3, inst->r.rt, true);
+    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_LWx));
+  }
+
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
@@ -1965,18 +1989,6 @@ void CPU::X64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, boo
   }
 
   FreeHostReg(addr.getIdx());
-
-  if (g_settings.gpu_pgxp_enable)
-  {
-    Flush(FLUSH_FOR_C_CALL);
-
-    DebugAssert(value != RWARG3);
-    cg->mov(RWARG3, value);
-    cg->mov(RWARG2, addr);
-    cg->and_(RWARG2, ~0x3u);
-    cg->mov(RWARG1, inst->bits);
-    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_LW));
-  }
 }
 
 void CPU::X64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
@@ -2098,28 +2110,31 @@ void CPU::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, boo
   // TODO: this can take over rt's value if it's no longer needed
   // NOTE: can't trust T in cf because of the alloc
   const Reg32 addr = Reg32(AllocateTempHostReg(HR_CALLEE_SAVED));
-  const Reg32 value = g_settings.gpu_pgxp_enable ? Reg32(AllocateTempHostReg(HR_CALLEE_SAVED)) : RWARG2;
-  if (g_settings.gpu_pgxp_enable)
-    MoveMIPSRegToReg(value, inst->r.rt);
-
   FlushForLoadStore(address, true, use_fastmem);
 
   // TODO: if address is constant, this can be simplified..
   // We'd need to be careful here if we weren't overwriting it..
   ComputeLoadStoreAddressArg(cf, address, addr);
+
+  if (g_settings.gpu_pgxp_enable)
+  {
+    Flush(FLUSH_FOR_C_CALL);
+    cg->mov(RWARG1, inst->bits);
+    cg->mov(RWARG2, addr);
+    MoveMIPSRegToReg(RWARG3, inst->r.rt);
+    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_SWx));
+  }
+
   cg->mov(RWARG1, addr);
   cg->and_(RWARG1, ~0x3u);
   GenerateLoad(RWARG1, MemoryAccessSize::Word, false, use_fastmem, []() { return RWRET; });
 
-  DebugAssert(value != cg->ecx);
   cg->mov(cg->ecx, addr);
   cg->and_(cg->ecx, 3);
   cg->shl(cg->ecx, 3); // *8
   cg->and_(addr, ~0x3u);
 
-  // Need to load down here for PGXP-off, because it's in a volatile reg that can get overwritten by flush.
-  if (!g_settings.gpu_pgxp_enable)
-    MoveMIPSRegToReg(value, inst->r.rt);
+  MoveMIPSRegToReg(RWARG2, inst->r.rt);
 
   if (inst->op == InstructionOp::swl)
   {
@@ -2132,14 +2147,14 @@ void CPU::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, boo
     cg->mov(RWARG3, 24);
     cg->sub(RWARG3, cg->ecx);
     cg->mov(cg->ecx, RWARG3);
-    cg->shr(value, cg->cl);
-    cg->or_(value, RWRET);
+    cg->shr(RWARG2, cg->cl);
+    cg->or_(RWARG2, RWRET);
   }
   else
   {
     // const u32 mem_mask = UINT32_C(0x00FFFFFF) >> (24 - shift);
     // new_value = (RWRET & mem_mask) | (value << shift);
-    cg->shl(value, cg->cl);
+    cg->shl(RWARG2, cg->cl);
 
     DebugAssert(RWARG3 != cg->ecx);
     cg->mov(RWARG3, 24);
@@ -2148,26 +2163,11 @@ void CPU::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, boo
     cg->mov(RWARG3, 0x00FFFFFFu);
     cg->shr(RWARG3, cg->cl);
     cg->and_(RWRET, RWARG3);
-    cg->or_(value, RWRET);
+    cg->or_(RWARG2, RWRET);
   }
 
-  if (!g_settings.gpu_pgxp_enable)
-  {
-    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
-    FreeHostReg(addr.getIdx());
-  }
-  else
-  {
-    GenerateStore(addr, value, MemoryAccessSize::Word, use_fastmem);
-
-    Flush(FLUSH_FOR_C_CALL);
-    cg->mov(RWARG3, value);
-    FreeHostReg(value.getIdx());
-    cg->mov(RWARG2, addr);
-    FreeHostReg(addr.getIdx());
-    cg->mov(RWARG1, inst->bits);
-    cg->call(reinterpret_cast<const void*>(&PGXP::CPU_SW));
-  }
+  GenerateStore(addr, RWARG2, MemoryAccessSize::Word, use_fastmem);
+  FreeHostReg(addr.getIdx());
 }
 
 void CPU::X64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,

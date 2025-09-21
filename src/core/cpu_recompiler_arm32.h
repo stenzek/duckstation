@@ -153,7 +153,7 @@ private:
 
   void MoveSToReg(const vixl::aarch32::Register& dst, CompileFlags cf);
   void MoveTToReg(const vixl::aarch32::Register& dst, CompileFlags cf);
-  void MoveMIPSRegToReg(const vixl::aarch32::Register& dst, Reg reg);
+  void MoveMIPSRegToReg(const vixl::aarch32::Register& dst, Reg reg, bool ignore_load_delays = false);
 
   vixl::aarch32::Assembler m_emitter;
   vixl::aarch32::Assembler m_far_emitter;

@@ -166,7 +166,7 @@ private:
 
   void MoveSToReg(const biscuit::GPR& dst, CompileFlags cf);
   void MoveTToReg(const biscuit::GPR& dst, CompileFlags cf);
-  void MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg);
+  void MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg, bool ignore_load_delays = false);
 
   std::unique_ptr<biscuit::Assembler> m_emitter;
   std::unique_ptr<biscuit::Assembler> m_far_emitter;

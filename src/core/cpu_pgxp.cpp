@@ -338,7 +338,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem(u32 addr, const PGXPValue& value)
     return;
 
   *pMem = value;
-  pMem->flags |= VALID_LOWZ | VALID_HIGHZ;
+  pMem->flags =
+    (value.flags & ~(VALID_LOWZ | VALID_HIGHZ)) | ((value.flags & VALID_Z) ? (VALID_LOWZ | VALID_HIGHZ) : 0);
 }
 
 ALWAYS_INLINE_RELEASE void CPU::PGXP::WriteMem16(u32 addr, const PGXPValue& value)
@@ -697,6 +698,241 @@ void CPU::PGXP::CPU_SW(Instruction instr, u32 addr, u32 rtVal)
   LOG_VALUES_STORE(instr.r.rt.GetValue(), rtVal, addr);
   PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
   WriteMem(addr, prtVal);
+}
+
+void CPU::PGXP::CPU_LWx(Instruction instr, u32 addr, u32 rtVal)
+{
+  LOG_VALUES_LOAD(addr, memVal);
+
+  const u32 aligned_addr = addr & ~3u;
+  PGXPValue* pmemVal = GetPtr(aligned_addr);
+  u32 memVal;
+  if (!pmemVal)
+    return;
+  if (!CPU::SafeReadMemoryWord(aligned_addr, &memVal)) [[unlikely]]
+    return;
+  pmemVal->Validate(memVal);
+  LOG_VALUES_LOAD(addr, memVal);
+
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+
+  const u32 byte_shift = addr & 3u;
+
+  if (instr.op == InstructionOp::lwl)
+  {
+    const u32 bit_shift = (byte_shift * 8);
+    const u32 mixed_value = (rtVal & (UINT32_C(0x00FFFFFF) >> bit_shift)) | (memVal << (24 - bit_shift));
+
+    switch (byte_shift)
+    {
+      case 0:
+      {
+        // only writing the upper half of Y, can't do much about that..
+        prtVal.y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
+        prtVal.value = mixed_value;
+        prtVal.flags = (prtVal.flags & ~VALID_Y);
+      }
+      break;
+
+      case 1:
+      {
+        prtVal.y = pmemVal->x;
+        prtVal.z = (pmemVal->flags & VALID_LOWZ) ? pmemVal->z : prtVal.z;
+        prtVal.value = mixed_value;
+        prtVal.flags =
+          (prtVal.flags & ~VALID_Y) | ((pmemVal->flags & VALID_X) << 1) | ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
+      }
+      break;
+
+      case 2:
+      {
+        // making a dog's breakfast of both X and Y
+        prtVal.x = static_cast<float>(static_cast<s16>(mixed_value));
+        prtVal.y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
+        prtVal.value = mixed_value;
+        prtVal.flags &= ~(VALID_X | VALID_Y | VALID_Z);
+      }
+      break;
+
+      case 3:
+      {
+        // effectively the same as a normal load.
+        prtVal = *pmemVal;
+        prtVal.value = mixed_value;
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+  }
+  else
+  {
+    const u32 bit_shift = (byte_shift * 8);
+    const u32 mixed_value = (rtVal & (UINT32_C(0xFFFFFF00) << (24 - bit_shift))) | (memVal >> bit_shift);
+
+    switch (byte_shift)
+    {
+      case 0:
+      {
+        // effectively the same as a normal load.
+        prtVal = *pmemVal;
+        prtVal.value = mixed_value;
+      }
+      break;
+
+      case 1:
+      {
+        // making a dog's breakfast of both X and Y
+        prtVal.x = static_cast<float>(static_cast<s16>(mixed_value));
+        prtVal.y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
+        prtVal.value = mixed_value;
+        prtVal.flags &= ~(VALID_X | VALID_Y | VALID_Z);
+      }
+      break;
+
+      case 2:
+      {
+        prtVal.x = pmemVal->y;
+        prtVal.z = (pmemVal->flags & VALID_HIGHZ) ? pmemVal->z : prtVal.z;
+        prtVal.value = mixed_value;
+        prtVal.flags = (prtVal.flags & ~VALID_X) | ((pmemVal->flags & VALID_Y) >> 1) |
+                       ((pmemVal->flags & VALID_HIGHZ) ? VALID_Z : 0);
+      }
+      break;
+
+      case 3:
+      {
+        // only writing the lower half of X, can't do much about that..
+        prtVal.x = static_cast<float>(static_cast<s16>(mixed_value));
+        prtVal.value = mixed_value;
+        prtVal.flags = (prtVal.flags & ~VALID_X);
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+  }
+}
+
+void CPU::PGXP::CPU_SWx(Instruction instr, u32 addr, u32 rtVal)
+{
+  LOG_VALUES_STORE(instr.r.rt.GetValue(), rtVal, addr);
+
+  const u32 aligned_addr = addr & ~3u;
+  PGXPValue* pmemVal = GetPtr(aligned_addr);
+  u32 memVal;
+  if (!pmemVal)
+    return;
+  if (!CPU::SafeReadMemoryWord(aligned_addr, &memVal)) [[unlikely]]
+    return;
+  pmemVal->Validate(memVal);
+
+  PGXPValue& prtVal = ValidateAndGetRtValue(instr, rtVal);
+
+  const u32 byte_shift = addr & 3u;
+
+  if (instr.op == InstructionOp::swl)
+  {
+    const u32 bit_shift = (byte_shift * 8);
+    const u32 mixed_value = (memVal & (UINT32_C(0xFFFFFF00) << bit_shift)) | (rtVal >> (24 - bit_shift));
+
+    switch (byte_shift)
+    {
+      case 0:
+      {
+        // only writing the lower half of X, can't do much about that..
+        pmemVal->x = static_cast<float>(static_cast<s16>(mixed_value));
+        pmemVal->value = mixed_value;
+        pmemVal->flags =
+          (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_LOWZ)) | ((pmemVal->flags & VALID_HIGHZ) ? VALID_Z : 0);
+      }
+      break;
+
+      case 1:
+      {
+        pmemVal->x = prtVal.y;
+        pmemVal->z = (prtVal.flags & VALID_Z) ? prtVal.z : pmemVal->z;
+        pmemVal->value = mixed_value;
+        pmemVal->flags = (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_LOWZ)) | ((prtVal.flags & VALID_Y) >> 1) |
+                         ((prtVal.flags & VALID_Z) ? (VALID_Z | VALID_LOWZ) : 0) |
+                         ((pmemVal->flags & VALID_HIGHZ) ? VALID_Z : 0);
+      }
+      break;
+
+      case 2:
+      {
+        // making a dog's breakfast of both X and Y
+        pmemVal->x = static_cast<float>(static_cast<s16>(mixed_value));
+        pmemVal->y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
+        pmemVal->value = mixed_value;
+        pmemVal->flags &= ~(VALID_X | VALID_Y | VALID_Z | VALID_LOWZ | VALID_HIGHZ);
+      }
+      break;
+
+      case 3:
+      {
+        // effectively the same as a normal store.
+        *pmemVal = prtVal;
+        pmemVal->value = mixed_value;
+        pmemVal->flags =
+          (prtVal.flags & ~(VALID_LOWZ | VALID_HIGHZ)) | ((prtVal.flags & VALID_Z) ? (VALID_LOWZ | VALID_HIGHZ) : 0);
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+  }
+  else
+  {
+    const u32 bit_shift = (byte_shift * 8);
+    const u32 mixed_value = (memVal & (UINT32_C(0x00FFFFFF) >> (24 - bit_shift))) | (rtVal << bit_shift);
+
+    switch (byte_shift)
+    {
+      case 0:
+      {
+        // effectively the same as a normal store.
+        *pmemVal = prtVal;
+        pmemVal->value = mixed_value;
+        pmemVal->flags =
+          (prtVal.flags & ~(VALID_LOWZ | VALID_HIGHZ)) | ((prtVal.flags & VALID_Z) ? (VALID_LOWZ | VALID_HIGHZ) : 0);
+      }
+      break;
+
+      case 1:
+      {
+        // making a dog's breakfast of both X and Y
+        pmemVal->x = static_cast<float>(static_cast<s16>(mixed_value));
+        pmemVal->y = static_cast<float>(static_cast<s16>(mixed_value >> 16));
+        pmemVal->value = mixed_value;
+        pmemVal->flags &= ~(VALID_X | VALID_Y | VALID_LOWZ | VALID_HIGHZ);
+      }
+      break;
+
+      case 2:
+      {
+        pmemVal->y = prtVal.x;
+        pmemVal->z = (prtVal.flags & VALID_Z) ? prtVal.z : pmemVal->z;
+        pmemVal->value = mixed_value;
+        pmemVal->flags = (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_HIGHZ)) | ((prtVal.flags & VALID_X) << 1) |
+                         ((prtVal.flags & VALID_Z) ? (VALID_Z | VALID_HIGHZ) : 0) |
+                         ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
+      }
+      break;
+
+      case 3:
+      {
+        // only writing the upper half of Y, can't do much about that..
+        pmemVal->y = static_cast<float>(static_cast<s16>(mixed_value));
+        pmemVal->value = mixed_value;
+        pmemVal->flags =
+          (pmemVal->flags & ~(VALID_X | VALID_Z | VALID_HIGHZ)) | ((pmemVal->flags & VALID_LOWZ) ? VALID_Z : 0);
+      }
+      break;
+
+        DefaultCaseIsUnreachable();
+    }
+  }
 }
 
 void CPU::PGXP::CPU_MOVE_Packed(u32 rd_and_rs, u32 rsVal)
