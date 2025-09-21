@@ -4764,11 +4764,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   }
   else
   {
-    if (GPUThread::IsFullscreenUIRequested())
+    const bool thread_changed = (g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+    if (GPUThread::IsFullscreenUIRequested() || thread_changed)
     {
       // handle device setting updates as well
       if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
-        GPUThread::UpdateSettings(false, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+        GPUThread::UpdateSettings(false, true, thread_changed);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
