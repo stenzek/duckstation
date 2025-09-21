@@ -1396,7 +1396,7 @@ restart_instruction:
       }
 
       u8 value;
-      if (!ReadMemoryByte(addr, &value))
+      if (!ReadMemoryByte(addr, &value)) [[unlikely]]
         return;
 
       const u32 sxvalue = SignExtend32(value);
@@ -1418,7 +1418,7 @@ restart_instruction:
       }
 
       u16 value;
-      if (!ReadMemoryHalfWord(addr, &value))
+      if (!ReadMemoryHalfWord(addr, &value)) [[unlikely]]
         return;
 
       const u32 sxvalue = SignExtend32(value);
@@ -1439,7 +1439,7 @@ restart_instruction:
       }
 
       u32 value;
-      if (!ReadMemoryWord(addr, &value))
+      if (!ReadMemoryWord(addr, &value)) [[unlikely]]
         return;
 
       WriteRegDelayed(inst.i.rt, value);
@@ -1459,7 +1459,7 @@ restart_instruction:
       }
 
       u8 value;
-      if (!ReadMemoryByte(addr, &value))
+      if (!ReadMemoryByte(addr, &value)) [[unlikely]]
         return;
 
       const u32 zxvalue = ZeroExtend32(value);
@@ -1480,7 +1480,7 @@ restart_instruction:
       }
 
       u16 value;
-      if (!ReadMemoryHalfWord(addr, &value))
+      if (!ReadMemoryHalfWord(addr, &value)) [[unlikely]]
         return;
 
       const u32 zxvalue = ZeroExtend32(value);
@@ -1503,7 +1503,7 @@ restart_instruction:
       }
 
       u32 aligned_value;
-      if (!ReadMemoryWord(aligned_addr, &aligned_value))
+      if (!ReadMemoryWord(aligned_addr, &aligned_value)) [[unlikely]]
         return;
 
       // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
@@ -1592,7 +1592,7 @@ restart_instruction:
 
       const u32 reg_value = ReadReg(inst.i.rt);
       u32 mem_value;
-      if (!ReadMemoryWord(aligned_addr, &mem_value))
+      if (!ReadMemoryWord(aligned_addr, &mem_value)) [[unlikely]]
         return;
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
