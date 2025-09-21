@@ -394,12 +394,12 @@ void DMA::WriteRegister(u32 offset, u32 value)
             // Figure out how roughly many CPU cycles it'll take for the transfer to complete, and delay the transfer.
             // Needed for Lagnacure Legend, which sets DICR to enable interrupts after CHCR to kickstart the transfer.
             // This has an artificial 500 cycle cap, setting it too high causes Namco Museum Vol. 4 and a couple of
-            // other games to crash... so clearly something is missing here.
-            const u32 block_words = (1u << state.channel_control.chopping_dma_window_size);
+            // other games to crash... so clearly something is missing here. Small blocks are similarly excluded,
+            // Dotchi Mecha! sets up a 3 word transfer for the CD sector header and expects it to complete immediately.
             const u32 cpu_cycles_per_block = (1u << state.channel_control.chopping_cpu_window_size);
-            const u32 blocks = state.block_control.manual.word_count / block_words;
+            const u32 blocks = state.block_control.manual.word_count >> state.channel_control.chopping_dma_window_size;
             const TickCount delay_cycles = std::min(static_cast<TickCount>(cpu_cycles_per_block * blocks), 500);
-            if (delay_cycles > 1 && true)
+            if (state.block_control.manual.word_count > 4 && delay_cycles > 1)
             {
               DEV_LOG("Delaying {} transfer by {} cycles due to chopping", static_cast<Channel>(channel_index),
                       delay_cycles);
