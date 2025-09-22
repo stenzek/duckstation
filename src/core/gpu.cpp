@@ -1951,6 +1951,11 @@ void GPU::UpdateDisplay(bool submit_frame)
   const bool interlaced = IsInterlacedDisplayEnabled();
   const u8 interlaced_field = GetInterlacedDisplayField();
   const bool line_skip = (interlaced && m_GPUSTAT.vertical_resolution);
+
+  // NOTE: Must be split out, since this can push commands itself (e.g. media capture).
+  GPUBackendFramePresentationParameters frame;
+  submit_frame = (submit_frame && System::GetFramePresentationParameters(&frame));
+
   GPUBackendUpdateDisplayCommand* cmd = GPUBackend::NewUpdateDisplayCommand();
   cmd->display_width = m_crtc_state.display_width;
   cmd->display_height = m_crtc_state.display_height;
@@ -1968,8 +1973,10 @@ void GPU::UpdateDisplay(bool submit_frame)
   cmd->display_24bit = m_GPUSTAT.display_area_color_depth_24;
   cmd->display_disabled = IsDisplayDisabled();
   cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
-  if ((cmd->submit_frame = submit_frame && System::GetFramePresentationParameters(&cmd->frame)))
+  if ((cmd->submit_frame = submit_frame))
   {
+    std::memcpy(&cmd->frame, &frame, sizeof(frame));
+
     const bool drain_one = cmd->frame.present_frame && GPUBackend::BeginQueueFrame();
     GPUThread::PushCommandAndWakeThread(cmd);
     if (drain_one)
@@ -1985,15 +1992,20 @@ void GPU::QueuePresentCurrentFrame()
 {
   DebugAssert(g_settings.IsRunaheadEnabled());
 
+  // NOTE: Must be split out, since this can push commands itself (e.g. media capture).
+  GPUBackendFramePresentationParameters frame;
+  const bool submit_frame = System::GetFramePresentationParameters(&frame);
+  if (!submit_frame)
+    return;
+
   // Submit can be skipped if it's a dupe frame and we're not dumping frames.
   GPUBackendSubmitFrameCommand* cmd = GPUBackend::NewSubmitFrameCommand();
-  if (System::GetFramePresentationParameters(&cmd->frame))
-  {
-    const bool drain_one = cmd->frame.present_frame && GPUBackend::BeginQueueFrame();
-    GPUThread::PushCommandAndWakeThread(cmd);
-    if (drain_one)
-      GPUBackend::WaitForOneQueuedFrame();
-  }
+  std::memcpy(&cmd->frame, &frame, sizeof(frame));
+
+  const bool drain_one = cmd->frame.present_frame && GPUBackend::BeginQueueFrame();
+  GPUThread::PushCommandAndWakeThread(cmd);
+  if (drain_one)
+    GPUBackend::WaitForOneQueuedFrame();
 }
 
 u8 GPU::CalculateAutomaticResolutionScale() const

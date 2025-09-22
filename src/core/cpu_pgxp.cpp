@@ -640,9 +640,11 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
       *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
       *out_w = vert->z / static_cast<float>(GTE::MAX_Z);
 
+#ifdef LOG_LOOKUPS
       GL_INS_FMT("0x{:08X} {},{} => VERTEX_CACHE{{{},{} ({},{},{}) ({},{})}}", addr, x, y, *out_x, *out_y,
                  TruncateVertexPosition(vert->x), TruncateVertexPosition(vert->y), vert->z, std::abs(*out_x - x),
                  std::abs(*out_y - y));
+#endif
 
       if (IsWithinTolerance(*out_x, *out_y, x, y))
       {
@@ -658,7 +660,9 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
   *out_y = static_cast<float>(y);
   *out_w = 1.0f;
 
+#ifdef LOG_LOOKUPS
   GL_INS_FMT("0x{:08X} {},{} => MISS", addr, x, y);
+#endif
   return false;
 }
 
