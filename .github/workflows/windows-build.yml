@@ -67,8 +67,8 @@ jobs:
       shell: cmd
       run: |
         cd data/resources
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile x64 Release Build
       shell: cmd
@@ -161,8 +161,8 @@ jobs:
       shell: cmd
       run: |
         cd data/resources
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile x64 Release Build
       shell: cmd
@@ -256,8 +256,8 @@ jobs:
       shell: cmd
       run: |
         cd data/resources
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile ARM64 Release Build
       shell: cmd

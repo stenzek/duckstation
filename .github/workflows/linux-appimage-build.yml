@@ -53,8 +53,8 @@ jobs:
       shell: bash
       run: |
         cd data/resources
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile Build
       shell: bash
@@ -121,8 +121,8 @@ jobs:
       shell: bash
       run: |
         cd data/resources
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile Build
       shell: bash
