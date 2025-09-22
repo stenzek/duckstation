@@ -1386,6 +1386,15 @@ void System::ApplySettings(bool display_osd_messages)
     LoadSettings(display_osd_messages);
   }
 
+  // If safe mode is changed, patches need to be disabled and settings potentially reloaded.
+  if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
+  {
+    const bool had_setting_overrides = Cheats::HasAnySettingOverrides();
+    Cheats::ReloadCheats(false, true, false, true, true);
+    if (had_setting_overrides != Cheats::HasAnySettingOverrides())
+      LoadSettings(false);
+  }
+
   CheckForSettingsChanges(old_settings);
   Host::CheckForSettingsChanges(old_settings);
 }
@@ -4334,9 +4343,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (IsValid())
   {
     ClearMemorySaveStates(false, false);
-
-    if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
-      Cheats::ReloadCheats(false, true, false, true, true);
 
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&

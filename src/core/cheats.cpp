@@ -1061,7 +1061,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
                       blocked_cheats_msg.view(), blocked_patches_msg.view()) :
           fmt::format(TRANSLATE_FS("Cheats", "{} disabled by achievements hardcore mode/safe mode."),
                       (blocked_cheats > 0) ? blocked_cheats_msg.view() : blocked_patches_msg.view());
-      Host::AddIconOSDMessage("CheatsBlocked", ICON_EMOJI_WARNING, std::move(message), Host::OSD_INFO_DURATION);
+      Host::AddIconOSDMessage("LoadCheats", ICON_EMOJI_WARNING, std::move(message), Host::OSD_INFO_DURATION);
     }
   }
 }
