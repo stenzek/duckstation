@@ -3003,11 +3003,9 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   else
   {
     // state has no disc
-    CDROM::RemoveMedia(false);
+    if (CDROM::RemoveMedia(false))
+      UpdateRunningGame(std::string(), nullptr, false);
   }
-
-  // ensure the correct card is loaded
-  ReloadMemoryCardsFromGameChange();
 
   ClearMemorySaveStates(false, false);
 
@@ -4121,7 +4119,6 @@ bool System::InsertMedia(const char* path)
                                       s_state.running_game_title, s_state.running_game_serial),
                           Host::OSD_INFO_DURATION);
 
-  ReloadMemoryCardsFromGameChange();
   return true;
 }
 
@@ -4229,7 +4226,13 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     if (!booting)
     {
       Achievements::GameChanged(image);
+
+      const bool had_setting_overrides = Cheats::HasAnySettingOverrides();
       Cheats::ReloadCheats(true, true, false, true, true);
+      if (had_setting_overrides)
+        ApplySettings(true);
+
+      ReloadMemoryCardsFromGameChange();
     }
   }
 
@@ -4330,7 +4333,6 @@ bool System::SwitchMediaSubImage(u32 index)
     subimage_title = image->GetSubImageTitle(index);
     title = FileSystem::GetDisplayNameFromPath(image->GetPath());
     UpdateRunningGame(image->GetPath(), image.get(), false);
-    ReloadMemoryCardsFromGameChange();
     okay = CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
                               GetCurrentGameSaveTitle(), &error);
   }

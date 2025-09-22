@@ -66,7 +66,7 @@ Other features include:
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
- - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.1/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
+ - A GPU capable of OpenGL 3.1/OpenGL ES 3.1/Direct3D 11 Feature Level 10.0/Vulkan 1.0. So, basically anything made in the last 10 years or so.
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
 ## Downloading and running
@@ -162,7 +162,7 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 
 CHD images with built-in subchannel information are also supported.
 
-If you are playing directly from a disc and your CD/DVD drive does not support subchannel reading, or has a skew with the returned SubQ, you can place the SBI file in the `subchannel` directory under the user directory, with the serial or title of the game.
+If you are playing directly from a disc and your CD/DVD drive does not support subchannel reading, or has a skew with the returned SubQ, you can place the SBI file in the `subchannels` directory under the user directory, with the serial or title of the game.
 
 ### Cheats and patch database
 
@@ -195,11 +195,6 @@ autoconf automake build-essential clang cmake curl extra-cmake-modules git libas
 Fedora package names:
 ```
 alsa-lib-devel autoconf automake brotli-devel clang cmake dbus-devel egl-wayland-devel extra-cmake-modules fontconfig-devel gcc-c++ gtk3-devel libavcodec-free-devel libavformat-free-devel libavutil-free-devel libcurl-devel libdecor-devel libevdev-devel libICE-devel libinput-devel libSM-devel libswresample-free-devel libswscale-free-devel libX11-devel libXau-devel libxcb-devel libXcomposite-devel libXcursor-devel libXext-devel libXfixes-devel libXft-devel libXi-devel libxkbcommon-devel libxkbcommon-x11-devel libXpresent-devel libXrandr-devel libXrender-devel libtool lld llvm make mesa-libEGL-devel mesa-libGL-devel nasm ninja-build openssl-devel patch pcre2-devel perl-Digest-SHA pipewire-devel pulseaudio-libs-devel systemd-devel wayland-devel xcb-util-cursor-devel xcb-util-devel xcb-util-errors-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel xcb-util-xrm-devel zlib-devel
-```
-
-Arch package names:
-```
-base-devel clang cmake curl dbus extra-cmake-modules freetype git libjpeg-turbo libpng libwebp libx11 libxrandr lld llvm ninja qt6-base qt6-imageformats qt6-svg qt6-tools wayland zstd
 ```
 
 #### Building

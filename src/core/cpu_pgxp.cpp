@@ -640,8 +640,16 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
       *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
       *out_w = vert->z / static_cast<float>(GTE::MAX_Z);
 
+      GL_INS_FMT("0x{:08X} {},{} => VERTEX_CACHE{{{},{} ({},{},{}) ({},{})}}", addr, x, y, *out_x, *out_y,
+                 TruncateVertexPosition(vert->x), TruncateVertexPosition(vert->y), vert->z, std::abs(*out_x - x),
+                 std::abs(*out_y - y));
+
       if (IsWithinTolerance(*out_x, *out_y, x, y))
+      {
+        // This is only really used for Syphon Filter 3, and including Z tends to make things worse.
+        // At least it can get rid of the jitter, but not the warping.
         return false;
+      }
     }
   }
 
@@ -649,6 +657,8 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
   *out_x = static_cast<float>(x);
   *out_y = static_cast<float>(y);
   *out_w = 1.0f;
+
+  GL_INS_FMT("0x{:08X} {},{} => MISS", addr, x, y);
   return false;
 }
 
@@ -702,8 +712,6 @@ void CPU::PGXP::CPU_SW(Instruction instr, u32 addr, u32 rtVal)
 
 void CPU::PGXP::CPU_LWx(Instruction instr, u32 addr, u32 rtVal)
 {
-  LOG_VALUES_LOAD(addr, memVal);
-
   const u32 aligned_addr = addr & ~3u;
   PGXPValue* pmemVal = GetPtr(aligned_addr);
   u32 memVal;
