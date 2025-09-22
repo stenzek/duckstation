@@ -3797,6 +3797,10 @@ void System::ResetControllers()
 
 void System::UpdateMemoryCards()
 {
+  // Disable memory cards when running PSFs/GPU dumps.
+  if ((!s_state.running_game_path.empty() && IsPsfPath(s_state.running_game_path.c_str())) || IsReplayingGPUDump())
+    return;
+
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     const MemoryCardType type = g_settings.memory_card_types[i];
@@ -5693,11 +5697,6 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
 std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
 {
   std::string ret;
-
-  // Disable memory cards when running PSFs/GPU dumps.
-  if ((!s_state.running_game_path.empty() && IsPsfPath(s_state.running_game_path.c_str())) || IsReplayingGPUDump())
-    return ret;
-
   std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
 
   switch (type)
