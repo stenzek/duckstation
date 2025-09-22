@@ -203,8 +203,7 @@ static std::string_view GetCurrentGameSaveTitle();
 
 static void UpdateControllers();
 static void ResetControllers();
-static void ReloadMemoryCardsFromGameChange();
-static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
+static std::string GetMemoryCardPathForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
 static std::string GetMediaPathFromSaveState(const char* path);
@@ -1859,7 +1858,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   s_state.exe_override = std::move(exe_override);
 
   UpdateControllers();
-  UpdateMemoryCardTypes();
+  UpdateMemoryCards();
   UpdateMultitaps();
   InternalReset();
 
@@ -3787,170 +3786,40 @@ void System::ResetControllers()
   }
 }
 
-std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardType type)
-{
-  // Disable memory cards when running PSFs.
-  const bool is_running_psf = !s_state.running_game_path.empty() && IsPsfPath(s_state.running_game_path.c_str());
-  if (is_running_psf)
-    return nullptr;
-
-  std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
-
-  switch (type)
-  {
-    case MemoryCardType::PerGame:
-    {
-      if (s_state.running_game_serial.empty())
-      {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no code. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
-        return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
-      }
-      else
-      {
-        Host::RemoveKeyedOSDMessage(std::move(message_key));
-        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(s_state.running_game_serial, slot));
-      }
-    }
-
-    case MemoryCardType::PerGameTitle:
-    {
-      if (s_state.running_game_title.empty())
-      {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no title. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
-        return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
-      }
-      else
-      {
-        const std::string_view game_title = (s_state.running_game_custom_title || !s_state.running_game_entry) ?
-                                              std::string_view(s_state.running_game_title) :
-                                              s_state.running_game_entry->GetSaveTitle();
-        std::string card_path;
-
-        // Multi-disc game - use disc set name.
-        if (s_state.running_game_entry && s_state.running_game_entry->disc_set)
-        {
-          card_path = g_settings.GetGameMemoryCardPath(
-            Path::SanitizeFileName(s_state.running_game_entry->disc_set->GetSaveTitle()), slot);
-        }
-
-        // But prefer a disc-specific card if one already exists.
-        std::string disc_card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(game_title), slot);
-        if (disc_card_path != card_path)
-        {
-          if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
-              FileSystem::FileExists(disc_card_path.c_str()))
-          {
-            if (g_settings.memory_card_use_playlist_title && !card_path.empty())
-            {
-              Host::AddIconOSDMessage(
-                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
-                fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
-                            Path::GetFileName(disc_card_path)),
-                Host::OSD_INFO_DURATION);
-            }
-
-            card_path = std::move(disc_card_path);
-          }
-        }
-
-        Host::RemoveKeyedOSDMessage(std::move(message_key));
-        return MemoryCard::Open(card_path.c_str());
-      }
-    }
-
-    case MemoryCardType::PerGameFileTitle:
-    {
-      const std::string display_name(FileSystem::GetDisplayNameFromPath(s_state.running_game_path));
-      const std::string_view file_title(Path::GetFileTitle(display_name));
-      if (file_title.empty())
-      {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no path. Using shared card instead."),
-                      slot + 1u));
-        return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
-      }
-      else
-      {
-        Host::RemoveKeyedOSDMessage(std::move(message_key));
-        return MemoryCard::Open(g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(file_title).c_str(), slot));
-      }
-    }
-
-    case MemoryCardType::Shared:
-    {
-      Host::RemoveKeyedOSDMessage(std::move(message_key));
-      return MemoryCard::Open(g_settings.GetSharedMemoryCardPath(slot));
-    }
-
-    case MemoryCardType::NonPersistent:
-    {
-      Host::RemoveKeyedOSDMessage(std::move(message_key));
-      return MemoryCard::Create();
-    }
-
-    case MemoryCardType::None:
-    default:
-    {
-      Host::RemoveKeyedOSDMessage(std::move(message_key));
-      return nullptr;
-    }
-  }
-}
-
-void System::UpdateMemoryCardTypes()
+void System::UpdateMemoryCards()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    Pad::SetMemoryCard(i, nullptr);
-
     const MemoryCardType type = g_settings.memory_card_types[i];
-    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
-    if (card)
+    if (type == MemoryCardType::None)
     {
-      if (const std::string& path = card->GetPath(); !path.empty())
-        INFO_LOG("Memory Card Slot {}: {}", i + 1, path);
-
-      Pad::SetMemoryCard(i, std::move(card));
+      Pad::SetMemoryCard(i, {});
+      continue;
     }
-  }
-}
 
-void System::ReloadMemoryCardsFromGameChange()
-{
-  if (!g_settings.HasAnyPerGameMemoryCards())
-    return;
+    std::string path = GetMemoryCardPathForSlot(i, type);
 
-  Host::AddIconOSDMessage("ReloadMemoryCardsFromGameChange", ICON_PF_MEMORY_CARD,
-                          TRANSLATE_STR("System", "Game changed, reloading memory cards."), Host::OSD_INFO_DURATION);
-
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-  {
-    const MemoryCardType type = g_settings.memory_card_types[i];
-    if (!Settings::IsPerGameMemoryCardType(type))
+    const MemoryCard* current_card = Pad::GetMemoryCard(i);
+    const bool path_changed = (!current_card || current_card->GetPath() != path);
+    INFO_LOG("Memory Card {}: {}{}", i + 1, path, path_changed ? "" : " [UNCHANGED]");
+    if (!path_changed)
       continue;
 
-    Pad::SetMemoryCard(i, nullptr);
-
-    std::unique_ptr<MemoryCard> card = GetMemoryCardForSlot(i, type);
-    if (card)
+    if (current_card)
     {
-      if (const std::string& path = card->GetPath(); !path.empty())
-        INFO_LOG("Memory Card Slot {}: {}", i + 1, path);
-
-      Pad::SetMemoryCard(i, std::move(card));
+      Host::AddIconOSDMessage(fmt::format("MemoryCardChange{}", i), ICON_PF_MEMORY_CARD,
+                              fmt::format(TRANSLATE_FS("OSDMessage", "Memory card in slot {} changed to '{}'."), i + 1,
+                                          Path::GetFileName(path)),
+                              Host::OSD_INFO_DURATION);
     }
+
+    std::unique_ptr<MemoryCard> card;
+    if (!path.empty())
+      card = MemoryCard::Open(std::move(path));
+    else
+      card = MemoryCard::Create();
+
+    Pad::SetMemoryCard(i, std::move(card));
   }
 }
 
@@ -4232,7 +4101,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
       if (had_setting_overrides)
         ApplySettings(true);
 
-      ReloadMemoryCardsFromGameChange();
+      if (g_settings.HasAnyPerGameMemoryCards())
+        UpdateMemoryCards();
     }
   }
 
@@ -4710,7 +4580,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
         (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title))
     {
-      UpdateMemoryCardTypes();
+      UpdateMemoryCards();
     }
 
     if (g_settings.rewind_enable != old_settings.rewind_enable ||
@@ -5809,6 +5679,135 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
     break;
     default:
       break;
+  }
+
+  return ret;
+}
+
+std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
+{
+  std::string ret;
+
+  // Disable memory cards when running PSFs/GPU dumps.
+  if ((!s_state.running_game_path.empty() && IsPsfPath(s_state.running_game_path.c_str())) || IsReplayingGPUDump())
+    return ret;
+
+  std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
+
+  switch (type)
+  {
+    case MemoryCardType::PerGame:
+    {
+      if (s_state.running_game_serial.empty())
+      {
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_PF_MEMORY_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no code. Using shared card instead."),
+                      slot + 1u),
+          Host::OSD_INFO_DURATION);
+        ret = g_settings.GetSharedMemoryCardPath(slot);
+      }
+      else
+      {
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
+        ret = g_settings.GetGameMemoryCardPath(s_state.running_game_serial, slot);
+      }
+    }
+    break;
+
+    case MemoryCardType::PerGameTitle:
+    {
+      if (s_state.running_game_title.empty())
+      {
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_PF_MEMORY_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no title. Using shared card instead."),
+                      slot + 1u),
+          Host::OSD_INFO_DURATION);
+        ret = g_settings.GetSharedMemoryCardPath(slot);
+      }
+      else
+      {
+        const std::string_view game_title = (s_state.running_game_custom_title || !s_state.running_game_entry) ?
+                                              std::string_view(s_state.running_game_title) :
+                                              s_state.running_game_entry->GetSaveTitle();
+        std::string card_path;
+
+        // Multi-disc game - use disc set name.
+        if (s_state.running_game_entry && s_state.running_game_entry->disc_set)
+        {
+          card_path = g_settings.GetGameMemoryCardPath(
+            Path::SanitizeFileName(s_state.running_game_entry->disc_set->GetSaveTitle()), slot);
+        }
+
+        // But prefer a disc-specific card if one already exists.
+        std::string disc_card_path = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(game_title), slot);
+        if (disc_card_path != card_path)
+        {
+          if (card_path.empty() || !g_settings.memory_card_use_playlist_title ||
+              FileSystem::FileExists(disc_card_path.c_str()))
+          {
+            if (g_settings.memory_card_use_playlist_title && !card_path.empty())
+            {
+              Host::AddIconOSDMessage(
+                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
+                fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
+                            Path::GetFileName(disc_card_path)),
+                Host::OSD_INFO_DURATION);
+            }
+
+            card_path = std::move(disc_card_path);
+          }
+        }
+
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
+        ret = card_path;
+      }
+    }
+    break;
+
+    case MemoryCardType::PerGameFileTitle:
+    {
+      const std::string display_name(FileSystem::GetDisplayNameFromPath(s_state.running_game_path));
+      const std::string_view file_title(Path::GetFileTitle(display_name));
+      if (file_title.empty())
+      {
+        Host::AddIconOSDMessage(
+          std::move(message_key), ICON_PF_MEMORY_CARD,
+          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
+                                             "game has no path. Using shared card instead."),
+                      slot + 1u));
+        ret = g_settings.GetSharedMemoryCardPath(slot);
+      }
+      else
+      {
+        Host::RemoveKeyedOSDMessage(std::move(message_key));
+        ret = g_settings.GetGameMemoryCardPath(Path::SanitizeFileName(file_title).c_str(), slot);
+      }
+    }
+    break;
+
+    case MemoryCardType::Shared:
+    {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
+      ret = g_settings.GetSharedMemoryCardPath(slot);
+    }
+    break;
+
+    case MemoryCardType::NonPersistent:
+    {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
+    }
+    break;
+
+    case MemoryCardType::None:
+    default:
+    {
+      Host::RemoveKeyedOSDMessage(std::move(message_key));
+    }
+    break;
   }
 
   return ret;

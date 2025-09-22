@@ -2591,7 +2591,7 @@ void EmuFolders::Update()
     System::ReloadGameSettings(false);
 
   if (System::IsValid() && old_memorycards != EmuFolders::MemoryCards)
-    System::UpdateMemoryCardTypes();
+    System::UpdateMemoryCards();
 }
 
 void EmuFolders::EnsureFolderExists(const std::string& path)

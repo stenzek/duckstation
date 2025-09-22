@@ -296,7 +296,7 @@ void SetVideoFrameRate(float frequency);
 
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
-void UpdateMemoryCardTypes();
+void UpdateMemoryCards();
 bool HasMemoryCard(u32 slot);
 bool IsSavingMemoryCards();
 

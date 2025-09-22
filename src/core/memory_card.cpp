@@ -295,10 +295,10 @@ std::unique_ptr<MemoryCard> MemoryCard::Create()
   return mc;
 }
 
-std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view path)
+std::unique_ptr<MemoryCard> MemoryCard::Open(std::string path)
 {
   std::unique_ptr<MemoryCard> mc = std::make_unique<MemoryCard>();
-  mc->m_path = path;
+  mc->m_path = std::move(path);
 
   Error error;
   if (!FileSystem::FileExists(mc->m_path.c_str())) [[unlikely]]

@@ -23,7 +23,7 @@ public:
   static constexpr u32 STATE_SIZE = 1 + 1 + 2 + 1 + 1 + 1 + MemoryCardImage::DATA_SIZE + 1;
 
   static std::unique_ptr<MemoryCard> Create();
-  static std::unique_ptr<MemoryCard> Open(std::string_view path);
+  static std::unique_ptr<MemoryCard> Open(std::string path);
 
   const MemoryCardImage::DataArray& GetData() const { return m_data; }
   MemoryCardImage::DataArray& GetData() { return m_data; }
