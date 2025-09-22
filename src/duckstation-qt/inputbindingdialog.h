@@ -1,10 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/types.h"
+
 #include "ui_inputbindingdialog.h"
+
 #include "util/input_manager.h"
+
+#include "common/types.h"
+
 #include <QtWidgets/QDialog>
 #include <optional>
 #include <string>
@@ -20,6 +24,9 @@ public:
   InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
                      std::string key_name, std::vector<std::string> bindings, QWidget* parent);
   ~InputBindingDialog();
+
+  static void logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value, float initial_value,
+                            float min_value);
 
 protected:
   enum : u32

@@ -350,6 +350,8 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
     m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
   }
 
+  InputBindingDialog::logInputEvent(m_bind_type, key, value, initial_value, min_value);
+
   const float abs_value = std::abs(value);
   const bool reverse_threshold =
     (key.source_subtype == InputSubclass::ControllerAxis && std::abs(initial_value) > 0.5f);

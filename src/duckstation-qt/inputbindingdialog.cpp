@@ -8,6 +8,7 @@
 #include "qtutils.h"
 
 #include "common/bitutils.h"
+#include "common/log.h"
 
 #include "fmt/format.h"
 
@@ -17,6 +18,8 @@
 #include <QtGui/QWheelEvent>
 
 #include "moc_inputbindingdialog.cpp"
+
+LOG_CHANNEL(Host);
 
 InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo::Type bind_type,
                                        std::string section_name, std::string key_name,
@@ -70,6 +73,14 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
 InputBindingDialog::~InputBindingDialog()
 {
   Q_ASSERT(!isListeningForInput());
+}
+
+void InputBindingDialog::logInputEvent(InputBindingInfo::Type bind_type, InputBindingKey key, float value,
+                                       float initial_value, float min_value)
+{
+  const TinyString key_str = InputManager::ConvertInputBindingKeyToString(bind_type, key);
+  DEV_LOG("Binding input event: key={} value={:.2f} initial_value={:.2f} min_value={:.2f}", key_str, value,
+          initial_value, min_value);
 }
 
 bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
@@ -309,6 +320,8 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
   {
     m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
   }
+
+  logInputEvent(m_bind_type, key, value, initial_value, min_value);
 
   const float abs_value = std::abs(value);
   const bool reverse_threshold =
