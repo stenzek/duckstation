@@ -324,8 +324,8 @@ void InputBindingDialog::inputManagerHookCallback(InputBindingKey key, float val
   logInputEvent(m_bind_type, key, value, initial_value, min_value);
 
   const float abs_value = std::abs(value);
-  const bool reverse_threshold =
-    (key.source_subtype == InputSubclass::ControllerAxis && std::abs(initial_value) > 0.5f);
+  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis &&
+                                  std::abs(initial_value) > 0.5f && std::abs(initial_value - min_value) > 0.1f);
 
   for (InputBindingKey& other_key : m_new_bindings)
   {
