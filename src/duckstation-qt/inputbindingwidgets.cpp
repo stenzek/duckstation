@@ -218,8 +218,8 @@ void InputBindingWidget::setNewBinding()
   if (m_new_bindings.empty())
     return;
 
-  std::string new_binding(
-    InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size()));
+  const SmallString new_binding =
+    InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size());
   if (!new_binding.empty())
   {
     if (m_sif)
@@ -239,7 +239,7 @@ void InputBindingWidget::setNewBinding()
   }
 
   m_bindings.clear();
-  m_bindings.push_back(std::move(new_binding));
+  m_bindings.emplace_back(new_binding);
 }
 
 void InputBindingWidget::clearBinding()

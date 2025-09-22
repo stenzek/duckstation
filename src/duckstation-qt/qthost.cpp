@@ -2607,7 +2607,7 @@ void InputDeviceListModel::enumerateDevices()
   for (const auto& key : motors)
   {
     new_motors.push_back(
-      QString::fromStdString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key)));
+      QtUtils::StringViewToQString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key)));
   }
 
   QMetaObject::invokeMethod(this, &InputDeviceListModel::resetLists, Qt::QueuedConnection, new_devices, new_motors);
@@ -2676,8 +2676,8 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
     vibration_motor_list.reserve(im_vibration_motor_list.size());
     for (const InputBindingKey& motor_key : im_vibration_motor_list)
     {
-      vibration_motor_list.push_back(
-        QString::fromStdString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motor_key)));
+      vibration_motor_list.push_back(QtUtils::StringViewToQString(
+        InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motor_key)));
     }
   }
 

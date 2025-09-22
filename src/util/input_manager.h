@@ -226,13 +226,13 @@ std::optional<InputSourceType> ParseInputSourceString(std::string_view str);
 std::optional<u32> GetIndexFromPointerBinding(std::string_view str);
 
 /// Returns the device name for a pointer index (e.g. Pointer-0).
-std::string GetPointerDeviceName(u32 pointer_index);
+TinyString GetPointerDeviceName(u32 pointer_index);
 
 /// Converts a key code from a human-readable string to an identifier.
 std::optional<u32> ConvertHostKeyboardStringToCode(std::string_view str);
 
 /// Converts a key code from an identifier to a human-readable string.
-std::optional<std::string> ConvertHostKeyboardCodeToString(u32 code);
+const char* ConvertHostKeyboardCodeToString(u32 code);
 
 /// Converts a key code from an identifier to an icon which can be drawn.
 const char* ConvertHostKeyboardCodeToIcon(u32 code);
@@ -257,10 +257,10 @@ InputBindingKey MakeSensorAxisKey(InputSubclass sensor, u32 axis);
 std::optional<InputBindingKey> ParseInputBindingKey(std::string_view binding);
 
 /// Converts a input key to a string.
-std::string ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
+TinyString ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key);
 
 /// Converts a chord of binding keys to a string.
-std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys,
+SmallString ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type, const InputBindingKey* keys,
                                             size_t num_keys);
 
 /// Represents a binding with icon fonts, if available.

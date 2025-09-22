@@ -221,15 +221,15 @@ void InputBindingDialog::addNewBinding()
   if (m_new_bindings.empty())
     return;
 
-  std::string new_binding =
+  SmallString new_binding =
     InputManager::ConvertInputBindingKeysToString(m_bind_type, m_new_bindings.data(), m_new_bindings.size());
   if (!new_binding.empty())
   {
-    if (std::find(m_bindings.begin(), m_bindings.end(), new_binding) != m_bindings.end())
+    if (std::find(m_bindings.begin(), m_bindings.end(), new_binding.view()) != m_bindings.end())
       return;
 
-    m_ui.bindingList->addItem(QString::fromStdString(new_binding));
-    m_bindings.push_back(std::move(new_binding));
+    m_ui.bindingList->addItem(QtUtils::StringViewToQString(new_binding));
+    m_bindings.emplace_back(new_binding);
     saveListToSettings();
   }
 }

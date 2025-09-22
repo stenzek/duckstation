@@ -362,84 +362,88 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
   return false;
 }
 
-std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
+TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
+  TinyString ret;
+
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
   {
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
     {
-      return GetPointerDeviceName(key.source_index);
+      ret = GetPointerDeviceName(key.source_index);
     }
     else if (key.source_type < InputSourceType::Count && s_state.input_sources[static_cast<u32>(key.source_type)])
     {
       // This assumes that it always follows the Type/Binding form.
-      std::string keystr(s_state.input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key));
-      std::string::size_type pos = keystr.find('/');
-      if (pos != std::string::npos)
-        keystr.erase(pos);
-      return keystr;
+      ret = s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
+
+      if (const s32 pos = ret.find('/'); pos > 0)
+        ret.erase(pos);
     }
   }
   else
   {
     if (key.source_type == InputSourceType::Keyboard)
     {
-      const std::optional<std::string> str(ConvertHostKeyboardCodeToString(key.data));
-      if (str.has_value() && !str->empty())
-        return fmt::format("Keyboard/{}", str->c_str());
+      if (const char* key_code_string = ConvertHostKeyboardCodeToString(key.data))
+        ret.format("Keyboard/{}", key_code_string);
     }
     else if (key.source_type == InputSourceType::Pointer)
     {
       if (key.source_subtype == InputSubclass::PointerButton)
       {
         if (key.data < s_pointer_button_names.size())
-          return fmt::format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
+          ret.format("Pointer-{}/{}", u32{key.source_index}, s_pointer_button_names[key.data]);
         else
-          return fmt::format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
+          ret.format("Pointer-{}/Button{}", u32{key.source_index}, key.data);
       }
       else if (key.source_subtype == InputSubclass::PointerAxis)
       {
-        return fmt::format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
-                           key.modifier == InputModifier::Negate ? '-' : '+');
+        ret.format("Pointer-{}/{}{:c}", u32{key.source_index}, s_pointer_axis_names[key.data],
+                   key.modifier == InputModifier::Negate ? '-' : '+');
       }
     }
     else if (key.source_type < InputSourceType::Count && s_state.input_sources[static_cast<u32>(key.source_type)])
     {
-      return std::string(s_state.input_sources[static_cast<u32>(key.source_type)]->ConvertKeyToString(key));
+      ret = s_state.input_sources[static_cast<size_t>(key.source_type)]->ConvertKeyToString(key);
     }
   }
 
-  return {};
+  return ret;
 }
 
-std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
+SmallString InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
                                                           const InputBindingKey* keys, size_t num_keys)
 {
+  SmallString ret;
+
   // can't have a chord of devices/pointers
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
   {
     // so only take the first
     if (num_keys > 0)
-      return ConvertInputBindingKeyToString(binding_type, keys[0]);
+    {
+      ret = ConvertInputBindingKeyToString(binding_type, keys[0]);
+      return ret;
+    }
   }
 
-  std::stringstream ss;
   for (size_t i = 0; i < num_keys; i++)
   {
-    const std::string keystr(ConvertInputBindingKeyToString(binding_type, keys[i]));
+    const TinyString keystr = ConvertInputBindingKeyToString(binding_type, keys[i]);
     if (keystr.empty())
-      return std::string();
+      return ret;
 
     if (i > 0)
-      ss << " & ";
+      ret.append(" & ");
 
-    ss << keystr;
+    ret.append(keystr);
   }
 
-  return std::move(ss).str();
+  return ret;
 }
 
 bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper /*= nullptr*/)
@@ -683,15 +687,10 @@ std::optional<u32> InputManager::ConvertHostKeyboardStringToCode(std::string_vie
   return std::nullopt;
 }
 
-std::optional<std::string> InputManager::ConvertHostKeyboardCodeToString(u32 code)
+const char* InputManager::ConvertHostKeyboardCodeToString(u32 code)
 {
-  std::optional<std::string> ret;
-
   const KeyCodeData* key_data = FindKeyCodeData(code);
-  if (key_data)
-    ret.emplace(key_data->name);
-
-  return ret;
+  return key_data ? key_data->name : nullptr;
 }
 
 const InputManager::KeyCodeData* InputManager::FindKeyCodeData(u32 usb_code)
@@ -874,9 +873,9 @@ std::optional<u32> InputManager::GetIndexFromPointerBinding(std::string_view sou
   return static_cast<u32>(pointer_index.value());
 }
 
-std::string InputManager::GetPointerDeviceName(u32 pointer_index)
+TinyString InputManager::GetPointerDeviceName(u32 pointer_index)
 {
-  return fmt::format("Pointer-{}", pointer_index);
+  return TinyString::from_format("Pointer-{}", pointer_index);
 }
 
 std::optional<InputBindingKey> InputManager::ParseSensorKey(std::string_view source, std::string_view sub_binding)

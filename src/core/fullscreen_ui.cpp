@@ -2587,8 +2587,8 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
             other_key.modifier = InputModifier::FullAxis;
 
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-          const std::string new_binding(InputManager::ConvertInputBindingKeysToString(
-            m_binding_type, m_new_bindings.data(), m_new_bindings.size()));
+          const SmallString new_binding =
+            InputManager::ConvertInputBindingKeysToString(m_binding_type, m_new_bindings.data(), m_new_bindings.size());
           bsi->SetStringValue(m_binding_section.c_str(), m_binding_key.c_str(), new_binding.c_str());
           SetSettingsChanged(bsi);
 
@@ -2684,10 +2684,10 @@ void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindi
   options.reserve(motors.size() + 1);
   for (size_t i = 0; i < motors.size(); i++)
   {
-    std::string text = InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motors[i]);
+    const TinyString text = InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motors[i]);
     const bool this_index = (current_binding.view() == text);
     current_index = this_index ? i : current_index;
-    options.emplace_back(std::move(text), this_index);
+    options.emplace_back(text, this_index);
   }
 
   // empty/no mapping value
