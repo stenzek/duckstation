@@ -3,6 +3,7 @@
 
 #include "gamelistwidget.h"
 #include "gamelistrefreshthread.h"
+#include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
@@ -1396,6 +1397,8 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
   connect(m_empty_ui.addGameDirectory, &QPushButton::clicked, this, [this]() { emit addGameDirectoryRequested(); });
   connect(m_empty_ui.scanForNewGames, &QPushButton::clicked, this, [this]() { refresh(false); });
+
+  connect(g_main_window, &MainWindow::themeChanged, this, &GameListWidget::onThemeChanged);
 
   const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
   if (grid_view)
