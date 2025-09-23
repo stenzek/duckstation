@@ -506,8 +506,15 @@ QToolBar {
 
 bool QtHost::IsDarkApplicationTheme()
 {
-  return s_state.is_variable_color_theme ? (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Dark) :
-                                           s_state.is_dark_theme;
+  if (!s_state.is_variable_color_theme)
+    return s_state.is_dark_theme;
+
+  const Qt::ColorScheme system_color_scheme = qApp->styleHints()->colorScheme();
+  if (system_color_scheme != Qt::ColorScheme::Unknown) [[likely]]
+    return (system_color_scheme == Qt::ColorScheme::Dark);
+
+  const QPalette palette = qApp->palette();
+  return (palette.windowText().color().value() > palette.window().color().value());
 }
 
 void QtHost::SetIconThemeFromStyle()
