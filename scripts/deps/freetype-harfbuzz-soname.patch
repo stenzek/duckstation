@@ -1,0 +1,18 @@
+--- freetype-2.14.1/src/autofit/ft-hb.c	2025-09-24 17:27:12.271362737 +1000
++++ freetype-2.14.1/src/autofit/ft-hb.c	2025-09-24 17:27:22.590123789 +1000
+@@ -33,12 +33,12 @@
+ 
+ #ifndef FT_LIBHARFBUZZ
+ #  ifdef _WIN32
+-#    define FT_LIBHARFBUZZ "libharfbuzz-0.dll"
++#    define FT_LIBHARFBUZZ "libharfbuzz.dll"
+ #  else
+ #    ifdef __APPLE__
+-#      define FT_LIBHARFBUZZ "libharfbuzz.0.dylib"
++#      define FT_LIBHARFBUZZ "libharfbuzz.dylib"
+ #    else
+-#      define FT_LIBHARFBUZZ "libharfbuzz.so.0"
++#      define FT_LIBHARFBUZZ "libharfbuzz.so"
+ #    endif
+ #  endif
+ #endif
