@@ -1,5 +1,7 @@
 add_executable(util-tests
   animated_image_tests.cpp
+  elf_parser_tests.cpp
+  cue_parser_tests.cpp
   image_tests.cpp
 )
 

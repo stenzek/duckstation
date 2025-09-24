@@ -8,6 +8,7 @@
 #include "common/string_util.h"
 
 #include <cstdarg>
+#include <sstream>
 
 LOG_CHANNEL(CueParser);
 
@@ -59,6 +60,26 @@ bool CueParser::File::Parse(std::FILE* fp, Error* error)
     if (!ParseLine(line, line_number, error))
       return false;
 
+    line_number++;
+  }
+
+  if (!CompleteLastTrack(line_number, error))
+    return false;
+
+  if (!SetTrackLengths(line_number, error))
+    return false;
+
+  return true;
+}
+
+bool CueParser::File::Parse(const std::string& buffer, Error* error)
+{
+  u32 line_number = 1;
+  std::istringstream ss(buffer);
+  for (std::string line; std::getline(ss, line);)
+  {
+    if (!ParseLine(line.c_str(), line_number, error))
+      return false;
     line_number++;
   }
 
