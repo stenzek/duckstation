@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "system.h"
 
+#include "util/animated_image.h"
 #include "util/cd_image.h"
 #include "util/elf_file.h"
 #include "util/http_downloader.h"
@@ -2133,18 +2134,17 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
                  Path::GetFileTitle(ret));
 
-        Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
-        std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
-                    MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
-        serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
+        static constexpr AnimatedImage::FrameDelay ICON_FRAME_DELAY = {1, 5}; // 200ms per frame
+        AnimatedImage image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT,
+                            static_cast<u32>(fi.icon_frames.size()), ICON_FRAME_DELAY);
+        for (size_t i = 0; i < fi.icon_frames.size(); i++)
+          image.SetPixels(static_cast<u32>(i), fi.icon_frames[i].pixels, MemoryCardImage::ICON_WIDTH * sizeof(u32));
+
+        serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str(), AnimatedImage::DEFAULT_SAVE_QUALITY, &error);
         if (serial_entry->icon_was_extracted)
-        {
           return ret;
-        }
         else
-        {
-          ERROR_LOG("Failed to save memory card icon to {}.", ret);
-        }
+          ERROR_LOG("Failed to save memory card icon to {}: {}", Path::GetFileName(ret), error.GetDescription());
       }
     }
   }
