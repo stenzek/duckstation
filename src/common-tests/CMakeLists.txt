@@ -1,7 +1,7 @@
 add_executable(common-tests
   bitutils_tests.cpp
   file_system_tests.cpp
-  gsvector.cpp
+  gsvector_tests.cpp
   gsvector_yuvtorgb_test.cpp
   hash_tests.cpp
   path_tests.cpp
