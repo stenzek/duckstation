@@ -40,6 +40,7 @@ public:
   ~FixedHeapArray() { deallocate(); }
 
   size_type size() const { return SIZE; }
+  size_type size_bytes() const { return SIZE * sizeof(T); }
   size_type capacity() const { return SIZE; }
   bool empty() const { return false; }
 
@@ -234,6 +235,7 @@ public:
   ~DynamicHeapArray() { internal_deallocate(); }
 
   size_type size() const { return m_size; }
+  size_type size_bytes() const { return m_size * sizeof(T); }
   size_type capacity() const { return m_size; }
   bool empty() const { return (m_size == 0); }
 
