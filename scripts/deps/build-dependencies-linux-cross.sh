@@ -89,13 +89,13 @@ if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; t
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
 		-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz"  \
-		-o "libbacktrace-$LIBBACKTRACE.tar.gz" "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
+		-o "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz" "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE_COMMIT.tar.gz" \
 		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
-		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
-		-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
-		-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG.tar.gz" \
-		-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz" \
-		-o "soundtouch-$SOUNDTOUCH.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH.tar.gz"
+		-o "cpuinfo-$CPUINFO_COMMIT.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO_COMMIT.tar.gz" \
+		-o "discord-rpc-$DISCORD_RPC_COMMIT.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC_COMMIT.tar.gz" \
+		-o "plutosvg-$PLUTOSVG_COMMIT.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG_COMMIT.tar.gz" \
+		-o "shaderc-$SHADERC_COMMIT.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC_COMMIT.tar.gz" \
+		-o "soundtouch-$SOUNDTOUCH_COMMIT.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH_COMMIT.tar.gz"
 fi
 
 cat > SHASUMS <<EOF
@@ -113,20 +113,20 @@ $QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
 $QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
 $QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
 $QTWAYLAND_XZ_HASH  qtwayland-everywhere-src-$QT.tar.xz
-$LIBBACKTRACE_GZ_HASH  libbacktrace-$LIBBACKTRACE.tar.gz
+$LIBBACKTRACE_GZ_HASH  libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz
 $SDL3_GZ_HASH  SDL3-$SDL3.tar.gz
-$CPUINFO_GZ_HASH  cpuinfo-$CPUINFO.tar.gz
-$DISCORD_RPC_GZ_HASH  discord-rpc-$DISCORD_RPC.tar.gz
-$PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG.tar.gz
-$SHADERC_GZ_HASH  shaderc-$SHADERC.tar.gz
-$SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH.tar.gz
+$CPUINFO_GZ_HASH  cpuinfo-$CPUINFO_COMMIT.tar.gz
+$DISCORD_RPC_GZ_HASH  discord-rpc-$DISCORD_RPC_COMMIT.tar.gz
+$PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG_COMMIT.tar.gz
+$SHADERC_GZ_HASH  shaderc-$SHADERC_COMMIT.tar.gz
+$SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH_COMMIT.tar.gz
 EOF
 
 shasum -a 256 --check SHASUMS
 
 # Have to clone with git, because it does version detection.
 if [[ "$SKIP_DOWNLOAD" != true && ! -d "SPIRV-Cross" ]]; then
-	git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
+	git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS_TAG --depth 1
 	if [ "$(git --git-dir=SPIRV-Cross/.git rev-parse HEAD)" != "$SPIRV_CROSS_SHA" ]; then
 		echo "SPIRV-Cross version mismatch, expected $SPIRV_CROSS_SHA, got $(git rev-parse HEAD)"
 		exit 1
@@ -183,9 +183,9 @@ EOF
 
 # NOTE: Must be a shared library because otherwise aarch64 libgcc symbols are missing when building with clang.
 echo "Building libbacktrace..."
-rm -fr "libbacktrace-$LIBBACKTRACE"
-tar xf "libbacktrace-$LIBBACKTRACE.tar.gz"
-cd "libbacktrace-$LIBBACKTRACE"
+rm -fr "libbacktrace-$LIBBACKTRACE_COMMIT"
+tar xf "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz"
+cd "libbacktrace-$LIBBACKTRACE_COMMIT"
 ./configure --prefix="$INSTALLDIR" --build=x86_64-linux-gnu --host="${CROSSTRIPLET}" --with-pic --enable-shared --disable-static
 make
 make install
@@ -375,9 +375,9 @@ ninja install
 cd ../../
 
 echo "Building shaderc..."
-rm -fr "shaderc-$SHADERC"
-tar xf "shaderc-$SHADERC.tar.gz"
-cd "shaderc-$SHADERC"
+rm -fr "shaderc-$SHADERC_COMMIT"
+tar xf "shaderc-$SHADERC_COMMIT.tar.gz"
+cd "shaderc-$SHADERC_COMMIT"
 cmake "${CMAKE_COMMON[@]}" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
@@ -392,36 +392,36 @@ ninja -C build install
 cd ..
 
 echo "Building cpuinfo..."
-rm -fr "cpuinfo-$CPUINFO"
-tar xf "cpuinfo-$CPUINFO.tar.gz"
-cd "cpuinfo-$CPUINFO"
+rm -fr "cpuinfo-$CPUINFO_COMMIT"
+tar xf "cpuinfo-$CPUINFO_COMMIT.tar.gz"
+cd "cpuinfo-$CPUINFO_COMMIT"
 cmake "${CMAKE_COMMON[@]}" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
 
 echo "Building discord-rpc..."
-rm -fr "discord-rpc-$DISCORD_RPC"
-tar xf "discord-rpc-$DISCORD_RPC.tar.gz"
-cd "discord-rpc-$DISCORD_RPC"
+rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
+tar xf "discord-rpc-$DISCORD_RPC_COMMIT.tar.gz"
+cd "discord-rpc-$DISCORD_RPC_COMMIT"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
 
 echo "Building plutosvg..."
-rm -fr "plutosvg-$PLUTOSVG"
-tar xf "plutosvg-$PLUTOSVG.tar.gz"
-cd "plutosvg-$PLUTOSVG"
+rm -fr "plutosvg-$PLUTOSVG_COMMIT"
+tar xf "plutosvg-$PLUTOSVG_COMMIT.tar.gz"
+cd "plutosvg-$PLUTOSVG_COMMIT"
 cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
 
 echo "Building soundtouch..."
-rm -fr "soundtouch-$SOUNDTOUCH"
-tar xf "soundtouch-$SOUNDTOUCH.tar.gz"
-cd "soundtouch-$SOUNDTOUCH"
+rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
+tar xf "soundtouch-$SOUNDTOUCH_COMMIT.tar.gz"
+cd "soundtouch-$SOUNDTOUCH_COMMIT"
 cmake "${CMAKE_COMMON[@]}" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install

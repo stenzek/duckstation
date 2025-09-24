@@ -68,15 +68,15 @@ call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/re
 call :downloadfile "zlib-ng-%ZLIBNG%.tar.gz" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/%ZLIBNG%.tar.gz" "%ZLIBNG_GZ_HASH%" || goto error
 call :downloadfile "zstd-%ZSTD%.tar.gz" "https://github.com/facebook/zstd/releases/download/v%ZSTD%/zstd-%ZSTD%.tar.gz" "%ZSTD_GZ_HASH%" || goto error
 
-call :downloadfile "cpuinfo-%CPUINFO%.tar.gz" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO%.tar.gz" "%CPUINFO_GZ_HASH%" || goto error
-call :downloadfile "discord-rpc-%DISCORD_RPC%.tar.gz" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.tar.gz" "%DISCORD_RPC_GZ_HASH%" || goto error
-call :downloadfile "plutosvg-%PLUTOSVG%.tar.gz" "https://github.com/stenzek/plutosvg/archive/%PLUTOSVG%.tar.gz" "%PLUTOSVG_GZ_HASH%" || goto error
-call :downloadfile "shaderc-%SHADERC%.tar.gz" "https://github.com/stenzek/shaderc/archive/%SHADERC%.tar.gz" "%SHADERC_GZ_HASH%" || goto error
-call :downloadfile "soundtouch-%SOUNDTOUCH%.tar.gz" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.tar.gz" "%SOUNDTOUCH_GZ_HASH%" || goto error
-call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" "%DXCOMPILER_ZIP_HASH%" || goto error
+call :downloadfile "cpuinfo-%CPUINFO_COMMIT%.tar.gz" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO_COMMIT%.tar.gz" "%CPUINFO_GZ_HASH%" || goto error
+call :downloadfile "discord-rpc-%DISCORD_RPC_COMMIT%.tar.gz" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC_COMMIT%.tar.gz" "%DISCORD_RPC_GZ_HASH%" || goto error
+call :downloadfile "plutosvg-%PLUTOSVG_COMMIT%.tar.gz" "https://github.com/stenzek/plutosvg/archive/%PLUTOSVG_COMMIT%.tar.gz" "%PLUTOSVG_GZ_HASH%" || goto error
+call :downloadfile "shaderc-%SHADERC_COMMIT%.tar.gz" "https://github.com/stenzek/shaderc/archive/%SHADERC_COMMIT%.tar.gz" "%SHADERC_GZ_HASH%" || goto error
+call :downloadfile "soundtouch-%SOUNDTOUCH_COMMIT%.tar.gz" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH_COMMIT%.tar.gz" "%SOUNDTOUCH_GZ_HASH%" || goto error
+call :downloadfile "dxcompiler-%DXCOMPILER_VERSION%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER_VERSION%" "%DXCOMPILER_ZIP_HASH%" || goto error
 
 if not exist SPIRV-Cross\ (
-  git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b %SPIRV_CROSS% --depth 1 || goto error
+  git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b %SPIRV_CROSS_TAG% --depth 1 || goto error
   pushd SPIRV-Cross
   git reset --hard %SPIRV_CROSS_SHA% || goto error
   popd
@@ -247,9 +247,9 @@ ninja install || goto error
 cd ..\.. || goto error
 
 echo Building shaderc...
-rmdir /S /Q "shaderc-%SHADERC%"
-tar -xf "shaderc-%SHADERC%.tar.gz" || goto error
-cd "shaderc-%SHADERC%" || goto error
+rmdir /S /Q "shaderc-%SHADERC_COMMIT%"
+tar -xf "shaderc-%SHADERC_COMMIT%.tar.gz" || goto error
+cd "shaderc-%SHADERC_COMMIT%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -264,27 +264,27 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building cpuinfo...
-rmdir /S /Q "cpuinfo-%CPUINFO%"
-tar -xf "cpuinfo-%CPUINFO%.tar.gz" || goto error
-cd "cpuinfo-%CPUINFO%" || goto error
+rmdir /S /Q "cpuinfo-%CPUINFO_COMMIT%"
+tar -xf "cpuinfo-%CPUINFO_COMMIT%.tar.gz" || goto error
+cd "cpuinfo-%CPUINFO_COMMIT%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
 echo Building discord-rpc...
-rmdir /S /Q "discord-rpc-%DISCORD_RPC%"
-tar -xf "discord-rpc-%DISCORD_RPC%.tar.gz" || goto error
-cd "discord-rpc-%DISCORD_RPC%" || goto error
+rmdir /S /Q "discord-rpc-%DISCORD_RPC_COMMIT%"
+tar -xf "discord-rpc-%DISCORD_RPC_COMMIT%.tar.gz" || goto error
+cd "discord-rpc-%DISCORD_RPC_COMMIT%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
 echo Building plutosvg...
-rmdir /S /Q "plutosvg-%PLUTOSVG%"
-tar -xf "plutosvg-%PLUTOSVG%.tar.gz" || goto error
-cd "plutosvg-%PLUTOSVG%" || goto error
+rmdir /S /Q "plutosvg-%PLUTOSVG_COMMIT%"
+tar -xf "plutosvg-%PLUTOSVG_COMMIT%.tar.gz" || goto error
+cd "plutosvg-%PLUTOSVG_COMMIT%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -292,9 +292,9 @@ cd .. || goto error
 
 rem This currently isn't using clang-cl. It probably should, might be losing a little speed.
 echo Building soundtouch...
-rmdir /S /Q "soundtouch-%SOUNDTOUCH%"
-tar -xf "soundtouch-%SOUNDTOUCH%.tar.gz" || goto error
-cd "soundtouch-%SOUNDTOUCH%" || goto error
+rmdir /S /Q "soundtouch-%SOUNDTOUCH_COMMIT%"
+tar -xf "soundtouch-%SOUNDTOUCH_COMMIT%.tar.gz" || goto error
+cd "soundtouch-%SOUNDTOUCH_COMMIT%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -306,10 +306,10 @@ mkdir "%INSTALLDIR%\include"
 mkdir "%INSTALLDIR%\lib"
 
 echo Extracting DXCompiler...
-rmdir /S /Q "dxcompiler-%DXCOMPILER%"
-mkdir "dxcompiler-%DXCOMPILER%"
-cd "dxcompiler-%DXCOMPILER%" || goto error
-%SEVENZIP% x "..\dxcompiler-%DXCOMPILER%.zip" || goto error
+rmdir /S /Q "dxcompiler-%DXCOMPILER_VERSION%"
+mkdir "dxcompiler-%DXCOMPILER_VERSION%"
+cd "dxcompiler-%DXCOMPILER_VERSION%" || goto error
+%SEVENZIP% x "..\dxcompiler-%DXCOMPILER_VERSION%.zip" || goto error
 copy build\native\include\* "%INSTALLDIR%\include" || goto error
 copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
 copy build\native\lib\arm64\*.lib "%INSTALLDIR%\lib" || goto error
