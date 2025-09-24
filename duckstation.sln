@@ -55,6 +55,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rapidyaml", "dep\rapidyaml\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-mini", "src\duckstation-mini\duckstation-mini.vcxproj", "{FA259BC0-1007-4FD9-8A47-87CC0ECB8445}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util-tests", "src\util-tests\util-tests.vcxproj", "{15538AD7-2201-45C2-B088-BBB7F37BD7F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -951,6 +953,30 @@ Global
 		{FA259BC0-1007-4FD9-8A47-87CC0ECB8445}.ReleaseLTCG-Clang|x64.ActiveCfg = ReleaseLTCG-Clang|x64
 		{FA259BC0-1007-4FD9-8A47-87CC0ECB8445}.ReleaseLTCG-Clang-SSE2|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
 		{FA259BC0-1007-4FD9-8A47-87CC0ECB8445}.ReleaseLTCG-Clang-SSE2|x64.ActiveCfg = ReleaseLTCG-Clang-SSE2|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug|ARM64.ActiveCfg = Debug-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug|x64.ActiveCfg = Debug|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug-Clang|ARM64.ActiveCfg = Debug-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug-Clang|ARM64.Build.0 = Debug-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug-Clang|x64.ActiveCfg = Debug-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug-Clang-SSE2|ARM64.ActiveCfg = Debug-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Debug-Clang-SSE2|x64.ActiveCfg = Debug-Clang-SSE2|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.DebugFast|ARM64.ActiveCfg = DebugFast-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.DebugFast|x64.ActiveCfg = DebugFast|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.DebugFast-Clang|ARM64.ActiveCfg = DebugFast-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.DebugFast-Clang|x64.ActiveCfg = DebugFast-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Devel-Clang|ARM64.ActiveCfg = Devel-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Devel-Clang|x64.ActiveCfg = Devel-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Release|ARM64.ActiveCfg = Release-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Release|ARM64.Build.0 = Release-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Release|x64.ActiveCfg = Release|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Release-Clang|ARM64.ActiveCfg = Release-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.Release-Clang|x64.ActiveCfg = Release-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG|x64.ActiveCfg = ReleaseLTCG|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG-Clang|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG-Clang|x64.ActiveCfg = ReleaseLTCG-Clang|x64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG-Clang-SSE2|ARM64.ActiveCfg = ReleaseLTCG-Clang|ARM64
+		{15538AD7-2201-45C2-B088-BBB7F37BD7F5}.ReleaseLTCG-Clang-SSE2|x64.ActiveCfg = ReleaseLTCG-Clang-SSE2|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
