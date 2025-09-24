@@ -310,11 +310,12 @@ function(add_util_resources target)
       message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
     endif()
 
-    # Copy shaderc/spirv-cross into the bundle
+    # Copy dynamically-loaded libraries (harfbuzz/shaderc/spirv-cross) into the bundle
+    get_target_property(HARFBUZZ_LIBRARY harfbuzz::harfbuzz IMPORTED_LOCATION_RELEASE)
     get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_SONAME_RELEASE)
     get_target_property(SHADERC_LIBRARY Shaderc::shaderc_shared IMPORTED_LOCATION_RELEASE)
-    target_sources(${target} PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
-    set_source_files_properties("${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+    target_sources(${target} PRIVATE "${HARFBUZZ_LIBRARY}" "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
+    set_source_files_properties("${HARFBUZZ_LIBRARY}" "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
 
     # Copy FFmpeg libraries into the bundle
     foreach(component avcodec avformat avutil swresample swscale)
