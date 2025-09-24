@@ -121,7 +121,7 @@ echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE_COMMIT"
 tar xf "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz"
 cd "libbacktrace-$LIBBACKTRACE_COMMIT"
-./configure --prefix="$INSTALLDIR" --with-pic
+CFLAGS="-fmacro-prefix-map=\"${PWD}\"=. -ffile-prefix-map=\"${PWD}\"=." ./configure --prefix="$INSTALLDIR" --with-pic
 make
 make install
 cd ..

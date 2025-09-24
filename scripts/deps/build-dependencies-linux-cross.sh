@@ -186,7 +186,7 @@ echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE_COMMIT"
 tar xf "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz"
 cd "libbacktrace-$LIBBACKTRACE_COMMIT"
-./configure --prefix="$INSTALLDIR" --build=x86_64-linux-gnu --host="${CROSSTRIPLET}" --with-pic --enable-shared --disable-static
+CFLAGS="-fmacro-prefix-map=\"${PWD}\"=. -ffile-prefix-map=\"${PWD}\"=." ./configure --prefix="$INSTALLDIR" --build=x86_64-linux-gnu --host="${CROSSTRIPLET}" --with-pic --enable-shared --disable-static
 make
 make install
 cd ..
