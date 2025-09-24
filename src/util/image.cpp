@@ -123,6 +123,12 @@ void Image::Resize(u32 new_width, u32 new_height, ImageFormat format, bool prese
   if (m_width == new_width && m_height == new_height && m_format == format)
     return;
 
+  if (new_width == 0 || new_height == 0)
+  {
+    Invalidate();
+    return;
+  }
+
   if (!preserve)
     m_pixels.reset();
 
@@ -767,9 +773,9 @@ bool Image::ConvertToRGBA8(void* RESTRICT pixels_out, u32 pixels_out_pitch, cons
           row_pixels_in += sizeof(u16);
           const u8 a1 = Truncate8(pixel_in & 0x01);
           const u8 r5 = Truncate8((pixel_in >> 11) & 0x1F);
-          const u8 g6 = Truncate8((pixel_in >> 6) & 0x1F);
+          const u8 g6 = Truncate8((pixel_in >> 6) & 0x3F);
           const u8 b5 = Truncate8((pixel_in >> 1) & 0x1F);
-          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
+          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 2) | (g6 & 3)) << 8) |
                             (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
           std::memcpy(row_pixels_out, &rgba8, sizeof(u32));
           row_pixels_out += sizeof(u32);
@@ -1079,7 +1085,7 @@ bool PNGBufferSaver(const Image& image, DynamicHeapArray<u8>* data, u8 quality, 
     return false;
 
   png_set_write_fn(
-    png_ptr, data,
+    png_ptr, &iodata,
     [](png_structp png_ptr, png_bytep data_ptr, png_size_t size) {
       IOData* iodata = static_cast<IOData*>(png_get_io_ptr(png_ptr));
       const size_t new_pos = iodata->buffer_pos + size;
