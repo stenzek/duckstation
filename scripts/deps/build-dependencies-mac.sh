@@ -183,11 +183,12 @@ cmake --build build --parallel
 cmake --install build
 cd ..
 
-echo "Building FreeType without HarfBuzz..."
+echo "Building FreeType..."
 rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.gz"
 cd "freetype-$FREETYPE"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build
+patch -p1 < "$SCRIPTDIR/freetype-harfbuzz-soname.patch"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build
 cmake --build build --parallel
 cmake --install build
 cd ..
@@ -197,15 +198,6 @@ rm -fr "harfbuzz-$HARFBUZZ"
 tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build
-cmake --build build --parallel
-cmake --install build
-cd ..
-
-echo "Building FreeType with HarfBuzz..."
-rm -fr "freetype-$FREETYPE"
-tar xf "freetype-$FREETYPE.tar.gz"
-cd "freetype-$FREETYPE"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
 cmake --build build --parallel
 cmake --install build
 cd ..

@@ -36,6 +36,7 @@ find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-con
 find_package(PNG 1.6.50 REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(Freetype 2.13.3 REQUIRED)
+find_package(harfbuzz REQUIRED)
 find_package(plutosvg 0.0.6 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
