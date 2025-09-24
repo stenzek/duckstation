@@ -1,4 +1,6 @@
 add_library(util
+  animated_image.cpp
+  animated_image.h
   audio_stream.cpp
   audio_stream.h
   cd_image.cpp
