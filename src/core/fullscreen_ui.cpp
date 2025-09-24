@@ -8932,13 +8932,20 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
       if (Achievements::GetGamePath() == entry->path)
         cover_it->second = Achievements::GetGameIconPath();
     }
-
-    // because memcard icons are crap res
-    if (fallback_to_icon && cover_it->second.empty())
-      cover_it->second = GameList::GetGameIconPath(entry->serial, entry->path);
   }
 
-  GPUTexture* const tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
+  // because memcard icons are crap res
+  if (fallback_to_icon && cover_it->second.empty())
+  {
+    cover_it = s_state.icon_image_map.find(entry->serial);
+    if (cover_it == s_state.icon_image_map.end())
+    {
+      std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+      cover_it = s_state.icon_image_map.emplace(entry->serial, std::move(icon_path)).first;
+    }
+  }
+
+  GPUTexture* const tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second) : nullptr;
   return tex ? tex : (return_default_image ? GetTextureForGameListEntryType(entry->type) : nullptr);
 }
 
