@@ -132,6 +132,7 @@ using ImGuiFullscreen::PopPrimaryColor;
 using ImGuiFullscreen::PushPrimaryColor;
 using ImGuiFullscreen::QueueResetFocus;
 using ImGuiFullscreen::RangeButton;
+using ImGuiFullscreen::RenderMultiLineShadowedTextClipped;
 using ImGuiFullscreen::RenderShadowedTextClipped;
 using ImGuiFullscreen::ResetFocusHere;
 using ImGuiFullscreen::RightAlignNavButtons;
@@ -431,9 +432,11 @@ static void PopulateGameListEntryList();
 std::string_view GetKeyForGameListEntry(const GameList::Entry* entry);
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
-                                    bool fallback_to_icon);
+                                    bool fallback_to_icon, bool return_default_image);
 static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
 static GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
+static void DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon, bool fallback_to_icon,
+                              bool draw_on_placeholder, ImDrawList* dl, const ImRect& rect);
 static void SwitchToAchievements();
 static void SwitchToLeaderboards();
 
@@ -523,6 +526,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::shared_ptr<GPUTexture> fallback_exe_texture;
   std::shared_ptr<GPUTexture> fallback_psf_texture;
   std::shared_ptr<GPUTexture> fallback_playlist_texture;
+  std::shared_ptr<GPUTexture> cover_placeholder_texture;
 
   // Background
   std::unique_ptr<GPUTexture> app_background_texture;
@@ -1339,6 +1343,7 @@ bool FullscreenUI::LoadResources()
   s_state.fallback_exe_texture = LoadTexture("fullscreenui/exe-file.png");
   s_state.fallback_psf_texture = LoadTexture("fullscreenui/psf-file.png");
   s_state.fallback_playlist_texture = LoadTexture("fullscreenui/playlist-file.png");
+  s_state.cover_placeholder_texture = LoadTexture("images/cover-placeholder.png");
 
   if (!CompileTransitionPipelines())
     return false;
@@ -1355,6 +1360,7 @@ void FullscreenUI::DestroyResources()
   g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
   s_state.transition_state = TransitionState::Inactive;
   s_state.transition_start_callback = {};
+  s_state.cover_placeholder_texture.reset();
   s_state.fallback_playlist_texture.reset();
   s_state.fallback_psf_texture.reset();
   s_state.fallback_exe_texture.reset();
@@ -8048,14 +8054,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (!visible)
         continue;
 
-      GPUTexture* cover_texture = GetGameListCover(entry, false, true);
-      const ImRect image_rect(CenterImage(
-        ImRect(ImVec2(mbb.title_bb.Min.x - row_left_margin, mbb.title_bb.Min.y),
-               ImVec2(mbb.title_bb.Min.x - row_image_padding, mbb.title_bb.Min.y + image_size)),
-        ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
+      DrawGameListCover(entry, false, true, false, ImGui::GetWindowDrawList(),
+                        ImRect(ImVec2(mbb.title_bb.Min.x - row_left_margin, mbb.title_bb.Min.y),
+                               ImVec2(mbb.title_bb.Min.x - row_image_padding, mbb.title_bb.Min.y + image_size)));
 
-      ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
-                                           ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
       RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
                                 mbb.title_bb.Max, text_color, entry->GetDisplayTitle(s_state.show_localized_titles),
                                 &mbb.title_size, ImVec2(0.0f, 0.0f), mbb.title_size.x, &mbb.title_bb);
@@ -8133,8 +8135,9 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   {
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
-    GPUTexture* cover_texture = selected_entry ? GetGameListCover(selected_entry, false, false) :
-                                                 GetTextureForGameListEntryType(GameList::EntryType::MaxCount);
+
+    GPUTexture* const cover_texture = selected_entry ? GetGameListCover(selected_entry, false, false, true) :
+                                                       GetTextureForGameListEntryType(GameList::EntryType::MaxCount);
     if (cover_texture)
     {
       const ImRect image_rect(CenterImage(
@@ -8447,13 +8450,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       bb.Min += style.FramePadding;
       bb.Max -= style.FramePadding;
 
-      GPUTexture* const cover_texture = GetGameListCover(entry, false, false);
-      const ImRect image_rect(
-        CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
-                                                                static_cast<float>(cover_texture->GetHeight()))));
-
-      dl->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                   IM_COL32(255, 255, 255, 255));
+      DrawGameListCover(entry, false, false, true, dl, ImRect(bb.Min, bb.Min + image_size));
 
       GPUTexture* const cover_trophy = GetGameListCoverTrophy(entry, image_size);
       if (cover_trophy)
@@ -8467,7 +8464,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       if (draw_title)
       {
         const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
-        ImGuiFullscreen::RenderMultiLineShadowedTextClipped(
+        RenderMultiLineShadowedTextClipped(
           dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, text_color,
           entry->GetDisplayTitle(s_state.show_localized_titles), LAYOUT_CENTER_ALIGN_TEXT, image_width, &title_bb);
       }
@@ -8919,7 +8916,7 @@ void FullscreenUI::SwitchToGameList()
 }
 
 GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
-                                           bool fallback_to_icon)
+                                           bool fallback_to_icon, bool return_default_image)
 {
   // lookup and grab cover image
   auto cover_it = s_state.cover_image_map.find(entry->path);
@@ -8941,8 +8938,8 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
       cover_it->second = GameList::GetGameIconPath(entry->serial, entry->path);
   }
 
-  GPUTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
-  return tex ? tex : GetTextureForGameListEntryType(entry->type);
+  GPUTexture* const tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
+  return tex ? tex : (return_default_image ? GetTextureForGameListEntryType(entry->type) : nullptr);
 }
 
 GPUTexture* FullscreenUI::GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size)
@@ -8993,7 +8990,42 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame(const std::string& game_path)
   if (!entry)
     return s_state.fallback_disc_texture.get();
 
-  return GetGameListCover(entry, true, true);
+  return GetGameListCover(entry, true, true, true);
+}
+
+void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
+                                     bool fallback_to_icon, bool draw_on_placeholder, ImDrawList* dl,
+                                     const ImRect& rect)
+{
+  GPUTexture* const cover_texture =
+    GetGameListCover(entry, fallback_to_achievements_icon, fallback_to_icon, !draw_on_placeholder);
+  if (cover_texture)
+  {
+    // simple case, has cover
+    const ImRect image_rect = CenterImage(
+      rect, ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight())));
+    dl->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                 IM_COL32(255, 255, 255, 255));
+    return;
+  }
+
+  // draw placeholder
+  const ImRect image_rect =
+    CenterImage(rect, ImVec2(static_cast<float>(s_state.cover_placeholder_texture->GetWidth()),
+                             static_cast<float>(s_state.cover_placeholder_texture->GetHeight())));
+  dl->AddImage(s_state.cover_placeholder_texture.get(), image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
+               ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+
+  // and the text
+  const float& font_size = UIStyle.LargeFontSize;
+  const float& font_weight = UIStyle.BoldFontWeight;
+  const std::string_view title = entry->GetDisplayTitle(s_state.show_localized_titles);
+  const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, image_rect.GetWidth(),
+                                                        image_rect.GetWidth(), IMSTR_START_END(title));
+  const ImVec2 title_offset = ImVec2(0.0f, std::max((image_rect.GetHeight() - title_size.y) * 0.5f, 0.0f));
+  RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, image_rect.Min + title_offset,
+                                     image_rect.Max, IM_COL32(255, 255, 255, 255), title, LAYOUT_CENTER_ALIGN_TEXT,
+                                     image_rect.GetWidth(), &image_rect);
 }
 
 //////////////////////////////////////////////////////////////////////////
