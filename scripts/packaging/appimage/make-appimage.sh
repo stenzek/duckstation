@@ -41,6 +41,7 @@ declare -a MANUAL_LIBS=(
 	"libswscale.so.8"
 	"libswresample.so.5"
 	"libdiscord-rpc.so"
+	"libharfbuzz.so"
 	"libfreetype.so.6"
 	"libshaderc_ds.so"
 	"libspirv-cross-c-shared.so.0"
