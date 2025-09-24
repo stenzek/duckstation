@@ -102,8 +102,8 @@ for encoder in $FFMPEG_ENCODER_LIST; do
 done
 
 if [ "$SKIP_DOWNLOAD" != true ]; then
-	if [ ! -f "ffmpeg-$FFMPEG.tar.xz" ]; then
-		curl -C - -L -O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz"
+	if [ ! -f "ffmpeg-$FFMPEG_VERSION.tar.xz" ]; then
+		curl -C - -L -O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.xz"
 	fi
 	if [ ! -f "lame-$LAME.tar.gz" ]; then
 		curl -C - -L -o "lame-$LAME.tar.gz" "https://sourceforge.net/projects/lame/files/lame/$LAME/lame-$LAME.tar.gz/download"
@@ -153,7 +153,7 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 fi
 
 cat > SHASUMS <<EOF
-$FFMPEG_XZ_HASH  ffmpeg-$FFMPEG.tar.xz
+$FFMPEG_XZ_HASH  ffmpeg-$FFMPEG_VERSION.tar.xz
 5393759308f6d7bc9eb1ed8013c954e03aadb85f0ed6e96f969a5df447b0f79c  AMF-headers.tar.gz
 7322744f239a0d8460fde84e92cca77f2fe9d7e25a213789659df9e86b696b42  fdk-aac-stripped-$FDK_AAC.tar.gz
 f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920  flac-$FLAC.tar.xz
@@ -319,9 +319,9 @@ cmake --install build-ds
 cd ..
 
 echo "Building ffmpeg..."
-rm -fr "ffmpeg-$FFMPEG"
-tar xf "ffmpeg-$FFMPEG.tar.xz"
-cd "ffmpeg-$FFMPEG"
+rm -fr "ffmpeg-$FFMPEG_VERSION"
+tar xf "ffmpeg-$FFMPEG_VERSION.tar.xz"
+cd "ffmpeg-$FFMPEG_VERSION"
 mkdir build
 cd build
 ../configure --prefix="$INSTALLDIR" --disable-static --enable-shared \

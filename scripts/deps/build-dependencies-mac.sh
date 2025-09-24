@@ -13,7 +13,7 @@ merge_binaries() {
 "
   pushd "$X86DIR"
   for X86BIN in $(find . -type f \( -name '*.dylib' -o -name '*.a' -o -perm +111 \)); do
-    if file "$X86DIR/$X86BIN" | grep "Mach-O " >/dev/null; then
+    if file "$X86DIR/$X86BIN" | grep "Mach-O " | grep " x86_64" >/dev/null; then
       ARMBIN="${ARMDIR}/${X86BIN}"
       echo "Merge $ARMBIN to $X86BIN..."
       lipo -create "$X86BIN" "$ARMBIN" -o "$X86BIN"
@@ -72,18 +72,18 @@ $LIBWEBP_GZ_HASH  libwebp-$LIBWEBP.tar.gz
 $LIBZIP_GZ_HASH  libzip-$LIBZIP.tar.gz
 $SDL3_GZ_HASH  SDL3-$SDL3.tar.gz
 $ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
-$FFMPEG_XZ_HASH  ffmpeg-$FFMPEG.tar.xz
+$FFMPEG_XZ_HASH  ffmpeg-$FFMPEG_VERSION.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
 $QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
 $QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
 $QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
 $QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
 $QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
-$CPUINFO_GZ_HASH  cpuinfo-$CPUINFO.tar.gz
-$DISCORD_RPC_GZ_HASH  discord-rpc-$DISCORD_RPC.tar.gz
-$PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG.tar.gz
-$SHADERC_GZ_HASH  shaderc-$SHADERC.tar.gz
-$SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH.tar.gz
+$CPUINFO_GZ_HASH  cpuinfo-$CPUINFO_COMMIT.tar.gz
+$DISCORD_RPC_GZ_HASH  discord-rpc-$DISCORD_RPC_COMMIT.tar.gz
+$PLUTOSVG_GZ_HASH  plutosvg-$PLUTOSVG_COMMIT.tar.gz
+$SHADERC_GZ_HASH  shaderc-$SHADERC_COMMIT.tar.gz
+$SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH_COMMIT.tar.gz
 EOF
 
 curl -L \
@@ -95,24 +95,24 @@ curl -L \
 	-O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.gz" \
 	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
-	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
+	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.xz" \
 	-O "https://github.com/KhronosGroup/MoltenVK/archive/refs/tags/v$MOLTENVK.tar.gz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtsvg-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttools-everywhere-src-$QT.tar.xz" \
 	-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qttranslations-everywhere-src-$QT.tar.xz" \
-	-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
-	-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
-	-o "plutosvg-$PLUTOSVG.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG.tar.gz" \
-	-o "shaderc-$SHADERC.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC.tar.gz" \
-	-o "soundtouch-$SOUNDTOUCH.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH.tar.gz"
+	-o "cpuinfo-$CPUINFO_COMMIT.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO_COMMIT.tar.gz" \
+	-o "discord-rpc-$DISCORD_RPC_COMMIT.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC_COMMIT.tar.gz" \
+	-o "plutosvg-$PLUTOSVG_COMMIT.tar.gz" "https://github.com/stenzek/plutosvg/archive/$PLUTOSVG_COMMIT.tar.gz" \
+	-o "shaderc-$SHADERC_COMMIT.tar.gz" "https://github.com/stenzek/shaderc/archive/$SHADERC_COMMIT.tar.gz" \
+	-o "soundtouch-$SOUNDTOUCH_COMMIT.tar.gz" "https://github.com/stenzek/soundtouch/archive/$SOUNDTOUCH_COMMIT.tar.gz"
 
 shasum -a 256 --check SHASUMS
 
 # Have to clone with git, because it does version detection.
 if [ ! -d "SPIRV-Cross" ]; then
-  git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
+  git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS_TAG --depth 1
 	if [ "$(git --git-dir=SPIRV-Cross/.git rev-parse HEAD)" != "$SPIRV_CROSS_SHA" ]; then
 		echo "SPIRV-Cross version mismatch, expected $SPIRV_CROSS_SHA, got $(git rev-parse HEAD)"
 		exit 1
@@ -220,9 +220,9 @@ make -C build install
 cd ..
 
 echo "Installing FFmpeg..."
-rm -fr "ffmpeg-$FFMPEG"
-tar xf "ffmpeg-$FFMPEG.tar.xz"
-cd "ffmpeg-$FFMPEG"
+rm -fr "ffmpeg-$FFMPEG_VERSION"
+tar xf "ffmpeg-$FFMPEG_VERSION.tar.xz"
+cd "ffmpeg-$FFMPEG_VERSION"
 mkdir build
 cd build
 LDFLAGS="-dead_strip $LDFLAGS" CFLAGS="-Os $CFLAGS" CXXFLAGS="-Os $CXXFLAGS" \
@@ -348,9 +348,9 @@ make install
 cd ../..
 
 echo "Building shaderc..."
-rm -fr "shaderc-$SHADERC"
-tar xf "shaderc-$SHADERC.tar.gz"
-cd "shaderc-$SHADERC"
+rm -fr "shaderc-$SHADERC_COMMIT"
+tar xf "shaderc-$SHADERC_COMMIT.tar.gz"
+cd "shaderc-$SHADERC_COMMIT"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
@@ -365,9 +365,9 @@ cmake --install build
 cd ..
 
 echo "Building cpuinfo..."
-rm -fr "cpuinfo-$CPUINFO"
-tar xf "cpuinfo-$CPUINFO.tar.gz"
-cd "cpuinfo-$CPUINFO"
+rm -fr "cpuinfo-$CPUINFO_COMMIT"
+tar xf "cpuinfo-$CPUINFO_COMMIT.tar.gz"
+cd "cpuinfo-$CPUINFO_COMMIT"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build
 make -C build "-j$NPROCS"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DCPUINFO_LIBRARY_TYPE=shared -DCPUINFO_RUNTIME_TYPE=shared -DCPUINFO_LOG_LEVEL=error -DCPUINFO_LOG_TO_STDIO=ON -DCPUINFO_BUILD_TOOLS=OFF -DCPUINFO_BUILD_UNIT_TESTS=OFF -DCPUINFO_BUILD_MOCK_TESTS=OFF -DCPUINFO_BUILD_BENCHMARKS=OFF -DUSE_SYSTEM_LIBS=ON -B build-arm64
@@ -377,27 +377,27 @@ make -C build install
 cd ..
 
 echo "Building discord-rpc..."
-rm -fr "discord-rpc-$DISCORD_RPC"
-tar xf "discord-rpc-$DISCORD_RPC.tar.gz"
-cd "discord-rpc-$DISCORD_RPC"
+rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
+tar xf "discord-rpc-$DISCORD_RPC_COMMIT.tar.gz"
+cd "discord-rpc-$DISCORD_RPC_COMMIT"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -B build
 cmake --build build --parallel
 cmake --install build
 cd ..
 
 echo "Building plutosvg..."
-rm -fr "plutosvg-$PLUTOSVG"
-tar xf "plutosvg-$PLUTOSVG.tar.gz"
-cd "plutosvg-$PLUTOSVG"
+rm -fr "plutosvg-$PLUTOSVG_COMMIT"
+tar xf "plutosvg-$PLUTOSVG_COMMIT.tar.gz"
+cd "plutosvg-$PLUTOSVG_COMMIT"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DPLUTOSVG_ENABLE_FREETYPE=ON -DPLUTOSVG_BUILD_EXAMPLES=OFF -B build
 cmake --build build --parallel
 cmake --install build
 cd ..
 
 echo "Building soundtouch..."
-rm -fr "soundtouch-$SOUNDTOUCH"
-tar xf "soundtouch-$SOUNDTOUCH.tar.gz"
-cd "soundtouch-$SOUNDTOUCH"
+rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
+tar xf "soundtouch-$SOUNDTOUCH_COMMIT.tar.gz"
+cd "soundtouch-$SOUNDTOUCH_COMMIT"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build
 cmake --build build --parallel
 cmake --install build
