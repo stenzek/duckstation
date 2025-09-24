@@ -4,6 +4,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
     <ClCompile Include="animated_image_tests.cpp" />
+    <ClCompile Include="cue_parser_tests.cpp" />
+    <ClCompile Include="elf_parser_tests.cpp" />
     <ClCompile Include="image_tests.cpp" />
   </ItemGroup>
   <ItemGroup>

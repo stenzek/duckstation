@@ -7,6 +7,7 @@
 #include "common/types.h"
 
 #include <functional>
+#include <string_view>
 
 class Error;
 

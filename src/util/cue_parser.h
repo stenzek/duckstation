@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
 #include "cd_image.h"
+
 #include "common/types.h"
+
 #include <optional>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -69,6 +73,7 @@ public:
   const Track* GetTrack(u32 n) const;
 
   bool Parse(std::FILE* fp, Error* error);
+  bool Parse(const std::string& buffer, Error* error);
 
 private:
   Track* GetMutableTrack(u32 n);
