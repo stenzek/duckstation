@@ -67,8 +67,8 @@ static bool IsUNCPath(const T& path)
 
 static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
 {
-  // no null bytes
-  if (c == 0)
+  // no newlines, don't be silly. or other control characters...
+  if (c <= static_cast<char32_t>(31))
     return false;
 
 #ifdef _WIN32
@@ -76,11 +76,8 @@ static inline bool FileSystemCharacterIsSane(char32_t c, bool strip_slashes)
   if ((c == U'/' || c == U'\\') && strip_slashes)
     return false;
 
-  if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*' || c == 0 ||
-      c <= static_cast<char32_t>(31))
-  {
+  if (c == U'<' || c == U'>' || c == U':' || c == U'"' || c == U'|' || c == U'?' || c == U'*')
     return false;
-  }
 #else
   if (c == '/' && strip_slashes)
     return false;
