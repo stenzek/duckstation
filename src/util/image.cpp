@@ -870,7 +870,7 @@ static void PNGSetErrorFunction(png_structp png_ptr, Error* error)
     [](png_structp png_ptr, png_const_charp message) { WARNING_LOG("libpng warning: {}", message); });
 }
 
-static bool PNGCommonLoader(Image* image, png_structp png_ptr, png_infop info_ptr, std::vector<png_bytep>& row_pointers)
+static bool PNGCommonLoader(Image* image, png_structp png_ptr, png_infop info_ptr)
 {
   png_read_info(png_ptr, info_ptr);
 
@@ -905,11 +905,14 @@ static bool PNGCommonLoader(Image* image, png_structp png_ptr, png_infop info_pt
   png_read_update_info(png_ptr, info_ptr);
 
   image->Resize(width, height, ImageFormat::RGBA8, false);
-  row_pointers.reserve(height);
-  for (u32 y = 0; y < height; y++)
-    row_pointers.push_back(reinterpret_cast<png_bytep>(image->GetRowPixels(y)));
 
-  png_read_image(png_ptr, row_pointers.data());
+  const int passes = png_set_interlace_handling(png_ptr);
+  for (int pass = 0; pass < passes; pass++)
+  {
+    for (u32 y = 0; y < height; y++)
+      png_read_row(png_ptr, reinterpret_cast<png_bytep>(image->GetRowPixels(y)), nullptr);
+  }
+
   return true;
 }
 
@@ -932,8 +935,6 @@ bool PNGFileLoader(Image* image, std::string_view filename, std::FILE* fp, Error
 
   ScopedGuard cleanup([&png_ptr, &info_ptr]() { png_destroy_read_struct(&png_ptr, &info_ptr, nullptr); });
 
-  std::vector<png_bytep> row_pointers;
-
   PNGSetErrorFunction(png_ptr, error);
   if (setjmp(png_jmpbuf(png_ptr)))
   {
@@ -947,7 +948,7 @@ bool PNGFileLoader(Image* image, std::string_view filename, std::FILE* fp, Error
       png_error(png_ptr, "fread() failed");
   });
 
-  return PNGCommonLoader(image, png_ptr, info_ptr, row_pointers);
+  return PNGCommonLoader(image, png_ptr, info_ptr);
 }
 
 bool PNGBufferLoader(Image* image, std::span<const u8> data, Error* error)
@@ -968,8 +969,6 @@ bool PNGBufferLoader(Image* image, std::span<const u8> data, Error* error)
   }
 
   ScopedGuard cleanup([&png_ptr, &info_ptr]() { png_destroy_read_struct(&png_ptr, &info_ptr, nullptr); });
-
-  std::vector<png_bytep> row_pointers;
 
   PNGSetErrorFunction(png_ptr, error);
   if (setjmp(png_jmpbuf(png_ptr)))
@@ -995,7 +994,7 @@ bool PNGBufferLoader(Image* image, std::span<const u8> data, Error* error)
     }
   });
 
-  return PNGCommonLoader(image, png_ptr, info_ptr, row_pointers);
+  return PNGCommonLoader(image, png_ptr, info_ptr);
 }
 
 static void PNGSaveCommon(const Image& image, png_structp png_ptr, png_infop info_ptr, u8 quality)
