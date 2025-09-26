@@ -48,9 +48,11 @@ private:
   void freezeWatchClicked();
   void removeWatchClicked();
   void scanCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
-  void watchCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
   void scanItemChanged(QTableWidgetItem* item);
+  void scanItemDoubleClicked(QTableWidgetItem* item);
+  void watchCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous);
   void watchItemChanged(QTableWidgetItem* item);
+  void watchItemDoubleClicked(QTableWidgetItem* item);
   void updateScanValue();
   void updateScanUi();
 
@@ -61,6 +63,8 @@ private:
   void updateResultsValues();
   void updateWatch();
   void updateWatchValues();
+
+  void tryOpenAddressInMemoryEditor(VirtualMemoryAddress address);
 
   int getSelectedResultIndexFirst() const;
   int getSelectedResultIndexLast() const;
