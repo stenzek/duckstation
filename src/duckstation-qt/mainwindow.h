@@ -33,6 +33,7 @@ class AutoUpdaterWindow;
 class MemoryCardEditorWindow;
 class DebuggerWindow;
 class MemoryScannerWindow;
+class MemoryEditorWindow;
 class CoverDownloadWindow;
 
 struct SystemBootParameters;
@@ -114,6 +115,7 @@ public:
   /// Returns pointer to settings window.
   SettingsWindow* getSettingsWindow();
   ControllerSettingsWindow* getControllerSettingsWindow();
+  MemoryEditorWindow* getMemoryEditorWindow();
 
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
@@ -292,6 +294,7 @@ private:
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
+  void onToolsMemoryEditorTriggered();
   void onToolsMemoryScannerTriggered();
   void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
@@ -345,6 +348,7 @@ private:
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
   MemoryScannerWindow* m_memory_scanner_window = nullptr;
+  MemoryEditorWindow* m_memory_editor_window = nullptr;
   CoverDownloadWindow* m_cover_download_window = nullptr;
 
   bool m_was_paused_by_focus_loss = false;

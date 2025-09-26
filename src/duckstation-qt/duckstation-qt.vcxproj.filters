@@ -49,6 +49,7 @@
     <ClCompile Include="isobrowserwindow.cpp" />
     <ClCompile Include="debuggercodeview.cpp" />
     <ClCompile Include="togglebutton.cpp" />
+    <ClCompile Include="memoryeditorwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -56,7 +57,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="memoryviewwidget.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">
@@ -110,6 +110,8 @@
     <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
     <QtMoc Include="togglebutton.h" />
+    <QtMoc Include="memoryeditorwindow.h" />
+    <QtMoc Include="memoryviewwidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -163,6 +165,7 @@
     <QtUi Include="memorycardrenamefiledialog.ui" />
     <QtUi Include="isobrowserwindow.ui" />
     <QtUi Include="postprocessingoverlayconfigwidget.ui" />
+    <QtUi Include="memoryeditorwindow.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

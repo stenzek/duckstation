@@ -120,6 +120,9 @@ set(SRCS
   memorycardrenamefiledialog.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
+  memoryeditorwindow.cpp
+  memoryeditorwindow.h
+  memoryeditorwindow.ui
   memoryscannerwindow.cpp
   memoryscannerwindow.h
   memoryscannerwindow.ui

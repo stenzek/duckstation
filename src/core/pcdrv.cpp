@@ -8,6 +8,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 LOG_CHANNEL(PCDrv);
@@ -77,7 +78,7 @@ static bool CloseFileHandle(u32 handle)
   return true;
 }
 
-static std::string ResolveHostPath(const std::string& path)
+static std::string ResolveHostPath(std::string_view path)
 {
   // Double-check that it falls within the directory of the root.
   // Not a real sandbox, but emulators shouldn't be treated as such. Don't run untrusted code!
@@ -142,7 +143,7 @@ bool PCDrv::HandleSyscall(u32 instruction_bits, CPU::Registers& regs)
       const bool is_open = (code == 0x103);
       const char* func = (code == 0x102) ? "PCcreat" : "PCopen";
       const u32 mode = regs.a2;
-      std::string filename;
+      SmallString filename;
       if (!CPU::SafeReadMemoryCString(regs.a1, &filename))
       {
         ERROR_LOG("{}: Invalid string", func);

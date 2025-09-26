@@ -36,7 +36,6 @@ protected:
 private:
   void setupAdditionalUi();
   void connectSignals();
-  void disconnectSignals();
   void createModels();
   void setUIEnabled(bool enabled, bool allow_pause);
   void saveCurrentState();

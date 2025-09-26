@@ -240,6 +240,7 @@
     <addaction name="actionCoverDownloader"/>
     <addaction name="actionControllerTest"/>
     <addaction name="separator"/>
+    <addaction name="actionMemoryEditor"/>
     <addaction name="actionMemoryScanner"/>
     <addaction name="actionISOBrowser"/>
     <addaction name="separator"/>
@@ -669,11 +670,11 @@
    <property name="text">
     <string>&amp;Settings</string>
    </property>
-   <property name="menuRole">
-    <enum>QAction::MenuRole::PreferencesRole</enum>
-   </property>
    <property name="toolTip">
     <string>Opens the settings window.</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionSettings2">
@@ -683,11 +684,11 @@
    <property name="text">
     <string>&amp;Settings</string>
    </property>
-   <property name="menuRole">
-    <enum>QAction::MenuRole::PreferencesRole</enum>
-   </property>
    <property name="toolTip">
     <string>Opens the settings window.</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionChangeDiscFromFile">
@@ -1290,6 +1291,14 @@
    </property>
    <property name="toolTip">
     <string>Shows titles for games in their native language.</string>
+   </property>
+  </action>
+  <action name="actionMemoryEditor">
+   <property name="text">
+    <string>Memory &amp;Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens the memory editor window.</string>
    </property>
   </action>
  </widget>

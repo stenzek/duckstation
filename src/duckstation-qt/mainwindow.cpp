@@ -14,6 +14,7 @@
 #include "isobrowserwindow.h"
 #include "logwindow.h"
 #include "memorycardeditorwindow.h"
+#include "memoryeditorwindow.h"
 #include "memoryscannerwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
@@ -881,6 +882,7 @@ void MainWindow::recreate()
 void MainWindow::destroySubWindows()
 {
   QtUtils::CloseAndDeleteWindow(m_cover_download_window);
+  QtUtils::CloseAndDeleteWindow(m_memory_editor_window);
   QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   QtUtils::CloseAndDeleteWindow(m_debugger_window);
   QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
@@ -2135,6 +2137,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.menuChangeDisc->setDisabled(starting_or_not_running);
   m_ui.menuCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionCPUDebugger->setDisabled(achievements_hardcore_mode);
+  m_ui.actionMemoryEditor->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryScanner->setDisabled(achievements_hardcore_mode);
   m_ui.actionReloadTextureReplacements->setDisabled(starting_or_not_running);
   m_ui.actionDumpRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2443,6 +2446,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
+  connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
@@ -2726,6 +2730,20 @@ ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
     m_controller_settings_window = new ControllerSettingsWindow();
 
   return m_controller_settings_window;
+}
+
+MemoryEditorWindow* MainWindow::getMemoryEditorWindow()
+{
+  if (!m_memory_editor_window)
+  {
+    m_memory_editor_window = new MemoryEditorWindow();
+    connect(m_memory_editor_window, &MemoryEditorWindow::closed, this, [this]() {
+      m_memory_editor_window->deleteLater();
+      m_memory_editor_window = nullptr;
+    });
+  }
+
+  return m_memory_editor_window;
 }
 
 void MainWindow::doControllerSettings(
@@ -3147,6 +3165,7 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
   if (enabled)
   {
     QtUtils::CloseAndDeleteWindow(m_debugger_window);
+    QtUtils::CloseAndDeleteWindow(m_memory_editor_window);
     QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   }
 
@@ -3249,6 +3268,14 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
   }
 
   Host::RunOnCPUThread([path = path.toStdString()]() { System::StartMediaCapture(path); });
+}
+
+void MainWindow::onToolsMemoryEditorTriggered()
+{
+  if (s_achievements_hardcore_mode)
+    return;
+
+  QtUtils::ShowOrRaiseWindow(getMemoryEditorWindow());
 }
 
 void MainWindow::onToolsMemoryScannerTriggered()

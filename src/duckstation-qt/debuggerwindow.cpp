@@ -522,12 +522,6 @@ void DebuggerWindow::connectSignals()
   m_refresh_timer.setInterval(TIMER_REFRESH_INTERVAL_MS);
 }
 
-void DebuggerWindow::disconnectSignals()
-{
-  EmuThread* hi = g_emu_thread;
-  hi->disconnect(this);
-}
-
 void DebuggerWindow::createModels()
 {
   m_registers_model = new DebuggerRegistersModel(this);
@@ -570,6 +564,8 @@ void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
   m_ui.memoryRegionEXP1->setEnabled(read_only_views);
   m_ui.memoryRegionScratchpad->setEnabled(read_only_views);
   m_ui.memoryRegionBIOS->setEnabled(read_only_views);
+  m_ui.memorySearch->setEnabled(read_only_views);
+  m_ui.memorySearchString->setEnabled(read_only_views);
 
   // Partial/timer refreshes only active when not paused.
   const bool timer_active = (!enabled && allow_pause);
@@ -597,11 +593,13 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
     const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
     const u32 end_page = static_cast<u32>(offset + count - 1) >> HOST_PAGE_SHIFT;
-    for (u32 i = start_page; i <= end_page; i++)
-    {
-      if (Bus::g_ram_code_bits[i])
-        CPU::CodeCache::InvalidateBlocksWithPageIndex(i);
-    }
+    Host::RunOnCPUThread([start_page, end_page]() {
+      for (u32 i = start_page; i <= end_page; i++)
+      {
+        if (Bus::g_ram_code_bits[i])
+          CPU::CodeCache::InvalidateBlocksWithPageIndex(i);
+      }
+    });
   };
 
   const PhysicalMemoryAddress start = Bus::GetMemoryRegionStart(region);

@@ -3195,7 +3195,7 @@ bool CPU::SafeReadMemoryWord(VirtualMemoryAddress addr, u32* value)
   return true;
 }
 
-bool CPU::SafeReadMemoryCString(VirtualMemoryAddress addr, std::string* value, u32 max_length /*= 1024*/)
+bool CPU::SafeReadMemoryCString(VirtualMemoryAddress addr, SmallStringBase* value, u32 max_length /*= 1024*/)
 {
   value->clear();
 
@@ -3206,7 +3206,7 @@ bool CPU::SafeReadMemoryCString(VirtualMemoryAddress addr, std::string* value, u
       return true;
 
     value->push_back(ch);
-    if (value->size() >= max_length)
+    if (value->length() >= max_length)
       return true;
 
     addr++;

@@ -29,6 +29,7 @@
     <ClCompile Include="inputbindingwidgets.cpp" />
     <ClCompile Include="isobrowserwindow.cpp" />
     <ClCompile Include="logwindow.cpp" />
+    <ClCompile Include="memoryeditorwindow.cpp" />
     <ClCompile Include="memoryscannerwindow.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
     <ClCompile Include="displaywidget.cpp" />
@@ -79,7 +80,8 @@
     <QtMoc Include="controllersettingswindow.h" />
     <QtMoc Include="colorpickerbutton.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
-    <ClInclude Include="memoryviewwidget.h" />
+    <QtMoc Include="memoryeditorwindow.h" />
+    <QtMoc Include="memoryviewwidget.h" />
     <QtMoc Include="logwindow.h" />
     <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
@@ -313,6 +315,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="postprocessingoverlayconfigwidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="memoryeditorwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />

@@ -9,7 +9,11 @@
 
 class MemoryViewWidget : public QAbstractScrollArea
 {
+  Q_OBJECT
+
 public:
+  static constexpr size_t INVALID_SELECTED_ADDRESS = ~static_cast<size_t>(0);
+
   using EditCallback = void (*)(size_t offset, size_t bytes);
 
   MemoryViewWidget(QWidget* parent = nullptr, size_t address_offset = 0, void* data_ptr = nullptr, size_t data_size = 0,
@@ -17,6 +21,8 @@ public:
   ~MemoryViewWidget();
 
   size_t addressOffset() const { return m_address_offset; }
+  size_t selectedAddress() const;
+  size_t topAddress() const;
 
   void setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable, EditCallback edit_callback);
   void setHighlightRange(size_t start, size_t end);
@@ -28,6 +34,10 @@ public:
   void saveCurrentData();
   void forceRefresh();
 
+Q_SIGNALS:
+  void topAddressChanged(size_t address);
+  void selectedAddressChanged(size_t address);
+
 protected:
   void paintEvent(QPaintEvent* event);
   void resizeEvent(QResizeEvent* event);
@@ -36,8 +46,6 @@ protected:
   void keyPressEvent(QKeyEvent* event);
 
 private:
-  static constexpr size_t INVALID_SELECTED_ADDRESS = ~static_cast<size_t>(0);
-
   int addressWidth() const;
   int hexWidth() const;
   int asciiWidth() const;
@@ -47,6 +55,7 @@ private:
   void expandCurrentDataToInclude(size_t offset);
   void adjustScrollToInclude(size_t offset);
   void adjustContent();
+  void notifySelectedAddressChanged();
 
   void* m_data;
   size_t m_data_size;
