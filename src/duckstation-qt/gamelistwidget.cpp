@@ -1342,10 +1342,7 @@ private:
 class GameListAnimatedIconDelegate final : public QStyledItemDelegate
 {
 public:
-  GameListAnimatedIconDelegate(QObject* parent, GameListModel* model, GameListCenterIconStyleDelegate* center_delegate,
-                               GameListAchievementsStyleDelegate* achievements_delegate)
-    : QStyledItemDelegate(parent), m_model(model), m_center_delegate(center_delegate),
-      m_achievements_delegate(achievements_delegate)
+  GameListAnimatedIconDelegate(QObject* parent, GameListModel* model) : QStyledItemDelegate(parent), m_model(model)
   {
     connect(&m_animation_timer, &QTimer::timeout, this, &GameListAnimatedIconDelegate::nextAnimationFrame);
   }
@@ -1353,19 +1350,18 @@ public:
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
   {
     const int column = index.column();
-    if (column == GameListModel::Column_Region)
+    if (column != GameListModel::Column_Icon || m_frame_pixmaps.empty())
     {
-      m_center_delegate->paint(painter, option, index);
-      return;
-    }
-    else if (column == GameListModel::Column_Achievements)
-    {
-      m_achievements_delegate->paint(painter, option, index);
-      return;
-    }
-    else if (column != GameListModel::Column_Icon || m_frame_pixmaps.empty())
-    {
-      QStyledItemDelegate::paint(painter, option, index);
+      if (QAbstractItemDelegate* const delegate =
+            static_cast<GameListListView*>(parent())->itemDelegateForColumn(index.column()))
+      {
+        delegate->paint(painter, option, index);
+      }
+      else
+      {
+        QStyledItemDelegate::paint(painter, option, index);
+      }
+
       return;
     }
 
@@ -1462,8 +1458,6 @@ public:
 
 private:
   GameListModel* m_model;
-  GameListCenterIconStyleDelegate* m_center_delegate;
-  GameListAchievementsStyleDelegate* m_achievements_delegate;
 
   std::vector<QPixmap> m_frame_pixmaps;
   u32 m_current_frame = 0;
@@ -2272,9 +2266,7 @@ void GameListListView::setAnimateGameIcons(bool enabled)
   if (m_animated_game_icon_delegate)
     return;
 
-  m_animated_game_icon_delegate = new GameListAnimatedIconDelegate(
-    this, m_model, static_cast<GameListCenterIconStyleDelegate*>(itemDelegateForColumn(GameListModel::Column_Icon)),
-    static_cast<GameListAchievementsStyleDelegate*>(itemDelegateForColumn(GameListModel::Column_Achievements)));
+  m_animated_game_icon_delegate = new GameListAnimatedIconDelegate(this, m_model);
 }
 
 void GameListListView::updateAnimatedGameIconDelegate()
