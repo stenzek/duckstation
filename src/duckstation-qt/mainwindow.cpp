@@ -546,6 +546,7 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionMergeDiscSets->setDisabled(disable);
   m_ui.actionShowLocalizedTitles->setDisabled(disable);
   m_ui.actionShowGameIcons->setDisabled(disable || !game_list);
+  m_ui.actionAnimateGameIcons->setDisabled(disable || !game_list || !m_ui.actionShowGameIcons->isChecked());
   m_ui.actionGridViewShowTitles->setDisabled(disable || !game_grid);
   m_ui.actionViewZoomIn->setDisabled(disable);
   m_ui.actionViewZoomOut->setDisabled(disable);
@@ -1782,10 +1783,10 @@ void MainWindow::setupAdditionalUi()
   group->addAction(m_ui.actionViewGameGrid);
   group->addAction(m_ui.actionViewSystemDisplay);
 
-  m_game_list_widget = new GameListWidget(m_ui.mainContainer);
-  m_game_list_widget->initialize(m_ui.actionViewGameList, m_ui.actionViewGameGrid, m_ui.actionMergeDiscSets,
-                                 m_ui.actionShowGameIcons, m_ui.actionGridViewShowTitles,
-                                 m_ui.actionShowLocalizedTitles);
+  m_game_list_widget =
+    new GameListWidget(m_ui.mainContainer, m_ui.actionViewGameList, m_ui.actionViewGameGrid, m_ui.actionMergeDiscSets,
+                       m_ui.actionShowGameIcons, m_ui.actionAnimateGameIcons, m_ui.actionGridViewShowTitles,
+                       m_ui.actionShowLocalizedTitles);
   m_ui.mainContainer->addWidget(m_game_list_widget);
 
   m_status_progress_widget = new QProgressBar(m_ui.statusBar);
@@ -2463,6 +2464,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionShowLocalizedTitles, &QAction::triggered, m_game_list_widget,
           &GameListWidget::setShowLocalizedTitles);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
+  connect(m_ui.actionAnimateGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setAnimateGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);
   connect(m_ui.actionViewZoomOut, &QAction::triggered, this, &MainWindow::onViewZoomOutActionTriggered);

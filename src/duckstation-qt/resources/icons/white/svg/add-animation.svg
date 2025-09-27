@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: MIT. Made by vmware: https://github.com/vmware/clarity-assets -->
+<svg fill="#ffffff" width="800px" height="800px" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+
+<title>animation_solid</title>
+
+<g id="bb9f4e02-7318-4dbb-9960-e0435cf0cad7" data-name="Layer 3">
+
+<path d="M3.5,23.77a6.41,6.41,0,0,0,9.33,8.67A11.65,11.65,0,0,1,3.5,23.77Z"/>
+
+<path d="M7.68,14.53a9.6,9.6,0,0,0,13.4,13.7A14.11,14.11,0,0,1,7.68,14.53Z"/>
+
+<path d="M21.78,2A12.12,12.12,0,1,1,9.66,14.15,12.12,12.12,0,0,1,21.78,2"/>
+
+</g>
+
+</svg>

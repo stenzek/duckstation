@@ -221,6 +221,7 @@
     <addaction name="actionMergeDiscSets"/>
     <addaction name="actionShowLocalizedTitles"/>
     <addaction name="actionShowGameIcons"/>
+    <addaction name="actionAnimateGameIcons"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionViewZoomIn"/>
     <addaction name="actionViewZoomOut"/>
@@ -1299,6 +1300,20 @@
    </property>
    <property name="toolTip">
     <string>Opens the memory editor window.</string>
+   </property>
+  </action>
+  <action name="actionAnimateGameIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="add-animation"/>
+   </property>
+   <property name="text">
+    <string>Animate Game Icons (List View)</string>
+   </property>
+   <property name="toolTip">
+    <string>Animates icons in the list view when selected.</string>
    </property>
   </action>
  </widget>

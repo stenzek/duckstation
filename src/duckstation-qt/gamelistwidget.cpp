@@ -14,7 +14,10 @@
 #include "core/settings.h"
 #include "core/system.h"
 
+#include "util/animated_image.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -76,8 +79,9 @@ static constexpr int COVER_ART_SIZE = 512;
 static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
-static constexpr int MEMORY_CARD_ICON_SIZE = 16;
-static constexpr int MEMORY_CARD_ICON_PADDING = 12;
+static constexpr int GAME_ICON_SIZE = 16;
+static constexpr int GAME_ICON_PADDING = 12;
+static constexpr int GAME_ICON_ANIMATION_LOOPS = 5;
 
 static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left,
                               bool expand_to_fill)
@@ -136,6 +140,21 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   }
 
   *image = std::move(padded_image);
+}
+
+static void resizeGameIcon(QPixmap& pm, int icon_size, qreal device_pixel_ratio)
+{
+  const int pm_width = pm.width();
+  const int pm_height = pm.height();
+
+  const qreal scale = (static_cast<qreal>(icon_size) / static_cast<qreal>(pm_width)) * device_pixel_ratio;
+  const int scaled_pm_width = static_cast<int>(static_cast<qreal>(pm_width) * scale);
+  const int scaled_pm_height = static_cast<int>(static_cast<qreal>(pm_height) * scale);
+
+  if (pm_width != scaled_pm_width || pm_height != scaled_pm_height)
+    QtUtils::ResizeSharpBilinear(pm, std::max(scaled_pm_width, scaled_pm_height), pm_width);
+
+  pm.setDevicePixelRatio(device_pixel_ratio);
 }
 
 static QString sizeToString(s64 size)
@@ -201,8 +220,8 @@ void GameListModel::setShowCoverTitles(bool enabled)
 
 void GameListModel::updateRowHeight(const QWidget* const widget)
 {
-  m_row_height = m_icon_size + MEMORY_CARD_ICON_PADDING +
-                 widget->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, widget);
+  m_row_height =
+    m_icon_size + GAME_ICON_PADDING + widget->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, widget);
 }
 
 void GameListModel::setShowGameIcons(bool enabled)
@@ -242,7 +261,7 @@ void GameListModel::setIconSize(int size)
 
 int GameListModel::getIconColumnWidth() const
 {
-  return m_icon_size + MEMORY_CARD_ICON_PADDING * 2;
+  return m_icon_size + GAME_ICON_PADDING * 2;
 }
 
 void GameListModel::setCoverScale(float scale)
@@ -468,7 +487,7 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
-const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
+const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
   if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
@@ -477,7 +496,7 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
     if (item)
     {
       if (!item->isNull())
-        return *item;
+        return item;
     }
     else
     {
@@ -486,25 +505,22 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        const int pm_width = pm.width();
-        const int pm_height = pm.height();
-
-        const qreal scale = (static_cast<qreal>(m_icon_size) / static_cast<qreal>(pm_width)) * m_device_pixel_ratio;
-        const int scaled_pm_width = static_cast<int>(static_cast<qreal>(pm_width) * scale);
-        const int scaled_pm_height = static_cast<int>(static_cast<qreal>(pm_height) * scale);
-
-        if (pm_width != scaled_pm_width || pm_height != scaled_pm_height)
-          QtUtils::ResizeSharpBilinear(pm, std::max(scaled_pm_width, scaled_pm_height), pm_width);
-
-        pm.setDevicePixelRatio(m_device_pixel_ratio);
-
-        return *m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
+        resizeGameIcon(pm, m_icon_size, m_device_pixel_ratio);
+        return m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
       // Stop it trying again in the future.
       m_icon_pixmap_cache.Insert(ge->serial, {});
     }
   }
+
+  return nullptr;
+}
+
+const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) const
+{
+  if (const QPixmap* pm = lookupIconPixmapForEntry(ge))
+    return *pm;
 
   // If we don't have a pixmap, we return the type pixmap.
   return m_type_pixmaps[static_cast<u32>(ge->type)];
@@ -539,7 +555,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
   // Provides a small performance boost when using default size icons.
-  if (m_icon_size == MEMORY_CARD_ICON_SIZE)
+  if (m_icon_size == GAME_ICON_SIZE)
   {
     if (const QPixmap* pm = m_icon_pixmap_cache.Lookup(entry->serial))
     {
@@ -1323,15 +1339,145 @@ private:
 
 } // namespace
 
-GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent)
+class GameListAnimatedIconDelegate final : public QStyledItemDelegate
 {
-}
+public:
+  GameListAnimatedIconDelegate(QObject* parent, GameListModel* model, GameListCenterIconStyleDelegate* center_delegate,
+                               GameListAchievementsStyleDelegate* achievements_delegate)
+    : QStyledItemDelegate(parent), m_model(model), m_center_delegate(center_delegate),
+      m_achievements_delegate(achievements_delegate)
+  {
+    connect(&m_animation_timer, &QTimer::timeout, this, &GameListAnimatedIconDelegate::nextAnimationFrame);
+  }
 
-GameListWidget::~GameListWidget() = default;
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+  {
+    const int column = index.column();
+    if (column == GameListModel::Column_Region)
+    {
+      m_center_delegate->paint(painter, option, index);
+      return;
+    }
+    else if (column == GameListModel::Column_Achievements)
+    {
+      m_achievements_delegate->paint(painter, option, index);
+      return;
+    }
+    else if (column != GameListModel::Column_Icon || m_frame_pixmaps.empty())
+    {
+      QStyledItemDelegate::paint(painter, option, index);
+      return;
+    }
 
-void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
-                                QAction* actionListShowIcons, QAction* actionGridShowTitles,
-                                QAction* actionShowLocalizedTitles)
+    const QRect& r = option.rect;
+    const QPixmap pix = m_frame_pixmaps[m_current_frame];
+    const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
+    const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
+
+    // draw pixmap at center of item
+    const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
+    painter->drawPixmap(r.topLeft() + p, pix);
+  }
+
+  bool setEntry(const GameList::Entry* entry, int source_row)
+  {
+    DebugAssert(source_row >= 0);
+
+    const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+    if (icon_path.empty())
+    {
+      clearEntry();
+      return false;
+    }
+
+    AnimatedImage image;
+    Error error;
+    if (!image.LoadFromFile(icon_path.c_str(), &error))
+    {
+      ERROR_LOG("Failed to load animated icon '{}': {}", Path::GetFileName(icon_path), error.GetDescription());
+      clearEntry();
+      return false;
+    }
+
+    // don't use animated delegate if there's only one frame
+    if (image.GetFrames() <= 1)
+    {
+      clearEntry();
+      return false;
+    }
+
+    m_frame_pixmaps.clear();
+    m_frame_pixmaps.reserve(image.GetFrames());
+    for (u32 i = 0; i < image.GetFrames(); i++)
+    {
+      QPixmap pm = QPixmap::fromImage(QImage(reinterpret_cast<uchar*>(image.GetPixels(i)), image.GetWidth(),
+                                             image.GetHeight(), QImage::Format::Format_RGBA8888));
+      resizeGameIcon(pm, m_model->getIconSize(), m_model->getDevicePixelRatio());
+      m_frame_pixmaps.push_back(std::move(pm));
+    }
+
+    m_current_frame = 0;
+    m_loops_remaining = GAME_ICON_ANIMATION_LOOPS;
+    m_source_row = source_row;
+
+    const AnimatedImage::FrameDelay& delay = image.GetFrameDelay(0);
+    m_animation_timer.start(std::max((1000 * delay.numerator) / delay.denominator, 100));
+    return true;
+  }
+
+  void clearEntry()
+  {
+    m_source_row = -1;
+    m_loops_remaining = 0;
+    m_current_frame = 0;
+    m_frame_pixmaps.clear();
+    m_animation_timer.stop();
+  }
+
+  void nextAnimationFrame()
+  {
+    m_current_frame = (m_current_frame + 1) % static_cast<u32>(m_frame_pixmaps.size());
+    if (m_current_frame == 0)
+    {
+      m_loops_remaining--;
+      if (m_loops_remaining == 0)
+        m_animation_timer.stop();
+    }
+
+    emit m_model->dataChanged(m_model->index(m_source_row, GameListModel::Column_Icon),
+                              m_model->index(m_source_row, GameListModel::Column_Icon), {Qt::DecorationRole});
+  }
+
+  void pauseAnimation()
+  {
+    if (!m_frame_pixmaps.empty() && m_loops_remaining > 0)
+      m_animation_timer.stop();
+  }
+
+  void resumeAnimation()
+  {
+    if (!m_frame_pixmaps.empty() && m_loops_remaining > 0)
+      m_animation_timer.start();
+  }
+
+private:
+  GameListModel* m_model;
+  GameListCenterIconStyleDelegate* m_center_delegate;
+  GameListAchievementsStyleDelegate* m_achievements_delegate;
+
+  std::vector<QPixmap> m_frame_pixmaps;
+  u32 m_current_frame = 0;
+  int m_loops_remaining = 0;
+  int m_source_row = -1;
+
+  QTimer m_animation_timer;
+};
+
+GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
+                               QAction* action_merge_disc_sets, QAction* action_show_list_icons,
+                               QAction* action_animate_list_icons, QAction* action_show_grid_titles,
+                               QAction* action_show_localized_titles)
+  : QWidget(parent)
 {
   m_model = new GameListModel(this);
   connect(m_model, &GameListModel::coverScaleChanged, this, &GameListWidget::onScaleChanged);
@@ -1354,6 +1500,7 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   }
 
   m_list_view = new GameListListView(m_model, m_sort_model, m_ui.stack);
+  m_list_view->setAnimateGameIcons(Host::GetBaseBoolSettingValue("UI", "GameListAnimateGameIcons", false));
   m_ui.stack->insertWidget(0, m_list_view);
 
   m_grid_view = new GameListGridView(m_model, m_sort_model, m_ui.stack);
@@ -1364,12 +1511,12 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
   m_empty_ui.supportedFormats->setText(qApp->translate("GameListWidget", SUPPORTED_FORMATS_STRING));
   m_ui.stack->insertWidget(2, m_empty_widget);
 
-  m_ui.viewGameList->setDefaultAction(actionGameList);
-  m_ui.viewGameGrid->setDefaultAction(actionGameGrid);
-  m_ui.mergeDiscSets->setDefaultAction(actionMergeDiscSets);
-  m_ui.showGameIcons->setDefaultAction(actionListShowIcons);
-  m_ui.showGridTitles->setDefaultAction(actionGridShowTitles);
-  m_ui.showLocalizedTitles->setDefaultAction(actionShowLocalizedTitles);
+  m_ui.viewGameList->setDefaultAction(action_view_list);
+  m_ui.viewGameGrid->setDefaultAction(action_view_grid);
+  m_ui.mergeDiscSets->setDefaultAction(action_merge_disc_sets);
+  m_ui.showGameIcons->setDefaultAction(action_show_list_icons);
+  m_ui.showGridTitles->setDefaultAction(action_show_grid_titles);
+  m_ui.showLocalizedTitles->setDefaultAction(action_show_localized_titles);
 
   connect(m_ui.scale, &QSlider::sliderPressed, this, &GameListWidget::showScaleToolTip);
   connect(m_ui.scale, &QSlider::sliderReleased, this, &QToolTip::hideText);
@@ -1402,18 +1549,21 @@ void GameListWidget::initialize(QAction* actionGameList, QAction* actionGameGrid
 
   const bool grid_view = Host::GetBaseBoolSettingValue("UI", "GameListGridView", false);
   if (grid_view)
-    actionGameGrid->setChecked(true);
+    action_view_grid->setChecked(true);
   else
-    actionGameList->setChecked(true);
-  actionMergeDiscSets->setChecked(m_sort_model->isMergingDiscSets());
-  actionShowLocalizedTitles->setChecked(m_model->getShowLocalizedTitles());
-  actionListShowIcons->setChecked(m_model->getShowGameIcons());
-  actionGridShowTitles->setChecked(m_model->getShowCoverTitles());
+    action_view_list->setChecked(true);
+  action_merge_disc_sets->setChecked(m_sort_model->isMergingDiscSets());
+  action_show_localized_titles->setChecked(m_model->getShowLocalizedTitles());
+  action_show_list_icons->setChecked(m_model->getShowGameIcons());
+  action_animate_list_icons->setChecked(m_list_view->isAnimatingGameIcons());
+  action_show_grid_titles->setChecked(m_model->getShowCoverTitles());
   onIconSizeChanged(m_model->getIconSize());
 
   setViewMode(grid_view ? VIEW_MODE_GRID : VIEW_MODE_LIST);
   updateBackground(true);
 }
+
+GameListWidget::~GameListWidget() = default;
 
 bool GameListWidget::isShowingGameList() const
 {
@@ -1591,7 +1741,13 @@ void GameListWidget::onSelectionModelCurrentChanged(const QModelIndex& current, 
 {
   const QModelIndex source_index = m_sort_model->mapToSource(current);
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
+  {
+    m_list_view->clearAnimatedGameIconDelegate();
     return;
+  }
+
+  // selection model hasn't updated yet, so this has to be queued... ugh.
+  QMetaObject::invokeMethod(m_list_view, &GameListListView::updateAnimatedGameIconDelegate, Qt::QueuedConnection);
 
   emit selectionChanged();
 }
@@ -1712,6 +1868,25 @@ void GameListWidget::setShowGameIcons(bool enabled)
   Host::SetBaseBoolSettingValue("UI", "GameListShowGameIcons", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowGameIcons(enabled);
+  if (isShowingGameList() && m_list_view->isAnimatingGameIcons())
+  {
+    if (enabled)
+      m_list_view->updateAnimatedGameIconDelegate();
+    else
+      m_list_view->clearAnimatedGameIconDelegate();
+  }
+}
+
+void GameListWidget::setAnimateGameIcons(bool enabled)
+{
+  if (m_list_view->isAnimatingGameIcons() == enabled)
+    return;
+
+  Host::SetBaseBoolSettingValue("UI", "GameListAnimateGameIcons", enabled);
+  Host::CommitBaseSettingChanges();
+  m_list_view->setAnimateGameIcons(enabled);
+  if (isShowingGameList())
+    m_list_view->updateAnimatedGameIconDelegate();
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
@@ -1727,6 +1902,7 @@ void GameListWidget::setShowCoverTitles(bool enabled)
 
 void GameListWidget::setViewMode(int stack_index)
 {
+  const int prev_stack_index = m_ui.stack->currentIndex();
   m_ui.stack->setCurrentIndex(stack_index);
   setFocusProxy(m_ui.stack->currentWidget());
 
@@ -1760,6 +1936,12 @@ void GameListWidget::setViewMode(int stack_index)
     m_ui.scale->setMaximum(MAX_ICON_SIZE / ICON_SIZE_STEP);
     m_ui.scale->setValue(m_model->getIconSize() / ICON_SIZE_STEP);
   }
+
+  // pause animation when list is not visible
+  if (stack_index == VIEW_MODE_LIST)
+    m_list_view->updateAnimatedGameIconDelegate();
+  else if (prev_stack_index == VIEW_MODE_LIST)
+    m_list_view->clearAnimatedGameIconDelegate();
 }
 
 void GameListWidget::showScaleToolTip()
@@ -1774,9 +1956,14 @@ void GameListWidget::showScaleToolTip()
 void GameListWidget::onScaleSliderChanged(int value)
 {
   if (isShowingGameGrid())
+  {
     m_model->setCoverScale(static_cast<float>(value) / 100.0f);
+  }
   else if (isShowingGameList())
+  {
     m_model->setIconSize(value * ICON_SIZE_STEP);
+    m_list_view->updateAnimatedGameIconDelegate();
+  }
 
   if (m_ui.scale->isSliderDown())
     showScaleToolTip();
@@ -1871,7 +2058,7 @@ GameListListView::GameListListView(GameListModel* model, GameListSortModel* sort
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
 
-  GameListCenterIconStyleDelegate* center_icon_delegate = new GameListCenterIconStyleDelegate(this);
+  GameListCenterIconStyleDelegate* const center_icon_delegate = new GameListCenterIconStyleDelegate(this);
   setItemDelegateForColumn(GameListModel::Column_Icon, center_icon_delegate);
   setItemDelegateForColumn(GameListModel::Column_Region, center_icon_delegate);
   setItemDelegateForColumn(GameListModel::Column_Achievements,
@@ -2064,6 +2251,77 @@ void GameListListView::adjustIconSize(int delta)
 {
   const int new_size = std::clamp(m_model->getIconSize() + delta, MIN_ICON_SIZE, MAX_ICON_SIZE);
   m_model->setIconSize(new_size);
+  updateAnimatedGameIconDelegate();
+}
+
+bool GameListListView::isAnimatingGameIcons() const
+{
+  return (m_animated_game_icon_delegate != nullptr);
+}
+
+void GameListListView::setAnimateGameIcons(bool enabled)
+{
+  if (!enabled)
+  {
+    clearAnimatedGameIconDelegate();
+    delete m_animated_game_icon_delegate;
+    m_animated_game_icon_delegate = nullptr;
+    return;
+  }
+
+  if (m_animated_game_icon_delegate)
+    return;
+
+  m_animated_game_icon_delegate = new GameListAnimatedIconDelegate(
+    this, m_model, static_cast<GameListCenterIconStyleDelegate*>(itemDelegateForColumn(GameListModel::Column_Icon)),
+    static_cast<GameListAchievementsStyleDelegate*>(itemDelegateForColumn(GameListModel::Column_Achievements)));
+}
+
+void GameListListView::updateAnimatedGameIconDelegate()
+{
+  if (!m_animated_game_icon_delegate || !m_model->getShowGameIcons())
+    return;
+
+  const QModelIndexList selected = selectionModel()->selectedIndexes();
+  if (selected.isEmpty())
+  {
+    clearAnimatedGameIconDelegate();
+    return;
+  }
+
+  // clear previous
+  const int visible_row = selected.first().row();
+  if (m_animated_icon_row >= 0)
+  {
+    setItemDelegateForRow(m_animated_icon_row, nullptr);
+    m_animated_icon_row = -1;
+  }
+
+  const auto lock = GameList::GetLock();
+  const QModelIndex source_index = m_sort_model->mapToSource(selected.first());
+  const GameList::Entry* entry = m_model->hasTakenGameList() ?
+                                   m_model->getTakenGameListEntry(static_cast<u32>(source_index.row())) :
+                                   GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
+
+  // don't try to load an animated icon if there is no icon
+  if (!entry || !m_model->lookupIconPixmapForEntry(entry))
+    return;
+
+  if (static_cast<GameListAnimatedIconDelegate*>(m_animated_game_icon_delegate)->setEntry(entry, source_index.row()))
+  {
+    m_animated_icon_row = visible_row;
+    setItemDelegateForRow(visible_row, m_animated_game_icon_delegate);
+  }
+}
+
+void GameListListView::clearAnimatedGameIconDelegate()
+{
+  if (m_animated_icon_row < 0)
+    return;
+
+  static_cast<GameListAnimatedIconDelegate*>(m_animated_game_icon_delegate)->clearEntry();
+  setItemDelegateForRow(m_animated_icon_row, nullptr);
+  m_animated_icon_row = -1;
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)

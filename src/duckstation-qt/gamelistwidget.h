@@ -25,6 +25,8 @@
 
 Q_DECLARE_METATYPE(const GameList::Entry*);
 
+class QStyledItemDelegate;
+
 class GameListSortModel;
 class GameListRefreshThread;
 class GameListWidget;
@@ -111,7 +113,10 @@ public:
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns);
 
+  qreal getDevicePixelRatio() const { return m_device_pixel_ratio; }
   void setDevicePixelRatio(qreal dpr);
+
+  const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
@@ -180,6 +185,11 @@ public:
 
   void adjustIconSize(int delta);
 
+  bool isAnimatingGameIcons() const;
+  void setAnimateGameIcons(bool enabled);
+  void updateAnimatedGameIconDelegate();
+  void clearAnimatedGameIconDelegate();
+
 protected:
   void wheelEvent(QWheelEvent* e) override;
 
@@ -194,6 +204,9 @@ private:
 
   GameListModel* m_model = nullptr;
   GameListSortModel* m_sort_model = nullptr;
+
+  QStyledItemDelegate* m_animated_game_icon_delegate = nullptr;
+  int m_animated_icon_row = -1;
 };
 
 class GameListGridView final : public QListView
@@ -226,15 +239,15 @@ class GameListWidget final : public QWidget
   Q_OBJECT
 
 public:
-  explicit GameListWidget(QWidget* parent = nullptr);
+  explicit GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
+                          QAction* action_merge_disc_sets, QAction* action_show_list_icons,
+                          QAction* action_animate_list_icons, QAction* action_show_grid_titles,
+                          QAction* action_show_localized_titles);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }
   ALWAYS_INLINE GameListListView* getListView() const { return m_list_view; }
   ALWAYS_INLINE GameListGridView* getGridView() const { return m_grid_view; }
-
-  void initialize(QAction* actionGameList, QAction* actionGameGrid, QAction* actionMergeDiscSets,
-                  QAction* actionListShowIcons, QAction* actionGridShowTitles, QAction* actionLocalizedTitles);
 
   void refresh(bool invalidate_cache);
   void cancelRefresh();
@@ -254,6 +267,7 @@ public:
   void setMergeDiscSets(bool enabled);
   void setShowLocalizedTitles(bool enabled);
   void setShowGameIcons(bool enabled);
+  void setAnimateGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
   void focusSearchWidget();
