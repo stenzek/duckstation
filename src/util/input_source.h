@@ -72,6 +72,9 @@ public:
   virtual void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                                 float small_intensity);
 
+  /// Enables/Disables the source's Analog Mode LED.
+  virtual void UpdateModeLEDState(InputBindingKey key, bool enabled);
+
   /// Creates a force-feedback device from this source.
   virtual std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) = 0;
 

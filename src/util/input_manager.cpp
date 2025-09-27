@@ -88,6 +88,19 @@ struct PadVibrationBinding
   }
 };
 
+struct PadModeLEDBinding
+{
+  struct ModeLED
+  {
+    InputBindingKey binding;
+    InputSource* source;
+    bool enabled;
+  };
+
+  ModeLED led;
+  u32 pad_index = 0;
+};
+
 struct MacroButton
 {
   u16 pad_index;                     ///< Pad index this macro button is for.
@@ -179,6 +192,9 @@ using BindingMap = std::unordered_multimap<InputBindingKey, std::shared_ptr<Inpu
 /// This is an array of all the pad vibration bindings, indexed by pad index.
 using VibrationBindingArray = std::vector<PadVibrationBinding>;
 
+/// This is an array of all the pad Mode LED bindings, indexed by pad index.
+using ModeLEDBindingArray = std::vector<PadModeLEDBinding>;
+
 /// Callback for pointer movement events. The key is the pointer key, and the value is the axis value.
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 
@@ -188,6 +204,7 @@ struct ALIGN_TO_CACHE_LINE State
 {
   BindingMap binding_map;
   VibrationBindingArray pad_vibration_array;
+  ModeLEDBindingArray pad_mode_led_array;
   std::vector<MacroButton> macro_buttons;
   std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
   std::recursive_mutex mutex;
@@ -951,6 +968,8 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
   bool vibration_binding_valid = false;
   PadVibrationBinding vibration_binding = {};
   vibration_binding.pad_index = pad_index;
+  PadModeLEDBinding led_binding = {};
+  led_binding.pad_index = pad_index;
 
   for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
   {
@@ -1025,6 +1044,14 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
                                    &vibration_binding.motors[bi.bind_index].source);
       }
       break;
+
+      case InputBindingInfo::Type::ModeLED:
+        if (bindings.empty())
+          continue;
+
+        if (ParseBindingAndGetSource(bindings.front(), &led_binding.led.binding, &led_binding.led.source))
+          s_state.pad_mode_led_array.push_back(std::move(led_binding));
+        break;
 
       case InputBindingInfo::Type::Pointer:
       case InputBindingInfo::Type::Device:
@@ -1541,6 +1568,7 @@ void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
   si.SetBoolValue("InputSources", "SDL", true);
   si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
   si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+  si.SetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode", false);
   si.SetBoolValue("InputSources", "XInput", false);
   si.SetBoolValue("InputSources", "RawInput", false);
 }
@@ -1762,6 +1790,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   Host::OnInputDeviceConnected(key, identifier, device_name);
+  SyncInputDeviceModeLEDOnConnection(identifier);
 }
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
@@ -1781,6 +1810,52 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
   Error::SetStringFmt(error, "No input source matched device '{}'", device);
   return {};
+}
+
+// ------------------------------------------------------------------------
+// Analog Mode LED
+// ------------------------------------------------------------------------
+
+void InputManager::SetPadModeLED(u32 pad_index, bool enabled)
+{
+  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
+  {
+    if (pad.pad_index != pad_index)
+      continue;
+
+    PadModeLEDBinding::ModeLED& led = pad.led;
+
+    if (led.enabled == enabled)
+      continue;
+
+    led.enabled = enabled;
+    led.source->UpdateModeLEDState(led.binding, enabled);
+  }
+}
+
+void InputManager::SyncInputDeviceModeLEDOnConnection(std::string_view identifier)
+{
+  const std::optional<s32> player_id = StringUtil::FromChars<s32>(identifier.substr(identifier.find('-') + 1));
+  if (!player_id.has_value() || player_id.value() < 0)
+    return;
+
+  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
+  {
+    PadModeLEDBinding::ModeLED& led = pad.led;
+
+    if (!led.source->ContainsDevice(identifier))
+      continue;
+
+    if (led.binding.source_index == static_cast<u32>(player_id.value()))
+    {
+      Controller* controller = System::GetController(pad.pad_index);
+      if (!controller)
+        return;
+
+      led.enabled = controller->InAnalogMode();
+      led.source->UpdateModeLEDState(led.binding, led.enabled);
+    }
+  }
 }
 
 // ------------------------------------------------------------------------
@@ -2101,6 +2176,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
+  s_state.pad_mode_led_array.clear();
   s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
 

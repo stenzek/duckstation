@@ -24,17 +24,32 @@ JogCon::JogCon(u32 index) : Controller(index)
 {
 }
 
-JogCon::~JogCon() = default;
+JogCon::~JogCon()
+{
+  InputManager::SetPadModeLED(m_index, false);
+}
 
 ControllerType JogCon::GetType() const
 {
   return ControllerType::JogCon;
 }
 
+bool JogCon::InAnalogMode() const
+{
+  // JogCon uses JogCon mode
+  return InJogConMode();
+}
+
+bool JogCon::InJogConMode() const
+{
+  return m_jogcon_mode;
+}
+
 void JogCon::Reset()
 {
   // Reset starts in jogcon mode?
   m_jogcon_mode = true;
+  InputManager::SetPadModeLED(m_index, m_jogcon_mode);
   ResetTransferState();
   ResetMotorConfig();
 }
@@ -183,6 +198,8 @@ void JogCon::SetJogConMode(bool enabled, bool show_message)
 
   m_jogcon_mode = enabled;
   m_configuration_mode = enabled && m_configuration_mode;
+
+  InputManager::SetPadModeLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_jogcon_mode ? "JogCon" : "Digital");
   if (show_message)
@@ -624,6 +641,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(JogCon::Button::MaxCount) + static_cast<u32>(halfaxis),                                            \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
+#define MODE_LED(name, display_name, icon_name, index, genb)                                                                  \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("JogCon", "D-Pad Up"), ICON_PF_DPAD_UP, JogCon::Button::Up, GenericInputBinding::DPadUp),
@@ -645,6 +664,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("SteeringLeft", TRANSLATE_NOOP("JogCon", "Steering Left"), ICON_PF_ANALOG_LEFT, JogCon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
   AXIS("SteeringRight", TRANSLATE_NOOP("JogCon", "Steering Right"), ICON_PF_ANALOG_RIGHT, JogCon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
 
+  MODE_LED("ModeLED", TRANSLATE_NOOP("JogCon", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
   // clang-format on
 
   {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), ICON_PF_VIBRATION, 0u, InputBindingInfo::Type::Motor,
@@ -656,6 +676,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
 #undef BUTTON
 #undef AXIS
+#undef MODE_LED
 };
 
 static const SettingInfo s_settings[] = {
