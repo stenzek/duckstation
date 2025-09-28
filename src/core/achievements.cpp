@@ -2696,7 +2696,6 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
       {
         const float progress_width = LayoutScale(100.0f);
         const float progress_height = UIStyle.MediumFontSize;
-        const ImVec2 progress_pos = ImVec2(text_pos.x + box_content_width - progress_width, text_pos.y);
         const ImRect progress_bb(ImVec2(text_pos.x + box_content_width - progress_width, text_pos.y),
                                  ImVec2(text_pos.x + box_content_width, text_pos.y + progress_height));
         dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
