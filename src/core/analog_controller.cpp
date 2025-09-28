@@ -173,7 +173,11 @@ float AnalogController::GetBindState(u32 index) const
 
 float AnalogController::GetVibrationMotorState(u32 index) const
 {
-  return ((index < m_motor_state.size()) ? m_motor_state[index] : 0) * (1.0f / 255.0f);
+  // this uses the InputManager definition, where 0 = large motor, 1 = small motor
+  if (index == 0)
+    return static_cast<float>(m_motor_state[LargeMotor]) * (1.0f / 255.0f);
+  else
+    return (m_motor_state[SmallMotor] > 0) ? 1.0f : 0.0f;
 }
 
 void AnalogController::SetBindState(u32 index, float value)
