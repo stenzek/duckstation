@@ -1618,6 +1618,9 @@ void GameListWidget::onThemeChanged()
 
   // Resize columns, since the text size can change with themes.
   m_list_view->updateFixedColumnWidths();
+
+  // Hacks for background.
+  updateBackground(false);
 }
 
 void GameListWidget::setBackgroundPath(const std::string_view path)
@@ -1660,6 +1663,8 @@ void GameListWidget::updateBackground(bool reload_image)
       m_ui.stack->setPalette(qApp->palette(m_ui.stack));
       m_ui.stack->setAutoFillBackground(false);
       m_list_view->setAlternatingRowColors(true);
+      m_list_view->setStyleSheet(QString());
+      m_grid_view->setStyleSheet(QString());
     }
 
     return;
@@ -1673,12 +1678,20 @@ void GameListWidget::updateBackground(bool reload_image)
       if (widget_width != m_ui.stack->width() || widget_height != m_ui.stack->height())
         return;
 
-      QPalette new_palette(m_ui.stack->palette());
+      QPalette new_palette = qApp->palette(m_ui.stack);
       new_palette.setBrush(QPalette::Window, QPixmap::fromImage(image));
       new_palette.setBrush(QPalette::Base, Qt::transparent);
       m_ui.stack->setPalette(new_palette);
       m_ui.stack->setAutoFillBackground(true);
       m_list_view->setAlternatingRowColors(false);
+
+      if (QtHost::IsStyleSheetApplicationTheme())
+      {
+        // Stylesheets override palette, so we need to set background: transparent on the grid and list view.
+        const QString style_sheet = QStringLiteral("QAbstractScrollArea { background-color: transparent; }");
+        m_list_view->setStyleSheet(style_sheet);
+        m_grid_view->setStyleSheet(style_sheet);
+      }
     };
   });
 }

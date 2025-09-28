@@ -340,6 +340,9 @@ void UpdateApplicationTheme();
 /// Returns true if the application theme is using dark colours.
 bool IsDarkApplicationTheme();
 
+/// Returns true if the application theme is using stylesheet overrides.
+bool IsStyleSheetApplicationTheme();
+
 /// Sets the icon theme, based on the current style (light/dark).
 void SetIconThemeFromStyle();
 
