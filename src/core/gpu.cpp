@@ -657,26 +657,22 @@ float GPU::ComputeDisplayAspectRatio() const
     return 4.0f / 3.0f;
 
   // PAR 1:1 is not corrected.
-  if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
+  if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1())
     return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
 
   float ar = 4.0f / 3.0f;
   if (!g_settings.display_force_4_3_for_24bit || !m_GPUSTAT.display_area_color_depth_24)
   {
-    if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
+    if (g_settings.display_aspect_ratio == DisplayAspectRatio::Stretch())
     {
       const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
       if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
         ar = static_cast<float>(wi.surface_width) / static_cast<float>(wi.surface_height);
     }
-    else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom)
+    else if (g_settings.display_aspect_ratio != DisplayAspectRatio::Auto())
     {
-      ar = static_cast<float>(g_settings.display_aspect_ratio_custom_numerator) /
-           static_cast<float>(g_settings.display_aspect_ratio_custom_denominator);
-    }
-    else
-    {
-      ar = g_settings.GetDisplayAspectRatioValue();
+      ar = static_cast<float>(g_settings.display_aspect_ratio.numerator) /
+           static_cast<float>(g_settings.display_aspect_ratio.denominator);
     }
   }
 
@@ -690,7 +686,7 @@ float GPU::ComputeSourceAspectRatio() const
 
   // Correction is applied to the GTE for stretch to fit, that way it fills the window.
   const float source_aspect_ratio_correction =
-    (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow) ? 1.0f : ComputeAspectRatioCorrection();
+    (g_settings.display_aspect_ratio == DisplayAspectRatio::Stretch()) ? 1.0f : ComputeAspectRatioCorrection();
 
   return source_aspect_ratio / source_aspect_ratio_correction;
 }
@@ -708,7 +704,7 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1())
     return 1.0f;
 
   // Apply aspect ratio correction for all borders, or overscan with altered display range.

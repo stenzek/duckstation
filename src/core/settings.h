@@ -8,13 +8,13 @@
 #include "util/audio_stream.h"
 
 #include "common/log.h"
+#include "common/small_string.h"
 
 #include <array>
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 
 class SettingsInterface;
 
@@ -76,8 +76,8 @@ struct GPUSettings
   u8 gpu_downsample_scale = 1;
   GPUWireframeMode gpu_wireframe_mode = DEFAULT_GPU_WIREFRAME_MODE;
   DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
-  DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
+  DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayRotation display_rotation = DEFAULT_DISPLAY_ROTATION;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
@@ -86,8 +86,6 @@ struct GPUSettings
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
   u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
-  u16 display_aspect_ratio_custom_numerator = 0;
-  u16 display_aspect_ratio_custom_denominator = 0;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
@@ -212,7 +210,6 @@ struct GPUSettings
 
   std::string overlay_image_path;
 
-  float GetDisplayAspectRatioValue() const;
   float GetPGXPDepthClearThreshold() const;
   void SetPGXPDepthClearThreshold(float value);
 
@@ -250,7 +247,7 @@ struct GPUSettings
 
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Progressive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
-  static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto;
+  static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto();
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayRotation DEFAULT_DISPLAY_ROTATION = DisplayRotation::Normal;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
@@ -528,9 +525,10 @@ struct Settings : public GPUSettings
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
 
-  static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(const char* str);
-  static const char* GetDisplayAspectRatioName(DisplayAspectRatio ar);
-  static const char* GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar);
+  static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(std::string_view str);
+  static TinyString GetDisplayAspectRatioName(DisplayAspectRatio ar);
+  static TinyString GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar);
+  static std::span<const DisplayAspectRatio> GetPredefinedDisplayAspectRatios();
 
   static std::optional<DisplayAlignment> ParseDisplayAlignment(const char* str);
   static const char* GetDisplayAlignmentName(DisplayAlignment alignment);

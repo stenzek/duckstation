@@ -5451,11 +5451,53 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     GPUDitheringMode::MaxCount);
   }
 
-  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SHAPES, "Aspect Ratio"),
-                  FSUI_VSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
-                  "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
-                  &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
-                  DisplayAspectRatio::Count);
+  static constexpr const char* ASPECT_RATIO_SECTION = "Display";
+  static constexpr const char* ASPECT_RATIO_KEY = "AspectRatio";
+  if (MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_SHAPES, "Aspect Ratio"),
+                          FSUI_VSTR("Changes the aspect ratio used to display the console's output to the screen."),
+                          (game_settings && !bsi->ContainsValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY)) ?
+                            TinyString(FSUI_VSTR("Use Global Setting")) :
+                            Settings::GetDisplayAspectRatioDisplayName(
+                              Settings::ParseDisplayAspectRatio(
+                                GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY, ""))
+                                .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))))
+  {
+    static constexpr const DisplayAspectRatio INHERIT_ASPECT_RATIO = {0, -1};
+    ImGuiFullscreen::ChoiceDialogOptions options;
+    const DisplayAspectRatio current_ar =
+      (bsi && !bsi->ContainsValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY)) ?
+        INHERIT_ASPECT_RATIO :
+        Settings::ParseDisplayAspectRatio(
+          GetEffectiveTinyStringSetting(bsi, ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY, "").c_str())
+          .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+    if (game_settings)
+    {
+      options.emplace_back(FSUI_STR("Use Global Setting"), current_ar == INHERIT_ASPECT_RATIO);
+    }
+    for (const DisplayAspectRatio& ratio : Settings::GetPredefinedDisplayAspectRatios())
+      options.emplace_back(Settings::GetDisplayAspectRatioDisplayName(ratio), current_ar == ratio);
+    OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_SHAPES, "Aspect Ratio"), false, std::move(options),
+                     [game_settings](s32 index, const std::string& title, bool checked) {
+                       if (index < 0)
+                         return;
+
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings && index == 0)
+                       {
+                         bsi->DeleteValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY);
+                       }
+                       else
+                       {
+                         bsi->SetStringValue(
+                           ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY,
+                           Settings::GetDisplayAspectRatioName(
+                             Settings::GetPredefinedDisplayAspectRatios()[game_settings ? (index - 1) : index]));
+                       }
+
+                       SetSettingsChanged(bsi);
+                     });
+  }
 
   DrawEnumSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES, "Deinterlacing Mode"),

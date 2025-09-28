@@ -598,8 +598,8 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
       text.append_format(" {}", Settings::GetTextureFilterName(g_gpu_settings.gpu_texture_filter));
     }
   }
-  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
-      g_settings.display_aspect_ratio != DisplayAspectRatio::R4_3)
+  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto() &&
+      g_settings.display_aspect_ratio != DisplayAspectRatio{4, 3})
   {
     text.append(" WSHack");
   }

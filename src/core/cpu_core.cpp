@@ -181,8 +181,6 @@ void CPU::Initialize()
 
   UpdateMemoryPointers();
   UpdateDebugDispatcherFlag();
-
-  GTE::Initialize();
 }
 
 void CPU::Shutdown()

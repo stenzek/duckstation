@@ -6,14 +6,13 @@
 
 class StateWrapper;
 
-enum class DisplayAspectRatio : u8;
+struct DisplayAspectRatio;
 
 namespace GTE {
 
-void Initialize();
 void Reset();
 bool DoState(StateWrapper& sw);
-void SetAspectRatio(DisplayAspectRatio aspect, u32 custom_num, u32 custom_denom);
+void SetAspectRatio(const DisplayAspectRatio& aspect);
 
 // control registers are offset by +32
 u32 ReadRegister(u32 index);

@@ -11,6 +11,8 @@
 
 enum class GPURenderer : u8;
 
+class SettingsInterface;
+
 class SettingsWindow;
 
 class GraphicsSettingsWidget : public QWidget
@@ -21,7 +23,9 @@ public:
   GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GraphicsSettingsWidget();
 
-  static void populateUpscalingModes(QComboBox* cb, int max_scale);
+  static void populateUpscalingModes(QComboBox* const cb, int max_scale);
+  static void createAspectRatioSetting(QComboBox* const cb, QSpinBox* const numerator, QLabel* const separator,
+                                       QSpinBox* const denominator, SettingsInterface* const sif);
 
   void onShowDebugSettingsChanged(bool enabled);
 
@@ -37,7 +41,6 @@ private:
   void updateRendererDependentOptions();
   void updatePGXPSettingsEnabled();
 
-  void onAspectRatioChanged();
   void updateResolutionDependentOptions();
   void onDownsampleModeChanged();
 

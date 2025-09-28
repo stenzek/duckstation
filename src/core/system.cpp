@@ -4544,10 +4544,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
-        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
-        (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom &&
-         (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
-          g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
     {
       UpdateGTEAspectRatio();
     }
@@ -5844,21 +5841,17 @@ void System::ToggleWidescreen()
   g_settings.gpu_widescreen_hack = !g_settings.gpu_widescreen_hack;
 
   const DisplayAspectRatio user_ratio =
-    Settings::ParseDisplayAspectRatio(
-      Host::GetStringSettingValue("Display", "AspectRatio",
-                                  Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
-        .c_str())
-      .value_or(DisplayAspectRatio::Auto);
-  ;
+    Settings::ParseDisplayAspectRatio(Host::GetStringSettingValue("Display", "AspectRatio"))
+      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
 
-  if (user_ratio == DisplayAspectRatio::Auto || user_ratio == DisplayAspectRatio::PAR1_1 ||
-      user_ratio == DisplayAspectRatio::R4_3)
+  if (user_ratio == DisplayAspectRatio::Auto() || user_ratio == DisplayAspectRatio::PAR1_1() ||
+      user_ratio == DisplayAspectRatio{4, 3})
   {
-    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio::R16_9 : user_ratio;
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? DisplayAspectRatio{16, 9} : user_ratio;
   }
   else
   {
-    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? user_ratio : DisplayAspectRatio::Auto;
+    g_settings.display_aspect_ratio = g_settings.gpu_widescreen_hack ? user_ratio : DisplayAspectRatio::Auto();
   }
 
   if (g_settings.gpu_widescreen_hack)
@@ -5874,8 +5867,8 @@ void System::ToggleWidescreen()
     Host::AddIconOSDMessage(
       "ToggleWidescreen", ICON_FA_SHAPES,
       fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen rendering is now disabled, and aspect ratio is set to {}."),
-                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio),
-                  Host::OSD_QUICK_DURATION));
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)),
+      Host::OSD_QUICK_DURATION);
   }
 
   UpdateGTEAspectRatio();
@@ -5945,18 +5938,12 @@ void System::UpdateGTEAspectRatio()
   DisplayAspectRatio gte_ar = g_settings.display_aspect_ratio;
   u32 custom_num = 0;
   u32 custom_denom = 0;
-  if (!g_settings.gpu_widescreen_hack)
+  if (!g_settings.gpu_widescreen_hack || gte_ar == DisplayAspectRatio::PAR1_1())
   {
     // No WS hack => no correction.
-    gte_ar = DisplayAspectRatio::R4_3;
+    gte_ar = DisplayAspectRatio::Auto();
   }
-  else if (gte_ar == DisplayAspectRatio::Custom)
-  {
-    // Custom AR => use values.
-    custom_num = g_settings.display_aspect_ratio_custom_numerator;
-    custom_denom = g_settings.display_aspect_ratio_custom_denominator;
-  }
-  else if (gte_ar == DisplayAspectRatio::MatchWindow)
+  else if (gte_ar == DisplayAspectRatio::Stretch())
   {
     if (const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo(); !main_window_info.IsSurfaceless())
     {
@@ -5966,16 +5953,16 @@ void System::UpdateGTEAspectRatio()
       custom_num =
         static_cast<u32>(std::max(std::round(static_cast<float>(main_window_info.surface_width) / correction), 1.0f));
       custom_denom = std::max<u32>(main_window_info.surface_height, 1u);
-      gte_ar = DisplayAspectRatio::Custom;
+      gte_ar = DisplayAspectRatio{static_cast<s16>(custom_num), static_cast<s16>(custom_denom)};
     }
     else
     {
       // Assume 4:3 until we get a window.
-      gte_ar = DisplayAspectRatio::R4_3;
+      gte_ar = DisplayAspectRatio::Auto();
     }
   }
 
-  GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
+  GTE::SetAspectRatio(gte_ar);
 }
 
 void System::UpdateAutomaticResolutionScale()

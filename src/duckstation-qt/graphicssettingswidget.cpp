@@ -47,6 +47,12 @@ static void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bo
   *ssaa = (value & (1u << 31)) != 0u;
 }
 
+static bool IsCustomAspectRatio(const DisplayAspectRatio& ratio)
+{
+  return std::ranges::none_of(Settings::GetPredefinedDisplayAspectRatios(),
+                              [&ratio](const auto& it) { return (it == ratio); });
+}
+
 GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
@@ -77,14 +83,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                &Settings::GetDownsampleModeDisplayName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, GPUDownsampleMode::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayAspectRatio, "Display", "AspectRatio",
-                                               &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
-                                               &Settings::GetDisplayAspectRatioDisplayName,
-                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO, DisplayAspectRatio::Count);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.customAspectRatioNumerator, "Display",
-                                              "CustomAspectRatioNumerator", 1);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.customAspectRatioDenominator, "Display",
-                                              "CustomAspectRatioDenominator", 1);
+  createAspectRatioSetting(m_ui.displayAspectRatio, m_ui.customAspectRatioNumerator, m_ui.customAspectRatioSeparator,
+                           m_ui.customAspectRatioDenominator, sif);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.displayDeinterlacing, "GPU", "DeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode,
@@ -111,8 +111,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::updateRendererDependentOptions);
   connect(m_ui.textureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
-  connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &GraphicsSettingsWidget::onAspectRatioChanged);
   connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onDownsampleModeChanged);
   connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
@@ -369,7 +367,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Init all dependent options.
   updateRendererDependentOptions();
-  onAspectRatioChanged();
   onDownsampleModeChanged();
   updateResolutionDependentOptions();
   onMediaCaptureBackendChanged();
@@ -423,7 +420,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
        "performance penalty."));
   dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
-    QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
+    QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
        "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
@@ -950,7 +947,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   }
 }
 
-void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* cb, int max_scale)
+void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max_scale)
 {
   static constexpr const std::pair<int, const char*> templates[] = {
     {0, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Based on Window Size)")},
@@ -967,6 +964,113 @@ void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* cb, int max_scale
     cb->addItem((it != std::end(templates)) ? qApp->translate("GraphicsSettingsWidget", it->second) :
                                               qApp->translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
   }
+}
+
+void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpinBox* const numerator,
+                                                      QLabel* const separator, QSpinBox* const denominator,
+                                                      SettingsInterface* const sif)
+{
+  static constexpr const char* CONFIG_SECTION = "Display";
+  static constexpr const char* CONFIG_KEY = "AspectRatio";
+
+  // AR requires special handling because of the custom option.
+  if (sif)
+  {
+    cb->addItem(qApp->translate("SettingsDialog", "Use Global Setting [%1]")
+                  .arg(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(
+                    Settings::ParseDisplayAspectRatio(Host::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
+                      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)))));
+  }
+  for (const DisplayAspectRatio& ratio : Settings::GetPredefinedDisplayAspectRatios())
+  {
+    cb->addItem(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(ratio)),
+                QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ratio)));
+  }
+  cb->addItem(tr("Custom"));
+
+  bool is_custom_ar = false;
+  if (sif && !sif->ContainsValue(CONFIG_SECTION, CONFIG_KEY))
+  {
+    cb->setCurrentIndex(0);
+  }
+  else
+  {
+    const DisplayAspectRatio ar =
+      Settings::ParseDisplayAspectRatio(sif ? sif->GetStringValue(CONFIG_SECTION, CONFIG_KEY) :
+                                              Host::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
+        .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+    if ((is_custom_ar = IsCustomAspectRatio(ar)))
+    {
+      cb->setCurrentIndex(cb->count() - 1);
+      numerator->setValue(ar.numerator);
+      denominator->setValue(ar.denominator);
+    }
+    else
+    {
+      cb->setCurrentIndex(cb->findData(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ar))));
+    }
+  }
+  numerator->setVisible(is_custom_ar);
+  separator->setVisible(is_custom_ar);
+  denominator->setVisible(is_custom_ar);
+
+  const auto value_changed = [cb, numerator, separator, denominator, sif]() {
+    std::optional<DisplayAspectRatio> value_to_save;
+    const int index = cb->currentIndex();
+    bool is_custom = false;
+    if (!sif || index > 0)
+    {
+      if (index == (cb->count() - 1))
+      {
+        is_custom = true;
+        value_to_save.emplace(static_cast<s16>(numerator->value()), static_cast<s16>(denominator->value()));
+      }
+      else
+      {
+        value_to_save.emplace(Settings::ParseDisplayAspectRatio(cb->currentData().toString().toStdString())
+                                .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+      }
+    }
+
+    numerator->setVisible(is_custom);
+    denominator->setVisible(is_custom);
+    separator->setVisible(is_custom);
+
+    if (sif)
+    {
+      if (value_to_save.has_value())
+      {
+        sif->SetStringValue(CONFIG_SECTION, CONFIG_KEY,
+                            Settings::GetDisplayAspectRatioName(value_to_save.value()).c_str());
+      }
+      else
+      {
+        sif->DeleteValue(CONFIG_SECTION, CONFIG_KEY);
+      }
+
+      QtHost::SaveGameSettings(sif, true);
+      g_emu_thread->reloadGameSettings();
+    }
+    else
+    {
+      if (value_to_save.has_value())
+      {
+        Host::SetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY,
+                                        Settings::GetDisplayAspectRatioName(value_to_save.value()).c_str());
+      }
+      else
+      {
+        Host::DeleteBaseSettingValue(CONFIG_SECTION, CONFIG_KEY);
+      }
+
+      Host::CommitBaseSettingChanges();
+      g_emu_thread->applySettings();
+    }
+  };
+
+  connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged), cb, value_changed);
+  connect(numerator, QOverload<int>::of(&QSpinBox::valueChanged), cb, value_changed);
+  connect(denominator, QOverload<int>::of(&QSpinBox::valueChanged), cb, std::move(value_changed));
 }
 
 void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
@@ -994,23 +1098,6 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled &&
                                            !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXPOn2DPolygons));
   m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
-}
-
-void GraphicsSettingsWidget::onAspectRatioChanged()
-{
-  const DisplayAspectRatio ratio =
-    Settings::ParseDisplayAspectRatio(
-      m_dialog
-        ->getEffectiveStringValue("Display", "AspectRatio",
-                                  Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
-        .c_str())
-      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
-
-  const bool is_custom = (ratio == DisplayAspectRatio::Custom);
-
-  m_ui.customAspectRatioNumerator->setVisible(is_custom);
-  m_ui.customAspectRatioDenominator->setVisible(is_custom);
-  m_ui.customAspectRatioSeparator->setVisible(is_custom);
 }
 
 void GraphicsSettingsWidget::updateResolutionDependentOptions()

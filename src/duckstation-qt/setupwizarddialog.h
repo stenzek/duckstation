@@ -74,7 +74,6 @@ private:
   void openAutomaticMappingMenu(u32 port, QLabel* update_label);
   void doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device);
 
-  void onGraphicsAspectRatioChanged();
   void onAchievementsLoginLogoutClicked();
   void onAchievementsLoginCompleted();
   void onAchievementsViewProfileClicked();

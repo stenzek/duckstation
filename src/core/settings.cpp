@@ -305,13 +305,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       si.GetStringValue("Display", "CropMode", GetDisplayCropModeName(DEFAULT_DISPLAY_CROP_MODE)).c_str())
       .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
-    ParseDisplayAspectRatio(
-      si.GetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(DEFAULT_DISPLAY_ASPECT_RATIO)).c_str())
-      .value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
-  display_aspect_ratio_custom_numerator = static_cast<u16>(
-    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioNumerator", 4), 1, std::numeric_limits<u16>::max()));
-  display_aspect_ratio_custom_denominator = static_cast<u16>(
-    std::clamp<int>(si.GetIntValue("Display", "CustomAspectRatioDenominator", 3), 1, std::numeric_limits<u16>::max()));
+    ParseDisplayAspectRatio(si.GetStringValue("Display", "AspectRatio")).value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
@@ -676,7 +670,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("Display", "LineStartOffset", display_line_start_offset);
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
-  si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio));
+  si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
@@ -692,8 +686,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("Display", "ScreenshotMode", GetDisplayScreenshotModeName(display_screenshot_mode));
   si.SetStringValue("Display", "ScreenshotFormat", GetDisplayScreenshotFormatName(display_screenshot_format));
   si.SetUIntValue("Display", "ScreenshotQuality", display_screenshot_quality);
-  si.SetIntValue("Display", "CustomAspectRatioNumerator", display_aspect_ratio_custom_numerator);
-  si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   if (!ignore_base)
   {
     si.SetBoolValue("Display", "ShowOSDMessages", display_show_messages);
@@ -1881,52 +1873,91 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
                                   "DisplayCropMode");
 }
 
-static constexpr const std::array s_display_aspect_ratio_names = {
+static constexpr const std::string_view s_auto_aspect_ratio_name =
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Auto (Game Native)", "DisplayAspectRatio");
+static constexpr const std::string_view s_stretch_aspect_ratio_name =
 #ifndef __ANDROID__
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Auto (Game Native)", "DisplayAspectRatio"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Stretch To Fill", "DisplayAspectRatio"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Custom", "DisplayAspectRatio"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Stretch To Fill", "DisplayAspectRatio");
 #else
-  "Auto (Game Native)",
-  "Auto (Match Window)",
-  "Custom",
+  "Auto (Match Window)";
 #endif
-  "4:3",
-  "16:9",
-  "19:9",
-  "20:9",
-  "PAR 1:1"};
-static constexpr const std::array s_display_aspect_ratio_values = {
-  4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
+static constexpr const std::string_view s_par_1_1_aspect_ratio_name =
+  TRANSLATE_DISAMBIG_NOOP("Settings", "PAR 1:1", "DisplayAspectRatio");
 
-std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
+std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(std::string_view str)
 {
-  int index = 0;
-  for (const char* name : s_display_aspect_ratio_names)
-  {
-    if (StringUtil::Strcasecmp(name, str) == 0)
-      return static_cast<DisplayAspectRatio>(index);
+  std::optional<DisplayAspectRatio> ret;
 
-    index++;
+  // Special cases.
+  if (str == s_auto_aspect_ratio_name)
+  {
+    ret.emplace(DisplayAspectRatio::Auto());
+  }
+  else if (str == s_stretch_aspect_ratio_name)
+  {
+    ret.emplace(DisplayAspectRatio::Stretch());
+  }
+  else if (str == s_par_1_1_aspect_ratio_name)
+  {
+    ret.emplace(DisplayAspectRatio::PAR1_1());
+  }
+  else
+  {
+    const std::string_view::size_type pos = str.find(':');
+    if (pos != std::string_view::npos)
+    {
+      const std::optional<s16> num = StringUtil::FromChars<s16>(str.substr(0, pos));
+      const std::optional<s16> denom = StringUtil::FromChars<s16>(str.substr(pos + 1));
+      if (num.has_value() && denom.has_value() && num.value() > 0 && denom.value() > 0)
+        ret.emplace(num.value(), denom.value());
+    }
   }
 
-  return std::nullopt;
+  return ret;
 }
 
-const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
+TinyString Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
 {
-  return s_display_aspect_ratio_names[static_cast<size_t>(ar)];
+  TinyString ret;
+
+  // Special cases.
+  if (ar == DisplayAspectRatio::Auto())
+    ret = s_auto_aspect_ratio_name;
+  else if (ar == DisplayAspectRatio::Stretch())
+    ret = s_stretch_aspect_ratio_name;
+  else if (ar == DisplayAspectRatio::PAR1_1())
+    ret = s_par_1_1_aspect_ratio_name;
+  else
+    ret.format("{}:{}", ar.numerator, ar.denominator);
+
+  return ret;
 }
 
-const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
+TinyString Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
 {
-  return Host::TranslateToCString("Settings", s_display_aspect_ratio_names[static_cast<size_t>(ar)],
-                                  "DisplayAspectRatio");
+  TinyString ret;
+
+  // Special cases.
+  if (ar == DisplayAspectRatio::Auto())
+    ret = Host::TranslateToStringView("Settings", s_auto_aspect_ratio_name, "DisplayAspectRatio");
+  else if (ar == DisplayAspectRatio::Stretch())
+    ret = Host::TranslateToStringView("Settings", s_stretch_aspect_ratio_name, "DisplayAspectRatio");
+  else if (ar == DisplayAspectRatio::PAR1_1())
+    ret = Host::TranslateToStringView("Settings", s_par_1_1_aspect_ratio_name, "DisplayAspectRatio");
+  else
+    ret.format("{}:{}", ar.numerator, ar.denominator);
+
+  return ret;
 }
 
-float GPUSettings::GetDisplayAspectRatioValue() const
+std::span<const DisplayAspectRatio> Settings::GetPredefinedDisplayAspectRatios()
 {
-  return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
+  static constexpr const std::array s_predefined_aspect_ratios = {
+    DisplayAspectRatio::Auto(), DisplayAspectRatio::Stretch(), DisplayAspectRatio{4, 3},
+    DisplayAspectRatio{16, 9},  DisplayAspectRatio{19, 9},     DisplayAspectRatio{20, 9},
+    DisplayAspectRatio{21, 9},  DisplayAspectRatio{16, 10},    DisplayAspectRatio::PAR1_1(),
+  };
+  return s_predefined_aspect_ratios;
 }
 
 static constexpr const std::array s_display_alignment_names = {"LeftOrTop", "Center", "RightOrBottom"};

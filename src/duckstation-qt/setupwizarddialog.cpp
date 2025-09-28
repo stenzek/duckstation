@@ -534,17 +534,9 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
   SettingWidgetBinder::DisconnectWidget(m_ui.displayAspectRatio);
   m_ui.displayAspectRatio->clear();
 
-  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayAspectRatio, "Display", "AspectRatio",
-                                               &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
-                                               &Settings::GetDisplayAspectRatioDisplayName,
-                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO, DisplayAspectRatio::Count);
-  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioNumerator, "Display",
-                                              "CustomAspectRatioNumerator", 1);
-  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioDenominator, "Display",
-                                              "CustomAspectRatioDenominator", 1);
-  connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-          &SetupWizardDialog::onGraphicsAspectRatioChanged);
-  onGraphicsAspectRatioChanged();
+  GraphicsSettingsWidget::createAspectRatioSetting(m_ui.displayAspectRatio, m_ui.customAspectRatioNumerator,
+                                                   m_ui.customAspectRatioSeparator, m_ui.customAspectRatioDenominator,
+                                                   nullptr);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.displayCropMode);
   m_ui.displayCropMode->clear();
@@ -574,22 +566,6 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
     SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
   }
-}
-
-void SetupWizardDialog::onGraphicsAspectRatioChanged()
-{
-  const DisplayAspectRatio ratio =
-    Settings::ParseDisplayAspectRatio(
-      Host::GetBaseStringSettingValue("Display", "AspectRatio",
-                                      Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
-        .c_str())
-      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
-
-  const bool is_custom = (ratio == DisplayAspectRatio::Custom);
-
-  m_ui.customAspectRatioNumerator->setVisible(is_custom);
-  m_ui.customAspectRatioDenominator->setVisible(is_custom);
-  m_ui.customAspectRatioSeparator->setVisible(is_custom);
 }
 
 void SetupWizardDialog::setupAchievementsPage(bool initial)

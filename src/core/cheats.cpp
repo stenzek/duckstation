@@ -287,7 +287,7 @@ void Cheats::CheatCode::ApplySettingOverrides()
     DEV_LOG("Enabling 8MB ram from {} patch.", GetName());
     g_settings.enable_8mb_ram = true;
   }
-  if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto)
+  if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
     DEV_LOG("Setting aspect ratio to {} from {} patch.",
             Settings::GetDisplayAspectRatioName(m_metadata.override_aspect_ratio.value()), GetName());

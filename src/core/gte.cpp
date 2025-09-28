@@ -23,7 +23,7 @@
 #include <numbers>
 #include <numeric>
 
-LOG_CHANNEL(Host);
+LOG_CHANNEL(CPU);
 
 // Freecam is disabled on Android because there's no windowed UI for it.
 // And because users can't be trusted to not crash games and complain.
@@ -51,11 +51,21 @@ static constexpr float FREECAM_MAX_MOVE_SPEED = 65536.0f;
 static constexpr float FREECAM_DEFAULT_TURN_SPEED = 30.0f;
 static constexpr float FREECAM_MAX_TURN_SPEED = 360.0f;
 
+enum class GTEAspectRatio : u8
+{
+  None,
+  R16_9,
+  R19_9,
+  R20_9,
+  Custom,
+  Count
+};
+
 namespace {
 
 struct ALIGN_TO_CACHE_LINE Config
 {
-  DisplayAspectRatio aspect_ratio = DisplayAspectRatio::R4_3;
+  GTEAspectRatio aspect_ratio = GTEAspectRatio::None;
   u32 custom_aspect_ratio_numerator = 0;
   u32 custom_aspect_ratio_denominator = 0;
   float custom_aspect_ratio_f = 1.0f;
@@ -259,12 +269,6 @@ static void Execute_GPF(Instruction inst);
 
 } // namespace GTE
 
-void GTE::Initialize()
-{
-  s_config.aspect_ratio = DisplayAspectRatio::R4_3;
-  Reset();
-}
-
 void GTE::Reset()
 {
   std::memset(&REGS, 0, sizeof(REGS));
@@ -278,22 +282,45 @@ bool GTE::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void GTE::SetAspectRatio(DisplayAspectRatio aspect, u32 custom_num, u32 custom_denom)
+void GTE::SetAspectRatio(const DisplayAspectRatio& aspect)
 {
-  s_config.aspect_ratio = aspect;
-  if (aspect != DisplayAspectRatio::Custom)
+  static constexpr const std::pair<DisplayAspectRatio, GTEAspectRatio> aspect_ratio_map[] = {
+    {DisplayAspectRatio::Auto(), GTEAspectRatio::None}, {DisplayAspectRatio{4, 3}, GTEAspectRatio::None},
+    {DisplayAspectRatio{16, 9}, GTEAspectRatio::R16_9}, {DisplayAspectRatio{19, 9}, GTEAspectRatio::R19_9},
+    {DisplayAspectRatio{20, 9}, GTEAspectRatio::R20_9},
+  };
+
+  s_config.aspect_ratio = GTEAspectRatio::Custom;
+
+  for (const auto& [display_ar, gte_ar] : aspect_ratio_map)
+  {
+    if (aspect == display_ar)
+    {
+      s_config.aspect_ratio = gte_ar;
+      break;
+    }
+  }
+
+  if (s_config.aspect_ratio == GTEAspectRatio::None)
+  {
+    DEV_LOG("GTE aspect ratio correction is disabled.");
+    return;
+  }
+
+  DEV_COLOR_LOG(StrongOrange, "GTE aspect ratio correction set to {}:{}", aspect.numerator, aspect.denominator);
+  if (s_config.aspect_ratio != GTEAspectRatio::Custom)
     return;
 
   // (4 / 3) / (num / denom) => gcd((4 * denom) / (3 * num))
-  const u32 x = 4u * custom_denom;
-  const u32 y = 3u * custom_num;
+  const u32 x = 4u * static_cast<u32>(aspect.denominator);
+  const u32 y = 3u * static_cast<u32>(aspect.numerator);
   const u32 gcd = std::gcd(x, y);
 
   s_config.custom_aspect_ratio_numerator = x / gcd;
   s_config.custom_aspect_ratio_denominator = y / gcd;
 
   s_config.custom_aspect_ratio_f =
-    static_cast<float>((4.0 / 3.0) / (static_cast<double>(custom_num) / static_cast<double>(custom_denom)));
+    static_cast<float>((4.0 / 3.0) / (static_cast<double>(aspect.numerator) / static_cast<double>(aspect.denominator)));
 }
 
 u32 GTE::ReadRegister(u32 index)
@@ -728,27 +755,25 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   s64 Sx;
   switch (s_config.aspect_ratio)
   {
-    case DisplayAspectRatio::R16_9:
+    case GTEAspectRatio::R16_9:
       Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(4)) + s64(REGS.OFX));
       break;
 
-    case DisplayAspectRatio::R19_9:
+    case GTEAspectRatio::R19_9:
       Sx = ((((s64(result) * s64(REGS.IR1)) * s64(12)) / s64(19)) + s64(REGS.OFX));
       break;
 
-    case DisplayAspectRatio::R20_9:
+    case GTEAspectRatio::R20_9:
       Sx = ((((s64(result) * s64(REGS.IR1)) * s64(3)) / s64(5)) + s64(REGS.OFX));
       break;
 
-    case DisplayAspectRatio::Custom:
+    case GTEAspectRatio::Custom:
       Sx = ((((s64(result) * s64(REGS.IR1)) * s64(s_config.custom_aspect_ratio_numerator)) /
              s64(s_config.custom_aspect_ratio_denominator)) +
             s64(REGS.OFX));
       break;
 
-    case DisplayAspectRatio::Auto:
-    case DisplayAspectRatio::R4_3:
-    case DisplayAspectRatio::PAR1_1:
+    case GTEAspectRatio::None:
     default:
       Sx = (s64(result) * s64(REGS.IR1) + s64(REGS.OFX));
       break;
@@ -826,25 +851,23 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 
     switch (s_config.aspect_ratio)
     {
-      case DisplayAspectRatio::Custom:
+      case GTEAspectRatio::Custom:
         precise_x = precise_x * s_config.custom_aspect_ratio_f;
         break;
 
-      case DisplayAspectRatio::R16_9:
+      case GTEAspectRatio::R16_9:
         precise_x = (precise_x * 3.0f) / 4.0f;
         break;
 
-      case DisplayAspectRatio::R19_9:
+      case GTEAspectRatio::R19_9:
         precise_x = (precise_x * 12.0f) / 19.0f;
         break;
 
-      case DisplayAspectRatio::R20_9:
+      case GTEAspectRatio::R20_9:
         precise_x = (precise_x * 3.0f) / 5.0f;
         break;
 
-      case DisplayAspectRatio::Auto:
-      case DisplayAspectRatio::R4_3:
-      case DisplayAspectRatio::PAR1_1:
+      case GTEAspectRatio::None:
       default:
         break;
     }
