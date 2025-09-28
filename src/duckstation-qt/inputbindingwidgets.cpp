@@ -483,6 +483,7 @@ void InputVibrationBindingWidget::onClicked()
   m_binding = new_value.toStdString();
   Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_binding.c_str());
   Host::CommitBaseSettingChanges();
+  g_emu_thread->reloadInputBindings();
   setText(new_value);
 }
 
