@@ -13,6 +13,7 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/gsvector.h"
+#include "common/log.h"
 #include "common/timer.h"
 
 #include "imgui.h"

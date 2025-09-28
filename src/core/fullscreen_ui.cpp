@@ -6674,7 +6674,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   DrawEnumSetting(bsi, FSUI_VSTR("Log Level"),
                   FSUI_VSTR("Sets the verbosity of messages logged. Higher levels will log more messages."), "Logging",
-                  "LogLevel", Settings::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
+                  "LogLevel", Log::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
                   &Settings::GetLogLevelDisplayName, Log::Level::MaxCount);
   DrawToggleSetting(bsi, FSUI_VSTR("Log To System Console"), FSUI_VSTR("Logs messages to the console window."),
                     "Logging", "LogToConsole", false);

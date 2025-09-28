@@ -7,7 +7,6 @@
 
 #include "util/audio_stream.h"
 
-#include "common/log.h"
 #include "common/small_string.h"
 
 #include <array>
@@ -17,6 +16,10 @@
 #include <string_view>
 
 class SettingsInterface;
+
+namespace Log {
+enum class Level : u32;
+}
 
 enum class RenderAPI : u8;
 enum class MediaCaptureBackend : u8;
@@ -618,8 +621,6 @@ struct Settings : public GPUSettings
     AchievementChallengeIndicatorMode::Notification;
   static constexpr u8 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr u8 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
-
-  static constexpr Log::Level DEFAULT_LOG_LEVEL = Log::Level::Info;
 
   static constexpr SaveStateCompressionMode DEFAULT_SAVE_STATE_COMPRESSION_MODE = SaveStateCompressionMode::ZstDefault;
 

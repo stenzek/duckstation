@@ -63,6 +63,9 @@ enum class Channel : u32
     MaxCount
 };
 
+// Default log level.
+static constexpr Log::Level DEFAULT_LOG_LEVEL = Log::Level::Info;
+
 // Packs a level and channel into one 16-bit number.
 using MessageCategory = u32;
 [[maybe_unused]] ALWAYS_INLINE constexpr u32 PackCategory(Channel channel, Level level, Color colour)

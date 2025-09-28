@@ -200,7 +200,7 @@ void LogWindow::updateLogLevelUi()
 {
   const Log::Level level =
     Settings::ParseLogLevelName(Host::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
-      .value_or(Settings::DEFAULT_LOG_LEVEL);
+      .value_or(Log::DEFAULT_LOG_LEVEL);
 
   const QList<QAction*> actions = m_level_menu->actions();
   for (u32 i = 0; i < actions.size(); i++)

@@ -1193,7 +1193,7 @@ bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
 
 void Settings::SetDefaultLogConfig(SettingsInterface& si)
 {
-  si.SetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL));
+  si.SetStringValue("Logging", "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL));
   si.SetBoolValue("Logging", "LogTimestamps", true);
 
 #if !defined(_WIN32) && !defined(__ANDROID__)
@@ -1215,8 +1215,8 @@ void Settings::SetDefaultLogConfig(SettingsInterface& si)
 void Settings::UpdateLogConfig(const SettingsInterface& si)
 {
   const Log::Level log_level =
-    ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
-      .value_or(DEFAULT_LOG_LEVEL);
+    ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(Log::DEFAULT_LOG_LEVEL)).c_str())
+      .value_or(Log::DEFAULT_LOG_LEVEL);
   const bool log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
   const bool log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
   const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
