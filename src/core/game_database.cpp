@@ -728,9 +728,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::DisableWidescreen))
   {
-    if (display_osd_messages && settings.gpu_widescreen_hack)
+    if (display_osd_messages && settings.gpu_widescreen_rendering)
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Widescreen rendering disabled."));
 
+    settings.gpu_widescreen_rendering = false;
     settings.gpu_widescreen_hack = false;
   }
 

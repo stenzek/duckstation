@@ -1395,6 +1395,20 @@ void System::ApplySettings(bool display_osd_messages)
       LoadSettings(false);
   }
 
+  // Reload patches if widescreen rendering setting changed.
+  if (IsValid() &&
+      (g_settings.gpu_widescreen_rendering != old_settings.gpu_widescreen_rendering ||
+       (g_settings.gpu_widescreen_rendering && g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)))
+  {
+    const bool prev_widescreen_patch = Cheats::IsWidescreenPatchActive();
+    Cheats::ReloadCheats(false, true, false, true, true);
+    if (prev_widescreen_patch != Cheats::IsWidescreenPatchActive() ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    {
+      LoadSettings(false);
+    }
+  }
+
   CheckForSettingsChanges(old_settings);
   Host::CheckForSettingsChanges(old_settings);
 }

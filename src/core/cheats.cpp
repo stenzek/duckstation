@@ -212,10 +212,12 @@ static bool ExtractCodeInfo(CodeInfoList* dst, const std::string_view file_data,
 static void AppendCheatToList(CodeInfoList* dst, CodeInfo code);
 
 static bool ShouldLoadDatabaseCheats();
+static bool WantsWidescreenPatch();
 static bool AreAnyPatchesEnabled();
 static void ReloadEnabledLists();
-static u32 EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
-                        bool hc_mode_active);
+static u32 EnablePatches(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
+                         bool hc_mode_active);
+static bool EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active);
 static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
                               bool show_disabled_codes);
 
@@ -259,6 +261,7 @@ struct Locals
   u32 active_cheat_count = 0;
   bool patches_enabled = false;
   bool cheats_enabled = false;
+  bool has_widescreen_patch = false;
   bool database_cheat_codes_enabled = false;
 };
 
@@ -811,10 +814,20 @@ bool Cheats::ShouldLoadDatabaseCheats()
   return (sif && sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
 }
 
+bool Cheats::WantsWidescreenPatch()
+{
+  return (g_settings.gpu_widescreen_rendering && g_settings.display_aspect_ratio.IsValid() &&
+          g_settings.display_aspect_ratio != DisplayAspectRatio{4, 3});
+}
+
 bool Cheats::AreAnyPatchesEnabled()
 {
   if (g_settings.disable_all_enhancements)
     return false;
+
+  // Look for widescreen patches.
+  if (WantsWidescreenPatch())
+    return true;
 
   // Only in the gameini.
   const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
@@ -840,8 +853,8 @@ void Cheats::ReloadEnabledLists()
   s_locals.enabled_patches = sif->GetStringList(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
 }
 
-u32 Cheats::EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
-                         bool hc_mode_active)
+u32 Cheats::EnablePatches(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
+                          bool hc_mode_active)
 {
   u32 count = 0;
   for (const std::unique_ptr<CheatCode>& p : patches)
@@ -887,6 +900,38 @@ u32 Cheats::EnableCheats(const CheatCodeList& patches, const EnableCodeList& ena
   }
 
   return count;
+}
+
+bool Cheats::EnableWidescreenPatch(const CheatCodeList& patches, bool hc_mode_active)
+{
+  const DisplayAspectRatio ar = g_settings.display_aspect_ratio;
+  if (ar.numerator <= 0 || ar.denominator <= 0)
+    return false;
+
+  for (const std::unique_ptr<CheatCode>& p : patches)
+  {
+    // don't rely on the name, use the attribute instead
+    if (!p->GetMetadata().override_aspect_ratio.has_value() || p->GetMetadata().override_aspect_ratio.value() != ar)
+      continue;
+
+    // don't load banned patches
+    if (p->GetMetadata().disallow_for_achievements && hc_mode_active)
+      continue;
+
+    // already enabled?
+    if (std::find(s_locals.enabled_patches.begin(), s_locals.enabled_patches.end(), p->GetName()) !=
+        s_locals.enabled_patches.end())
+    {
+      return true;
+    }
+
+    INFO_LOG("Enabling widescreen patch: {}", p->GetName());
+    s_locals.enabled_patches.push_back(p->GetName());
+    return true;
+  }
+
+  WARNING_LOG("No widescreen patch found for aspect ratio {}.", Settings::GetDisplayAspectRatioName(ar));
+  return false;
 }
 
 void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
@@ -954,6 +999,7 @@ void Cheats::UnloadAll()
   s_locals.patch_codes = CheatCodeList();
   s_locals.patches_enabled = false;
   s_locals.cheats_enabled = false;
+  s_locals.has_widescreen_patch = false;
   s_locals.database_cheat_codes_enabled = false;
 }
 
@@ -1015,10 +1061,12 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
 
   if (!g_settings.disable_all_enhancements)
   {
+    s_locals.has_widescreen_patch =
+      WantsWidescreenPatch() && EnableWidescreenPatch(s_locals.patch_codes, hc_mode_active);
     s_locals.active_patch_count =
-      EnableCheats(s_locals.patch_codes, s_locals.enabled_patches, "Patches", hc_mode_active);
+      EnablePatches(s_locals.patch_codes, s_locals.enabled_patches, "Patches", hc_mode_active);
     s_locals.active_cheat_count =
-      AreCheatsEnabled() ? EnableCheats(s_locals.cheat_codes, s_locals.enabled_cheats, "Cheats", hc_mode_active) : 0;
+      AreCheatsEnabled() ? EnablePatches(s_locals.cheat_codes, s_locals.enabled_cheats, "Cheats", hc_mode_active) : 0;
   }
 
   // Display message on first boot when we load patches.
@@ -1124,6 +1172,11 @@ u32 Cheats::GetActivePatchCount()
 u32 Cheats::GetActiveCheatCount()
 {
   return s_locals.active_cheat_count;
+}
+
+bool Cheats::IsWidescreenPatchActive()
+{
+  return s_locals.has_widescreen_patch;
 }
 
 //////////////////////////////////////////////////////////////////////////

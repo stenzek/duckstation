@@ -318,7 +318,7 @@ enum class ForceVideoTimingMode : u8
   Disabled,
   NTSC,
   PAL,
-  
+
   Count,
 };
 
@@ -346,4 +346,5 @@ struct DisplayAspectRatio
   {
     return (std::memcmp(this, &rhs, sizeof(DisplayAspectRatio)) != 0);
   }
+  ALWAYS_INLINE bool IsValid() const { return (numerator > 0 && denominator > 0); }
 };

@@ -158,6 +158,9 @@ extern u32 GetActivePatchCount();
 /// Returns the number of active cheats.
 extern u32 GetActiveCheatCount();
 
+/// Returns true if the widescreen patch is active.
+extern bool IsWidescreenPatchActive();
+
 // Config sections/keys to use to enable patches.
 extern const char* PATCHES_CONFIG_SECTION;
 extern const char* CHEATS_CONFIG_SECTION;
