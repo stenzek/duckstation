@@ -49,7 +49,7 @@ void GamePatchDetailsWidget::onEnabledStateChanged(Qt::CheckState state)
   else
     si->RemoveFromStringList("Patches", "Enable", m_name.c_str());
 
-  si->Save();
+  QtHost::SaveGameSettings(si, true);
   g_emu_thread->reloadGameSettings();
 }
 
