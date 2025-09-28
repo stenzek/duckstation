@@ -1670,30 +1670,23 @@ void GameListWidget::updateBackground(bool reload_image)
     return;
   }
 
-  QtAsyncTask::create(this, [image = m_background_image, this, widget_width = m_ui.stack->width(),
-                             widget_height = m_ui.stack->height()]() mutable {
-    resizeAndPadImage(&image, widget_width, widget_height, true, true);
-    return [image = std::move(image), this, widget_width, widget_height]() {
-      // check for dimensions change
-      if (widget_width != m_ui.stack->width() || widget_height != m_ui.stack->height())
-        return;
+  QImage scaled_image = m_background_image;
+  resizeAndPadImage(&scaled_image, m_ui.stack->width(), m_ui.stack->height(), true, true);
 
-      QPalette new_palette = qApp->palette(m_ui.stack);
-      new_palette.setBrush(QPalette::Window, QPixmap::fromImage(image));
-      new_palette.setBrush(QPalette::Base, Qt::transparent);
-      m_ui.stack->setPalette(new_palette);
-      m_ui.stack->setAutoFillBackground(true);
-      m_list_view->setAlternatingRowColors(false);
+  QPalette new_palette = qApp->palette(m_ui.stack);
+  new_palette.setBrush(QPalette::Window, QPixmap::fromImage(scaled_image));
+  new_palette.setBrush(QPalette::Base, Qt::transparent);
+  m_ui.stack->setPalette(new_palette);
+  m_ui.stack->setAutoFillBackground(true);
+  m_list_view->setAlternatingRowColors(false);
 
-      if (QtHost::IsStyleSheetApplicationTheme())
-      {
-        // Stylesheets override palette, so we need to set background: transparent on the grid and list view.
-        const QString style_sheet = QStringLiteral("QAbstractScrollArea { background-color: transparent; }");
-        m_list_view->setStyleSheet(style_sheet);
-        m_grid_view->setStyleSheet(style_sheet);
-      }
-    };
-  });
+  if (QtHost::IsStyleSheetApplicationTheme())
+  {
+    // Stylesheets override palette, so we need to set background: transparent on the grid and list view.
+    const QString style_sheet = QStringLiteral("QAbstractScrollArea { background-color: transparent; }");
+    m_list_view->setStyleSheet(style_sheet);
+    m_grid_view->setStyleSheet(style_sheet);
+  }
 }
 
 bool GameListWidget::hasBackground() const
