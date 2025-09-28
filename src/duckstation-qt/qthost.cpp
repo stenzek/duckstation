@@ -140,6 +140,7 @@ struct State
   INISettingsInterface base_settings_interface;
   std::unique_ptr<QTimer> settings_save_timer;
   std::vector<QTranslator*> translators;
+  QIcon app_icon;
   QLocale app_locale;
   std::once_flag roboto_font_once_flag;
   QStringList roboto_font_families;
@@ -238,12 +239,16 @@ bool QtHost::EarlyProcessStartup()
   qInstallMessageHandler(MessageOutputHandler);
 
   Error error;
-  if (System::ProcessStartup(&error)) [[likely]]
-    return true;
+  if (!System::ProcessStartup(&error)) [[unlikely]]
+  {
+    QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
+                          QString::fromStdString(error.GetDescription()));
+    return false;
+  }
 
-  QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
-                        QString::fromStdString(error.GetDescription()));
-  return false;
+  // Load resources.
+  s_state.app_icon = QIcon(QStringLiteral(":/icons/duck.png"));
+  return true;
 }
 
 void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
@@ -366,8 +371,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 
 const QIcon& QtHost::GetAppIcon()
 {
-  static const QIcon icon(QStringLiteral(":/icons/duck.png"));
-  return icon;
+  return s_state.app_icon;
 }
 
 std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
