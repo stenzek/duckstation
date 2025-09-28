@@ -7,6 +7,8 @@
 
 #include "ui_graphicssettingswidget.h"
 
+#include "core/types.h"
+
 #include "util/gpu_device.h"
 
 enum class GPURenderer : u8;
@@ -24,6 +26,9 @@ public:
   ~GraphicsSettingsWidget();
 
   static void populateUpscalingModes(QComboBox* const cb, int max_scale);
+
+  static QVariant packAspectRatio(DisplayAspectRatio ar);
+  static DisplayAspectRatio unpackAspectRatio(const QVariant& var);
   static void createAspectRatioSetting(QComboBox* const cb, QSpinBox* const numerator, QLabel* const separator,
                                        QSpinBox* const denominator, SettingsInterface* const sif);
 

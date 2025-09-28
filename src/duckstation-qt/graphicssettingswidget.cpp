@@ -47,12 +47,6 @@ static void DecodeMSAAModeValue(const QVariant& userdata, uint* multisamples, bo
   *ssaa = (value & (1u << 31)) != 0u;
 }
 
-static bool IsCustomAspectRatio(const DisplayAspectRatio& ratio)
-{
-  return std::ranges::none_of(Settings::GetPredefinedDisplayAspectRatios(),
-                              [&ratio](const auto& it) { return (it == ratio); });
-}
-
 GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
 {
@@ -966,6 +960,17 @@ void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max
   }
 }
 
+QVariant GraphicsSettingsWidget::packAspectRatio(DisplayAspectRatio ar)
+{
+  return QVariant(static_cast<uint>(ar.numerator) << 16 | static_cast<uint>(ar.denominator));
+}
+
+DisplayAspectRatio GraphicsSettingsWidget::unpackAspectRatio(const QVariant& var)
+{
+  const uint packed = var.toUInt();
+  return DisplayAspectRatio{static_cast<s16>(packed >> 16), static_cast<s16>(packed & 0xFFFFu)};
+}
+
 void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpinBox* const numerator,
                                                       QLabel* const separator, QSpinBox* const denominator,
                                                       SettingsInterface* const sif)
@@ -984,7 +989,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   for (const DisplayAspectRatio& ratio : Settings::GetPredefinedDisplayAspectRatios())
   {
     cb->addItem(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(ratio)),
-                QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ratio)));
+                packAspectRatio(ratio));
   }
   cb->addItem(tr("Custom"));
 
@@ -999,7 +1004,8 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
       Settings::ParseDisplayAspectRatio(sif ? sif->GetStringValue(CONFIG_SECTION, CONFIG_KEY) :
                                               Host::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
         .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
-    if ((is_custom_ar = IsCustomAspectRatio(ar)))
+    if ((is_custom_ar = std::ranges::none_of(Settings::GetPredefinedDisplayAspectRatios(),
+                                             [&ar](const auto& it) { return (it == ar); })))
     {
       cb->setCurrentIndex(cb->count() - 1);
       numerator->setValue(ar.numerator);
@@ -1007,7 +1013,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
     }
     else
     {
-      cb->setCurrentIndex(cb->findData(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioName(ar))));
+      cb->setCurrentIndex(cb->findData(packAspectRatio(ar)));
     }
   }
   numerator->setVisible(is_custom_ar);
@@ -1027,8 +1033,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
       }
       else
       {
-        value_to_save.emplace(Settings::ParseDisplayAspectRatio(cb->currentData().toString().toStdString())
-                                .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO));
+        value_to_save.emplace(unpackAspectRatio(cb->currentData()));
       }
     }
 
