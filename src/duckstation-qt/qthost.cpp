@@ -120,7 +120,6 @@ static bool SetDataDirectory();
 static bool SetCriticalFolders();
 static void LoadResources();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
-static void MigrateSettings();
 static void SaveSettings();
 static bool RunSetupWizard();
 static void UpdateFontOrder(std::string_view language);
@@ -515,7 +514,6 @@ bool QtHost::InitializeConfig()
 
   EmuFolders::LoadConfig(s_state.base_settings_interface);
   EmuFolders::EnsureFoldersExist();
-  MigrateSettings();
 
   // We need to create the console window early, otherwise it appears in front of the main window.
   if (!Log::IsConsoleOutputEnabled() && s_state.base_settings_interface.GetBoolValue("Logging", "LogToConsole", false))
@@ -648,21 +646,6 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
     InputManager::SetDefaultSourceConfig(si);
     Settings::SetDefaultControllerConfig(si);
     Settings::SetDefaultHotkeyConfig(si);
-  }
-}
-
-void QtHost::MigrateSettings()
-{
-  SmallString value;
-  if (s_state.base_settings_interface.GetStringValue("Display", "SyncMode", &value))
-  {
-    s_state.base_settings_interface.SetBoolValue("Display", "VSync", (value == "VSync" || value == "VSyncRelaxed"));
-    s_state.base_settings_interface.SetBoolValue(
-      "Display", "OptimalFramePacing",
-      (value == "VRR" || s_state.base_settings_interface.GetBoolValue("Display", "DisplayAllFrames", false)));
-    s_state.base_settings_interface.DeleteValue("Display", "SyncMode");
-    s_state.base_settings_interface.DeleteValue("Display", "DisplayAllFrames");
-    s_state.base_settings_interface.Save();
   }
 }
 
