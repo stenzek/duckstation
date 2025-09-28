@@ -39,6 +39,10 @@
         <source>Missing thirdparty.html file. You should request it from where-ever you obtained DuckStation.</source>
         <translation>Saknar filen thirdparty.html. Du bör begära den från var du fick tag på DuckStation.</translation>
     </message>
+    <message>
+        <source>and other contributors</source>
+        <translation>och andra bidragsgivare</translation>
+    </message>
 </context>
 <context>
     <name>AchievementLoginDialog</name>
@@ -3771,6 +3775,15 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
         <source>Write</source>
         <translation>Skriv</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>DebuggerWindow</source>
+        <comment>Invalid address. It should be in hex (0x12345678 or 12345678)</comment>
+        <translation>Felsökarfönster</translation>
+    </message>
 </context>
 <context>
     <name>DebuggerCodeModel</name>
@@ -4037,7 +4050,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
@@ -9137,7 +9150,11 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     </message>
     <message>
         <source>File Size</source>
-        <translation>Filstorlek</translation>
+        <translation type="vanished">Filstorlek</translation>
+    </message>
+    <message>
+        <source>Data Size</source>
+        <translation>Datastorlek</translation>
     </message>
 </context>
 <context>
@@ -10717,6 +10734,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Uses OpenGL ES even when desktop OpenGL is supported. May improve performance on some SBC drivers.</source>
         <translation>Använder OpenGL ES även när OpenGL för stationära datorer stöds. Kan förbättra prestandan på vissa SBC-drivrutiner.</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation>Anpassad</translation>
     </message>
 </context>
 <context>
@@ -12981,7 +13002,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Saves the session state from the selected slot.</source>
-        <translation>Sparar sessionens tillstånd till den valda platsen.</translation>
+        <translation type="vanished">Sparar sessionens tillstånd till den valda platsen.</translation>
     </message>
     <message>
         <source>Exits the application.</source>
@@ -13298,6 +13319,30 @@ Detta går inte att ångra.</translation>
     <message>
         <source>&amp;Descending</source>
         <translation>&amp;Fallande</translation>
+    </message>
+    <message>
+        <source>Saves the session state to the selected slot.</source>
+        <translation>Sparar sessionstillståndet till vald plats.</translation>
+    </message>
+    <message>
+        <source>Memory &amp;Editor</source>
+        <translation>Minnesr&amp;edigerare</translation>
+    </message>
+    <message>
+        <source>Opens the memory editor window.</source>
+        <translation>Öppnar fönstret för minnesredigeraren.</translation>
+    </message>
+    <message>
+        <source>Animate Game Icons (List View)</source>
+        <translation>Animera spelikoner (listvy)</translation>
+    </message>
+    <message>
+        <source>Animates icons in the list view when selected.</source>
+        <translation>Animerar ikoner i listvyn när de väljs.</translation>
+    </message>
+    <message>
+        <source>Darker Fusion</source>
+        <translation>Darker Fusion</translation>
     </message>
 </context>
 <context>
@@ -13744,6 +13789,129 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     </message>
 </context>
 <context>
+    <name>MemoryEditorWindow</name>
+    <message>
+        <source>Memory Editor</source>
+        <translation>Minnesredigerare</translation>
+    </message>
+    <message>
+        <source>Address:</source>
+        <translation>Adress:</translation>
+    </message>
+    <message>
+        <source>RAM</source>
+        <translation>RAM</translation>
+    </message>
+    <message>
+        <source>Scratchpad</source>
+        <translation>Skissblock</translation>
+    </message>
+    <message>
+        <source>EXP1</source>
+        <translation>EXP1</translation>
+    </message>
+    <message>
+        <source>BIOS</source>
+        <translation>BIOS</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Sök</translation>
+    </message>
+    <message>
+        <source>Data Inspector</source>
+        <translation>Datainspekterare</translation>
+    </message>
+    <message>
+        <source>ASCII Character:</source>
+        <translation>ASCII-tecken:</translation>
+    </message>
+    <message>
+        <source>Signed Byte:</source>
+        <translation>Signerad byte:</translation>
+    </message>
+    <message>
+        <source>Decimal</source>
+        <translation>Decimal</translation>
+    </message>
+    <message>
+        <source>Hexadecimal</source>
+        <translation>Hexadecimal</translation>
+    </message>
+    <message>
+        <source>Octal</source>
+        <translation>Oktal</translation>
+    </message>
+    <message>
+        <source>Unsigned Byte:</source>
+        <translation>Osignerad byte:</translation>
+    </message>
+    <message>
+        <source>Little Endian</source>
+        <translation>Little Endian</translation>
+    </message>
+    <message>
+        <source>Big Endian</source>
+        <translation>Big Endian</translation>
+    </message>
+    <message>
+        <source>Unsigned Halfword:</source>
+        <translation>Osignerad halfword:</translation>
+    </message>
+    <message>
+        <source>32-Bit Float:</source>
+        <translation>32-bitars flyttal:</translation>
+    </message>
+    <message>
+        <source>Unsigned Doubleword:</source>
+        <translation>Osignerad doubleword:</translation>
+    </message>
+    <message>
+        <source>UTF-8 String:</source>
+        <translation>UTF-8-sträng:</translation>
+    </message>
+    <message>
+        <source>64-Bit Float:</source>
+        <translation>64-bitars flyttal:</translation>
+    </message>
+    <message>
+        <source>Unsigned Word:</source>
+        <translation>Osignerad word:</translation>
+    </message>
+    <message>
+        <source>Signed Word:</source>
+        <translation>Signerad word:</translation>
+    </message>
+    <message>
+        <source>Signed Halfword:</source>
+        <translation>Signerad halfword:</translation>
+    </message>
+    <message>
+        <source>Signed Doubleword:</source>
+        <translation>Signerad doubleword:</translation>
+    </message>
+    <message>
+        <source>Enter memory address:</source>
+        <translation>Ange minnesadress:</translation>
+    </message>
+    <message>
+        <source>Invalid search pattern. It should contain hex digits or question marks.</source>
+        <translation>Ogiltigt sökmönster. Det bör innehålla hexadecimala siffror eller frågetecken.</translation>
+    </message>
+    <message>
+        <source>Pattern not found in memory.</source>
+        <translation>Mönstret hittades inte i minnet.</translation>
+    </message>
+    <message>
+        <source>Pattern found at 0x%1 (passed the end of memory).</source>
+        <translation>Mönster hittades vid 0x%1 (passerat minnets slut).</translation>
+    </message>
+    <message>
+        <source>Pattern found at 0x%1.</source>
+        <translation>Mönster hittades vid 0x%1.</translation>
+    </message>
+</context>
+<context>
     <name>MemoryScannerWindow</name>
     <message>
         <source>Memory Scanner</source>
@@ -14004,6 +14172,10 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <source>Failed to load watches from file: %1</source>
         <translation>Misslyckades med att läsa in watches från fil: %1</translation>
+    </message>
+    <message>
+        <source>Failed to open memory editor at specified address.</source>
+        <translation>Misslyckades med att öppna minnesredigeraren vid angiven adress.</translation>
     </message>
 </context>
 <context>
@@ -14543,6 +14715,10 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
 Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation>Det gick inte att läsa sektorn från skivavbildningen. Spelet kommer troligen att krascha nu.
 Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
+    </message>
+    <message>
+        <source>Memory card in slot {} changed to &apos;{}&apos;.</source>
+        <translation>Minneskortet i plats {} ändrat till &apos;{}&apos;.</translation>
     </message>
 </context>
 <context>
@@ -15609,7 +15785,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Custom</source>
         <comment>DisplayAspectRatio</comment>
-        <translation>Anpassad</translation>
+        <translation type="vanished">Anpassad</translation>
     </message>
     <message>
         <source>Left / Top</source>
@@ -15965,6 +16141,11 @@ Vill du skapa denna katalog?</translation>
         <source>Bilinear (Hybrid)</source>
         <comment>DisplayScalingMode</comment>
         <translation>Bilinjär (Hybrid)</translation>
+    </message>
+    <message>
+        <source>PAR 1:1</source>
+        <comment>DisplayAspectRatio</comment>
+        <translation>PAR 1:1</translation>
     </message>
 </context>
 <context>
@@ -16665,7 +16846,7 @@ Inloggningstoken genererades %2.</translation>
     </message>
     <message>
         <source>Game changed, reloading memory cards.</source>
-        <translation>Spelet ändrades, läser om minneskort.</translation>
+        <translation type="vanished">Spelet ändrades, läser om minneskort.</translation>
     </message>
     <message>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
