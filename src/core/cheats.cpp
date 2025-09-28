@@ -1388,7 +1388,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
   CheatFileReader reader(file_contents);
 
   std::string_view next_code_group;
-  CheatCode::Metadata next_code_metadata;
+  CheatCode::Metadata next_code_metadata = {};
   bool next_code_ignored = false;
   std::optional<size_t> code_body_start;
 
@@ -1397,7 +1397,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     if (!code_body_start.has_value())
     {
       WARNING_LOG("Empty cheat body at line {}", reader.GetCurrentLineNumber());
-      next_code_metadata = CheatCode::Metadata();
+      next_code_metadata = {};
       return;
     }
 
@@ -1423,7 +1423,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     }
 
     next_code_group = {};
-    next_code_metadata = CheatCode::Metadata();
+    next_code_metadata = {};
     code_body_start.reset();
     if (std::exchange(next_code_ignored, false))
       return;
