@@ -118,6 +118,7 @@ static void SetAppRoot();
 static void SetResourcesDirectory();
 static bool SetDataDirectory();
 static bool SetCriticalFolders();
+static void LoadResources();
 static void SetDefaultSettings(SettingsInterface& si, bool system, bool controller);
 static void MigrateSettings();
 static void SaveSettings();
@@ -246,8 +247,6 @@ bool QtHost::EarlyProcessStartup()
     return false;
   }
 
-  // Load resources.
-  s_state.app_icon = QIcon(QStringLiteral(":/icons/duck.png"));
   return true;
 }
 
@@ -597,6 +596,11 @@ bool QtHost::SetDataDirectory()
   }
 
   return true;
+}
+
+void QtHost::LoadResources()
+{
+  s_state.app_icon = QIcon(QStringLiteral(":/icons/duck.png"));
 }
 
 void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -3274,8 +3278,10 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
     return false;
   }
 
-  // Check the file we're starting actually exists.
+  // Not the best location for this, but early enough.
+  LoadResources();
 
+  // Check the file we're starting actually exists.
   if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
   {
     QMessageBox::critical(
