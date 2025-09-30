@@ -2037,7 +2037,7 @@ void System::DestroySystem()
     Host::ClearOSDMessages(true);
   });
 
-  InputManager::PauseVibration();
+  InputManager::ClearEffects();
   InputManager::UpdateHostMouseMode();
 
   if (g_settings.inhibit_screensaver)

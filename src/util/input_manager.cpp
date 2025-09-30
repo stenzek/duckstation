@@ -88,17 +88,12 @@ struct PadVibrationBinding
   }
 };
 
-struct PadModeLEDBinding
+struct PadLEDBinding
 {
-  struct ModeLED
-  {
-    InputBindingKey binding;
-    InputSource* source;
-    bool enabled;
-  };
-
-  ModeLED led;
-  u32 pad_index = 0;
+  InputBindingKey binding;
+  InputSource* source;
+  float last_intensity;
+  u32 pad_index;
 };
 
 struct MacroButton
@@ -192,8 +187,8 @@ using BindingMap = std::unordered_multimap<InputBindingKey, std::shared_ptr<Inpu
 /// This is an array of all the pad vibration bindings, indexed by pad index.
 using VibrationBindingArray = std::vector<PadVibrationBinding>;
 
-/// This is an array of all the pad Mode LED bindings, indexed by pad index.
-using ModeLEDBindingArray = std::vector<PadModeLEDBinding>;
+/// This is an array of all the pad LED bindings, indexed by pad index.
+using PadLEDBindingArray = std::vector<PadLEDBinding>;
 
 /// Callback for pointer movement events. The key is the pointer key, and the value is the axis value.
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
@@ -204,7 +199,7 @@ struct ALIGN_TO_CACHE_LINE State
 {
   BindingMap binding_map;
   VibrationBindingArray pad_vibration_array;
-  ModeLEDBindingArray pad_mode_led_array;
+  PadLEDBindingArray pad_led_array;
   std::vector<MacroButton> macro_buttons;
   std::vector<std::pair<u32, PointerMoveCallback>> pointer_move_callbacks;
   std::recursive_mutex mutex;
@@ -382,6 +377,9 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 TinyString InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
   TinyString ret;
+
+  // in case the source disappears, very unlikely
+  const auto lock = std::unique_lock(s_state.mutex);
 
   if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
       binding_type == InputBindingInfo::Type::Device)
@@ -968,7 +966,7 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
   bool vibration_binding_valid = false;
   PadVibrationBinding vibration_binding = {};
   vibration_binding.pad_index = pad_index;
-  PadModeLEDBinding led_binding = {};
+  PadLEDBinding led_binding = {};
   led_binding.pad_index = pad_index;
 
   for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
@@ -1045,13 +1043,24 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       }
       break;
 
-      case InputBindingInfo::Type::ModeLED:
+      case InputBindingInfo::Type::LED:
+      {
         if (bindings.empty())
           continue;
 
-        if (ParseBindingAndGetSource(bindings.front(), &led_binding.led.binding, &led_binding.led.source))
-          s_state.pad_mode_led_array.push_back(std::move(led_binding));
-        break;
+        if (ParseBindingAndGetSource(bindings.front(), &led_binding.binding, &led_binding.source))
+        {
+          // If we're reloading bindings due to e.g. device connection, sync the LED state.
+          if (Controller* controller = System::GetController(pad_index))
+            led_binding.last_intensity = controller->GetLEDState(bi.bind_index);
+
+          // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
+          led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
+
+          s_state.pad_led_array.push_back(std::move(led_binding));
+        }
+      }
+      break;
 
       case InputBindingInfo::Type::Pointer:
       case InputBindingInfo::Type::Device:
@@ -1790,7 +1799,6 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   Host::OnInputDeviceConnected(key, identifier, device_name);
-  SyncInputDeviceModeLEDOnConnection(identifier);
 }
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
@@ -1810,52 +1818,6 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
   Error::SetStringFmt(error, "No input source matched device '{}'", device);
   return {};
-}
-
-// ------------------------------------------------------------------------
-// Analog Mode LED
-// ------------------------------------------------------------------------
-
-void InputManager::SetPadModeLED(u32 pad_index, bool enabled)
-{
-  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
-  {
-    if (pad.pad_index != pad_index)
-      continue;
-
-    PadModeLEDBinding::ModeLED& led = pad.led;
-
-    if (led.enabled == enabled)
-      continue;
-
-    led.enabled = enabled;
-    led.source->UpdateModeLEDState(led.binding, enabled);
-  }
-}
-
-void InputManager::SyncInputDeviceModeLEDOnConnection(std::string_view identifier)
-{
-  const std::optional<s32> player_id = StringUtil::FromChars<s32>(identifier.substr(identifier.find('-') + 1));
-  if (!player_id.has_value() || player_id.value() < 0)
-    return;
-
-  for (PadModeLEDBinding& pad : s_state.pad_mode_led_array)
-  {
-    PadModeLEDBinding::ModeLED& led = pad.led;
-
-    if (!led.source->ContainsDevice(identifier))
-      continue;
-
-    if (led.binding.source_index == static_cast<u32>(player_id.value()))
-    {
-      Controller* controller = System::GetController(pad.pad_index);
-      if (!controller)
-        return;
-
-      led.enabled = controller->InAnalogMode();
-      led.source->UpdateModeLEDState(led.binding, led.enabled);
-    }
-  }
 }
 
 // ------------------------------------------------------------------------
@@ -1974,6 +1936,36 @@ void InputManager::UpdateContinuedVibration()
         motor.source->UpdateMotorState(motor.binding, motor.last_intensity);
       }
     }
+  }
+}
+
+// ------------------------------------------------------------------------
+// LEDs
+// ------------------------------------------------------------------------
+
+void InputManager::SetPadLEDState(u32 pad_index, float intensity)
+{
+  for (PadLEDBinding& pad : s_state.pad_led_array)
+  {
+    if (pad.pad_index != pad_index || pad.last_intensity == intensity)
+      continue;
+
+    pad.last_intensity = intensity;
+    pad.source->UpdateLEDState(pad.binding, intensity);
+  }
+}
+
+void InputManager::ClearEffects()
+{
+  PauseVibration();
+
+  for (PadLEDBinding& pad : s_state.pad_led_array)
+  {
+    if (pad.last_intensity == 0.0f)
+      continue;
+
+    pad.last_intensity = 0.0f;
+    pad.source->UpdateLEDState(pad.binding, 0.0f);
   }
 }
 
@@ -2176,7 +2168,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
-  s_state.pad_mode_led_array.clear();
+  s_state.pad_led_array.clear();
   s_state.macro_buttons.clear();
   s_state.pointer_move_callbacks.clear();
 
@@ -2294,17 +2286,18 @@ InputManager::DeviceList InputManager::EnumerateDevices()
   return ret;
 }
 
-InputManager::VibrationMotorList InputManager::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
+InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type,
+                                                                    std::optional<InputBindingKey> for_device)
 {
   std::unique_lock lock(s_state.mutex);
 
-  VibrationMotorList ret;
+  DeviceEffectList ret;
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
     {
-      VibrationMotorList devs = s_state.input_sources[i]->EnumerateVibrationMotors(for_device);
+      DeviceEffectList devs = s_state.input_sources[i]->EnumerateEffects(type, for_device);
       if (ret.empty())
         ret = std::move(devs);
       else

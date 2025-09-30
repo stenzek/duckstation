@@ -26,10 +26,7 @@ AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
   Reset();
 }
 
-AnalogJoystick::~AnalogJoystick()
-{
-  InputManager::SetPadModeLED(m_index, false);
-}
+AnalogJoystick::~AnalogJoystick() = default;
 
 ControllerType AnalogJoystick::GetType() const
 {
@@ -44,7 +41,8 @@ bool AnalogJoystick::InAnalogMode() const
 void AnalogJoystick::Reset()
 {
   m_transfer_state = TransferState::Idle;
-  InputManager::SetPadModeLED(m_index, m_analog_mode);
+  m_analog_mode = true;
+  InputManager::SetPadLEDState(m_index, 1.0f);
 }
 
 bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
@@ -245,7 +243,7 @@ void AnalogJoystick::ToggleAnalogMode()
 {
   m_analog_mode = !m_analog_mode;
 
-  InputManager::SetPadModeLED(m_index, m_analog_mode);
+  InputManager::SetPadLEDState(m_index, BoolToFloat(m_analog_mode));
 
   INFO_LOG("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   Host::AddIconOSDMessage(
@@ -357,7 +355,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 #define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
-  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
+  {name, display_name, icon_name, index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogJoystick", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogJoystick::Button::Up, GenericInputBinding::DPadUp),

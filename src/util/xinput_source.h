@@ -43,11 +43,13 @@ public:
   void PollEvents() override;
   std::optional<float> GetCurrentValue(InputBindingKey key) override;
   InputManager::DeviceList EnumerateDevices() override;
-  InputManager::VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device) override;
+  InputManager::DeviceEffectList EnumerateEffects(std::optional<InputBindingInfo::Type> type,
+                                                  std::optional<InputBindingKey> for_device) override;
   bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping) override;
   void UpdateMotorState(InputBindingKey key, float intensity) override;
   void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                         float small_intensity) override;
+  void UpdateLEDState(InputBindingKey key, float intensity) override;
 
   bool ContainsDevice(std::string_view device) const override;
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;

@@ -316,7 +316,8 @@ InputManager::DeviceList DInputSource::EnumerateDevices()
   return ret;
 }
 
-InputManager::VibrationMotorList DInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
+InputManager::DeviceEffectList DInputSource::EnumerateEffects(std::optional<InputBindingInfo::Type> type,
+                                                              std::optional<InputBindingKey> for_device)
 {
   return {};
 }
@@ -333,6 +334,11 @@ void DInputSource::UpdateMotorState(InputBindingKey key, float intensity)
 
 void DInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                                     float small_intensity)
+{
+  // not supported
+}
+
+void DInputSource::UpdateLEDState(InputBindingKey key, float intensity)
 {
   // not supported
 }

@@ -20,11 +20,6 @@ void InputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey sm
     UpdateMotorState(small_key, small_intensity);
 }
 
-void InputSource::UpdateModeLEDState(InputBindingKey key, bool enabled)
-{
-
-}
-
 InputBindingKey InputSource::MakeGenericControllerDeviceKey(InputSourceType clazz, u32 controller_index)
 {
   InputBindingKey key = {};

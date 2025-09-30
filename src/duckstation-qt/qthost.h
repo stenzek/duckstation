@@ -7,6 +7,7 @@
 
 #include "core/game_list.h"
 #include "core/host.h"
+#include "core/input_types.h"
 #include "core/system.h"
 #include "core/types.h"
 
@@ -277,15 +278,14 @@ public:
   };
 
   using DeviceList = QList<Device>;
+  using EffectList = QList<QPair<InputBindingInfo::Type, InputBindingKey>>;
 
   explicit InputDeviceListModel(QObject* parent = nullptr);
   ~InputDeviceListModel() override;
 
   // Safe to access on UI thread.
   ALWAYS_INLINE const DeviceList& getDeviceList() const { return m_devices; }
-  ALWAYS_INLINE const QStringList& getVibrationMotorList() const { return m_vibration_motors; }
-
-  static QIcon getIconForKey(const InputBindingKey& key);
+  ALWAYS_INLINE const EffectList& getEffectList() const { return m_effects; }
 
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -294,14 +294,16 @@ public:
   void enumerateDevices();
 
   void onDeviceConnected(const InputBindingKey& key, const QString& identifier, const QString& device_name,
-                         const QStringList& vibration_motors);
+                         const EffectList& effects);
   void onDeviceDisconnected(const InputBindingKey& key, const QString& identifier);
 
+  static QIcon getIconForKey(const InputBindingKey& key);
+
 private:
-  void resetLists(const DeviceList& devices, const QStringList& motors);
+  void resetLists(const DeviceList& devices, const EffectList& motors);
 
   DeviceList m_devices;
-  QStringList m_vibration_motors;
+  EffectList m_effects;
 };
 
 class QtAsyncTask : public QObject

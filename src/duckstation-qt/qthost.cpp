@@ -2586,36 +2586,33 @@ void InputDeviceListModel::enumerateDevices()
   DebugAssert(g_emu_thread->isCurrentThread());
 
   const InputManager::DeviceList devices = InputManager::EnumerateDevices();
-  const InputManager::VibrationMotorList motors = InputManager::EnumerateVibrationMotors();
+  const InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects();
 
   DeviceList new_devices;
   new_devices.reserve(devices.size());
   for (const auto& [key, identifier, device_name] : devices)
     new_devices.emplace_back(key, QString::fromStdString(identifier), QString::fromStdString(device_name));
 
-  QStringList new_motors;
-  new_motors.reserve(motors.size());
-  for (const auto& key : motors)
-  {
-    new_motors.push_back(
-      QtUtils::StringViewToQString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key)));
-  }
+  EffectList new_effects;
+  new_effects.reserve(effects.size());
+  for (const auto& [type, key] : effects)
+    new_effects.emplace_back(type, key);
 
-  QMetaObject::invokeMethod(this, &InputDeviceListModel::resetLists, Qt::QueuedConnection, new_devices, new_motors);
+  QMetaObject::invokeMethod(this, &InputDeviceListModel::resetLists, Qt::QueuedConnection, new_devices, new_effects);
 }
 
-void InputDeviceListModel::resetLists(const DeviceList& devices, const QStringList& motors)
+void InputDeviceListModel::resetLists(const DeviceList& devices, const EffectList& effects)
 {
   beginResetModel();
 
   m_devices = devices;
-  m_vibration_motors = motors;
+  m_effects = effects;
 
   endResetModel();
 }
 
 void InputDeviceListModel::onDeviceConnected(const InputBindingKey& key, const QString& identifier,
-                                             const QString& device_name, const QStringList& vibration_motors)
+                                             const QString& device_name, const EffectList& effects)
 {
   for (const auto& it : m_devices)
   {
@@ -2628,7 +2625,7 @@ void InputDeviceListModel::onDeviceConnected(const InputBindingKey& key, const Q
   m_devices.emplace_back(key, identifier, device_name);
   endInsertRows();
 
-  m_vibration_motors.append(vibration_motors);
+  m_effects.append(effects);
 }
 
 void InputDeviceListModel::onDeviceDisconnected(const InputBindingKey& key, const QString& identifier)
@@ -2642,12 +2639,12 @@ void InputDeviceListModel::onDeviceDisconnected(const InputBindingKey& key, cons
       m_devices.remove(i);
       endRemoveRows();
 
-      // remove vibration motors too
-      const QString motor_prefix = QStringLiteral("%1/").arg(identifier);
-      for (qsizetype j = 0; j < m_vibration_motors.size();)
+      // remove effects too
+      const QString effect_prefix = QStringLiteral("%1/").arg(identifier);
+      for (qsizetype j = 0; j < m_effects.size();)
       {
-        if (m_vibration_motors[j].startsWith(motor_prefix))
-          m_vibration_motors.remove(j);
+        if (m_effects[j].second.source_type == key.source_type && m_effects[j].second.source_index == key.source_index)
+          m_effects.remove(j);
         else
           j++;
       }
@@ -2659,22 +2656,19 @@ void InputDeviceListModel::onDeviceDisconnected(const InputBindingKey& key, cons
 
 void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
 {
-  // get the motors for this device to append to the list
-  QStringList vibration_motor_list;
-  const InputManager::VibrationMotorList im_vibration_motor_list = InputManager::EnumerateVibrationMotors(key);
-  if (!im_vibration_motor_list.empty())
+  // get the effects for this device to append to the list
+  InputDeviceListModel::EffectList qeffect_list;
+  const InputManager::DeviceEffectList effect_list = InputManager::EnumerateDeviceEffects(std::nullopt, key);
+  if (!effect_list.empty())
   {
-    vibration_motor_list.reserve(im_vibration_motor_list.size());
-    for (const InputBindingKey& motor_key : im_vibration_motor_list)
-    {
-      vibration_motor_list.push_back(QtUtils::StringViewToQString(
-        InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motor_key)));
-    }
+    qeffect_list.reserve(effect_list.size());
+    for (const auto& [eff_type, eff_key] : effect_list)
+      qeffect_list.emplace_back(eff_type, eff_key);
   }
 
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceConnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier),
-                            QtUtils::StringViewToQString(device_name), vibration_motor_list);
+                            QtUtils::StringViewToQString(device_name), qeffect_list);
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {

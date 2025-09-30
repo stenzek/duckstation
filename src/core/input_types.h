@@ -15,12 +15,14 @@ struct InputBindingInfo
     Axis,
     HalfAxis,
     Motor,
-    ModeLED,
+    LED,
     Pointer,         // Absolute pointer, does not receive any events, but is queryable.
     RelativePointer, // Receive relative mouse movement events, bind_index is offset by the axis.
     Device,          // Used for special-purpose device selection, e.g. force feedback.
     Macro,
   };
+
+  ALWAYS_INLINE static bool IsEffectType(Type type) { return (type >= Type::Motor && type <= Type::LED); }
 
   const char* name;
   const char* display_name;

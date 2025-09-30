@@ -103,6 +103,10 @@ void Win32RawInputSource::UpdateMotorState(InputBindingKey large_key, InputBindi
 {
 }
 
+void Win32RawInputSource::UpdateLEDState(InputBindingKey key, float intensity)
+{
+}
+
 bool Win32RawInputSource::ContainsDevice(std::string_view device) const
 {
   return false;
@@ -130,8 +134,8 @@ std::unique_ptr<ForceFeedbackDevice> Win32RawInputSource::CreateForceFeedbackDev
   return {};
 }
 
-InputManager::VibrationMotorList
-Win32RawInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
+InputManager::DeviceEffectList Win32RawInputSource::EnumerateEffects(std::optional<InputBindingInfo::Type> type,
+                                                                     std::optional<InputBindingKey> for_device)
 {
   return {};
 }

@@ -499,7 +499,8 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
   {
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
         bi.type == InputBindingInfo::Type::Pointer || bi.type == InputBindingInfo::Type::RelativePointer ||
-        bi.type == InputBindingInfo::Type::Device || bi.type == InputBindingInfo::Type::Motor)
+        bi.type == InputBindingInfo::Type::Device || bi.type == InputBindingInfo::Type::Motor ||
+        bi.type == InputBindingInfo::Type::LED)
     {
       if (!axis_gbox)
       {
@@ -507,14 +508,10 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         axis_layout = new QGridLayout(axis_gbox);
       }
 
-      QGroupBox* gbox =
+      QGroupBox* const gbox =
         new QGroupBox(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
-      QVBoxLayout* temp = new QVBoxLayout(gbox);
-      QWidget* widget;
-      if (bi.type != InputBindingInfo::Type::Motor)
-        widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
-      else
-        widget = new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), bi.name);
+      QVBoxLayout* const temp = new QVBoxLayout(gbox);
+      QWidget* const widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
 
       temp->addWidget(widget);
       axis_layout->addWidget(gbox, row, column);
@@ -586,7 +583,8 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
   {
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
         bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer ||
-        bi.type == InputBindingInfo::Type::RelativePointer)
+        bi.type == InputBindingInfo::Type::RelativePointer || bi.type == InputBindingInfo::Type::Motor ||
+        bi.type == InputBindingInfo::Type::LED)
     {
       InputBindingWidget* widget = parent->findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
       if (!widget)
@@ -596,12 +594,6 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
       }
 
       widget->initialize(sif, bi.type, config_section, bi.name);
-    }
-    else if (bi.type == InputBindingInfo::Type::Motor)
-    {
-      InputVibrationBindingWidget* widget = parent->findChild<InputVibrationBindingWidget*>(QString::fromUtf8(bi.name));
-      if (widget)
-        widget->setKey(getDialog(), config_section, bi.name);
     }
   }
 }

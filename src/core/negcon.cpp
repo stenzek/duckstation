@@ -5,7 +5,6 @@
 #include "host.h"
 #include "system.h"
 
-#include "util/input_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
@@ -27,26 +26,16 @@ NeGcon::NeGcon(u32 index) : Controller(index)
   m_axis_state[static_cast<u8>(Axis::Steering)] = 0x80;
 }
 
-NeGcon::~NeGcon()
-{
-  InputManager::SetPadModeLED(m_index, false);
-}
+NeGcon::~NeGcon() = default;
 
 ControllerType NeGcon::GetType() const
 {
   return ControllerType::NeGcon;
 }
 
-bool NeGcon::InAnalogMode() const
-{
-  // NeGcon is always analog
-  return true;
-}
-
 void NeGcon::Reset()
 {
   m_transfer_state = TransferState::Idle;
-  InputManager::SetPadModeLED(m_index, true);
 }
 
 bool NeGcon::DoState(StateWrapper& sw, bool apply_input_state)
@@ -281,8 +270,6 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(NeGcon::Button::Count) + static_cast<u32>(halfaxis),                                               \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
-#define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
-  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGcon", "D-Pad Up"), ICON_PF_DPAD_UP, NeGcon::Button::Up, GenericInputBinding::DPadUp),
@@ -298,13 +285,10 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   BUTTON("R", TRANSLATE_NOOP("NeGcon", "Right Trigger"), ICON_PF_RIGHT_TRIGGER_RT, NeGcon::Button::R, GenericInputBinding::R1),
   AXIS("SteeringLeft", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Left"), ICON_PF_ANALOG_LEFT, NeGcon::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
   AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, NeGcon::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
-
-  MODE_LED("ModeLED", TRANSLATE_NOOP("NeGcon", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef AXIS
 #undef BUTTON
-#undef MODE_LED
 };
 
 static const SettingInfo s_settings[] = {

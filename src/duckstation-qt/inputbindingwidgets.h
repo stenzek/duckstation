@@ -56,6 +56,8 @@ protected:
   void onInputListenTimerTimeout();
   void inputManagerHookCallback(InputBindingKey key, float value);
 
+  void showEffectBindingDialog();
+
   SettingsInterface* m_sif = nullptr;
   InputBindingInfo::Type m_bind_type = InputBindingInfo::Type::Unknown;
   std::string m_section_name;
@@ -67,31 +69,4 @@ protected:
   u32 m_input_listen_remaining_seconds = 0;
   QPoint m_input_listen_start_position{};
   bool m_mouse_mapping_enabled = false;
-};
-
-class InputVibrationBindingWidget : public QPushButton
-{
-  Q_OBJECT
-
-public:
-  explicit InputVibrationBindingWidget(QWidget* parent);
-  InputVibrationBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, std::string section_name,
-                              std::string key_name);
-  ~InputVibrationBindingWidget();
-
-  void setKey(ControllerSettingsWindow* dialog, std::string section_name, std::string key_name);
-
-  void clearBinding();
-
-protected:
-  virtual void mouseReleaseEvent(QMouseEvent* e) override;
-
-  void onClicked();
-
-private:
-  std::string m_section_name;
-  std::string m_key_name;
-  std::string m_binding;
-
-  ControllerSettingsWindow* m_dialog;
 };

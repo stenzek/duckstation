@@ -96,6 +96,11 @@ float Controller::GetVibrationMotorState(u32 index) const
   return 0.0f;
 }
 
+float Controller::GetLEDState(u32 index) const
+{
+  return 0.0f;
+}
+
 bool Controller::InAnalogMode() const
 {
   return false;

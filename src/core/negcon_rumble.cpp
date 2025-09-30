@@ -36,10 +36,7 @@ NeGconRumble::NeGconRumble(u32 index) : Controller(index)
   m_rumble_config.fill(0xFF);
 }
 
-NeGconRumble::~NeGconRumble()
-{
-  InputManager::SetPadModeLED(m_index, false);
-}
+NeGconRumble::~NeGconRumble() = default;
 
 ControllerType NeGconRumble::GetType() const
 {
@@ -238,7 +235,7 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
   if (m_analog_mode == enabled)
     return;
 
-  InputManager::SetPadModeLED(m_index, enabled);
+  InputManager::SetPadLEDState(m_index, BoolToFloat(enabled));
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)
@@ -731,7 +728,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define MOTOR(name, display_name, icon_name, index, genb)                                                              \
   {name, display_name, icon_name, index, InputBindingInfo::Type::Motor, genb}
 #define MODE_LED(name, display_name, icon_name, index, genb)                                                                  \
-  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
+  {name, display_name, icon_name, index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),

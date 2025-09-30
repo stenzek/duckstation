@@ -59,7 +59,8 @@ public:
   virtual InputManager::DeviceList EnumerateDevices() = 0;
 
   /// Enumerates available vibration motors at the time of call.
-  virtual InputManager::VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device) = 0;
+  virtual InputManager::DeviceEffectList EnumerateEffects(std::optional<InputBindingInfo::Type> type,
+                                                          std::optional<InputBindingKey> for_device) = 0;
 
   /// Retrieves bindings that match the generic bindings for the specified device.
   /// Returns false if it's not one of our devices.
@@ -72,8 +73,8 @@ public:
   virtual void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,
                                 float small_intensity);
 
-  /// Enables/Disables the source's Analog Mode LED.
-  virtual void UpdateModeLEDState(InputBindingKey key, bool enabled);
+  /// Adjusts intensities of LEDs or other indicators on the device.
+  virtual void UpdateLEDState(InputBindingKey key, float intensity) = 0;
 
   /// Creates a force-feedback device from this source.
   virtual std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) = 0;

@@ -739,7 +739,7 @@
          <number>6</number>
         </property>
         <item row="0" column="0">
-         <widget class="InputVibrationBindingWidget" name="LargeMotor">
+         <widget class="InputBindingWidget" name="LargeMotor">
           <property name="minimumSize">
            <size>
             <width>100</width>
@@ -779,7 +779,7 @@
          <number>6</number>
         </property>
         <item row="0" column="0">
-         <widget class="InputVibrationBindingWidget" name="SmallMotor">
+         <widget class="InputBindingWidget" name="SmallMotor">
           <property name="minimumSize">
            <size>
             <width>100</width>
@@ -811,7 +811,7 @@
    <header>inputbindingwidgets.h</header>
   </customwidget>
   <customwidget>
-   <class>InputVibrationBindingWidget</class>
+   <class>InputEffectBindingWidget</class>
    <extends>QPushButton</extends>
    <header>inputbindingwidgets.h</header>
   </customwidget>

@@ -29,8 +29,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
                                                               "SDLTouchpadAsPointer", false);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
                                                               "SDLPS5PlayerLED", false);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5MicMuteLEDForAnalogMode, "InputSources",
-                                                              "SDLPS5MicMuteLEDForAnalogMode", false);
   connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
@@ -122,8 +120,6 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
     m_ui.enableTouchPadAsPointer->setEnabled(enabled);
   if (m_ui.enableSDLPS5PlayerLED)
     m_ui.enableSDLPS5PlayerLED->setEnabled(enabled);
-  if (m_ui.enableSDLPS5MicMuteLEDForAnalogMode)
-    m_ui.enableSDLPS5MicMuteLEDForAnalogMode->setEnabled(enabled);
   if (m_ui.ledSettings)
     m_ui.ledSettings->setEnabled(enabled);
 }
@@ -148,7 +144,7 @@ void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 play
 {
   std::string key = fmt::format("Player{}LED", player_id);
   const u32 current_value =
-    SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
+    SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id, false);
   button->setColor(current_value);
 
   connect(button, &ColorPickerButton::colorChanged, this, [this, key = std::move(key)](u32 new_rgb) {

@@ -382,8 +382,8 @@ static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
 static void PopulatePatchesAndCheatsList();
 static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
-static void BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                       const char* key, std::string_view display_name);
+static void BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
+                               const char* key, std::string_view display_name);
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                    const char* name, std::string_view display_name, std::string_view icon_name,
                                    bool show_type = true);
@@ -2478,6 +2478,9 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
         case InputBindingInfo::Type::Motor:
           title.format(ICON_FA_BELL " {}", display_name);
           break;
+        case InputBindingInfo::Type::LED:
+          title.format(ICON_FA_LIGHTBULB " {}", display_name);
+          break;
         case InputBindingInfo::Type::Macro:
           title.format(ICON_FA_PIZZA_SLICE " {}", display_name);
           break;
@@ -2512,8 +2515,8 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   if (clicked)
   {
-    if (type == InputBindingInfo::Type::Motor)
-      BeginVibrationMotorBinding(bsi, type, section, name, display_name);
+    if (type == InputBindingInfo::Type::Motor || type == InputBindingInfo::Type::LED)
+      BeginEffectBinding(bsi, type, section, name, display_name);
     else
       s_state.input_binding_dialog.Start(bsi, type, section, name, display_name);
   }
@@ -2672,46 +2675,49 @@ void FullscreenUI::InputBindingDialog::Draw()
   EndRender();
 }
 
-void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
-                                              const char* key, std::string_view display_name)
+void FullscreenUI::BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
+                                      const char* key, std::string_view display_name)
 {
   // vibration motors use a list to select
   const bool game_settings = IsEditingGameSettings(bsi);
-  InputManager::VibrationMotorList motors = InputManager::EnumerateVibrationMotors();
-  if (motors.empty())
+  const InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
+  if (effects.empty())
   {
     ShowToast({}, FSUI_STR("No devices with vibration motors were detected."));
     return;
   }
 
   const TinyString current_binding = bsi->GetTinyStringValue(section, key);
-  size_t current_index = motors.size();
+  size_t current_index = effects.size();
   ChoiceDialogOptions options;
-  options.reserve(motors.size() + 1);
-  for (size_t i = 0; i < motors.size(); i++)
+  options.reserve(effects.size() + 1);
+  for (size_t i = 0; i < effects.size(); i++)
   {
-    const TinyString text = InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motors[i]);
+    const TinyString text = InputManager::ConvertInputBindingKeyToString(effects[i].first, effects[i].second);
     const bool this_index = (current_binding.view() == text);
     current_index = this_index ? i : current_index;
     options.emplace_back(text, this_index);
   }
 
   // empty/no mapping value
-  options.emplace_back(FSUI_STR("No Vibration"), current_binding.empty());
+  if (type == InputBindingInfo::Type::Motor)
+    options.emplace_back(FSUI_STR("No Vibration"), current_binding.empty());
+  else if (type == InputBindingInfo::Type::LED)
+    options.emplace_back(FSUI_STR("No LED"), current_binding.empty());
 
   // add current value to list if it's not currently available
-  if (!current_binding.empty() && current_index == motors.size())
+  if (!current_binding.empty() && current_index == effects.size())
     options.emplace_back(std::make_pair(std::string(current_binding.view()), true));
 
   OpenChoiceDialog(display_name, false, std::move(options),
                    [game_settings, section = std::string(section), key = std::string(key),
-                    motors = std::move(motors)](s32 index, const std::string& title, bool checked) {
+                    effects = std::move(effects)](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
 
                      auto lock = Host::GetSettingsLock();
                      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                     if (static_cast<size_t>(index) == motors.size())
+                     if (static_cast<size_t>(index) == effects.size())
                        bsi->DeleteValue(section.c_str(), key.c_str());
                      else
                        bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
@@ -4866,12 +4872,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                     "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
                     FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
-                    "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDLControllerEnhancedMode", true),
-                    false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Mic Mute LED for Analog Mode"),
-                    FSUI_VSTR("Enable/Disable using the DualSense controller's Mic Mute LED to indicate when Analog Mode is active."), "InputSources",
-                    "SDLPS5MicMuteLEDForAnalogMode", false, bsi->GetBoolValue("InputSources", "SDLControllerEnhancedMode", true),
-                    false);
+                    "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 #ifdef _WIN32
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
                     FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "

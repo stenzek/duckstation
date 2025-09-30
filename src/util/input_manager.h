@@ -53,7 +53,7 @@ enum class InputSubclass : u32
   ControllerHat = 2,
   ControllerMotor = 3,
   ControllerHaptic = 4,
-  ControllerModeLED = 5,
+  ControllerLED = 5,
 
   SensorAccelerometer = 0,
 };
@@ -277,8 +277,9 @@ using DeviceList = std::vector<std::tuple<InputBindingKey, std::string, std::str
 DeviceList EnumerateDevices();
 
 /// Enumerates available vibration motors at the time of call.
-using VibrationMotorList = std::vector<InputBindingKey>;
-VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device = std::nullopt);
+using DeviceEffectList = std::vector<std::pair<InputBindingInfo::Type, InputBindingKey>>;
+DeviceEffectList EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type = std::nullopt,
+                                        std::optional<InputBindingKey> for_device = std::nullopt);
 
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
@@ -340,8 +341,8 @@ void RemoveHook();
 /// Returns true if there is an interception hook present.
 bool HasHook();
 
-void SetPadModeLED(u32 pad_index, bool enabled);
-void SyncInputDeviceModeLEDOnConnection(std::string_view identifier);
+/// Internal method used by pads to dispatch LED updates to input sources.
+void SetPadLEDState(u32 pad_index, float intensity);
 
 /// Internal method used by pads to dispatch vibration updates to input sources.
 /// Intensity is normalized from 0 to 1.
@@ -350,6 +351,9 @@ void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensi
 /// Zeros all vibration intensities. Call when pausing.
 /// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 void PauseVibration();
+
+/// Disables all vibration and LED effects. Call when stopping emulation.
+void ClearEffects();
 
 /// Returns the number of currently-connected pointer devices.
 u32 GetPointerCount();

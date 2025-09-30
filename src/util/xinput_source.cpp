@@ -369,11 +369,15 @@ std::unique_ptr<ForceFeedbackDevice> XInputSource::CreateForceFeedbackDevice(std
   return {};
 }
 
-InputManager::VibrationMotorList XInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
+InputManager::DeviceEffectList XInputSource::EnumerateEffects(std::optional<InputBindingInfo::Type> type,
+                                                              std::optional<InputBindingKey> for_device)
 {
-  InputManager::VibrationMotorList ret;
+  InputManager::DeviceEffectList ret;
 
   if (for_device.has_value() && for_device->source_type != InputSourceType::XInput)
+    return ret;
+
+  if (type.has_value() && type.value() != InputBindingInfo::Type::Motor)
     return ret;
 
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
@@ -386,10 +390,10 @@ InputManager::VibrationMotorList XInputSource::EnumerateVibrationMotors(std::opt
       continue;
 
     if (cd.has_large_motor)
-      ret.push_back(MakeGenericControllerMotorKey(InputSourceType::XInput, i, 0));
+      ret.emplace_back(InputBindingInfo::Type::Motor, MakeGenericControllerMotorKey(InputSourceType::XInput, i, 0));
 
     if (cd.has_small_motor)
-      ret.push_back(MakeGenericControllerMotorKey(InputSourceType::XInput, i, 1));
+      ret.emplace_back(InputBindingInfo::Type::Motor, MakeGenericControllerMotorKey(InputSourceType::XInput, i, 1));
   }
 
   return ret;
@@ -583,6 +587,11 @@ void XInputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey s
   cd.last_vibration.wLeftMotorSpeed = static_cast<u16>(large_intensity * 65535.0f);
   cd.last_vibration.wRightMotorSpeed = static_cast<u16>(small_intensity * 65535.0f);
   m_xinput_set_state(large_key.source_index, &cd.last_vibration);
+}
+
+void XInputSource::UpdateLEDState(InputBindingKey key, float intensity)
+{
+  // not supported
 }
 
 std::unique_ptr<InputSource> InputSource::CreateXInputSource()
