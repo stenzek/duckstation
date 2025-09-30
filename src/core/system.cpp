@@ -4794,6 +4794,12 @@ void System::WarnAboutUnsafeSettings()
           ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
       }
+      if (g_settings.gpu_pgxp_tolerance >= 0.0f)
+      {
+        append(
+          ICON_EMOJI_WARNING,
+          TRANSLATE_SV("System", "PGXP Geometry Tolerance is not set to default. This may cause rendering errors."));
+      }
     }
     if (g_settings.enable_8mb_ram)
     {
