@@ -18,9 +18,10 @@ public:
 Q_SIGNALS:
   void colorChanged(quint32 new_color);
 
-private:
-  void updateBackgroundColor();
+protected:
+  void paintEvent(QPaintEvent* event) override;
 
+private:
   void onClicked();
 
   u32 m_color = 0;

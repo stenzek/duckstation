@@ -151,7 +151,6 @@
     <QtUi Include="controllerbindingwidget_mouse.ui" />
     <QtUi Include="coverdownloadwindow.ui" />
     <QtUi Include="setupwizarddialog.ui" />
-    <QtUi Include="controllerledsettingsdialog.ui" />
     <QtUi Include="debuggeraddbreakpointdialog.ui" />
     <QtUi Include="graphicssettingswidget.ui" />
     <QtUi Include="memoryscannerwindow.ui" />

@@ -5,6 +5,7 @@
 #include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
+#include "flowlayout.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
@@ -12,6 +13,11 @@
 
 #include "util/ini_settings_interface.h"
 #include "util/sdl_input_source.h"
+
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QVBoxLayout>
 
 #include "moc_controllerglobalsettingswidget.cpp"
 
@@ -94,12 +100,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
 ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;
 
-void ControllerGlobalSettingsWidget::ledSettingsClicked()
-{
-  ControllerLEDSettingsDialog dialog(this, m_dialog);
-  dialog.exec();
-}
-
 void ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked(const QString& link)
 {
   if (link == QStringLiteral("ADVANCED_SDL_OPTIONS"))
@@ -124,30 +124,60 @@ void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
     m_ui.ledSettings->setEnabled(enabled);
 }
 
-ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
-  : QDialog(parent), m_dialog(dialog)
+void ControllerGlobalSettingsWidget::ledSettingsClicked()
 {
-  m_ui.setupUi(this);
-  m_ui.buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
+  static constexpr auto config_key = [](u32 player_id, bool active) {
+    return TinyString::from_format("Player{}{}LED", player_id, active ? "Active" : "");
+  };
 
-  linkButton(m_ui.SDL0LED, 0);
-  linkButton(m_ui.SDL1LED, 1);
-  linkButton(m_ui.SDL2LED, 2);
-  linkButton(m_ui.SDL3LED, 3);
+  if (std::ranges::none_of(
+        g_emu_thread->getInputDeviceListModel()->getDeviceList(),
+        [](const InputDeviceListModel::Device& dev) { return (dev.key.source_type == InputSourceType::SDL); }))
+  {
+    QMessageBox::critical(this, tr("Error"), tr("No SDL devices are currently connected."));
+    return;
+  }
 
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
-}
+  QDialog dlg(this);
+  dlg.setWindowTitle(tr("Controller LED Settings"));
+  dlg.setMaximumWidth(550);
+  dlg.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;
+  QVBoxLayout* const main_layout = new QVBoxLayout(&dlg);
+  FlowLayout* const flow_layout = new FlowLayout();
 
-void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 player_id)
-{
-  std::string key = fmt::format("Player{}LED", player_id);
-  const u32 current_value =
-    SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id, false);
-  button->setColor(current_value);
+  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  {
+    if (dev.key.source_type != InputSourceType::SDL)
+      continue;
 
-  connect(button, &ColorPickerButton::colorChanged, this, [this, key = std::move(key)](u32 new_rgb) {
-    m_dialog->setStringValue("SDLExtra", key.c_str(), fmt::format("{:06X}", new_rgb).c_str());
-  });
+    QGroupBox* const gbox = new QGroupBox(QStringLiteral("%1: %2").arg(dev.identifier).arg(dev.display_name), &dlg);
+    gbox->setFixedWidth(250);
+    QGridLayout* const gbox_layout = new QGridLayout(gbox);
+    for (u32 active = 0; active < 2; active++)
+    {
+      gbox_layout->addWidget(new QLabel(active ? tr("Active:") : tr("Inactive:"), &dlg), static_cast<int>(active), 0);
+
+      ColorPickerButton* const button = new ColorPickerButton(gbox);
+      button->setColor(SDLInputSource::ParseRGBForPlayerId(
+        m_dialog->getStringValue("SDLExtra", config_key(dev.key.source_index, active != 0), ""), dev.key.source_index,
+        active != 0));
+      gbox_layout->addWidget(button, static_cast<int>(active), 1);
+      connect(button, &ColorPickerButton::colorChanged, this,
+              [this, player_id = dev.key.source_index, active](u32 new_rgb) {
+                m_dialog->setStringValue("SDLExtra", config_key(player_id, active),
+                                         TinyString::from_format("{:06X}", new_rgb));
+              });
+    }
+
+    flow_layout->addWidget(gbox);
+  }
+
+  main_layout->addLayout(flow_layout);
+
+  QDialogButtonBox* const bbox = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+  connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+  main_layout->addWidget(bbox);
+
+  dlg.exec();
 }

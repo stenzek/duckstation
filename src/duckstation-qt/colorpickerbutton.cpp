@@ -4,14 +4,16 @@
 #include "colorpickerbutton.h"
 #include "qtutils.h"
 
+#include <QtGui/QPainter>
 #include <QtWidgets/QColorDialog>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QStyleOptionButton>
 
 #include "moc_colorpickerbutton.cpp"
 
 ColorPickerButton::ColorPickerButton(QWidget* parent) : QPushButton(parent)
 {
   connect(this, &QPushButton::clicked, this, &ColorPickerButton::onClicked);
-  updateBackgroundColor();
 }
 
 u32 ColorPickerButton::color()
@@ -25,12 +27,42 @@ void ColorPickerButton::setColor(u32 rgb)
     return;
 
   m_color = rgb;
-  updateBackgroundColor();
+  update();
 }
 
-void ColorPickerButton::updateBackgroundColor()
+void ColorPickerButton::paintEvent(QPaintEvent* event)
 {
-  setStyleSheet(QStringLiteral("background-color: #%1;").arg(static_cast<uint>(m_color), 8, 16, QChar('0')));
+  Q_UNUSED(event);
+
+  QPainter painter(this);
+  QStyleOptionButton option;
+  option.initFrom(this);
+
+  if (isDown())
+    option.state |= QStyle::State_Sunken;
+  if (isDefault())
+    option.features |= QStyleOptionButton::DefaultButton;
+
+  // Get the content rect (area inside the border)
+  const QRect contentRect = style()->subElementRect(QStyle::SE_PushButtonContents, &option, this);
+
+  // Draw the button frame first (this includes the border but should not fill the interior)
+  style()->drawPrimitive(QStyle::PE_PanelButtonBevel, &option, &painter, this);
+
+  // Fill the content area with our custom color
+  painter.fillRect(contentRect, QColor::fromRgb(m_color));
+
+  // Draw the focus rectangle if needed
+  if (option.state & QStyle::State_HasFocus)
+  {
+    QStyleOptionFocusRect focusOption;
+    focusOption.initFrom(this);
+    focusOption.rect = style()->subElementRect(QStyle::SE_PushButtonFocusRect, &option, this);
+    style()->drawPrimitive(QStyle::PE_FrameFocusRect, &focusOption, &painter, this);
+  }
+
+  // Draw the button label (text/icon) on top
+  style()->drawControl(QStyle::CE_PushButtonLabel, &option, &painter, this);
 }
 
 void ColorPickerButton::onClicked()
@@ -49,6 +81,6 @@ void ColorPickerButton::onClicked()
   const u32 new_rgb = (static_cast<u32>(selected.red()) << 16) | (static_cast<u32>(selected.green()) << 8) |
                       static_cast<u32>(selected.blue());
   m_color = new_rgb;
-  updateBackgroundColor();
+  update();
   emit colorChanged(new_rgb);
 }
