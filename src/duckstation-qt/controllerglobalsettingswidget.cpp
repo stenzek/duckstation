@@ -5,7 +5,6 @@
 #include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
-#include "flowlayout.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
@@ -17,6 +16,7 @@
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
+#include <QtWidgets/QScrollArea>
 #include <QtWidgets/QVBoxLayout>
 
 #include "moc_controllerglobalsettingswidget.cpp"
@@ -140,11 +140,33 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
   QDialog dlg(this);
   dlg.setWindowTitle(tr("Controller LED Settings"));
-  dlg.setMaximumWidth(550);
+  dlg.setFixedWidth(450);
   dlg.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
   QVBoxLayout* const main_layout = new QVBoxLayout(&dlg);
-  FlowLayout* const flow_layout = new FlowLayout();
+
+  QHBoxLayout* const heading_layout = new QHBoxLayout();
+  QLabel* const icon = new QLabel(&dlg);
+  icon->setPixmap(QIcon::fromTheme(QStringLiteral("lightbulb-line")).pixmap(32, 32));
+  QLabel* const heading = new QLabel(
+    tr("<strong>Controller LED Settings</strong><br>\nThe \"alternate\" color is used when analog mode is active."),
+    &dlg);
+  heading->setWordWrap(true);
+  heading_layout->addWidget(icon, 0, Qt::AlignTop | Qt::AlignLeft);
+  heading_layout->addWidget(heading, 1);
+  main_layout->addLayout(heading_layout);
+
+  QScrollArea* const scroll_area = new QScrollArea(&dlg);
+  scroll_area->setWidgetResizable(true);
+  scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  main_layout->addWidget(scroll_area, 1);
+
+  QWidget* const scroll_area_widget = new QWidget(scroll_area);
+  scroll_area->setWidget(scroll_area_widget);
+
+  QVBoxLayout* const scroll_area_layout = new QVBoxLayout(scroll_area_widget);
+  scroll_area_layout->setContentsMargins(10, 10, 10, 10);
 
   for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
@@ -152,11 +174,11 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
       continue;
 
     QGroupBox* const gbox = new QGroupBox(QStringLiteral("%1: %2").arg(dev.identifier).arg(dev.display_name), &dlg);
-    gbox->setFixedWidth(250);
     QGridLayout* const gbox_layout = new QGridLayout(gbox);
     for (u32 active = 0; active < 2; active++)
     {
-      gbox_layout->addWidget(new QLabel(active ? tr("Active:") : tr("Inactive:"), &dlg), static_cast<int>(active), 0);
+      gbox_layout->addWidget(new QLabel(active ? tr("Alternate Mode:") : tr("Normal Mode:"), &dlg),
+                             static_cast<int>(active), 0);
 
       ColorPickerButton* const button = new ColorPickerButton(gbox);
       button->setColor(SDLInputSource::ParseRGBForPlayerId(
@@ -170,10 +192,10 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
               });
     }
 
-    flow_layout->addWidget(gbox);
+    scroll_area_layout->addWidget(gbox);
   }
 
-  main_layout->addLayout(flow_layout);
+  scroll_area_layout->addStretch(1);
 
   QDialogButtonBox* const bbox = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
   connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);

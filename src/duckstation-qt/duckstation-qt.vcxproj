@@ -19,7 +19,6 @@
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
-    <ClCompile Include="flowlayout.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamecheatsettingswidget.cpp" />
     <ClCompile Include="gamepatchsettingswidget.cpp" />
@@ -90,7 +89,6 @@
     <QtMoc Include="gamepatchsettingswidget.h" />
     <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
-    <ClInclude Include="flowlayout.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />

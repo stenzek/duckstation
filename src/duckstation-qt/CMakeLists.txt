@@ -69,8 +69,6 @@ set(SRCS
   emulationsettingswidget.cpp
   emulationsettingswidget.h
   emulationsettingswidget.ui
-  flowlayout.cpp
-  flowlayout.h
   foldersettingswidget.cpp
   foldersettingswidget.h
   foldersettingswidget.ui
