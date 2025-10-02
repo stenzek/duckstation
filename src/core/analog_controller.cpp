@@ -29,7 +29,10 @@ AnalogController::AnalogController(u32 index) : Controller(index)
   m_rumble_config.fill(0xFF);
 }
 
-AnalogController::~AnalogController() = default;
+AnalogController::~AnalogController()
+{
+  InputManager::SetPadModeLED(m_index, false);
+}
 
 ControllerType AnalogController::GetType() const
 {
@@ -338,6 +341,8 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
     return;
 
   m_analog_mode = enabled;
+
+  InputManager::SetPadModeLED(m_index, enabled);
 
   INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
   if (show_message)
@@ -785,6 +790,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    genb}
 #define MOTOR(name, display_name, icon_name, index, genb)                                                              \
   {name, display_name, icon_name, index, InputBindingInfo::Type::Motor, genb}
+#define MODE_LED(name, display_name, icon_name, index, genb)                                                                  \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::ModeLED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogController", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogController::Button::Up, GenericInputBinding::DPadUp),
@@ -816,11 +823,14 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
   MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, 0, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, 1, GenericInputBinding::SmallMotor),
+
+  MODE_LED("ModeLED", TRANSLATE_NOOP("AnalogController", "Mode LED"), ICON_PF_ANALOG_LEFT_RIGHT, 0, GenericInputBinding::ModeLED),
 // clang-format on
 
 #undef MOTOR
 #undef AXIS
 #undef BUTTON
+#undef MODE_LED
 };
 
 static constexpr const char* s_invert_settings[] = {
