@@ -142,6 +142,14 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   *image = std::move(padded_image);
 }
 
+static void fastResizePixmap(QPixmap& pm, int expected_width, int expected_height)
+{
+  const qreal dpr = pm.devicePixelRatio();
+  const int dpr_expected_width = static_cast<int>(static_cast<qreal>(expected_width) * dpr);
+  const int dpr_expected_height = static_cast<int>(static_cast<qreal>(expected_height) * dpr);
+  pm = pm.scaled(QSize(dpr_expected_width, dpr_expected_height), Qt::IgnoreAspectRatio, Qt::FastTransformation);
+}
+
 static void resizeGameIcon(QPixmap& pm, int icon_size, qreal device_pixel_ratio)
 {
   const int pm_width = pm.width();
@@ -278,8 +286,6 @@ void GameListModel::setCoverScale(float scale)
 
 void GameListModel::updateCoverScale()
 {
-  m_cover_pixmap_cache.Clear();
-
   QImage loading_image;
   if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
@@ -414,14 +420,13 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
 void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
 {
   // old request before cover scale change?
-  QPixmap* pm;
-  if (m_cover_scale != scale || !(pm = m_cover_pixmap_cache.Lookup(path)))
+  CoverPixmapCacheEntry* pmp;
+  if (m_cover_scale != scale || image.isNull() || !(pmp = m_cover_pixmap_cache.Lookup(path)))
     return;
 
-  if (!image.isNull())
-    *pm = QPixmap::fromImage(image);
-  else
-    *pm = QPixmap();
+  pmp->pixmap = QPixmap::fromImage(image);
+  pmp->scale = scale;
+  pmp->is_loading = false;
 
   invalidateCoverForPath(path);
 }
@@ -752,6 +757,8 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       {
         case Column_Icon:
           return QSize(getIconColumnWidth(), m_row_height);
+        case Column_Cover:
+          return QSize(getCoverArtSize(), getCoverArtSize());
         default:
           return {};
       }
@@ -773,14 +780,29 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Cover:
         {
-          QPixmap* pm = m_cover_pixmap_cache.Lookup(ge->path);
-          if (pm)
-            return *pm;
+          CoverPixmapCacheEntry* pm = m_cover_pixmap_cache.Lookup(ge->path);
+          if (pm && pm->scale == m_cover_scale)
+            return pm->pixmap;
 
-          // We insert the placeholder into the cache, so that we don't repeatedly
-          // queue loading jobs for this game.
+          // We insert the placeholder into the cache, so that we don't repeatedly queue loading jobs for this game.
           const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
-          return *m_cover_pixmap_cache.Insert(ge->path, m_loading_pixmap);
+          if (pm && !pm->is_loading)
+          {
+            // Use a fast resize so we don't block the main thread, it'll get fixed up soon.
+            // But don't try to resize loading pixmaps.
+            if (pm->is_loading)
+              pm->pixmap = m_loading_pixmap;
+            else
+              fastResizePixmap(pm->pixmap, getCoverArtSize(), getCoverArtSize());
+
+            pm->scale = m_cover_scale;
+          }
+          else
+          {
+            pm = m_cover_pixmap_cache.Insert(ge->path, CoverPixmapCacheEntry{m_loading_pixmap, m_cover_scale, true});
+          }
+
+          return pm->pixmap;
         }
 
         default:

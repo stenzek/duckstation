@@ -123,6 +123,13 @@ Q_SIGNALS:
   void iconSizeChanged(int size);
 
 private:
+  struct CoverPixmapCacheEntry
+  {
+    QPixmap pixmap;
+    float scale;
+    bool is_loading;
+  };
+
   void rowsChanged(const QList<int>& rows);
   QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
 
@@ -167,7 +174,7 @@ private:
 
   mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 
-  mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
+  mutable LRUCache<std::string, CoverPixmapCacheEntry> m_cover_pixmap_cache;
 };
 
 class GameListListView final : public QTableView
