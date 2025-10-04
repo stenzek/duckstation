@@ -108,7 +108,7 @@ public:
 
   float getCoverScale() const { return m_cover_scale; }
   void setCoverScale(float scale);
-  int getCoverArtSize() const;
+  QSize getCoverArtSize() const;
   int getCoverArtSpacing() const;
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
@@ -140,10 +140,10 @@ private:
   void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
 
-  static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
+  static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                   qreal dpr, const std::string& path, const std::string& serial,
                                   const std::string& save_title, const QString& display_title, bool is_custom_title);
-  static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
+  static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                      const QString& title);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
