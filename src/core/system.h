@@ -269,6 +269,9 @@ bool CanPauseSystem(bool display_message);
 /// Returns the maximum size of a save state, considering the current configuration.
 size_t GetMaxSaveStateSize();
 
+/// Returns the maximum size of a save state that is not expected to be serialized to file.
+size_t GetMaxMemorySaveStateSize();
+
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
 bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);

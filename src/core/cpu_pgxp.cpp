@@ -14,6 +14,7 @@
 #include "settings.h"
 
 #include "util/gpu_device.h"
+#include "util/state_wrapper.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -59,6 +60,8 @@ enum : u32
 #define HIWORD_S16(val) (static_cast<s16>(static_cast<u16>(static_cast<u32>(val) >> 16)))
 #define SET_LOWORD(val, loword) ((static_cast<u32>(val) & 0xFFFF0000u) | static_cast<u32>(static_cast<u16>(loword)))
 #define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
+
+static bool ShouldSavePGXPState();
 
 static double f16Sign(double val);
 static double f16Unsign(double val);
@@ -184,6 +187,42 @@ void CPU::PGXP::Shutdown()
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
+}
+
+bool CPU::PGXP::ShouldSavePGXPState()
+{
+  // Only save PGXP state for runahead, not rewind.
+  // The performance impact is too great, and the glitches are much less noticeable with rewind.
+  return (g_settings.gpu_pgxp_enable && g_settings.IsRunaheadEnabled());
+}
+
+size_t CPU::PGXP::GetStateSize()
+{
+  if (!ShouldSavePGXPState())
+    return 0;
+
+  const size_t base_size = sizeof(g_state.pgxp_gpr) + sizeof(g_state.pgxp_cop0) + sizeof(g_state.pgxp_gte) +
+                           (sizeof(PGXPValue) * PGXP_MEM_SIZE);
+  const size_t vertex_cache_size = sizeof(PGXPValue) * VERTEX_CACHE_SIZE;
+  return base_size + (g_settings.gpu_pgxp_vertex_cache ? vertex_cache_size : 0);
+}
+
+void CPU::PGXP::DoState(StateWrapper& sw)
+{
+  if (!ShouldSavePGXPState())
+  {
+    // Value checks will fail and fall back to imprecise geometry when using rewind.
+    return;
+  }
+
+  sw.DoBytes(g_state.pgxp_gpr, sizeof(g_state.pgxp_gpr));
+  sw.DoBytes(g_state.pgxp_cop0, sizeof(g_state.pgxp_cop0));
+  sw.DoBytes(g_state.pgxp_gte, sizeof(g_state.pgxp_gte));
+
+  sw.DoBytes(s_mem, sizeof(PGXPValue) * PGXP_MEM_SIZE);
+
+  if (s_vertex_cache)
+    sw.DoBytes(s_vertex_cache, sizeof(PGXPValue) * VERTEX_CACHE_SIZE);
 }
 
 ALWAYS_INLINE_RELEASE double CPU::PGXP::f16Sign(double val)

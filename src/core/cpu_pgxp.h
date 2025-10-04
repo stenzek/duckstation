@@ -11,6 +11,12 @@ void Initialize();
 void Reset();
 void Shutdown();
 
+/// Returns memory usage to serialize additional PGXP state.
+size_t GetStateSize();
+
+/// Save/load additional PGXP state.
+void DoState(StateWrapper& sw);
+
 /// Vertex lookup from GPU side.
 bool GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, int yOffs, float* out_x, float* out_y,
                       float* out_w);
