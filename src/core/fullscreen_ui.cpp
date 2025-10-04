@@ -229,6 +229,7 @@ static bool CompileTransitionPipelines();
 //////////////////////////////////////////////////////////////////////////
 
 static constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
+static constexpr const char* NONE_BACKGROUND_NAME = "None";
 
 static bool HasBackground();
 static void LoadBackground();
@@ -1929,7 +1930,7 @@ ChoiceDialogOptions FullscreenUI::GetBackgroundOptions(const TinyString& current
   static constexpr const char* dir = FS_OSPATH_SEPARATOR_STR "fullscreenui" FS_OSPATH_SEPARATOR_STR "backgrounds";
 
   ChoiceDialogOptions options;
-  options.emplace_back(FSUI_STR("None"), current_value == "None");
+  options.emplace_back(FSUI_STR("None"), (current_value == NONE_BACKGROUND_NAME));
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(Path::Combine(EmuFolders::UserResources, dir).c_str(), "*",
@@ -4168,7 +4169,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
       MenuButtonWithValue(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"),
                           FSUI_VSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
                                     "located in resources/fullscreenui/backgrounds in the data directory."),
-                          current_value.c_str()))
+                          (current_value == NONE_BACKGROUND_NAME) ? FSUI_VSTR("None") : current_value.view()))
   {
     ChoiceDialogOptions options = GetBackgroundOptions(current_value);
     OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
@@ -4177,7 +4178,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                          return;
 
                        SettingsInterface* bsi = GetEditingSettingsInterface();
-                       bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
+                       bsi->SetStringValue("Main", "FullscreenUIBackground",
+                                           (index == 0) ? NONE_BACKGROUND_NAME : title.c_str());
                        SetSettingsChanged(bsi);
 
                        // Have to defer the reload, because we've already drawn the bg for this frame.
