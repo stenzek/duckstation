@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "input_manager.h"
@@ -1832,46 +1832,11 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
     if (pad.pad_index != pad_index)
       continue;
 
-    PadVibrationBinding::Motor& large_motor = pad.motors[0];
-    PadVibrationBinding::Motor& small_motor = pad.motors[1];
-    if (large_motor.last_intensity == large_or_single_motor_intensity &&
-        small_motor.last_intensity == small_motor_intensity)
-      continue;
-
-    if (pad.AreMotorsCombined())
-    {
-      // if the motors are combined, we need to adjust to the maximum of both
-      const float report_intensity = std::max(large_or_single_motor_intensity, small_motor_intensity);
-      if (large_motor.source)
-      {
-        large_motor.last_update_time = Timer::GetCurrentValue();
-        large_motor.source->UpdateMotorState(large_motor.binding, report_intensity);
-      }
-    }
-    else if (large_motor.source == small_motor.source)
-    {
-      // both motors are bound to the same source, do an optimal update
-      large_motor.last_update_time = Timer::GetCurrentValue();
-      large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_or_single_motor_intensity,
-                                           small_motor_intensity);
-    }
-    else
-    {
-      // update motors independently
-      if (large_motor.source && large_motor.last_intensity != large_or_single_motor_intensity)
-      {
-        large_motor.last_update_time = Timer::GetCurrentValue();
-        large_motor.source->UpdateMotorState(large_motor.binding, large_or_single_motor_intensity);
-      }
-      if (small_motor.source && small_motor.last_intensity != small_motor_intensity)
-      {
-        small_motor.last_update_time = Timer::GetCurrentValue();
-        small_motor.source->UpdateMotorState(small_motor.binding, small_motor_intensity);
-      }
-    }
-
-    large_motor.last_intensity = large_or_single_motor_intensity;
-    small_motor.last_intensity = small_motor_intensity;
+    pad.motors[0].last_intensity = large_or_single_motor_intensity;
+    pad.motors[0].last_update_time = 0; // force update at end of frame
+    pad.motors[1].last_intensity = small_motor_intensity;
+    pad.motors[1].last_update_time = 0; // force update at end of frame
+    break;
   }
 }
 
@@ -1902,21 +1867,41 @@ void InputManager::UpdateContinuedVibration()
     {
       // motors are combined
       PadVibrationBinding::Motor& large_motor = pad.motors[0];
-      if (!large_motor.source)
-        continue;
+      PadVibrationBinding::Motor& small_motor = pad.motors[1];
 
-      // so only check the first one
-      const double dt = Timer::ConvertValueToSeconds(current_time - large_motor.last_update_time);
+      // skip if both motors are off and this wasn't just changed
+      const Timer::Value min_update_time = std::min(large_motor.last_update_time, small_motor.last_update_time);
+      const double dt = Timer::ConvertValueToSeconds(current_time - min_update_time);
       if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
         continue;
 
       // but take max of both motors for the intensity
       const float intensity = pad.GetCombinedIntensity();
-      if (intensity == 0.0f)
+      if (intensity == 0.0f && min_update_time > 0)
         continue;
 
       large_motor.last_update_time = current_time;
       large_motor.source->UpdateMotorState(large_motor.binding, intensity);
+    }
+    else if (pad.motors[0].source && pad.motors[0].source == pad.motors[1].source)
+    {
+      // motors are independent, but share the same source. do a combined update
+      PadVibrationBinding::Motor& large_motor = pad.motors[0];
+      PadVibrationBinding::Motor& small_motor = pad.motors[1];
+      const Timer::Value min_update_time = std::min(large_motor.last_update_time, small_motor.last_update_time);
+
+      // skip if both motors are off and this wasn't just changed
+      if (std::max(large_motor.last_intensity, small_motor.last_intensity) == 0.0f && min_update_time > 0)
+        continue;
+
+      const double dt = Timer::ConvertValueToSeconds(current_time - min_update_time);
+      if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
+        continue;
+
+      large_motor.last_update_time = current_time;
+      small_motor.last_update_time = current_time;
+      large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_motor.last_intensity,
+                                           small_motor.last_intensity);
     }
     else
     {
@@ -1924,7 +1909,7 @@ void InputManager::UpdateContinuedVibration()
       for (u32 i = 0; i < MAX_MOTORS_PER_PAD; i++)
       {
         PadVibrationBinding::Motor& motor = pad.motors[i];
-        if (!motor.source || motor.last_intensity == 0.0f)
+        if (!motor.source || (motor.last_intensity == 0.0f && motor.last_update_time > 0))
           continue;
 
         const double dt = Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
