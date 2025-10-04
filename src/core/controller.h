@@ -83,9 +83,6 @@ public:
   /// Returns the current state of the specified LED.
   virtual float GetLEDState(u32 index) const;
 
-  /// Returns true if the controller supports analog mode, and it is active.
-  virtual bool InAnalogMode() const;
-
   /// Returns analog input bytes packed as a u32. Values are specific to controller type.
   virtual std::optional<u32> GetAnalogInputBytes() const;
 

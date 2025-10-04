@@ -55,7 +55,6 @@ public:
   static std::unique_ptr<NeGconRumble> Create(u32 index);
 
   ControllerType GetType() const override;
-  bool InAnalogMode() const override;
 
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;

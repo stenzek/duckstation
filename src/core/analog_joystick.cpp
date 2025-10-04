@@ -33,11 +33,6 @@ ControllerType AnalogJoystick::GetType() const
   return ControllerType::AnalogJoystick;
 }
 
-bool AnalogJoystick::InAnalogMode() const
-{
-  return m_analog_mode;
-}
-
 void AnalogJoystick::Reset()
 {
   m_transfer_state = TransferState::Idle;

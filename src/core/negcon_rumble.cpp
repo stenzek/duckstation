@@ -42,10 +42,6 @@ ControllerType NeGconRumble::GetType() const
 {
   return ControllerType::NeGconRumble;
 }
-bool NeGconRumble::InAnalogMode() const
-{
-  return m_analog_mode;
-}
 
 void NeGconRumble::Reset()
 {
