@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: "Build"
+    name: "${{ matrix.arch }}"
     strategy:
       fail-fast: true
       matrix:
