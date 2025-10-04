@@ -29,6 +29,7 @@
 #include <memory>
 #include <mutex>
 #include <sstream>
+#include <tuple>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -73,6 +74,16 @@ struct PadVibrationBinding
   Timer::Value last_update_time; ///< Last time this motor was updated.
   InputSource* source;           ///< Input source for this motor.
   float last_intensity;          ///< Last intensity we sent to the motor.
+
+  ALWAYS_INLINE static u64 PackPadAndBindIndex(u32 pad_index, u32 bind_index)
+  {
+    return (static_cast<u64>(pad_index) << 32) | static_cast<u64>(bind_index);
+  }
+
+  ALWAYS_INLINE static std::tuple<u32, u32> UnpackPadAndBindIndex(u64 packed)
+  {
+    return {static_cast<u32>(packed >> 32), static_cast<u32>(packed)};
+  }
 };
 
 struct PadLEDBinding
@@ -132,6 +143,7 @@ static float ApplySingleBindingScale(float sensitivity, float deadzone, float va
 static void AddHotkeyBindings(const SettingsInterface& si);
 static void AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad,
                            const Controller::ControllerInfo& cinfo);
+static void SynchronizePadEffectBindings(InputBindingKey key);
 static void UpdateContinuedVibration();
 static void GenerateRelativeMouseEvents();
 
@@ -148,11 +160,6 @@ static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
-
-ALWAYS_INLINE static u64 PackPadAndBindIndex(u32 pad_index, u32 bind_index)
-{
-  return (static_cast<u64>(pad_index) << 32) | static_cast<u64>(bind_index);
-}
 
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
@@ -617,7 +624,7 @@ void InputManager::AddVibrationBinding(u32 pad_index, u32 bind_index, const Inpu
                                        InputSource* source)
 {
   s_state.pad_vibration_array.push_back(
-    PadVibrationBinding{.pad_and_bind_index = PackPadAndBindIndex(pad_index, bind_index),
+    PadVibrationBinding{.pad_and_bind_index = PadVibrationBinding::PackPadAndBindIndex(pad_index, bind_index),
                         .binding = binding,
                         .last_update_time = 0,
                         .source = source,
@@ -1016,7 +1023,7 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
           PadVibrationBinding vib_binding;
           if (ParseBindingAndGetSource(binding, &vib_binding.binding, &vib_binding.source))
           {
-            vib_binding.pad_and_bind_index = PackPadAndBindIndex(pad_index, bi.bind_index);
+            vib_binding.pad_and_bind_index = PadVibrationBinding::PackPadAndBindIndex(pad_index, bi.bind_index);
             vib_binding.last_update_time = 0;
 
             // If we're reloading bindings due to e.g. device connection, sync the vibration state.
@@ -1067,6 +1074,37 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         ERROR_LOG("Unhandled binding info type {}", static_cast<u32>(bi.type));
         break;
     }
+  }
+}
+
+void InputManager::SynchronizePadEffectBindings(InputBindingKey key)
+{
+  for (PadVibrationBinding& vib_binding : s_state.pad_vibration_array)
+  {
+    // only matching devices
+    if (vib_binding.binding.source_type != key.source_type && vib_binding.binding.source_index != key.source_index)
+      continue;
+
+    // need to find the max intensity for this binding, might be more than one if combined motors
+    float max_intensity = 0.0f;
+    for (PadVibrationBinding& other_vib_binding : s_state.pad_vibration_array)
+    {
+      if (vib_binding.binding == other_vib_binding.binding)
+        max_intensity = std::max(max_intensity, other_vib_binding.last_intensity);
+    }
+
+    if (max_intensity > 0.0f)
+      vib_binding.source->UpdateMotorState(vib_binding.binding, max_intensity);
+  }
+
+  for (PadLEDBinding& led_binding : s_state.pad_led_array)
+  {
+    // only matching devices
+    if (led_binding.binding.source_type != key.source_type && led_binding.binding.source_index != key.source_index)
+      continue;
+
+    // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
+    led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
   }
 }
 
@@ -1791,6 +1829,7 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
                                           std::string_view device_name)
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
+  SynchronizePadEffectBindings(key);
   Host::OnInputDeviceConnected(key, identifier, device_name);
 }
 
@@ -1819,7 +1858,7 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
 void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float intensity)
 {
-  const u64 pad_and_bind_index = PackPadAndBindIndex(pad_index, bind_index);
+  const u64 pad_and_bind_index = PadVibrationBinding::PackPadAndBindIndex(pad_index, bind_index);
   for (PadVibrationBinding& vib : s_state.pad_vibration_array)
   {
     if (vib.pad_and_bind_index == pad_and_bind_index && vib.last_intensity != intensity)
