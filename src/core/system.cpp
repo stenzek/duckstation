@@ -353,7 +353,7 @@ static StateVars s_state;
 
 static TinyString GetTimestampStringForFileName()
 {
-  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", Common::LocalTime(std::time(nullptr)));
+  return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", Common::LocalTime(std::time(nullptr)).value_or(std::tm{}));
 }
 
 bool System::PerformEarlyHardwareChecks(Error* error)

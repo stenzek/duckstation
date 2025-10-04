@@ -1158,7 +1158,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
     li->game_details = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "{} ({})"), ssi->title, ssi->serial);
 
   li->summary = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT),
-                            Common::LocalTime(static_cast<std::time_t>(ssi->timestamp)));
+                            Common::LocalTime(static_cast<std::time_t>(ssi->timestamp)).value_or(std::tm{}));
   li->filename = Path::GetFileName(path);
   li->slot = slot;
   li->global = global;
@@ -1458,9 +1458,14 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   FILESYSTEM_STAT_DATA sd;
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
-    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT), Common::LocalTime(sd.ModificationTime));
+  {
+    date = fmt::format(TRANSLATE_FS("SaveStateSelectorUI", DATE_TIME_FORMAT),
+                       Common::LocalTime(sd.ModificationTime).value_or(std::tm{}));
+  }
   else
+  {
     date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
+  }
 
   Host::AddIconOSDMessage(
     "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,

@@ -605,10 +605,12 @@ std::string Host::FormatNumber(NumberFormatType type, s64 value)
         DefaultCaseIsUnreachable();
     }
 
-    char buf[128];
-    const std::tm ttime = Common::LocalTime(static_cast<std::time_t>(value));
-    std::strftime(buf, std::size(buf), format, &ttime);
-    ret.assign(buf);
+    ret.resize(128);
+
+    if (const std::optional<std::tm> ltime = Common::LocalTime(static_cast<std::time_t>(value)))
+      ret.resize(std::strftime(ret.data(), ret.size(), format, &ltime.value()));
+    else
+      ret = "Invalid";
   }
   else
   {

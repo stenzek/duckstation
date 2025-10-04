@@ -1594,14 +1594,15 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
   }
   else
   {
-    const std::tm ctime = Common::LocalTime(std::time(nullptr));
-    const std::tm ttime = Common::LocalTime(timestamp);
-    if (ctime.tm_year == ttime.tm_year && ctime.tm_yday == ttime.tm_yday)
+    const std::optional<std::tm> ctime = Common::LocalTime(std::time(nullptr));
+    const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
+    if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year && ctime->tm_yday == ttime->tm_yday)
     {
       ret = TRANSLATE_STR("GameList", "Today");
     }
-    else if ((ctime.tm_year == ttime.tm_year && ctime.tm_yday == (ttime.tm_yday + 1)) ||
-             (ctime.tm_yday == 0 && (ctime.tm_year - 1) == ttime.tm_year))
+    else if (ctime.has_value() && ttime.has_value() &&
+             ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
+              (ctime->tm_yday == 0 && (ctime->tm_year - 1) == ttime->tm_year)))
     {
       ret = TRANSLATE_STR("GameList", "Yesterday");
     }

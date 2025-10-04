@@ -573,8 +573,13 @@ std::string IsoReader::ISODirectoryEntryDateTime::GetFormattedTime() const
   const s32 uts_offset = static_cast<s32>(gmt_offset) * 3600;
   const time_t uts = std::mktime(&utime) + uts_offset;
 
-  char buf[128];
-  const std::tm ltime = Common::LocalTime(uts);
-  const size_t len = std::strftime(buf, std::size(buf), "%c", &ltime);
-  return std::string(buf, len);
+  std::string ret;
+  ret.resize(128);
+
+  if (const std::optional<std::tm> ltime = Common::LocalTime(uts))
+    ret.resize(std::strftime(ret.data(), ret.size(), "%c", &ltime.value()));
+  else
+    ret = "Invalid";
+
+  return ret;
 }

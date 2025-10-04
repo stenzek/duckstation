@@ -4,18 +4,22 @@
 #pragma once
 
 #include <ctime>
+#include <optional>
 
 namespace Common {
 
-inline std::tm LocalTime(std::time_t tvalue)
+inline std::optional<std::tm> LocalTime(std::time_t tvalue)
 {
-  std::tm ttime;
+  std::optional<std::tm> ret;
+  ret.emplace();
 #ifdef _MSC_VER
-  localtime_s(&ttime, &tvalue);
+  if (localtime_s(&ret.value(), &tvalue) != 0)
+    ret.reset();
 #else
-  localtime_r(&tvalue, &ttime);
+  if (!localtime_r(&tvalue, &ret.value()))
+    ret.reset();
 #endif
-  return ttime;
+  return ret;
 }
 
 } // namespace Common
