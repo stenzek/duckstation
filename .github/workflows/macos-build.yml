@@ -7,22 +7,25 @@ on:
 jobs:
   macos-build:
     name: "Universal"
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
     steps:
     - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
-    - name: Use Xcode 16.1
-      run: sudo xcode-select -s /Applications/Xcode_16.1.app
+    - name: Use Xcode 26
+      run: sudo xcode-select -s /Applications/Xcode_26.0.app
+
+    - name: Download Metal Toolchain
+      run: xcodebuild -downloadComponent MetalToolchain
 
     - name: Cache Dependencies
       id: cache-deps-mac
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: deps-mac ${{ hashFiles('scripts/deps/build-dependencies-mac.sh') }}
+        key: deps-mac ${{ hashFiles('scripts/deps/build-dependencies-mac.sh', 'scripts/deps/versions') }}
 
     - name: Build Dependencies
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'

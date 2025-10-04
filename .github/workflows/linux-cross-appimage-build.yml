@@ -27,7 +27,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: deps-cross ${{ matrix.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh') }}
+        key: deps-cross ${{ matrix.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh', 'scripts/deps/versions') }}
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'

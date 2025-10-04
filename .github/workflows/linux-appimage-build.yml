@@ -22,7 +22,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh', 'scripts/deps/versions') }}
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -90,7 +90,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh', 'scripts/deps/versions') }}
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'
