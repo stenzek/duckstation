@@ -123,4 +123,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: "windows-${{ matrix.arch }}"
-        path: "${{ matrix.assetname }}*"
+        path: "duckstation-windows-${{ matrix.arch }}-*.zip"
