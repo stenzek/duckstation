@@ -322,6 +322,7 @@ struct Settings : public GPUSettings
   bool bios_fast_forward_boot : 1 = false;
 
   bool rewind_enable : 1 = false;
+  bool runahead_for_analog_input : 1 = false;
 
   bool apply_compatibility_settings : 1 = true;
   bool apply_game_settings : 1 = true;

@@ -4662,6 +4662,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
                                "high system requirements."),
                      "Main", "RunaheadFrameCount", 0, runahead_options);
 
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_PF_ANALOG_ANY, "Runahead for Analog Input"),
+    FSUI_VSTR("Activates runahead when analog input changes, which significantly increases system requirements."),
+    "Main", "RunaheadForAnalogInput", false, runahead_enabled);
+
   TinyString rewind_summary;
   if (runahead_enabled)
   {
@@ -9559,6 +9564,7 @@ TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
 TRANSLATE_NOOP("FullscreenUI", "Achievements are not enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Achievements: ");
+TRANSLATE_NOOP("FullscreenUI", "Activates runahead when analog input changes, which significantly increases system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Add Shader");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
@@ -9770,7 +9776,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
 TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense controllers.");
-TRANSLATE_NOOP("FullscreenUI", "Enable/Disable using the DualSense controller's Mic Mute LED to indicate when Analog Mode is active.");
 TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
@@ -9941,6 +9946,7 @@ TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
 TRANSLATE_NOOP("FullscreenUI", "No");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
+TRANSLATE_NOOP("FullscreenUI", "No LED");
 TRANSLATE_NOOP("FullscreenUI", "No Vibration");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No devices with vibration motors were detected.");
@@ -10056,10 +10062,10 @@ TRANSLATE_NOOP("FullscreenUI", "Right: ");
 TRANSLATE_NOOP("FullscreenUI", "Round Upscaled Texture Coordinates");
 TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
+TRANSLATE_NOOP("FullscreenUI", "Runahead for Analog Input");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
 TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
-TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Mic Mute LED for Analog Mode");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
 TRANSLATE_NOOP("FullscreenUI", "Save Controller Preset");

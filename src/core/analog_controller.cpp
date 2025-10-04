@@ -262,7 +262,7 @@ void AnalogController::SetBindState(u32 index, float value)
     }
 
     if (std::memcmp(m_axis_state.data(), prev_axis_state.data(), m_axis_state.size()) != 0)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(true);
 
 #undef MERGE
 
@@ -274,14 +274,14 @@ void AnalogController::SetBindState(u32 index, float value)
   if (value >= m_button_deadzone)
   {
     if (m_button_state & bit)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state &= ~(bit);
   }
   else
   {
     if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state |= bit;
   }

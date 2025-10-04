@@ -216,6 +216,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
   rewind_save_slots = static_cast<u16>(std::min(si.GetUIntValue("Main", "RewindSaveSlots", 10u), 65535u));
   runahead_frames = static_cast<u8>(std::min(si.GetUIntValue("Main", "RunaheadFrameCount", 0u), 255u));
+  runahead_for_analog_input = si.GetBoolValue("Main", "RunaheadForAnalogInput", false);
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
@@ -598,6 +599,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetUIntValue("Main", "RewindSaveSlots", rewind_save_slots);
   si.SetUIntValue("Main", "RunaheadFrameCount", runahead_frames);
+  si.SetBoolValue("Main", "RunaheadForAnalogInput", runahead_for_analog_input);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
@@ -1061,6 +1063,7 @@ void Settings::ApplySettingRestrictions()
     g_settings.mdec_use_old_routines = false;
     g_settings.bios_patch_fast_boot = false;
     g_settings.runahead_frames = 0;
+    g_settings.runahead_for_analog_input = false;
     g_settings.rewind_enable = false;
     g_settings.pio_device_type = PIODeviceType::None;
     g_settings.pcdrv_enable = false;

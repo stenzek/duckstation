@@ -101,8 +101,8 @@ void AnalogJoystick::SetBindState(u32 index, float value)
       return;
 
     const u8 u8_value = static_cast<u8>(std::clamp(value * m_analog_sensitivity * 255.0f, 0.0f, 255.0f));
-    if (u8_value != m_half_axis_state[sub_index])
-      System::SetRunaheadReplayFlag();
+    if (m_half_axis_state[sub_index] == u8_value)
+      return;
 
     m_half_axis_state[sub_index] = u8_value;
 
@@ -181,7 +181,7 @@ void AnalogJoystick::SetBindState(u32 index, float value)
     }
 
     if (std::memcmp(m_axis_state.data(), prev_axis_state.data(), m_axis_state.size()) != 0)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(true);
 
 #undef MERGE
 
@@ -193,14 +193,14 @@ void AnalogJoystick::SetBindState(u32 index, float value)
   if (value >= 0.5f)
   {
     if (m_button_state & bit)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state &= ~(bit);
   }
   else
   {
     if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state |= bit;
   }

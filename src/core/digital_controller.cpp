@@ -64,14 +64,14 @@ void DigitalController::SetBindState(u32 index, float value)
   if (pressed)
   {
     if (m_button_state & bit)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state &= ~bit;
   }
   else
   {
     if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state |= bit;
   }

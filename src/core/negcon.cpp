@@ -137,14 +137,14 @@ void NeGcon::SetBindState(u32 index, float value)
     if (value >= 0.5f)
     {
       if (m_button_state & bit)
-        System::SetRunaheadReplayFlag();
+        System::SetRunaheadReplayFlag(false);
 
       m_button_state &= ~bit;
     }
     else
     {
       if (!(m_button_state & bit))
-        System::SetRunaheadReplayFlag();
+        System::SetRunaheadReplayFlag(false);
 
       m_button_state |= bit;
     }

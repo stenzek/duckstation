@@ -126,7 +126,7 @@ void JogCon::SetBindState(u32 index, float value)
         -static_cast<s8>((static_cast<u32>(m_half_axis_state[static_cast<u32>(HalfAxis::SteeringLeft)]) + 1) / 2);
 
     if (m_steering_state != prev_steering_state)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(true);
   }
 
   const u16 bit = u16(1) << static_cast<u8>(index);
@@ -134,14 +134,14 @@ void JogCon::SetBindState(u32 index, float value)
   if (value >= m_button_deadzone)
   {
     if (m_button_state & bit)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state &= ~(bit);
   }
   else
   {
     if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state |= bit;
   }

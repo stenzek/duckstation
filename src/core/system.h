@@ -437,7 +437,7 @@ std::string GetImageForLoadingScreen(const std::string& game_path);
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
 void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
-void SetRunaheadReplayFlag();
+void SetRunaheadReplayFlag(bool is_analog_input);
 
 /// Asynchronous work tasks, complete on worker thread.
 void QueueAsyncTask(std::function<void()> function);

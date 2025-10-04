@@ -5149,9 +5149,12 @@ bool System::DoRunahead()
   return false;
 }
 
-void System::SetRunaheadReplayFlag()
+void System::SetRunaheadReplayFlag(bool is_analog_input)
 {
   if (s_state.runahead_frames == 0 || s_state.memory_save_state_count == 0)
+    return;
+
+  if (is_analog_input && !g_settings.runahead_for_analog_input)
     return;
 
 #ifdef PROFILE_MEMORY_SAVE_STATES

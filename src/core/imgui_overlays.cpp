@@ -561,7 +561,7 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
   if (g_settings.rewind_enable)
     text.append_format(" RW={}/{}", g_settings.rewind_save_frequency, g_settings.rewind_save_slots);
   if (g_settings.IsRunaheadEnabled())
-    text.append_format(" RA={}", g_settings.runahead_frames);
+    text.append_format(" RA={}{}", g_settings.runahead_frames, g_settings.runahead_for_analog_input ? "+A" : "");
 
   if (g_settings.cpu_overclock_active)
     text.append_format(" CPU={}%", g_settings.GetCPUOverclockPercent());

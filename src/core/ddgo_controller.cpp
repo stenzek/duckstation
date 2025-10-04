@@ -114,14 +114,14 @@ void DDGoController::SetBindState(u32 index, float value)
   if (pressed)
   {
     if (m_button_state & bit)
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state &= ~bit;
   }
   else
   {
     if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag();
+      System::SetRunaheadReplayFlag(false);
 
     m_button_state |= bit;
   }
@@ -215,7 +215,7 @@ void DDGoController::SetPowerLevel(u32 level)
   m_power_level = Truncate8(level);
   m_power_transition_frames_remaining = m_power_transition_frames;
   UpdatePowerBits();
-  System::SetRunaheadReplayFlag();
+  System::SetRunaheadReplayFlag(false);
 }
 
 void DDGoController::UpdatePowerBits()
@@ -251,7 +251,7 @@ void DDGoController::SetBrakeLevel(u32 level)
   m_brake_level = Truncate8(level);
   m_brake_transition_frames_remaining = m_brake_transition_frames;
   UpdateBrakeBits();
-  System::SetRunaheadReplayFlag();
+  System::SetRunaheadReplayFlag(false);
 }
 
 void DDGoController::UpdateBrakeBits()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>440</height>
+    <height>481</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -133,40 +133,13 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Rewind/Runahead</string>
+      <string>Rewind</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="rewindEnable">
-        <property name="text">
-         <string>Enable Rewinding</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,0">
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Rewind Save Frequency:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="rewindSaveFrequency">
-        <property name="suffix">
-         <string> Seconds</string>
-        </property>
-        <property name="maximum">
-         <double>3600.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Rewind Buffer Size:</string>
         </property>
        </widget>
       </item>
@@ -183,14 +156,60 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="rewindSummary">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Rewind Buffer Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="rewindSaveFrequency">
+        <property name="suffix">
+         <string> Seconds</string>
+        </property>
+        <property name="maximum">
+         <double>3600.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QCheckBox" name="rewindEnable">
+        <property name="text">
+         <string>Enable Rewinding</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Runahead</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Runahead:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="0" column="1">
        <widget class="QComboBox" name="runaheadFrames">
         <item>
          <property name="text">
@@ -249,13 +268,10 @@
         </item>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QLabel" name="rewindSummary">
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="runaheadForAnalogInput">
         <property name="text">
-         <string>TextLabel</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+         <string>Enable for Analog Input</string>
         </property>
        </widget>
       </item>
@@ -269,8 +285,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>

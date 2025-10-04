@@ -31,6 +31,8 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, "Main", "RewindFrequency", 10.0f);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.runaheadFrames, "Main", "RunaheadFrameCount", 0);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.runaheadForAnalogInput, "Main", "RunaheadForAnalogInput",
+                                               false);
 
   const float effective_emulation_speed = m_dialog->getEffectiveFloatValue("Main", "EmulationSpeed", 1.0f);
   fillComboBoxWithEmulationSpeeds(m_ui.emulationSpeed, effective_emulation_speed);
@@ -144,6 +146,9 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.runaheadFrames, tr("Runahead"), tr("Disabled"),
     tr(
       "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."));
+  dialog->registerWidgetHelp(
+    m_ui.runaheadForAnalogInput, tr("Enable for Analog Input"), tr("Unchecked"),
+    tr("Activates runahead when analog input changes, which significantly increases system requirements."));
 
   onOptimalFramePacingChanged();
   updateSkipDuplicateFramesEnabled();
@@ -239,6 +244,7 @@ void EmulationSettingsWidget::updateRewind()
   const bool rewind_enabled = m_dialog->getEffectiveBoolValue("Main", "RewindEnable", false);
   const bool runahead_enabled = m_dialog->getIntValue("Main", "RunaheadFrameCount", 0) > 0;
   m_ui.rewindEnable->setEnabled(!runahead_enabled);
+  m_ui.runaheadForAnalogInput->setEnabled(runahead_enabled);
 
   if (!runahead_enabled && rewind_enabled)
   {
