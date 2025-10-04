@@ -91,16 +91,6 @@ u32 Controller::GetButtonStateBits() const
   return 0;
 }
 
-float Controller::GetVibrationMotorState(u32 index) const
-{
-  return 0.0f;
-}
-
-float Controller::GetLEDState(u32 index) const
-{
-  return 0.0f;
-}
-
 std::optional<u32> Controller::GetAnalogInputBytes() const
 {
   return std::nullopt;

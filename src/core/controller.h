@@ -77,12 +77,6 @@ public:
   /// Returns a bitmask of the current button states, 1 = on.
   virtual u32 GetButtonStateBits() const;
 
-  /// Returns the current state of the specified vibration motor.
-  virtual float GetVibrationMotorState(u32 index) const;
-
-  /// Returns the current state of the specified LED.
-  virtual float GetLEDState(u32 index) const;
-
   /// Returns analog input bytes packed as a u32. Values are specific to controller type.
   virtual std::optional<u32> GetAnalogInputBytes() const;
 

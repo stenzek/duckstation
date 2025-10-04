@@ -10,6 +10,7 @@
 #include "core/system.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -72,6 +73,7 @@ struct PadVibrationBinding
     InputBindingKey binding;
     Timer::Value last_update_time;
     InputSource* source;
+    u32 bind_index;
     float last_intensity;
   };
 
@@ -1030,16 +1032,21 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
 
       case InputBindingInfo::Type::Motor:
       {
-        DebugAssert(bi.bind_index < std::size(vibration_binding.motors));
+        DebugAssert(bi.generic_mapping == GenericInputBinding::LargeMotor ||
+                    bi.generic_mapping == GenericInputBinding::SmallMotor);
         if (bindings.empty())
           continue;
 
         if (bindings.size() > 1)
           WARNING_LOG("More than one vibration motor binding for {}:{}", pad_index, bi.name);
 
-        vibration_binding_valid |=
-          ParseBindingAndGetSource(bindings.front(), &vibration_binding.motors[bi.bind_index].binding,
-                                   &vibration_binding.motors[bi.bind_index].source);
+        PadVibrationBinding::Motor& motor =
+          vibration_binding.motors[BoolToUInt32(bi.generic_mapping == GenericInputBinding::SmallMotor)];
+        if (ParseBindingAndGetSource(bindings.front(), &motor.binding, &motor.source))
+        {
+          motor.bind_index = bi.bind_index;
+          vibration_binding_valid = true;
+        }
       }
       break;
 
@@ -1052,7 +1059,7 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         {
           // If we're reloading bindings due to e.g. device connection, sync the LED state.
           if (Controller* controller = System::GetController(pad_index))
-            led_binding.last_intensity = controller->GetLEDState(bi.bind_index);
+            led_binding.last_intensity = controller->GetBindState(bi.bind_index);
 
           // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
           led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
@@ -1824,18 +1831,26 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 // Vibration
 // ------------------------------------------------------------------------
 
-void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensity,
-                                            float small_motor_intensity)
+void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float intensity)
 {
   for (PadVibrationBinding& pad : s_state.pad_vibration_array)
   {
     if (pad.pad_index != pad_index)
       continue;
 
-    pad.motors[0].last_intensity = large_or_single_motor_intensity;
-    pad.motors[0].last_update_time = 0; // force update at end of frame
-    pad.motors[1].last_intensity = small_motor_intensity;
-    pad.motors[1].last_update_time = 0; // force update at end of frame
+    PadVibrationBinding::Motor* motor;
+    if (bind_index == pad.motors[0].bind_index)
+      motor = &pad.motors[0];
+    else if (bind_index == pad.motors[1].bind_index)
+      motor = &pad.motors[1];
+    else
+      break;
+
+    if (motor->last_intensity == intensity)
+      break;
+
+    motor->last_intensity = intensity;
+    motor->last_update_time = 0; // force update at end of frame
     break;
   }
 }

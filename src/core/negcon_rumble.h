@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -60,7 +60,6 @@ public:
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
   float GetBindState(u32 index) const override;
-  float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
 
   void ResetTransferState() override;
@@ -90,6 +89,12 @@ private:
 
   static constexpr s16 DEFAULT_SMALL_MOTOR_VIBRATION_BIAS = 8;
   static constexpr s16 DEFAULT_LARGE_MOTOR_VIBRATION_BIAS = 8;
+
+  static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::Count);
+  static constexpr u32 MOTOR_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::Count);
+  static constexpr u32 LED_BIND_START_INDEX = MOTOR_BIND_START_INDEX + NUM_MOTORS;
+
+  static const Controller::ControllerBindingInfo s_binding_info[];
 
   std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
   bool m_force_analog_on_reset = true;
@@ -140,7 +145,6 @@ private:
   void SetAnalogMode(bool enabled, bool show_message);
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
-  void UpdateHostVibration();
   u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
   void SetMotorStateForConfigIndex(int index, u8 value);

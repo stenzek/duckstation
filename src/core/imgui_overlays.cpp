@@ -69,7 +69,6 @@ struct InputOverlayState
     u8 slot;
     bool multitap;
     u32 icon_color;
-    float vibration_state[InputManager::MAX_MOTORS_PER_PAD];
     float bind_state[MAX_BINDS];
   };
 
@@ -809,19 +808,14 @@ void ImGuiManager::UpdateInputOverlay()
       const u32 bidx = bi.bind_index;
 
       // this will leave some uninitalized, but who cares, it won't be read on the other side
-      if (bi.type >= InputBindingInfo::Type::Button && bi.type <= InputBindingInfo::Type::HalfAxis)
+      if (bi.type >= InputBindingInfo::Type::Button && bi.type <= InputBindingInfo::Type::Motor)
       {
         DebugAssert(bidx < InputOverlayState::MAX_BINDS);
         pstate.bind_state[bidx] = controller->GetBindState(bidx);
       }
-      else if (bi.type == InputBindingInfo::Type::Motor)
-      {
-        DebugAssert(bidx < InputManager::MAX_MOTORS_PER_PAD);
-        pstate.vibration_state[bidx] = controller->GetVibrationMotorState(bidx);
-      }
       else if (bi.type == InputBindingInfo::Type::LED)
       {
-        const float intensity = controller->GetLEDState(bidx);
+        const float intensity = controller->GetBindState(bidx);
         pstate.icon_color = (GSVector4::cxpr_rgba32(NORMAL_ICON_COLOR) + (GSVector4::cxpr_rgba32(ALTERNATE_ICON_COLOR) -
                                                                           GSVector4::cxpr_rgba32(NORMAL_ICON_COLOR)) *
                                                                            GSVector4(intensity))
@@ -906,7 +900,7 @@ void ImGuiManager::DrawInputsOverlay()
       }
       else if (bi.type == InputBindingInfo::Type::Motor)
       {
-        const float value = pstate.vibration_state[bi.bind_index];
+        const float value = pstate.bind_state[bi.bind_index];
         if (value >= 1.0f)
           text.append_format(" {}", bi.icon_name ? bi.icon_name : bi.name);
         else if (value > 0.0f)

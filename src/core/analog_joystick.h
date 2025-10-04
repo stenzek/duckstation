@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -91,6 +91,11 @@ private:
     LeftAxisX,
     LeftAxisY
   };
+
+  static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::Count);
+  static constexpr u32 LED_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::Count);
+
+  static const Controller::ControllerBindingInfo s_binding_info[];
 
   u16 GetID() const;
   void ToggleAnalogMode();

@@ -14,8 +14,8 @@ struct InputBindingInfo
     Button,
     Axis,
     HalfAxis,
-    Motor,
-    LED,
+    Motor,           // Vibration motors, generic_mapping gets used for motor selection.
+    LED,             // Status LEDs, e.g. analog/digital mode indicator.
     Pointer,         // Absolute pointer, does not receive any events, but is queryable.
     RelativePointer, // Receive relative mouse movement events, bind_index is offset by the axis.
     Device,          // Used for special-purpose device selection, e.g. force feedback.

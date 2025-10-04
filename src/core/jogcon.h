@@ -54,7 +54,6 @@ public:
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
   float GetBindState(u32 index) const override;
-  float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
 
@@ -96,6 +95,13 @@ private:
   };
 
   static constexpr float DEFAULT_STEERING_HOLD_DEADZONE = 0.03f;
+
+  static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::MaxCount);
+  static constexpr u32 MOTOR_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::MaxCount);
+  static constexpr u32 LED_BIND_START_INDEX = MOTOR_BIND_START_INDEX + 1;
+  static constexpr u32 FFDEVICE_BIND_START_INDEX = LED_BIND_START_INDEX + 1;
+
+  static const Controller::ControllerBindingInfo s_binding_info[];
 
   u8 GetIDByte() const;
   u8 GetModeID() const;

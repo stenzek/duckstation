@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_joystick.h"
@@ -74,22 +74,14 @@ bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
 
 float AnalogJoystick::GetBindState(u32 index) const
 {
-  if (index >= static_cast<u32>(Button::Count))
-  {
-    const u32 sub_index = index - static_cast<u32>(Button::Count);
-    if (sub_index >= static_cast<u32>(m_half_axis_state.size()))
-      return 0.0f;
-
-    return static_cast<float>(m_half_axis_state[sub_index]) * (1.0f / 255.0f);
-  }
+  if (index >= LED_BIND_START_INDEX)
+    return BoolToFloat(index == LED_BIND_START_INDEX && m_analog_mode);
+  else if (index >= HALFAXIS_BIND_START_INDEX)
+    return static_cast<float>(m_half_axis_state[index - HALFAXIS_BIND_START_INDEX]) * (1.0f / 255.0f);
   else if (index < static_cast<u32>(Button::Mode))
-  {
     return static_cast<float>(((m_button_state >> index) & 1u) ^ 1u);
-  }
   else
-  {
     return 0.0f;
-  }
 }
 
 void AnalogJoystick::SetBindState(u32 index, float value)
@@ -339,18 +331,18 @@ std::unique_ptr<AnalogJoystick> AnalogJoystick::Create(u32 index)
   return std::make_unique<AnalogJoystick>(index);
 }
 
-static const Controller::ControllerBindingInfo s_binding_info[] = {
+constinit const Controller::ControllerBindingInfo AnalogJoystick::s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
   {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 #define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
   {name,                                                                                                               \
    display_name,                                                                                                       \
    icon_name,                                                                                                          \
-   static_cast<u32>(AnalogJoystick::Button::Count) + static_cast<u32>(halfaxis),                                       \
+   HALFAXIS_BIND_START_INDEX + static_cast<u32>(halfaxis),                                                             \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
 #define MODE_LED(name, display_name, icon_name, index, genb)                                                           \
-  {name, display_name, icon_name, index, InputBindingInfo::Type::LED, genb}
+  {name, display_name, icon_name, LED_BIND_START_INDEX + index, InputBindingInfo::Type::LED, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogJoystick", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogJoystick::Button::Up, GenericInputBinding::DPadUp),

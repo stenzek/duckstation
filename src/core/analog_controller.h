@@ -71,8 +71,6 @@ public:
   bool DoState(StateWrapper& sw, bool ignore_input_state) override;
 
   float GetBindState(u32 index) const override;
-  float GetVibrationMotorState(u32 index) const override;
-  float GetLEDState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;
@@ -102,6 +100,12 @@ private:
   static constexpr s16 DEFAULT_SMALL_MOTOR_VIBRATION_BIAS = 8;
   static constexpr s16 DEFAULT_LARGE_MOTOR_VIBRATION_BIAS = 8;
 
+  static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::Count);
+  static constexpr u32 MOTOR_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::Count);
+  static constexpr u32 LED_BIND_START_INDEX = MOTOR_BIND_START_INDEX + NUM_MOTORS;
+
+  static const Controller::ControllerBindingInfo s_binding_info[];
+
   Command m_command = Command::Idle;
   u8 m_command_step = 0;
   u8 m_response_length = 0;
@@ -120,7 +124,6 @@ private:
   void SetAnalogMode(bool enabled, bool show_message);
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
-  void UpdateHostVibration();
   u16 GetExtraButtonMask() const;
   void ResetRumbleConfig();
   void Poll();
