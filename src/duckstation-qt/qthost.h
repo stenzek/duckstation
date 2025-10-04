@@ -287,6 +287,12 @@ public:
   ALWAYS_INLINE const DeviceList& getDeviceList() const { return m_devices; }
   ALWAYS_INLINE const EffectList& getEffectList() const { return m_effects; }
 
+  /// Returns the device name for the specified key, or an empty string if not found.
+  QString getDeviceName(const InputBindingKey& key);
+
+  /// Returns whether any effects are available for the specified type.
+  bool hasEffectsOfType(InputBindingInfo::Type type);
+
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

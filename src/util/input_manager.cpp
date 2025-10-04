@@ -68,34 +68,19 @@ struct InputBinding
 
 struct PadVibrationBinding
 {
-  struct Motor
-  {
-    InputBindingKey binding;
-    Timer::Value last_update_time;
-    InputSource* source;
-    u32 bind_index;
-    float last_intensity;
-  };
-
-  u32 pad_index = 0;
-  Motor motors[MAX_MOTORS_PER_PAD] = {};
-
-  /// Returns true if the two motors are bound to the same host motor.
-  ALWAYS_INLINE bool AreMotorsCombined() const { return motors[0].binding == motors[1].binding; }
-
-  /// Returns the intensity when both motors are combined.
-  ALWAYS_INLINE float GetCombinedIntensity() const
-  {
-    return std::max(motors[0].last_intensity, motors[1].last_intensity);
-  }
+  u64 pad_and_bind_index;        ///< Combined pad index and bind index for quick lookup.
+  InputBindingKey binding;       ///< Binding key for this motor.
+  Timer::Value last_update_time; ///< Last time this motor was updated.
+  InputSource* source;           ///< Input source for this motor.
+  float last_intensity;          ///< Last intensity we sent to the motor.
 };
 
 struct PadLEDBinding
 {
-  InputBindingKey binding;
-  InputSource* source;
-  float last_intensity;
-  u32 pad_index;
+  InputBindingKey binding; ///< Binding key for this LED.
+  InputSource* source;     ///< Input source for this LED.
+  float last_intensity;    ///< Last intensity we sent to the LED.
+  u32 pad_index;           ///< Pad index this LED is for.
 };
 
 struct MacroButton
@@ -163,6 +148,11 @@ static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
+
+ALWAYS_INLINE static u64 PackPadAndBindIndex(u32 pad_index, u32 bind_index)
+{
+  return (static_cast<u64>(pad_index) << 32) | static_cast<u64>(bind_index);
+}
 
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
@@ -623,23 +613,15 @@ void InputManager::AddBinding(std::string_view binding, const InputEventHandler&
     s_state.binding_map.emplace(ibinding->keys[i].MaskDirection(), ibinding);
 }
 
-void InputManager::AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding,
-                                       InputSource* motor_0_source, const InputBindingKey* motor_1_binding,
-                                       InputSource* motor_1_source)
+void InputManager::AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& binding,
+                                       InputSource* source)
 {
-  PadVibrationBinding vib;
-  vib.pad_index = pad_index;
-  if (motor_0_binding)
-  {
-    vib.motors[0].binding = *motor_0_binding;
-    vib.motors[0].source = motor_0_source;
-  }
-  if (motor_1_binding)
-  {
-    vib.motors[1].binding = *motor_1_binding;
-    vib.motors[1].source = motor_1_source;
-  }
-  s_state.pad_vibration_array.push_back(std::move(vib));
+  s_state.pad_vibration_array.push_back(
+    PadVibrationBinding{.pad_and_bind_index = PackPadAndBindIndex(pad_index, bind_index),
+                        .binding = binding,
+                        .last_update_time = 0,
+                        .source = source,
+                        .last_intensity = 0.0f});
 }
 
 // ------------------------------------------------------------------------
@@ -965,12 +947,6 @@ void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 void InputManager::AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad_index,
                                   const Controller::ControllerInfo& cinfo)
 {
-  bool vibration_binding_valid = false;
-  PadVibrationBinding vibration_binding = {};
-  vibration_binding.pad_index = pad_index;
-  PadLEDBinding led_binding = {};
-  led_binding.pad_index = pad_index;
-
   for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
   {
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
@@ -1032,20 +1008,25 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
 
       case InputBindingInfo::Type::Motor:
       {
-        DebugAssert(bi.generic_mapping == GenericInputBinding::LargeMotor ||
-                    bi.generic_mapping == GenericInputBinding::SmallMotor);
         if (bindings.empty())
           continue;
 
-        if (bindings.size() > 1)
-          WARNING_LOG("More than one vibration motor binding for {}:{}", pad_index, bi.name);
-
-        PadVibrationBinding::Motor& motor =
-          vibration_binding.motors[BoolToUInt32(bi.generic_mapping == GenericInputBinding::SmallMotor)];
-        if (ParseBindingAndGetSource(bindings.front(), &motor.binding, &motor.source))
+        for (const std::string& binding : bindings)
         {
-          motor.bind_index = bi.bind_index;
-          vibration_binding_valid = true;
+          PadVibrationBinding vib_binding;
+          if (ParseBindingAndGetSource(binding, &vib_binding.binding, &vib_binding.source))
+          {
+            vib_binding.pad_and_bind_index = PackPadAndBindIndex(pad_index, bi.bind_index);
+            vib_binding.last_update_time = 0;
+
+            // If we're reloading bindings due to e.g. device connection, sync the vibration state.
+            if (Controller* controller = System::GetController(pad_index))
+              vib_binding.last_intensity = controller->GetBindState(bi.bind_index);
+            else
+              vib_binding.last_intensity = 0.0f;
+
+            s_state.pad_vibration_array.push_back(vib_binding);
+          }
         }
       }
       break;
@@ -1055,16 +1036,24 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         if (bindings.empty())
           continue;
 
-        if (ParseBindingAndGetSource(bindings.front(), &led_binding.binding, &led_binding.source))
+        for (const std::string& binding : bindings)
         {
-          // If we're reloading bindings due to e.g. device connection, sync the LED state.
-          if (Controller* controller = System::GetController(pad_index))
-            led_binding.last_intensity = controller->GetBindState(bi.bind_index);
+          PadLEDBinding led_binding;
+          if (ParseBindingAndGetSource(binding, &led_binding.binding, &led_binding.source))
+          {
+            led_binding.pad_index = pad_index;
 
-          // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
-          led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
+            // If we're reloading bindings due to e.g. device connection, sync the LED state.
+            if (Controller* controller = System::GetController(pad_index))
+              led_binding.last_intensity = controller->GetBindState(bi.bind_index);
+            else
+              led_binding.last_intensity = 0.0f;
 
-          s_state.pad_led_array.push_back(std::move(led_binding));
+            // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
+            led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
+
+            s_state.pad_led_array.push_back(led_binding);
+          }
         }
       }
       break;
@@ -1079,9 +1068,6 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         break;
     }
   }
-
-  if (vibration_binding_valid)
-    s_state.pad_vibration_array.push_back(std::move(vibration_binding));
 }
 
 // ------------------------------------------------------------------------
@@ -1833,25 +1819,14 @@ std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(con
 
 void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float intensity)
 {
-  for (PadVibrationBinding& pad : s_state.pad_vibration_array)
+  const u64 pad_and_bind_index = PackPadAndBindIndex(pad_index, bind_index);
+  for (PadVibrationBinding& vib : s_state.pad_vibration_array)
   {
-    if (pad.pad_index != pad_index)
-      continue;
-
-    PadVibrationBinding::Motor* motor;
-    if (bind_index == pad.motors[0].bind_index)
-      motor = &pad.motors[0];
-    else if (bind_index == pad.motors[1].bind_index)
-      motor = &pad.motors[1];
-    else
-      break;
-
-    if (motor->last_intensity == intensity)
-      break;
-
-    motor->last_intensity = intensity;
-    motor->last_update_time = 0; // force update at end of frame
-    break;
+    if (vib.pad_and_bind_index == pad_and_bind_index && vib.last_intensity != intensity)
+    {
+      vib.last_intensity = intensity;
+      vib.last_update_time = 0; // force update at end of frame
+    }
   }
 }
 
@@ -1859,16 +1834,9 @@ void InputManager::PauseVibration()
 {
   for (PadVibrationBinding& binding : s_state.pad_vibration_array)
   {
-    for (u32 motor_index = 0; motor_index < MAX_MOTORS_PER_PAD; motor_index++)
-    {
-      PadVibrationBinding::Motor& motor = binding.motors[motor_index];
-      if (!motor.source || motor.last_intensity == 0.0f)
-        continue;
-
-      // we deliberately don't zero the intensity here, so it can resume later
-      motor.last_update_time = 0;
-      motor.source->UpdateMotorState(motor.binding, 0.0f);
-    }
+    // we deliberately don't zero the intensity here, so it can resume later
+    binding.last_update_time = 0;
+    binding.source->UpdateMotorState(binding.binding, 0.0f);
   }
 }
 
@@ -1876,66 +1844,50 @@ void InputManager::UpdateContinuedVibration()
 {
   // update vibration intensities, so if the game does a long effect, it continues
   const u64 current_time = Timer::GetCurrentValue();
-  for (PadVibrationBinding& pad : s_state.pad_vibration_array)
+  for (PadVibrationBinding& binding : s_state.pad_vibration_array)
   {
-    if (pad.AreMotorsCombined())
+    // skip if motor is off and wasn't just changed
+    if (binding.last_update_time > 0)
     {
-      // motors are combined
-      PadVibrationBinding::Motor& large_motor = pad.motors[0];
-      PadVibrationBinding::Motor& small_motor = pad.motors[1];
-
-      // skip if both motors are off and this wasn't just changed
-      const Timer::Value min_update_time = std::min(large_motor.last_update_time, small_motor.last_update_time);
-      const double dt = Timer::ConvertValueToSeconds(current_time - min_update_time);
-      if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
-        continue;
-
-      // but take max of both motors for the intensity
-      const float intensity = pad.GetCombinedIntensity();
-      if (intensity == 0.0f && min_update_time > 0)
-        continue;
-
-      large_motor.last_update_time = current_time;
-      large_motor.source->UpdateMotorState(large_motor.binding, intensity);
-    }
-    else if (pad.motors[0].source && pad.motors[0].source == pad.motors[1].source)
-    {
-      // motors are independent, but share the same source. do a combined update
-      PadVibrationBinding::Motor& large_motor = pad.motors[0];
-      PadVibrationBinding::Motor& small_motor = pad.motors[1];
-      const Timer::Value min_update_time = std::min(large_motor.last_update_time, small_motor.last_update_time);
-
-      // skip if both motors are off and this wasn't just changed
-      if (std::max(large_motor.last_intensity, small_motor.last_intensity) == 0.0f && min_update_time > 0)
-        continue;
-
-      const double dt = Timer::ConvertValueToSeconds(current_time - min_update_time);
-      if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
-        continue;
-
-      large_motor.last_update_time = current_time;
-      small_motor.last_update_time = current_time;
-      large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_motor.last_intensity,
-                                           small_motor.last_intensity);
-    }
-    else
-    {
-      // independent motor control
-      for (u32 i = 0; i < MAX_MOTORS_PER_PAD; i++)
+      if (binding.last_intensity == 0.0f ||
+          Timer::ConvertValueToSeconds(current_time - binding.last_update_time) < VIBRATION_UPDATE_INTERVAL_SECONDS)
       {
-        PadVibrationBinding::Motor& motor = pad.motors[i];
-        if (!motor.source || (motor.last_intensity == 0.0f && motor.last_update_time > 0))
-          continue;
-
-        const double dt = Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
-        if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
-          continue;
-
-        // re-notify the source of the continued effect
-        motor.last_update_time = current_time;
-        motor.source->UpdateMotorState(motor.binding, motor.last_intensity);
+        continue;
       }
     }
+
+    // figure out the intensity, we need to search all bindings since it may be combined
+    // merge into a single update where possible
+    std::array<InputBindingKey, 2> motor_keys = {};
+    std::array<float, 2> motor_intensities = {0.0f, 0.0f};
+    u32 motor_intensities_mask = 0;
+    for (PadVibrationBinding& other_binding : s_state.pad_vibration_array)
+    {
+      // only try to merge devices of the same source/index
+      if (other_binding.source != binding.source || other_binding.binding.source_index != binding.binding.source_index)
+        continue;
+
+      // data should probably never be more than 1, but just in case
+      if (other_binding.binding.data > 1 && binding.binding.data != other_binding.binding.data)
+        continue;
+
+      const u32 motor_index = std::min<u32>(other_binding.binding.data, 1u);
+      other_binding.last_update_time = current_time;
+      motor_keys[motor_index] = other_binding.binding;
+      motor_intensities[motor_index] = std::max(motor_intensities[motor_index], other_binding.last_intensity);
+      motor_intensities_mask |= (1u << motor_index);
+    }
+
+    // can we send it as a single update?
+    DEV_COLOR_LOG(StrongOrange, "Sending vibration update to device {}: mask 0x{:02X}, intensities {{{}, {}}}",
+                  static_cast<u32>(binding.binding.source_index), motor_intensities_mask, motor_intensities[0],
+                  motor_intensities[1]);
+    if (motor_intensities_mask == 0b11)
+      binding.source->UpdateMotorState(motor_keys[0], motor_keys[1], motor_intensities[0], motor_intensities[1]);
+    else if (motor_intensities_mask == 0b01)
+      binding.source->UpdateMotorState(motor_keys[0], motor_intensities[0]);
+    else // if (motor_intensities_mask == 0b10)
+      binding.source->UpdateMotorState(motor_keys[1], motor_intensities[1]);
   }
 }
 

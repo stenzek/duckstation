@@ -2543,6 +2543,26 @@ QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
     return QIcon::fromTheme(QStringLiteral("controller-line"));
 }
 
+QString InputDeviceListModel::getDeviceName(const InputBindingKey& key)
+{
+  QString ret;
+  for (const InputDeviceListModel::Device& device : m_devices)
+  {
+    if (device.key.source_type == key.source_type && device.key.source_index == key.source_index)
+    {
+      ret = device.display_name;
+      break;
+    }
+  }
+
+  return ret;
+}
+
+bool InputDeviceListModel::hasEffectsOfType(InputBindingInfo::Type type)
+{
+  return std::ranges::any_of(m_effects, [type](const auto& eff) { return eff.first == type; });
+}
+
 int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
   return m_devices.size();

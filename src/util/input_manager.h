@@ -321,8 +321,7 @@ bool ParseBindingAndGetSource(std::string_view binding, InputBindingKey* key, In
 void AddBinding(std::string_view binding, const InputEventHandler& handler);
 
 /// Adds an external vibration binding.
-void AddVibrationBinding(u32 pad_index, const InputBindingKey* motor_0_binding, InputSource* motor_0_source,
-                         const InputBindingKey* motor_1_binding, InputSource* motor_1_source);
+void AddVibrationBinding(u32 pad_index, u32 bind_index, const InputBindingKey& binding, InputSource* source);
 
 /// Updates internal state for any binds for this key, and fires callbacks as needed.
 /// Returns true if anything was bound to this key, otherwise false.

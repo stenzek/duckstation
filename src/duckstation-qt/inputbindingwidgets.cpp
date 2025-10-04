@@ -271,18 +271,18 @@ void InputBindingWidget::reloadBinding()
 
 void InputBindingWidget::onClicked()
 {
-  if (m_bindings.size() > 1)
-  {
-    openDialog();
-    return;
-  }
-
   if (InputBindingInfo::IsEffectType(m_bind_type))
   {
     showEffectBindingDialog();
   }
   else
   {
+    if (m_bindings.size() > 1)
+    {
+      openDialog();
+      return;
+    }
+
     if (isListeningForInput())
       stopListeningForInput();
 
@@ -419,13 +419,47 @@ void InputBindingWidget::openDialog()
 
 void InputBindingWidget::showEffectBindingDialog()
 {
-  std::vector<InputBindingKey> options;
-  QStringList option_names;
-  QString current;
+  if (!g_emu_thread->getInputDeviceListModel()->hasEffectsOfType(m_bind_type))
+  {
+    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"),
+                          (m_bind_type == InputBindingInfo::Type::Motor) ?
+                            tr("No devices with vibration motors were detected.") :
+                            tr("No devices with LEDs were detected."));
+    return;
+  }
 
-  const InputDeviceListModel::EffectList& all_options = g_emu_thread->getInputDeviceListModel()->getEffectList();
-  options.reserve(all_options.size());
-  option_names.reserve(all_options.size());
+  const QString full_key(QString::fromStdString(fmt::format("{}/{}", m_section_name, m_key_name)));
+
+  QDialog dlg(this);
+  dlg.setWindowTitle(full_key);
+  dlg.setFixedWidth(450);
+  dlg.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+  QVBoxLayout* const main_layout = new QVBoxLayout(&dlg);
+
+  QHBoxLayout* const heading_layout = new QHBoxLayout();
+  QLabel* const icon = new QLabel(&dlg);
+  icon->setPixmap(QIcon::fromTheme(QStringLiteral("pushpin-line")).pixmap(32, 32));
+  QLabel* const heading =
+    new QLabel(tr("<strong>%1</strong><br>Select the device and effect to map this bind to.").arg(full_key), &dlg);
+  heading->setWordWrap(true);
+  heading_layout->addWidget(icon, 0, Qt::AlignTop | Qt::AlignLeft);
+  heading_layout->addWidget(heading, 1);
+  main_layout->addLayout(heading_layout);
+
+  QListWidget* const list = new QListWidget(&dlg);
+  list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+  // hook up selection to alter check state
+  connect(list, &QListWidget::itemSelectionChanged, [list]() {
+    const int count = list->count();
+    for (int i = 0; i < count; i++)
+      list->item(i)->setCheckState(Qt::Unchecked);
+
+    for (QListWidgetItem* item : list->selectedItems())
+      item->setCheckState(item->isSelected() ? Qt::Checked : Qt::Unchecked);
+  });
+
   for (const auto& [type, key] : g_emu_thread->getInputDeviceListModel()->getEffectList())
   {
     if (type != m_bind_type)
@@ -435,47 +469,57 @@ void InputBindingWidget::showEffectBindingDialog()
     if (name.empty())
       continue;
 
-    QString qname = QtUtils::StringViewToQString(name);
-    if (!m_bindings.empty() && name == m_bindings.front())
-      current = qname;
+    const bool is_bound =
+      std::ranges::any_of(m_bindings, [&name](const std::string& other_name) { return (other_name == name.view()); });
 
-    options.push_back(key);
-    option_names.push_back(std::move(qname));
+    QListWidgetItem* const item = new QListWidgetItem();
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(is_bound ? Qt::Checked : Qt::Unchecked);
+    item->setText(QStringLiteral("%1\n%2")
+                    .arg(QtUtils::StringViewToQString(name))
+                    .arg(g_emu_thread->getInputDeviceListModel()->getDeviceName(key)));
+    item->setData(Qt::UserRole, QtUtils::StringViewToQString(name));
+    item->setIcon(InputDeviceListModel::getIconForKey(key));
+    list->addItem(item);
+
+    item->setSelected(is_bound);
   }
 
-  if (options.empty())
-  {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"),
-                          (m_bind_type == InputBindingInfo::Type::Motor) ?
-                            tr("No devices with vibration motors were detected.") :
-                            tr("No devices with LEDs were detected."));
-    return;
-  }
+  main_layout->addWidget(list);
 
-  // TODO: Multiple options? needs a custom dialog
-  const QString full_key(
-    QStringLiteral("%1/%2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
-  QInputDialog input_dialog(this);
-  input_dialog.setWindowTitle(full_key);
-  input_dialog.setLabelText(tr("Select device and effect for %1.").arg(full_key));
-  input_dialog.setInputMode(QInputDialog::TextInput);
-  input_dialog.setOptions(QInputDialog::UseListViewForComboBoxItems);
-  input_dialog.setComboBoxEditable(false);
-  input_dialog.setComboBoxItems(option_names);
-  input_dialog.setTextValue(current);
-  if (input_dialog.exec() == QDialog::Rejected)
+  QDialogButtonBox* const bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+  connect(bbox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+  connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+  main_layout->addWidget(bbox);
+
+  if (dlg.exec() != QDialog::Accepted)
     return;
 
-  const QString new_value = input_dialog.textValue();
-  for (qsizetype i = 0; i < option_names.size(); i++)
+  m_bindings.clear();
+
+  const int count = list->count();
+  for (int i = 0; i < count; i++)
   {
-    if (new_value == option_names[i])
-    {
-      m_new_bindings.clear();
-      m_new_bindings.push_back(options[i]);
-      setNewBinding();
-      reloadBinding();
-      return;
-    }
+    const QListWidgetItem* const item = list->item(i);
+    if (item->checkState() == Qt::Checked)
+      m_bindings.push_back(item->data(Qt::UserRole).toString().toStdString());
   }
+
+  if (m_sif)
+  {
+    m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+    QtHost::SaveGameSettings(m_sif, false);
+    g_emu_thread->reloadGameSettings();
+  }
+  else
+  {
+    Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+    Host::CommitBaseSettingChanges();
+    if (m_bind_type == InputBindingInfo::Type::Pointer)
+      g_emu_thread->updateControllerSettings();
+    g_emu_thread->reloadInputBindings();
+  }
+
+  setNewBinding();
+  reloadBinding();
 }
