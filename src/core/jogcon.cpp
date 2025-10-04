@@ -117,12 +117,16 @@ void JogCon::SetBindState(u32 index, float value)
       return;
 
     m_half_axis_state[sub_index] = u8_value;
-    System::SetRunaheadReplayFlag();
+
+    const s8 prev_steering_state = m_steering_state;
 
     m_steering_state =
       (m_half_axis_state[static_cast<u32>(HalfAxis::SteeringRight)] != 0) ?
         static_cast<s8>((m_half_axis_state[static_cast<u32>(HalfAxis::SteeringRight)] / 2)) :
         -static_cast<s8>((static_cast<u32>(m_half_axis_state[static_cast<u32>(HalfAxis::SteeringLeft)]) + 1) / 2);
+
+    if (m_steering_state != prev_steering_state)
+      System::SetRunaheadReplayFlag();
   }
 
   const u16 bit = u16(1) << static_cast<u8>(index);

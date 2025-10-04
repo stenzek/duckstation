@@ -110,6 +110,8 @@ void AnalogJoystick::SetBindState(u32 index, float value)
   ((m_half_axis_state[static_cast<u32>(pos)] != 0) ? (127u + ((m_half_axis_state[static_cast<u32>(pos)] + 1u) / 2u)) : \
                                                      (127u - (m_half_axis_state[static_cast<u32>(neg)] / 2u)))
 
+    const auto prev_axis_state = m_axis_state;
+
     switch (static_cast<HalfAxis>(sub_index))
     {
       case HalfAxis::LLeft:
@@ -163,7 +165,6 @@ void AnalogJoystick::SetBindState(u32 index, float value)
       {
         pos_x = ((m_invert_right_stick & 1u) != 0u) ? MERGE_F(HalfAxis::RLeft, HalfAxis::RRight) :
                                                       MERGE_F(HalfAxis::RRight, HalfAxis::RLeft);
-        ;
         pos_y = ((m_invert_right_stick & 2u) != 0u) ? MERGE_F(HalfAxis::RUp, HalfAxis::RDown) :
                                                       MERGE_F(HalfAxis::RDown, HalfAxis::RUp);
       }
@@ -178,6 +179,9 @@ void AnalogJoystick::SetBindState(u32 index, float value)
       }
 #undef MERGE_F
     }
+
+    if (std::memcmp(m_axis_state.data(), prev_axis_state.data(), m_axis_state.size()) != 0)
+      System::SetRunaheadReplayFlag();
 
 #undef MERGE
 
