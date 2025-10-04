@@ -5,10 +5,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux-x64-appimage-build:
-    name: "x64"
+  linux-appimage-build:
+    name: "${{ matrix.name }}"
     runs-on: ubuntu-22.04
     timeout-minutes: 120
+    strategy:
+      matrix:
+        include:
+          - name: "x64"
+            asset: "DuckStation-x64.AppImage"
+            artifact: "linux-x64-appimage"
+            cmakeoptions: ""
+          - name: "x64 SSE2"
+            asset: "DuckStation-x64-SSE2.AppImage"
+            artifact: "linux-x64-sse2-appimage"
+            cmakeoptions: "-DDISABLE_SSE4=ON"
     steps:
     - uses: actions/checkout@v5
       with:
@@ -36,7 +47,7 @@ jobs:
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
         echo '#pragma once' > src/scmversion/tag.h
-        echo '#define SCM_RELEASE_ASSET "DuckStation-x64.AppImage"' >> src/scmversion/tag.h
+        echo '#define SCM_RELEASE_ASSET "${{ matrix.asset }}"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
     - name: Tag as Preview Release
@@ -61,81 +72,13 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmakeoptions }} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
         cmake --build . --parallel
         cd ..
-        scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
+        scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps "${{ matrix.asset }}"
 
-    - name: Upload Qt AppImage
+    - name: Upload AppImage
       uses: actions/upload-artifact@v4
       with:
-        name: "linux-x64-appimage"
-        path: "DuckStation-x64.AppImage"
-
-
-  linux-x64-sse2-appimage-build:
-    name: "x64 SSE2"
-    runs-on: ubuntu-22.04
-    timeout-minutes: 120
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
-    - name: Install Packages
-      run: scripts/packaging/appimage/install-packages.sh
-
-    - name: Cache Dependencies
-      id: cache-deps
-      uses: actions/cache@v4
-      with:
-        path: ~/deps
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh', 'scripts/deps/versions') }}
-
-    - name: Build Dependencies
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      run: scripts/deps/build-dependencies-linux.sh "$HOME/deps"
-
-    - name: Build FFmpeg
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      run: scripts/deps/build-ffmpeg-linux.sh "$HOME/deps"
-
-    - name: Set Build Tag Asset
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-        echo '#define SCM_RELEASE_ASSET "DuckStation-x64-SSE2.AppImage"' >> src/scmversion/tag.h
-        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
-
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
-      run: |
-        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
-
-    - name: Tag as Rolling Release
-      if: github.ref == 'refs/heads/dev'
-      run: |
-        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
-
-    - name: Download Patch Archives
-      shell: bash
-      run: |
-        cd data/resources
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
-
-    - name: Compile Build
-      shell: bash
-      run: |
-        mkdir build
-        cd build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DDISABLE_SSE4=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
-        cmake --build . --parallel
-        cd ..
-        scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64-SSE2
-
-    - name: Upload Qt AppImage
-      uses: actions/upload-artifact@v4
-      with:
-        name: "linux-x64-sse2-appimage"
-        path: "DuckStation-x64-SSE2.AppImage"
+        name: "${{ matrix.artifact }}"
+        path: "${{ matrix.asset }}"

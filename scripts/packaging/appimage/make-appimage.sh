@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
@@ -27,7 +27,7 @@ fi
 ROOTDIR=$1
 BUILDDIR=$2
 DEPSDIR=$3
-NAME=$4
+ASSETNAME=$4
 
 BINARY=duckstation-qt
 APPDIRNAME=DuckStation.AppDir
@@ -188,5 +188,5 @@ mkdir -p "$OUTDIR/usr/share/metainfo"
 "$SCRIPTDIR/../generate-metainfo.sh" "$OUTDIR/usr/share/metainfo"
 
 echo "Generating AppImage..."
-rm -f "$NAME.AppImage"
-"$APPIMAGETOOL" -v --runtime-file "$APPIMAGERUNTIME" "$OUTDIR" "$NAME.AppImage"
+rm -f "$ASSETNAME"
+"$APPIMAGETOOL" -v --runtime-file "$APPIMAGERUNTIME" "$OUTDIR" "$ASSETNAME"

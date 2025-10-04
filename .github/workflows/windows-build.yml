@@ -5,10 +5,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  windows-x64-build:
-    name: "x64"
+  windows-build:
+    name: "${{ matrix.name }}"
     runs-on: windows-2022
     timeout-minutes: 120
+    strategy:
+      matrix:
+        include:
+          - name: "x64"
+            arch: "x64"
+            vcvars: "x64"
+            config: "ReleaseLTCG-Clang"
+            platform: "x64"
+            bindir: "x64"
+            assetname: "duckstation-windows-x64-release.zip"
+            updatername: "updater-x64-ReleaseLTCG.exe"
+          - name: "x64 SSE2"
+            arch: "x64-sse2"
+            vcvars: "x64"
+            config: "ReleaseLTCG-Clang-SSE2"
+            platform: "x64"
+            bindir: "x64"
+            assetname: "duckstation-windows-x64-sse2-release.zip"
+            updatername: "updater-x64-ReleaseLTCG-SSE2.exe"
+          - name: "ARM64"
+            arch: "arm64"
+            vcvars: "amd64_arm64"
+            config: "ReleaseLTCG-Clang"
+            platform: "ARM64"
+            bindir: "ARM64"
+            assetname: "duckstation-windows-arm64-release.zip"
+            updatername: "updater-ARM64-ReleaseLTCG.exe"
     steps:
     - uses: actions/checkout@v5
       with:
@@ -40,7 +67,7 @@ jobs:
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
-        echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
+        echo #define SCM_RELEASE_ASSET "${{ matrix.assetname }}" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
     - name: Tag as Preview Release
@@ -70,219 +97,30 @@ jobs:
         curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
         curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
-    - name: Compile x64 Release Build
+    - name: Compile ${{ matrix.name }} Release Build
       shell: cmd
       run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-        msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG-Clang
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vcvars }}
+        msbuild duckstation.sln -t:Build -p:Platform=${{ matrix.platform }};Configuration=${{ matrix.config }}
 
-    - name: Create x64 Symbols Archive
+    - name: Create ${{ matrix.name }} Symbols Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-release-symbols.zip ./bin/x64/*.pdb
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-${{ matrix.arch }}-release-symbols.zip ./bin/${{ matrix.bindir }}/*.pdb
 
     - name: Remove Extra Bloat Before Archiving
       shell: cmd
       run: |
-        del /Q bin\x64\*.pdb bin\x64\*.exp bin\x64\*.lib bin\x64\*.iobj bin\x64\*.ipdb bin\x64\common-tests*
-        rename bin\x64\updater-x64-ReleaseLTCG.exe updater.exe
+        del /Q bin\${{ matrix.bindir }}\*.pdb bin\${{ matrix.bindir }}\*.exp bin\${{ matrix.bindir }}\*.lib bin\${{ matrix.bindir }}\*.iobj bin\${{ matrix.bindir }}\*.ipdb bin\${{ matrix.bindir }}\common-tests*
+        rename bin\${{ matrix.bindir }}\${{ matrix.updatername }} updater.exe
 
-    - name: Create x64 Release Archive
+    - name: Create ${{ matrix.name }} Release Archive
       shell: cmd
       run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-release.zip ./bin/x64/*
+        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r ${{ matrix.assetname }} ./bin/${{ matrix.bindir }}/*
 
-    - name: Upload x64 Release Artifact
+    - name: Upload ${{ matrix.name }} Release Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "windows-x64"
-        path: "duckstation-windows-x64-release*.zip"
-
-
-  windows-x64-sse2-build:
-    name: "x64 SSE2"
-    runs-on: windows-2022
-    timeout-minutes: 120
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-
-    - name: Cache Dependencies
-      id: cache-deps
-      uses: actions/cache@v4
-      with:
-        path: |
-          dep/msvc/deps-arm64
-          dep/msvc/deps-x64
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat', 'scripts/deps/versions') }}
-
-    - name: Build x64 Dependencies
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      env:
-        DEBUG: 0
-      run: scripts/deps/build-dependencies-windows-x64.bat
-
-    - name: Build ARM64 Dependencies
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      env:
-        DEBUG: 0
-      run: scripts/deps/build-dependencies-windows-arm64.bat
-
-    - name: Set Build Tag Asset
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-        echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-sse2-release.zip" >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
-
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
-      shell: cmd
-      run: |
-        echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
-
-    - name: Tag as Rolling Release Build
-      if: github.ref == 'refs/heads/dev'
-      shell: cmd
-      run: |
-        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
-
-    - name: Update RC Version Fields
-      shell: cmd
-      run: |
-        cd src\scmversion
-        call update_rc_version.bat
-        cd ..\..
-        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
-
-    - name: Download Patch Archives
-      shell: cmd
-      run: |
-        cd data/resources
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
-
-    - name: Compile x64 Release Build
-      shell: cmd
-      run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-        msbuild duckstation.sln -t:Build -p:Platform=x64;Configuration=ReleaseLTCG-Clang-SSE2
-
-    - name: Create x64 Symbols Archive
-      shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-sse2-release-symbols.zip ./bin/x64/*.pdb
-
-    - name: Remove Extra Bloat Before Archiving
-      shell: cmd
-      run: |
-        del /Q bin\x64\*.pdb bin\x64\*.exp bin\x64\*.lib bin\x64\*.iobj bin\x64\*.ipdb bin\x64\common-tests*
-        rename bin\x64\updater-x64-ReleaseLTCG-SSE2.exe updater.exe
-
-    - name: Create x64 Release Archive
-      shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-x64-sse2-release.zip ./bin/x64/*
-
-    - name: Upload x64 Release Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "windows-x64-sse2"
-        path: "duckstation-windows-x64-sse2-release*.zip"
-
-
-  windows-arm64-build:
-    name: "ARM64"
-    runs-on: windows-2022
-    timeout-minutes: 120
-    steps:
-    - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0
-        submodules: true
-
-    - name: Cache Dependencies
-      id: cache-deps
-      uses: actions/cache@v4
-      with:
-        path: |
-          dep/msvc/deps-arm64
-          dep/msvc/deps-x64
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat', 'scripts/deps/versions') }}
-
-    - name: Build x64 Dependencies
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      env:
-        DEBUG: 0
-      run: scripts/deps/build-dependencies-windows-x64.bat
-
-    - name: Build ARM64 Dependencies
-      if: steps.cache-deps.outputs.cache-hit != 'true'
-      env:
-        DEBUG: 0
-      run: scripts/deps/build-dependencies-windows-arm64.bat
-
-    - name: Set Build Tag Asset
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      shell: cmd
-      run: |
-        echo #pragma once > src/scmversion/tag.h
-        echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
-        echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
-
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
-      shell: cmd
-      run: |
-        echo #define SCM_RELEASE_TAG "preview" >> src/scmversion/tag.h
-
-    - name: Tag as Rolling Release
-      if: github.ref == 'refs/heads/dev'
-      shell: cmd
-      run: |
-        echo #define SCM_RELEASE_TAG "latest" >> src/scmversion/tag.h
-
-    - name: Update RC Version Fields
-      shell: cmd
-      run: |
-        cd src\scmversion
-        call update_rc_version.bat
-        cd ..\..
-        git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
-
-    - name: Download Patch Archives
-      shell: cmd
-      run: |
-        cd data/resources
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl --retry 5 --retry-all-errors -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
-
-    - name: Compile ARM64 Release Build
-      shell: cmd
-      run: |
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64_arm64
-        msbuild duckstation.sln -t:Build -p:Platform=ARM64;Configuration=ReleaseLTCG-Clang
-
-    - name: Create ARM64 symbols archive
-      shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-arm64-release-symbols.zip ./bin/ARM64/*.pdb
-
-    - name: Remove Extra Bloat Before Archiving
-      shell: cmd
-      run: |
-        del /Q bin\ARM64\*.pdb bin\ARM64\*.exp bin\ARM64\*.lib bin\ARM64\*.iobj bin\ARM64\*.ipdb bin\ARM64\common-tests*
-        rename bin\ARM64\updater-ARM64-ReleaseLTCG.exe updater.exe
-
-    - name: Create ARM64 Release Archive
-      shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" a -mx9 -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
-
-    - name: Upload ARM64 Release Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "windows-arm64"
-        path: "duckstation-windows-arm64-release*.zip"
+        name: "windows-${{ matrix.arch }}"
+        path: "${{ matrix.assetname }}*"
