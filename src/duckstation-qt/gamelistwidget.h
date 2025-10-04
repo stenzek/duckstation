@@ -111,7 +111,7 @@ public:
   int getCoverArtSize() const;
   int getCoverArtSpacing() const;
   void refreshCovers();
-  void updateCacheSize(int num_rows, int num_columns);
+  void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 
   qreal getDevicePixelRatio() const { return m_device_pixel_ratio; }
   void setDevicePixelRatio(qreal dpr);
@@ -237,6 +237,7 @@ protected:
 
 private:
   GameListModel* m_model = nullptr;
+  GameListSortModel* m_sort_model = nullptr;
   int m_horizontal_offset = 0;
   int m_vertical_offset = 0;
 };

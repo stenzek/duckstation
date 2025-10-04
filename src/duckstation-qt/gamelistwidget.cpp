@@ -323,13 +323,32 @@ void GameListModel::refreshCovers()
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DecorationRole});
 }
 
-void GameListModel::updateCacheSize(int num_rows, int num_columns)
+void GameListModel::updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model,
+                                    int top_left_row)
 {
   // Add additional buffer zone to the rows, since Qt will grab them early when scrolling.
   const int num_items = (num_rows + MIN_COVER_CACHE_ROW_BUFFER) * num_columns;
 
   // This is a bit conversative, since it doesn't consider padding, but better to be over than under.
-  m_cover_pixmap_cache.SetMaxCapacity(static_cast<int>(std::max(num_items, MIN_COVER_CACHE_SIZE)));
+  const int cache_size = std::max(num_items, MIN_COVER_CACHE_SIZE);
+  if (static_cast<u32>(cache_size) < m_cover_pixmap_cache.GetSize())
+  {
+    // If we're removing items, make sure we try to keep those currently in view in the cache.
+    // Otherwise we'll have flicker of the loading pixmap as they get evicted and reloaded.
+    const auto lock = GameList::GetLock();
+    for (int row = 0; row < cache_size; row++)
+    {
+      const QModelIndex real_index = sort_model->mapToSource(sort_model->index(top_left_row + row, Column_Cover));
+      if (!real_index.isValid())
+        continue;
+
+      const GameList::Entry* ge = GameList::GetEntryByIndex(static_cast<u32>(real_index.row()));
+      if (ge)
+        m_cover_pixmap_cache.Lookup(ge->path);
+    }
+  }
+
+  m_cover_pixmap_cache.SetMaxCapacity(static_cast<u32>(cache_size));
 }
 
 void GameListModel::setDevicePixelRatio(qreal dpr)
@@ -2345,7 +2364,7 @@ void GameListListView::clearAnimatedGameIconDelegate()
 }
 
 GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent)
-  : QListView(parent), m_model(model)
+  : QListView(parent), m_model(model), m_sort_model(sort_model)
 {
   setModel(sort_model);
   setModelColumn(GameListModel::Column_Cover);
@@ -2415,7 +2434,8 @@ void GameListGridView::updateLayout()
 
   setGridSize(QSize(item_width, item_height));
 
-  m_model->updateCacheSize(num_rows, num_columns);
+  const int top_left_row = (verticalScrollBar()->value() / item_height) * num_columns;
+  m_model->updateCacheSize(num_rows, num_columns, m_sort_model, top_left_row);
 
   m_horizontal_offset = margin;
   m_vertical_offset = item_spacing;
