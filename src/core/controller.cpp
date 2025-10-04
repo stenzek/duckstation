@@ -106,11 +106,6 @@ std::optional<u32> Controller::GetAnalogInputBytes() const
   return std::nullopt;
 }
 
-u32 Controller::GetInputOverlayIconColor() const
-{
-  return 0xFFFFFFFFu;
-}
-
 void Controller::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
 }

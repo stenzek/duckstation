@@ -57,7 +57,6 @@ public:
   float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
-  u32 GetInputOverlayIconColor() const override;
 
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;

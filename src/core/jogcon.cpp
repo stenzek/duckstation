@@ -171,11 +171,6 @@ void JogCon::ResetTransferState()
   m_command_step = 0;
 }
 
-u32 JogCon::GetInputOverlayIconColor() const
-{
-  return m_jogcon_mode ? 0xFF2534F0u : 0xFFCCCCCCu;
-}
-
 void JogCon::SetJogConMode(bool enabled, bool show_message)
 {
   if (m_jogcon_mode == enabled)

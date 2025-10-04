@@ -769,6 +769,9 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
 
 void ImGuiManager::UpdateInputOverlay()
 {
+  static constexpr u32 NORMAL_ICON_COLOR = 0xFFCCCCCCu;
+  static constexpr u32 ALTERNATE_ICON_COLOR = 0xFF2534F0u;
+
   u32 num_active_pads = 0;
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
   {
@@ -798,7 +801,7 @@ void ImGuiManager::UpdateInputOverlay()
     pstate.slot = Truncate8(slot);
     pstate.multitap = multitap;
     pstate.ctype = ctype;
-    pstate.icon_color = controller->GetInputOverlayIconColor();
+    pstate.icon_color = NORMAL_ICON_COLOR;
 
     const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(ctype);
     for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
@@ -815,6 +818,14 @@ void ImGuiManager::UpdateInputOverlay()
       {
         DebugAssert(bidx < InputManager::MAX_MOTORS_PER_PAD);
         pstate.vibration_state[bidx] = controller->GetVibrationMotorState(bidx);
+      }
+      else if (bi.type == InputBindingInfo::Type::LED)
+      {
+        const float intensity = controller->GetLEDState(bidx);
+        pstate.icon_color = (GSVector4::cxpr_rgba32(NORMAL_ICON_COLOR) + (GSVector4::cxpr_rgba32(ALTERNATE_ICON_COLOR) -
+                                                                          GSVector4::cxpr_rgba32(NORMAL_ICON_COLOR)) *
+                                                                           GSVector4(intensity))
+                              .rgba32();
       }
     }
   }

@@ -315,11 +315,6 @@ std::optional<u32> AnalogController::GetAnalogInputBytes() const
          m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
 }
 
-u32 AnalogController::GetInputOverlayIconColor() const
-{
-  return m_analog_mode ? 0xFF2534F0u : 0xFFCCCCCCu;
-}
-
 void AnalogController::ResetTransferState()
 {
   if (m_analog_toggle_queued)
