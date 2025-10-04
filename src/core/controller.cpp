@@ -217,20 +217,10 @@ std::string Controller::GetSettingsSection(u32 pad)
 
 bool Controller::InCircularDeadzone(float deadzone, float pos_x, float pos_y)
 {
-  if (pos_x == 0.0f && pos_y == 0.0f)
-    return false;
+  // Calculate the actual distance from center, and compare to deadzone radius.
+  const float distance = std::sqrt(pos_x * pos_x + pos_y * pos_y);
+  return (distance <= deadzone);
 
-  // Compute the angle at the given position in the stick's square bounding box.
-  const float theta = std::atan2(pos_y, pos_x);
-
-  // Compute the position that the edge of the circle would be at, given the angle.
-  const float dz_x = std::cos(theta) * deadzone;
-  const float dz_y = std::sin(theta) * deadzone;
-
-  // We're in the deadzone if our position is less than the circle edge.
-  const bool in_x = (pos_x < 0.0f) ? (pos_x > dz_x) : (pos_x <= dz_x);
-  const bool in_y = (pos_y < 0.0f) ? (pos_y > dz_y) : (pos_y <= dz_y);
-  return (in_x && in_y);
 }
 
 bool Controller::CanStartInAnalogMode(ControllerType ctype)
