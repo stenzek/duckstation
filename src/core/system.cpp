@@ -2902,7 +2902,7 @@ size_t System::GetMaxSaveStateSize()
   // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
   static constexpr u32 MAX_2MB_SAVE_STATE_SIZE = 5 * 1024 * 1024;
   static constexpr u32 MAX_8MB_SAVE_STATE_SIZE = 11 * 1024 * 1024;
-  const bool is_8mb_ram = (System::IsValid() ? (Bus::g_ram_size > Bus::RAM_2MB_SIZE) : g_settings.enable_8mb_ram);
+  const bool is_8mb_ram = (System::IsValid() ? (Bus::g_ram_size > Bus::RAM_2MB_SIZE) : g_settings.cpu_enable_8mb_ram);
   return is_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE;
 }
 
@@ -4717,7 +4717,7 @@ void System::SetTaintsFromSettings()
     SetTaint(Taint::CPUOverclock);
   if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
     SetTaint(Taint::ForceFrameTimings);
-  if (g_settings.enable_8mb_ram)
+  if (g_settings.cpu_enable_8mb_ram)
     SetTaint(Taint::RAM8MB);
   if (Cheats::GetActivePatchCount() > 0)
     SetTaint(Taint::Patches);
@@ -4805,7 +4805,7 @@ void System::WarnAboutUnsafeSettings()
           TRANSLATE_SV("System", "PGXP Geometry Tolerance is not set to default. This may cause rendering errors."));
       }
     }
-    if (g_settings.enable_8mb_ram)
+    if (g_settings.cpu_enable_8mb_ram)
     {
       append(ICON_EMOJI_WARNING,
              TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
@@ -4848,7 +4848,7 @@ void System::WarnAboutUnsafeSettings()
 
     if (g_settings.cpu_overclock_active)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-    if (g_settings.enable_8mb_ram)
+    if (g_settings.cpu_enable_8mb_ram)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
     if (g_settings.gpu_resolution_scale != 1)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
@@ -4881,7 +4881,7 @@ void System::WarnAboutUnsafeSettings()
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
     if (g_settings.texture_replacements.enable_vram_write_replacements)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-    if (g_settings.use_old_mdec_routines)
+    if (g_settings.mdec_use_old_routines)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
     if (g_settings.pio_device_type != PIODeviceType::None)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));

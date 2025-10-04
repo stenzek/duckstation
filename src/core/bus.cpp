@@ -383,7 +383,7 @@ void Bus::CleanupMemoryMap()
 
 void Bus::Initialize()
 {
-  SetRAMSize(g_settings.enable_8mb_ram);
+  SetRAMSize(g_settings.cpu_enable_8mb_ram);
   MapFastmemViews();
 }
 

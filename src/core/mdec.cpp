@@ -554,7 +554,7 @@ bool MDEC::DecodeMonoMacroblock()
   if (!s_state.data_out_fifo.IsEmpty())
     return false;
 
-  if (g_settings.use_old_mdec_routines) [[unlikely]]
+  if (g_settings.mdec_use_old_routines) [[unlikely]]
   {
     if (!DecodeRLE_Old(s_state.blocks[0].data(), s_state.iq_y.data()))
       return false;
@@ -585,7 +585,7 @@ bool MDEC::DecodeMonoMacroblock()
 
 bool MDEC::DecodeColoredMacroblock()
 {
-  if (g_settings.use_old_mdec_routines) [[unlikely]]
+  if (g_settings.mdec_use_old_routines) [[unlikely]]
   {
     for (; s_state.current_block < NUM_BLOCKS; s_state.current_block++)
     {
@@ -762,7 +762,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_15Bit:
     {
-      if (g_settings.use_old_mdec_routines) [[unlikely]]
+      if (g_settings.mdec_use_old_routines) [[unlikely]]
       {
         const u16 a = ZeroExtend16(s_state.status.data_output_bit15.GetValue()) << 15;
         for (u32 i = 0; i < static_cast<u32>(s_state.block_rgb.size());)

@@ -294,21 +294,21 @@ struct Settings : public GPUSettings
   bool cpu_recompiler_memory_exceptions : 1 = false;
   bool cpu_recompiler_block_linking : 1 = true;
   bool cpu_recompiler_icache : 1 = false;
+  bool cpu_enable_8mb_ram : 1 = false;
 
-  bool sync_to_host_refresh_rate : 1 = false;
-  bool inhibit_screensaver : 1 = true;
-  bool pause_on_focus_loss : 1 = false;
-  bool pause_on_controller_disconnection : 1 = false;
-  bool save_state_on_exit : 1 = true;
-  bool create_save_state_backups : 1 = DEFAULT_SAVE_STATE_BACKUPS;
-  bool confim_power_off : 1 = true;
-  bool load_devices_from_save_states : 1 = false;
-  bool apply_compatibility_settings : 1 = true;
-  bool apply_game_settings : 1 = true;
-  bool disable_all_enhancements : 1 = false;
-  bool enable_discord_presence : 1 = false;
+  bool mdec_use_old_routines : 1 = false;
+  bool mdec_disable_cdrom_speedup : 1 = false;
 
-  bool rewind_enable : 1 = false;
+  bool pcdrv_enable : 1 = false;
+  bool pcdrv_enable_writes : 1 = false;
+
+  bool pio_switch_active : 1 = true;
+  bool pio_flash_write_enable : 1 = false;
+
+  bool sio_redirect_to_tty : 1 = false;
+
+  bool memory_card_use_playlist_title : 1 = true;
+  bool memory_card_fast_forward_access : 1 = false;
 
   bool cdrom_region_check : 1 = false;
   bool cdrom_subq_skew : 1 = false;
@@ -317,39 +317,44 @@ struct Settings : public GPUSettings
   bool cdrom_mute_cd_audio : 1 = false;
   bool cdrom_auto_disc_change : 1 = false;
 
-  u16 rewind_save_slots = 10;
+  bool bios_tty_logging : 1 = false;
+  bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
+  bool bios_fast_forward_boot : 1 = false;
+
+  bool rewind_enable : 1 = false;
+
+  bool apply_compatibility_settings : 1 = true;
+  bool apply_game_settings : 1 = true;
+  bool load_devices_from_save_states : 1 = false;
+
   u8 runahead_frames = 0;
+  u16 rewind_save_slots = 10;
 
   SaveStateCompressionMode save_state_compression = DEFAULT_SAVE_STATE_COMPRESSION_MODE;
+
+  u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
+  CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
 
   u8 cdrom_read_speedup = 1;
   u8 cdrom_seek_speedup = 1;
   u32 cdrom_max_seek_speedup_cycles = DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES;
   u32 cdrom_max_read_speedup_cycles = DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES;
 
-  u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
-  CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
-
   u8 audio_output_volume = 100;
   u8 audio_fast_forward_volume = 100;
 
   bool audio_output_muted : 1 = false;
 
-  bool use_old_mdec_routines : 1 = false;
-  bool mdec_disable_cdrom_speedup : 1 = false;
-  bool pcdrv_enable : 1 = false;
+  bool sync_to_host_refresh_rate : 1 = false;
+  bool inhibit_screensaver : 1 = true;
+  bool pause_on_focus_loss : 1 = false;
+  bool pause_on_controller_disconnection : 1 = false;
+  bool save_state_on_exit : 1 = true;
+  bool create_save_state_backups : 1 = DEFAULT_SAVE_STATE_BACKUPS;
+  bool confim_power_off : 1 = true;
+  bool disable_all_enhancements : 1 = false;
+  bool enable_discord_presence : 1 = false;
   bool export_shared_memory : 1 = false;
-
-  bool bios_tty_logging : 1 = false;
-  bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
-  bool bios_fast_forward_boot : 1 = false;
-  bool enable_8mb_ram : 1 = false;
-  bool memory_card_use_playlist_title : 1 = true;
-  bool memory_card_fast_forward_access : 1 = false;
-  bool pio_switch_active : 1 = true;
-  bool pio_flash_write_enable : 1 = false;
-  bool sio_redirect_to_tty : 1 = false;
-  bool pcdrv_enable_writes : 1 = false;
 
   // achievements
   bool achievements_enabled : 1 = false;

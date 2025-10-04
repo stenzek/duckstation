@@ -297,10 +297,10 @@ void Cheats::CheatCode::ApplySettingOverrides()
     DEV_LOG("Disabling widescreen rendering from {} patch.", GetName());
     g_settings.gpu_widescreen_hack = false;
   }
-  if (m_metadata.enable_8mb_ram && !g_settings.enable_8mb_ram)
+  if (m_metadata.enable_8mb_ram && !g_settings.cpu_enable_8mb_ram)
   {
     DEV_LOG("Enabling 8MB ram from {} patch.", GetName());
-    g_settings.enable_8mb_ram = true;
+    g_settings.cpu_enable_8mb_ram = true;
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto())
   {
