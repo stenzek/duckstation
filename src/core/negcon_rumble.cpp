@@ -125,7 +125,7 @@ float NeGconRumble::GetBindState(u32 index) const
   }
   else if (index >= MOTOR_BIND_START_INDEX)
   {
-    return m_motor_state[index - MOTOR_BIND_START_INDEX] * (1.0f / 255.0f);
+    return GetMotorStrength(index - MOTOR_BIND_START_INDEX);
   }
   else if (index >= (HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::I)))
   {
@@ -279,16 +279,21 @@ void NeGconRumble::SetMotorState(u32 motor, u8 value)
   {
     m_motor_state[motor] = value;
 
-    // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
-    const u8 state = m_motor_state[motor];
-    const double x = static_cast<double>(std::clamp<s32>(static_cast<s32>(state) + m_vibration_bias[motor], 0, 255));
-    const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
-                            156.82454281087692 * x + 3.637978807091713e-11;
-
-    const float hvalue = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
-    DEV_LOG("Set {} motor to {} (raw {})", (motor == LargeMotor) ? "large" : "small", hvalue, state);
+    const float hvalue = GetMotorStrength(motor);
+    DEV_LOG("Set {} motor to {} (raw {})", (motor == LargeMotor) ? "large" : "small", hvalue, m_motor_state[motor]);
     InputManager::SetPadVibrationIntensity(m_index, MOTOR_BIND_START_INDEX + motor, hvalue);
   }
+}
+
+float NeGconRumble::GetMotorStrength(u32 motor) const
+{
+  // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
+  const u8 state = m_motor_state[motor];
+  const double x = static_cast<double>(std::clamp<s32>(static_cast<s32>(state) + m_vibration_bias[motor], 0, 255));
+  const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
+                          156.82454281087692 * x + 3.637978807091713e-11;
+
+  return (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
 }
 
 u8 NeGconRumble::GetExtraButtonMaskLSB() const

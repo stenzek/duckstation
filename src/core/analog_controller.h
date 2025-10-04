@@ -124,6 +124,7 @@ private:
   void SetAnalogMode(bool enabled, bool show_message);
   void ProcessAnalogModeToggle();
   void SetMotorState(u32 motor, u8 value);
+  float GetMotorStrength(u32 motor) const;
   u16 GetExtraButtonMask() const;
   void ResetRumbleConfig();
   void Poll();
