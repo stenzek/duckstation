@@ -776,8 +776,6 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       {
         case Column_Icon:
           return QSize(getIconColumnWidth(), m_row_height);
-        case Column_Cover:
-          return getCoverArtSize();
         default:
           return {};
       }
