@@ -4,7 +4,6 @@
 #pragma once
 
 #include "input_types.h"
-#include "settings.h"
 #include "types.h"
 
 #include <array>
@@ -18,6 +17,8 @@
 
 class SettingsInterface;
 class StateWrapper;
+
+struct SettingInfo;
 
 class Controller
 {

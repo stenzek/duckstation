@@ -427,17 +427,9 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
         static_cast<s64>(
           QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
 
-      // strip sha off the version
-      std::string_view current_version = g_scm_tag_str;
-      if (std::string_view::size_type pos = current_version.find('-'); pos != std::string_view::npos)
-      {
-        if (std::string_view::size_type pos2 = current_version.find('-', pos + 1); pos2 != std::string_view::npos)
-          current_version = current_version.substr(0, pos2);
-      }
-
       m_ui.currentVersion->setText(
         tr("Current Version: %1 (%2)")
-          .arg(QtUtils::StringViewToQString(TinyString::from_format("{}/{}", current_version, THIS_RELEASE_TAG)))
+          .arg(QtUtils::StringViewToQString(TinyString::from_format("{}/{}", g_scm_version_str, THIS_RELEASE_TAG)))
           .arg(current_date));
       m_ui.newVersion->setText(
         tr("New Version: %1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));

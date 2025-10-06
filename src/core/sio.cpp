@@ -4,6 +4,7 @@
 #include "sio.h"
 #include "bus.h"
 #include "controller.h"
+#include "settings.h"
 
 #include "util/state_wrapper.h"
 
