@@ -90,7 +90,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &InterfaceSettingsWidget::onLanguageChanged);
 
-    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_tag_str).arg(g_scm_date_str));
+    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
   }
 
   onRenderToSeparateWindowChanged();

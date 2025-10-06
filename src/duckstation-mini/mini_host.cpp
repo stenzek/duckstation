@@ -1178,7 +1178,7 @@ std::string MiniHost::GetWindowTitle(const std::string& game_title)
 #endif
 
   if (System::IsShutdown() || game_title.empty())
-    return fmt::format("DuckStation {}{}", g_scm_tag_str, suffix);
+    return fmt::format("DuckStation {}{}", g_scm_version_str, suffix);
   else
     return fmt::format("{}{}", game_title, suffix);
 }

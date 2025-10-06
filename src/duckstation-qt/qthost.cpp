@@ -298,7 +298,7 @@ bool QtHost::IsRunningOnWayland()
 
 QString QtHost::GetAppNameAndVersion()
 {
-  return QStringLiteral("DuckStation %1").arg(QLatin1StringView(g_scm_tag_str));
+  return QStringLiteral("DuckStation %1").arg(QLatin1StringView(g_scm_version_str));
 }
 
 QString QtHost::GetAppConfigSuffix()
