@@ -1150,42 +1150,94 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
 {
   System::FlushSaveStates();
 
-  FILESYSTEM_STAT_DATA sd;
   std::string save_state_path = System::GetGameSaveStatePath(serial, -1);
-  if (save_state_path.empty() || !FileSystem::StatFile(save_state_path.c_str(), &sd))
+  if (save_state_path.empty() || !FileSystem::FileExists(save_state_path.c_str()))
     return false;
 
-  QMessageBox* msgbox = new QMessageBox(this);
-  msgbox->setIcon(QMessageBox::Question);
-  msgbox->setWindowTitle(tr("Load Resume State"));
-  msgbox->setWindowModality(Qt::WindowModal);
-  msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
-  msgbox->setText(
-    tr("A resume save state was found for this game, saved at:\n\n%1.\n\nDo you want to load this state, "
-       "or start from a fresh boot?")
-      .arg(QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(sd.ModificationTime))));
+  std::optional<ExtendedSaveStateInfo> ssi = System::GetExtendedSaveStateInfo(save_state_path.c_str());
+  if (!ssi.has_value())
+    return false;
 
-  QPushButton* load = msgbox->addButton(tr("Load State"), QMessageBox::AcceptRole);
-  QPushButton* boot = msgbox->addButton(tr("Fresh Boot"), QMessageBox::RejectRole);
-  QPushButton* delboot = msgbox->addButton(tr("Delete And Boot"), QMessageBox::RejectRole);
-  msgbox->addButton(QMessageBox::Cancel);
-  msgbox->setDefaultButton(load);
+  QDialog* const dlg = new QDialog(this);
+  dlg->setWindowTitle(tr("Load Resume State"));
+  dlg->setWindowModality(Qt::WindowModal);
+  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
 
-  connect(load, &QPushButton::clicked, [this, path, save_state_path]() mutable {
+  QVBoxLayout* const main_layout = new QVBoxLayout(dlg);
+  main_layout->setSpacing(10);
+
+  QHBoxLayout* const heading_layout = new QHBoxLayout();
+  heading_layout->setSpacing(10);
+  QLabel* const heading_icon = new QLabel(dlg);
+  heading_icon->setPixmap(style()->standardIcon(QStyle::SP_MessageBoxQuestion).pixmap(32, 32));
+  heading_layout->addWidget(heading_icon, 0, Qt::AlignTop);
+
+  QLabel* const heading_text = new QLabel(dlg);
+  heading_text->setText(
+    tr("<strong>Resume Game</strong><br>Do you want to load this state, or start from a fresh boot?"));
+  heading_layout->addWidget(heading_text, 1, Qt::AlignTop);
+  main_layout->addLayout(heading_layout);
+
+  QLabel* const timestamp_label = new QLabel(dlg);
+  timestamp_label->setText(
+    tr("Save was created on %1.")
+      .arg(QtHost::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(ssi->timestamp))));
+  timestamp_label->setWordWrap(true);
+  timestamp_label->setAlignment(Qt::AlignHCenter);
+  main_layout->addWidget(timestamp_label);
+
+  if (ssi->screenshot.IsValid())
+  {
+    std::optional<Image> image;
+    if (ssi->screenshot.GetFormat() != ImageFormat::RGBA8)
+      image = ssi->screenshot.ConvertToRGBA8();
+    else
+      image = std::move(ssi->screenshot);
+
+    if (image.has_value())
+    {
+      // Convert the screenshot to a QImage, then to a QPixmap, then scale it down to something reasonable.
+      const QPixmap pixmap =
+        QPixmap::fromImage(QImage(static_cast<uchar*>(image->GetPixels()), static_cast<int>(image->GetWidth()),
+                                  static_cast<int>(image->GetHeight()), QImage::Format_RGBA8888))
+          .scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      QLabel* const image_label = new QLabel(dlg);
+      image_label->setPixmap(pixmap);
+      image_label->setAlignment(Qt::AlignHCenter);
+      main_layout->addWidget(image_label);
+    }
+  }
+
+  QDialogButtonBox* const bbox = new QDialogButtonBox(Qt::Horizontal, dlg);
+
+  QPushButton* const load = bbox->addButton(tr("Load State"), QDialogButtonBox::AcceptRole);
+  QPushButton* const boot = bbox->addButton(tr("Fresh Boot"), QDialogButtonBox::RejectRole);
+  QPushButton* const delboot = bbox->addButton(tr("Delete And Boot"), QDialogButtonBox::RejectRole);
+  QPushButton* const cancel = bbox->addButton(QDialogButtonBox::Cancel);
+  load->setDefault(true);
+
+  connect(load, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
     startFile(std::move(path), std::move(save_state_path), std::nullopt);
+    dlg->accept();
   });
-  connect(boot, &QPushButton::clicked,
-          [this, path]() mutable { startFile(std::move(path), std::nullopt, std::nullopt); });
-  connect(delboot, &QPushButton::clicked, [this, path, save_state_path]() mutable {
+  connect(boot, &QPushButton::clicked, [this, dlg, path]() mutable {
+    startFile(std::move(path), std::nullopt, std::nullopt);
+    dlg->accept();
+  });
+  connect(delboot, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
     if (!FileSystem::DeleteFile(save_state_path.c_str()))
     {
       QMessageBox::critical(this, tr("Error"),
                             tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
     }
     startFile(std::move(path), std::nullopt, std::nullopt);
+    dlg->accept();
   });
+  connect(cancel, &QPushButton::clicked, dlg, &QDialog::reject);
 
-  msgbox->show();
+  main_layout->addWidget(bbox);
+
+  dlg->show();
   return true;
 }
 
