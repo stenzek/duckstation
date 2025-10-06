@@ -1292,6 +1292,14 @@ Olästa meddelanden: {}</translation>
         <source>Allows you to use the right analog stick to control the shoulder buttons, as well as the buttons.</source>
         <translation>Låter dig använda den högra analoga spaken för att styra axelknapparna, samt knapparna.</translation>
     </message>
+    <message>
+        <source>Analog LED</source>
+        <translation>Analog LED</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Mode LED</translation>
+    </message>
 </context>
 <context>
     <name>AnalogJoystick</name>
@@ -1442,6 +1450,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Inverts the direction of the right analog stick.</source>
         <translation>Inverterar riktningen för den högra analoga spaken.</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Mode LED</translation>
     </message>
 </context>
 <context>
@@ -2647,6 +2659,10 @@ Den här varningen visas bara en gång.</translation>
         <source>L3</source>
         <translation>L3</translation>
     </message>
+    <message>
+        <source>Analog LED</source>
+        <translation>Analog LED</translation>
+    </message>
 </context>
 <context>
     <name>ControllerBindingWidget_AnalogJoystick</name>
@@ -3244,28 +3260,50 @@ Den här varningen visas bara en gång.</translation>
         <source>Advanced SDL Options</source>
         <translation>Avancerade SDL-alternativ</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>No SDL devices are currently connected.</source>
+        <translation>Inga SDL-enheter är för närvarande anslutna.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Controller LED Settings&lt;/strong&gt;&lt;br&gt;
+The &quot;alternate&quot; color is used when analog mode is active.</source>
+        <translation>&lt;strong&gt;Inställningar för kontrollerns LED-lampor&lt;/strong&gt;&lt;br&gt;
+Den ”alternativa” färgen används när analogt läge är aktivt.</translation>
+    </message>
+    <message>
+        <source>Alternate Mode:</source>
+        <translation>Alternativt läge:</translation>
+    </message>
+    <message>
+        <source>Normal Mode:</source>
+        <translation>Normalt läge:</translation>
+    </message>
 </context>
 <context>
     <name>ControllerLEDSettingsDialog</name>
     <message>
         <source>Controller LED Settings</source>
-        <translation>LED-inställningar för handkontroller</translation>
+        <translation type="vanished">LED-inställningar för handkontroller</translation>
     </message>
     <message>
         <source>SDL-0 LED</source>
-        <translation>SDL-0 LED</translation>
+        <translation type="vanished">SDL-0 LED</translation>
     </message>
     <message>
         <source>SDL-1 LED</source>
-        <translation>SDL-1 LED</translation>
+        <translation type="vanished">SDL-1 LED</translation>
     </message>
     <message>
         <source>SDL-2 LED</source>
-        <translation>SDL-2 LED</translation>
+        <translation type="vanished">SDL-2 LED</translation>
     </message>
     <message>
         <source>SDL-3 LED</source>
-        <translation>SDL-3 LED</translation>
+        <translation type="vanished">SDL-3 LED</translation>
     </message>
 </context>
 <context>
@@ -4342,7 +4380,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Rewind/Runahead</source>
-        <translation>Spola tillbaka/Runahead</translation>
+        <translation type="vanished">Spola tillbaka/Runahead</translation>
     </message>
     <message>
         <source>Enable Rewinding</source>
@@ -4534,6 +4572,18 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     <message>
         <source>Emulation Speed</source>
         <translation>Emuleringshastighet</translation>
+    </message>
+    <message>
+        <source>Rewind</source>
+        <translation>Spola tillbaka</translation>
+    </message>
+    <message>
+        <source>Enable for Analog Input</source>
+        <translation>Aktivera för analog inmatning</translation>
+    </message>
+    <message>
+        <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
+        <translation>Aktiverar runahead när analog inmatning ändras, vilket avsevärt ökar systemkraven.</translation>
     </message>
 </context>
 <context>
@@ -8076,6 +8126,18 @@ ${serial}: Serienumret för spelet.</translation>
         <source>Yes</source>
         <translation>Ja</translation>
     </message>
+    <message>
+        <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
+        <translation>Aktiverar runahead när analog inmatning ändras, vilket avsevärt ökar systemkraven.</translation>
+    </message>
+    <message>
+        <source>No LED</source>
+        <translation>Ingen LED</translation>
+    </message>
+    <message>
+        <source>Runahead for Analog Input</source>
+        <translation>Runahead för analog inmatning</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -11478,6 +11540,22 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <source>Push Button/Axis... [%1]</source>
         <translation>Tryckknapp/Axlar... [%1]</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>No devices with vibration motors were detected.</source>
+        <translation>Inga enheter med vibrationsmotorer hittades.</translation>
+    </message>
+    <message>
+        <source>No devices with LEDs were detected.</source>
+        <translation>Inga enheter med LED hittades.</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Select the device and effect to map this bind to.</source>
+        <translation>&lt;strong&gt;%1&lt;/strong&gt;&lt;br&gt;Välj enheten och effekten som denna bindning ska mappas till.</translation>
+    </message>
 </context>
 <context>
     <name>InputManager</name>
@@ -11502,15 +11580,15 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <name>InputVibrationBindingWidget</name>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>No devices with vibration motors were detected.</source>
-        <translation>Inga enheter med vibrationsmotorer hittades.</translation>
+        <translation type="vanished">Inga enheter med vibrationsmotorer hittades.</translation>
     </message>
     <message>
         <source>Select vibration motor for %1.</source>
-        <translation>Välj vibrationsmotor för %1.</translation>
+        <translation type="vanished">Välj vibrationsmotor för %1.</translation>
     </message>
 </context>
 <context>
@@ -11795,6 +11873,10 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>Sets the deadzone for holding the wheel at the set position, i.e. when it will not trigger an effect.</source>
         <translation>Ställer in dödläget för när ratten hålls på inställd position, t.ex när den inte ska utlösa en effekt.</translation>
+    </message>
+    <message>
+        <source>Mode LED</source>
+        <translation>Mode LED</translation>
     </message>
 </context>
 <context>
@@ -12726,7 +12808,7 @@ Denna åtgärd kan inte ångras.</translation>
 %1.
 
 Do you want to load this state, or start from a fresh boot?</source>
-        <translation>Ett sparat tillstånd hittades för detta spel som sparades:
+        <translation type="vanished">Ett sparat tillstånd hittades för detta spel som sparades:
 
 %1.
 
@@ -13343,6 +13425,14 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Darker Fusion</source>
         <translation>Darker Fusion</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;Resume Game&lt;/strong&gt;&lt;br&gt;Do you want to load this state, or start from a fresh boot?</source>
+        <translation>&lt;strong&gt;Återuppta spel&lt;/strong&gt;&lt;br&gt;Vill du läsa  in detta tillstånd eller starta om från början?</translation>
+    </message>
+    <message>
+        <source>Save was created on %1.</source>
+        <translation>Sparningen skapades %1.</translation>
     </message>
 </context>
 <context>
@@ -17152,6 +17242,10 @@ Detta kan bero på att din GPU inte har stöd för vald renderare ({1}) eller p�
     <message>
         <source>No disc found for serial {}.</source>
         <translation>Ingen skiva hittades för serienummer {}.</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Tolerance is not set to default. This may cause rendering errors.</source>
+        <translation>PGXP-geometritoleransen är inte inställd på standardvärdet. Detta kan orsaka renderingsfel.</translation>
     </message>
 </context>
 <context>
