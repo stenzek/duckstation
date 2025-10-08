@@ -384,6 +384,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cdrom_subq_skew = si.GetBoolValue("CDROM", "SubQSkew", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
+  cdrom_ignore_host_subcode = si.GetBoolValue("CDROM", "IgnoreHostSubcode", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
   cdrom_auto_disc_change = si.GetBoolValue("CDROM", "AutoDiscChange", false);
   cdrom_read_speedup =
@@ -714,6 +715,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
+  si.SetBoolValue("CDROM", "IgnoreHostSubcode", cdrom_ignore_host_subcode);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
   si.SetBoolValue("CDROM", "AutoDiscChange", cdrom_auto_disc_change);
   si.SetUIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
