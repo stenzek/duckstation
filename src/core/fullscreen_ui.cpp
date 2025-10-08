@@ -4161,7 +4161,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINTBRUSH, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                        "Dark", s_theme_names, s_theme_values, true,
+                        Host::GetDefaultFullscreenUITheme(), s_theme_names, s_theme_values, true,
                         [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::SetTheme); });
 
   if (const TinyString current_value =
