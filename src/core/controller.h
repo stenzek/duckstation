@@ -92,12 +92,6 @@ public:
   static const ControllerInfo& GetControllerInfo(ControllerType type);
   static const ControllerInfo* GetControllerInfo(std::string_view name);
 
-  /// Applies an analog deadzone/sensitivity.
-  static float ApplyAnalogDeadzoneSensitivity(float deadzone, float sensitivity, float value)
-  {
-    return (value < deadzone) ? 0.0f : ((value - deadzone) / (1.0f - deadzone) * sensitivity);
-  }
-
   /// Returns true if the specified coordinates are inside a circular deadzone.
   static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
 
