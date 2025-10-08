@@ -418,7 +418,7 @@ bool Cheats::SearchCheatArchive(CheatArchive& archive, std::string_view serial, 
   }
   if (data.has_value())
   {
-    f(std::move(zip_filename), std::move(data.value()), true);
+    f(zip_filename, std::move(data.value()), true);
     return true;
   }
 
@@ -478,7 +478,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
       {
         const std::optional<std::string> contents = FileSystem::ReadFileToString(file.c_str(), &error);
         if (contents.has_value())
-          f(std::move(file), std::move(contents.value()), false);
+          f(file, std::move(contents.value()), false);
         else
           WARNING_LOG("Failed to read cht file '{}': {}", Path::GetFileName(file), error.GetDescription());
       }
