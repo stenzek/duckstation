@@ -82,7 +82,7 @@ static void SetRtValue(Instruction instr, const PGXPValue& val, u32 rtVal);
 static PGXPValue& GetSXY0();
 static PGXPValue& GetSXY1();
 static PGXPValue& GetSXY2();
-static PGXPValue& PushSXY();
+static void PushScreenXYFIFO();
 
 static PGXPValue* GetPtr(u32 addr);
 static const PGXPValue& ValidateAndLoadMem(u32 addr, u32 value);
@@ -292,11 +292,11 @@ ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY2()
   return g_state.pgxp_gte[14];
 }
 
-ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::PushSXY()
+ALWAYS_INLINE void CPU::PGXP::PushScreenXYFIFO()
 {
-  g_state.pgxp_gte[12] = g_state.pgxp_gte[13];
-  g_state.pgxp_gte[13] = g_state.pgxp_gte[14];
-  return g_state.pgxp_gte[14];
+  g_state.pgxp_gte[12] = g_state.pgxp_gte[13]; // SXY0 = SXY1
+  g_state.pgxp_gte[13] = g_state.pgxp_gte[14]; // SXY1 = SXY2
+  g_state.pgxp_gte[14] = g_state.pgxp_gte[15]; // SXY2 = SXYP
 }
 
 ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
@@ -498,12 +498,13 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
 void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 {
-  PGXPValue& pvalue = PushSXY();
+  PGXPValue& pvalue = g_state.pgxp_gte[15];
   pvalue.x = x;
   pvalue.y = y;
   pvalue.z = z;
   pvalue.value = value;
   pvalue.flags = VALID_ALL;
+  PushScreenXYFIFO();
 
   if (g_settings.gpu_pgxp_vertex_cache)
     CacheVertex(value, pvalue);
@@ -545,8 +546,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXPValue& value, 
     case 15:
     {
       // push FIFO
-      PGXPValue& SXY2 = PushSXY();
-      SXY2 = value;
+      g_state.pgxp_gte[15] = value;
+      PushScreenXYFIFO();
       return;
     }
 
