@@ -1182,21 +1182,21 @@ public:
   {
     beginFilterChange();
     m_merge_disc_sets = enabled;
-    invalidateRowsFilter();
+    endFilterChange(Direction::Rows);
   }
 
   void setFilterType(GameList::EntryType type)
   {
     beginFilterChange();
     m_filter_type = type;
-    invalidateRowsFilter();
+    endFilterChange(Direction::Rows);
   }
 
   void setFilterRegion(DiscRegion region)
   {
     beginFilterChange();
     m_filter_region = region;
-    invalidateRowsFilter();
+    endFilterChange(Direction::Rows);
   }
 
   void setFilterName(std::string name)
@@ -1204,7 +1204,7 @@ public:
     beginFilterChange();
     m_filter_name = std::move(name);
     std::transform(m_filter_name.begin(), m_filter_name.end(), m_filter_name.begin(), StringUtil::ToLower);
-    invalidateRowsFilter();
+    endFilterChange(Direction::Rows);
   }
 
   bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override

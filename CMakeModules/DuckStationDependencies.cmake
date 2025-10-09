@@ -66,7 +66,10 @@ set(CMAKE_FIND_ROOT_PATH ${FIND_ROOT_PATH_BACKUP})
 
 # Qt has transitive dependencies on system libs, so do it afterwards.
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.9.3 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  # All our builds include Qt, so this is not a problem.
+  set(QT_NO_PRIVATE_MODULE_WARNING ON)
+
+  find_package(Qt6 6.10.0 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
 
   # Have to verify it down here, don't want users using unpatched Qt.
   if(NOT Qt6_DIR MATCHES "^${CMAKE_PREFIX_PATH}")
