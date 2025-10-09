@@ -8,7 +8,7 @@
 #define RC_CONVERSION_FILL(obj, obj_type, src_type) memset((uint8_t*)obj + sizeof(src_type), 0, sizeof(obj_type) - sizeof(src_type))
 
 /* https://media.retroachievements.org/Badge/123456_lock.png is 58 with null terminator */
-#define RC_CLIENT_IMAGE_URL_BUFFER_SIZE 64
+#define RC_CLIENT_IMAGE_URL_BUFFER_SIZE 128
 
 typedef struct rc_client_external_conversions_t {
   rc_client_user_t user;
