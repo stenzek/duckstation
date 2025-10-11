@@ -35,11 +35,11 @@ STRIP=strip
 
 declare -a MANUAL_LIBS=(
 	"libz.so.1"
-	"libavcodec.so.61"
-	"libavformat.so.61"
-	"libavutil.so.59"
-	"libswscale.so.8"
-	"libswresample.so.5"
+	"libavcodec.so.62"
+	"libavformat.so.62"
+	"libavutil.so.60"
+	"libswscale.so.9"
+	"libswresample.so.6"
 	"libdiscord-rpc.so"
 	"libharfbuzz.so"
 	"libfreetype.so.6"
