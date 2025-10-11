@@ -184,8 +184,8 @@ namespace {
 class ShaderCompileProgressTracker
 {
 public:
-  ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
+  ShaderCompileProgressTracker(u32 total)
+    : m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
       m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
       m_start_time(Timer::GetCurrentValue()), m_last_update_time(0), m_progress(0), m_total(total)
   {
@@ -211,8 +211,10 @@ public:
     const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
-      ImGuiFullscreen::RenderLoadingScreen(m_image, m_title, 0, static_cast<int>(m_total),
-                                           static_cast<int>(m_progress));
+      ImGuiFullscreen::RenderLoadingScreen(
+        m_image, TRANSLATE_SV("GPU_HW", "Compiling Shaders..."),
+        SmallString::from_format(TRANSLATE_FS("GPU_HW", "{} of {} pipelines"), m_progress, m_total), 0,
+        static_cast<int>(m_total), static_cast<int>(m_progress));
       m_last_update_time = tv;
     }
 
@@ -220,7 +222,6 @@ public:
   }
 
 private:
-  std::string m_title;
   std::string m_image;
   Timer::Value m_min_time;
   Timer::Value m_update_interval;
@@ -1164,7 +1165,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   m_clear_depth_pipeline.reset();
   m_copy_depth_pipeline.reset();
 
-  ShaderCompileProgressTracker progress(TRANSLATE_STR("GPU_HW", "Compiling Pipelines..."), total_items);
+  ShaderCompileProgressTracker progress(total_items);
 
   // vertex shaders - [textured/palette/sprite]
   // fragment shaders - [depth_test][render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]

@@ -47,13 +47,16 @@ namespace ImGuiFullscreen {
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 static constexpr float MENU_ITEM_BORDER_ROUNDING = 10.0f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
+static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
 static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
-static void DrawLoadingScreen(std::string_view image, std::string_view message, s32 progress_min, s32 progress_max,
-                              s32 progress_value, bool is_persistent);
+static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
+static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
+static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+                              s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent);
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
@@ -289,11 +292,16 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::vector<BackgroundProgressDialogData> background_progress_dialogs;
 
   std::string loading_screen_image;
-  std::string loading_screen_message;
+  std::string loading_screen_title;
+  std::string loading_screen_caption;
   s32 loading_screen_min = 0;
   s32 loading_screen_max = 0;
   s32 loading_screen_value = 0;
   bool loading_screen_open = false;
+
+  std::array<std::pair<Timer::Value, s32>, LOADING_PROGRESS_SAMPLE_COUNT> loading_screen_samples;
+  u32 loading_screen_sample_index;
+  u32 loading_screen_valid_samples;
 };
 
 } // namespace
@@ -3918,11 +3926,15 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
   }
 }
 
-void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
-                                          s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
+void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+                                          s32 progress_min /*= -1*/, s32 progress_max /*= -1*/,
+                                          s32 progress_value /*= -1*/)
 {
   if (progress_min < progress_max)
-    INFO_LOG("{}: {}/{}", message, progress_value, progress_max);
+  {
+    UpdateLoadingScreenProgress(progress_min, progress_max, progress_value);
+    INFO_LOG("{}: {}/{}", title, progress_value, progress_max);
+  }
 
   if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
     return;
@@ -3931,7 +3943,7 @@ void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_vi
   ImGui::EndFrame();
   ImGui::NewFrame();
 
-  DrawLoadingScreen(image, message, progress_min, progress_max, progress_value, false);
+  DrawLoadingScreen(image, title, caption, progress_min, progress_max, progress_value, false);
 
   ImGuiManager::CreateDrawLists();
 
@@ -3951,11 +3963,32 @@ void ImGuiFullscreen::OpenOrUpdateLoadingScreen(std::string_view image, std::str
 {
   if (!image.empty() && s_state.loading_screen_image != image)
     s_state.loading_screen_image = image;
-  if (s_state.loading_screen_message != message)
-    s_state.loading_screen_message = message;
-  s_state.loading_screen_min = progress_min;
-  s_state.loading_screen_max = progress_max;
-  s_state.loading_screen_value = progress_value;
+  if (s_state.loading_screen_title != message)
+    s_state.loading_screen_title = message;
+  if (progress_min < progress_max)
+  {
+    UpdateLoadingScreenProgress(progress_min, progress_max, progress_value);
+
+    s_state.loading_screen_caption.clear();
+    fmt::format_to(std::back_inserter(s_state.loading_screen_caption), FSUI_FSTR("{} of {}"), progress_value,
+                   progress_max);
+  }
+
+  s_state.loading_screen_open = true;
+}
+
+void ImGuiFullscreen::OpenOrUpdateLoadingScreen(std::string_view image, std::string_view title,
+                                                std::string_view caption, s32 progress_min /*= -1*/,
+                                                s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
+{
+  if (!image.empty() && s_state.loading_screen_image != image)
+    s_state.loading_screen_image = image;
+  if (s_state.loading_screen_title != title)
+    s_state.loading_screen_title = title;
+  if (s_state.loading_screen_caption != caption)
+    s_state.loading_screen_caption = caption;
+  if (progress_min < progress_max)
+    UpdateLoadingScreenProgress(progress_min, progress_max, progress_value);
   s_state.loading_screen_open = true;
 }
 
@@ -3969,41 +4002,141 @@ void ImGuiFullscreen::RenderLoadingScreen()
   if (!s_state.loading_screen_open)
     return;
 
-  DrawLoadingScreen(s_state.loading_screen_image, s_state.loading_screen_message, s_state.loading_screen_min,
-                    s_state.loading_screen_max, s_state.loading_screen_value, true);
+  DrawLoadingScreen(s_state.loading_screen_image, s_state.loading_screen_title, s_state.loading_screen_caption,
+                    s_state.loading_screen_min, s_state.loading_screen_max, s_state.loading_screen_value, true);
 }
 
 void ImGuiFullscreen::CloseLoadingScreen()
 {
+  s_state.loading_screen_samples = {};
+  s_state.loading_screen_valid_samples = 0;
+  s_state.loading_screen_sample_index = 0;
+  s_state.loading_screen_caption = {};
+  s_state.loading_screen_title = {};
   s_state.loading_screen_image = {};
-  s_state.loading_screen_message = {};
   s_state.loading_screen_min = 0;
   s_state.loading_screen_max = 0;
   s_state.loading_screen_value = 0;
   s_state.loading_screen_open = false;
 }
 
-void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view message, s32 progress_min,
-                                        s32 progress_max, s32 progress_value, bool is_persistent)
+void ImGuiFullscreen::UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value)
+{
+  if (progress_min != s_state.loading_screen_min || progress_max != s_state.loading_screen_max)
+  {
+    // new range, toss time calculations
+    s_state.loading_screen_min = progress_min;
+    s_state.loading_screen_max = progress_max;
+    s_state.loading_screen_value = progress_value;
+
+    // reset estimation data
+    s_state.loading_screen_samples[0] = std::make_pair(Timer::GetCurrentValue(), progress_value);
+    s_state.loading_screen_sample_index = 0;
+    s_state.loading_screen_valid_samples = 1;
+    return;
+  }
+
+  // Only update if the value has changed
+  if (s_state.loading_screen_value != progress_value)
+  {
+    s_state.loading_screen_value = progress_value;
+
+    // Add new sample
+    s_state.loading_screen_sample_index = (s_state.loading_screen_sample_index + 1) % LOADING_PROGRESS_SAMPLE_COUNT;
+    s_state.loading_screen_samples[s_state.loading_screen_sample_index] =
+      std::make_pair(Timer::GetCurrentValue(), progress_value);
+    s_state.loading_screen_valid_samples =
+      std::min(s_state.loading_screen_valid_samples + 1, static_cast<u32>(LOADING_PROGRESS_SAMPLE_COUNT));
+  }
+}
+
+bool ImGuiFullscreen::GetLoadingScreenTimeEstimate(SmallString& out_str)
+{
+  // Calculate average progress rate using all samples
+  Timer::Value total_time_diff = 0;
+  s32 total_progress_diff = 0;
+  for (u32 i = 0; i < (s_state.loading_screen_valid_samples - 1); i++)
+  {
+    const u32 idx =
+      (s_state.loading_screen_sample_index + LOADING_PROGRESS_SAMPLE_COUNT - i) % LOADING_PROGRESS_SAMPLE_COUNT;
+    const u32 prev_idx = (idx == 0) ? (LOADING_PROGRESS_SAMPLE_COUNT - 1) : (idx - 1);
+    total_time_diff += s_state.loading_screen_samples[idx].first - s_state.loading_screen_samples[prev_idx].first;
+    total_progress_diff += s_state.loading_screen_samples[idx].second - s_state.loading_screen_samples[prev_idx].second;
+  }
+
+  if (total_progress_diff == 0)
+    return false;
+
+  // Calculate average progress rate per second
+  const double progress_per_second =
+    static_cast<double>(total_progress_diff) / Timer::ConvertValueToSeconds(total_time_diff);
+  const s32 remaining_progress = s_state.loading_screen_max - s_state.loading_screen_value;
+  const double remaining_seconds = remaining_progress / progress_per_second;
+
+  // Format the time string
+  if (remaining_seconds < 60.0)
+  {
+    // lupdate isn't smart enough to find the next line...
+    const int secs = static_cast<int>(remaining_seconds);
+    out_str = TRANSLATE_PLURAL_SSTR("FullscreenUI", "%n seconds remaining", "Loading time", secs);
+  }
+  else
+  {
+    const int mins = static_cast<int>(remaining_seconds / 60.0);
+    out_str = TRANSLATE_PLURAL_SSTR("FullscreenUI", "%n minutes remaining", "Loading time", mins);
+  }
+
+  return true;
+}
+
+void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+                                        s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent)
 {
   const auto& io = ImGui::GetIO();
   const bool has_progress = (progress_min < progress_max);
 
-  const float font_size = UIStyle.MediumFontSize;
-  const float font_weight = UIStyle.BoldFontWeight;
-  const float padding_and_rounding = LayoutScale(18.0f);
   const float item_spacing = LayoutScale(10.0f);
   const float frame_rounding = LayoutScale(6.0f);
-  const float bar_height = (has_progress || is_persistent) ? LayoutScale(18.0f) : 0.0f;
-  const float window_width = LayoutScale(450.0f);
-  const float window_height =
-    ((padding_and_rounding * 2.0f) + font_size + item_spacing + bar_height + LayoutScale(5.0f));
-  const float window_spacing = LayoutScale(20.0f);
-
+  const float bar_height = (has_progress || is_persistent) ? LayoutScale(10.0f) : 0.0f;
+  const float content_width = LayoutScale(450.0f);
   const float image_width = LayoutScale(260.0f);
   const float image_height = LayoutScale(260.0f);
-  const ImVec2 image_pos = ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f),
-                                  ImCeil(((io.DisplaySize.y - image_height - window_height - window_spacing) * 0.5f)));
+  const float image_spacing = LayoutScale(20.0f);
+
+  const float title_font_size = UIStyle.LargeFontSize;
+  const float title_font_weight = UIStyle.BoldFontWeight;
+  const ImVec2 title_size =
+    UIStyle.Font->CalcTextSizeA(title_font_size, title_font_weight, FLT_MAX, content_width, IMSTR_START_END(title));
+  const u32 title_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
+
+  const float caption_font_size = UIStyle.MediumLargeFontSize;
+  const float caption_font_weight = UIStyle.NormalFontWeight;
+  const ImVec2 caption_size = caption.empty() ?
+                                ImVec2() :
+                                UIStyle.Font->CalcTextSizeA(caption_font_size, caption_font_weight, FLT_MAX,
+                                                            content_width, IMSTR_START_END(caption));
+  const u32 caption_color = ImGui::GetColorU32(DarkerColor(UIStyle.PrimaryTextColor));
+
+  const float estimate_font_size = UIStyle.MediumFontSize;
+  const float estimate_font_weight = UIStyle.NormalFontWeight;
+  const u32 estimate_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.PrimaryTextColor)));
+  SmallString estimate;
+  ImVec2 estimate_size;
+  if (has_progress)
+  {
+    if (GetLoadingScreenTimeEstimate(estimate))
+    {
+      estimate_size = UIStyle.Font->CalcTextSizeA(estimate_font_size, estimate_font_weight, FLT_MAX, content_width,
+                                                  IMSTR_START_END(estimate));
+    }
+  }
+
+  const float total_height = image_height + image_spacing + title_size.y +
+                             (bar_height > 0.0f ? (item_spacing + bar_height) : 0.0f) +
+                             (!caption.empty() ? (item_spacing + caption_size.y) : 0.0f) +
+                             (has_progress ? (item_spacing + estimate_font_size) : 0.0f);
+  const ImVec2 image_pos =
+    ImVec2(ImCeil((io.DisplaySize.x - image_width) * 0.5f), ImCeil(((io.DisplaySize.y - total_height) * 0.5f)));
   ImDrawList* const dl = ImGui::GetBackgroundDrawList();
   GPUTexture* tex = GetCachedTexture(image);
   if (tex)
@@ -4012,38 +4145,18 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
     dl->AddImage(tex, image_rect.Min, image_rect.Max);
   }
 
-  const ImVec2 window_pos =
-    ImVec2(ImCeil((io.DisplaySize.x - window_width) * 0.5f), image_pos.y + image_height + window_spacing);
-  dl->AddRectFilled(window_pos, window_pos + ImVec2(window_width, window_height),
-                    ImGui::GetColorU32(UIStyle.PopupBackgroundColor), padding_and_rounding);
+  ImVec2 current_pos =
+    ImVec2(ImCeil((io.DisplaySize.x - content_width) * 0.5f), image_pos.y + image_height + image_spacing);
 
-  TinyString prog_text;
-  ImVec2 prog_text_size;
-  if (has_progress)
-  {
-    prog_text.format("{}/{}", progress_value, progress_max);
-    prog_text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(prog_text));
-  }
-
-  const float avail_width = window_width - (padding_and_rounding * 2.0f);
-  const ImVec2 text_pos = window_pos + ImVec2(padding_and_rounding, padding_and_rounding);
-  const float text_wrap_width = avail_width - prog_text_size.x;
-  const ImVec2 text_size =
-    UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, text_wrap_width, IMSTR_START_END(message));
-  dl->AddText(UIStyle.Font, font_size, font_weight, text_pos, ImGui::GetColorU32(UIStyle.PrimaryTextColor),
-              IMSTR_START_END(message), text_wrap_width);
-
-  if (has_progress)
-  {
-    const ImVec2 prog_text_pos = ImVec2(text_pos.x + avail_width - prog_text_size.x, text_pos.y);
-    dl->AddText(UIStyle.Font, font_size, font_weight, prog_text_pos, ImGui::GetColorU32(UIStyle.PrimaryTextColor),
-                IMSTR_START_END(prog_text));
-  }
+  RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight, current_pos,
+                                     current_pos + ImVec2(content_width, title_size.y), title_color, title,
+                                     ImVec2(0.5f, 0.0f), content_width);
+  current_pos.y += title_size.y + item_spacing;
 
   if (bar_height > 0.0f)
   {
-    const ImVec2 box_start = ImVec2(text_pos.x, text_pos.y + text_size.y + item_spacing);
-    const ImVec2 box_end = box_start + ImVec2(avail_width, bar_height);
+    const ImVec2& box_start = current_pos;
+    const ImVec2 box_end = box_start + ImVec2(content_width, bar_height);
     dl->AddRectFilled(box_start, box_end, ImGui::GetColorU32(UIStyle.PopupFrameBackgroundColor), frame_rounding);
 
     if (has_progress)
@@ -4051,16 +4164,6 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
       const float fraction = static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min);
       ImGui::RenderRectFilledRangeH(dl, ImRect(box_start, box_end), ImGui::GetColorU32(UIStyle.SecondaryColor), 0.0f,
                                     fraction, frame_rounding);
-
-#if 0
-      prog_text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
-      const ImVec2 pct_text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
-                                                               FLT_MAX, 0.0f, IMSTR_START_END(prog_text));
-      const ImVec2 pct_text_pos = ImVec2(box_start.x + ((box_end.x - box_start.x) / 2.0f) - (pct_text_size.x / 2.0f),
-                                         box_start.y + ((box_end.y - box_start.y) / 2.0f) - (pct_text_size.y / 2.0f));
-      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, pct_text_pos,
-                  ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(prog_text));
-#endif
     }
     else
     {
@@ -4075,6 +4178,23 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
                           ImGui::GetColorU32(UIStyle.SecondaryColor), frame_rounding);
       }
     }
+
+    current_pos.y += bar_height + item_spacing;
+  }
+
+  if (!caption.empty())
+  {
+    RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, caption_font_size, caption_font_weight, current_pos,
+                                       current_pos + ImVec2(content_width, caption_size.y), caption_color, caption,
+                                       ImVec2(0.5f, 0.0f), content_width);
+    current_pos.y += caption_size.y + item_spacing;
+  }
+
+  if (!estimate.empty())
+  {
+    RenderMultiLineShadowedTextClipped(dl, UIStyle.Font, estimate_font_size, estimate_font_weight, current_pos,
+                                       current_pos + ImVec2(content_width, estimate_size.y), estimate_color, estimate,
+                                       ImVec2(0.5f, 0.0f), content_width);
   }
 }
 

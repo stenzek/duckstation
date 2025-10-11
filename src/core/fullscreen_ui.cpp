@@ -9289,7 +9289,7 @@ void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
     return;
 
   m_last_progress_percent = percent;
-  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text, 0, 100, percent);
+  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
 }
 
 void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
@@ -9368,7 +9368,9 @@ void LoadingScreenProgressCallback::SetCancellable(bool cancellable)
 
 void LoadingScreenProgressCallback::SetTitle(const std::string_view title)
 {
-  // todo?
+  ProgressCallback::SetTitle(title);
+  m_title = title;
+  Redraw(true);
 }
 
 void LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
@@ -9423,14 +9425,15 @@ void LoadingScreenProgressCallback::Redraw(bool force)
   m_last_progress_percent = percent;
   if (m_on_gpu_thread)
   {
-    ImGuiFullscreen::RenderLoadingScreen(m_image, m_status_text, 0, static_cast<s32>(m_progress_range),
+    ImGuiFullscreen::RenderLoadingScreen(m_image, m_title, m_status_text, 0, static_cast<s32>(m_progress_range),
                                          static_cast<s32>(m_progress_value));
   }
   else
   {
-    GPUThread::RunOnThread([image = std::move(m_image), status_text = SmallString(std::string_view(m_status_text)),
+    GPUThread::RunOnThread([image = std::move(m_image), title = SmallString(std::string_view(m_title)),
+                            status_text = SmallString(std::string_view(m_status_text)),
                             range = static_cast<s32>(m_progress_range), value = static_cast<s32>(m_progress_value)]() {
-      ImGuiFullscreen::OpenOrUpdateLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, status_text, 0, range, value);
+      ImGuiFullscreen::OpenOrUpdateLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, title, status_text, 0, range, value);
     });
     m_image = {};
   }
@@ -10293,5 +10296,6 @@ TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
+TRANSLATE_NOOP("FullscreenUI", "{} of {}");
 // TRANSLATION-STRING-AREA-END
 #endif

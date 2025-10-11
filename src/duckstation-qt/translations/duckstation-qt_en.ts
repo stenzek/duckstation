@@ -151,6 +151,27 @@
     </message>
 </context>
 <context>
+    <name>FullscreenUI</name>
+    <message numerus="yes">
+        <location filename="../../util/imgui_fullscreen.cpp" line="4081"/>
+        <source>%n seconds remaining</source>
+        <comment>Loading time</comment>
+        <translation>
+            <numerusform>%n second remaining</numerusform>
+            <numerusform>%n seconds remaining</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/imgui_fullscreen.cpp" line="4086"/>
+        <source>%n minutes remaining</source>
+        <comment>Loading time</comment>
+        <translation>
+            <numerusform>%n minute remaining</numerusform>
+            <numerusform>%n minutes remaining</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>GPU_HW</name>
     <message numerus="yes">
         <location filename="../../core/gpu_hw_texture_cache.cpp" line="3706"/>

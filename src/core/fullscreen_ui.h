@@ -137,6 +137,7 @@ private:
   s32 m_last_progress_percent = -1;
   bool m_on_gpu_thread = false;
   std::string m_image;
+  std::string m_title;
 };
 
 // Host UI triggers from Big Picture mode.

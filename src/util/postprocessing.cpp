@@ -417,6 +417,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
 
   Error error;
   LoadingScreenProgressCallback progress;
+  progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
   for (u32 i = 0; i < stage_count; i++)
@@ -485,6 +486,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   m_stages.resize(stage_count);
 
   LoadingScreenProgressCallback progress;
+  progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
   const GPUTexture::Format prev_format = m_target_format;
