@@ -55,6 +55,7 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libavformat/version.h"
 #include "libavutil/dict.h"
+#include "libavutil/ffversion.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/version.h"
@@ -2023,18 +2024,18 @@ bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
 
   UnloadFFmpeg();
 
-  Error::SetStringFmt(
-    error,
-    TRANSLATE_FS(
-      "MediaCapture",
-      "You may be missing one or more files, or are using the incorrect version. This build of DuckStation requires:\n"
-      "  libavcodec: {}\n"
-      "  libavformat: {}\n"
-      "  libavutil: {}\n"
-      "  libswscale: {}\n"
-      "  libswresample: {}\n"),
-    LIBAVCODEC_VERSION_MAJOR, LIBAVFORMAT_VERSION_MAJOR, LIBAVUTIL_VERSION_MAJOR, LIBSWSCALE_VERSION_MAJOR,
-    LIBSWRESAMPLE_VERSION_MAJOR);
+  Error::SetStringFmt(error,
+                      TRANSLATE_FS("MediaCapture",
+                                   "FFmpeg was not found, or is not the correct version.\n"
+                                   "You can download FFmpeg from {}.\n"
+                                   "This build of DuckStation requires FFmpeg v{}, with library versions:\n"
+                                   "  libavcodec: {}\n"
+                                   "  libavformat: {}\n"
+                                   "  libavutil: {}\n"
+                                   "  libswscale: {}\n"
+                                   "  libswresample: {}\n"),
+                      "https://www.ffmpeg.org/", FFMPEG_VERSION, LIBAVCODEC_VERSION_MAJOR, LIBAVFORMAT_VERSION_MAJOR,
+                      LIBAVUTIL_VERSION_MAJOR, LIBSWSCALE_VERSION_MAJOR, LIBSWRESAMPLE_VERSION_MAJOR);
   return false;
 }
 
