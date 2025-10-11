@@ -1,6 +1,4 @@
 /*
- * Version macros.
- *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -18,23 +16,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVFILTER_VERSION_MAJOR_H
-#define AVFILTER_VERSION_MAJOR_H
+
+#ifndef AVUTIL_HWCONTEXT_AMF_H
+#define AVUTIL_HWCONTEXT_AMF_H
+
+#include "pixfmt.h"
+#include "hwcontext.h"
+#include <AMF/core/Factory.h>
+#include <AMF/core/Context.h>
+#include <AMF/core/Trace.h>
+#include <AMF/core/Debug.h>
 
 /**
- * @file
- * @ingroup lavfi
- * Libavfilter version macros
+ * This struct is allocated as AVHWDeviceContext.hwctx
  */
+typedef struct AVAMFDeviceContext {
+    void *              library;
+    AMFFactory         *factory;
+    void               *trace_writer;
 
-#define LIBAVFILTER_VERSION_MAJOR  10
+    int64_t             version; ///< version of AMF runtime
+    AMFContext         *context;
+    AMF_MEMORY_TYPE     memory_type;
+} AVAMFDeviceContext;
 
-/**
- * FF_API_* defines may be placed below to indicate public API that will be
- * dropped at a future version bump. The defines themselves are not part of
- * the public API and may change, break or disappear at any time.
- */
+enum AMF_SURFACE_FORMAT av_av_to_amf_format(enum AVPixelFormat fmt);
+enum AVPixelFormat av_amf_to_av_format(enum AMF_SURFACE_FORMAT fmt);
 
-#define FF_API_LINK_PUBLIC     (LIBAVFILTER_VERSION_MAJOR < 11)
-
-#endif /* AVFILTER_VERSION_MAJOR_H */
+#endif /* AVUTIL_HWCONTEXT_AMF_H */

@@ -142,7 +142,7 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_CPB_PROPERTIES,
 
     /**
-     * Recommmends skipping the specified number of samples
+     * Recommends skipping the specified number of samples
      * @code
      * u32le number of samples to skip from start of this packet
      * u32le number of samples to skip from end of this packet
@@ -346,6 +346,23 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_LCEVC,
 
     /**
+     * This side data contains information about the reference display width(s)
+     * and reference viewing distance(s) as well as information about the
+     * corresponding reference stereo pair(s), i.e., the pair(s) of views to be
+     * displayed for the viewer's left and right eyes on the reference display
+     * at the reference viewing distance.
+     * The payload is the AV3DReferenceDisplaysInfo struct defined in
+     * libavutil/tdrdi.h.
+     */
+    AV_PKT_DATA_3D_REFERENCE_DISPLAYS,
+
+    /**
+     * Contains the last received RTCP SR (Sender Report) information
+     * in the form of the AVRTCPSenderReport struct.
+     */
+    AV_PKT_DATA_RTCP_SR,
+
+    /**
      * The number of side data types.
      * This is not part of the public API/ABI in the sense that it may
      * change when new side data types are added.
@@ -356,10 +373,6 @@ enum AVPacketSideDataType {
     AV_PKT_DATA_NB
 };
 
-#if FF_API_QUALITY_FACTOR
-#define AV_PKT_DATA_QUALITY_FACTOR AV_PKT_DATA_QUALITY_STATS //DEPRECATED
-#endif
-
 /**
  * This structure stores auxiliary information for decoding, presenting, or
  * otherwise processing the coded stream. It is typically exported by demuxers
@@ -368,11 +381,11 @@ enum AVPacketSideDataType {
  *
  * Global side data is handled as follows:
  * - During demuxing, it may be exported through
- *   @ref AVStream.codecpar.side_data "AVStream's codec parameters", which can
+ *   @ref AVCodecParameters.coded_side_data "AVStream's codec parameters", which can
  *   then be passed as input to decoders through the
  *   @ref AVCodecContext.coded_side_data "decoder context's side data", for
  *   initialization.
- * - For muxing, it can be fed through @ref AVStream.codecpar.side_data
+ * - For muxing, it can be fed through @ref AVCodecParameters.coded_side_data
  *   "AVStream's codec parameters", typically  the output of encoders through
  *   the @ref AVCodecContext.coded_side_data "encoder context's side data", for
  *   initialization.
@@ -879,6 +892,13 @@ int av_packet_make_writable(AVPacket *pkt);
  *               converted
  */
 void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
+
+/**
+ * Allocate an AVContainerFifo instance for AVPacket.
+ *
+ * @param flags currently unused
+ */
+struct AVContainerFifo *av_container_fifo_alloc_avpacket(unsigned flags);
 
 /**
  * @}
