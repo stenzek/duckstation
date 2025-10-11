@@ -278,6 +278,11 @@ void GameListModel::setCoverScale(float scale)
 
   m_cover_scale = scale;
 
+  // Invalidate all pending loads. This stops the case where the user changes the scale,
+  // then quickly changes back before the loads finish, resulting in the image never loading.
+  m_cover_pixmap_cache.Apply(
+    [](const std::string&, CoverPixmapCacheEntry& entry) { entry.scale = entry.is_loading ? 0.0f : entry.scale; });
+
   Host::SetBaseFloatSettingValue("UI", "GameListCoverArtScale", scale);
   Host::CommitBaseSettingChanges();
   updateCoverScale();
