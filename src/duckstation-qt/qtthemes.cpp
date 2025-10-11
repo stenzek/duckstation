@@ -17,11 +17,12 @@
 namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
 static void SetStyleFromSettings();
+static QString GetNativeThemeStylesheet();
+static bool NativeThemeStylesheetNeedsUpdate();
 
 namespace {
 struct State
 {
-  std::string current_theme_name;
   QString unthemed_style_name;
   QPalette unthemed_palette;
   bool is_stylesheet_theme = false;
@@ -50,7 +51,7 @@ void QtHost::UpdateApplicationTheme()
   }
 
   SetStyleFromSettings();
-  SetIconThemeFromStyle();
+  UpdateThemeOnStyleChange();
 }
 
 void QtHost::SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme)
@@ -502,7 +503,7 @@ QToolBar {
     SetThemeAttributes(false, true, false);
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
+    qApp->setStyleSheet(GetNativeThemeStylesheet());
   }
 }
 
@@ -524,9 +525,14 @@ bool QtHost::IsStyleSheetApplicationTheme()
   return s_state.is_stylesheet_theme;
 }
 
-void QtHost::SetIconThemeFromStyle()
+void QtHost::UpdateThemeOnStyleChange()
 {
-  QIcon::setThemeName(IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black"));
+  const QString new_theme_name = IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black");
+  if (QIcon::themeName() != new_theme_name)
+    QIcon::setThemeName(new_theme_name);
+
+  if (NativeThemeStylesheetNeedsUpdate())
+    qApp->setStyleSheet(GetNativeThemeStylesheet());
 }
 
 const char* Host::GetDefaultFullscreenUITheme()
@@ -551,4 +557,113 @@ const char* Host::GetDefaultFullscreenUITheme()
     return "AMOLED";
   else
     return IsDarkApplicationTheme() ? "Dark" : "Light";
+}
+
+bool QtHost::NativeThemeStylesheetNeedsUpdate()
+{
+#ifdef __APPLE__
+  // See below, only used on MacOS.
+  return s_state.is_variable_color_theme;
+#else
+  return false;
+#endif
+}
+
+QString QtHost::GetNativeThemeStylesheet()
+{
+  QString ret;
+#ifdef __APPLE__
+  // Qt's native style on MacOS is... not great.
+  // We re-theme the tool buttons to look like Cocoa tool buttons, and fix up popup menus.
+  ret = QStringLiteral(R"(
+QMenu {
+    border-radius: 10px;
+    padding: 4px 0;
+}
+QMenu::item {
+    padding: 4px 15px;
+    border-radius: 8px;
+    margin: 0 2px;
+}
+QMenu::icon,
+QMenu::indicator {
+    left: 8px;
+}
+QMenu::icon:checked {
+    border-radius: 4px;
+}
+QMenu::separator {
+    height: 1px;
+    margin: 4px 8px;
+}
+QToolButton {
+    border: none;
+    background: transparent;
+    padding: 5px;
+    border-radius: 10px;
+})");
+  if (IsDarkApplicationTheme())
+  {
+    ret += QStringLiteral(R"(
+QMenu {
+    background-color: #161616;
+    border: 1px solid #2c2c2c;
+}
+QMenu::item {
+    color: #dcdcdc;
+}
+QMenu::item:selected {
+    background-color: #2b4ab3;
+    color: #ffffff;
+}
+QMenu::icon:checked {
+    background: #414141;
+    border: 1px solid #777;
+}
+QMenu::separator {
+    background: #3b3b3b;
+}
+QToolButton:checked {
+    background-color: #454645;
+}
+QToolButton:hover {
+    background-color: #393c3c;
+}
+QToolButton:pressed {
+    background-color: #808180;
+})");
+  }
+  else
+  {
+    ret += QStringLiteral(R"(
+QMenu {
+    background-color: #bdbdbd;
+    border: 1px solid #d5d5d4;
+}
+QMenu::item {
+    color: #1d1d1d;
+}
+QMenu::item:selected {
+    background-color: #2e5dc9;
+    color: #ffffff;
+}
+QMenu::icon:checked {
+    background: #414141;
+    border: 1px solid #777;
+}
+QMenu::separator {
+    background: #a9a9a9;
+}
+QToolButton:checked {
+    background-color: #e2e2e2;
+}
+QToolButton:hover {
+    background-color: #f0f0f0;
+}
+QToolButton:pressed {
+    background-color: #8c8c8c;
+})");
+  }
+#endif
+  return ret;
 }

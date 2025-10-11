@@ -2891,7 +2891,7 @@ void MainWindow::changeEvent(QEvent* event)
 
   if (event->type() == QEvent::StyleChange)
   {
-    QtHost::SetIconThemeFromStyle();
+    QtHost::UpdateThemeOnStyleChange();
     emit themeChanged(QtHost::IsDarkApplicationTheme());
   }
 

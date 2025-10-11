@@ -352,7 +352,7 @@ bool IsDarkApplicationTheme();
 bool IsStyleSheetApplicationTheme();
 
 /// Sets the icon theme, based on the current style (light/dark).
-void SetIconThemeFromStyle();
+void UpdateThemeOnStyleChange();
 
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
