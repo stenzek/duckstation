@@ -38,7 +38,11 @@ static State s_state;
 
 const char* QtHost::GetDefaultThemeName()
 {
+#ifndef __APPLE__
   return "darkerfusion";
+#else
+  return "";
+#endif
 }
 
 void QtHost::UpdateApplicationTheme()
