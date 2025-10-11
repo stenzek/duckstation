@@ -2187,7 +2187,9 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
   m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionScreenshot->setDisabled(starting_or_not_running);
+  m_ui.menuChangeDisc->menuAction()->setDisabled(starting_or_not_running);
   m_ui.menuChangeDisc->setDisabled(starting_or_not_running);
+  m_ui.menuCheats->menuAction()->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.menuCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionCPUDebugger->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryEditor->setDisabled(achievements_hardcore_mode);
@@ -2199,8 +2201,10 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionCaptureGPUFrame->setDisabled(starting_or_not_running);
 
   m_ui.actionLoadState->setDisabled(starting);
+  m_ui.menuLoadState->menuAction()->setDisabled(starting);
   m_ui.menuLoadState->setDisabled(starting);
   m_ui.actionSaveState->setDisabled(starting_or_not_running);
+  m_ui.menuSaveState->menuAction()->setDisabled(starting_or_not_running);
   m_ui.menuSaveState->setDisabled(starting_or_not_running);
   m_ui.menuWindowSize->setDisabled(starting_or_not_running);
   m_ui.actionViewGameList->setDisabled(starting);
