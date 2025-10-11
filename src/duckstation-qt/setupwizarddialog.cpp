@@ -380,7 +380,7 @@ void SetupWizardDialog::setupControllerPage(bool initial)
   {
     QComboBox* type_combo;
     QLabel* mapping_result;
-    QToolButton* mapping_button;
+    QPushButton* mapping_button;
   };
   const PadWidgets pad_widgets[NUM_PADS] = {
     {m_ui.controller1Type, m_ui.controller1Mapping, m_ui.controller1AutomaticMapping},

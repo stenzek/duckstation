@@ -641,6 +641,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   : QWidget(parent), m_parent(parent), m_bwidget(bwidget), m_index(index)
 {
   m_ui.setupUi(this);
+  m_ui.increaseFrequency->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
+  m_ui.decreateFrequency->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
 
   ControllerSettingsWindow* dialog = m_bwidget->getDialog();
   const std::string& section = m_bwidget->getConfigSection();

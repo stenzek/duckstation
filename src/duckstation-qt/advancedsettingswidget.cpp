@@ -189,7 +189,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.logToFile, &QCheckBox::checkStateChanged, this, &AdvancedSettingsWidget::onAnyLogSinksChanged);
   onAnyLogSinksChanged(); // initialize enabled/disabled state of checkboxes
 
-  connect(m_ui.logChannels, &QToolButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
+  connect(m_ui.logChannels, &QAbstractButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,

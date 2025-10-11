@@ -77,8 +77,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="newCardB">
-       <property name="text">
+      <widget class="QPushButton" name="newCardB">
+       <property name="toolTip">
         <string>New...</string>
        </property>
        <property name="icon">
@@ -88,8 +88,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="openCardB">
-       <property name="text">
+      <widget class="QPushButton" name="openCardB">
+       <property name="toolTip">
         <string>Open...</string>
        </property>
        <property name="icon">
@@ -149,8 +149,8 @@
       <widget class="QComboBox" name="cardAPath"/>
      </item>
      <item>
-      <widget class="QToolButton" name="newCardA">
-       <property name="text">
+      <widget class="QPushButton" name="newCardA">
+       <property name="toolTip">
         <string>New...</string>
        </property>
        <property name="icon">
@@ -160,8 +160,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="openCardA">
-       <property name="text">
+      <widget class="QPushButton" name="openCardA">
+       <property name="toolTip">
         <string>Open...</string>
        </property>
        <property name="icon">

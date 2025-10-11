@@ -49,7 +49,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="sortCheats">
+      <widget class="QPushButton" name="sortCheats">
        <property name="toolTip">
         <string>Sort Alphabetically</string>
        </property>
@@ -62,7 +62,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="add">
+      <widget class="QPushButton" name="add">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -75,13 +75,10 @@
        <property name="icon">
         <iconset theme="add-line"/>
        </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
-       </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="remove">
+      <widget class="QPushButton" name="remove">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -94,13 +91,10 @@
        <property name="icon">
         <iconset theme="minus-line"/>
        </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
-       </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="disableAll">
+      <widget class="QPushButton" name="disableAll">
        <property name="toolTip">
         <string>Disable All Cheats</string>
        </property>
@@ -110,7 +104,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="reloadCheats">
+      <widget class="QPushButton" name="reloadCheats">
        <property name="toolTip">
         <string>Reload Cheats</string>
        </property>

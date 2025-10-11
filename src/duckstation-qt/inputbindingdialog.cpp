@@ -48,9 +48,9 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
       sif, m_ui.deadzone, m_section_name, fmt::format("{}Deadzone", m_key_name), 100.0f, 0.0f);
 
     connect(m_ui.sensitivity, &QSlider::valueChanged, this, &InputBindingDialog::onSensitivityChanged);
-    connect(m_ui.resetSensitivity, &QToolButton::clicked, this, &InputBindingDialog::onResetSensitivityClicked);
+    connect(m_ui.resetSensitivity, &QPushButton::clicked, this, &InputBindingDialog::onResetSensitivityClicked);
     connect(m_ui.deadzone, &QSlider::valueChanged, this, &InputBindingDialog::onDeadzoneChanged);
-    connect(m_ui.resetDeadzone, &QToolButton::clicked, this, &InputBindingDialog::onResetDeadzoneClicked);
+    connect(m_ui.resetDeadzone, &QPushButton::clicked, this, &InputBindingDialog::onResetDeadzoneClicked);
 
     onSensitivityChanged(m_ui.sensitivity->value());
     onDeadzoneChanged(m_ui.deadzone->value());

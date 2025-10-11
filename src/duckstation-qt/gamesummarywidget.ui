@@ -52,14 +52,10 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="title">
-     <property name="placeholderText">
-      <string>Clear the line to restore the original title...</string>
-     </property>
-    </widget>
+    <widget class="QLineEdit" name="title" />
    </item>
    <item row="1" column="2">
-    <widget class="QToolButton" name="restoreTitle">
+    <widget class="QPushButton" name="restoreTitle">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -131,7 +127,7 @@
     </widget>
    </item>
    <item row="4" column="2">
-    <widget class="QToolButton" name="restoreRegion">
+    <widget class="QPushButton" name="restoreRegion">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -181,7 +177,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="compatibilityComments">
+      <widget class="QPushButton" name="compatibilityComments">
        <property name="icon">
         <iconset theme="information-line"/>
        </property>

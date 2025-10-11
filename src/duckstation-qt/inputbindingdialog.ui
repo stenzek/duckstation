@@ -115,7 +115,7 @@
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QToolButton" name="resetSensitivity">
+       <widget class="QPushButton" name="resetSensitivity">
         <property name="toolTip">
          <string>Reset Sensitivity</string>
         </property>
@@ -125,7 +125,7 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QToolButton" name="resetDeadzone">
+       <widget class="QPushButton" name="resetDeadzone">
         <property name="toolTip">
          <string>Reset Deadzone</string>
         </property>

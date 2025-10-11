@@ -65,7 +65,7 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 
   populateUi(entry);
 
-  connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
+  connect(m_ui.compatibilityComments, &QAbstractButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
   connect(m_ui.editInputProfile, &QAbstractButton::clicked, this, &GameSummaryWidget::onEditInputProfileClicked);
   connect(m_ui.computeHashes, &QAbstractButton::clicked, this, &GameSummaryWidget::onComputeHashClicked);

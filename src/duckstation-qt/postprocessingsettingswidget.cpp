@@ -79,11 +79,11 @@ void PostProcessingChainConfigWidget::triggerSettingsReload()
 void PostProcessingChainConfigWidget::connectUi()
 {
   connect(m_ui.reload, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onReloadButtonClicked);
-  connect(m_ui.add, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onAddButtonClicked);
-  connect(m_ui.remove, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onRemoveButtonClicked);
-  connect(m_ui.clear, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onClearButtonClicked);
-  connect(m_ui.moveUp, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onMoveUpButtonClicked);
-  connect(m_ui.moveDown, &QToolButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
+  connect(m_ui.add, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onAddButtonClicked);
+  connect(m_ui.remove, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onRemoveButtonClicked);
+  connect(m_ui.clear, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onClearButtonClicked);
+  connect(m_ui.moveUp, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveUpButtonClicked);
+  connect(m_ui.moveDown, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
   connect(m_ui.stages, &QListWidget::itemSelectionChanged, this,
           &PostProcessingChainConfigWidget::onSelectedShaderChanged);
 }

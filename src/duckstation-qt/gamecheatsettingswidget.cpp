@@ -210,10 +210,10 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.cheatList, &QTreeView::customContextMenuRequested, this,
           &GameCheatSettingsWidget::onCheatListContextMenuRequested);
   connect(m_codes_model, &QStandardItemModel::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
-  connect(m_ui.add, &QToolButton::clicked, this, &GameCheatSettingsWidget::newCode);
-  connect(m_ui.remove, &QToolButton::clicked, this, &GameCheatSettingsWidget::onRemoveCodeClicked);
-  connect(m_ui.disableAll, &QToolButton::clicked, this, &GameCheatSettingsWidget::disableAllCheats);
-  connect(m_ui.reloadCheats, &QToolButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
+  connect(m_ui.add, &QPushButton::clicked, this, &GameCheatSettingsWidget::newCode);
+  connect(m_ui.remove, &QPushButton::clicked, this, &GameCheatSettingsWidget::onRemoveCodeClicked);
+  connect(m_ui.disableAll, &QPushButton::clicked, this, &GameCheatSettingsWidget::disableAllCheats);
+  connect(m_ui.reloadCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
   connect(m_ui.importCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onImportClicked);
   connect(m_ui.exportCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onExportClicked);
   connect(m_ui.clearCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onClearClicked);
@@ -1004,8 +1004,8 @@ GameCheatCodeChoiceEditorDialog::GameCheatCodeChoiceEditorDialog(QWidget* parent
   m_ui.setupUi(this);
   QtUtils::SetColumnWidthsForTreeView(m_ui.optionList, {-1, 150});
 
-  connect(m_ui.add, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onAddClicked);
-  connect(m_ui.remove, &QToolButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onRemoveClicked);
+  connect(m_ui.add, &QPushButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onAddClicked);
+  connect(m_ui.remove, &QPushButton::clicked, this, &GameCheatCodeChoiceEditorDialog::onRemoveClicked);
   connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &GameCheatCodeChoiceEditorDialog::onSaveClicked);
   connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
