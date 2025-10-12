@@ -192,9 +192,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   m_sort_model->sort(sorting_enabled ? 0 : -1, Qt::AscendingOrder);
   m_ui.cheatList->setModel(m_sort_model);
   m_ui.cheatList->setItemDelegate(new CheatListOptionDelegate(this, m_ui.cheatList));
-
   reloadList();
-  QtUtils::SetColumnWidthsForTreeView(m_ui.cheatList, {-1, 150});
 
   // We don't use the binder here, because they're binary - either enabled, or not in the file.
   m_ui.enableCheats->setChecked(sif->GetBoolValue("Cheats", "EnableCheats", false));
@@ -555,6 +553,16 @@ void GameCheatSettingsWidget::reloadList()
 
   // Expand all items, and ensure the size is correct. Otherwise editing codes resizes it.
   expandAllItems();
+
+  // Set column sizes, option dropdown gets less space.
+  // Qt asserts if we do this without any data.
+  if (m_codes.empty())
+    return;
+
+  QHeaderView* const cheat_list_header = m_ui.cheatList->header();
+  cheat_list_header->setSectionResizeMode(0, QHeaderView::Stretch);
+  cheat_list_header->setSectionResizeMode(1, QHeaderView::Fixed);
+  cheat_list_header->resizeSection(1, 150);
 }
 
 void GameCheatSettingsWidget::expandAllItems()
