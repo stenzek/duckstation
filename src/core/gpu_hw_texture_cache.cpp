@@ -3463,8 +3463,10 @@ void GPUTextureCache::PreloadReplacementTextures()
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
   {                                                                                                                    \
-    ImGuiFullscreen::RenderLoadingScreen(image_path, "Preloading replacement textures...", 0,                          \
-                                         static_cast<int>(total_textures), static_cast<int>(num_textures_loaded));     \
+    ImGuiFullscreen::RenderLoadingScreen(                                                                              \
+      image_path, TRANSLATE_SV("GPU_HW", "Preloading replacement textures..."),                                        \
+      TinyString::from_format(TRANSLATE_FS("GPU_HW", "{0} of {1} textures"), num_textures_loaded, total_textures), 0,  \
+      static_cast<int>(total_textures), static_cast<int>(num_textures_loaded));                                        \
     last_update_time.Reset();                                                                                          \
   }
 
