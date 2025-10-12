@@ -119,7 +119,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   m_path = entry->path;
 
   m_ui.path->setText(QString::fromStdString(entry->path));
-  m_ui.serial->setText(QString::fromStdString(entry->serial));
+  m_ui.serial->setText(QtUtils::StringViewToQString(TinyString::from_format("{} ({:016X})", entry->serial, entry->hash)));
   m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
   m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
