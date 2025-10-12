@@ -51,7 +51,8 @@ SettingsWindow::SettingsWindow() : QWidget()
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_serial(entry->serial), m_hash(entry->hash)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_serial(entry->serial), m_hash(entry->hash),
+    m_path(entry->path)
 {
   m_ui.setupUi(this);
   setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
@@ -660,6 +661,11 @@ bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
 {
   return (m_database_entry && m_database_entry->HasTrait(trait) &&
           m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
+}
+
+bool SettingsWindow::isGameHashStable() const
+{
+  return (m_path.empty() || !CDImage::HasOverlayablePatch(m_path.c_str()));
 }
 
 SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,

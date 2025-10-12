@@ -238,7 +238,7 @@ std::string GameCheatSettingsWidget::getPathForSavingCheats() const
 {
   // Check for the path without the hash first. If we have one of those, keep using it.
   std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
-  if (!FileSystem::FileExists(path.c_str()))
+  if (!FileSystem::FileExists(path.c_str()) && m_dialog->isGameHashStable())
     path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), true);
   return path;
 }

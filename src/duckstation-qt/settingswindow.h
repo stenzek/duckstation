@@ -65,6 +65,7 @@ public:
   ALWAYS_INLINE const std::string& getGameTitle() const { return m_title; }
   ALWAYS_INLINE const std::string& getGameSerial() const { return m_serial; }
   ALWAYS_INLINE const std::optional<GameHash>& getGameHash() const { return m_hash; }
+  ALWAYS_INLINE const std::string& getGamePath() const { return m_path; }
   ALWAYS_INLINE const GameDatabase::Entry* getDatabaseEntry() const { return m_database_entry; }
   ALWAYS_INLINE bool hasDatabaseEntry() const { return (m_database_entry != nullptr); }
 
@@ -107,6 +108,7 @@ public:
 
   void setGameTitle(std::string_view title);
   bool hasGameTrait(GameDatabase::Trait trait);
+  bool isGameHashStable() const;
 
   void setCategory(const char* category);
   void setCategoryRow(int index);
@@ -165,4 +167,5 @@ private:
   std::string m_title;
   std::string m_serial;
   std::optional<GameHash> m_hash;
+  std::string m_path;
 };
