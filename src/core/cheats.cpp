@@ -1470,6 +1470,7 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       return;
     }
 
+    const SmallString code_name(next_code_metadata.name);
     const std::string_view code_body =
       file_contents.substr(code_body_start.value(), reader.GetCurrentLineOffset() - code_body_start.value());
 
@@ -1477,8 +1478,12 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     std::unique_ptr<CheatCode> code = ParseCode(std::move(next_code_metadata), code_body, &error);
     if (!code)
     {
-      WARNING_LOG("Failed to parse gameshark code ending on line {}: {}", reader.GetCurrentLineNumber(),
-                  error.GetDescription());
+      WARNING_LOG("Failed to parse code ending on line {}: {}", reader.GetCurrentLineNumber(), error.GetDescription());
+
+      Host::AddIconOSDWarning(fmt::format("cheat_parse_error_{}", code_name), ICON_EMOJI_WARNING,
+                              fmt::format("{} '{}':\n{}", TRANSLATE_SV("Cheats", "Failed to parse cheat code"),
+                                          code_name, error.GetDescription()),
+                              Host::OSD_WARNING_DURATION);
     }
 
     next_code_group = {};
