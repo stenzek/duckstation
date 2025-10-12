@@ -231,7 +231,8 @@ static void EnumerateChtFiles(const std::string_view serial, std::optional<GameH
 
 static std::optional<CodeOption> ParseOption(const std::string_view value);
 static bool ParseOptionRange(const std::string_view value, u16* out_range_start, u16* out_range_end);
-extern void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
+static void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
+static std::unique_ptr<CheatCode> ParseCode(CheatCode::Metadata metadata, const std::string_view data, Error* error);
 
 static Cheats::FileFormat DetectFileFormat(const std::string_view file_contents);
 static bool ImportPCSXFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
@@ -239,9 +240,6 @@ static bool ImportLibretroFile(CodeInfoList* dst, const std::string_view file_co
                                Error* error);
 static bool ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
 static bool ImportOldChtFile(const std::string_view serial);
-
-static std::unique_ptr<CheatCode> ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
-                                                     Error* error);
 
 const char* PATCHES_CONFIG_SECTION = "Patches";
 const char* CHEATS_CONFIG_SECTION = "Cheats";
@@ -790,6 +788,24 @@ void Cheats::RemoveAllCodes(const std::string_view serial, const std::string_vie
         ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
     }
   }
+}
+
+bool Cheats::ValidateCodeBody(std::string_view name, CodeType type, CodeActivation activation, std::string_view body,
+                              Error* error)
+{
+  // don't need the full metadata, only enough to get through
+  CheatCode::Metadata metadata = {};
+  metadata.name = name;
+  metadata.type = type;
+  metadata.activation = activation;
+
+  std::unique_ptr<CheatCode> code = ParseCode(std::move(metadata), body, error);
+  return static_cast<bool>(code);
+}
+
+bool Cheats::ValidateCodeBody(const CodeInfo& code, Error* error)
+{
+  return ValidateCodeBody(code.name, code.type, code.activation, code.body, error);
 }
 
 std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)
@@ -1457,28 +1473,18 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     const std::string_view code_body =
       file_contents.substr(code_body_start.value(), reader.GetCurrentLineOffset() - code_body_start.value());
 
-    std::unique_ptr<CheatCode> code;
-    if (next_code_metadata.type == CodeType::Gameshark)
+    Error error;
+    std::unique_ptr<CheatCode> code = ParseCode(std::move(next_code_metadata), code_body, &error);
+    if (!code)
     {
-      Error error;
-      code = ParseGamesharkCode(std::move(next_code_metadata), code_body, &error);
-      if (!code)
-      {
-        WARNING_LOG("Failed to parse gameshark code ending on line {}: {}", reader.GetCurrentLineNumber(),
-                    error.GetDescription());
-        return;
-      }
-    }
-    else
-    {
-      WARNING_LOG("Unknown code type ending at line {}", reader.GetCurrentLineNumber());
-      return;
+      WARNING_LOG("Failed to parse gameshark code ending on line {}: {}", reader.GetCurrentLineNumber(),
+                  error.GetDescription());
     }
 
     next_code_group = {};
     next_code_metadata = {};
     code_body_start.reset();
-    if (std::exchange(next_code_ignored, false))
+    if (std::exchange(next_code_ignored, false) || !code)
       return;
 
     // overwrite existing codes with the same name.
@@ -4446,14 +4452,26 @@ void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
   {
     Instruction& inst = instructions[index];
     const u32 value_mask = ((1u << bit_count) - 1);
-    ;
     const u32 fixed_mask = ~(value_mask << bitpos_start);
     inst.second = (inst.second & fixed_mask) | ((value & value_mask) << bitpos_start);
   }
 }
 
-std::unique_ptr<Cheats::CheatCode> Cheats::ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
-                                                              Error* error)
+std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadata, const std::string_view data,
+                                                     Error* error)
 {
-  return GamesharkCheatCode::Parse(std::move(metadata), data, error);
+  std::unique_ptr<Cheats::CheatCode> ret;
+
+  switch (metadata.type)
+  {
+    case CodeType::Gameshark:
+      ret = GamesharkCheatCode::Parse(std::move(metadata), data, error);
+      break;
+
+    default:
+      Error::SetStringView(error, "Unknown code type");
+      break;
+  }
+
+  return ret;
 }

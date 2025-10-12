@@ -864,6 +864,23 @@ void CheatCodeEditorDialog::saveClicked()
     return;
   }
 
+  const Cheats::CodeType new_type = static_cast<Cheats::CodeType>(m_ui.type->currentIndex());
+  const Cheats::CodeActivation new_activation = static_cast<Cheats::CodeActivation>(m_ui.activation->currentIndex());
+
+  // Validate it before trying to save it.
+  Error error;
+  if (!Cheats::ValidateCodeBody(new_name, new_type, new_activation, new_body, &error))
+  {
+    if (QMessageBox::question(QtUtils::GetRootWidget(this), tr("Error"),
+                              tr("The entered cheat code is not valid:\n\n%1\n\nTrying to use this cheat will not work "
+                                 "as expected. Do you want to continue?")
+                                .arg(QString::fromStdString(error.GetDescription())),
+                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+    {
+      return;
+    }
+  }
+
   // name actually includes the prefix
   if (const int index = m_ui.group->currentIndex(); index != 0)
   {
@@ -894,8 +911,8 @@ void CheatCodeEditorDialog::saveClicked()
                           .replace(QChar('\n'), QChar(' '))
                           .trimmed()
                           .toStdString();
-  m_code->type = static_cast<Cheats::CodeType>(m_ui.type->currentIndex());
-  m_code->activation = static_cast<Cheats::CodeActivation>(m_ui.activation->currentIndex());
+  m_code->type = new_type;
+  m_code->activation = new_activation;
   m_code->body = std::move(new_body);
 
   m_code->option_range_start = 0;
@@ -914,7 +931,6 @@ void CheatCodeEditorDialog::saveClicked()
   }
 
   std::string path = m_parent->getPathForSavingCheats();
-  Error error;
   if (!Cheats::UpdateCodeInFile(path.c_str(), old_name, m_code, &error))
   {
     QMessageBox::critical(this, tr("Error"),

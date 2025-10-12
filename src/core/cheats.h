@@ -124,6 +124,11 @@ extern bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* 
 /// Removes any .cht files for the specified game.
 extern void RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash);
 
+/// Validates whether a cheat code is properly formatted.
+extern bool ValidateCodeBody(std::string_view name, CodeType type, CodeActivation activation, std::string_view body,
+                             Error* error);
+extern bool ValidateCodeBody(const CodeInfo& code, Error* error);
+
 /// Returns the path to a new cheat/patch cht for the specified serial and hash.
 extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 
