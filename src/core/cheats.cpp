@@ -1198,8 +1198,8 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
   const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &ignore_this_code, &reader]() {
     if (current_code.file_offset_end > current_code.file_offset_body_start)
     {
-      current_code.body = file_data.substr(current_code.file_offset_body_start,
-                                           current_code.file_offset_end - current_code.file_offset_body_start);
+      current_code.body = StringUtil::StripWhitespace(file_data.substr(
+        current_code.file_offset_body_start, current_code.file_offset_end - current_code.file_offset_body_start));
     }
     else
     {
@@ -1795,9 +1795,10 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
         return false;
     }
 
-    current_code.body = std::string_view(file_contents)
-                          .substr(current_code.file_offset_body_start,
-                                  current_code.file_offset_end - current_code.file_offset_body_start);
+    current_code.body =
+      StringUtil::StripWhitespace(std::string_view(file_contents)
+                                    .substr(current_code.file_offset_body_start,
+                                            current_code.file_offset_end - current_code.file_offset_body_start));
 
     AppendCheatToList(dst, std::move(current_code));
     return true;
@@ -1977,10 +1978,10 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
         return false;
     }
 
-    current_code.body = std::string_view(file_contents)
-                          .substr(current_code.file_offset_body_start,
-                                  current_code.file_offset_end - current_code.file_offset_body_start);
-    StringUtil::StripWhitespace(&current_code.body);
+    current_code.body =
+      StringUtil::StripWhitespace(std::string_view(file_contents)
+                                    .substr(current_code.file_offset_body_start,
+                                            current_code.file_offset_end - current_code.file_offset_body_start));
 
     AppendCheatToList(dst, std::move(current_code));
     return true;
