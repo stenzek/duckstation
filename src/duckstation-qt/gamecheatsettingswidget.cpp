@@ -358,7 +358,8 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
   connect(remove, &QAction::triggered, this, [this, &selected_code]() { removeCode(selected_code, true); });
   context_menu.addSeparator();
 
-  QAction* disable_all = context_menu.addAction(QIcon::fromTheme(QStringLiteral("chat-off-line")), tr("Disable All Cheats"));
+  QAction* disable_all =
+    context_menu.addAction(QIcon::fromTheme(QStringLiteral("chat-off-line")), tr("Disable All Cheats"));
   connect(disable_all, &QAction::triggered, this, &GameCheatSettingsWidget::disableAllCheats);
 
   QAction* reload = context_menu.addAction(QIcon::fromTheme(QStringLiteral("refresh-line")), tr("Reload Cheats"));
@@ -856,7 +857,7 @@ void CheatCodeEditorDialog::saveClicked()
     return;
   }
 
-  std::string new_body = m_ui.instructions->toPlainText().toStdString();
+  std::string new_body = QtUtils::NormalizeLineEndings(m_ui.instructions->toPlainText()).trimmed().toStdString();
   if (new_body.empty())
   {
     QMessageBox::critical(this, tr("Error"), tr("Instructions cannot be empty."));
@@ -889,7 +890,10 @@ void CheatCodeEditorDialog::saveClicked()
   }
 
   m_code->name = std::move(new_name);
-  m_code->description = m_ui.description->toPlainText().replace('\n', ' ').toStdString();
+  m_code->description = QtUtils::NormalizeLineEndings(m_ui.description->toPlainText())
+                          .replace(QChar('\n'), QChar(' '))
+                          .trimmed()
+                          .toStdString();
   m_code->type = static_cast<Cheats::CodeType>(m_ui.type->currentIndex());
   m_code->activation = static_cast<Cheats::CodeActivation>(m_ui.activation->currentIndex());
   m_code->body = std::move(new_body);

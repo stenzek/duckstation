@@ -177,6 +177,13 @@ QString QtUtils::StringViewToQString(std::string_view str)
   return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 }
 
+QString QtUtils::NormalizeLineEndings(QString str)
+{
+  str.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+  str.replace(QChar('\r'), QChar('\n'));
+  return str;
+}
+
 void QtUtils::SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
 {
   if (widget->font().italic() != inherited)

@@ -91,6 +91,9 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
 /// Converts a std::string_view to a QString safely.
 QString StringViewToQString(std::string_view str);
 
+/// Ensures line endings are normalized in \n format.
+QString NormalizeLineEndings(QString str);
+
 /// Sets a widget to italics if the setting value is inherited.
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
 
