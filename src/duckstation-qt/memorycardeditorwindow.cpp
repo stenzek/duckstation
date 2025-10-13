@@ -155,6 +155,7 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   connectCardUi(&m_card_b, m_ui.buttonBoxB);
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
+  updateButtonState();
 
   const QString new_card_hover_text(tr("New Card..."));
   const QString open_card_hover_text(tr("Open Card..."));
@@ -347,8 +348,8 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
 
   card->table->setRowCount(0);
   card->dirty = false;
-  card->blocks_free_label->clear();
   card->save_button->setEnabled(false);
+  card->blocks_free_label->clear();
 
   card->filename.clear();
 
@@ -529,6 +530,8 @@ void MemoryCardEditorWindow::openCard(Card* card)
   }
 
   card->filename = filename.toStdString();
+  card->save_button->setEnabled(false);
+  card->dirty = false;
   updateCardTable(card);
   updateCardBlocksFree(card);
   updateButtonState();
