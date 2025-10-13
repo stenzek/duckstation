@@ -624,6 +624,9 @@ QMenu::item:selected {
     background-color: #2b4ab3;
     color: #ffffff;
 }
+QMenu::item:disabled {
+    color: #585858;
+}
 QMenu::icon:checked {
     background: #414141;
     border: 1px solid #777;
@@ -658,6 +661,9 @@ QMenu::item:selected {
 QMenu::icon:checked {
     background: #414141;
     border: 1px solid #777;
+}
+QMenu::item:disabled {
+    color: #909090;
 }
 QMenu::separator {
     background: #a9a9a9;
