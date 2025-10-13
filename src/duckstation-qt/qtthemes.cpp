@@ -536,7 +536,11 @@ void QtHost::UpdateThemeOnStyleChange()
     QIcon::setThemeName(new_theme_name);
 
   if (NativeThemeStylesheetNeedsUpdate())
-    qApp->setStyleSheet(GetNativeThemeStylesheet());
+  {
+    const QString stylesheet = GetNativeThemeStylesheet();
+    if (qApp->styleSheet() != stylesheet)
+      qApp->setStyleSheet(stylesheet);
+  }
 }
 
 const char* Host::GetDefaultFullscreenUITheme()
