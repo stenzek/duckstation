@@ -26,6 +26,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/progress_callback.h"
+#include "common/string_pool.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
 #include "common/time_helpers.h"
@@ -137,6 +138,9 @@ static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::strin
 static std::string GetMemcardTimestampCachePath();
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
 
+static std::string GetAchievementGameBadgeCachePath();
+static void LoadAchievementGameBadges();
+
 struct State
 {
   EntryList entries;
@@ -144,7 +148,12 @@ struct State
   CacheMap cache_map;
   std::vector<MemcardTimestampCacheEntry> memcard_timestamp_cache_entries;
 
+  // TODO: Turn this into a proper cache of achievement data, not just the badge names.
+  std::vector<std::pair<u32, u32>> achievement_game_id_badges; // game_id, string_pool_offset
+  BumpStringPool achievement_game_badge_names;
+
   bool game_list_loaded = false;
+  bool achievement_game_badges_loaded = false;
 };
 
 ALIGN_TO_CACHE_LINE static State s_state;
@@ -185,6 +194,17 @@ bool GameList::ShouldShowLocalizedTitles()
   return Host::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
 }
 
+bool GameList::ShouldLoadAchievementsProgress()
+{
+  return Host::ContainsBaseSettingValue("Cheevos", "Token");
+}
+
+bool GameList::PreferAchievementGameBadgesForIcons()
+{
+  return (ShouldLoadAchievementsProgress() &&
+          Host::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
+}
+
 bool GameList::IsScannableFilename(std::string_view path)
 {
   // we don't scan bin files because they'll duplicate
@@ -192,11 +212,6 @@ bool GameList::IsScannableFilename(std::string_view path)
     return false;
 
   return (System::IsDiscPath(path) || System::IsExePath(path) || System::IsPsfPath(path));
-}
-
-bool GameList::ShouldLoadAchievementsProgress()
-{
-  return Host::ContainsBaseSettingValue("Cheevos", "Token");
 }
 
 bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
@@ -2004,12 +2019,20 @@ void GameList::ReloadMemcardTimestampCache()
     entry.serial[sizeof(entry.serial) - 1] = 0;
 }
 
-std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path)
+std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path, u32 achievements_game_id)
 {
   std::string ret;
 
+  std::string fallback_path;
+  if (achievements_game_id != 0)
+  {
+    fallback_path = GetAchievementGameBadgePath(achievements_game_id);
+    if (!fallback_path.empty() && PreferAchievementGameBadgesForIcons())
+      return (ret = std::move(fallback_path));
+  }
+
   if (serial.empty())
-    return ret;
+    return (ret = std::move(fallback_path));
 
   // might exist already, or the user used a custom icon
   ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
@@ -2022,8 +2045,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   if (memcard_path.empty() || type == MemoryCardType::Shared ||
       !FileSystem::StatFile(memcard_path.c_str(), &memcard_sd))
   {
-    ret = {};
-    return ret;
+    return (ret = std::move(fallback_path));
   }
 
   const s64 timestamp = memcard_sd.ModificationTime;
@@ -2039,10 +2061,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
       // user might've deleted the file, so re-extract it if so
       // otherwise, card hasn't changed, still no icon
       if (entry.memcard_timestamp == timestamp && !entry.icon_was_extracted)
-      {
-        ret = {};
-        return ret;
-      }
+        return (ret = std::move(fallback_path));
 
       serial_entry = &entry;
       break;
@@ -2092,9 +2111,8 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
     ERROR_LOG("Failed to load memory card '{}': {}", Path::GetFileName(memcard_path), error.GetDescription());
   }
 
-  ret = {};
   UpdateMemcardTimestampCache(*serial_entry);
-  return ret;
+  return (ret = std::move(fallback_path));
 }
 
 bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)
@@ -2147,4 +2165,146 @@ bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& ent
 
   // append it.
   return (std::fwrite(&entry, sizeof(entry), 1, fp.get()) == 1);
+}
+
+std::string GameList::GetAchievementGameBadgeCachePath()
+{
+  return Path::Combine(EmuFolders::Cache, "achievement_game_badges.cache");
+}
+
+std::string GameList::GetAchievementGameBadgePath(u32 game_id)
+{
+  LoadAchievementGameBadges();
+
+  std::string ret;
+
+  const auto iter =
+    std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
+                     [](const auto& entry, u32 search) { return entry.first < search; });
+  if (iter != s_state.achievement_game_id_badges.end() && iter->first == game_id)
+  {
+    const std::string_view badge_name = s_state.achievement_game_badge_names.GetString(iter->second);
+    if (!badge_name.empty())
+    {
+      ret = Achievements::GetGameBadgePath(badge_name);
+      if (!FileSystem::FileExists(ret.c_str()))
+        ret.clear();
+    }
+  }
+
+  return ret;
+}
+
+void GameList::LoadAchievementGameBadges()
+{
+  if (s_state.achievement_game_badges_loaded)
+    return;
+
+  s_state.achievement_game_badges_loaded = true;
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetAchievementGameBadgeCachePath().c_str(), false, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to load cache: {}", error.GetDescription());
+    return;
+  }
+
+  // avoid heap allocations by using the file size as a guide
+  static constexpr u32 MAX_RESERVE_SIZE = 1 * 1024 * 1024;
+  s_state.achievement_game_badge_names.Reserve(
+    static_cast<size_t>(std::clamp<s64>(FileSystem::FSize64(fp.get()), 0, MAX_RESERVE_SIZE)));
+
+  char line[256];
+  while (std::fgets(line, sizeof(line), fp.get()))
+  {
+    const std::string_view line_sv = StringUtil::StripWhitespace(line);
+    if (line_sv.empty())
+      continue;
+
+    const std::string_view::size_type pos = line_sv.find(',');
+    if (pos != std::string_view::npos)
+    {
+      const std::optional<u32> game_id = StringUtil::FromChars<u32>(line_sv.substr(0, pos));
+      const std::string_view badge_name = StringUtil::StripWhitespace(line_sv.substr(pos + 1));
+      if (game_id.has_value() && !badge_name.empty())
+      {
+        s_state.achievement_game_id_badges.emplace_back(
+          game_id.value(), static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name)));
+        continue;
+      }
+    }
+
+    WARNING_LOG("Malformed line in cache: '{}'", line_sv);
+  }
+
+  DEV_LOG("Loaded {} achievement badge names", s_state.achievement_game_id_badges.size());
+
+  // the file may not be sorted, so sort it now.
+  std::sort(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(),
+            [](const auto& a, const auto& b) { return a.first < b.first; });
+}
+
+void GameList::UpdateAchievementBadgeName(u32 game_id, std::string_view badge_name)
+{
+  if (game_id == 0)
+    return;
+
+  std::unique_lock lock(s_state.mutex);
+
+  LoadAchievementGameBadges();
+
+  const auto iter =
+    std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
+                     [](const auto& entry, u32 search) { return entry.first < search; });
+  bool game_exists = false;
+  if (iter != s_state.achievement_game_id_badges.end() && iter->first == game_id)
+  {
+    if (s_state.achievement_game_badge_names.GetString(iter->second) == badge_name)
+      return;
+
+    iter->second = static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name));
+    game_exists = true;
+  }
+  else
+  {
+    s_state.achievement_game_id_badges.insert(
+      iter, {game_id, static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name))});
+  }
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetAchievementGameBadgeCachePath().c_str(), true, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to open cache for update: {}", error.GetDescription());
+    return;
+  }
+
+  // this is really terrible, but the case where a badge name changes is so rare that it's not worth handling well
+  if (game_exists)
+  {
+    if (!FileSystem::FTruncate64(fp.get(), 0, &error))
+    {
+      ERROR_LOG("Failed to truncate cache: {}", error.GetDescription());
+      return;
+    }
+
+    for (const auto& entry : s_state.achievement_game_id_badges)
+    {
+      const std::string_view entry_badge = s_state.achievement_game_badge_names.GetString(entry.second);
+      if (std::fprintf(fp.get(), "%u,%.*s\n", entry.first, static_cast<int>(entry_badge.size()), entry_badge.data()) <
+          0)
+      {
+        ERROR_LOG("Failed to rewrite cache: errno {}", errno);
+      }
+    }
+  }
+  else
+  {
+    if (!FileSystem::FSeek64(fp.get(), 0, SEEK_END, &error) ||
+        std::fprintf(fp.get(), "%u,%.*s\n", game_id, static_cast<int>(badge_name.size()), badge_name.data()) < 0)
+    {
+      ERROR_LOG("Failed to append to cache: errno {}", errno);
+    }
+  }
 }

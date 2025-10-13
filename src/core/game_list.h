@@ -168,13 +168,18 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
 /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
 /// timestamp of the memory card has changed.
-std::string GetGameIconPath(std::string_view serial, std::string_view path);
+std::string GetGameIconPath(std::string_view serial, std::string_view path, u32 achievements_game_id);
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.
 void UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, u32 num_achievements, u32 num_unlocked,
                            u32 num_unlocked_hardcore);
 void UpdateAllAchievementData();
+
+/// Accesses achievement game badges. Assumes the lock is held.
+bool PreferAchievementGameBadgesForIcons();
+std::string GetAchievementGameBadgePath(u32 game_id);
+void UpdateAchievementBadgeName(u32 game_id, std::string_view badge_name);
 
 } // namespace GameList
 

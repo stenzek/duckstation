@@ -1325,9 +1325,13 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_state.game_icon_url =
     info->badge_url ? std::string(info->badge_url) : GetImageURL(info->badge_name, RC_IMAGE_TYPE_GAME);
   s_state.game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
-  if (!s_state.game_icon.empty() && !s_state.game_icon_url.empty() &&
-      !FileSystem::FileExists(s_state.game_icon.c_str()))
-    DownloadImage(s_state.game_icon_url, s_state.game_icon);
+  if (!s_state.game_icon.empty() && !s_state.game_icon_url.empty())
+  {
+    if (!FileSystem::FileExists(s_state.game_icon.c_str()))
+      DownloadImage(s_state.game_icon_url, s_state.game_icon);
+
+    GameList::UpdateAchievementBadgeName(info->id, info->badge_name);
+  }
 
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
@@ -2301,6 +2305,11 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
   //: Score summary, shown in Big Picture mode.
   ret.format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)"), user->score, user->score_softcore);
   return ret;
+}
+
+std::string Achievements::GetGameBadgePath(std::string_view badge_name)
+{
+  return GetLocalImagePath(badge_name, RC_IMAGE_TYPE_GAME);
 }
 
 u32 Achievements::GetPauseThrottleFrames()

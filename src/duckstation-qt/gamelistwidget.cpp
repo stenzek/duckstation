@@ -529,7 +529,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path);
+      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path, ge->achievements_game_id);
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
@@ -593,7 +593,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
     }
   }
 
-  const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+  const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
   if (!icon_path.empty())
     ret = QIcon(QString::fromStdString(icon_path));
 
@@ -1423,7 +1423,7 @@ public:
   {
     DebugAssert(source_row >= 0);
 
-    const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+    const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
     if (icon_path.empty())
     {
       clearEntry();
@@ -1513,8 +1513,8 @@ private:
 
 GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
                                QAction* action_merge_disc_sets, QAction* action_show_list_icons,
-                               QAction* action_animate_list_icons, QAction* action_show_grid_titles,
-                               QAction* action_show_localized_titles)
+                               QAction* action_animate_list_icons, QAction* action_prefer_achievement_game_icons,
+                               QAction* action_show_grid_titles, QAction* action_show_localized_titles)
   : QWidget(parent)
 {
   m_model = new GameListModel(this);
@@ -1594,6 +1594,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   action_show_localized_titles->setChecked(m_model->getShowLocalizedTitles());
   action_show_list_icons->setChecked(m_model->getShowGameIcons());
   action_animate_list_icons->setChecked(m_list_view->isAnimatingGameIcons());
+  action_prefer_achievement_game_icons->setChecked(GameList::PreferAchievementGameBadgesForIcons());
   action_show_grid_titles->setChecked(m_model->getShowCoverTitles());
   onIconSizeChanged(m_model->getIconSize());
 
@@ -1931,6 +1932,17 @@ void GameListWidget::setAnimateGameIcons(bool enabled)
   m_list_view->setAnimateGameIcons(enabled);
   if (isShowingGameList())
     m_list_view->updateAnimatedGameIconDelegate();
+}
+
+void GameListWidget::setPreferAchievementGameIcons(bool enabled)
+{
+  Host::SetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", enabled);
+  Host::CommitBaseSettingChanges();
+
+  if (!enabled)
+    GameList::ReloadMemcardTimestampCache();
+
+  m_model->refreshIcons();
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)

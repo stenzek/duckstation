@@ -249,8 +249,8 @@ class GameListWidget final : public QWidget
 public:
   explicit GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
                           QAction* action_merge_disc_sets, QAction* action_show_list_icons,
-                          QAction* action_animate_list_icons, QAction* action_show_grid_titles,
-                          QAction* action_show_localized_titles);
+                          QAction* action_animate_list_icons, QAction* action_prefer_achievement_game_icons,
+                          QAction* action_show_grid_titles, QAction* action_show_localized_titles);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }
@@ -276,6 +276,7 @@ public:
   void setShowLocalizedTitles(bool enabled);
   void setShowGameIcons(bool enabled);
   void setAnimateGameIcons(bool enabled);
+  void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
   void focusSearchWidget();

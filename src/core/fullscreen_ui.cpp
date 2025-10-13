@@ -8994,7 +8994,7 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
     cover_it = s_state.icon_image_map.find(entry->serial);
     if (cover_it == s_state.icon_image_map.end())
     {
-      std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+      std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
       cover_it = s_state.icon_image_map.emplace(entry->serial, std::move(icon_path)).first;
     }
   }

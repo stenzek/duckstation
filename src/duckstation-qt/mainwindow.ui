@@ -217,19 +217,21 @@
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
     <addaction name="menuSortBy"/>
+    <addaction name="actionViewZoomIn"/>
+    <addaction name="actionViewZoomOut"/>
     <addaction name="separator"/>
     <addaction name="actionMergeDiscSets"/>
     <addaction name="actionShowLocalizedTitles"/>
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionAnimateGameIcons"/>
+    <addaction name="actionPreferAchievementGameIcons"/>
+    <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
-    <addaction name="actionViewZoomIn"/>
-    <addaction name="actionViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
-    <addaction name="actionViewRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionChangeGameListBackground"/>
     <addaction name="actionClearGameListBackground"/>
+    <addaction name="actionViewRefreshAchievementProgress"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
@@ -1027,7 +1029,7 @@
     <iconset theme="price-tag-3-line"/>
    </property>
    <property name="text">
-    <string>Show Titl&amp;es (Grid View)</string>
+    <string>Show G&amp;rid Captions</string>
    </property>
    <property name="iconText">
     <string>Show Titles (Grid View)</string>
@@ -1060,7 +1062,7 @@
   </action>
   <action name="actionGridViewRefreshCovers">
    <property name="text">
-    <string>Refresh &amp;Covers (Grid View)</string>
+    <string>Refresh Grid &amp;Covers</string>
    </property>
    <property name="toolTip">
     <string>Invalidates the cache of game covers, allowing new images to be discovered.</string>
@@ -1134,7 +1136,7 @@
     <iconset theme="image-fill"/>
    </property>
    <property name="text">
-    <string>Show Game Ico&amp;ns (List View)</string>
+    <string>Show Game Ico&amp;ns</string>
    </property>
    <property name="toolTip">
     <string>Shows icons from the memory card of each game in list view.</string>
@@ -1310,10 +1312,24 @@
     <iconset theme="add-animation"/>
    </property>
    <property name="text">
-    <string>Animate Game Icons (List View)</string>
+    <string>Animate Game Icons</string>
    </property>
    <property name="toolTip">
     <string>Animates icons in the list view when selected.</string>
+   </property>
+  </action>
+  <action name="actionPreferAchievementGameIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="trophy-line"/>
+   </property>
+   <property name="text">
+    <string>Prefer Achievement Icons</string>
+   </property>
+   <property name="toolTip">
+    <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
    </property>
   </action>
  </widget>
