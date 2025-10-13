@@ -58,6 +58,7 @@
       <Filter>thirdparty</Filter>
     </ClInclude>
     <ClInclude Include="time_helpers.h" />
+    <ClInclude Include="string_pool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -89,6 +90,7 @@
     <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="thirdparty\aes.cpp" />
     <ClCompile Include="task_queue.cpp" />
+    <ClCompile Include="string_pool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

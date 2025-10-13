@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "common/string_util.h"
+#include "common/string_pool.h"
 
 #include <gtest/gtest.h>
+#include <tuple>
 
 TEST(StringUtil, Ellipsise)
 {
@@ -1019,3 +1021,477 @@ TEST(StringUtil, WideStringToUTF8String)
   ASSERT_EQ(dest, "Hello");
 }
 #endif
+
+// ============================================================================
+// BumpStringPool Tests
+// ============================================================================
+
+class BumpStringPoolTest : public ::testing::Test
+{
+protected:
+  BumpStringPool pool;
+};
+
+TEST_F(BumpStringPoolTest, InitialState)
+{
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+}
+
+TEST_F(BumpStringPoolTest, AddString_ValidString)
+{
+  const std::string_view test_str = "test";
+  const auto offset = pool.AddString(test_str);
+
+  EXPECT_NE(offset, BumpStringPool::InvalidOffset);
+  EXPECT_FALSE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), test_str.size() + 1); // +1 for null terminator
+}
+
+TEST_F(BumpStringPoolTest, AddString_EmptyString)
+{
+  const auto offset = pool.AddString("");
+
+  EXPECT_EQ(offset, BumpStringPool::InvalidOffset);
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+}
+
+TEST_F(BumpStringPoolTest, AddString_MultipleStrings)
+{
+  const std::string_view str1 = "first";
+  const std::string_view str2 = "second";
+  const std::string_view str3 = "third";
+
+  const auto offset1 = pool.AddString(str1);
+  const auto offset2 = pool.AddString(str2);
+  const auto offset3 = pool.AddString(str3);
+
+  EXPECT_NE(offset1, BumpStringPool::InvalidOffset);
+  EXPECT_NE(offset2, BumpStringPool::InvalidOffset);
+  EXPECT_NE(offset3, BumpStringPool::InvalidOffset);
+
+  EXPECT_EQ(offset1, 0u);
+  EXPECT_EQ(offset2, str1.size() + 1);
+  EXPECT_EQ(offset3, str1.size() + 1 + str2.size() + 1);
+
+  const size_t expected_size = str1.size() + str2.size() + str3.size() + 3; // +3 for null terminators
+  EXPECT_EQ(pool.GetSize(), expected_size);
+}
+
+TEST_F(BumpStringPoolTest, AddString_DuplicateStrings)
+{
+  const std::string_view test_str = "duplicate";
+
+  const auto offset1 = pool.AddString(test_str);
+  const auto offset2 = pool.AddString(test_str);
+
+  // BumpStringPool does NOT deduplicate
+  EXPECT_NE(offset1, offset2);
+  EXPECT_EQ(pool.GetSize(), (test_str.size() + 1) * 2);
+}
+
+TEST_F(BumpStringPoolTest, GetString_ValidOffset)
+{
+  const std::string_view test_str = "hello world";
+  const auto offset = pool.AddString(test_str);
+
+  const auto retrieved = pool.GetString(offset);
+
+  EXPECT_EQ(retrieved, test_str);
+}
+
+TEST_F(BumpStringPoolTest, GetString_InvalidOffset)
+{
+  const auto retrieved = pool.GetString(BumpStringPool::InvalidOffset);
+
+  EXPECT_TRUE(retrieved.empty());
+}
+
+TEST_F(BumpStringPoolTest, GetString_OutOfBoundsOffset)
+{
+  std::ignore = pool.AddString("test");
+  const auto retrieved = pool.GetString(9999);
+
+  EXPECT_TRUE(retrieved.empty());
+}
+
+TEST_F(BumpStringPoolTest, GetString_MultipleStrings)
+{
+  const std::string_view str1 = "alpha";
+  const std::string_view str2 = "beta";
+  const std::string_view str3 = "gamma";
+
+  const auto offset1 = pool.AddString(str1);
+  const auto offset2 = pool.AddString(str2);
+  const auto offset3 = pool.AddString(str3);
+
+  EXPECT_EQ(pool.GetString(offset1), str1);
+  EXPECT_EQ(pool.GetString(offset2), str2);
+  EXPECT_EQ(pool.GetString(offset3), str3);
+}
+
+TEST_F(BumpStringPoolTest, Clear)
+{
+  std::ignore = pool.AddString("test1");
+  std::ignore = pool.AddString("test2");
+  std::ignore = pool.AddString("test3");
+
+  EXPECT_FALSE(pool.IsEmpty());
+  EXPECT_GT(pool.GetSize(), 0u);
+
+  pool.Clear();
+
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+}
+
+TEST_F(BumpStringPoolTest, Reserve)
+{
+  pool.Reserve(1024);
+
+  // Reserve doesn't change the logical size or empty state
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+
+  // After reservation, adding strings should still work
+  const auto offset = pool.AddString("test");
+  EXPECT_NE(offset, BumpStringPool::InvalidOffset);
+}
+
+TEST_F(BumpStringPoolTest, AddString_SpecialCharacters)
+{
+  const std::string_view special_str = "Hello\nWorld\t!@#$%^&*()";
+  const auto offset = pool.AddString(special_str);
+
+  EXPECT_NE(offset, BumpStringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), special_str);
+}
+
+TEST_F(BumpStringPoolTest, AddString_UnicodeCharacters)
+{
+  const std::string_view unicode_str = "Hello 世界 🌍";
+  const auto offset = pool.AddString(unicode_str);
+
+  EXPECT_NE(offset, BumpStringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), unicode_str);
+}
+
+TEST_F(BumpStringPoolTest, AddString_LongString)
+{
+  std::string long_str(10000, 'x');
+  const auto offset = pool.AddString(long_str);
+
+  EXPECT_NE(offset, BumpStringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), long_str);
+  EXPECT_EQ(pool.GetSize(), long_str.size() + 1);
+}
+
+// ============================================================================
+// StringPool Tests
+// ============================================================================
+
+class StringPoolTest : public ::testing::Test
+{
+protected:
+  StringPool pool;
+};
+
+TEST_F(StringPoolTest, InitialState)
+{
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+  EXPECT_EQ(pool.GetCount(), 0u);
+}
+
+TEST_F(StringPoolTest, AddString_ValidString)
+{
+  const std::string_view test_str = "test";
+  const auto offset = pool.AddString(test_str);
+
+  EXPECT_NE(offset, StringPool::InvalidOffset);
+  EXPECT_FALSE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), test_str.size() + 1);
+  EXPECT_EQ(pool.GetCount(), 1u);
+}
+
+TEST_F(StringPoolTest, AddString_EmptyString)
+{
+  const auto offset = pool.AddString("");
+
+  EXPECT_EQ(offset, StringPool::InvalidOffset);
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+  EXPECT_EQ(pool.GetCount(), 0u);
+}
+
+TEST_F(StringPoolTest, AddString_MultipleStrings)
+{
+  const std::string_view str1 = "first";
+  const std::string_view str2 = "second";
+  const std::string_view str3 = "third";
+
+  const auto offset1 = pool.AddString(str1);
+  const auto offset2 = pool.AddString(str2);
+  const auto offset3 = pool.AddString(str3);
+
+  EXPECT_NE(offset1, StringPool::InvalidOffset);
+  EXPECT_NE(offset2, StringPool::InvalidOffset);
+  EXPECT_NE(offset3, StringPool::InvalidOffset);
+
+  EXPECT_EQ(pool.GetCount(), 3u);
+
+  const size_t expected_size = str1.size() + str2.size() + str3.size() + 3;
+  EXPECT_EQ(pool.GetSize(), expected_size);
+}
+
+TEST_F(StringPoolTest, AddString_DuplicateStrings)
+{
+  const std::string_view test_str = "duplicate";
+
+  const auto offset1 = pool.AddString(test_str);
+  const auto offset2 = pool.AddString(test_str);
+
+  // StringPool DOES deduplicate
+  EXPECT_EQ(offset1, offset2);
+  EXPECT_EQ(pool.GetSize(), test_str.size() + 1);
+  EXPECT_EQ(pool.GetCount(), 1u);
+}
+
+TEST_F(StringPoolTest, AddString_MultipleDuplicates)
+{
+  const std::string_view str1 = "test";
+  const std::string_view str2 = "hello";
+
+  const auto offset1_1 = pool.AddString(str1);
+  const auto offset2_1 = pool.AddString(str2);
+  const auto offset1_2 = pool.AddString(str1);
+  const auto offset2_2 = pool.AddString(str2);
+  const auto offset1_3 = pool.AddString(str1);
+
+  EXPECT_EQ(offset1_1, offset1_2);
+  EXPECT_EQ(offset1_1, offset1_3);
+  EXPECT_EQ(offset2_1, offset2_2);
+  EXPECT_NE(offset1_1, offset2_1);
+
+  EXPECT_EQ(pool.GetCount(), 2u);
+  EXPECT_EQ(pool.GetSize(), str1.size() + str2.size() + 2);
+}
+
+TEST_F(StringPoolTest, GetString_ValidOffset)
+{
+  const std::string_view test_str = "hello world";
+  const auto offset = pool.AddString(test_str);
+
+  const auto retrieved = pool.GetString(offset);
+
+  EXPECT_EQ(retrieved, test_str);
+}
+
+TEST_F(StringPoolTest, GetString_InvalidOffset)
+{
+  const auto retrieved = pool.GetString(StringPool::InvalidOffset);
+
+  EXPECT_TRUE(retrieved.empty());
+}
+
+TEST_F(StringPoolTest, GetString_OutOfBoundsOffset)
+{
+  std::ignore = pool.AddString("test");
+  const auto retrieved = pool.GetString(9999);
+
+  EXPECT_TRUE(retrieved.empty());
+}
+
+TEST_F(StringPoolTest, GetString_MultipleStrings)
+{
+  const std::string_view str1 = "alpha";
+  const std::string_view str2 = "beta";
+  const std::string_view str3 = "gamma";
+
+  const auto offset1 = pool.AddString(str1);
+  const auto offset2 = pool.AddString(str2);
+  const auto offset3 = pool.AddString(str3);
+
+  EXPECT_EQ(pool.GetString(offset1), str1);
+  EXPECT_EQ(pool.GetString(offset2), str2);
+  EXPECT_EQ(pool.GetString(offset3), str3);
+}
+
+TEST_F(StringPoolTest, Clear)
+{
+  std::ignore = pool.AddString("test1");
+  std::ignore = pool.AddString("test2");
+  std::ignore = pool.AddString("test3");
+
+  EXPECT_FALSE(pool.IsEmpty());
+  EXPECT_GT(pool.GetSize(), 0u);
+  EXPECT_EQ(pool.GetCount(), 3u);
+
+  pool.Clear();
+
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+  EXPECT_EQ(pool.GetCount(), 0u);
+}
+
+TEST_F(StringPoolTest, Clear_WithDuplicates)
+{
+  std::ignore = pool.AddString("test");
+  std::ignore = pool.AddString("test");
+  std::ignore = pool.AddString("hello");
+
+  EXPECT_EQ(pool.GetCount(), 2u);
+
+  pool.Clear();
+
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetCount(), 0u);
+}
+
+TEST_F(StringPoolTest, Reserve)
+{
+  pool.Reserve(1024);
+
+  // Reserve doesn't change the logical state
+  EXPECT_TRUE(pool.IsEmpty());
+  EXPECT_EQ(pool.GetSize(), 0u);
+  EXPECT_EQ(pool.GetCount(), 0u);
+
+  // After reservation, adding strings should still work
+  const auto offset = pool.AddString("test");
+  EXPECT_NE(offset, StringPool::InvalidOffset);
+}
+
+TEST_F(StringPoolTest, AddString_SpecialCharacters)
+{
+  const std::string_view special_str = "Hello\nWorld\t!@#$%^&*()";
+  const auto offset = pool.AddString(special_str);
+
+  EXPECT_NE(offset, StringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), special_str);
+}
+
+TEST_F(StringPoolTest, AddString_UnicodeCharacters)
+{
+  const std::string_view unicode_str = "Hello 世界 🌍";
+  const auto offset = pool.AddString(unicode_str);
+
+  EXPECT_NE(offset, StringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), unicode_str);
+}
+
+TEST_F(StringPoolTest, AddString_LongString)
+{
+  std::string long_str(10000, 'x');
+  const auto offset = pool.AddString(long_str);
+
+  EXPECT_NE(offset, StringPool::InvalidOffset);
+  EXPECT_EQ(pool.GetString(offset), long_str);
+  EXPECT_EQ(pool.GetSize(), long_str.size() + 1);
+  EXPECT_EQ(pool.GetCount(), 1u);
+}
+
+TEST_F(StringPoolTest, AddString_SimilarStrings)
+{
+  const std::string_view str1 = "test";
+  const std::string_view str2 = "test1";
+  const std::string_view str3 = "testing";
+
+  const auto offset1 = pool.AddString(str1);
+  const auto offset2 = pool.AddString(str2);
+  const auto offset3 = pool.AddString(str3);
+
+  EXPECT_NE(offset1, offset2);
+  EXPECT_NE(offset1, offset3);
+  EXPECT_NE(offset2, offset3);
+
+  EXPECT_EQ(pool.GetCount(), 3u);
+
+  EXPECT_EQ(pool.GetString(offset1), str1);
+  EXPECT_EQ(pool.GetString(offset2), str2);
+  EXPECT_EQ(pool.GetString(offset3), str3);
+}
+
+TEST_F(StringPoolTest, GetCount_TracksUniqueStrings)
+{
+  EXPECT_EQ(pool.GetCount(), 0u);
+
+  std::ignore = pool.AddString("unique1");
+  EXPECT_EQ(pool.GetCount(), 1u);
+
+  std::ignore = pool.AddString("unique2");
+  EXPECT_EQ(pool.GetCount(), 2u);
+
+  std::ignore = pool.AddString("unique1"); // Duplicate
+  EXPECT_EQ(pool.GetCount(), 2u);
+
+  std::ignore = pool.AddString("unique3");
+  EXPECT_EQ(pool.GetCount(), 3u);
+}
+
+TEST_F(StringPoolTest, ReuseAfterClear)
+{
+  const std::string_view test_str = "reuse";
+
+  const auto offset1 = pool.AddString(test_str);
+  EXPECT_EQ(offset1, 0u);
+  EXPECT_EQ(pool.GetCount(), 1u);
+
+  pool.Clear();
+
+  const auto offset2 = pool.AddString(test_str);
+  EXPECT_EQ(pool.GetCount(), 1u);
+
+  // After clear, new strings start at offset 0 again
+  EXPECT_EQ(offset2, 0u);
+  EXPECT_EQ(pool.GetString(offset2), test_str);
+}
+
+// ============================================================================
+// Comparison Tests: BumpStringPool vs StringPool
+// ============================================================================
+
+TEST(StringPoolComparison, DuplicationBehavior)
+{
+  BumpStringPool bump_pool;
+  StringPool string_pool;
+
+  const std::string_view test_str = "duplicate";
+
+  const auto bump_offset1 = bump_pool.AddString(test_str);
+  const auto bump_offset2 = bump_pool.AddString(test_str);
+
+  const auto string_offset1 = string_pool.AddString(test_str);
+  const auto string_offset2 = string_pool.AddString(test_str);
+
+  // BumpStringPool creates duplicates
+  EXPECT_NE(bump_offset1, bump_offset2);
+  EXPECT_EQ(bump_pool.GetSize(), (test_str.size() + 1) * 2);
+
+  // StringPool deduplicates
+  EXPECT_EQ(string_offset1, string_offset2);
+  EXPECT_EQ(string_pool.GetSize(), test_str.size() + 1);
+}
+
+TEST(StringPoolComparison, MemoryEfficiency)
+{
+  BumpStringPool bump_pool;
+  StringPool string_pool;
+
+  const std::string_view str = "test";
+
+  // Add same string 100 times
+  for (int i = 0; i < 100; ++i)
+  {
+    std::ignore = bump_pool.AddString(str);
+    std::ignore = string_pool.AddString(str);
+  }
+
+  // BumpStringPool stores 100 copies
+  EXPECT_EQ(bump_pool.GetSize(), (str.size() + 1) * 100);
+
+  // StringPool stores only 1 copy
+  EXPECT_EQ(string_pool.GetSize(), str.size() + 1);
+  EXPECT_EQ(string_pool.GetCount(), 1u);
+}

@@ -56,6 +56,8 @@ add_library(common
   small_string.h
   string_util.cpp
   string_util.h
+  string_pool.cpp
+  string_pool.h
   time_helpers.h
   thirdparty/SmallVector.cpp
   thirdparty/SmallVector.h
