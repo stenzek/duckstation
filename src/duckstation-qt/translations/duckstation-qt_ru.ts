@@ -2831,7 +2831,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <location filename="../consolesettingswidget.ui" line="71"/>
         <location filename="../consolesettingswidget.cpp" line="89"/>
         <source>Fast Forward Boot</source>
-        <translation>Перемотка с загрузкой</translation>
+        <translation>Перемотка при загрузке</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="64"/>
