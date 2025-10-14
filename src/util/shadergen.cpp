@@ -379,40 +379,42 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
   m_has_uniform_buffer = false;
 }
 
-void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan) const
+void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant) const
 {
+  const u32 binding = push_constant ? 1 : 0;
+  const char* const name = push_constant ? "PushConstants" : "UBOBlock";
   if (m_shader_language == GPUShaderLanguage::GLSLVK)
   {
-    if (m_render_api == RenderAPI::Vulkan && push_constant_on_vulkan)
+    if (push_constant && (m_render_api == RenderAPI::Vulkan || m_render_api == RenderAPI::Metal))
     {
-      ss << "layout(push_constant, row_major) uniform PushConstants\n";
+      ss << "layout(push_constant, row_major) uniform " << name << "\n";
     }
     else
     {
-      ss << "layout(std140, row_major, set = 0, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, set = 0, binding = " << binding << ") uniform " << name << "\n";
       m_has_uniform_buffer = true;
     }
   }
   else if (m_glsl)
   {
     if (m_use_glsl_binding_layout)
-      ss << "layout(std140, row_major, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, binding = " << binding << ") uniform " << name << "\n";
     else
-      ss << "layout(std140, row_major) uniform UBOBlock\n";
+      ss << "layout(std140, row_major) uniform " << name << "\n";
 
     m_has_uniform_buffer = true;
   }
   else
   {
-    ss << "cbuffer UBOBlock : register(b0)\n";
+    ss << "cbuffer " << name << " : register(b" << binding << ")\n";
     m_has_uniform_buffer = true;
   }
 }
 
 void ShaderGen::DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
-                                     bool push_constant_on_vulkan) const
+                                     bool push_constant) const
 {
-  WriteUniformBufferDeclaration(ss, push_constant_on_vulkan);
+  WriteUniformBufferDeclaration(ss, push_constant);
 
   ss << "{\n";
   for (const char* member : members)

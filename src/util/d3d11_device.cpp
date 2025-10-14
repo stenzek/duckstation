@@ -545,8 +545,21 @@ bool D3D11Device::CreateBuffers(Error* error)
     return false;
   }
 
+  const CD3D11_BUFFER_DESC pc_desc(PUSH_CONSTANT_BUFFER_SIZE, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC,
+                                   D3D11_CPU_ACCESS_WRITE);
+  if (const HRESULT hr = m_device->CreateBuffer(&pc_desc, nullptr, m_push_constant_buffer.GetAddressOf()); FAILED(hr))
+  {
+    Error::SetHResult(error, "Failed to create push constant buffer: ", hr);
+    return false;
+  }
+
   // Index buffer never changes :)
   m_context->IASetIndexBuffer(m_index_buffer.GetD3DBuffer(), DXGI_FORMAT_R16_UINT, 0);
+  m_context->VSSetConstantBuffers(1, 1, m_push_constant_buffer.GetAddressOf());
+  m_context->PSSetConstantBuffers(1, 1, m_push_constant_buffer.GetAddressOf());
+  if (m_features.compute_shaders)
+    m_context->CSSetConstantBuffers(1, 1, m_push_constant_buffer.GetAddressOf());
+
   return true;
 }
 
@@ -919,15 +932,19 @@ void D3D11Device::UnmapIndexBuffer(u32 used_index_count)
 
 void D3D11Device::PushUniformBuffer(const void* data, u32 data_size)
 {
-  const u32 req_align =
-    m_uniform_buffer.IsUsingMapNoOverwrite() ? UNIFORM_BUFFER_ALIGNMENT : UNIFORM_BUFFER_ALIGNMENT_DISCARD;
-  const u32 req_size = Common::AlignUpPow2(data_size, req_align);
-  const auto res = m_uniform_buffer.Map(m_context.Get(), req_align, req_size);
-  std::memcpy(res.pointer, data, data_size);
-  m_uniform_buffer.Unmap(m_context.Get(), req_size);
-  s_stats.buffer_streamed += data_size;
+  DebugAssert(data_size <= PUSH_CONSTANT_BUFFER_SIZE);
 
-  BindUniformBuffer(res.index_aligned * UNIFORM_BUFFER_ALIGNMENT, req_size);
+  D3D11_MAPPED_SUBRESOURCE mapped;
+  if (const HRESULT hr = m_context->Map(m_push_constant_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+      FAILED(hr))
+  {
+    ERROR_LOG("Failed to map push constant buffer: {:08X}", static_cast<unsigned>(hr));
+    return;
+  }
+
+  std::memcpy(mapped.pData, data, data_size);
+  m_context->Unmap(m_push_constant_buffer.Get(), 0);
+  s_stats.buffer_streamed += data_size;
 }
 
 void* D3D11Device::MapUniformBuffer(u32 size)

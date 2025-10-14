@@ -45,9 +45,9 @@ public:
   void DefineMacro(std::stringstream& ss, const char* name, s32 value) const;
   void WriteHeader(std::stringstream& ss, bool enable_rov = false, bool enable_framebuffer_fetch = false,
                    bool enable_dual_source_blend = false) const;
-  void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan) const;
+  void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant) const;
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
-                            bool push_constant_on_vulkan) const;
+                            bool push_constant) const;
   void DeclareTexture(std::stringstream& ss, const char* name, u32 index, bool multisampled = false,
                       bool is_int = false, bool is_unsigned = false) const;
   void DeclareTextureBuffer(std::stringstream& ss, const char* name, u32 index, bool is_int, bool is_unsigned) const;

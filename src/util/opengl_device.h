@@ -165,6 +165,7 @@ private:
   static constexpr u32 VERTEX_BUFFER_SIZE = 8 * 1024 * 1024;
   static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
   static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
+  static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 1 * 1024 * 1024;
   static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
   bool CheckFeatures(CreateFlags create_flags);
@@ -201,6 +202,7 @@ private:
   std::unique_ptr<OpenGLStreamBuffer> m_vertex_buffer;
   std::unique_ptr<OpenGLStreamBuffer> m_index_buffer;
   std::unique_ptr<OpenGLStreamBuffer> m_uniform_buffer;
+  std::unique_ptr<OpenGLStreamBuffer> m_push_constant_buffer;
   std::unique_ptr<OpenGLStreamBuffer> m_texture_stream_buffer;
 
   // TODO: pass in file instead of blob for pipeline cache

@@ -1704,14 +1704,16 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
   }
 
   // Need to know if there's UBOs for mapping.
-  const spvc_reflected_resource *ubos, *textures;
-  size_t ubos_count, textures_count, images_count;
+  const spvc_reflected_resource *ubos, *push_constants, *textures, *images;
+  size_t ubos_count, push_constants_count, textures_count, images_count;
   if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &ubos,
                                                                   &ubos_count)) != SPVC_SUCCESS ||
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(
+         resources, SPVC_RESOURCE_TYPE_PUSH_CONSTANT, &push_constants, &push_constants_count)) != SPVC_SUCCESS ||
       (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
                                                                   &textures, &textures_count)) != SPVC_SUCCESS ||
-      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE,
-                                                                  &textures, &images_count)) != SPVC_SUCCESS)
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE, &images,
+                                                                  &images_count)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() failed: {}", static_cast<int>(sres));
     return {};
@@ -1765,7 +1767,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                .sampler = {}};
         if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
         {
-          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for UBO failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+      }
+
+      if (push_constants_count > 0)
+      {
+        const spvc_hlsl_resource_binding rb = {.stage = execmodel,
+                                               .desc_set = SPVC_HLSL_PUSH_CONSTANT_DESC_SET,
+                                               .binding = SPVC_HLSL_PUSH_CONSTANT_BINDING,
+                                               .cbv = {.register_space = 0, .register_binding = 1},
+                                               .uav = {},
+                                               .srv = {},
+                                               .sampler = {}};
+        if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for push constant failed: {}",
+                              static_cast<int>(sres));
           return {};
         }
       }
@@ -1783,7 +1803,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                  .sampler = {.register_space = 0, .register_binding = i}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for texture failed: {}",
+                                static_cast<int>(sres));
             return {};
           }
         }
@@ -1802,7 +1823,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                  .sampler = {}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for image failed: {}",
+                                static_cast<int>(sres));
             return {};
           }
         }
@@ -1875,63 +1897,52 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         return {};
       }
 
-      const spvc_msl_resource_binding pc_rb = {.stage = execmodel,
-                                               .desc_set = SPVC_MSL_PUSH_CONSTANT_DESC_SET,
-                                               .binding = SPVC_MSL_PUSH_CONSTANT_BINDING,
-                                               .msl_buffer = 0,
-                                               .msl_texture = 0,
-                                               .msl_sampler = 0};
-      if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &pc_rb)) != SPVC_SUCCESS)
-      {
-        Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for push constant failed: {}",
-                            static_cast<int>(sres));
-        return {};
-      }
+      const auto add_msl_resource_binding = [&scompiler, &execmodel, &error](unsigned desc_set, unsigned binding,
+                                                                             unsigned msl_buffer, unsigned msl_texture,
+                                                                             unsigned msl_sampler) {
+        const spvc_msl_resource_binding rb = {.stage = execmodel,
+                                              .desc_set = desc_set,
+                                              .binding = binding,
+                                              .msl_buffer = msl_buffer,
+                                              .msl_texture = msl_texture,
+                                              .msl_sampler = msl_sampler};
+
+        const spvc_result sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb);
+        if (sres != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
+          return false;
+        }
+
+        return true;
+      };
+
+      // push constant
+      if (!add_msl_resource_binding(SPVC_MSL_PUSH_CONSTANT_DESC_SET, SPVC_MSL_PUSH_CONSTANT_BINDING, 2, 0, 0))
+        return false;
 
       if (stage == GPUShaderStage::Fragment || stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
         {
-          const spvc_msl_resource_binding rb = {.stage = execmodel,
-                                                .desc_set = TEXTURE_DESCRIPTOR_SET,
-                                                .binding = i,
-                                                .msl_buffer = i,
-                                                .msl_texture = i,
-                                                .msl_sampler = i};
-
-          if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-          {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
-            return {};
-          }
+          // Add +1 for the buffer binding since we use this for texture buffers.
+          if (!add_msl_resource_binding(TEXTURE_DESCRIPTOR_SET, i, i + 1, i, i))
+            return false;
         }
       }
 
       if (stage == GPUShaderStage::Fragment && !m_features.framebuffer_fetch)
       {
-        const spvc_msl_resource_binding rb = {
-          .stage = execmodel, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
-
-        if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-        {
-          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
-                              static_cast<int>(sres));
-          return {};
-        }
+        if (!add_msl_resource_binding(2, 0, 0, MAX_TEXTURE_SAMPLERS, 0))
+          return false;
       }
 
       if (stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
-          const spvc_msl_resource_binding rb = {
-            .stage = execmodel, .desc_set = 2, .binding = i, .msl_buffer = i, .msl_texture = i, .msl_sampler = i};
-
-          if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-          {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
-            return {};
-          }
+          if (!add_msl_resource_binding(2, i, i, i, i))
+            return false;
         }
       }
     }

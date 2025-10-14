@@ -5,4 +5,4 @@
 
 #include "common/types.h"
 
-inline constexpr u32 SHADER_CACHE_VERSION = 33;
+inline constexpr u32 SHADER_CACHE_VERSION = 34;

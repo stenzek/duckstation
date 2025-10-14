@@ -144,6 +144,7 @@ private:
   static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
+  static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 128;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
   void SetFeatures(CreateFlags create_flags);
@@ -183,6 +184,7 @@ private:
   D3D11StreamBuffer m_vertex_buffer;
   D3D11StreamBuffer m_index_buffer;
   D3D11StreamBuffer m_uniform_buffer;
+  ComPtr<ID3D11Buffer> m_push_constant_buffer;
 
   D3D11Pipeline* m_current_pipeline = nullptr;
   std::array<D3D11Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};

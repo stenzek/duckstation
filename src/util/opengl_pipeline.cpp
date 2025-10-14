@@ -472,9 +472,12 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
 {
   if (!ShaderGen::UseGLSLBindingLayout())
   {
-    GLint location = glGetUniformBlockIndex(program_id, "UBOBlock");
-    if (location >= 0)
-      glUniformBlockBinding(program_id, location, 0);
+    const GLint ubo_location = glGetUniformBlockIndex(program_id, "UBOBlock");
+    if (ubo_location >= 0)
+      glUniformBlockBinding(program_id, ubo_location, 0);
+    const GLint push_constant_location = glGetUniformBlockIndex(program_id, "PushConstants");
+    if (push_constant_location >= 0)
+      glUniformBlockBinding(program_id, push_constant_location, 1);
 
     glUseProgram(program_id);
 
@@ -482,9 +485,9 @@ void OpenGLDevice::PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, 
     const u32 num_textures = std::max<u32>(GetActiveTexturesForLayout(plconfig.layout), 1);
     for (u32 i = 0; i < num_textures; i++)
     {
-      location = glGetUniformLocation(program_id, TinyString::from_format("samp{}", i));
-      if (location >= 0)
-        glUniform1i(location, i);
+      const GLint samp_location = glGetUniformLocation(program_id, TinyString::from_format("samp{}", i));
+      if (samp_location >= 0)
+        glUniform1i(samp_location, i);
     }
 
     glUseProgram(m_last_program);

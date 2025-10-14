@@ -82,8 +82,8 @@ class MetalPipeline final : public GPUPipeline
 public:
   ~MetalPipeline() override;
 
-  ALWAYS_INLINE bool IsRenderPipeline() const { return (m_depth != nil); }
-  ALWAYS_INLINE bool IsComputePipeline() const { return (m_depth == nil); }
+  ALWAYS_INLINE bool IsRenderPipeline() const { return !IsComputePipeline(); }
+  ALWAYS_INLINE bool IsComputePipeline() const { return GPUDevice::IsComputeLayout(m_layout); }
   ALWAYS_INLINE id<MTLRenderPipelineState> GetRenderPipelineState() const
   {
     return (id<MTLRenderPipelineState>)m_pipeline;
@@ -93,20 +93,23 @@ public:
     return (id<MTLComputePipelineState>)m_pipeline;
   }
   ALWAYS_INLINE id<MTLDepthStencilState> GetDepthState() const { return m_depth; }
-  ALWAYS_INLINE MTLCullMode GetCullMode() const { return m_cull_mode; }
-  ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return m_primitive; }
+  ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
+  ALWAYS_INLINE MTLCullMode GetCullMode() const { return static_cast<MTLCullMode>(m_cull_mode); }
+  ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return static_cast<MTLPrimitiveType>(m_primitive); }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
 #endif
 
 private:
-  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode, MTLPrimitiveType primitive);
+  MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, Layout layout, MTLCullMode cull_mode,
+                MTLPrimitiveType primitive);
 
   id m_pipeline;
   id<MTLDepthStencilState> m_depth;
-  MTLCullMode m_cull_mode;
-  MTLPrimitiveType m_primitive;
+  Layout m_layout;
+  u8 m_cull_mode;
+  u8 m_primitive;
 };
 
 class MetalTexture final : public GPUTexture
@@ -350,6 +353,12 @@ private:
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 64 * 1024 * 1024; // TODO reduce after separate allocations
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
+  static constexpr u32 VERTEX_BINDING_UBO = 0;
+  static constexpr u32 VERTEX_BINDING_VBO = 1;
+  static constexpr u32 VERTEX_BINDING_PUSH_CONSTANTS = 2;
+  static constexpr u32 FRAGMENT_BINDING_UBO = 0;
+  static constexpr u32 FRAGMENT_BINDING_SSBO = 1;
+  static constexpr u32 FRAGMENT_BINDING_PUSH_CONSTANTS = 2;
 
   using DepthStateMap = std::unordered_map<u8, id<MTLDepthStencilState>>;
 
@@ -393,7 +402,7 @@ private:
 
   void PreDrawCheck();
   void SetInitialEncoderState();
-  void PushUniformBuffer(const void* data, u32 data_size);
+  void PushRenderUniformBuffer(const void* data, u32 data_size);
   void SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type);
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
