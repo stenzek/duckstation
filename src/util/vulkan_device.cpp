@@ -3043,7 +3043,7 @@ bool VulkanDevice::CreatePipelineLayouts()
         plb.AddDescriptorSet(m_image_ds_layout);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
-      Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO Pipeline Layout");
+      Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO + Push Constant Pipeline Layout");
     }
 
     {
@@ -3058,6 +3058,21 @@ bool VulkanDevice::CreatePipelineLayouts()
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
       Vulkan::SetObjectName(m_device, pl, "Multi Texture Pipeline Layout");
+    }
+
+    {
+      VkPipelineLayout& pl =
+        m_pipeline_layouts[type][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
+      plb.AddDescriptorSet(m_ubo_ds_layout);
+      plb.AddDescriptorSet(m_multi_texture_ds_layout);
+      plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
+      if (feedback_loop)
+        plb.AddDescriptorSet(m_feedback_loop_ds_layout);
+      else if (rov)
+        plb.AddDescriptorSet(m_image_ds_layout);
+      if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+        return false;
+      Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO + Push Constant Pipeline Layout");
     }
   }
 
@@ -3894,6 +3909,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
 
   if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
                 layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+                layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
                 layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
   {
     new_dynamic_offsets = ((dirty & DIRTY_FLAG_DYNAMIC_OFFSETS) != 0);
@@ -3924,6 +3940,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   }
   else if constexpr (layout == GPUPipeline::Layout::MultiTextureAndUBO ||
                      layout == GPUPipeline::Layout::MultiTextureAndPushConstants ||
+                     layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
                      layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO ||
                      layout == GPUPipeline::Layout::ComputeMultiTextureAndPushConstants)
   {
@@ -3940,7 +3957,10 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
                                                     tex->GetVkLayout());
       }
 
-      const u32 set = (layout == GPUPipeline::Layout::MultiTextureAndUBO) ? 1 : 0;
+      const u32 set = (layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+                       layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants) ?
+                        1 :
+                        0;
       dsub.PushUpdate(m_current_command_buffer, vk_bind_point, vk_pipeline_layout, set);
       if (num_ds == 0)
         return true;
@@ -4034,6 +4054,9 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
 
     case GPUPipeline::Layout::MultiTextureAndPushConstants:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::MultiTextureAndPushConstants>(dirty);
+
+    case GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants:
+      return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants>(dirty);
 
     case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);

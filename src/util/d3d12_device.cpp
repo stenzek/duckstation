@@ -1609,6 +1609,8 @@ void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, b
     1, // SingleTextureBufferAndPushConstants
     0, // MultiTextureAndUBO
     2, // MultiTextureAndPushConstants
+    3, // MultiTextureAndUBOAndPushConstants
+    0, // ComputeMultiTextureAndUBO
     2, // ComputeSingleTextureAndPushConstants
   };
 
@@ -1737,7 +1739,26 @@ bool D3D12Device::CreateRootSignatures(Error* error)
       rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
       if (!(rs = rsb.Create(error, true)))
         return false;
-      D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
+      D3D12::SetObjectName(rs.Get(), "Multi Texture + Push Constant Pipeline Layout");
+    }
+
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
+
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
+                             D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO + Push Constant Pipeline Layout");
     }
   }
 
@@ -2473,6 +2494,7 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
 
   if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
                 layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+                layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
                 layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
   {
     if (dirty & DIRTY_FLAG_CONSTANT_BUFFER)
@@ -2577,7 +2599,8 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
         2 :
         ((layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants) ?
            1 :
-           ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO) ?
+           ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+             layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants) ?
               3 :
               2));
     if constexpr (!IsComputeLayout(layout))
@@ -2607,6 +2630,9 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
 
     case GPUPipeline::Layout::MultiTextureAndPushConstants:
       return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndPushConstants>(dirty);
+
+    case GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants:
+      return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants>(dirty);
 
     case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
       return UpdateParametersForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);

@@ -213,6 +213,9 @@ public:
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
 
+    // Multiple textures, 1 streamed UBO, 128 byte push constants.
+    MultiTextureAndUBOAndPushConstants,
+
     // Multiple textures, 1 streamed UBO, compute shader.
     ComputeMultiTextureAndUBO,
 
@@ -734,6 +737,7 @@ public:
       0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
+      MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBOAndPushConstants
       MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndPushConstants
     };
