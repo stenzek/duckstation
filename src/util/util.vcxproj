@@ -4,6 +4,8 @@
   <ItemGroup>
     <ClInclude Include="animated_image.h" />
     <ClInclude Include="compress_helpers.h" />
+    <ClInclude Include="dyn_shaderc.h" />
+    <ClInclude Include="dyn_spirv_cross.h" />
     <ClInclude Include="elf_file.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="imgui_animated.h" />

@@ -3,6 +3,8 @@
 
 #include "gpu_device.h"
 #include "compress_helpers.h"
+#include "dyn_shaderc.h"
+#include "dyn_spirv_cross.h"
 #include "gpu_framebuffer_manager.h"
 #include "image.h"
 #include "imgui_manager.h"
@@ -20,8 +22,6 @@
 #include "common/timer.h"
 
 #include "fmt/format.h"
-#include "shaderc/shaderc.h"
-#include "spirv_cross_c.h"
 #include "xxhash.h"
 
 #include "IconsEmoji.h"
@@ -1367,69 +1367,22 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 #define SHADERC_LIB_NAME "shaderc_shared"
 #endif
 
-#define SHADERC_FUNCTIONS(X)                                                                                           \
-  X(shaderc_compiler_initialize)                                                                                       \
-  X(shaderc_compiler_release)                                                                                          \
-  X(shaderc_compile_options_initialize)                                                                                \
-  X(shaderc_compile_options_release)                                                                                   \
-  X(shaderc_compile_options_set_source_language)                                                                       \
-  X(shaderc_compile_options_set_generate_debug_info)                                                                   \
-  X(shaderc_compile_options_set_optimization_level)                                                                    \
-  X(shaderc_compile_options_set_target_env)                                                                            \
-  X(shaderc_compilation_status_to_string)                                                                              \
-  X(shaderc_compile_into_spv)                                                                                          \
-  X(shaderc_result_release)                                                                                            \
-  X(shaderc_result_get_length)                                                                                         \
-  X(shaderc_result_get_num_warnings)                                                                                   \
-  X(shaderc_result_get_bytes)                                                                                          \
-  X(shaderc_result_get_compilation_status)                                                                             \
-  X(shaderc_result_get_error_message)                                                                                  \
-  X(shaderc_optimize_spv)
-
-#define SPIRV_CROSS_FUNCTIONS(X)                                                                                       \
-  X(spvc_context_create)                                                                                               \
-  X(spvc_context_destroy)                                                                                              \
-  X(spvc_context_set_error_callback)                                                                                   \
-  X(spvc_context_parse_spirv)                                                                                          \
-  X(spvc_context_create_compiler)                                                                                      \
-  X(spvc_compiler_create_compiler_options)                                                                             \
-  X(spvc_compiler_create_shader_resources)                                                                             \
-  X(spvc_compiler_get_execution_model)                                                                                 \
-  X(spvc_compiler_options_set_bool)                                                                                    \
-  X(spvc_compiler_options_set_uint)                                                                                    \
-  X(spvc_compiler_install_compiler_options)                                                                            \
-  X(spvc_compiler_require_extension)                                                                                   \
-  X(spvc_compiler_compile)                                                                                             \
-  X(spvc_resources_get_resource_list_for_type)
-
-#ifdef _WIN32
-#define SPIRV_CROSS_HLSL_FUNCTIONS(X) X(spvc_compiler_hlsl_add_resource_binding)
-#else
-#define SPIRV_CROSS_HLSL_FUNCTIONS(X)
-#endif
-#ifdef __APPLE__
-#define SPIRV_CROSS_MSL_FUNCTIONS(X) X(spvc_compiler_msl_add_resource_binding)
-#else
-#define SPIRV_CROSS_MSL_FUNCTIONS(X)
-#endif
-
-// TODO: NOT thread safe, yet.
 namespace dyn_libs {
-static bool OpenShaderc(Error* error);
 static void CloseShaderc();
-static bool OpenSpirvCross(Error* error);
 static void CloseSpirvCross();
 static void CloseAll();
 
+static std::mutex s_dyn_mutex;
 static DynamicLibrary s_shaderc_library;
 static DynamicLibrary s_spirv_cross_library;
 
-static shaderc_compiler_t s_shaderc_compiler = nullptr;
-
 static bool s_close_registered = false;
 
-#define ADD_FUNC(F) static decltype(&::F) F;
-SHADERC_FUNCTIONS(ADD_FUNC)
+shaderc_compiler_t g_shaderc_compiler = nullptr;
+
+// TODO: Merge all of these into a struct?
+#define ADD_FUNC(F) decltype(&::F) F;
+DYN_SHADERC_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_HLSL_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
@@ -1439,6 +1392,7 @@ SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
 
 bool dyn_libs::OpenShaderc(Error* error)
 {
+  const std::unique_lock lock(s_dyn_mutex);
   if (s_shaderc_library.IsOpen())
     return true;
 
@@ -1457,11 +1411,11 @@ bool dyn_libs::OpenShaderc(Error* error)
     return false;                                                                                                      \
   }
 
-  SHADERC_FUNCTIONS(LOAD_FUNC)
+  DYN_SHADERC_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  s_shaderc_compiler = shaderc_compiler_initialize();
-  if (!s_shaderc_compiler)
+  g_shaderc_compiler = shaderc_compiler_initialize();
+  if (!g_shaderc_compiler)
   {
     Error::SetStringView(error, "shaderc_compiler_initialize() failed");
     CloseShaderc();
@@ -1479,14 +1433,14 @@ bool dyn_libs::OpenShaderc(Error* error)
 
 void dyn_libs::CloseShaderc()
 {
-  if (s_shaderc_compiler)
+  if (g_shaderc_compiler)
   {
-    shaderc_compiler_release(s_shaderc_compiler);
-    s_shaderc_compiler = nullptr;
+    shaderc_compiler_release(g_shaderc_compiler);
+    g_shaderc_compiler = nullptr;
   }
 
 #define UNLOAD_FUNC(F) F = nullptr;
-  SHADERC_FUNCTIONS(UNLOAD_FUNC)
+  DYN_SHADERC_FUNCTIONS(UNLOAD_FUNC)
 #undef UNLOAD_FUNC
 
   s_shaderc_library.Close();
@@ -1494,6 +1448,7 @@ void dyn_libs::CloseShaderc()
 
 bool dyn_libs::OpenSpirvCross(Error* error)
 {
+  const std::unique_lock lock(s_dyn_mutex);
   if (s_spirv_cross_library.IsOpen())
     return true;
 
@@ -1551,7 +1506,7 @@ void dyn_libs::CloseAll()
 #undef SPIRV_CROSS_HLSL_FUNCTIONS
 #undef SPIRV_CROSS_MSL_FUNCTIONS
 #undef SPIRV_CROSS_FUNCTIONS
-#undef SHADERC_FUNCTIONS
+#undef DYN_SHADERC_FUNCTIONS
 
 std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error)
 {
@@ -1588,7 +1543,7 @@ std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span
   dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_optimize_spv(dyn_libs::s_shaderc_compiler, spirv.data(), spirv.size(), options);
+    dyn_libs::shaderc_optimize_spv(dyn_libs::g_shaderc_compiler, spirv.data(), spirv.size(), options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)
@@ -1643,7 +1598,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
     options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_compile_into_spv(dyn_libs::s_shaderc_compiler, source.data(), source.length(),
+    dyn_libs::shaderc_compile_into_spv(dyn_libs::g_shaderc_compiler, source.data(), source.length(),
                                        stage_kinds[static_cast<size_t>(stage)], "source", entry_point, options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;

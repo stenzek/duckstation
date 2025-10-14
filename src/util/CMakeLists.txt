@@ -19,6 +19,8 @@ add_library(util
   compress_helpers.h
   cue_parser.cpp
   cue_parser.h
+  dyn_shaderc.h
+  dyn_spirv_cross.h
   elf_file.cpp
   elf_file.h
   gpu_device.cpp
