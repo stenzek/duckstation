@@ -164,8 +164,8 @@ private:
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
 
+  std::string m_path;
   std::string m_title;
   std::string m_serial;
   std::optional<GameHash> m_hash;
-  std::string m_path;
 };

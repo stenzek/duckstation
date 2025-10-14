@@ -125,10 +125,10 @@ static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path,
 static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map);
 
 static std::string GetPlayedTimePath();
-static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
-static std::string MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry);
+static bool ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry);
+static std::string MakePlayedTimeLine(std::string_view serial, const PlayedTimeEntry& entry);
 static PlayedTimeMap LoadPlayedTimeMap();
-static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& serial, std::time_t last_time, std::time_t add_time);
+static PlayedTimeEntry UpdatePlayedTimeFile(std::string_view serial, std::time_t last_time, std::time_t add_time);
 
 static std::string GetCustomPropertiesFile();
 static const std::string& GetCustomPropertiesSection(const std::string& path, std::string* temp_path);
@@ -1343,7 +1343,7 @@ std::string GameList::GetPlayedTimePath()
   return Path::Combine(EmuFolders::DataRoot, "playtime.dat");
 }
 
-bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry)
+bool GameList::ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry)
 {
   size_t len = std::strlen(line);
   if (len != (PLAYED_TIME_LINE_LENGTH + 1)) // \n
@@ -1372,7 +1372,7 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
   return true;
 }
 
-std::string GameList::MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry)
+std::string GameList::MakePlayedTimeLine(std::string_view serial, const PlayedTimeEntry& entry)
 {
   return fmt::format("{:<{}} {:<{}} {:<{}}\n", serial, static_cast<unsigned>(PLAYED_TIME_SERIAL_LENGTH),
                      entry.total_played_time, static_cast<unsigned>(PLAYED_TIME_TOTAL_TIME_LENGTH),
@@ -1394,7 +1394,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap()
   char line[256];
   while (std::fgets(line, sizeof(line), fp.get()))
   {
-    std::string serial;
+    std::string_view serial;
     PlayedTimeEntry entry;
     if (!ParsePlayedTimeLine(line, serial, entry))
       continue;
@@ -1405,13 +1405,13 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap()
       continue;
     }
 
-    ret.emplace(std::move(serial), entry);
+    ret.emplace(std::string(serial), entry);
   }
 
   return ret;
 }
 
-GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& serial, std::time_t last_time,
+GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string_view serial, std::time_t last_time,
                                                          std::time_t add_time)
 {
   const PlayedTimeEntry new_entry{last_time, add_time};
@@ -1431,7 +1431,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& seri
     if (!std::fgets(line, sizeof(line), fp.get()))
       break;
 
-    std::string line_serial;
+    std::string_view line_serial;
     PlayedTimeEntry line_entry;
     if (!ParsePlayedTimeLine(line, line_serial, line_entry))
       continue;
@@ -1443,7 +1443,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& seri
     line_entry.last_played_time = (last_time != 0) ? last_time : 0;
     line_entry.total_played_time = (last_time != 0) ? (line_entry.total_played_time + add_time) : 0;
 
-    std::string new_line(MakePlayedTimeLine(serial, line_entry));
+    const std::string new_line = MakePlayedTimeLine(serial, line_entry);
     if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
@@ -1456,7 +1456,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& seri
   if (last_time != 0)
   {
     // new entry.
-    std::string new_line(MakePlayedTimeLine(serial, new_entry));
+    const std::string new_line = MakePlayedTimeLine(serial, new_entry);
     if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
@@ -1529,7 +1529,7 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
 void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
 {
   std::unique_lock lock(s_state.mutex);
-  llvm::SmallVector<std::string, 8> serials;
+  llvm::SmallVector<std::string_view, 8> serials;
 
   if (entry->IsDiscSet())
   {
@@ -1538,14 +1538,13 @@ void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
       if (!member->serial.empty())
       {
         if (std::find(serials.begin(), serials.end(), member->serial) == serials.end())
-          serials.push_back(member->serial);
+          serials.emplace_back(member->serial);
       }
     }
   }
   else if (!entry->serial.empty())
   {
-    if (std::find(serials.begin(), serials.end(), entry->serial) == serials.end())
-      serials.push_back(entry->serial);
+    serials.emplace_back(entry->serial);
   }
 
   for (const auto& serial : serials)
