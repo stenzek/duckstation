@@ -75,6 +75,10 @@
 #include <cstdlib>
 #include <memory>
 
+#ifdef _WIN32
+#include <objbase.h> // CoInitializeEx
+#endif
+
 #include "moc_qthost.cpp"
 
 LOG_CHANNEL(Host);
@@ -109,8 +113,10 @@ static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
+static bool VeryEarlyProcessStartup();
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
+static void ProcessShutdown();
 static void MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 static void RegisterTypes();
 static bool InitializeConfig();
@@ -205,6 +211,24 @@ bool QtHost::PerformEarlyHardwareChecks()
   return okay;
 }
 
+bool QtHost::VeryEarlyProcessStartup()
+{
+  CrashHandler::Install(&Bus::CleanupMemoryMap);
+
+#ifdef _WIN32
+  // Ensure COM is initialized before Qt gets a chance to do it, since this could change in the future.
+  HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  if (FAILED(hr)) [[unlikely]]
+  {
+    MessageBoxA(nullptr, fmt::format("CoInitializeEx failed: 0x{:08X}", hr).c_str(), "Error", MB_ICONERROR);
+    return false;
+  }
+#endif
+
+  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  return true;
+}
+
 bool QtHost::EarlyProcessStartup()
 {
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -247,6 +271,19 @@ bool QtHost::EarlyProcessStartup()
   }
 
   return true;
+}
+
+void QtHost::ProcessShutdown()
+{
+  System::ProcessShutdown();
+
+  // Ensure log is flushed.
+  Log::SetFileOutputParams(false, nullptr);
+
+  // Clean up CoInitializeEx() from VeryEarlyProcessStartup().
+#ifdef _WIN32
+  CoUninitialize();
+#endif
 }
 
 void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
@@ -3351,9 +3388,8 @@ bool QtHost::RunSetupWizard()
 
 int main(int argc, char* argv[])
 {
-  CrashHandler::Install(&Bus::CleanupMemoryMap);
-
-  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  if (!QtHost::VeryEarlyProcessStartup())
+    return EXIT_FAILURE;
 
   QApplication app(argc, argv);
   if (!QtHost::PerformEarlyHardwareChecks())
@@ -3437,10 +3473,7 @@ shutdown_and_exit:
   delete g_main_window;
   Assert(!g_main_window);
 
-  // Ensure log is flushed.
-  Log::SetFileOutputParams(false, nullptr);
-
-  System::ProcessShutdown();
+  QtHost::ProcessShutdown();
 
   return result;
 }
