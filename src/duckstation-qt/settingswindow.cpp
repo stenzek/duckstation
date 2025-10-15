@@ -51,8 +51,8 @@ SettingsWindow::SettingsWindow() : QWidget()
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_serial(entry->serial), m_hash(entry->hash),
-    m_path(entry->path)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_path(entry->path), m_serial(entry->serial),
+    m_hash(entry->hash)
 {
   m_ui.setupUi(this);
   setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
