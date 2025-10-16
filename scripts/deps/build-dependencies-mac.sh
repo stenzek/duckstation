@@ -135,6 +135,7 @@ make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
+rm -fr "libpng-$LIBPNG"
 
 echo "Building libjpeg..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
@@ -147,6 +148,7 @@ make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 
 echo "Installing Zstd..."
 rm -fr "zstd-$ZSTD"
@@ -159,6 +161,7 @@ make -C build-dir-arm64 "-j$NPROCS"
 merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
 make -C build-dir install
 cd ..
+rm -fr "zstd-$ZSTD"
 
 echo "Installing WebP..."
 rm -fr "libwebp-$LIBWEBP"
@@ -175,6 +178,7 @@ make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
+rm -fr "libwebp-$LIBWEBP"
 
 echo "Installing libzip..."
 rm -fr "libzip-$LIBZIP"
@@ -187,6 +191,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -B build \
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "libzip-$LIBZIP"
 
 echo "Building FreeType..."
 rm -fr "freetype-$FREETYPE"
@@ -197,6 +202,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_R
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "freetype-$FREETYPE"
 
 echo "Building HarfBuzz..."
 rm -fr "harfbuzz-$HARFBUZZ"
@@ -206,6 +212,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DHB_B
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "harfbuzz-$HARFBUZZ"
 
 echo "Installing SDL..."
 rm -fr "SDL3-$SDL3"
@@ -215,6 +222,7 @@ cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_SHARED=ON -DSD
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
+rm -fr "SDL3-$SDL3"
 
 echo "Installing FFmpeg..."
 rm -fr "ffmpeg-$FFMPEG_VERSION"
@@ -250,6 +258,7 @@ merge_binaries $(realpath build) $(realpath build-arm64)
 cd build
 make install
 cd ../..
+rm -fr "ffmpeg-$FFMPEG_VERSION"
 
 # MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."
@@ -260,6 +269,7 @@ cd "MoltenVK-${MOLTENVK}"
 make macos
 cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
 cd ..
+rm -fr "MoltenVK-${MOLTENVK}"
 
 echo "Installing Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
@@ -299,6 +309,7 @@ cmake -B build "${CMAKE_COMMON[@]}" "${CMAKE_COMMON_QT[@]}" -DFEATURE_dbus=OFF -
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
+rm -fr "qtbase-everywhere-src-$QT"
 
 echo "Installing Qt SVG..."
 rm -fr "qtsvg-everywhere-src-$QT"
@@ -310,6 +321,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qtsvg-everywhere-src-$QT"
 
 echo "Installing Qt Image Formats..."
 rm -fr "qtimageformats-everywhere-src-$QT"
@@ -321,6 +333,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qtimageformats-everywhere-src-$QT"
 
 echo "Installing Qt Shader Tools..."
 rm -fr "qtshadertools-everywhere-src-$QT"
@@ -332,6 +345,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qtshadertools-everywhere-src-$QT"
 
 echo "Installing Qt Declarative..."
 rm -fr "qtdeclarative-everywhere-src-$QT"
@@ -343,6 +357,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qtdeclarative-everywhere-src-$QT"
 
 echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
@@ -354,6 +369,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qttools-everywhere-src-$QT"
 
 echo "Installing Qt Translations..."
 rm -fr "qttranslations-everywhere-src-$QT"
@@ -365,6 +381,7 @@ cd build
 make "-j$NPROCS"
 make install
 cd ../..
+rm -fr "qttranslations-everywhere-src-$QT"
 
 echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC_COMMIT"
@@ -374,6 +391,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHA
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
+rm -fr "shaderc-$SHADERC_COMMIT"
 
 echo "Building SPIRV-Cross..."
 cd SPIRV-Cross
@@ -381,6 +399,7 @@ rm -fr build
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSPIRV_CROSS_SHARED=ON -DSPIRV_CROSS_STATIC=OFF -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_ENABLE_GLSL=ON -DSPIRV_CROSS_ENABLE_HLSL=OFF -DSPIRV_CROSS_ENABLE_MSL=ON -DSPIRV_CROSS_ENABLE_CPP=OFF -DSPIRV_CROSS_ENABLE_REFLECT=OFF -DSPIRV_CROSS_ENABLE_C_API=ON -DSPIRV_CROSS_ENABLE_UTIL=ON -B build
 cmake --build build --parallel
 cmake --install build
+rm -fr build
 cd ..
 
 echo "Building cpuinfo..."
@@ -394,6 +413,7 @@ make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
+rm -fr "cpuinfo-$CPUINFO_COMMIT"
 
 echo "Building discord-rpc..."
 rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
@@ -403,6 +423,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -B bui
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
 
 echo "Building plutosvg..."
 rm -fr "plutosvg-$PLUTOSVG_COMMIT"
@@ -412,6 +433,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DPLUT
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "plutosvg-$PLUTOSVG_COMMIT"
 
 echo "Building soundtouch..."
 rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
@@ -421,6 +443,7 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DCMAKE_INTERPROCEDURAL_OPTIM
 cmake --build build --parallel
 cmake --install build
 cd ..
+rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
 
 echo "Cleaning up..."
 cd ..

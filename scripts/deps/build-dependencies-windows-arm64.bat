@@ -102,6 +102,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "zlib-ng-%ZLIBNG%"
 
 echo Building libpng...
 rmdir /S /Q "libpng-%LIBPNG%"
@@ -112,6 +113,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "libpng-%LIBPNG%"
 
 echo Building libjpeg...
 rmdir /S /Q "libjpeg-turbo-%LIBJPEGTURBO%"
@@ -121,6 +123,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "libjpeg-turbo-%LIBJPEGTURBO%"
 
 echo Building Zstandard...
 rmdir /S /Q "zstd-%ZSTD%"
@@ -130,6 +133,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "zstd-%ZSTD%"
 
 echo Building WebP...
 rmdir /S /Q "libwebp-%LIBWEBP%"
@@ -139,6 +143,7 @@ cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "libwebp-%LIBWEBP%"
 
 echo Building libzip...
 rmdir /S /Q "libzip-%LIBZIP%"
@@ -148,6 +153,7 @@ cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "libzip-%LIBZIP%"
 
 echo Building FreeType...
 rmdir /S /Q "freetype-%FREETYPE%"
@@ -158,6 +164,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "freetype-%FREETYPE%"
 
 echo Building HarfBuzz...
 rmdir /S /Q "harfbuzz-%HARFBUZZ%"
@@ -167,6 +174,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "harfbuzz-%HARFBUZZ%"
 
 echo Building SDL...
 rmdir /S /Q "SDL3-%SDL3%"
@@ -178,6 +186,7 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 copy build\SDL3.pdb "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
+rmdir /S /Q "SDL3-%SDL3%"
 
 if %DEBUG%==1 (
   set QTBUILDSPEC=-DCMAKE_CONFIGURATION_TYPES="Release;Debug" -G "Ninja Multi-Config"
@@ -197,6 +206,7 @@ cmake -B build %ARM64TOOLCHAIN% -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTA
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "qtbase-everywhere-src-%QT%"
 
 echo Building Qt SVG...
 rmdir /S /Q "qtsvg-everywhere-src-%QT%"
@@ -208,6 +218,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qtsvg-everywhere-src-%QT%"
 
 echo Building Qt Image Formats...
 rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
@@ -219,6 +230,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
 
 echo Building Qt Shader Tools...
 rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
@@ -230,6 +242,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
 
 echo Building Qt Declarative...
 rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
@@ -241,6 +254,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
 
 echo Building Qt Tools...
 rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
@@ -252,6 +266,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
 
 echo Building Qt Translations...
 rmdir /S /Q "qttranslations-everywhere-src-%QT%"
@@ -263,6 +278,7 @@ call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
+rmdir /S /Q "qttranslations-everywhere-src-%QT%"
 
 echo Building shaderc...
 rmdir /S /Q "shaderc-%SHADERC_COMMIT%"
@@ -272,6 +288,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "shaderc-%SHADERC_COMMIT%"
 
 echo Building SPIRV-Cross...
 cd SPIRV-Cross || goto error
@@ -279,6 +296,7 @@ rmdir /S /Q "build"
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSPIRV_CROSS_SHARED=ON -DSPIRV_CROSS_STATIC=OFF -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_ENABLE_GLSL=ON -DSPIRV_CROSS_ENABLE_HLSL=ON -DSPIRV_CROSS_ENABLE_MSL=OFF -DSPIRV_CROSS_ENABLE_CPP=OFF -DSPIRV_CROSS_ENABLE_REFLECT=OFF -DSPIRV_CROSS_ENABLE_C_API=ON -DSPIRV_CROSS_ENABLE_UTIL=ON -B build -G Ninja
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
+rmdir /S /Q "build"
 cd .. || goto error
 
 echo Building cpuinfo...
@@ -289,6 +307,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "cpuinfo-%CPUINFO_COMMIT%"
 
 echo Building discord-rpc...
 rmdir /S /Q "discord-rpc-%DISCORD_RPC_COMMIT%"
@@ -298,6 +317,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "discord-rpc-%DISCORD_RPC_COMMIT%"
 
 echo Building plutosvg...
 rmdir /S /Q "plutosvg-%PLUTOSVG_COMMIT%"
@@ -307,6 +327,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "plutosvg-%PLUTOSVG_COMMIT%"
 
 rem This currently isn't using clang-cl. It probably should, might be losing a little speed.
 echo Building soundtouch...
@@ -317,6 +338,7 @@ cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLD
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
+rmdir /S /Q "soundtouch-%SOUNDTOUCH_COMMIT%"
 
 rem These should already exist, but just in case.
 mkdir "%INSTALLDIR%\bin"
@@ -332,6 +354,7 @@ copy build\native\include\* "%INSTALLDIR%\include" || goto error
 copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
 copy build\native\lib\arm64\*.lib "%INSTALLDIR%\lib" || goto error
 cd .. || goto error
+rmdir /S /Q "dxcompiler-%DXCOMPILER_VERSION%"
 
 echo Cleaning up...
 cd ..
