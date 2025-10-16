@@ -59,6 +59,7 @@ private:
 
   std::unique_ptr<GPUPipeline> m_pipeline;
   std::unique_ptr<GPUSampler> m_sampler;
+  GPUTexture::Format m_output_format = GPUTexture::Format::Unknown;
 };
 
 } // namespace PostProcessing
