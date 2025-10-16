@@ -1,0 +1,44 @@
+From 54c2f2c3f781db2e5593d44aa108f7043fc19baa Mon Sep 17 00:00:00 2001
+From: Sam Lantinga <slouken@libsdl.org>
+Date: Wed, 8 Oct 2025 13:15:48 -0700
+Subject: [PATCH] Only call WIN_RoUninitialize() if WIN_RoInitialize()
+ succeeded
+
+Fixes https://github.com/libsdl-org/SDL/issues/14178
+
+(cherry picked from commit 7914bdb7ea14ee5109d50df857c8dfc69a28a62d)
+---
+ src/joystick/windows/SDL_windows_gaming_input.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/joystick/windows/SDL_windows_gaming_input.c b/src/joystick/windows/SDL_windows_gaming_input.c
+index 11ee2243b7683..5f9435e34a570 100644
+--- a/src/joystick/windows/SDL_windows_gaming_input.c
++++ b/src/joystick/windows/SDL_windows_gaming_input.c
+@@ -69,6 +69,7 @@ typedef PCWSTR(WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *leng
+ 
+ static struct
+ {
++    bool ro_initialized;
+     CoIncrementMTAUsage_t CoIncrementMTAUsage;
+     RoGetActivationFactory_t RoGetActivationFactory;
+     WindowsCreateStringReference_t WindowsCreateStringReference;
+@@ -592,6 +593,7 @@ static bool WGI_JoystickInit(void)
+     if (FAILED(WIN_RoInitialize())) {
+         return SDL_SetError("RoInitialize() failed");
+     }
++    wgi.ro_initialized = true;
+ 
+ #define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x);
+     RESOLVE(CoIncrementMTAUsage);
+@@ -1002,7 +1004,9 @@ static void WGI_JoystickQuit(void)
+         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_Release(wgi.controller_statics);
+     }
+ 
+-    WIN_RoUninitialize();
++    if (wgi.ro_initialized) {
++        WIN_RoUninitialize();
++    }
+ 
+     SDL_zero(wgi);
+ }

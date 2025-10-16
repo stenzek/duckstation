@@ -59,7 +59,9 @@ call :downloadfile "libpng-%LIBPNG%.tar.gz" "https://download.sourceforge.net/li
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "%LIBJPEGTURBO_GZ_HASH%" || goto error
 call :downloadfile "SDL3-%SDL3%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL3%/SDL3-%SDL3%.zip" "%SDL3_ZIP_HASH%" || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" "%QTBASE_ZIP_HASH%" || goto error
+call :downloadfile "qtdeclarative-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtdeclarative-everywhere-src-%QT%.zip" "%QTDECLARATIVE_ZIP_HASH%" || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" "%QTIMAGEFORMATS_ZIP_HASH%" || goto error
+call :downloadfile "qtshadertools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtshadertools-everywhere-src-%QT%.zip" "%QTSHADERTOOLS_ZIP_HASH%" || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" "%QTSVG_ZIP_HASH%" || goto error
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" "%QTTOOLS_ZIP_HASH%" || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" "%QTTRANSLATIONS_ZIP_HASH%" || goto error
@@ -170,6 +172,7 @@ echo Building SDL...
 rmdir /S /Q "SDL3-%SDL3%"
 %SEVENZIP% x "SDL3-%SDL3%.zip" || goto error
 cd "SDL3-%SDL3%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\sdl3-wgi-roinitialize.patch" || goto error
 cmake -B build %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -213,6 +216,28 @@ cd "qtimageformats-everywhere-src-%QT%" || goto error
 mkdir build || goto error
 cd build || goto error
 call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF -DFEATURE_system_webp=ON || goto error
+cmake --build . --parallel || goto error
+ninja install || goto error
+cd ..\.. || goto error
+
+echo Building Qt Shader Tools...
+rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
+%SEVENZIP% x "qtshadertools-everywhere-src-%QT%.zip" || goto error
+cd "qtshadertools-everywhere-src-%QT%" || goto error
+mkdir build || goto error
+cd build || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
+cmake --build . --parallel || goto error
+ninja install || goto error
+cd ..\.. || goto error
+
+echo Building Qt Declarative...
+rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
+%SEVENZIP% x "qtdeclarative-everywhere-src-%QT%.zip" || goto error
+cd "qtdeclarative-everywhere-src-%QT%" || goto error
+mkdir build || goto error
+cd build || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
