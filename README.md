@@ -94,7 +94,7 @@ Once downloaded and extracted, you can launch the emulator with `duckstation-qt-
 
 ### Linux
 
-DuckStation is provided for x86_64/ARM32/ARM64 Linux in AppImage (recommended) and Flatpak (not recommended) formats.
+DuckStation is provided for x86_64/ARM32/ARM64 Linux in AppImage formats.
 
 #### AppImage
 
@@ -103,21 +103,7 @@ The AppImages require a distribution equivalent to Ubuntu 22.04 or newer to run.
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.AppImage`.
  - Run `chmod a+x` on the downloaded AppImage -- following this step, the AppImage can be run like a typical executable.
 
-#### Flatpak
-
-Due to various Flatpak limitations and Flathub randomly breaking regularly, **the Flatpak package is not recommended**. **We recommend that you use the AppImage instead.**
-
- - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-x64.flatpak`.
- - Run `flatpak install ./duckstation-x64.flatpak`.
-
-or, if you have FlatHub set up:
- - Run `flatpak install org.duckstation.DuckStation`.
-
-Use `flatpak run org.duckstation.DuckStation` to start, or select `DuckStation` in the launcher of your desktop environment. Follow the Setup Wizard to get started.
-
-**As of 2025/07/26, with the aforementioned issues and a lack of interest from users, the Flatpak package is deprecated. Future updates are not guaranteed.**
-
-To migrate your data from the Flatpak package to the AppImage, you can run the following command:
+If you were previously using the Flatpak package, to migrate your data from the Flatpak to the AppImage, you can run the following command:
 ```bash
 mv ~/.var/app/org.duckstation.DuckStation/config/duckstation ~/.local/share
 ```

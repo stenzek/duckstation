@@ -28,17 +28,13 @@ jobs:
   linux-cross-appimage:
     name: 🐧 Linux Cross-Compiled AppImage
     uses: "./.github/workflows/linux-cross-appimage-build.yml"
-  linux-flatpak:
-    name: 📦 Linux Flatpak
-    needs: [linux-appimage, linux-cross-appimage]
-    uses: "./.github/workflows/linux-flatpak-build.yml"
   macos:
     name: 🍎 MacOS
     uses: "./.github/workflows/macos-build.yml"
 
   create-release:
     name: 📤 Create Release
-    needs: [windows, linux-appimage, linux-cross-appimage, linux-flatpak, macos]
+    needs: [windows, linux-appimage, linux-cross-appimage, macos]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -71,8 +67,6 @@ jobs:
             ./artifacts/linux-arm64-appimage/DuckStation-Mini-arm64.AppImage
             ./artifacts/linux-armhf-appimage/DuckStation-armhf.AppImage
             ./artifacts/linux-armhf-appimage/DuckStation-Mini-armhf.AppImage
-            ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
-            ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
 
       - name: Create Rolling Release
@@ -96,6 +90,4 @@ jobs:
             ./artifacts/linux-arm64-appimage/DuckStation-Mini-arm64.AppImage
             ./artifacts/linux-armhf-appimage/DuckStation-armhf.AppImage
             ./artifacts/linux-armhf-appimage/DuckStation-Mini-armhf.AppImage
-            ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
-            ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
