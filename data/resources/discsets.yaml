@@ -1293,6 +1293,11 @@
     - SLUS-00319
     - SLUS-00555
 - name: "Gran Turismo 2"
+  saveName: "Gran Turismo 2 (USA)"
+  serials:
+    - SCUS-94455
+    - SCUS-94488
+- name: "Gran Turismo 2"
   saveName: "Gran Turismo 2 (Europe) (En,Fr,De,Es,It)"
   serials:
     - SCES-02380
