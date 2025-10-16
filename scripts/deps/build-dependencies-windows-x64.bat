@@ -161,7 +161,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INST
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
-tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
+rmdir /S /Q "freetype-%FREETYPE%"
 
 echo Building HarfBuzz...
 rmdir /S /Q "harfbuzz-%HARFBUZZ%"
@@ -244,16 +244,23 @@ ninja install || goto error
 cd ..\.. || goto error
 rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
 
+rem This mess with the junction is to work around path length limits in cmake/MSVC.
 echo Building Qt Declarative...
 rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
 %SEVENZIP% x "qtdeclarative-everywhere-src-%QT%.zip" || goto error
 cd "qtdeclarative-everywhere-src-%QT%" || goto error
+set QTDECLARATIVEDIR=%CD%
 mkdir build || goto error
-cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
+pushd ..\..\..\.. || goto error
+mklink /J b "%QTDECLARATIVEDIR%\build" || goto error
+cd b || goto error
+call "%INSTALLDIR%\bin\qt-configure-module.bat" %QTDECLARATIVEDIR% -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
-cd ..\.. || goto error
+cd .. || goto error
+rmdir b || goto error
+popd || goto error
+cd .. || goto error
 rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
 
 echo Building Qt Tools...
