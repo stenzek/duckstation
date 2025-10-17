@@ -5322,12 +5322,14 @@ void System::CloseRewindStateSelector()
   s_state.rewind_selector_states.clear();
   s_state.rewind_selector_index = 0;
 
-  // Unpause if it wasn't paused before
-  if (GPUThread::IsSystemPaused() && !s_state.was_paused_before_rewind_selector)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
-
   // Clear the run idle reason
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::RewindSelectorActive, false);
+
+  // Always unpause to avoid UI freeze issues
+  if (GPUThread::IsSystemPaused())
+  {
+    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+  }
 }
 
 bool System::IsRewindStateSelectorOpen()
