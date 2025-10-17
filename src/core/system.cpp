@@ -544,6 +544,9 @@ bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
 
   LogStartupInformation();
 
+  // Clean up any leftover rewind states from previous sessions
+  CleanupRewindStates();
+
   GPUThread::Internal::ProcessStartup();
 
   if (g_settings.achievements_enabled)
@@ -566,6 +569,9 @@ void System::CPUThreadShutdown()
   Achievements::Shutdown();
 
   InputManager::CloseSources();
+
+  // Clean up rewind states on shutdown
+  CleanupRewindStates();
 
   s_state.async_task_queue.SetWorkerCount(0);
   s_state.cpu_thread_handle = {};
@@ -5234,6 +5240,36 @@ void System::DeleteRewindStatesAfter(u32 frame_number)
         FileSystem::DeleteFile(state.screenshot_path.c_str());
     }
   }
+}
+
+void System::CleanupRewindStates()
+{
+  const std::string& rewind_base_dir = EmuFolders::Rewind;
+  if (rewind_base_dir.empty() || !FileSystem::DirectoryExists(rewind_base_dir.c_str()))
+    return;
+
+  // Get all game-specific subdirectories in the rewind folder
+  FileSystem::FindResultsArray subdirs;
+  FileSystem::FindFiles(rewind_base_dir.c_str(), "*", FILESYSTEM_FIND_FOLDERS, &subdirs);
+
+  u32 cleaned_dirs = 0;
+  for (const FILESYSTEM_FIND_DATA& subdir : subdirs)
+  {
+    // Skip . and ..
+    const std::string_view dirname = Path::GetFileName(subdir.FileName);
+    if (dirname == "." || dirname == "..")
+      continue;
+
+    // Recursively delete the entire game rewind directory and all its contents
+    if (FileSystem::RecursiveDeleteDirectory(subdir.FileName.c_str()))
+    {
+      DEBUG_LOG("Deleted rewind directory: {}", subdir.FileName);
+      cleaned_dirs++;
+    }
+  }
+
+  if (cleaned_dirs > 0)
+    INFO_LOG("Cleaned up {} rewind state director{}", cleaned_dirs, (cleaned_dirs == 1) ? "y" : "ies");
 }
 
 void System::OpenRewindStateSelector()

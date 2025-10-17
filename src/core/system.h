@@ -377,6 +377,9 @@ void SaveRewindState();
 /// Deletes all rewind states with frame numbers greater than the specified frame.
 void DeleteRewindStatesAfter(u32 frame_number);
 
+/// Cleans up all rewind states.
+void CleanupRewindStates();
+
 /// Opens the rewind state selector UI.
 void OpenRewindStateSelector();
 
