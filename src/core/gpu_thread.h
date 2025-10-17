@@ -37,6 +37,7 @@ enum class RunIdleReason : u8
   SystemPaused = (1 << 1),
   FullscreenUIActive = (1 << 2),
   LoadingScreenActive = (1 << 3),
+  RewindSelectorActive = (1 << 4),
 };
 
 /// Starts Big Picture UI.

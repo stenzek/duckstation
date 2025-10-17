@@ -1478,7 +1478,8 @@ void GPUThread::UpdateRunIdle()
                                      static_cast<u8>(RunIdleReason::SystemPaused) |
                                      static_cast<u8>(RunIdleReason::LoadingScreenActive);
   static constexpr u8 ACTIVATE_MASK =
-    static_cast<u8>(RunIdleReason::FullscreenUIActive) | static_cast<u8>(RunIdleReason::LoadingScreenActive);
+    static_cast<u8>(RunIdleReason::FullscreenUIActive) | static_cast<u8>(RunIdleReason::LoadingScreenActive) |
+    static_cast<u8>(RunIdleReason::RewindSelectorActive);
 
   const bool new_flag = (g_gpu_device && ((s_state.run_idle_reasons & REQUIRE_MASK) != 0) &&
                          ((s_state.run_idle_reasons & ACTIVATE_MASK) != 0));

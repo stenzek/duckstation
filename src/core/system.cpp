@@ -5301,6 +5301,9 @@ void System::OpenRewindStateSelector()
   s_state.rewind_selector_states = GetAvailableRewindStates();
   s_state.rewind_selector_index = 0;
 
+  // Set the run idle reason so the GPU thread keeps processing events
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::RewindSelectorActive, true);
+
   // Pause the game
   s_state.was_paused_before_rewind_selector = GPUThread::IsSystemPaused();
   if (!s_state.was_paused_before_rewind_selector)
@@ -5319,6 +5322,9 @@ void System::CloseRewindStateSelector()
   // Unpause if it wasn't paused before
   if (GPUThread::IsSystemPaused() && !s_state.was_paused_before_rewind_selector)
     Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+
+  // Clear the run idle reason
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::RewindSelectorActive, false);
 }
 
 bool System::IsRewindStateSelectorOpen()
