@@ -1645,15 +1645,28 @@ void ImGuiManager::RenderRewindSelector()
     // Display state info for current selection
     const auto& current_state = states[current_index];
     const u32 current_frame = System::Internal::GetRewindSelectorCurrentFrame();
-    const u32 frame_diff = (states.empty() || current_state.frame_number >= current_frame) ?
-                           0 : (current_frame - current_state.frame_number);
-    const float seconds_ago = frame_diff / System::GetVideoFrameRate();
 
     ImGui::Text("Frame: %u", current_state.frame_number);
-    if (frame_diff > 0)
-      ImGui::Text("Time: %.2f seconds ago (%.0f frames)", seconds_ago, static_cast<float>(frame_diff));
+
+    if (current_state.frame_number < current_frame)
+    {
+      // State is in the past
+      const u32 frame_diff = current_frame - current_state.frame_number;
+      const float seconds_ago = frame_diff / System::GetVideoFrameRate();
+      ImGui::Text("Time: %.2f seconds (%.0f frames) ago", seconds_ago, static_cast<float>(frame_diff));
+    }
+    else if (current_state.frame_number > current_frame)
+    {
+      // State is in the future (can happen after manual load state)
+      const u32 frame_diff = current_state.frame_number - current_frame;
+      const float seconds_ahead = frame_diff / System::GetVideoFrameRate();
+      ImGui::Text("Time: %.2f seconds (%.0f frames) ahead", seconds_ahead, static_cast<float>(frame_diff));
+    }
     else
+    {
+      // State is exactly at current frame
       ImGui::Text("Time: Current frame");
+    }
 
     ImGui::Spacing();
     ImGui::Separator();
