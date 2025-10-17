@@ -356,6 +356,33 @@ void SetRewindState(bool enabled);
 
 void DoFrameStep();
 
+/// Save state-based rewinding.
+struct RewindStateInfo
+{
+  u32 frame_number;
+  std::time_t timestamp;
+  std::string state_path;
+  std::string screenshot_path;
+};
+
+/// Returns the directory for rewind save states for the current game.
+std::string GetRewindStateSaveDirectory();
+
+/// Returns a list of available rewind states for the current game.
+std::vector<RewindStateInfo> GetAvailableRewindStates();
+
+/// Saves a rewind state to disk (only when using save state-based rewinding).
+void SaveRewindState();
+
+/// Opens the rewind state selector UI.
+void OpenRewindStateSelector();
+
+/// Closes the rewind state selector UI.
+void CloseRewindStateSelector();
+
+/// Returns true if the rewind state selector UI is open.
+bool IsRewindStateSelectorOpen();
+
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
 std::string GetGameSaveStatePath(std::string_view serial, s32 slot);
 

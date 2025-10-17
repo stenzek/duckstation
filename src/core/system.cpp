@@ -303,6 +303,12 @@ struct ALIGN_TO_CACHE_LINE StateVars
   u32 memory_save_state_front = 0;
   u32 memory_save_state_count = 0;
 
+  // Save state-based rewinding
+  bool rewind_selector_open = false;
+  bool was_paused_before_rewind_selector = false;
+  size_t rewind_selector_index = 0;
+  std::vector<System::RewindStateInfo> rewind_selector_states;
+
   const BIOS::ImageInfo* bios_image_info = nullptr;
   BIOS::ImageInfo::Hash bios_hash = {};
   u32 taints = 0;
@@ -2183,7 +2189,10 @@ void System::FrameDone()
   {
     if (s_state.rewind_save_counter == 0)
     {
-      SaveMemoryState(AllocateMemoryState());
+      if (g_settings.rewind_use_save_states)
+        SaveRewindState();
+      else
+        SaveMemoryState(AllocateMemoryState());
       s_state.rewind_save_counter = s_state.rewind_save_frequency;
     }
     else
@@ -4950,7 +4959,8 @@ void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64
 
 void System::UpdateMemorySaveStateSettings()
 {
-  const bool any_memory_states_active = (g_settings.IsRunaheadEnabled() || g_settings.rewind_enable);
+  const bool any_memory_states_active = 
+    (g_settings.IsRunaheadEnabled() || (g_settings.rewind_enable && !g_settings.rewind_use_save_states));
   FreeMemoryStateStorage(true, true, any_memory_states_active);
 
   if (IsReplayingGPUDump()) [[unlikely]]
@@ -4966,13 +4976,22 @@ void System::UpdateMemorySaveStateSettings()
     s_state.rewind_save_frequency =
       static_cast<s32>(std::ceil(g_settings.rewind_save_frequency * s_state.video_frame_rate));
     s_state.rewind_save_counter = 0;
-    num_slots = g_settings.rewind_save_slots;
 
-    u64 ram_usage, vram_usage;
-    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
-    INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
-             std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
-             vram_usage / 1048576);
+    if (g_settings.rewind_use_save_states)
+    {
+      INFO_LOG("Rewind is enabled using save states, saving every {} frames, with {} slots",
+               std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots);
+    }
+    else
+    {
+      num_slots = g_settings.rewind_save_slots;
+
+      u64 ram_usage, vram_usage;
+      CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
+      INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
+               std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
+               vram_usage / 1048576);
+    }
   }
   else
   {
@@ -5076,6 +5095,139 @@ void System::DoRewind()
     return;
 
   Throttle(Timer::GetCurrentValue(), s_state.next_frame_time);
+}
+
+std::string System::GetRewindStateSaveDirectory()
+{
+  const std::string& game_serial = s_state.running_game_serial;
+  if (game_serial.empty())
+    return {};
+
+  return Path::Combine(EmuFolders::Rewind, game_serial);
+}
+
+std::vector<System::RewindStateInfo> System::GetAvailableRewindStates()
+{
+  std::vector<RewindStateInfo> states;
+
+  const std::string rewind_dir = GetRewindStateSaveDirectory();
+  if (rewind_dir.empty())
+    return states;
+
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(rewind_dir.c_str(), "*.sav", FILESYSTEM_FIND_FILES, &files);
+
+  for (const FILESYSTEM_FIND_DATA& fd : files)
+  {
+    const std::string& path = fd.FileName;
+    const std::string_view filename(Path::GetFileName(path));
+
+    // Parse frame number from filename (format: rewind_NNNNNNNNNN.sav)
+    if (!StringUtil::StartsWithNoCase(filename, "rewind_") || !StringUtil::EndsWithNoCase(filename, ".sav"))
+      continue;
+
+    const std::string_view frame_str = filename.substr(7, filename.length() - 11);
+    const std::optional<u32> frame_number = StringUtil::FromChars<u32>(frame_str);
+    if (!frame_number.has_value())
+      continue;
+
+    RewindStateInfo info;
+    info.frame_number = frame_number.value();
+    info.timestamp = fd.ModificationTime;
+    info.state_path = path;
+    info.screenshot_path = Path::ReplaceExtension(path, "png");
+    states.push_back(std::move(info));
+  }
+
+  // Sort by frame number (most recent first)
+  std::sort(states.begin(), states.end(), [](const RewindStateInfo& a, const RewindStateInfo& b) {
+    return a.frame_number > b.frame_number;
+  });
+
+  return states;
+}
+
+void System::SaveRewindState()
+{
+  if (!IsValid() || !g_settings.rewind_enable || !g_settings.rewind_use_save_states)
+    return;
+
+  if (s_state.rewind_selector_open)
+    return;
+
+  const std::string rewind_dir = GetRewindStateSaveDirectory();
+  if (rewind_dir.empty())
+    return;
+
+  // Create directory if it doesn't exist
+  Error error;
+  if (!FileSystem::EnsureDirectoryExists(rewind_dir.c_str(), false, &error))
+  {
+    ERROR_LOG("Failed to create rewind directory {}: {}", rewind_dir, error.GetDescription());
+    return;
+  }
+
+  // Generate filename based on current frame number
+  const std::string state_path =
+    Path::Combine(rewind_dir, fmt::format("rewind_{:010d}.sav", s_state.frame_number));
+  const std::string screenshot_path = Path::ReplaceExtension(state_path, "png");
+
+  // Save the state
+  if (!SaveState(state_path.c_str(), &error, false, false))
+  {
+    ERROR_LOG("Failed to save rewind state to {}: {}", state_path, error.GetDescription());
+    return;
+  }
+
+  // Save screenshot
+  SaveScreenshot(screenshot_path.c_str(), DisplayScreenshotMode::InternalResolution,
+                 DisplayScreenshotFormat::PNG, 85);
+
+  // Clean up old states (keep only the configured number)
+  std::vector<RewindStateInfo> existing_states = GetAvailableRewindStates();
+  while (existing_states.size() > g_settings.rewind_save_slots)
+  {
+    const RewindStateInfo& oldest_state = existing_states.back();
+    if (FileSystem::FileExists(oldest_state.state_path.c_str()))
+      FileSystem::DeleteFile(oldest_state.state_path.c_str());
+    if (FileSystem::FileExists(oldest_state.screenshot_path.c_str()))
+      FileSystem::DeleteFile(oldest_state.screenshot_path.c_str());
+    existing_states.pop_back();
+  }
+}
+
+void System::OpenRewindStateSelector()
+{
+  if (!IsValid() || !g_settings.rewind_enable || !g_settings.rewind_use_save_states)
+    return;
+
+  s_state.rewind_selector_open = true;
+  s_state.rewind_selector_states = GetAvailableRewindStates();
+  s_state.rewind_selector_index = 0;
+
+  // Pause the game
+  s_state.was_paused_before_rewind_selector = GPUThread::IsSystemPaused();
+  if (!s_state.was_paused_before_rewind_selector)
+    Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+}
+
+void System::CloseRewindStateSelector()
+{
+  if (!s_state.rewind_selector_open)
+    return;
+
+  s_state.rewind_selector_open = false;
+  s_state.rewind_selector_states.clear();
+  s_state.rewind_selector_index = 0;
+
+  // Unpause if it wasn't paused before
+  if (GPUThread::IsSystemPaused() && !s_state.was_paused_before_rewind_selector)
+    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+}
+
+bool System::IsRewindStateSelectorOpen()
+{
+  return s_state.rewind_selector_open;
 }
 
 bool System::IsRunaheadActive()
