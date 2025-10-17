@@ -374,6 +374,9 @@ std::vector<RewindStateInfo> GetAvailableRewindStates();
 /// Saves a rewind state to disk (only when using save state-based rewinding).
 void SaveRewindState();
 
+/// Deletes all rewind states with frame numbers greater than the specified frame.
+void DeleteRewindStatesAfter(u32 frame_number);
+
 /// Opens the rewind state selector UI.
 void OpenRewindStateSelector();
 

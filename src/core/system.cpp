@@ -5215,6 +5215,27 @@ void System::SaveRewindState()
   }
 }
 
+void System::DeleteRewindStatesAfter(u32 frame_number)
+{
+  const std::string rewind_dir = GetRewindStateSaveDirectory();
+  if (rewind_dir.empty())
+    return;
+
+  std::vector<RewindStateInfo> existing_states = GetAvailableRewindStates();
+  for (const RewindStateInfo& state : existing_states)
+  {
+    // Delete all states with frame numbers greater than the selected one (more recent states)
+    if (state.frame_number > frame_number)
+    {
+      DEBUG_LOG("Deleting future rewind state: {} (frame {})", state.state_path, state.frame_number);
+      if (FileSystem::FileExists(state.state_path.c_str()))
+        FileSystem::DeleteFile(state.state_path.c_str());
+      if (FileSystem::FileExists(state.screenshot_path.c_str()))
+        FileSystem::DeleteFile(state.screenshot_path.c_str());
+    }
+  }
+}
+
 void System::OpenRewindStateSelector()
 {
   if (!IsValid() || !g_settings.rewind_enable || !g_settings.rewind_use_save_states)

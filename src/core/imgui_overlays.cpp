@@ -1614,9 +1614,16 @@ void ImGuiManager::RenderRewindSelector()
     {
       // Queue the state load to run on the CPU thread
       const std::string state_path = states[current_index].state_path;
-      Host::RunOnCPUThread([state_path]() {
+      const u32 selected_frame = states[current_index].frame_number;
+
+      Host::RunOnCPUThread([state_path, selected_frame]() {
         Error error;
-        if (!System::LoadState(state_path.c_str(), &error, true, false))
+        if (System::LoadState(state_path.c_str(), &error, true, false))
+        {
+          // Delete all states that occurred after this one (future states from old timeline)
+          System::DeleteRewindStatesAfter(selected_frame);
+        }
+        else
         {
           Host::AddIconOSDMessage("RewindLoadState", ICON_EMOJI_WARNING,
                                  fmt::format("Failed to load rewind state: {}", error.GetDescription()),
