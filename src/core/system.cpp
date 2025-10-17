@@ -3761,17 +3761,20 @@ void System::SetRewindState(bool enabled)
   // If using save state-based rewinding, open the selector UI
   if (g_settings.rewind_use_save_states)
   {
-    if (enabled && !IsRewindStateSelectorOpen())
+    if (enabled)
     {
-      GPUThread::RunOnThread([]() {
-        System::OpenRewindStateSelector();
-      });
-    }
-    else if (!enabled && IsRewindStateSelectorOpen())
-    {
-      GPUThread::RunOnThread([]() {
-        System::CloseRewindStateSelector();
-      });
+      if (!IsRewindStateSelectorOpen())
+      {
+        GPUThread::RunOnThread([]() {
+          System::OpenRewindStateSelector();
+        });
+      }
+      else
+      {
+        GPUThread::RunOnThread([]() {
+          System::CloseRewindStateSelector();
+        });
+      }
     }
   }
   else
