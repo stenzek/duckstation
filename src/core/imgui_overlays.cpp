@@ -1644,8 +1644,9 @@ void ImGuiManager::RenderRewindSelector()
 
     // Display state info for current selection
     const auto& current_state = states[current_index];
-    const u32 frame_diff = (states.empty() || current_index == 0) ?
-                           0 : (states[0].frame_number - current_state.frame_number);
+    const u32 current_frame = System::Internal::GetRewindSelectorCurrentFrame();
+    const u32 frame_diff = (states.empty() || current_state.frame_number >= current_frame) ?
+                           0 : (current_frame - current_state.frame_number);
     const float seconds_ago = frame_diff / System::GetVideoFrameRate();
 
     ImGui::Text("Frame: %u", current_state.frame_number);

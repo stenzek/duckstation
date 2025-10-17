@@ -307,6 +307,7 @@ struct ALIGN_TO_CACHE_LINE StateVars
   bool rewind_selector_open = false;
   bool was_paused_before_rewind_selector = false;
   size_t rewind_selector_index = 0;
+  u32 rewind_selector_current_frame = 0;
   std::vector<System::RewindStateInfo> rewind_selector_states;
 
   const BIOS::ImageInfo* bios_image_info = nullptr;
@@ -3773,8 +3774,9 @@ void System::SetRewindState(bool enabled)
     {
       if (!IsRewindStateSelectorOpen())
       {
-        GPUThread::RunOnThread([]() {
-          System::OpenRewindStateSelector();
+        const u32 current_frame = System::GetFrameNumber();
+        GPUThread::RunOnThread([current_frame]() {
+          System::OpenRewindStateSelector(current_frame);
         });
       }
       else
@@ -5292,12 +5294,13 @@ void System::CleanupRewindStates()
     INFO_LOG("Cleaned up {} rewind state director{}", cleaned_dirs, (cleaned_dirs == 1) ? "y" : "ies");
 }
 
-void System::OpenRewindStateSelector()
+void System::OpenRewindStateSelector(u32 current_frame_number)
 {
   if (!IsValid() || !g_settings.rewind_enable || !g_settings.rewind_use_save_states)
     return;
 
   s_state.rewind_selector_open = true;
+  s_state.rewind_selector_current_frame = current_frame_number;
   s_state.rewind_selector_states = GetAvailableRewindStates();
   s_state.rewind_selector_index = 0;
 
@@ -5350,6 +5353,11 @@ const std::vector<System::RewindStateInfo>& GetRewindSelectorStates()
 size_t& GetRewindSelectorIndex()
 {
   return s_state.rewind_selector_index;
+}
+
+u32 GetRewindSelectorCurrentFrame()
+{
+  return s_state.rewind_selector_current_frame;
 }
 
 } // namespace System::Internal

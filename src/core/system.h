@@ -382,7 +382,7 @@ void DeleteRewindStatesAfter(u32 frame_number);
 void CleanupRewindStates();
 
 /// Opens the rewind state selector UI.
-void OpenRewindStateSelector();
+void OpenRewindStateSelector(u32 current_frame_number);
 
 /// Closes the rewind state selector UI.
 void CloseRewindStateSelector();
@@ -494,6 +494,9 @@ const std::vector<RewindStateInfo>& GetRewindSelectorStates();
 
 /// Returns a reference to the rewind selector index (for UI rendering).
 size_t& GetRewindSelectorIndex();
+
+/// Returns the current frame number when the rewind selector was opened.
+u32 GetRewindSelectorCurrentFrame();
 
 } // namespace Internal
 
