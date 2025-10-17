@@ -3236,7 +3236,8 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
   return true;
 }
 
-bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
+bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
+                       bool show_osd_message)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -3258,15 +3259,19 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
   VERBOSE_LOG("Preparing state save took {:.2f} msec", save_timer.GetTimeMilliseconds());
 
   std::string osd_key = fmt::format("save_state_{}", path);
-  Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
-                          fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
+  if (show_osd_message)
+  {
+    Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
+                            fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
+  }
 
   // ensure multiple saves to the same path do not overlap
   FlushSaveStates();
 
   s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
   s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
-                                       backup_existing_save, compression = g_settings.save_state_compression]() {
+                                       backup_existing_save, compression = g_settings.save_state_compression,
+                                       show_osd_message]() {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;
@@ -3304,18 +3309,21 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
     if (!IsValid())
       return;
 
-    if (result)
+    if (show_osd_message)
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
-                              fmt::format(TRANSLATE_FS("System", "State saved to '{}'."), Path::GetFileName(path)),
-                              Host::OSD_QUICK_DURATION);
-    }
-    else
-    {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_WARNING,
-                              fmt::format(TRANSLATE_FS("System", "Failed to save state to '{0}':\n{1}"),
-                                          Path::GetFileName(path), lerror.GetDescription()),
-                              Host::OSD_ERROR_DURATION);
+      if (result)
+      {
+        Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
+                                fmt::format(TRANSLATE_FS("System", "State saved to '{}'."), Path::GetFileName(path)),
+                                Host::OSD_QUICK_DURATION);
+      }
+      else
+      {
+        Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_WARNING,
+                                fmt::format(TRANSLATE_FS("System", "Failed to save state to '{0}':\n{1}"),
+                                            Path::GetFileName(path), lerror.GetDescription()),
+                                Host::OSD_ERROR_DURATION);
+      }
     }
   });
 
@@ -5210,7 +5218,7 @@ void System::SaveRewindState()
   const std::string screenshot_path = Path::ReplaceExtension(state_path, "png");
 
   // Save the state
-  if (!SaveState(state_path.c_str(), &error, false, false))
+  if (!SaveState(state_path.c_str(), &error, false, false, false))
   {
     ERROR_LOG("Failed to save rewind state to {}: {}", state_path, error.GetDescription());
     return;
@@ -5218,7 +5226,7 @@ void System::SaveRewindState()
 
   // Save screenshot
   SaveScreenshot(screenshot_path.c_str(), DisplayScreenshotMode::InternalResolution,
-                 DisplayScreenshotFormat::PNG, 85);
+                 DisplayScreenshotFormat::PNG, 85, false);
 
   // Clean up old states (keep only the configured number)
   std::vector<RewindStateInfo> existing_states = GetAvailableRewindStates();
@@ -5559,7 +5567,8 @@ std::string System::GetScreenshotPath(const char* extension)
   return path;
 }
 
-void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality)
+void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality,
+                            bool show_osd_message)
 {
   if (!IsValid())
     return;
@@ -5568,7 +5577,7 @@ void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, Displa
   if (!path || path[0] == '\0')
     path = (auto_path = GetScreenshotPath(Settings::GetDisplayScreenshotFormatExtension(format))).c_str();
 
-  GPUBackend::RenderScreenshotToFile(path, mode, quality, true);
+  GPUBackend::RenderScreenshotToFile(path, mode, quality, show_osd_message);
 }
 
 bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frames /*= 0*/)

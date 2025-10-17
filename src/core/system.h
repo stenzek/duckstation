@@ -274,7 +274,8 @@ size_t GetMaxMemorySaveStateSize();
 
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
-bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);
+bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
+               bool show_osd_message = true);
 bool SaveResumeState(Error* error);
 
 /// State data access, use with care as the media path is not updated.
@@ -436,7 +437,7 @@ void UpdateVolume();
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
 void SaveScreenshot(const char* path = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
-                    u8 quality = g_settings.display_screenshot_quality);
+                    u8 quality = g_settings.display_screenshot_quality, bool show_osd_message = true);
 
 /// Starts/stops GPU dump/trace recording.
 bool StartRecordingGPUDump(const char* path = nullptr, u32 num_frames = 1);
