@@ -4644,15 +4644,24 @@ void FullscreenUI::DrawEmulationSettingsPage()
   const s32 runahead_frames = GetEffectiveIntSetting(bsi, "Main", "RunaheadFrameCount", 0);
   const bool runahead_enabled = (runahead_frames > 0);
   const bool rewind_enabled = GetEffectiveBoolSetting(bsi, "Main", "RewindEnable", false);
+  const bool rewind_use_save_states = GetEffectiveBoolSetting(bsi, "Main", "RewindUseSaveStates", false);
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BACKWARD, "Rewind using Save States"),
+                    FSUI_VSTR("Uses save states instead of memory for rewinding. Opens a menu to navigate states."),
+                    "Main", "RewindUseSaveStates", false, rewind_enabled && !runahead_enabled);
 
   DrawFloatRangeSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Rewind Save Frequency"),
-    FSUI_VSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
-    "RewindFrequency", 10.0f, 0.0f, 3600.0f, FSUI_CSTR("%.2f Seconds"), 1.0f, rewind_enabled);
+    rewind_use_save_states ?
+      FSUI_VSTR("How often a rewind state will be created.") :
+      FSUI_VSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."),
+    "Main", "RewindFrequency", 10.0f, 0.0f, 3600.0f, FSUI_CSTR("%.2f Seconds"), 1.0f, rewind_enabled);
   DrawIntRangeSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_WHISKEY_GLASS, "Rewind Save Slots"),
-    FSUI_VSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."), "Main",
-    "RewindSaveSlots", 10, 1, 10000, FSUI_CSTR("%d Frames"), rewind_enabled);
+    rewind_use_save_states ?
+      FSUI_VSTR("How many saves will be kept for rewinding.") :
+      FSUI_VSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."),
+    "Main", "RewindSaveSlots", 10, 1, 10000, FSUI_CSTR("%d Frames"), rewind_enabled);
 
   static constexpr const std::array runahead_options = {
     FSUI_NSTR("Disabled"), FSUI_NSTR("1 Frame"),  FSUI_NSTR("2 Frames"), FSUI_NSTR("3 Frames"),

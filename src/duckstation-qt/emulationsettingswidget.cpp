@@ -28,6 +28,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.preFrameSleepBuffer, "Display", "PreFrameSleepBuffer",
                                                 Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindEnable, "Main", "RewindEnable", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.rewindUseSaveStates, "Main", "RewindUseSaveStates", false);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.rewindSaveFrequency, "Main", "RewindFrequency", 10.0f);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.rewindSaveSlots, "Main", "RewindSaveSlots", 10);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.runaheadFrames, "Main", "RunaheadFrameCount", 0);
@@ -86,6 +87,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.preFrameSleep, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onPreFrameSleepChanged);
 
   connect(m_ui.rewindEnable, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateRewind);
+  connect(m_ui.rewindUseSaveStates, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveFrequency, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
           &EmulationSettingsWidget::updateRewind);
   connect(m_ui.rewindSaveSlots, QOverload<int>::of(&QSpinBox::valueChanged), this,
@@ -142,6 +144,10 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
        "requirements.<br> "
        "<b>Rewind Buffer Size:</b> How many saves will be kept for rewinding. Higher values have greater memory "
        "requirements."));
+  dialog->registerWidgetHelp(
+    m_ui.rewindUseSaveStates, tr("Rewind using Save States"), tr("Unchecked"),
+    tr("Uses save state files instead of keeping rewind states in memory. Reduces RAM usage but uses disk space and may "
+       "be slightly slower. Opens a menu when the rewind hotkey is pressed, allowing you to choose which state to load. "));
   dialog->registerWidgetHelp(
     m_ui.runaheadFrames, tr("Runahead"), tr("Disabled"),
     tr(
@@ -243,27 +249,46 @@ void EmulationSettingsWidget::updateRewind()
 {
   const bool rewind_enabled = m_dialog->getEffectiveBoolValue("Main", "RewindEnable", false);
   const bool runahead_enabled = m_dialog->getIntValue("Main", "RunaheadFrameCount", 0) > 0;
+  const bool use_save_states = m_dialog->getEffectiveBoolValue("Main", "RewindUseSaveStates", false);
+
   m_ui.rewindEnable->setEnabled(!runahead_enabled);
+  m_ui.rewindUseSaveStates->setEnabled(rewind_enabled && !runahead_enabled);
   m_ui.runaheadForAnalogInput->setEnabled(runahead_enabled);
 
   if (!runahead_enabled && rewind_enabled)
   {
-    const u32 resolution_scale = static_cast<u32>(m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1));
-    const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
-    const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
-    const float duration =
-      ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
+    if (use_save_states)
+    {
+      const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
+      const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
+      const float duration =
+        ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
 
-    u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(frames, resolution_scale, &ram_usage, &vram_usage);
+      m_ui.rewindSummary->setText(
+        tr("Rewind for %n frame(s), lasting %1 second(s) will save state and screenshots to disk, compression and resolution will determine file size.", "", frames)
+          .arg(duration));
+      m_ui.rewindSaveFrequency->setEnabled(true);
+      m_ui.rewindSaveSlots->setEnabled(true);
+    }
+    else
+    {
+      const u32 resolution_scale = static_cast<u32>(m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1));
+      const u32 frames = static_cast<u32>(m_ui.rewindSaveSlots->value());
+      const float frequency = static_cast<float>(m_ui.rewindSaveFrequency->value());
+      const float duration =
+        ((frequency <= std::numeric_limits<float>::epsilon()) ? (1.0f / 60.0f) : frequency) * static_cast<float>(frames);
 
-    m_ui.rewindSummary->setText(
-      tr("Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.", "", frames)
-        .arg(duration)
-        .arg(ram_usage / 1048576)
-        .arg(vram_usage / 1048576));
-    m_ui.rewindSaveFrequency->setEnabled(true);
-    m_ui.rewindSaveSlots->setEnabled(true);
+      u64 ram_usage, vram_usage;
+      System::CalculateRewindMemoryUsage(frames, resolution_scale, &ram_usage, &vram_usage);
+
+      m_ui.rewindSummary->setText(
+        tr("Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.", "", frames)
+          .arg(duration)
+          .arg(ram_usage / 1048576)
+          .arg(vram_usage / 1048576));
+      m_ui.rewindSaveFrequency->setEnabled(true);
+      m_ui.rewindSaveSlots->setEnabled(true);
+    }
   }
   else
   {
