@@ -285,6 +285,7 @@ struct Settings : public GPUSettings
   bool bios_fast_forward_boot : 1 = false;
 
   bool rewind_enable : 1 = false;
+  bool rewind_use_save_states : 1 = false;
   bool runahead_for_analog_input : 1 = false;
 
   bool apply_compatibility_settings : 1 = true;
@@ -628,6 +629,7 @@ extern std::string InputProfiles;
 extern std::string MemoryCards;
 extern std::string Patches;
 extern std::string Resources;
+extern std::string Rewind;
 extern std::string SaveStates;
 extern std::string Screenshots;
 extern std::string Shaders;

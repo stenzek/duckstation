@@ -213,6 +213,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
   enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
+  rewind_use_save_states = si.GetBoolValue("Main", "RewindUseSaveStates", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
   rewind_save_slots = static_cast<u16>(std::min(si.GetUIntValue("Main", "RewindSaveSlots", 10u), 65535u));
   runahead_frames = static_cast<u8>(std::min(si.GetUIntValue("Main", "RunaheadFrameCount", 0u), 255u));
@@ -597,6 +598,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
+  si.SetBoolValue("Main", "RewindUseSaveStates", rewind_use_save_states);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
   si.SetUIntValue("Main", "RewindSaveSlots", rewind_save_slots);
   si.SetUIntValue("Main", "RunaheadFrameCount", runahead_frames);
@@ -2508,6 +2510,7 @@ std::string InputProfiles;
 std::string MemoryCards;
 std::string Patches;
 std::string Resources;
+std::string Rewind;
 std::string SaveStates;
 std::string Screenshots;
 std::string Shaders;
@@ -2531,6 +2534,7 @@ void EmuFolders::SetDefaults()
   InputProfiles = Path::Combine(DataRoot, "inputprofiles");
   MemoryCards = Path::Combine(DataRoot, "memcards");
   Patches = Path::Combine(DataRoot, "patches");
+  Rewind = Path::Combine(DataRoot, "rewind");
   SaveStates = Path::Combine(DataRoot, "savestates");
   Screenshots = Path::Combine(DataRoot, "screenshots");
   Shaders = Path::Combine(DataRoot, "shaders");
@@ -2563,6 +2567,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
   Patches = LoadPathFromSettings(si, DataRoot, "Folders", "Patches", "patches");
+  Rewind = LoadPathFromSettings(si, DataRoot, "Folders", "Rewind", "rewind");
   SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
   Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
   Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
@@ -2581,6 +2586,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("MemoryCards Directory: {}", MemoryCards);
   DEV_LOG("Patches Directory: {}", Patches);
   DEV_LOG("Resources Directory: {}", Resources);
+  DEV_LOG("Rewind Directory: {}", Rewind);
   DEV_LOG("SaveStates Directory: {}", SaveStates);
   DEV_LOG("Screenshots Directory: {}", Screenshots);
   DEV_LOG("Shaders Directory: {}", Shaders);
@@ -2602,6 +2608,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
   si.SetStringValue("Folders", "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
+  si.SetStringValue("Folders", "Rewind", Path::MakeRelative(Rewind, DataRoot).c_str());
   si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
@@ -2650,6 +2657,7 @@ void EmuFolders::EnsureFoldersExist()
   EnsureFolderExists(InputProfiles);
   EnsureFolderExists(MemoryCards);
   EnsureFolderExists(Patches);
+  EnsureFolderExists(Rewind);
   EnsureFolderExists(SaveStates);
   EnsureFolderExists(Screenshots);
   EnsureFolderExists(Shaders);
