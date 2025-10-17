@@ -1487,10 +1487,250 @@ void ImGuiManager::RenderOverlayWindows()
   {
     if (SaveStateSelectorUI::s_state.is_open)
       SaveStateSelectorUI::Draw();
+
+    ImGuiManager::RenderRewindSelector();
   }
 }
 
 void ImGuiManager::DestroyOverlayTextures()
 {
   SaveStateSelectorUI::DestroyTextures();
+}
+
+namespace {
+struct RewindSelectorCache
+{
+  std::unordered_map<std::string, std::shared_ptr<GPUTexture>> textures;
+
+  void Clear()
+  {
+    textures.clear();
+  }
+
+  GPUTexture* GetTexture(const std::string& path)
+  {
+    auto it = textures.find(path);
+    if (it != textures.end())
+      return it->second.get();
+
+    // Try to load the texture
+    if (!FileSystem::FileExists(path.c_str()))
+      return nullptr;
+
+    Error error;
+    Image screenshot_image;
+    if (!screenshot_image.LoadFromFile(path.c_str(), &error))
+    {
+      WARNING_LOG("Failed to load rewind screenshot '{}': {}", path, error.GetDescription());
+      return nullptr;
+    }
+
+    std::shared_ptr<GPUTexture> texture = g_gpu_device->FetchAndUploadTextureImage(screenshot_image, GPUTexture::Flags::None, &error);
+    if (!texture)
+    {
+      WARNING_LOG("Failed to upload rewind screenshot texture '{}': {}", path, error.GetDescription());
+      return nullptr;
+    }
+
+    textures[path] = texture;
+    return texture.get();
+  }
+};
+
+static RewindSelectorCache s_rewind_selector_cache;
+} // namespace
+
+void ImGuiManager::RenderRewindSelector()
+{
+  if (!System::IsRewindStateSelectorOpen())
+  {
+    // Clear cache when selector is closed
+    s_rewind_selector_cache.Clear();
+    return;
+  }
+
+  const auto& states = System::Internal::GetRewindSelectorStates();
+  if (states.empty())
+  {
+    s_rewind_selector_cache.Clear();
+    System::CloseRewindStateSelector();
+    return;
+  }
+
+  const float scale = ImGuiManager::GetGlobalScale();
+  const ImVec2 display_size = ImGui::GetIO().DisplaySize;
+
+  // Calculate window size based on display size and scale
+  // Use 80% of screen width and 70% of screen height (with min/max bounds)
+  const float window_width = std::clamp(display_size.x * 0.8f, 800.0f * scale, 1920.0f * scale);
+  const float window_height = std::clamp(display_size.y * 0.7f, 500.0f * scale, 1080.0f * scale);
+
+  ImGui::SetNextWindowPos(ImVec2(display_size.x * 0.5f, display_size.y * 0.5f),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  ImGui::SetNextWindowSize(ImVec2(window_width, window_height));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f * scale);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20.0f * scale, 20.0f * scale));
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.95f));
+
+  if (ImGui::Begin("Rewind State Selector", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse))
+  {
+    ImGui::PushFont(ImGuiManager::GetTextFont(), ImGuiFullscreen::UIStyle.MediumFontSize, ImGuiFullscreen::UIStyle.NormalFontWeight);
+
+    // Title
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize("Select Rewind State").x) * 0.5f);
+    ImGui::Text("Select Rewind State");
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // Instructions
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Use Left/Right or D-Pad to navigate, Confirm to select, Cancel to exit");
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // Handle input
+    size_t& current_index = System::Internal::GetRewindSelectorIndex();
+
+    // Navigate left (go to older states)
+    if ((ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft)) &&
+        current_index < states.size() - 1)
+    {
+      current_index++;
+    }
+
+    // Navigate right (go to newer states)
+    if ((ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight)) &&
+        current_index > 0)
+    {
+      current_index--;
+    }
+
+    // Confirm selection
+    if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) ||
+        ImGui::IsKeyPressed(ImGuiKey_GamepadFaceDown))
+    {
+      // Queue the state load to run on the CPU thread
+      const std::string state_path = states[current_index].state_path;
+      Host::RunOnCPUThread([state_path]() {
+        Error error;
+        if (!System::LoadState(state_path.c_str(), &error, true, false))
+        {
+          Host::AddIconOSDMessage("RewindLoadState", ICON_EMOJI_WARNING,
+                                 fmt::format("Failed to load rewind state: {}", error.GetDescription()),
+                                 Host::OSD_ERROR_DURATION);
+        }
+      });
+      System::CloseRewindStateSelector();
+    }
+
+    // Cancel
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight))
+    {
+      System::CloseRewindStateSelector();
+    }
+
+    // Display state info for current selection
+    const auto& current_state = states[current_index];
+    const u32 frame_diff = (states.empty() || current_index == 0) ?
+                           0 : (states[0].frame_number - current_state.frame_number);
+    const float seconds_ago = frame_diff / System::GetVideoFrameRate();
+
+    ImGui::Text("Frame: %u", current_state.frame_number);
+    if (frame_diff > 0)
+      ImGui::Text("Time: %.2f seconds ago (%.0f frames)", seconds_ago, static_cast<float>(frame_diff));
+    else
+      ImGui::Text("Time: Current frame");
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // Display thumbnails in horizontal layout with selected one centered
+    const float thumbnail_size = 200.0f * scale;
+    const float spacing = 20.0f * scale;
+    const float available_width = ImGui::GetContentRegionAvail().x;
+
+    // Calculate how many thumbnails to show on each side of selected
+    // This allows partial thumbnails to be visible for better visual feedback
+    const size_t max_per_side = std::max<size_t>(2, static_cast<size_t>((available_width * 0.5f) / (thumbnail_size + spacing)));
+
+    // Always show thumbnails centered on current selection
+    // Start from further back to allow partial thumbnails on the left
+    const size_t start_idx = (current_index > max_per_side) ? current_index - max_per_side : 0;
+    const size_t end_idx = std::min(current_index + max_per_side + 1, states.size());
+    const size_t num_visible = end_idx - start_idx;
+
+    // Calculate the center position where selected thumbnail should be
+    const float center_x = available_width * 0.5f;
+
+    // Calculate starting X position to always center the selected thumbnail
+    // Position selected thumbnail's center at screen center, then offset for its position in the list
+    const size_t selected_visual_position = end_idx - 1 - current_index;
+    const float start_x = center_x - (selected_visual_position * (thumbnail_size + spacing)) - (thumbnail_size * 0.5f);
+
+    // Draw thumbnails horizontally centered
+    ImGui::BeginChild("ThumbnailArea", ImVec2(0, thumbnail_size + 60.0f * scale), false);
+
+    ImGui::SetCursorPosX(start_x);
+    ImGui::SetCursorPosY(10.0f * scale);
+
+    // Iterate in reverse to display oldest (higher index) on left, newest (lower index) on right
+    for (size_t idx = 0; idx < num_visible; idx++)
+    {
+      const size_t i = end_idx - 1 - idx;
+      const bool is_selected = (i == current_index);
+      const float alpha = is_selected ? 1.0f : 0.5f;
+
+      ImGui::PushID(static_cast<int>(i));
+
+      // Apply alpha to make non-selected items dimmed
+      ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+      // Store position before drawing for border
+      const ImVec2 item_pos = ImGui::GetCursorScreenPos();
+
+      // Get cached texture
+      GPUTexture* texture = s_rewind_selector_cache.GetTexture(states[i].screenshot_path);
+
+      if (texture)
+      {
+        ImGui::Image(texture, ImVec2(thumbnail_size, thumbnail_size));
+      }
+      else
+      {
+        ImGui::Button("No Preview", ImVec2(thumbnail_size, thumbnail_size));
+      }
+
+      // Draw border around selected thumbnail
+      if (is_selected)
+      {
+        const float border_thickness = 4.0f * scale;
+        const float pulse_alpha = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
+        const ImU32 border_color = IM_COL32(255, 215, 0, static_cast<u8>(pulse_alpha * 255.0f));
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        const ImVec2 border_min = ImVec2(item_pos.x - border_thickness * 0.5f, item_pos.y - border_thickness * 0.5f);
+        const ImVec2 border_max = ImVec2(item_pos.x + thumbnail_size + border_thickness * 0.5f,
+                                         item_pos.y + thumbnail_size + border_thickness * 0.5f);
+        draw_list->AddRect(border_min, border_max, border_color, 0.0f, ImDrawFlags_None, border_thickness);
+      }
+
+      ImGui::PopStyleVar();
+
+      ImGui::PopID();
+
+      if (idx < num_visible - 1)
+        ImGui::SameLine(0.0f, spacing);
+    }
+
+    ImGui::EndChild();
+
+    ImGui::PopFont();
+  }
+  ImGui::End();
+
+  ImGui::PopStyleColor();
+  ImGui::PopStyleVar(2);
 }

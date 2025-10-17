@@ -5249,6 +5249,20 @@ bool System::IsRewindStateSelectorOpen()
   return s_state.rewind_selector_open;
 }
 
+namespace System::Internal {
+
+const std::vector<System::RewindStateInfo>& GetRewindSelectorStates()
+{
+  return s_state.rewind_selector_states;
+}
+
+size_t& GetRewindSelectorIndex()
+{
+  return s_state.rewind_selector_index;
+}
+
+} // namespace System::Internal
+
 bool System::IsRunaheadActive()
 {
   return (s_state.runahead_frames > 0);

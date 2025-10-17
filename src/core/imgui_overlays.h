@@ -25,6 +25,7 @@ void DestroyAllDebugWindows();
 
 void RenderOverlayWindows();
 void DestroyOverlayTextures();
+void RenderRewindSelector();
 
 } // namespace ImGuiManager
 

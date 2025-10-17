@@ -477,6 +477,16 @@ void ReleaseSocketMultiplexer();
 /// Called when rich presence changes.
 void UpdateRichPresence(bool update_session_time);
 
+namespace Internal {
+
+/// Returns a reference to the rewind selector states (for UI rendering).
+const std::vector<RewindStateInfo>& GetRewindSelectorStates();
+
+/// Returns a reference to the rewind selector index (for UI rendering).
+size_t& GetRewindSelectorIndex();
+
+} // namespace Internal
+
 } // namespace System
 
 namespace Host {
