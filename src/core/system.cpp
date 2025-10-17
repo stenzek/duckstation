@@ -4647,6 +4647,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.rewind_enable != old_settings.rewind_enable ||
+        g_settings.rewind_use_save_states != old_settings.rewind_use_save_states ||
         g_settings.rewind_save_frequency != old_settings.rewind_save_frequency ||
         g_settings.rewind_save_slots != old_settings.rewind_save_slots ||
         g_settings.runahead_frames != old_settings.runahead_frames)
@@ -4987,7 +4988,15 @@ void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64
 
 void System::UpdateMemorySaveStateSettings()
 {
-  const bool any_memory_states_active = 
+  // Close rewind selector if switching away from save state mode
+  if (s_state.rewind_selector_open && !g_settings.rewind_use_save_states)
+  {
+    GPUThread::RunOnThread([]() {
+      System::CloseRewindStateSelector();
+    });
+  }
+
+  const bool any_memory_states_active =
     (g_settings.IsRunaheadEnabled() || (g_settings.rewind_enable && !g_settings.rewind_use_save_states));
   FreeMemoryStateStorage(true, true, any_memory_states_active);
 
