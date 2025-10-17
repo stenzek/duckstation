@@ -5332,6 +5332,14 @@ bool System::IsRewindStateSelectorOpen()
   return s_state.rewind_selector_open;
 }
 
+void System::ResetRewindSaveCounter()
+{
+  // Reset counter to full frequency to prevent immediate duplicate save
+  // This should be called after loading a rewind state
+  if (s_state.rewind_save_frequency >= 0)
+    s_state.rewind_save_counter = s_state.rewind_save_frequency;
+}
+
 namespace System::Internal {
 
 const std::vector<System::RewindStateInfo>& GetRewindSelectorStates()

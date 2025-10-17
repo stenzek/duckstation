@@ -1622,6 +1622,9 @@ void ImGuiManager::RenderRewindSelector()
         {
           // Delete all states that occurred after this one (future states from old timeline)
           System::DeleteRewindStatesAfter(selected_frame);
+
+          // Reset counter to prevent immediate duplicate save on next frame
+          System::ResetRewindSaveCounter();
         }
         else
         {
