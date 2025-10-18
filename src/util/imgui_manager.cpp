@@ -34,8 +34,8 @@
 #include <chrono>
 #include <cmath>
 #include <deque>
-#include <mutex>
 #include <limits>
+#include <mutex>
 #include <type_traits>
 #include <unordered_map>
 
@@ -1358,15 +1358,15 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
     return false;
 
   const auto iter = s_state.imgui_key_map.find(key.data);
-  if (iter == s_state.imgui_key_map.end())
-    return false;
+  if (iter != s_state.imgui_key_map.end())
+  {
+    GPUThread::RunOnThread([imkey = iter->second, pressed = (value != 0.0f)]() {
+      if (!s_state.imgui_context)
+        return;
 
-  GPUThread::RunOnThread([imkey = iter->second, pressed = (value != 0.0f)]() {
-    if (!s_state.imgui_context)
-      return;
-
-    SetImKeyState(s_state.imgui_context->IO, imkey, pressed);
-  });
+      SetImKeyState(s_state.imgui_context->IO, imkey, pressed);
+    });
+  }
 
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
