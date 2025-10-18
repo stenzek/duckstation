@@ -159,7 +159,7 @@ static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE WidgetsState
+struct ALIGN_TO_CACHE_LINE Locals
 {
   // Main
   MainWindowType current_main_window = MainWindowType::None;
@@ -186,7 +186,7 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
 
 } // namespace
 
-static WidgetsState s_state;
+static Locals s_locals;
 
 } // namespace FullscreenUI
 
@@ -197,13 +197,13 @@ static WidgetsState s_state;
 void FullscreenUI::Initialize()
 {
   // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
-  if (s_state.initialized || !ImGuiManager::IsInitialized())
+  if (s_locals.initialized || !ImGuiManager::IsInitialized())
     return;
 
-  s_state.initialized = true;
+  s_locals.initialized = true;
 
   // in case we open the pause menu while the game is running
-  if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+  if (s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
       !GPUThread::IsGPUBackendRequested())
   {
     ReturnToMainWindow();
@@ -219,13 +219,13 @@ void FullscreenUI::Initialize()
 
 bool FullscreenUI::IsInitialized()
 {
-  return s_state.initialized;
+  return s_locals.initialized;
 }
 
 bool FullscreenUI::HasActiveWindow()
 {
-  return s_state.initialized && (s_state.current_main_window != MainWindowType::None ||
-                                 GetTransitionState() != TransitionState::Inactive || AreAnyDialogsOpen());
+  return s_locals.initialized && (s_locals.current_main_window != MainWindowType::None ||
+                                  GetTransitionState() != TransitionState::Inactive || AreAnyDialogsOpen());
 }
 
 bool FullscreenUI::AreAnyDialogsOpen()
@@ -256,7 +256,7 @@ void FullscreenUI::OnSystemStarting()
 
     BeginTransition(LONG_TRANSITION_TIME, []() {
       ClearSaveStateEntryList();
-      s_state.current_main_window = MainWindowType::None;
+      s_locals.current_main_window = MainWindowType::None;
       QueueResetFocus(FocusResetType::ViewChanged);
       UpdateRunIdleState();
     });
@@ -288,7 +288,7 @@ void FullscreenUI::OnSystemResumed()
       return;
 
     // get rid of pause menu if we unpaused another way
-    if (s_state.current_main_window == MainWindowType::PauseMenu)
+    if (s_locals.current_main_window == MainWindowType::PauseMenu)
       ClosePauseMenuImmediately();
 
     UpdateRunIdleState();
@@ -305,20 +305,20 @@ void FullscreenUI::OnSystemDestroyed()
     if (!IsInitialized())
       return;
 
-    s_state.pause_menu_was_open = false;
-    s_state.was_paused_on_quick_menu_open = false;
-    s_state.current_pause_submenu = PauseSubMenu::None;
+    s_locals.pause_menu_was_open = false;
+    s_locals.was_paused_on_quick_menu_open = false;
+    s_locals.current_pause_submenu = PauseSubMenu::None;
     ReturnToMainWindow(LONG_TRANSITION_TIME);
   });
 }
 
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
-  s_state.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
-  if (!s_state.was_paused_on_quick_menu_open)
+  s_locals.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
+  if (!s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(true); });
 
-  s_state.pause_menu_was_open |= set_pause_menu_open;
+  s_locals.pause_menu_was_open |= set_pause_menu_open;
 }
 
 void FullscreenUI::OpenPauseMenu()
@@ -328,7 +328,7 @@ void FullscreenUI::OpenPauseMenu()
 
   GPUThread::RunOnThread([]() {
     Initialize();
-    if (s_state.current_main_window != MainWindowType::None)
+    if (s_locals.current_main_window != MainWindowType::None)
       return;
 
     PauseForMenuOpen(true);
@@ -336,7 +336,7 @@ void FullscreenUI::OpenPauseMenu()
 
     Achievements::UpdateRecentUnlockAndAlmostThere();
     BeginTransition(SHORT_TRANSITION_TIME, []() {
-      s_state.current_pause_submenu = PauseSubMenu::None;
+      s_locals.current_pause_submenu = PauseSubMenu::None;
       SwitchToMainWindow(MainWindowType::PauseMenu);
     });
   });
@@ -349,7 +349,7 @@ void FullscreenUI::OpenCheatsMenu()
 
   GPUThread::RunOnThread([]() {
     Initialize();
-    if (s_state.current_main_window != MainWindowType::None)
+    if (s_locals.current_main_window != MainWindowType::None)
       return;
 
     PauseForMenuOpen(false);
@@ -385,12 +385,12 @@ void FullscreenUI::ClosePauseMenu()
   if (!GPUThread::HasGPUBackend())
     return;
 
-  if (GPUThread::IsSystemPaused() && !s_state.was_paused_on_quick_menu_open)
+  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(false); });
 
   BeginTransition(SHORT_TRANSITION_TIME, []() {
-    s_state.current_pause_submenu = PauseSubMenu::None;
-    s_state.pause_menu_was_open = false;
+    s_locals.current_pause_submenu = PauseSubMenu::None;
+    s_locals.pause_menu_was_open = false;
     SwitchToMainWindow(MainWindowType::None);
   });
 }
@@ -402,11 +402,11 @@ void FullscreenUI::ClosePauseMenuImmediately()
 
   CancelTransition();
 
-  if (GPUThread::IsSystemPaused() && !s_state.was_paused_on_quick_menu_open)
+  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(false); });
 
-  s_state.current_pause_submenu = PauseSubMenu::None;
-  s_state.pause_menu_was_open = false;
+  s_locals.current_pause_submenu = PauseSubMenu::None;
+  s_locals.pause_menu_was_open = false;
   SwitchToMainWindow(MainWindowType::None);
 
   // Present frame with menu closed. We have to defer this for a frame so imgui loses keyboard focus.
@@ -416,11 +416,11 @@ void FullscreenUI::ClosePauseMenuImmediately()
 
 void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 {
-  if (s_state.current_main_window == type)
+  if (s_locals.current_main_window == type)
     return;
 
-  s_state.previous_main_window = (type == MainWindowType::None) ? MainWindowType::None : s_state.current_main_window;
-  s_state.current_main_window = type;
+  s_locals.previous_main_window = (type == MainWindowType::None) ? MainWindowType::None : s_locals.current_main_window;
+  s_locals.current_main_window = type;
   if (!AreAnyDialogsOpen())
   {
     ImGui::SetWindowFocus(nullptr);
@@ -433,17 +433,17 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
 
 void FullscreenUI::ReturnToPreviousWindow()
 {
-  if (s_state.previous_main_window == MainWindowType::None)
+  if (s_locals.previous_main_window == MainWindowType::None)
   {
     ReturnToMainWindow();
   }
   else
   {
-    BeginTransition([window = s_state.previous_main_window]() {
+    BeginTransition([window = s_locals.previous_main_window]() {
       SwitchToMainWindow(window);
 
       // return stack is only one deep
-      s_state.previous_main_window = window;
+      s_locals.previous_main_window = window;
     });
   }
 }
@@ -455,13 +455,13 @@ void FullscreenUI::ReturnToMainWindow()
 
 void FullscreenUI::ReturnToMainWindow(float transition_time)
 {
-  if (GPUThread::IsSystemPaused() && !s_state.was_paused_on_quick_menu_open)
+  if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
     Host::RunOnCPUThread([]() { System::PauseSystem(false); });
 
   BeginTransition(transition_time, []() {
-    s_state.previous_main_window = MainWindowType::None;
-    s_state.current_pause_submenu = PauseSubMenu::None;
-    s_state.pause_menu_was_open = false;
+    s_locals.previous_main_window = MainWindowType::None;
+    s_locals.current_pause_submenu = PauseSubMenu::None;
+    s_locals.pause_menu_was_open = false;
 
     if (GPUThread::HasGPUBackend())
     {
@@ -481,28 +481,28 @@ void FullscreenUI::Shutdown(bool clear_state)
 {
   if (clear_state)
   {
-    s_state.current_main_window = MainWindowType::None;
-    s_state.current_pause_submenu = PauseSubMenu::None;
-    s_state.pause_menu_was_open = false;
-    s_state.was_paused_on_quick_menu_open = false;
+    s_locals.current_main_window = MainWindowType::None;
+    s_locals.current_pause_submenu = PauseSubMenu::None;
+    s_locals.pause_menu_was_open = false;
+    s_locals.was_paused_on_quick_menu_open = false;
 
     Achievements::ClearUIState();
     ClearSaveStateEntryList();
     ClearSettingsState();
     ClearGameListState();
-    s_state.current_time_string = {};
-    s_state.current_time = 0;
+    s_locals.current_time_string = {};
+    s_locals.current_time = 0;
   }
 
   DestroyResources();
 
-  s_state.initialized = false;
+  s_locals.initialized = false;
   UpdateRunIdleState();
 }
 
 void FullscreenUI::Render()
 {
-  if (!s_state.initialized)
+  if (!s_locals.initialized)
   {
     RenderLoadingScreen();
     return;
@@ -511,16 +511,16 @@ void FullscreenUI::Render()
   UploadAsyncTextures();
 
   // draw background before any overlays
-  if (!GPUThread::HasGPUBackend() && s_state.current_main_window != MainWindowType::None)
+  if (!GPUThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
     DrawBackground();
 
   BeginLayout();
 
   // Primed achievements must come first, because we don't want the pause screen to be behind them.
-  if (s_state.current_main_window == MainWindowType::None)
+  if (s_locals.current_main_window == MainWindowType::None)
     Achievements::DrawGameOverlays();
 
-  switch (s_state.current_main_window)
+  switch (s_locals.current_main_window)
   {
     case MainWindowType::Landing:
       DrawLandingWindow();
@@ -568,8 +568,8 @@ void FullscreenUI::Render()
 
 void FullscreenUI::DestroyResources()
 {
-  s_state.app_background_texture.reset();
-  s_state.app_background_shader.reset();
+  s_locals.app_background_texture.reset();
+  s_locals.app_background_shader.reset();
 }
 
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
@@ -627,12 +627,12 @@ bool FullscreenUI::UserThemeableHorizontalButton(const std::string_view png_name
 void FullscreenUI::UpdateCurrentTimeString()
 {
   const std::time_t current_time = std::time(nullptr);
-  if (s_state.current_time == current_time)
+  if (s_locals.current_time == current_time)
     return;
 
-  s_state.current_time = current_time;
-  s_state.current_time_string = {};
-  s_state.current_time_string = Host::FormatNumber(Host::NumberFormatType::ShortTime, static_cast<s64>(current_time));
+  s_locals.current_time = current_time;
+  s_locals.current_time_string = {};
+  s_locals.current_time_string = Host::FormatNumber(Host::NumberFormatType::ShortTime, static_cast<s64>(current_time));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -686,7 +686,7 @@ void FullscreenUI::DoResume()
     return;
 
   ClearSaveStateEntryList();
-  s_state.save_state_selector_slots.push_back(std::move(slentry));
+  s_locals.save_state_selector_slots.push_back(std::move(slentry));
   OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
 }
 
@@ -992,7 +992,7 @@ void FullscreenUI::DoToggleFullscreen()
 
 bool FullscreenUI::HasBackground()
 {
-  return static_cast<bool>(s_state.app_background_texture || s_state.app_background_shader);
+  return static_cast<bool>(s_locals.app_background_texture || s_locals.app_background_shader);
 }
 
 void FullscreenUI::UpdateBackground()
@@ -1000,9 +1000,9 @@ void FullscreenUI::UpdateBackground()
   if (!IsInitialized())
     return;
 
-  g_gpu_device->RecycleTexture(std::move(s_state.app_background_texture));
-  s_state.app_background_shader.reset();
-  s_state.background_loaded = true;
+  g_gpu_device->RecycleTexture(std::move(s_locals.app_background_texture));
+  s_locals.app_background_shader.reset();
+  s_locals.background_loaded = true;
 
   const TinyString background_name =
     Host::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
@@ -1131,8 +1131,8 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
                                                                GPUTexture::Format::RGBA8);
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
-  s_state.app_background_shader = g_gpu_device->CreatePipeline(plconfig, error);
-  if (!s_state.app_background_shader)
+  s_locals.app_background_shader = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_locals.app_background_shader)
     return false;
 
   return true;
@@ -1155,9 +1155,9 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
   GSVector2::store<true>(uniforms.u_display_size, display_size);
   GSVector2::store<true>(uniforms.u_rcp_display_size, GSVector2::cxpr(1.0f) / display_size);
   uniforms.u_time =
-    static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.app_background_load_time));
+    static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.app_background_load_time));
 
-  g_gpu_device->SetPipeline(s_state.app_background_shader.get());
+  g_gpu_device->SetPipeline(s_locals.app_background_shader.get());
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
 }
@@ -1168,8 +1168,8 @@ bool FullscreenUI::LoadBackgroundImage(const std::string& path, Error* error)
   if (!image.LoadFromFile(path.c_str(), error))
     return false;
 
-  s_state.app_background_texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, error);
-  if (!s_state.app_background_texture)
+  s_locals.app_background_texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, error);
+  if (!s_locals.app_background_texture)
     return false;
 
   return true;
@@ -1177,21 +1177,21 @@ bool FullscreenUI::LoadBackgroundImage(const std::string& path, Error* error)
 
 void FullscreenUI::DrawBackground()
 {
-  if (!s_state.background_loaded)
+  if (!s_locals.background_loaded)
     UpdateBackground();
 
-  if (s_state.app_background_shader)
+  if (s_locals.app_background_shader)
   {
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
     dl->AddCallback(&FullscreenUI::DrawShaderBackgroundCallback, nullptr);
   }
-  else if (s_state.app_background_texture)
+  else if (s_locals.app_background_texture)
   {
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
     const ImVec2 size = ImGui::GetIO().DisplaySize;
-    const ImRect uv_rect = FitImage(size, ImVec2(static_cast<float>(s_state.app_background_texture->GetWidth()),
-                                                 static_cast<float>(s_state.app_background_texture->GetHeight())));
-    dl->AddImage(s_state.app_background_texture.get(), ImVec2(0.0f, 0.0f), size, uv_rect.Min, uv_rect.Max);
+    const ImRect uv_rect = FitImage(size, ImVec2(static_cast<float>(s_locals.app_background_texture->GetWidth()),
+                                                 static_cast<float>(s_locals.app_background_texture->GetHeight())));
+    dl->AddImage(s_locals.app_background_texture.get(), ImVec2(0.0f, 0.0f), size, uv_rect.Min, uv_rect.Max);
   }
 }
 
@@ -1250,11 +1250,11 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
       UpdateCurrentTimeString();
 
       const ImVec2 time_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
-                                                           IMSTR_START_END(s_state.current_time_string));
+                                                           IMSTR_START_END(s_locals.current_time_string));
       time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
                         LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
       RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, time_pos, time_pos + time_size,
-                                text_color, s_state.current_time_string, &time_size);
+                                text_color, s_locals.current_time_string, &time_size);
     }
 
     // draw achievements info
@@ -1465,7 +1465,7 @@ float FullscreenUI::GetBackgroundAlpha()
   if (GPUThread::HasGPUBackend())
   {
     // reduce background opacity when changing postfx settings
-    if (s_state.current_main_window == MainWindowType::Settings &&
+    if (s_locals.current_main_window == MainWindowType::Settings &&
         GetCurrentSettingsPage() == SettingsPage::PostProcessing)
     {
       return 0.50f;
@@ -1484,7 +1484,7 @@ float FullscreenUI::GetBackgroundAlpha()
 void FullscreenUI::DrawPauseMenu()
 {
   static constexpr auto switch_submenu = [](PauseSubMenu submenu) {
-    s_state.current_pause_submenu = submenu;
+    s_locals.current_pause_submenu = submenu;
     QueueResetFocus(FocusResetType::ViewChanged);
   };
 
@@ -1548,10 +1548,10 @@ void FullscreenUI::DrawPauseMenu()
 
     ImVec2 text_size =
       UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, std::numeric_limits<float>::max(),
-                                  -1.0f, IMSTR_START_END(s_state.current_time_string));
+                                  -1.0f, IMSTR_START_END(s_locals.current_time_string));
     text_pos = ImVec2(display_size.x - scaled_top_bar_padding - text_size.x, scaled_top_bar_padding);
     RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_pos, display_size,
-                              title_text_color, s_state.current_time_string);
+                              title_text_color, s_locals.current_time_string);
     text_pos.y += UIStyle.LargeFontSize + scaled_text_spacing;
 
     if (!game_serial.empty())
@@ -1600,10 +1600,10 @@ void FullscreenUI::DrawPauseMenu()
 
     // reduce spacing to fit all the buttons
     ResetFocusHere();
-    BeginMenuButtons(submenu_item_count[static_cast<u32>(s_state.current_pause_submenu)], 1.0f,
+    BeginMenuButtons(submenu_item_count[static_cast<u32>(s_locals.current_pause_submenu)], 1.0f,
                      LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING, 0.0f, 4.0f);
 
-    switch (s_state.current_pause_submenu)
+    switch (s_locals.current_pause_submenu)
     {
       case PauseSubMenu::None:
       {
@@ -1657,7 +1657,7 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
         {
-          BeginTransition(SHORT_TRANSITION_TIME, []() { s_state.current_main_window = MainWindowType::None; });
+          BeginTransition(SHORT_TRANSITION_TIME, []() { s_locals.current_main_window = MainWindowType::None; });
           Host::RunOnCPUThread([]() { BeginChangeDiscOnCPUThread(false); });
         }
 
@@ -1787,12 +1787,12 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
 
 void FullscreenUI::ClearSaveStateEntryList()
 {
-  for (SaveStateListEntry& entry : s_state.save_state_selector_slots)
+  for (SaveStateListEntry& entry : s_locals.save_state_selector_slots)
   {
     if (entry.preview_texture)
       g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
   }
-  s_state.save_state_selector_slots.clear();
+  s_locals.save_state_selector_slots.clear();
 }
 
 u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
@@ -1807,7 +1807,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
     li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
     if (undo_save_state->screenshot.IsValid())
       li.preview_texture = g_gpu_device->FetchAndUploadTextureImage(undo_save_state->screenshot);
-    s_state.save_state_selector_slots.push_back(std::move(li));
+    s_locals.save_state_selector_slots.push_back(std::move(li));
   }
 
   if (!serial.empty())
@@ -1816,7 +1816,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
     {
       SaveStateListEntry li;
       if (InitializeSaveStateListEntryFromSerial(&li, serial, i, false) || !is_loading)
-        s_state.save_state_selector_slots.push_back(std::move(li));
+        s_locals.save_state_selector_slots.push_back(std::move(li));
     }
   }
 
@@ -1824,10 +1824,10 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
   {
     SaveStateListEntry li;
     if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
-      s_state.save_state_selector_slots.push_back(std::move(li));
+      s_locals.save_state_selector_slots.push_back(std::move(li));
   }
 
-  return static_cast<u32>(s_state.save_state_selector_slots.size());
+  return static_cast<u32>(s_locals.save_state_selector_slots.size());
 }
 
 void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::string& path, bool is_loading)
@@ -1842,7 +1842,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
       GPUThread::RunOnThread([serial = std::move(serial), undo_state = std::move(undo_state), is_loading]() mutable {
         if (PopulateSaveStateListEntries(serial, std::move(undo_state), is_loading) > 0)
         {
-          s_state.save_state_selector_loading = is_loading;
+          s_locals.save_state_selector_loading = is_loading;
           SwitchToMainWindow(MainWindowType::SaveStateSelector);
         }
         else
@@ -1856,7 +1856,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   {
     if (PopulateSaveStateListEntries(serial, std::nullopt, is_loading) > 0)
     {
-      s_state.save_state_selector_loading = is_loading;
+      s_locals.save_state_selector_loading = is_loading;
       SwitchToMainWindow(MainWindowType::SaveStateSelector);
     }
     else
@@ -1932,7 +1932,7 @@ void FullscreenUI::DrawSaveStateSelector()
   bool closed = false;
 
   // last state deleted?
-  if (s_state.save_state_selector_slots.empty())
+  if (s_locals.save_state_selector_slots.empty())
     closed = true;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "##save_state_selector_title",
@@ -1942,7 +1942,7 @@ void FullscreenUI::DrawSaveStateSelector()
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       closed = true;
 
-    NavTitle(s_state.save_state_selector_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State"));
+    NavTitle(s_locals.save_state_selector_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State"));
     EndNavBar();
   }
 
@@ -1982,7 +1982,7 @@ void FullscreenUI::DrawSaveStateSelector()
     ImGui::SetCursorPosX(start_x);
     for (u32 i = 0;;)
     {
-      SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
+      SaveStateListEntry& entry = s_locals.save_state_selector_slots[i];
 
       ImGuiWindow* window = ImGui::GetCurrentWindow();
       if (window->SkipItems)
@@ -2051,7 +2051,7 @@ void FullscreenUI::DrawSaveStateSelector()
           CancelPendingMenuClose();
 
           std::string title;
-          if (s_state.save_state_selector_loading)
+          if (s_locals.save_state_selector_loading)
             title = FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load State");
           else
             title = FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Save State");
@@ -2065,14 +2065,14 @@ void FullscreenUI::DrawSaveStateSelector()
 
           OpenChoiceDialog(std::move(title), false, std::move(options),
                            [i](s32 index, const std::string& title, bool checked) mutable {
-                             if (index < 0 || i >= s_state.save_state_selector_slots.size())
+                             if (index < 0 || i >= s_locals.save_state_selector_slots.size())
                                return;
 
-                             SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
+                             SaveStateListEntry& entry = s_locals.save_state_selector_slots[i];
                              if (index == 0)
                              {
                                // load state
-                               if (s_state.save_state_selector_loading)
+                               if (s_locals.save_state_selector_loading)
                                  do_load_state(std::move(entry.game_path), std::move(entry.state_path));
                                else
                                  do_save_state(entry.slot, entry.global);
@@ -2092,9 +2092,9 @@ void FullscreenUI::DrawSaveStateSelector()
                                  // TODO: do this with a transition for safety
                                  g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
 
-                                 if (s_state.save_state_selector_loading)
-                                   s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() +
-                                                                           i);
+                                 if (s_locals.save_state_selector_loading)
+                                   s_locals.save_state_selector_slots.erase(s_locals.save_state_selector_slots.begin() +
+                                                                            i);
                                  else
                                    InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
                                }
@@ -2109,7 +2109,7 @@ void FullscreenUI::DrawSaveStateSelector()
 
       // avoid triggering imgui warning
       i++;
-      if (i == s_state.save_state_selector_slots.size())
+      if (i == s_locals.save_state_selector_slots.size())
         break;
 
       grid_x++;
@@ -2136,8 +2136,8 @@ void FullscreenUI::DrawSaveStateSelector()
     SetFullscreenFooterText(
       std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select State")),
                  std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Delete State")),
-                 std::make_pair(ICON_PF_BUTTON_A, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
-                                                                                        FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_BUTTON_A, s_locals.save_state_selector_loading ? FSUI_VSTR("Load State") :
+                                                                                         FSUI_VSTR("Save State")),
                  std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
   }
   else
@@ -2146,14 +2146,14 @@ void FullscreenUI::DrawSaveStateSelector()
       std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
                                 FSUI_VSTR("Select State")),
                  std::make_pair(ICON_PF_F1, FSUI_VSTR("Delete State")),
-                 std::make_pair(ICON_PF_ENTER, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
-                                                                                     FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_ENTER, s_locals.save_state_selector_loading ? FSUI_VSTR("Load State") :
+                                                                                      FSUI_VSTR("Save State")),
                  std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
 
   if (pressed_entry)
   {
-    if (s_state.save_state_selector_loading)
+    if (s_locals.save_state_selector_loading)
       do_load_state(std::move(pressed_entry->game_path), std::move(pressed_entry->state_path));
     else
       do_save_state(pressed_entry->slot, pressed_entry->global);
@@ -2172,7 +2172,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
     return false;
 
   slentry.game_path = entry->path;
-  s_state.save_state_selector_slots.push_back(std::move(slentry));
+  s_locals.save_state_selector_slots.push_back(std::move(slentry));
   OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
   return true;
 }
@@ -2185,7 +2185,7 @@ void FullscreenUI::DrawResumeStateSelector()
     return;
   }
 
-  SaveStateListEntry& entry = s_state.save_state_selector_slots.front();
+  SaveStateListEntry& entry = s_locals.save_state_selector_slots.front();
 
   SmallString sick;
   sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {}?"),
@@ -2397,74 +2397,6 @@ void FullscreenUI::SwitchToLeaderboards()
   SwitchToMainWindow(MainWindowType::Leaderboards);
 }
 
-FullscreenUI::BackgroundProgressCallback::BackgroundProgressCallback(std::string name)
-  : ProgressCallback(), m_name(std::move(name))
-{
-  OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
-}
-
-FullscreenUI::BackgroundProgressCallback::~BackgroundProgressCallback()
-{
-  CloseBackgroundProgressDialog(m_name.c_str());
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetStatusText(const std::string_view text)
-{
-  ProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetProgressRange(u32 range)
-{
-  const u32 last_range = m_progress_range;
-
-  ProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetProgressValue(u32 value)
-{
-  const u32 last_value = m_progress_value;
-
-  ProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != last_value)
-    Redraw(false);
-}
-
-void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
-{
-  const int percent =
-    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-  if (percent == m_last_progress_percent && !force)
-    return;
-
-  m_last_progress_percent = percent;
-  UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
-}
-
-void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
-{
-  Host::ReportErrorAsync("Error", message);
-}
-
-bool FullscreenUI::BackgroundProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  return Host::ConfirmMessage("Confirm", message);
-}
-
-void FullscreenUI::BackgroundProgressCallback::ModalInformation(const std::string_view message)
-{
-  Host::ReportErrorAsync("Information", message);
-}
-
-void FullscreenUI::BackgroundProgressCallback::SetCancelled()
-{
-  if (m_cancellable)
-    m_cancelled = true;
-}
 
 #endif // __ANDROID__
 

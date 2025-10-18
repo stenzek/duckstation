@@ -17,6 +17,8 @@
 #include "IconsEmoji.h"
 #include "IconsPromptFont.h"
 
+#ifndef __ANDROID__
+
 namespace FullscreenUI {
 
 enum class GameListView : u8
@@ -1181,3 +1183,5 @@ void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback
                                      image_rect.Max, IM_COL32(255, 255, 255, 255), title, LAYOUT_CENTER_ALIGN_TEXT,
                                      image_rect.GetWidth(), &image_rect);
 }
+
+#endif // __ANDROID__

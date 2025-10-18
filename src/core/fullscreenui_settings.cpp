@@ -37,6 +37,8 @@
 
 LOG_CHANNEL(FullscreenUI);
 
+#ifndef __ANDROID__
+
 namespace FullscreenUI {
 
 namespace {
@@ -5225,3 +5227,5 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
   EndMenuButtons();
 }
+
+#endif // __ANDROID__

@@ -11,6 +11,8 @@ namespace GameList {
 struct Entry;
 }
 
+#ifndef __ANDROID__
+
 namespace FullscreenUI {
 
 enum class MainWindowType : u8
@@ -90,8 +92,7 @@ void ClearGameListState();
 void SwitchToGameList();
 void DrawGameListWindow();
 
-void DoStartPath(std::string path, std::string state = std::string(),
-                        std::optional<bool> fast_boot = std::nullopt);
+void DoStartPath(std::string path, std::string state = std::string(), std::optional<bool> fast_boot = std::nullopt);
 
 GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
 void SetCoverCacheEntry(std::string path, std::string cover_path);
@@ -112,3 +113,5 @@ SettingsPage GetCurrentSettingsPage();
 bool IsInputBindingDialogOpen();
 
 } // namespace FullscreenUI
+
+#endif // __ANDROID__

@@ -4182,6 +4182,75 @@ void FullscreenUI::DrawBackgroundProgressDialogs(ImVec2& position, float spacing
   }
 }
 
+FullscreenUI::BackgroundProgressCallback::BackgroundProgressCallback(std::string name)
+  : ProgressCallback(), m_name(std::move(name))
+{
+  OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
+}
+
+FullscreenUI::BackgroundProgressCallback::~BackgroundProgressCallback()
+{
+  CloseBackgroundProgressDialog(m_name.c_str());
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  Redraw(true);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetProgressRange(u32 range)
+{
+  const u32 last_range = m_progress_range;
+
+  ProgressCallback::SetProgressRange(range);
+
+  if (m_progress_range != last_range)
+    Redraw(false);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetProgressValue(u32 value)
+{
+  const u32 last_value = m_progress_value;
+
+  ProgressCallback::SetProgressValue(value);
+
+  if (m_progress_value != last_value)
+    Redraw(false);
+}
+
+void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
+{
+  const int percent =
+    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
+  if (percent == m_last_progress_percent && !force)
+    return;
+
+  m_last_progress_percent = percent;
+  UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
+}
+
+void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
+{
+  Host::ReportErrorAsync("Error", message);
+}
+
+bool FullscreenUI::BackgroundProgressCallback::ModalConfirmation(const std::string_view message)
+{
+  return Host::ConfirmMessage("Confirm", message);
+}
+
+void FullscreenUI::BackgroundProgressCallback::ModalInformation(const std::string_view message)
+{
+  Host::ReportErrorAsync("Information", message);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetCancelled()
+{
+  if (m_cancellable)
+    m_cancelled = true;
+}
+
 void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
                                        s32 progress_min /*= -1*/, s32 progress_max /*= -1*/,
                                        s32 progress_value /*= -1*/)
