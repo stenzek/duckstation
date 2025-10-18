@@ -5,6 +5,7 @@
 #include "core/bus.h"
 #include "core/controller.h"
 #include "core/fullscreenui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
@@ -19,7 +20,6 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
