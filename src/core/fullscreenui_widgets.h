@@ -481,21 +481,16 @@ bool IsBackgroundProgressDialogOpen(std::string_view str_id);
 
 /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
 /// such as compiling shaders when starting up.
-
-void OpenLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
-                       s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
-void UpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
-                         s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
-void CloseLoadingScreen();
-
 void RenderLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
                          s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
 
+/// Opens or updates a loading screen, rendering is managed by FullscreenUI. Safe to call from CPU thread.
+void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
+                               s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
 bool IsLoadingScreenOpen();
+void CloseLoadingScreen();
 
-/// Renders a previously-configured loading screen.
-void RenderLoadingScreen();
-
+/// Notification and toast support.
 void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
 void ShowToast(std::string title, std::string message, float duration = 10.0f);
 
@@ -574,7 +569,7 @@ struct MenuButtonBounds
   void CalcSummarySize(const std::string_view& summary, float font_size);
 };
 
-} // namespace ImGuiFullscreen
+} // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.
 namespace Host {

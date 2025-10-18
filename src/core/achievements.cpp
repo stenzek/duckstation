@@ -1728,15 +1728,12 @@ bool Achievements::DoState(StateWrapper& sw)
     // before deserializing, otherwise that state's going to get lost.
     if (s_state.load_game_request)
     {
-      // Messy because GPU-thread, but at least it looks pretty.
-      GPUThread::RunOnThread([]() {
-        FullscreenUI::OpenLoadingScreen(System::GetImageForLoadingScreen(GPUThread::GetGamePath()),
-                                        TRANSLATE_SV("Achievements", "Downloading achievements data..."));
-      });
+      FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
+                                              TRANSLATE_SV("Achievements", "Downloading achievements data..."));
 
       s_state.http_downloader->WaitForAllRequests();
 
-      GPUThread::RunOnThread([]() { FullscreenUI::CloseLoadingScreen(); });
+      FullscreenUI::CloseLoadingScreen();
     }
 
     u32 data_size = 0;

@@ -70,9 +70,14 @@ static void DrawLoadingScreen(std::string_view image, std::string_view title, st
 
 // Returns true if any overlay windows are active, such as notifications or toasts.
 static bool AreAnyNotificationsActive();
-static void OnNotificationsActivated();
+
+/// Updates the run-idle trigger for notifications.
+static void UpdateNotificationsRunIdle();
+static void UpdateLoadingScreenRunIdle();
+
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
+static void DrawLoadingScreen();
 
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
 
@@ -1083,6 +1088,8 @@ void FullscreenUI::RenderOverlays()
   std::unique_lock lock(s_state.shared_state_mutex);
   if (!AreAnyNotificationsActive())
     return;
+
+  DrawLoadingScreen();
 
   const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
@@ -4068,7 +4075,7 @@ void FullscreenUI::OpenBackgroundProgressDialog(std::string_view str_id, std::st
   s_state.background_progress_dialogs.push_back(std::move(data));
 
   if (!was_active)
-    OnNotificationsActivated();
+    UpdateNotificationsRunIdle();
 }
 
 void FullscreenUI::UpdateBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max,
@@ -4282,23 +4289,29 @@ void FullscreenUI::RenderLoadingScreen(std::string_view image, std::string_view 
   ImGuiManager::NewFrame();
 }
 
-void FullscreenUI::OpenLoadingScreen(std::string_view image, std::string_view title, std::string_view caption /* =  */,
-                                     s32 progress_min /* = -1 */, s32 progress_max /* = -1 */,
-                                     s32 progress_value /* = -1 */)
+void FullscreenUI::UpdateLoadingScreenRunIdle()
 {
-  Assert(GPUThread::IsOnThread());
-  Assert(!GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, true);
+  // early out if we're already on the GPU thread
+  if (GPUThread::IsOnThread())
+  {
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+    return;
+  }
 
-  UpdateLoadingScreen(image, title, caption, progress_min, progress_max, progress_value);
+  // need to check it again once we're executing on the gpu thread, it could've changed since
+  GPUThread::RunOnThread([]() {
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, s_state.loading_screen_open);
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+  });
 }
 
-void FullscreenUI::UpdateLoadingScreen(std::string_view image, std::string_view title,
-                                       std::string_view caption /* =  */, s32 progress_min /* = -1 */,
-                                       s32 progress_max /* = -1 */, s32 progress_value /* = -1 */)
+void FullscreenUI::OpenOrUpdateLoadingScreen(std::string_view image, std::string_view title,
+                                             std::string_view caption /* =  */, s32 progress_min /* = -1 */,
+                                             s32 progress_max /* = -1 */, s32 progress_value /* = -1 */)
 {
-  Assert(GPUThread::IsOnThread());
-  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
+  const std::unique_lock lock(s_state.shared_state_mutex);
+  const bool was_loading_screen_open = std::exchange(s_state.loading_screen_open, true);
 
   if (!image.empty() && s_state.loading_screen_image != image)
     s_state.loading_screen_image = image;
@@ -4318,7 +4331,9 @@ void FullscreenUI::UpdateLoadingScreen(std::string_view image, std::string_view 
                      progress_max);
     }
   }
-  s_state.loading_screen_open = true;
+
+  if (!was_loading_screen_open)
+    UpdateLoadingScreenRunIdle();
 }
 
 bool FullscreenUI::IsLoadingScreenOpen()
@@ -4326,7 +4341,7 @@ bool FullscreenUI::IsLoadingScreenOpen()
   return s_state.loading_screen_open;
 }
 
-void FullscreenUI::RenderLoadingScreen()
+void FullscreenUI::DrawLoadingScreen()
 {
   if (!s_state.loading_screen_open)
     return;
@@ -4337,9 +4352,9 @@ void FullscreenUI::RenderLoadingScreen()
 
 void FullscreenUI::CloseLoadingScreen()
 {
-  Assert(GPUThread::IsOnThread());
-  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, false);
+  const std::unique_lock lock(s_state.shared_state_mutex);
+  if (!s_state.loading_screen_open)
+    return;
 
   s_state.loading_screen_samples = {};
   s_state.loading_screen_valid_samples = 0;
@@ -4351,6 +4366,8 @@ void FullscreenUI::CloseLoadingScreen()
   s_state.loading_screen_max = 0;
   s_state.loading_screen_value = 0;
   s_state.loading_screen_open = false;
+
+  UpdateLoadingScreenRunIdle();
 }
 
 void FullscreenUI::UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value)
@@ -4632,22 +4649,12 @@ void LoadingScreenProgressCallback::Redraw(bool force)
   }
   else
   {
-    GPUThread::RunOnThread([image = std::move(m_image), title = SmallString(std::string_view(m_title)),
-                            status_text = SmallString(std::string_view(m_status_text)),
-                            range = static_cast<s32>(m_progress_range), value = static_cast<s32>(m_progress_value),
-                            is_first_update = (m_last_progress_percent < 0 && !m_on_gpu_thread)]() {
-      // activation?
-      if (is_first_update)
-      {
-        FullscreenUI::OpenLoadingScreen(image.empty() ? std::string_view(ImGuiManager::LOGO_IMAGE_NAME) :
-                                                        std::string_view(image),
-                                        title, status_text, 0, range, value);
-      }
-      else
-      {
-        FullscreenUI::UpdateLoadingScreen(image, title, status_text, 0, range, value);
-      }
-    });
+    // activation? use default image if unspecified
+    const std::string_view image = (m_image.empty() && m_last_progress_percent < 0 && !m_on_gpu_thread) ?
+                                     std::string_view(ImGuiManager::LOGO_IMAGE_NAME) :
+                                     std::string_view(m_image);
+    FullscreenUI::OpenOrUpdateLoadingScreen(image, m_title, m_status_text, 0, static_cast<s32>(m_progress_range),
+                                            static_cast<s32>(m_progress_value));
     m_image = {};
   }
 
@@ -4676,15 +4683,21 @@ static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
 bool FullscreenUI::AreAnyNotificationsActive()
 {
   return (!s_state.notifications.empty() || !s_state.toast_title.empty() || !s_state.toast_message.empty() ||
-          !s_state.background_progress_dialogs.empty());
+          !s_state.background_progress_dialogs.empty() || s_state.loading_screen_open);
 }
 
-void FullscreenUI::OnNotificationsActivated()
+void FullscreenUI::UpdateNotificationsRunIdle()
 {
+  // early out if we're already on the GPU thread
   if (GPUThread::IsOnThread())
-    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, true);
-  else
-    GPUThread::RunOnThread([]() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, true); });
+  {
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive());
+    return;
+  }
+
+  // need to check it again once we're executing on the gpu thread, it could've changed since
+  GPUThread::RunOnThread(
+    []() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive()); });
 }
 
 void FullscreenUI::AddNotification(std::string key, float duration, std::string title, std::string text,
@@ -4730,7 +4743,7 @@ void FullscreenUI::AddNotification(std::string key, float duration, std::string 
   s_state.notifications.push_back(std::move(notif));
 
   if (!prev_had_notifications)
-    OnNotificationsActivated();
+    UpdateNotificationsRunIdle();
 }
 
 void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
@@ -4881,7 +4894,7 @@ void FullscreenUI::ShowToast(std::string title, std::string message, float durat
   s_state.toast_duration = duration;
 
   if (!prev_had_notifications)
-    OnNotificationsActivated();
+    UpdateNotificationsRunIdle();
 }
 
 void FullscreenUI::DrawToast()

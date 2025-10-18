@@ -472,15 +472,16 @@ void FullscreenUI::Render()
 {
   UploadAsyncTextures();
 
+  if (!s_locals.initialized)
+  {
+    // achievement overlays still need to get drawn
+    Achievements::DrawGameOverlays();
+    return;
+  }
+
   // draw background before any overlays
   if (!GPUThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
     DrawBackground();
-
-  if (!s_locals.initialized)
-  {
-    RenderLoadingScreen();
-    return;
-  }
 
   BeginLayout();
 
@@ -527,8 +528,6 @@ void FullscreenUI::Render()
     DrawResumeStateSelector();
 
   EndLayout();
-
-  RenderLoadingScreen();
 
   ResetCloseMenuIfNeeded();
   UpdateTransitionState();

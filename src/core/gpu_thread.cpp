@@ -1482,7 +1482,11 @@ void GPUThread::UpdateRunIdle()
     return;
 
   s_state.run_idle_flag = new_flag;
-  DEV_LOG("GPU thread now {} idle", new_flag ? "running" : "NOT running");
+  if (new_flag)
+    DEV_COLOR_LOG(StrongYellow, "GPU thread now running idle");
+  else
+    DEV_COLOR_LOG(StrongOrange, "GPU thread now NOT running idle");
+
   Host::OnGPUThreadRunIdleChanged(new_flag);
 }
 
