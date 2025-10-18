@@ -6,6 +6,7 @@
 #include "bios.h"
 #include "cheats.h"
 #include "controller.h"
+#include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu.h"
 #include "gpu_backend.h"
@@ -22,7 +23,6 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"

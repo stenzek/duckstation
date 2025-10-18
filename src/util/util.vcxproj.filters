@@ -12,7 +12,6 @@
     <ClInclude Include="cue_parser.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="shadergen.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="postprocessing.h" />
     <ClInclude Include="postprocessing_shader.h" />
@@ -97,7 +96,6 @@
     <ClCompile Include="cd_image_device.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="shadergen.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="postprocessing.cpp" />
     <ClCompile Include="postprocessing_shader.cpp" />

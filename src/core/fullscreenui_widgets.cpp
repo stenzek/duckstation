@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "imgui_fullscreen.h"
-#include "gpu_device.h"
-#include "image.h"
-#include "imgui_animated.h"
-#include "imgui_manager.h"
+#include "fullscreenui_widgets.h"
+#include "fullscreen_ui.h"
+#include "gpu_thread.h"
+#include "host.h"
+#include "system.h"
+
+#include "util/gpu_device.h"
+#include "util/image.h"
+#include "util/imgui_animated.h"
+#include "util/imgui_manager.h"
 
 #include "common/assert.h"
 #include "common/easing.h"
@@ -17,11 +22,6 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 #include "common/timer.h"
-
-#include "core/fullscreen_ui.h" // For updating run idle state.
-#include "core/gpu_thread.h"    // For kicking to GPU thread.
-#include "core/host.h"
-#include "core/system.h" // For async workers, should be in general host.
 
 #include "fmt/core.h"
 

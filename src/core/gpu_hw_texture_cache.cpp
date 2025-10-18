@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_hw_texture_cache.h"
+#include "fullscreenui_widgets.h"
 #include "game_database.h"
 #include "gpu_hw.h"
 #include "gpu_hw_shadergen.h"
@@ -13,7 +14,6 @@
 #include "system.h"
 
 #include "util/gpu_device.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
 

@@ -8,6 +8,7 @@
 #include "cpu_core_private.h"
 #include "dma.h"
 #include "fullscreen_ui.h"
+#include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_thread.h"
@@ -21,7 +22,6 @@
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"

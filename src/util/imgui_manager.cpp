@@ -5,12 +5,12 @@
 #include "gpu_device.h"
 #include "host.h"
 #include "image.h"
-#include "imgui_fullscreen.h"
 #include "input_manager.h"
 #include "shadergen.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
 #include "core/fullscreen_ui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"

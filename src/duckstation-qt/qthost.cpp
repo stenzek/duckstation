@@ -15,6 +15,7 @@
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
 #include "core/gdb_server.h"
@@ -44,7 +45,6 @@
 
 #include "util/audio_stream.h"
 #include "util/http_downloader.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"

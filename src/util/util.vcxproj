@@ -29,7 +29,6 @@
     <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="http_downloader.h" />
-    <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="input_manager.h" />
@@ -149,7 +148,6 @@
     </ClCompile>
     <ClCompile Include="http_downloader_winhttp.cpp" />
     <ClCompile Include="image.cpp" />
-    <ClCompile Include="imgui_fullscreen.cpp" />
     <ClCompile Include="imgui_manager.cpp" />
     <ClCompile Include="ini_settings_interface.cpp" />
     <ClCompile Include="input_manager.cpp" />

@@ -4,6 +4,7 @@
 #include "gpu_hw.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
+#include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
@@ -15,7 +16,6 @@
 #include "settings.h"
 #include "system_private.h"
 
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/postprocessing.h"
 #include "util/state_wrapper.h"

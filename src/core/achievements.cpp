@@ -10,6 +10,7 @@
 #include "cheats.h"
 #include "cpu_core.h"
 #include "fullscreen_ui.h"
+#include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"
 #include "host.h"
@@ -35,7 +36,6 @@
 
 #include "util/cd_image.h"
 #include "util/http_downloader.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/platform_misc.h"
 #include "util/state_wrapper.h"
