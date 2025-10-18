@@ -188,34 +188,8 @@ std::string GetGameBadgePath(std::string_view badge_name);
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();
 
-/// Clears all cached state used to render the UI.
-void ClearUIState();
-
 /// Draws ImGui overlays when not paused.
 void DrawGameOverlays();
-
-/// Draws ImGui overlays when paused.
-void DrawPauseMenuOverlays(float start_pos_y);
-
-/// Updates the stored most-recent and closest-to-completion achievements.
-/// Call before calling DrawPauseMenuOverlays() for the first time.
-void UpdateRecentUnlockAndAlmostThere();
-
-#ifndef __ANDROID__
-
-/// Queries the achievement list, and if no achievements are available, returns false.
-bool PrepareAchievementsWindow();
-
-/// Renders the achievement list.
-void DrawAchievementsWindow();
-
-/// Queries the leaderboard list, and if no leaderboards are available, returns false.
-bool PrepareLeaderboardsWindow();
-
-/// Renders the leaderboard list.
-void DrawLeaderboardsWindow();
-
-#endif // __ANDROID__
 
 } // namespace Achievements
 

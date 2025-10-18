@@ -2,53 +2,30 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui.h"
-#include "achievements.h"
-#include "bios.h"
-#include "cheats.h"
-#include "controller.h"
 #include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
+#include "achievements_private.h"
+#include "controller.h"
 #include "game_list.h"
-#include "gpu.h"
-#include "gpu_backend.h"
-#include "gpu_presenter.h"
 #include "gpu_thread.h"
-#include "gte_types.h"
-#include "host.h"
-#include "imgui_overlays.h"
-#include "settings.h"
 #include "system.h"
-#include "system_private.h"
 
 #include "scmversion/scmversion.h"
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
-#include "util/ini_settings_interface.h"
-#include "util/input_manager.h"
-#include "util/postprocessing.h"
 #include "util/shadergen.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/progress_callback.h"
-#include "common/small_string.h"
-#include "common/string_util.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-
-#include <atomic>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 LOG_CHANNEL(FullscreenUI);
 
@@ -66,9 +43,6 @@ enum class PauseSubMenu : u8
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
-static void PauseForMenuOpen(bool set_pause_menu_open);
-static void ClosePauseMenu();
-static void ClosePauseMenuImmediately();
 static void DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size);
 static void DrawLandingWindow();
 static void DrawStartGameWindow();
@@ -139,12 +113,6 @@ static u32 PopulateSaveStateListEntries(const std::string& serial, std::optional
                                         bool is_loading);
 static void DrawSaveStateSelector();
 static void DrawResumeStateSelector();
-
-//////////////////////////////////////////////////////////////////////////
-// Achievements/Leaderboards
-//////////////////////////////////////////////////////////////////////////
-static void SwitchToAchievements();
-static void SwitchToLeaderboards();
 
 //////////////////////////////////////////////////////////////////////////
 // Constants
@@ -334,7 +302,7 @@ void FullscreenUI::OpenPauseMenu()
     PauseForMenuOpen(true);
     ForceKeyNavEnabled();
 
-    Achievements::UpdateRecentUnlockAndAlmostThere();
+    UpdateAchievementsRecentUnlockAndAlmostThere();
     BeginTransition(SHORT_TRANSITION_TIME, []() {
       s_locals.current_pause_submenu = PauseSubMenu::None;
       SwitchToMainWindow(MainWindowType::PauseMenu);
@@ -486,7 +454,7 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_locals.pause_menu_was_open = false;
     s_locals.was_paused_on_quick_menu_open = false;
 
-    Achievements::ClearUIState();
+    ClearAchievementsState();
     ClearSaveStateEntryList();
     ClearSettingsState();
     ClearGameListState();
@@ -502,17 +470,17 @@ void FullscreenUI::Shutdown(bool clear_state)
 
 void FullscreenUI::Render()
 {
-  if (!s_locals.initialized)
-  {
-    RenderLoadingScreen();
-    return;
-  }
-
   UploadAsyncTextures();
 
   // draw background before any overlays
   if (!GPUThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
     DrawBackground();
+
+  if (!s_locals.initialized)
+  {
+    RenderLoadingScreen();
+    return;
+  }
 
   BeginLayout();
 
@@ -544,10 +512,10 @@ void FullscreenUI::Render()
       DrawSaveStateSelector();
       break;
     case MainWindowType::Achievements:
-      Achievements::DrawAchievementsWindow();
+      DrawAchievementsWindow();
       break;
     case MainWindowType::Leaderboards:
-      Achievements::DrawLeaderboardsWindow();
+      DrawLeaderboardsWindow();
       break;
     default:
       break;
@@ -1587,7 +1555,7 @@ void FullscreenUI::DrawPauseMenu()
                     ImVec2(display_size.x, display_size.x - scaled_top_bar_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
                     ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.825f)));
 
-  Achievements::DrawPauseMenuOverlays(scaled_top_bar_height);
+  DrawAchievementsPauseMenuOverlays(scaled_top_bar_height);
 
   if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f,
                             ImVec2(10.0f, 10.0f), ImGuiWindowFlags_NoBackground))
@@ -2327,75 +2295,5 @@ void FullscreenUI::DrawAboutWindow()
 
   EndFixedPopupDialog();
 }
-
-void FullscreenUI::OpenAchievementsWindow()
-{
-  // NOTE: Called from CPU thread.
-  if (!System::IsValid())
-    return;
-
-  const auto lock = Achievements::GetLock();
-  if (!Achievements::IsActive() || !Achievements::HasAchievements())
-  {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
-                                                        FSUI_STR("Achievements are not enabled."));
-    return;
-  }
-
-  GPUThread::RunOnThread([]() {
-    Initialize();
-
-    PauseForMenuOpen(false);
-    ForceKeyNavEnabled();
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToAchievements);
-  });
-}
-
-void FullscreenUI::SwitchToAchievements()
-{
-  if (!Achievements::PrepareAchievementsWindow())
-  {
-    ClosePauseMenuImmediately();
-    return;
-  }
-
-  SwitchToMainWindow(MainWindowType::Achievements);
-}
-
-void FullscreenUI::OpenLeaderboardsWindow()
-{
-  if (!System::IsValid())
-    return;
-
-  const auto lock = Achievements::GetLock();
-  if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
-  {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
-                                                        FSUI_STR("Achievements are not enabled."));
-    return;
-  }
-
-  GPUThread::RunOnThread([]() {
-    Initialize();
-
-    PauseForMenuOpen(false);
-    ForceKeyNavEnabled();
-
-    BeginTransition(SHORT_TRANSITION_TIME, &SwitchToLeaderboards);
-  });
-}
-
-void FullscreenUI::SwitchToLeaderboards()
-{
-  if (!Achievements::PrepareLeaderboardsWindow())
-  {
-    ClosePauseMenuImmediately();
-    return;
-  }
-
-  SwitchToMainWindow(MainWindowType::Leaderboards);
-}
-
 
 #endif // __ANDROID__

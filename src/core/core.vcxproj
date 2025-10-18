@@ -30,6 +30,7 @@
     <ClCompile Include="cpu_types.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="digital_controller.cpp" />
+    <ClCompile Include="fullscreenui_achievements.cpp" />
     <ClCompile Include="fullscreenui_game_list.cpp" />
     <ClCompile Include="fullscreenui_settings.cpp" />
     <ClCompile Include="fullscreenui_widgets.cpp" />

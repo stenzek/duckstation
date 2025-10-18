@@ -34,12 +34,6 @@ void InvalidateCoverCache();
 
 float GetBackgroundAlpha();
 
-void OpenLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
-                       s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
-void UpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
-                         s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
-void CloseLoadingScreen();
-
 void UpdateTheme();
 void UpdateRunIdleState();
 
@@ -50,7 +44,6 @@ void OpenCheatsMenu();
 void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
-void ReturnToPreviousWindow();
 
 class BackgroundProgressCallback final : public ProgressCallback
 {

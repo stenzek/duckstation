@@ -57,7 +57,12 @@ enum class SettingsPage : u8
 void SwitchToMainWindow(MainWindowType type);
 void ReturnToMainWindow();
 void ReturnToMainWindow(float transition_time);
+void ReturnToPreviousWindow();
 bool AreAnyDialogsOpen();
+
+void PauseForMenuOpen(bool set_pause_menu_open);
+void ClosePauseMenu();
+void ClosePauseMenuImmediately();
 
 void ExitFullscreenAndOpenURL(std::string_view url);
 void CopyTextToClipboard(std::string title, std::string_view text);
@@ -111,6 +116,29 @@ void SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash, Setti
 void DrawSettingsWindow();
 SettingsPage GetCurrentSettingsPage();
 bool IsInputBindingDialogOpen();
+
+//////////////////////////////////////////////////////////////////////////
+// Achievements
+//////////////////////////////////////////////////////////////////////////
+
+/// Draws ImGui overlays when paused.
+void DrawAchievementsPauseMenuOverlays(float start_pos_y);
+
+/// Updates the stored most-recent and closest-to-completion achievements.
+/// Call before calling DrawPauseMenuOverlays() for the first time.
+void UpdateAchievementsRecentUnlockAndAlmostThere();
+
+/// Switches to the achievements window.
+void SwitchToAchievements();
+
+/// Switches to the leaderboards window.
+void SwitchToLeaderboards();
+
+/// Renders the achievement list.
+void DrawAchievementsWindow();
+
+/// Renders the leaderboard list.
+void DrawLeaderboardsWindow();
 
 } // namespace FullscreenUI
 
