@@ -8,7 +8,7 @@
 #include "qtutils.h"
 #include "settingswindow.h"
 
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/game_list.h"
 #include "core/host.h"
 #include "core/settings.h"

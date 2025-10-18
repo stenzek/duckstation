@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_presenter.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"

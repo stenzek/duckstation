@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui_widgets.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "gpu_thread.h"
 #include "host.h"
 #include "system.h"

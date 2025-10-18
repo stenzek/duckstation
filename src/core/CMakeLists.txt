@@ -38,8 +38,8 @@ add_library(core
   digital_controller.h
   dma.cpp
   dma.h
-  fullscreen_ui.cpp
-  fullscreen_ui.h
+  fullscreenui.cpp
+  fullscreenui.h
   fullscreenui_widgets.cpp
   fullscreenui_widgets.h
   game_database.cpp

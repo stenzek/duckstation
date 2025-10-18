@@ -4,7 +4,7 @@
 #include "game_list.h"
 #include "achievements.h"
 #include "bios.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "host.h"
 #include "memory_card_image.h"
 #include "psf_loader.h"

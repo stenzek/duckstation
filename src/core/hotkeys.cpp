@@ -5,7 +5,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"

@@ -14,7 +14,7 @@
 #include "core/bus.h"
 #include "core/cheats.h"
 #include "core/controller.h"
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
 #include "core/game_list.h"

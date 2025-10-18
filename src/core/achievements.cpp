@@ -9,7 +9,7 @@
 #include "bus.h"
 #include "cheats.h"
 #include "cpu_core.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"

@@ -6,8 +6,8 @@ import re
 
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
 END_IDENT = "// TRANSLATION-STRING-AREA-END"
-SRC_FILES = ["src/core/fullscreen_ui.cpp", "src/util/imgui_fullscreen.cpp", "src/util/imgui_fullscreen.h"]
-DST_FILE = "src/core/fullscreen_ui.cpp"
+SRC_FILES = ["src/core/fullscreenui.cpp", "src/core/fullscreenui_widgets.cpp", "src/core/fullscreenui_widgets.h"]
+DST_FILE = "src/core/fullscreenui.cpp"
 
 full_source = ""
 for src_file in SRC_FILES:

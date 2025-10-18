@@ -12,7 +12,7 @@
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
 #include "dma.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "game_database.h"
 #include "game_list.h"
 #include "gpu.h"

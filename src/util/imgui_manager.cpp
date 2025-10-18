@@ -9,7 +9,7 @@
 #include "shadergen.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"

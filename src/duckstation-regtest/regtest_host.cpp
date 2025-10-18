@@ -4,7 +4,7 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/controller.h"
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"

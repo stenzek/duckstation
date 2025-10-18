@@ -45,7 +45,7 @@
     <ClCompile Include="pcdrv.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
-    <ClCompile Include="fullscreen_ui.cpp" />
+    <ClCompile Include="fullscreenui.cpp" />
     <ClCompile Include="achievements.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
@@ -121,7 +121,7 @@
     <ClInclude Include="pcdrv.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="imgui_overlays.h" />
-    <ClInclude Include="fullscreen_ui.h" />
+    <ClInclude Include="fullscreenui.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="pch.h" />

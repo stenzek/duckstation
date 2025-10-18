@@ -5,7 +5,7 @@
 #include "cdrom_async_reader.h"
 #include "cdrom_subq_replacement.h"
 #include "dma.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "host.h"
 #include "interrupt_controller.h"
 #include "mdec.h"

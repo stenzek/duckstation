@@ -7,7 +7,7 @@
 #include "settingwidgetbinder.h"
 #include "ui_texturereplacementsettingsdialog.h"
 
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/game_database.h"
 #include "core/gpu.h"
 #include "core/settings.h"

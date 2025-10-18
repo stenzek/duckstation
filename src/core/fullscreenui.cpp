@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "achievements.h"
 #include "bios.h"
 #include "cheats.h"

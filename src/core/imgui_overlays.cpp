@@ -7,7 +7,7 @@
 #include "controller.h"
 #include "cpu_core_private.h"
 #include "dma.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"

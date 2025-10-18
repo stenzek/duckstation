@@ -11,7 +11,7 @@
 #include "shadergen.h"
 
 // TODO: Remove me
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/host.h"
 #include "core/settings.h"
 
