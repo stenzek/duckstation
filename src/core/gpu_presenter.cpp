@@ -1087,8 +1087,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
 
     ImGuiManager::RenderOSDMessages();
 
-    if (FullscreenUI::IsInitialized())
-      FullscreenUI::RenderOverlays();
+    FullscreenUI::RenderOverlays();
 
     if (backend && !GPUThread::IsSystemPaused())
       ImGuiManager::RenderSoftwareCursors();

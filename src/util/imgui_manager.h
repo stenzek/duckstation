@@ -87,7 +87,7 @@ void SetGlobalScale(float global_scale);
 bool Initialize(float global_scale, float screen_margin, Error* error);
 
 /// Frees all ImGui resources.
-void Shutdown();
+void Shutdown(bool clear_fsui_state);
 
 /// Returns main ImGui context.
 ImGuiContext* GetMainContext();

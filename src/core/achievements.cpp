@@ -1317,11 +1317,6 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_state.has_achievements = has_achievements;
   s_state.has_leaderboards = has_leaderboards;
   s_state.has_rich_presence = rc_client_has_rich_presence(client);
-
-  // ensure fullscreen UI is ready for notifications
-  if (display_summary)
-    GPUThread::RunOnThread(&FullscreenUI::Initialize);
-
   s_state.game_icon_url =
     info->badge_url ? std::string(info->badge_url) : GetImageURL(info->badge_name, RC_IMAGE_TYPE_GAME);
   s_state.game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
@@ -1410,18 +1405,12 @@ void Achievements::DisplayAchievementSummary()
     GPUThread::RunOnThread([title = s_state.game_title, summary = std::string(summary.view()), icon = s_state.game_icon,
                             time = IsHardcoreModeActive() ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
                                                             ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::AddNotification("AchievementsSummary", time, std::move(title), std::move(summary), std::move(icon));
     });
 
     if (s_state.game_summary.num_unsupported_achievements > 0)
     {
       GPUThread::RunOnThread([num_unsupported = s_state.game_summary.num_unsupported_achievements]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification("UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME,
                                       TRANSLATE_STR("Achievements", "Unsupported Achievements"),
                                       TRANSLATE_PLURAL_STR("Achievements",
@@ -1442,9 +1431,6 @@ void Achievements::DisplayHardcoreDeferredMessage()
   if (g_settings.achievements_hardcore_mode && System::IsValid())
   {
     GPUThread::RunOnThread([]() {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::ShowToast(std::string(),
                               TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
                               Host::OSD_WARNING_DURATION);
@@ -1478,9 +1464,6 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
     GPUThread::RunOnThread([id = cheevo->id, duration = g_settings.achievements_notification_duration,
                             title = std::move(title), description = std::string(cheevo->description),
                             badge_path = std::move(badge_path)]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::AddNotification(fmt::format("achievement_unlock_{}", id), static_cast<float>(duration),
                                     std::move(title), std::move(description), std::move(badge_path));
     });
@@ -1505,9 +1488,6 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
     GPUThread::RunOnThread(
       [title = s_state.game_title, message = std::move(message), icon = s_state.game_icon]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
                                       std::move(message), std::move(icon));
       });
@@ -1542,9 +1522,6 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
 
     GPUThread::RunOnThread(
       [title = std::move(title), message = std::move(message), badge_path = std::move(badge_path)]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
                                       std::move(message), std::move(badge_path));
       });
@@ -1562,9 +1539,6 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 
     GPUThread::RunOnThread([id = event->leaderboard->id, title = std::move(title), message = std::move(message),
                             icon = s_state.game_icon]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_STARTED_NOTIFICATION_TIME,
                                     std::move(title), std::move(message), std::move(icon));
     });
@@ -1582,9 +1556,6 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 
     GPUThread::RunOnThread([id = event->leaderboard->id, title = std::move(title), message = std::move(message),
                             icon = s_state.game_icon]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_FAILED_NOTIFICATION_TIME,
                                     std::move(title), std::move(message), std::move(icon));
     });
@@ -1613,8 +1584,6 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
     GPUThread::RunOnThread([id = event->leaderboard->id, title = std::move(title), message = std::move(message),
                             icon = s_state.game_icon]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id),
                                     static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
                                     std::move(message), std::move(icon));
@@ -1649,9 +1618,6 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
     GPUThread::RunOnThread([id = event->leaderboard->id, title = std::move(title), message = std::move(message),
                             icon = s_state.game_icon]() mutable {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id),
                                     static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
                                     std::move(message), std::move(icon));
@@ -1734,9 +1700,6 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
       [title = std::move(title),
        description = std::string(event->achievement->description ? event->achievement->description : ""), badge_path,
        id = event->achievement->id]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_STARTED_NOTIFICATION_TIME,
                                       std::move(title), std::move(description), std::move(badge_path));
       });
@@ -1772,9 +1735,6 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
       [title = std::move(title),
        description = std::string(event->achievement->description ? event->achievement->description : ""),
        badge_path = std::move(badge_path), id = event->achievement->id]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_FAILED_NOTIFICATION_TIME,
                                       std::move(title), std::move(description), std::move(badge_path));
       });
@@ -1851,9 +1811,6 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
   WARNING_LOG("Server disconnected.");
 
   GPUThread::RunOnThread([]() {
-    if (!FullscreenUI::Initialize())
-      return;
-
     FullscreenUI::ShowToast(
       TRANSLATE_STR("Achievements", "Achievements Disconnected"),
       TRANSLATE_STR("Achievements",
@@ -1867,9 +1824,6 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
   WARNING_LOG("Server reconnected.");
 
   GPUThread::RunOnThread([]() {
-    if (!FullscreenUI::Initialize())
-      return;
-
     FullscreenUI::ShowToast(TRANSLATE_STR("Achievements", "Achievements Reconnected"),
                             TRANSLATE_STR("Achievements", "All pending unlock requests have completed."),
                             Host::OSD_INFO_DURATION);
@@ -1906,9 +1860,6 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
   if (System::IsValid() && display_message)
   {
     GPUThread::RunOnThread([enabled]() {
-      if (!FullscreenUI::Initialize())
-        return;
-
       FullscreenUI::ShowToast(std::string(),
                               enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
                                         TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
@@ -2202,7 +2153,8 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
         TRANSLATE_FS("Achievements", "Achievement unlocks will not be submitted for this session.\nError: {}"),
         error_message);
       GPUThread::RunOnThread([message = std::move(message)]() mutable {
-        if (!GPUThread::HasGPUBackend() || !FullscreenUI::Initialize())
+        // Only display this notification if we're booting a game.
+        if (!GPUThread::HasGPUBackend())
           return;
 
         FullscreenUI::AddNotification("AchievementsLoginFailed", Host::OSD_ERROR_DURATION,
@@ -2252,9 +2204,6 @@ void Achievements::ShowLoginNotification()
 
     GPUThread::RunOnThread(
       [title = std::move(title), summary = std::move(summary), badge_path = std::move(badge_path)]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
-
         FullscreenUI::AddNotification("achievements_login", LOGIN_NOTIFICATION_TIME, std::move(title),
                                       std::move(summary), std::move(badge_path));
       });

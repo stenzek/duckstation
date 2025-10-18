@@ -696,19 +696,20 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   }
 
   if (!ImGuiManager::Initialize(g_gpu_settings.display_osd_scale / 100.0f, g_gpu_settings.display_osd_margin,
-                                &create_error) ||
-      (s_state.requested_fullscreen_ui && !FullscreenUI::Initialize()))
+                                &create_error))
   {
     ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
-    FullscreenUI::Shutdown(clear_fsui_state_on_failure);
-    ImGuiManager::Shutdown();
+    ImGuiManager::Shutdown(clear_fsui_state_on_failure);
     g_gpu_device->Destroy();
     g_gpu_device.reset();
     if (wi.has_value())
       Host::ReleaseRenderWindow();
     return false;
   }
+
+  if (s_state.requested_fullscreen_ui)
+    FullscreenUI::Initialize();
 
   InputManager::SetDisplayWindowSize(ImGuiManager::GetWindowWidth(), ImGuiManager::GetWindowHeight());
 
@@ -736,7 +737,7 @@ void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
   Assert(!s_state.gpu_presenter);
 
   FullscreenUI::Shutdown(clear_fsui_state);
-  ImGuiManager::Shutdown();
+  ImGuiManager::Shutdown(clear_fsui_state);
 
   INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
@@ -910,10 +911,9 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   }
   else if (s_state.requested_fullscreen_ui)
   {
-    const bool had_gpu_device = static_cast<bool>(g_gpu_device);
-    if (!g_gpu_device && !CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr))
+    if (!(*cmd->out_result =
+            g_gpu_device || CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr)))
     {
-      *cmd->out_result = false;
       return;
     }
 
@@ -924,12 +924,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     // Don't need timing to run FSUI.
     g_gpu_device->SetGPUTimingEnabled(false);
 
-    if (!(*cmd->out_result = FullscreenUI::IsInitialized() || FullscreenUI::Initialize()))
-    {
-      Error::SetStringView(cmd->error_ptr, "Failed to initialize FullscreenUI.");
-      if (!had_gpu_device)
-        DestroyDeviceOnThread(true);
-    }
+    // Ensure FSUI is initialized.
+    FullscreenUI::Initialize();
   }
 }
 

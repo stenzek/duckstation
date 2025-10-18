@@ -393,7 +393,6 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   PauseSubMenu current_pause_submenu = PauseSubMenu::None;
   MainWindowType previous_main_window = MainWindowType::None;
   bool initialized = false;
-  bool tried_to_initialize = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
   std::string achievements_user_badge_path;
@@ -464,20 +463,11 @@ static WidgetsState s_state;
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-bool FullscreenUI::Initialize()
+void FullscreenUI::Initialize()
 {
-  if (s_state.initialized)
-    return true;
-
   // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
-  if (s_state.tried_to_initialize || !ImGuiManager::IsInitialized())
-    return false;
-
-  if (!InitializeWidgets())
-  {
-    s_state.tried_to_initialize = true;
-    return false;
-  }
+  if (s_state.initialized || !ImGuiManager::IsInitialized())
+    return;
 
   s_state.initialized = true;
   s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
@@ -496,8 +486,6 @@ bool FullscreenUI::Initialize()
   {
     UpdateRunIdleState();
   }
-
-  return true;
 }
 
 bool FullscreenUI::IsInitialized()
@@ -611,7 +599,8 @@ void FullscreenUI::OpenPauseMenu()
     return;
 
   GPUThread::RunOnThread([]() {
-    if (!Initialize() || s_state.current_main_window != MainWindowType::None)
+    Initialize();
+    if (s_state.current_main_window != MainWindowType::None)
       return;
 
     PauseForMenuOpen(true);
@@ -631,7 +620,8 @@ void FullscreenUI::OpenCheatsMenu()
     return;
 
   GPUThread::RunOnThread([]() {
-    if (!Initialize() || s_state.current_main_window != MainWindowType::None)
+    Initialize();
+    if (s_state.current_main_window != MainWindowType::None)
       return;
 
     PauseForMenuOpen(false);
@@ -798,10 +788,8 @@ void FullscreenUI::Shutdown(bool clear_state)
   }
 
   DestroyResources();
-  ShutdownWidgets(clear_state);
 
   s_state.initialized = false;
-  s_state.tried_to_initialize = false;
   UpdateRunIdleState();
 }
 
@@ -1252,8 +1240,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
       options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
 
     GPUThread::RunOnThread([options = std::move(options), pause_if_needed = std::move(pause_if_needed)]() mutable {
-      if (!Initialize())
-        return;
+      Initialize();
 
       auto callback = [](s32 index, const std::string& title, bool checked) {
         if (index == 0)
@@ -1304,8 +1291,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
 
       GPUThread::RunOnThread([options = std::move(options), paths = std::move(paths),
                               pause_if_needed = std::move(pause_if_needed)]() mutable {
-        if (!Initialize())
-          return;
+        Initialize();
 
         auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) mutable {
           if (index == 0)
@@ -1337,9 +1323,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
   }
 
   GPUThread::RunOnThread([pause_if_needed = std::move(pause_if_needed)]() {
-    if (!Initialize())
-      return;
-
+    Initialize();
     StartChangeDiscFromFile();
     pause_if_needed();
   });
@@ -8721,9 +8705,6 @@ void FullscreenUI::OpenAchievementsWindow()
   if (!Achievements::IsActive() || !Achievements::HasAchievements())
   {
     GPUThread::RunOnThread([]() {
-      if (!Initialize())
-        return;
-
       ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
                                                           FSUI_STR("Achievements are not enabled."));
     });
@@ -8731,8 +8712,7 @@ void FullscreenUI::OpenAchievementsWindow()
   }
 
   GPUThread::RunOnThread([]() {
-    if (!Initialize())
-      return;
+    Initialize();
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
@@ -8761,9 +8741,6 @@ void FullscreenUI::OpenLeaderboardsWindow()
   if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
     GPUThread::RunOnThread([]() {
-      if (!Initialize())
-        return;
-
       ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
                                                           FSUI_STR("Achievements are not enabled."));
     });
@@ -8771,8 +8748,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
   }
 
   GPUThread::RunOnThread([]() {
-    if (!Initialize())
-      return;
+    Initialize();
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();

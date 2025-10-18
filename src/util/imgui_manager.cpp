@@ -225,7 +225,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   FullscreenUI::UpdateTheme();
   FullscreenUI::UpdateLayoutScale();
 
-  if (!CreateFontAtlas(error) || !CompilePipelines(error))
+  if (!CreateFontAtlas(error) || !CompilePipelines(error) || !FullscreenUI::InitializeWidgets(error))
     return false;
 
   NewFrame();
@@ -234,9 +234,11 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   return true;
 }
 
-void ImGuiManager::Shutdown()
+void ImGuiManager::Shutdown(bool clear_fsui_state)
 {
   DestroySoftwareCursorTextures();
+
+  FullscreenUI::ShutdownWidgets(clear_fsui_state);
 
   s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;

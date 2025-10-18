@@ -2151,12 +2151,6 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         callback(result);
       };
 
-      if (!FullscreenUI::Initialize())
-      {
-        final_callback(false);
-        return;
-      }
-
       FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
                                                 fmt::format(ICON_FA_CHECK " {}", yes_text),
                                                 fmt::format(ICON_FA_XMARK " {}", no_text));

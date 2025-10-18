@@ -57,7 +57,7 @@ static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
-static bool CompileTransitionPipelines();
+static bool CompileTransitionPipelines(Error* error);
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
@@ -374,15 +374,16 @@ void FullscreenUI::SetFont(ImFont* ui_font)
   UIStyle.Font = ui_font;
 }
 
-bool FullscreenUI::InitializeWidgets()
+bool FullscreenUI::InitializeWidgets(Error* error)
 {
   std::unique_lock lock(s_state.shared_state_mutex);
 
   s_state.focus_reset_queued = FocusResetType::ViewChanged;
   s_state.close_button_state = CloseButtonState::None;
 
-  s_state.placeholder_texture = LoadTexture("images/placeholder.png");
-  if (!s_state.placeholder_texture || !CompileTransitionPipelines())
+  if (!(s_state.placeholder_texture = LoadTexture("images/placeholder.png")))
+    Error::SetStringView(error, "Failed to load placeholder.png");
+  if (!s_state.placeholder_texture || !CompileTransitionPipelines(error))
   {
     ShutdownWidgets(true);
     return false;
@@ -741,20 +742,19 @@ GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
   return s_state.transition_current_texture.get();
 }
 
-bool FullscreenUI::CompileTransitionPipelines()
+bool FullscreenUI::CompileTransitionPipelines(Error* error)
 {
   const RenderAPI render_api = g_gpu_device->GetRenderAPI();
   const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), false, false);
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
 
-  Error error;
   std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                             shadergen.GeneratePassthroughVertexShader(), &error);
+                                                             shadergen.GeneratePassthroughVertexShader(), error);
   std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                             shadergen.GenerateFadeFragmentShader(), &error);
+                                                             shadergen.GenerateFadeFragmentShader(), error);
   if (!vs || !fs)
   {
-    ERROR_LOG("Failed to compile transition shaders: {}", error.GetDescription());
+    Error::AddPrefix(error, "Failed to compile transition shaders: ");
     return false;
   }
   GL_OBJECT_NAME(vs, "Transition Vertex Shader");
@@ -774,10 +774,10 @@ bool FullscreenUI::CompileTransitionPipelines()
   plconfig.geometry_shader = nullptr;
   plconfig.fragment_shader = fs.get();
 
-  s_state.transition_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, &error);
+  s_state.transition_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error);
   if (!s_state.transition_blend_pipeline)
   {
-    ERROR_LOG("Failed to create transition blend pipeline: {}", error.GetDescription());
+    Error::AddPrefix(error, "Failed to create transition blend pipeline: ");
     return false;
   }
 
@@ -4627,7 +4627,7 @@ void FullscreenUI::AddNotification(std::string key, float duration, std::string 
   notif.target_y = -1.0f;
   notif.last_y = -1.0f;
   s_state.notifications.push_back(std::move(notif));
-  FullscreenUI::UpdateRunIdleState();
+  UpdateRunIdleState();
 }
 
 bool FullscreenUI::HasAnyNotifications()

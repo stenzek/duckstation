@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+class Error;
 class Image;
 class GPUTexture;
 class GPUSwapChain;
@@ -208,7 +209,7 @@ ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 
 /// Initializes, setting up any state.
-bool InitializeWidgets();
+bool InitializeWidgets(Error* error);
 
 /// Shuts down, clearing all state.
 void ShutdownWidgets(bool clear_state);
