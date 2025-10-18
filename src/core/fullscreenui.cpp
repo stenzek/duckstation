@@ -698,7 +698,7 @@ void FullscreenUI::SwitchToMainWindow(MainWindowType type)
   if (s_state.current_main_window == type)
     return;
 
-  s_state.previous_main_window = s_state.current_main_window;
+  s_state.previous_main_window = (type == MainWindowType::None) ? MainWindowType::None : s_state.current_main_window;
   s_state.current_main_window = type;
   if (!AreAnyDialogsOpen())
   {
