@@ -395,7 +395,6 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   bool initialized = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
-  std::string achievements_user_badge_path;
 
   // Resources
   std::shared_ptr<GPUTexture> app_icon_texture;
@@ -1711,16 +1710,14 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
         RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, name_pos, name_pos + name_size,
                                   text_color, username, &name_size);
 
-        if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
-          s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
-        if (!s_state.achievements_user_badge_path.empty()) [[likely]]
+        if (const std::string& badge_path = Achievements::GetLoggedInUserBadgePath(); !badge_path.empty())
         {
           const ImVec2 badge_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
           const ImVec2 badge_pos =
             ImVec2(name_pos.x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 
-          dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(s_state.achievements_user_badge_path)),
-                       badge_pos, badge_pos + badge_size);
+          dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_pos,
+                       badge_pos + badge_size);
         }
       }
     }
@@ -5903,10 +5900,7 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
     settings_lock.unlock();
     {
       const auto lock = Achievements::GetLock();
-      if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
-        s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
-
-      badge_path = s_state.achievements_user_badge_path;
+      badge_path = Achievements::GetLoggedInUserBadgePath();
       if (badge_path.empty())
         badge_path = "images/ra-generic-user.png";
 
@@ -5939,16 +5933,16 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
           score_summary = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
       }
     }
+
+    if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
+    {
+      const ImRect badge_rect = CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
+      dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
+    }
+    pos.x += badge_size + LayoutScale(15.0f);
+
     settings_lock.lock();
   }
-
-  if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
-  {
-    const ImRect badge_rect = CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
-    dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
-  }
-
-  pos.x += badge_size + LayoutScale(15.0f);
 
   RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, pos,
                             pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),

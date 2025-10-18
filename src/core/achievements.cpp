@@ -168,7 +168,7 @@ static void EnableHardcodeMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
 static void FinishInitialize();
-static void FinishLogin(const rc_client_t* client);
+static void FinishLogin();
 static void ShowLoginNotification();
 static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
@@ -275,6 +275,8 @@ struct State
   bool has_rich_presence = false;
 
   std::recursive_mutex mutex; // large
+
+  std::string user_badge_path;
 
   std::string rich_presence_string;
   Timer::Value rich_presence_poll_time = 0;
@@ -2080,7 +2082,9 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   Host::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
 
-  FinishLogin(client);
+  // Will be using temporary client if achievements are not enabled.
+  if (client == s_state.client)
+    FinishLogin();
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
@@ -2113,32 +2117,32 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
     return;
   }
 
-  FinishLogin(client);
+  // Should be active here.
+  DebugAssert(client == s_state.client);
+  FinishLogin();
 }
 
-void Achievements::FinishLogin(const rc_client_t* client)
+void Achievements::FinishLogin()
 {
-  const rc_client_user_t* user = rc_client_get_user_info(client);
+  const rc_client_user_t* const user = rc_client_get_user_info(s_state.client);
   if (!user)
     return;
+
+  s_state.user_badge_path = GetLocalImagePath(user->username, RC_IMAGE_TYPE_USER);
+  if (!s_state.user_badge_path.empty() && !FileSystem::FileExists(s_state.user_badge_path.c_str()))
+  {
+    std::string url;
+    if (IsUsingRAIntegration() || !user->avatar_url)
+      url = GetImageURL(user->username, RC_IMAGE_TYPE_USER);
+    else
+      url = user->avatar_url;
+
+    DownloadImage(std::move(url), s_state.user_badge_path);
+  }
 
   PreloadHashDatabase();
 
   Host::OnAchievementsLoginSuccess(user->username, user->score, user->score_softcore, user->num_unread_messages);
-
-  if (System::IsValid())
-  {
-    const auto lock = GetLock();
-    if (s_state.client == client)
-      Host::RunOnCPUThread(ShowLoginNotification);
-  }
-}
-
-void Achievements::ShowLoginNotification()
-{
-  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
-  if (!user)
-    return;
 
   if (g_settings.achievements_notifications)
   {
@@ -2147,7 +2151,7 @@ void Achievements::ShowLoginNotification()
                                       user->score, user->score_softcore, user->num_unread_messages);
 
     FullscreenUI::AddNotification("achievements_login", LOGIN_NOTIFICATION_TIME, user->display_name, std::move(summary),
-                                  GetLoggedInUserBadgePath());
+                                  s_state.user_badge_path);
   }
 }
 
@@ -2160,27 +2164,9 @@ const char* Achievements::GetLoggedInUserName()
   return user->username;
 }
 
-std::string Achievements::GetLoggedInUserBadgePath()
+const std::string& Achievements::GetLoggedInUserBadgePath()
 {
-  std::string badge_path;
-
-  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
-  if (!user) [[unlikely]]
-    return badge_path;
-
-  badge_path = GetLocalImagePath(user->username, RC_IMAGE_TYPE_USER);
-  if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
-  {
-    std::string url;
-    if (IsUsingRAIntegration() || !user->avatar_url)
-      url = GetImageURL(user->username, RC_IMAGE_TYPE_USER);
-    else
-      url = user->avatar_url;
-
-    DownloadImage(std::move(url), badge_path);
-  }
-
-  return badge_path;
+  return s_state.user_badge_path;
 }
 
 SmallString Achievements::GetLoggedInUserPointsSummary()

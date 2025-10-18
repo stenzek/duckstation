@@ -176,7 +176,7 @@ const char* GetLoggedInUserName();
 
 /// Returns the path to the user's profile avatar.
 /// Should be called with the lock held.
-std::string GetLoggedInUserBadgePath();
+const std::string& GetLoggedInUserBadgePath();
 
 /// Returns a summary of the user's points.
 /// Should be called with the lock held.
