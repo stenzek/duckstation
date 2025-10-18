@@ -46,7 +46,7 @@ static constexpr PhysicalMemoryAddress BASE_ADDRESS_MASK = UINT32_C(0x00FFFFFF);
 static constexpr PhysicalMemoryAddress TRANSFER_ADDRESS_MASK = UINT32_C(0x00FFFFFC);
 static constexpr PhysicalMemoryAddress LINKED_LIST_TERMINATOR = UINT32_C(0x00FFFFFF);
 
-static constexpr TickCount LINKED_LIST_HEADER_READ_TICKS = 10;
+static constexpr TickCount LINKED_LIST_HEADER_READ_TICKS = 8;
 static constexpr TickCount LINKED_LIST_BLOCK_SETUP_TICKS = 5;
 static constexpr TickCount SLICE_SIZE_WHEN_TRANSMITTING_PAD = 10;
 static constexpr TickCount SLICE_SIZE_WHEN_DECODING_MDEC = 100;
