@@ -151,6 +151,7 @@
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
     <ClInclude Include="fullscreenui_private.h" />
+    <ClInclude Include="fullscreenui_strings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

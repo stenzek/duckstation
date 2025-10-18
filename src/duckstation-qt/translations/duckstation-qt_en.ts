@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1387"/>
+        <location filename="../../core/achievements.cpp" line="1384"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1390"/>
+        <location filename="../../core/achievements.cpp" line="1387"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1428"/>
+        <location filename="../../core/achievements.cpp" line="1417"/>
         <source>%n achievements are not supported by DuckStation.</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1503"/>
-        <location filename="../../core/achievements.cpp" line="1540"/>
+        <location filename="../../core/achievements.cpp" line="1477"/>
+        <location filename="../../core/achievements.cpp" line="1507"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -53,9 +53,9 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1505"/>
-        <location filename="../../core/achievements.cpp" line="1542"/>
-        <location filename="../../core/achievements.cpp" line="3218"/>
+        <location filename="../../core/achievements.cpp" line="1479"/>
+        <location filename="../../core/achievements.cpp" line="1509"/>
+        <location filename="../../core/achievements.cpp" line="3092"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -64,7 +64,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2670"/>
+        <location filename="../../core/achievements.cpp" line="2545"/>
         <source>%n unlocks have not been confirmed by the server.</source>
         <comment>Pause Menu</comment>
         <translation>
@@ -73,7 +73,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2978"/>
+        <location filename="../../core/achievements.cpp" line="2853"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -82,7 +82,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3005"/>
+        <location filename="../../core/achievements.cpp" line="2880"/>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
@@ -91,7 +91,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3466"/>
+        <location filename="../../core/achievements.cpp" line="3340"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -153,7 +153,7 @@
 <context>
     <name>FullscreenUI</name>
     <message numerus="yes">
-        <location filename="../../util/imgui_fullscreen.cpp" line="4081"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4414"/>
         <source>%n seconds remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -162,7 +162,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../util/imgui_fullscreen.cpp" line="4086"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4419"/>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -235,7 +235,7 @@
 <context>
     <name>System</name>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="1693"/>
+        <location filename="../../core/system.cpp" line="1697"/>
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
             <numerusform>You cannot pause until another %n second has passed.</numerusform>

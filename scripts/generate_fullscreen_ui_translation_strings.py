@@ -13,7 +13,7 @@ SRC_FILES = ["src/core/fullscreenui.cpp",
              "src/core/fullscreenui_settings.cpp",
              "src/core/fullscreenui_widgets.cpp",
              "src/core/fullscreenui_widgets.h"]
-DST_FILE = "src/core/fullscreenui.cpp"
+DST_FILE = "src/core/fullscreenui_strings.h"
 
 full_source = ""
 for src_file in SRC_FILES:

@@ -115,6 +115,7 @@
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="fullscreenui_private.h" />
+    <ClInclude Include="fullscreenui_strings.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
     <ClInclude Include="fullscreenui.h" />
     <ClInclude Include="game_database.h" />
