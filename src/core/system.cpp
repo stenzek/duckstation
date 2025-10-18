@@ -1681,6 +1681,10 @@ void System::PauseSystem(bool paused)
 
 bool System::CanPauseSystem(bool display_message)
 {
+  // Don't add to the pause timer when we're already paused.
+  if (IsPaused())
+    return true;
+
   const u32 frames_until_pause_allowed = Achievements::GetPauseThrottleFrames();
   if (frames_until_pause_allowed == 0)
     return true;
