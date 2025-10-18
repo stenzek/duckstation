@@ -69,6 +69,7 @@
     <ClCompile Include="gpu_presenter.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="fullscreenui_widgets.cpp" />
+    <ClCompile Include="fullscreenui_settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="gpu_presenter.h" />
     <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="fullscreenui_widgets.h" />
+    <ClInclude Include="fullscreenui_private.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

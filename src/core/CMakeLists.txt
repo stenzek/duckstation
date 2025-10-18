@@ -40,6 +40,8 @@ add_library(core
   dma.h
   fullscreenui.cpp
   fullscreenui.h
+  fullscreenui_private.h
+  fullscreenui_settings.cpp
   fullscreenui_widgets.cpp
   fullscreenui_widgets.h
   game_database.cpp

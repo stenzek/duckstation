@@ -6,7 +6,9 @@ import re
 
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
 END_IDENT = "// TRANSLATION-STRING-AREA-END"
-SRC_FILES = ["src/core/fullscreenui.cpp", "src/core/fullscreenui_widgets.cpp", "src/core/fullscreenui_widgets.h"]
+SRC_FILES = ["src/core/fullscreenui.cpp",
+             "src/core/fullscreenui_settings.cpp",
+             "src/core/fullscreenui_widgets.cpp", "src/core/fullscreenui_widgets.h"]
 DST_FILE = "src/core/fullscreenui.cpp"
 
 full_source = ""
