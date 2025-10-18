@@ -75,7 +75,6 @@ void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
 void ReturnToPreviousWindow();
-void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 
 class BackgroundProgressCallback final : public ProgressCallback
 {

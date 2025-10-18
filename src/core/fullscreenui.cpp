@@ -129,7 +129,6 @@ static void ExitFullscreenAndOpenURL(std::string_view url);
 static void CopyTextToClipboard(std::string title, std::string_view text);
 static void DrawAboutWindow();
 static void FixStateIfPaused();
-static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 static bool CompileTransitionPipelines();
 
 //////////////////////////////////////////////////////////////////////////
@@ -353,26 +352,6 @@ static void SwitchToLeaderboards();
 // Constants
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr const std::array s_ps_button_mapping{
-  std::make_pair(ICON_PF_XBOX_DPAD_LEFT, ICON_PF_DPAD_LEFT),
-  std::make_pair(ICON_PF_XBOX_DPAD_UP, ICON_PF_DPAD_UP),
-  std::make_pair(ICON_PF_XBOX_DPAD_RIGHT, ICON_PF_DPAD_RIGHT),
-  std::make_pair(ICON_PF_XBOX_DPAD_DOWN, ICON_PF_DPAD_DOWN),
-  std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, ICON_PF_DPAD_LEFT_RIGHT),
-  std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, ICON_PF_DPAD_UP_DOWN),
-  std::make_pair(ICON_PF_BUTTON_A, ICON_PF_BUTTON_CROSS),
-  std::make_pair(ICON_PF_BUTTON_B, ICON_PF_BUTTON_CIRCLE),
-  std::make_pair(ICON_PF_BUTTON_X, ICON_PF_BUTTON_SQUARE),
-  std::make_pair(ICON_PF_BUTTON_Y, ICON_PF_BUTTON_TRIANGLE),
-  std::make_pair(ICON_PF_SHARE_CAPTURE, ICON_PF_DUALSHOCK_SHARE),
-  std::make_pair(ICON_PF_BURGER_MENU, ICON_PF_DUALSHOCK_OPTIONS),
-  std::make_pair(ICON_PF_XBOX, ICON_PF_PLAYSTATION),
-  std::make_pair(ICON_PF_LEFT_SHOULDER_LB, ICON_PF_LEFT_SHOULDER_L1),
-  std::make_pair(ICON_PF_LEFT_TRIGGER_LT, ICON_PF_LEFT_TRIGGER_L2),
-  std::make_pair(ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_RIGHT_SHOULDER_R1),
-  std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
-};
-
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievements_login";
@@ -492,76 +471,6 @@ static WidgetsState s_state;
 } // namespace FullscreenUI
 
 //////////////////////////////////////////////////////////////////////////
-// Utility
-//////////////////////////////////////////////////////////////////////////
-
-void FullscreenUI::GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel)
-{
-  if (IsGamepadInputSource())
-  {
-    CreateFooterTextString(
-      dest,
-      std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-                 std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                 std::make_pair(ICON_PF_BUTTON_B, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel"))});
-  }
-  else
-  {
-    CreateFooterTextString(
-      dest, std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
-                       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                       std::make_pair(ICON_PF_ESC, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel"))});
-  }
-}
-
-void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
-{
-  SmallString text;
-  GetStandardSelectionFooterText(text, back_instead_of_cancel);
-  SetFullscreenFooterText(text, GetBackgroundAlpha());
-}
-
-void FullscreenUI::GetChoiceDialogHelpText(SmallStringBase& dest)
-{
-  FullscreenUI::GetStandardSelectionFooterText(dest, false);
-}
-
-void FullscreenUI::GetFileSelectorHelpText(SmallStringBase& dest)
-{
-  if (IsGamepadInputSource())
-  {
-    CreateFooterTextString(dest, std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-                                            std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Parent Directory")),
-                                            std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                            std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
-  }
-  else
-  {
-    CreateFooterTextString(
-      dest,
-      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
-                 std::make_pair(ICON_PF_BACKSPACE, FSUI_VSTR("Parent Directory")),
-                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
-  }
-}
-
-void FullscreenUI::GetInputDialogHelpText(SmallStringBase& dest)
-{
-  if (IsGamepadInputSource())
-  {
-    CreateFooterTextString(dest, std::array{std::make_pair(ICON_PF_KEYBOARD, FSUI_VSTR("Enter Value")),
-                                            std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                            std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
-  }
-  else
-  {
-    CreateFooterTextString(dest, std::array{std::make_pair(ICON_PF_KEYBOARD, FSUI_VSTR("Enter Value")),
-                                            std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                                            std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
 
@@ -575,13 +484,6 @@ bool FullscreenUI::Initialize()
     return false;
 
   s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
-
-  SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
-  SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
-  SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false));
-
-  if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
-    SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
 
   if (!InitializeWidgets() || !LoadResources())
   {
@@ -2094,18 +1996,15 @@ void FullscreenUI::DrawLandingWindow()
                                        std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Toggle Fullscreen")),
                                        std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Exit"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Exit"))});
   }
   else
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_F1, FSUI_VSTR("About")),
-                                       std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
-                                       std::make_pair(ICON_PF_F11, FSUI_VSTR("Toggle Fullscreen")),
-                                       std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
-                                       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))},
-                            GetBackgroundAlpha());
+    SetFullscreenFooterText(std::array{
+      std::make_pair(ICON_PF_F1, FSUI_VSTR("About")), std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
+      std::make_pair(ICON_PF_F11, FSUI_VSTR("Toggle Fullscreen")),
+      std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
+      std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Exit"))});
   }
 }
 
@@ -2160,16 +2059,14 @@ void FullscreenUI::DrawStartGameWindow()
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Load Global State")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_F1, FSUI_VSTR("Load Global State")),
                                        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
   }
 }
 
@@ -3912,16 +3809,14 @@ void FullscreenUI::DrawSettingsWindow()
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, FSUI_VSTR("Change Page")),
                                        std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR("Change Page")),
                                        std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Navigate")),
                                        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))});
   }
 }
 
@@ -4064,38 +3959,27 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     FSUI_VSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "Main",
     "FullscreenUIOpenToGameList", false);
 
-  if (DrawToggleSetting(
-        bsi, FSUI_ICONVSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
-        FSUI_VSTR(
-          "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
-        "Main", "FullscreenUIDisplayPSIcons", false))
-  {
-    if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
-      SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
-    else
-      SetFullscreenFooterTextIconMapping({});
-  }
+  bool widgets_settings_changed = DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
+    FSUI_VSTR("Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
+    "Main", "FullscreenUIDisplayPSIcons", false);
 
-  if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_RESTORE, "Window Animations"),
-                        FSUI_VSTR("Animates windows opening/closing and changes between views in the Big Picture UI."),
-                        "Main", "FullscreenUIAnimations", true))
-  {
-    SetAnimations(bsi->GetBoolValue("Main", "FullscreenUIAnimations", true));
-  }
+  widgets_settings_changed |=
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_RESTORE, "Window Animations"),
+                      FSUI_VSTR("Animates windows opening/closing and changes between views in the Big Picture UI."),
+                      "Main", "FullscreenUIAnimations", true);
 
-  if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST, "Smooth Scrolling"),
-                        FSUI_VSTR("Enables smooth scrolling of menus in the Big Picture UI."), "Main",
-                        "FullscreenUISmoothScrolling", true))
-  {
-    SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", true));
-  }
+  widgets_settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST, "Smooth Scrolling"),
+                                                FSUI_VSTR("Enables smooth scrolling of menus in the Big Picture UI."),
+                                                "Main", "FullscreenUISmoothScrolling", true);
+  widgets_settings_changed |=
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
+                      FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
+                      "FullscreenUIMenuBorders", false);
 
-  if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
-                        FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
-                        "FullscreenUIMenuBorders", false))
-  {
-    SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", false));
-  }
+  // use transition to work around double lock
+  if (widgets_settings_changed)
+    BeginTransition(0.0f, &FullscreenUI::UpdateWidgetsSettings);
 
   MenuHeading(FSUI_VSTR("Behavior"));
 
@@ -7150,16 +7034,13 @@ void FullscreenUI::DrawPauseMenu()
   {
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Return To Game"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Return To Game"))});
   }
   else
   {
-    SetFullscreenFooterText(
-      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
-                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-                 std::make_pair(ICON_PF_ESC, FSUI_VSTR("Return To Game"))},
-      GetBackgroundAlpha());
+    SetFullscreenFooterText(std::array{
+      std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
+      std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Return To Game"))});
   }
 }
 
@@ -7571,8 +7452,7 @@ void FullscreenUI::DrawSaveStateSelector()
                  std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Delete State")),
                  std::make_pair(ICON_PF_BUTTON_A, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
                                                                                         FSUI_VSTR("Save State")),
-                 std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))},
-      GetBackgroundAlpha());
+                 std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
   }
   else
   {
@@ -7582,8 +7462,7 @@ void FullscreenUI::DrawSaveStateSelector()
                  std::make_pair(ICON_PF_F1, FSUI_VSTR("Delete State")),
                  std::make_pair(ICON_PF_ENTER, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
                                                                                      FSUI_VSTR("Save State")),
-                 std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))},
-      GetBackgroundAlpha());
+                 std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
 
   if (pressed_entry)
@@ -7900,23 +7779,20 @@ void FullscreenUI::DrawGameListWindow()
                                        std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Change View")),
                                        std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))},
-                            GetBackgroundAlpha());
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))});
   }
   else
   {
-    SetFullscreenFooterText(
-      std::array{
-        std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
-                       FSUI_VSTR("Select Game")),
-        std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
-        std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
-        std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
-        std::make_pair(ICON_PF_F1, FSUI_VSTR("Launch Options")),
-        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
-        std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
-      },
-      GetBackgroundAlpha());
+    SetFullscreenFooterText(std::array{
+      std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
+                     FSUI_VSTR("Select Game")),
+      std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
+      std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
+      std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
+      std::make_pair(ICON_PF_F1, FSUI_VSTR("Launch Options")),
+      std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
+      std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
+    });
   }
 }
 

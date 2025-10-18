@@ -212,14 +212,14 @@ bool InitializeWidgets();
 /// Shuts down, clearing all state.
 void ShutdownWidgets(bool clear_state);
 
+/// Loads settings from the settings interface.
+void UpdateWidgetsSettings();
+
 std::span<const char* const> GetThemeNames();
 std::span<const char* const> GetThemeDisplayNames();
 std::vector<std::string_view> GetLocalizedThemeDisplayNames();
 void UpdateTheme();
 
-void SetAnimations(bool enabled);
-void SetSmoothScrolling(bool enabled);
-void SetMenuBorders(bool enabled);
 void SetFont(ImFont* ui_font);
 bool UpdateLayoutScale();
 
@@ -297,10 +297,9 @@ void SetWindowNavWrapping(bool allow_wrap_x = false, bool allow_wrap_y = true);
 
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
-void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
-void SetFullscreenFooterText(std::string_view text, float background_alpha);
-void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha);
-void SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping);
+void SetFullscreenFooterText(std::string_view text);
+void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 void SetFullscreenStatusText(std::string_view text);
 void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
 void DrawFullscreenFooter();
@@ -473,11 +472,6 @@ void ClearNotifications();
 void ShowToast(std::string title, std::string message, float duration = 10.0f);
 bool HasToast();
 void ClearToast();
-
-// Message callbacks.
-void GetChoiceDialogHelpText(SmallStringBase& dest);
-void GetFileSelectorHelpText(SmallStringBase& dest);
-void GetInputDialogHelpText(SmallStringBase& dest);
 
 // Wrapper for an animated popup dialog.
 class PopupDialog

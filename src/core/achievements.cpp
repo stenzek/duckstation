@@ -1413,8 +1413,7 @@ void Achievements::DisplayAchievementSummary()
       if (!FullscreenUI::Initialize())
         return;
 
-      FullscreenUI::AddNotification("AchievementsSummary", time, std::move(title), std::move(summary),
-                                       std::move(icon));
+      FullscreenUI::AddNotification("AchievementsSummary", time, std::move(title), std::move(summary), std::move(icon));
     });
 
     if (s_state.game_summary.num_unsupported_achievements > 0)
@@ -1424,11 +1423,11 @@ void Achievements::DisplayAchievementSummary()
           return;
 
         FullscreenUI::AddNotification("UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME,
-                                         TRANSLATE_STR("Achievements", "Unsupported Achievements"),
-                                         TRANSLATE_PLURAL_STR("Achievements",
-                                                              "%n achievements are not supported by DuckStation.",
-                                                              "Achievement popup", num_unsupported),
-                                         "images/warning.svg");
+                                      TRANSLATE_STR("Achievements", "Unsupported Achievements"),
+                                      TRANSLATE_PLURAL_STR("Achievements",
+                                                           "%n achievements are not supported by DuckStation.",
+                                                           "Achievement popup", num_unsupported),
+                                      "images/warning.svg");
       });
     }
   }
@@ -1447,8 +1446,8 @@ void Achievements::DisplayHardcoreDeferredMessage()
         return;
 
       FullscreenUI::ShowToast(std::string(),
-                                 TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
-                                 Host::OSD_WARNING_DURATION);
+                              TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
+                              Host::OSD_WARNING_DURATION);
     });
   }
 }
@@ -1483,7 +1482,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
         return;
 
       FullscreenUI::AddNotification(fmt::format("achievement_unlock_{}", id), static_cast<float>(duration),
-                                       std::move(title), std::move(description), std::move(badge_path));
+                                    std::move(title), std::move(description), std::move(badge_path));
     });
   }
 
@@ -1510,7 +1509,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
           return;
 
         FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
-                                         std::move(message), std::move(icon));
+                                      std::move(message), std::move(icon));
       });
   }
 }
@@ -1547,7 +1546,7 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
           return;
 
         FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
-                                         std::move(message), std::move(badge_path));
+                                      std::move(message), std::move(badge_path));
       });
   }
 }
@@ -1567,7 +1566,7 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
         return;
 
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_STARTED_NOTIFICATION_TIME,
-                                       std::move(title), std::move(message), std::move(icon));
+                                    std::move(title), std::move(message), std::move(icon));
     });
   }
 }
@@ -1587,7 +1586,7 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
         return;
 
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_FAILED_NOTIFICATION_TIME,
-                                       std::move(title), std::move(message), std::move(icon));
+                                    std::move(title), std::move(message), std::move(icon));
     });
   }
 }
@@ -1617,8 +1616,8 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
       if (!FullscreenUI::Initialize())
         return;
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id),
-                                       static_cast<float>(g_settings.achievements_leaderboard_duration),
-                                       std::move(title), std::move(message), std::move(icon));
+                                    static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
+                                    std::move(message), std::move(icon));
     });
   }
 
@@ -1654,8 +1653,8 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
         return;
 
       FullscreenUI::AddNotification(fmt::format("leaderboard_{}", id),
-                                       static_cast<float>(g_settings.achievements_leaderboard_duration),
-                                       std::move(title), std::move(message), std::move(icon));
+                                    static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
+                                    std::move(message), std::move(icon));
     });
   }
 }
@@ -1739,7 +1738,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
           return;
 
         FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_STARTED_NOTIFICATION_TIME,
-                                         std::move(title), std::move(description), std::move(badge_path));
+                                      std::move(title), std::move(description), std::move(badge_path));
       });
   }
 
@@ -1777,7 +1776,7 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
           return;
 
         FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", id), CHALLENGE_FAILED_NOTIFICATION_TIME,
-                                         std::move(title), std::move(description), std::move(badge_path));
+                                      std::move(title), std::move(description), std::move(badge_path));
       });
   }
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification ||
@@ -1872,8 +1871,8 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
       return;
 
     FullscreenUI::ShowToast(TRANSLATE_STR("Achievements", "Achievements Reconnected"),
-                               TRANSLATE_STR("Achievements", "All pending unlock requests have completed."),
-                               Host::OSD_INFO_DURATION);
+                            TRANSLATE_STR("Achievements", "All pending unlock requests have completed."),
+                            Host::OSD_INFO_DURATION);
   });
 }
 
@@ -1911,9 +1910,9 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
         return;
 
       FullscreenUI::ShowToast(std::string(),
-                                 enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
-                                           TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
-                                 Host::OSD_INFO_DURATION);
+                              enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
+                                        TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
+                              Host::OSD_INFO_DURATION);
     });
   }
 
@@ -2207,8 +2206,8 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
           return;
 
         FullscreenUI::AddNotification("AchievementsLoginFailed", Host::OSD_ERROR_DURATION,
-                                         TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
-                                         std::move(message), "images/warning.svg");
+                                      TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
+                                      std::move(message), "images/warning.svg");
       });
     }
 
@@ -2257,7 +2256,7 @@ void Achievements::ShowLoginNotification()
           return;
 
         FullscreenUI::AddNotification("achievements_login", LOGIN_NOTIFICATION_TIME, std::move(title),
-                                         std::move(summary), std::move(badge_path));
+                                      std::move(summary), std::move(badge_path));
       });
   }
 }
@@ -2930,9 +2929,9 @@ void Achievements::DrawAchievementsWindow()
   bool close_window = false;
 
   if (FullscreenUI::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading",
-                                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
-                                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
-                                               ImGuiWindowFlags_NoScrollWithMouse))
+                                          heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+                                          ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
+                                            ImGuiWindowFlags_NoScrollWithMouse))
   {
     const ImVec2 pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float spacing = FullscreenUI::LayoutScale(FullscreenUI::LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
@@ -3007,10 +3006,10 @@ void Achievements::DrawAchievementsWindow()
                     "Unsupported achievement count", s_state.game_summary.num_unsupported_achievements));
 
       const ImRect unsupported_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
-      RenderShadowedTextClipped(
-        UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, unsupported_bb.Min, unsupported_bb.Max,
-        ImGui::GetColorU32(FullscreenUI::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
-        ImVec2(0.0f, 0.0f), 0.0f, &unsupported_bb);
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, unsupported_bb.Min,
+                                unsupported_bb.Max,
+                                ImGui::GetColorU32(FullscreenUI::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                                text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unsupported_bb);
 
       top += UIStyle.MediumFontSize + spacing;
     }
@@ -3043,10 +3042,10 @@ void Achievements::DrawAchievementsWindow()
       }
 
       const ImRect beaten_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
-      RenderShadowedTextClipped(
-        UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, beaten_bb.Min, beaten_bb.Max,
-        ImGui::GetColorU32(FullscreenUI::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text, nullptr,
-        ImVec2(0.0f, 0.0f), 0.0f, &beaten_bb);
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, beaten_bb.Min,
+                                beaten_bb.Max,
+                                ImGui::GetColorU32(FullscreenUI::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                                text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &beaten_bb);
 
       top += UIStyle.MediumFontSize + spacing;
     }
@@ -3145,13 +3144,12 @@ void Achievements::DrawAchievementsWindow()
   });
   FullscreenUI::SetFullscreenFooterText(
     std::array{std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
-                                                                        ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                                                                     ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
                               TRANSLATE_SV("Achievements", "Change Selection")),
                std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                               TRANSLATE_SV("Achievements", "View Details")),
                std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                              TRANSLATE_SV("Achievements", "Back"))},
-    FullscreenUI::GetBackgroundAlpha());
+                              TRANSLATE_SV("Achievements", "Back"))});
 
   if (close_window)
     FullscreenUI::ReturnToPreviousWindow();
@@ -3194,7 +3192,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   ImRect bb;
   bool visible, hovered;
   const bool clicked = FullscreenUI::MenuButtonFrame(TinyString::from_format("chv_{}", cheevo->id), content_height,
-                                                        true, &bb, &visible, &hovered);
+                                                     true, &bb, &visible, &hovered);
   if (!visible)
     return;
 
@@ -3396,9 +3394,9 @@ void Achievements::DrawLeaderboardsWindow()
   const float column_spacing = spacing * 2.0f;
 
   if (FullscreenUI::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
-                                             heading_background, 0.0f, ImVec2(10.0f, 10.0f),
-                                             ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
-                                               ImGuiWindowFlags_NoScrollWithMouse))
+                                          heading_background, 0.0f, ImVec2(10.0f, 10.0f),
+                                          ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration |
+                                            ImGuiWindowFlags_NoScrollWithMouse))
   {
     const ImVec2 heading_pos = ImGui::GetCursorScreenPos() + ImGui::GetStyle().FramePadding;
     const float image_size = LayoutScale(85.0f);
@@ -3615,13 +3613,12 @@ void Achievements::DrawLeaderboardsWindow()
 
     FullscreenUI::SetFullscreenFooterText(
       std::array{std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
-                                                                          ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                                                                       ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
                                 TRANSLATE_SV("Achievements", "Change Selection")),
                  std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "Open Leaderboard")),
                  std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))},
-      FullscreenUI::GetBackgroundAlpha());
+                                TRANSLATE_SV("Achievements", "Back"))});
   }
   else
   {
@@ -3679,16 +3676,15 @@ void Achievements::DrawLeaderboardsWindow()
 
     FullscreenUI::SetFullscreenFooterText(
       std::array{std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_LEFT_RIGHT :
-                                                                          ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
+                                                                       ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
                                 TRANSLATE_SV("Achievements", "Change Page")),
                  std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
-                                                                          ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                                                                       ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
                                 TRANSLATE_SV("Achievements", "Change Selection")),
                  std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "View Profile")),
                  std::make_pair(FullscreenUI::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))},
-      FullscreenUI::GetBackgroundAlpha());
+                                TRANSLATE_SV("Achievements", "Back"))});
   }
 
   if (close_leaderboard_on_exit)
@@ -4241,7 +4237,7 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
         return;
 
       FullscreenUI::ShowToast({}, TRANSLATE_STR("Achievements", "Updated achievement progress database."),
-                                 Host::OSD_INFO_DURATION);
+                              Host::OSD_INFO_DURATION);
     });
   }
 }

@@ -28,6 +28,7 @@
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
+#include "IconsPromptFont.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
 
@@ -50,6 +51,21 @@ static constexpr float MENU_ITEM_BORDER_ROUNDING = 10.0f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
+static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
+static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
+
+static void CreateFooterTextString(SmallStringBase& dest,
+                                   std::span<const std::pair<const char*, std::string_view>> items);
+
+static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
+static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
+static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
+static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+                              s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent);
+static void DrawNotifications(ImVec2& position, float spacing);
+static void DrawToast();
+static ImGuiID GetBackgroundProgressID(std::string_view str_id);
+
 static constexpr std::array s_theme_display_names = {
   FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
   FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"),
@@ -60,17 +76,36 @@ static constexpr std::array s_theme_names = {
   "", "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain",
 };
 
-static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
-static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
+static constexpr const std::array s_ps_button_mapping{
+  std::make_pair(ICON_PF_LEFT_TRIGGER_LT, ICON_PF_LEFT_TRIGGER_L2),
+  std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
+  std::make_pair(ICON_PF_LEFT_SHOULDER_LB, ICON_PF_LEFT_SHOULDER_L1),
+  std::make_pair(ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_RIGHT_SHOULDER_R1),
+  std::make_pair(ICON_PF_BUTTON_X, ICON_PF_BUTTON_SQUARE),
+  std::make_pair(ICON_PF_BUTTON_Y, ICON_PF_BUTTON_TRIANGLE),
+  std::make_pair(ICON_PF_BUTTON_B, ICON_PF_BUTTON_CIRCLE),
+  std::make_pair(ICON_PF_BUTTON_A, ICON_PF_BUTTON_CROSS),
+  std::make_pair(ICON_PF_SHARE_CAPTURE, ICON_PF_DUALSHOCK_SHARE),
+  std::make_pair(ICON_PF_BURGER_MENU, ICON_PF_DUALSHOCK_OPTIONS),
+  std::make_pair(ICON_PF_XBOX_DPAD_LEFT, ICON_PF_DPAD_LEFT),
+  std::make_pair(ICON_PF_XBOX_DPAD_UP, ICON_PF_DPAD_UP),
+  std::make_pair(ICON_PF_XBOX_DPAD_RIGHT, ICON_PF_DPAD_RIGHT),
+  std::make_pair(ICON_PF_XBOX_DPAD_DOWN, ICON_PF_DPAD_DOWN),
+  std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, ICON_PF_DPAD_LEFT_RIGHT),
+  std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, ICON_PF_DPAD_UP_DOWN),
+  std::make_pair(ICON_PF_XBOX, ICON_PF_PLAYSTATION),
+};
+static_assert(
+  []() {
+    for (size_t i = 1; i < s_ps_button_mapping.size(); i++)
+    {
+      if (StringUtil::ConstexprCompare(s_ps_button_mapping[i - 1].first, s_ps_button_mapping[i].first) >= 0)
+        return false;
+    }
 
-static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
-static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
-static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
-static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
-                              s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent);
-static void DrawNotifications(ImVec2& position, float spacing);
-static void DrawToast();
-static ImGuiID GetBackgroundProgressID(std::string_view str_id);
+    return true;
+  }(),
+  "PS button mapping is not sorted");
 
 namespace {
 
@@ -259,7 +294,6 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   CloseButtonState close_button_state = CloseButtonState::None;
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
-  bool initialized = false;
 
   u32 menu_button_index = 0;
   ImVec2 horizontal_menu_button_size = {};
@@ -272,9 +306,8 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   SmallString last_fullscreen_footer_text;
   SmallString left_fullscreen_footer_text;
   SmallString last_left_fullscreen_footer_text;
-  std::vector<std::pair<std::string_view, std::string_view>> fullscreen_footer_icon_mapping;
+  std::span<const std::pair<const char*, const char*>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
-  float fullscreen_text_alpha;
 
   ImGuiID enum_choice_button_id = 0;
   s32 enum_choice_button_value = 0;
@@ -338,15 +371,15 @@ bool FullscreenUI::InitializeWidgets()
   if (!s_state.placeholder_texture)
     return false;
 
-  s_state.initialized = true;
+  UpdateWidgetsSettings();
   ResetMenuButtonFrame();
+
   return true;
 }
 
 void FullscreenUI::ShutdownWidgets(bool clear_state)
 {
   std::unique_lock lock(s_state.shared_state_mutex);
-  s_state.initialized = false;
   s_state.texture_upload_queue.clear();
   s_state.placeholder_texture.reset();
   UIStyle.Font = nullptr;
@@ -370,19 +403,15 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
   }
 }
 
-void FullscreenUI::SetAnimations(bool enabled)
+void FullscreenUI::UpdateWidgetsSettings()
 {
-  UIStyle.Animations = enabled;
-}
+  UIStyle.Animations = Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
+  UIStyle.SmoothScrolling = Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
+  UIStyle.MenuBorders = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
 
-void FullscreenUI::SetSmoothScrolling(bool enabled)
-{
-  UIStyle.SmoothScrolling = enabled;
-}
-
-void FullscreenUI::SetMenuBorders(bool enabled)
-{
-  UIStyle.MenuBorders = enabled;
+  s_state.fullscreen_footer_icon_mapping = Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
+                                             s_ps_button_mapping :
+                                             std::span<const std::pair<const char*, const char*>>{};
 }
 
 const std::shared_ptr<GPUTexture>& FullscreenUI::GetPlaceholderTexture()
@@ -553,8 +582,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
         return;
 
       std::unique_lock lock(s_state.shared_state_mutex);
-      if (s_state.initialized)
-        s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
+      s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
     });
   }
 
@@ -586,8 +614,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
         return;
 
       std::unique_lock lock(s_state.shared_state_mutex);
-      if (s_state.initialized)
-        s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
+      s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
     });
   }
 
@@ -851,9 +878,6 @@ void FullscreenUI::EndFixedPopupDialog()
 
 void FullscreenUI::RenderOverlays()
 {
-  if (!s_state.initialized)
-    return;
-
   const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float notification_vertical_pos = GetNotificationVerticalPosition();
@@ -1181,17 +1205,14 @@ void FullscreenUI::CreateFooterTextString(SmallStringBase& dest,
   }
 }
 
-void FullscreenUI::SetFullscreenFooterText(std::string_view text, float background_alpha)
+void FullscreenUI::SetFullscreenFooterText(std::string_view text)
 {
   s_state.fullscreen_footer_text.assign(text);
-  s_state.fullscreen_text_alpha = background_alpha;
 }
 
-void FullscreenUI::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items,
-                                           float background_alpha)
+void FullscreenUI::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
 {
   CreateFooterTextString(s_state.fullscreen_footer_text, items);
-  s_state.fullscreen_text_alpha = background_alpha;
 }
 
 void FullscreenUI::SetFullscreenStatusText(std::string_view text)
@@ -1204,19 +1225,22 @@ void FullscreenUI::SetFullscreenStatusText(std::span<const std::pair<const char*
   CreateFooterTextString(s_state.left_fullscreen_footer_text, items);
 }
 
-void FullscreenUI::SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping)
+void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
 {
-  if (mapping.empty())
+  if (IsGamepadInputSource())
   {
-    s_state.fullscreen_footer_icon_mapping = {};
-    return;
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
+                 std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                 std::make_pair(ICON_PF_BUTTON_B, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel"))});
   }
-
-  s_state.fullscreen_footer_icon_mapping.reserve(mapping.size());
-  for (const auto& [icon, mapped_icon] : mapping)
-    s_state.fullscreen_footer_icon_mapping.emplace_back(icon, mapped_icon);
-  std::sort(s_state.fullscreen_footer_icon_mapping.begin(), s_state.fullscreen_footer_icon_mapping.end(),
-            [](const auto& lhs, const auto& rhs) { return (lhs.first < rhs.first); });
+  else
+  {
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
+                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
+                 std::make_pair(ICON_PF_ESC, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel"))});
+  }
 }
 
 void FullscreenUI::DrawFullscreenFooter()
@@ -1235,10 +1259,11 @@ void FullscreenUI::DrawFullscreenFooter()
   const float height = LayoutScale(LAYOUT_FOOTER_HEIGHT);
   const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
   const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
+  const float bg_alpha = GetBackgroundAlpha();
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
   dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
-                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, s_state.fullscreen_text_alpha)), 0.0f);
+                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, bg_alpha)), 0.0f);
 
   ImFont* const font = UIStyle.Font;
   const float font_size = UIStyle.MediumFontSize;
@@ -1312,9 +1337,6 @@ void FullscreenUI::DrawFullscreenFooter()
                   IMSTR_START_END(s_state.left_fullscreen_footer_text));
     }
   }
-
-  // for next frame
-  s_state.fullscreen_text_alpha = 1.0f;
 }
 
 void FullscreenUI::PrerenderMenuButtonBorder()
@@ -3167,7 +3189,20 @@ void FullscreenUI::FileSelectorDialog::Draw()
 
   EndMenuButtons();
 
-  GetFileSelectorHelpText(s_state.fullscreen_footer_text);
+  if (IsGamepadInputSource())
+  {
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
+                                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Parent Directory")),
+                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
+  }
+  else
+  {
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
+                 std::make_pair(ICON_PF_BACKSPACE, FSUI_VSTR("Parent Directory")),
+                 std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")), std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
+  }
 
   EndRender();
 
@@ -3342,7 +3377,7 @@ void FullscreenUI::ChoiceDialog::Draw()
     EndMenuButtons();
   }
 
-  GetChoiceDialogHelpText(s_state.fullscreen_footer_text);
+  SetStandardSelectionFooterText(false);
 
   EndRender();
 
@@ -3468,7 +3503,18 @@ void FullscreenUI::InputStringDialog::Draw()
 
   EndMenuButtons();
 
-  GetInputDialogHelpText(s_state.fullscreen_footer_text);
+  if (IsGamepadInputSource())
+  {
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_KEYBOARD, FSUI_VSTR("Enter Value")),
+                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
+  }
+  else
+  {
+    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_KEYBOARD, FSUI_VSTR("Enter Value")),
+                                       std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
+                                       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
+  }
 
   EndRender();
 }
@@ -3534,7 +3580,7 @@ void FullscreenUI::MessageDialog::Draw()
 
   EndMenuButtons();
 
-  GetChoiceDialogHelpText(s_state.fullscreen_footer_text);
+  SetStandardSelectionFooterText(false);
 
   EndRender();
 
