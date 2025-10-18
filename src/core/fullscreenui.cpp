@@ -129,7 +129,6 @@ static void ExitFullscreenAndOpenURL(std::string_view url);
 static void CopyTextToClipboard(std::string title, std::string_view text);
 static void DrawAboutWindow();
 static void FixStateIfPaused();
-static bool CompileTransitionPipelines();
 
 //////////////////////////////////////////////////////////////////////////
 // Backgrounds
@@ -150,7 +149,7 @@ static ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = 
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static bool LoadResources();
+static void LoadResources();
 static void DestroyResources();
 static GPUTexture* GetUserThemeableTexture(
   const std::string_view png_name, const std::string_view svg_name, bool* is_colorable = nullptr,
@@ -390,7 +389,6 @@ private:
 struct ALIGN_TO_CACHE_LINE WidgetsState
 {
   // Main
-  TransitionState transition_state = TransitionState::Inactive;
   MainWindowType current_main_window = MainWindowType::None;
   PauseSubMenu current_pause_submenu = PauseSubMenu::None;
   MainWindowType previous_main_window = MainWindowType::None;
@@ -412,14 +410,6 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   std::unique_ptr<GPUTexture> app_background_texture;
   std::unique_ptr<GPUPipeline> app_background_shader;
   Timer::Value app_background_load_time = 0;
-
-  // Transition Resources
-  TransitionStartCallback transition_start_callback;
-  std::unique_ptr<GPUTexture> transition_prev_texture;
-  std::unique_ptr<GPUTexture> transition_current_texture;
-  std::unique_ptr<GPUPipeline> transition_blend_pipeline;
-  float transition_total_time = 0.0f;
-  float transition_remaining_time = 0.0f;
 
   // Pause Menu
   std::time_t current_time = 0;
@@ -483,18 +473,16 @@ bool FullscreenUI::Initialize()
   if (s_state.tried_to_initialize || !ImGuiManager::IsInitialized())
     return false;
 
-  s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
-
-  if (!InitializeWidgets() || !LoadResources())
+  if (!InitializeWidgets())
   {
-    DestroyResources();
-    Shutdown(true);
     s_state.tried_to_initialize = true;
     return false;
   }
 
   s_state.initialized = true;
+  s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
 
+  LoadResources();
   LoadBackground();
 
   // in case we open the pause menu while the game is running
@@ -520,7 +508,7 @@ bool FullscreenUI::IsInitialized()
 bool FullscreenUI::HasActiveWindow()
 {
   return s_state.initialized && (s_state.current_main_window != MainWindowType::None ||
-                                 s_state.transition_state != TransitionState::Inactive || AreAnyDialogsOpen());
+                                 GetTransitionState() != TransitionState::Inactive || AreAnyDialogsOpen());
 }
 
 bool FullscreenUI::AreAnyDialogsOpen()
@@ -538,176 +526,6 @@ void FullscreenUI::UpdateRunIdleState()
 {
   const bool new_run_idle = (HasActiveWindow() || HasToast() || HasAnyNotifications());
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
-}
-
-void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
-{
-  if (s_state.transition_state == TransitionState::Inactive)
-  {
-    const float real_time = UIStyle.Animations ? time : 0.0f;
-    s_state.transition_state = TransitionState::Starting;
-    s_state.transition_total_time = real_time;
-    s_state.transition_remaining_time = real_time;
-  }
-
-  // run any callback if we queue another transition in the middle of one already active
-  if (s_state.transition_start_callback)
-  {
-    if (s_state.transition_state == TransitionState::Starting)
-      WARNING_LOG("More than one transition started");
-
-    std::move(s_state.transition_start_callback)();
-  }
-
-  s_state.transition_start_callback = std::move(func);
-
-  UpdateRunIdleState();
-}
-
-void FullscreenUI::CancelTransition()
-{
-  if (s_state.transition_state != TransitionState::Active)
-    return;
-
-  if (s_state.transition_start_callback)
-    std::move(s_state.transition_start_callback)();
-
-  s_state.transition_state = TransitionState::Inactive;
-  s_state.transition_start_callback = {};
-  s_state.transition_remaining_time = 0.0f;
-}
-
-void FullscreenUI::BeginTransition(float time, TransitionStartCallback func)
-{
-  BeginTransition(std::move(func), time);
-}
-
-bool FullscreenUI::IsTransitionActive()
-{
-  return (s_state.transition_state != TransitionState::Inactive);
-}
-
-FullscreenUI::TransitionState FullscreenUI::GetTransitionState()
-{
-  return s_state.transition_state;
-}
-
-GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
-{
-  if (!g_gpu_device->ResizeTexture(&s_state.transition_current_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
-                                   GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
-                                   false))
-  {
-    ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", swap_chain->GetWidth(),
-              swap_chain->GetHeight());
-    s_state.transition_state = TransitionState::Inactive;
-    return nullptr;
-  }
-
-  return s_state.transition_current_texture.get();
-}
-
-bool FullscreenUI::CompileTransitionPipelines()
-{
-  const RenderAPI render_api = g_gpu_device->GetRenderAPI();
-  const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), false, false);
-  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-
-  Error error;
-  std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                             shadergen.GeneratePassthroughVertexShader(), &error);
-  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                             shadergen.GenerateFadeFragmentShader(), &error);
-  if (!vs || !fs)
-  {
-    ERROR_LOG("Failed to compile transition shaders: {}", error.GetDescription());
-    return false;
-  }
-  GL_OBJECT_NAME(vs, "Transition Vertex Shader");
-  GL_OBJECT_NAME(fs, "Transition Fragment Shader");
-
-  GPUPipeline::GraphicsConfig plconfig;
-  GPUBackend::SetScreenQuadInputLayout(plconfig);
-  plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
-  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
-  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.SetTargetFormats(swap_chain ? swap_chain->GetFormat() : GPUTexture::Format::RGBA8);
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
-  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  plconfig.vertex_shader = vs.get();
-  plconfig.geometry_shader = nullptr;
-  plconfig.fragment_shader = fs.get();
-
-  s_state.transition_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, &error);
-  if (!s_state.transition_blend_pipeline)
-  {
-    ERROR_LOG("Failed to create transition blend pipeline: {}", error.GetDescription());
-    return false;
-  }
-
-  return true;
-}
-
-void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
-{
-  GPUTexture* const curr = s_state.transition_current_texture.get();
-  DebugAssert(curr);
-
-  if (s_state.transition_state == TransitionState::Starting)
-  {
-    // copy current frame
-    if (!g_gpu_device->ResizeTexture(&s_state.transition_prev_texture, curr->GetWidth(), curr->GetHeight(),
-                                     GPUTexture::Type::RenderTarget, curr->GetFormat(), GPUTexture::Flags::None, false))
-    {
-      ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", curr->GetWidth(), curr->GetHeight());
-      s_state.transition_state = TransitionState::Inactive;
-      return;
-    }
-
-    g_gpu_device->CopyTextureRegion(s_state.transition_prev_texture.get(), 0, 0, 0, 0, curr, 0, 0, 0, 0,
-                                    curr->GetWidth(), curr->GetHeight());
-
-    s_state.transition_state = TransitionState::Active;
-  }
-
-  const float transition_alpha = s_state.transition_remaining_time / s_state.transition_total_time;
-  const float uniforms[2] = {1.0f - transition_alpha, transition_alpha};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->SetPipeline(s_state.transition_blend_pipeline.get());
-  g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
-  g_gpu_device->SetTextureSampler(0, curr, g_gpu_device->GetNearestSampler());
-  g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
-
-  const GSVector2i size = swap_chain->GetSizeVec();
-  const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
-  const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
-                                                                  GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
-  GPUPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
-                               swap_chain->GetPreRotation());
-}
-
-void FullscreenUI::UpdateTransitionState()
-{
-  if (s_state.transition_state == TransitionState::Inactive)
-    return;
-
-  // this callback will exist after starting if a second transition gets queued
-  if (s_state.transition_start_callback)
-  {
-    std::move(s_state.transition_start_callback)();
-    s_state.transition_start_callback = {};
-  }
-
-  s_state.transition_remaining_time -= ImGui::GetIO().DeltaTime;
-  if (s_state.transition_remaining_time <= 0.0f)
-  {
-    // At 1080p we're only talking 2MB of VRAM, 16MB at 4K.. saves reallocating it on the next transition.
-    // g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
-    // g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
-    s_state.transition_state = TransitionState::Inactive;
-  }
 }
 
 void FullscreenUI::OnSystemStarting()
@@ -1112,7 +930,7 @@ void FullscreenUI::InvalidateCoverCache()
   });
 }
 
-bool FullscreenUI::LoadResources()
+void FullscreenUI::LoadResources()
 {
   s_state.app_icon_texture = LoadTexture("images/duck.png");
   s_state.fallback_disc_texture = LoadTexture("fullscreenui/cdrom.png");
@@ -1121,21 +939,11 @@ bool FullscreenUI::LoadResources()
   s_state.fallback_playlist_texture = LoadTexture("fullscreenui/playlist-file.png");
   s_state.cover_placeholder_texture = LoadTexture("images/cover-placeholder.png");
 
-  if (!CompileTransitionPipelines())
-    return false;
-
   InitializeHotkeyList();
-
-  return true;
 }
 
 void FullscreenUI::DestroyResources()
 {
-  s_state.transition_blend_pipeline.reset();
-  g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
-  g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
-  s_state.transition_state = TransitionState::Inactive;
-  s_state.transition_start_callback = {};
   s_state.cover_placeholder_texture.reset();
   s_state.fallback_playlist_texture.reset();
   s_state.fallback_psf_texture.reset();

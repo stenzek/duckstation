@@ -3,6 +3,8 @@
 
 #include "fullscreenui_widgets.h"
 #include "fullscreenui.h"
+#include "gpu_backend.h"
+#include "gpu_presenter.h"
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -12,6 +14,7 @@
 #include "util/image.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_manager.h"
+#include "util/shadergen.h"
 
 #include "common/assert.h"
 #include "common/easing.h"
@@ -53,6 +56,8 @@ static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
+
+static bool CompileTransitionPipelines();
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
@@ -109,7 +114,7 @@ static_assert(
 
 namespace {
 
-enum class CloseButtonState
+enum class CloseButtonState : u8
 {
   None,
   KeyboardPressed,
@@ -292,8 +297,9 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   std::recursive_mutex shared_state_mutex;
 
   CloseButtonState close_button_state = CloseButtonState::None;
-  ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
+  TransitionState transition_state = TransitionState::Inactive;
+  ImGuiDir has_pending_nav_move = ImGuiDir_None;
 
   u32 menu_button_index = 0;
   ImVec2 horizontal_menu_button_size = {};
@@ -301,6 +307,14 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
   std::shared_ptr<GPUTexture> placeholder_texture;
   std::deque<std::pair<std::string, Image>> texture_upload_queue;
+
+  // Transition Resources
+  TransitionStartCallback transition_start_callback;
+  std::unique_ptr<GPUTexture> transition_prev_texture;
+  std::unique_ptr<GPUTexture> transition_current_texture;
+  std::unique_ptr<GPUPipeline> transition_blend_pipeline;
+  float transition_total_time = 0.0f;
+  float transition_remaining_time = 0.0f;
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
@@ -368,8 +382,11 @@ bool FullscreenUI::InitializeWidgets()
   s_state.close_button_state = CloseButtonState::None;
 
   s_state.placeholder_texture = LoadTexture("images/placeholder.png");
-  if (!s_state.placeholder_texture)
+  if (!s_state.placeholder_texture || !CompileTransitionPipelines())
+  {
+    ShutdownWidgets(true);
     return false;
+  }
 
   UpdateWidgetsSettings();
   ResetMenuButtonFrame();
@@ -380,6 +397,13 @@ bool FullscreenUI::InitializeWidgets()
 void FullscreenUI::ShutdownWidgets(bool clear_state)
 {
   std::unique_lock lock(s_state.shared_state_mutex);
+
+  s_state.transition_blend_pipeline.reset();
+  g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
+  g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
+  s_state.transition_state = TransitionState::Inactive;
+  s_state.transition_start_callback = {};
+
   s_state.texture_upload_queue.clear();
   s_state.placeholder_texture.reset();
   UIStyle.Font = nullptr;
@@ -647,6 +671,176 @@ void FullscreenUI::UploadAsyncTextures()
       s_state.texture_cache.Insert(std::move(it.first), std::move(tex));
 
     lock.lock();
+  }
+}
+
+void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
+{
+  if (s_state.transition_state == TransitionState::Inactive)
+  {
+    const float real_time = UIStyle.Animations ? time : 0.0f;
+    s_state.transition_state = TransitionState::Starting;
+    s_state.transition_total_time = real_time;
+    s_state.transition_remaining_time = real_time;
+  }
+
+  // run any callback if we queue another transition in the middle of one already active
+  if (s_state.transition_start_callback)
+  {
+    if (s_state.transition_state == TransitionState::Starting)
+      WARNING_LOG("More than one transition started");
+
+    std::move(s_state.transition_start_callback)();
+  }
+
+  s_state.transition_start_callback = std::move(func);
+
+  UpdateRunIdleState();
+}
+
+void FullscreenUI::CancelTransition()
+{
+  if (s_state.transition_state != TransitionState::Active)
+    return;
+
+  if (s_state.transition_start_callback)
+    std::move(s_state.transition_start_callback)();
+
+  s_state.transition_state = TransitionState::Inactive;
+  s_state.transition_start_callback = {};
+  s_state.transition_remaining_time = 0.0f;
+}
+
+void FullscreenUI::BeginTransition(float time, TransitionStartCallback func)
+{
+  BeginTransition(std::move(func), time);
+}
+
+bool FullscreenUI::IsTransitionActive()
+{
+  return (s_state.transition_state != TransitionState::Inactive);
+}
+
+FullscreenUI::TransitionState FullscreenUI::GetTransitionState()
+{
+  return s_state.transition_state;
+}
+
+GPUTexture* FullscreenUI::GetTransitionRenderTexture(GPUSwapChain* swap_chain)
+{
+  if (!g_gpu_device->ResizeTexture(&s_state.transition_current_texture, swap_chain->GetWidth(), swap_chain->GetHeight(),
+                                   GPUTexture::Type::RenderTarget, swap_chain->GetFormat(), GPUTexture::Flags::None,
+                                   false))
+  {
+    ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", swap_chain->GetWidth(),
+              swap_chain->GetHeight());
+    s_state.transition_state = TransitionState::Inactive;
+    return nullptr;
+  }
+
+  return s_state.transition_current_texture.get();
+}
+
+bool FullscreenUI::CompileTransitionPipelines()
+{
+  const RenderAPI render_api = g_gpu_device->GetRenderAPI();
+  const ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), false, false);
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+
+  Error error;
+  std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                             shadergen.GeneratePassthroughVertexShader(), &error);
+  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                             shadergen.GenerateFadeFragmentShader(), &error);
+  if (!vs || !fs)
+  {
+    ERROR_LOG("Failed to compile transition shaders: {}", error.GetDescription());
+    return false;
+  }
+  GL_OBJECT_NAME(vs, "Transition Vertex Shader");
+  GL_OBJECT_NAME(fs, "Transition Fragment Shader");
+
+  GPUPipeline::GraphicsConfig plconfig;
+  GPUBackend::SetScreenQuadInputLayout(plconfig);
+  plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.SetTargetFormats(swap_chain ? swap_chain->GetFormat() : GPUTexture::Format::RGBA8);
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  plconfig.vertex_shader = vs.get();
+  plconfig.geometry_shader = nullptr;
+  plconfig.fragment_shader = fs.get();
+
+  s_state.transition_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, &error);
+  if (!s_state.transition_blend_pipeline)
+  {
+    ERROR_LOG("Failed to create transition blend pipeline: {}", error.GetDescription());
+    return false;
+  }
+
+  return true;
+}
+
+void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
+{
+  GPUTexture* const curr = s_state.transition_current_texture.get();
+  DebugAssert(curr);
+
+  if (s_state.transition_state == TransitionState::Starting)
+  {
+    // copy current frame
+    if (!g_gpu_device->ResizeTexture(&s_state.transition_prev_texture, curr->GetWidth(), curr->GetHeight(),
+                                     GPUTexture::Type::RenderTarget, curr->GetFormat(), GPUTexture::Flags::None, false))
+    {
+      ERROR_LOG("Failed to allocate {}x{} texture for transition, cancelling.", curr->GetWidth(), curr->GetHeight());
+      s_state.transition_state = TransitionState::Inactive;
+      return;
+    }
+
+    g_gpu_device->CopyTextureRegion(s_state.transition_prev_texture.get(), 0, 0, 0, 0, curr, 0, 0, 0, 0,
+                                    curr->GetWidth(), curr->GetHeight());
+
+    s_state.transition_state = TransitionState::Active;
+  }
+
+  const float transition_alpha = s_state.transition_remaining_time / s_state.transition_total_time;
+  const float uniforms[2] = {1.0f - transition_alpha, transition_alpha};
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+  g_gpu_device->SetPipeline(s_state.transition_blend_pipeline.get());
+  g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
+  g_gpu_device->SetTextureSampler(0, curr, g_gpu_device->GetNearestSampler());
+  g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
+
+  const GSVector2i size = swap_chain->GetSizeVec();
+  const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
+  const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
+                                                                  GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
+  GPUPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
+                               swap_chain->GetPreRotation());
+}
+
+void FullscreenUI::UpdateTransitionState()
+{
+  if (s_state.transition_state == TransitionState::Inactive)
+    return;
+
+  // this callback will exist after starting if a second transition gets queued
+  if (s_state.transition_start_callback)
+  {
+    std::move(s_state.transition_start_callback)();
+    s_state.transition_start_callback = {};
+  }
+
+  s_state.transition_remaining_time -= ImGui::GetIO().DeltaTime;
+  if (s_state.transition_remaining_time <= 0.0f)
+  {
+    // At 1080p we're only talking 2MB of VRAM, 16MB at 4K.. saves reallocating it on the next transition.
+    // g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
+    // g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
+    s_state.transition_state = TransitionState::Inactive;
   }
 }
 
