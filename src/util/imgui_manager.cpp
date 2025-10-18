@@ -22,6 +22,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/thirdparty/usb_key_code_data.h"
 #include "common/timer.h"
 
 #include "IconsFontAwesome6.h"
@@ -37,7 +38,6 @@
 #include <limits>
 #include <mutex>
 #include <type_traits>
-#include <unordered_map>
 
 LOG_CHANNEL(ImGuiManager);
 
@@ -73,7 +73,6 @@ static_assert(std::is_same_v<WCharType, ImWchar>);
 
 static void UpdateScale();
 static void SetStyle(ImGuiStyle& style, float scale);
-static void SetKeyMap();
 static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool CreateFontAtlas(Error* error);
@@ -93,6 +92,7 @@ static void CreateSoftwareCursorTextures();
 static void UpdateSoftwareCursorTexture(SoftwareCursor& cursor, const std::string& image_path);
 static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
+static std::optional<ImGuiKey> MapHostKeyEventToImGuiKey(u32 key);
 
 static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
@@ -145,9 +145,6 @@ struct ALIGN_TO_CACHE_LINE State
   std::deque<OSDMessage> osd_active_messages;
 
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
-
-  // mapping of host key -> imgui key
-  ALIGN_TO_CACHE_LINE std::unordered_map<u32, ImGuiKey> imgui_key_map;
 
   TextFontOrder text_font_order = ImGuiManager::GetDefaultTextFontOrder();
 
@@ -224,7 +221,6 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
   io.DisplaySize = ImVec2(s_state.window_width, s_state.window_height);
 
-  SetKeyMap();
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
   FullscreenUI::SetTheme();
   ImGuiFullscreen::UpdateLayoutScale();
@@ -637,135 +633,6 @@ void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
   style.ScaleAllSizes(scale);
-}
-
-void ImGuiManager::SetKeyMap()
-{
-  struct KeyMapping
-  {
-    ImGuiKey index;
-    const char* name;
-    const char* alt_name;
-  };
-
-  static constexpr KeyMapping mapping[] = {
-    {ImGuiKey_LeftArrow, "Left", nullptr},
-    {ImGuiKey_RightArrow, "Right", nullptr},
-    {ImGuiKey_UpArrow, "Up", nullptr},
-    {ImGuiKey_DownArrow, "Down", nullptr},
-    {ImGuiKey_PageUp, "PageUp", nullptr},
-    {ImGuiKey_PageDown, "PageDown", nullptr},
-    {ImGuiKey_Home, "Home", nullptr},
-    {ImGuiKey_End, "End", nullptr},
-    {ImGuiKey_Insert, "Insert", nullptr},
-    {ImGuiKey_Delete, "Delete", nullptr},
-    {ImGuiKey_Backspace, "Backspace", nullptr},
-    {ImGuiKey_Space, "Space", nullptr},
-    {ImGuiKey_Enter, "Return", nullptr},
-    {ImGuiKey_Escape, "Escape", nullptr},
-    {ImGuiKey_LeftCtrl, "LeftControl", "Control"},
-    {ImGuiKey_LeftShift, "LeftShift", "Shift"},
-    {ImGuiKey_LeftAlt, "LeftAlt", "Alt"},
-    {ImGuiKey_LeftSuper, "LeftSuper", "Super"},
-    {ImGuiKey_RightCtrl, "RightControl", nullptr},
-    {ImGuiKey_RightShift, "RightShift", nullptr},
-    {ImGuiKey_RightAlt, "RightAlt", nullptr},
-    {ImGuiKey_RightSuper, "RightSuper", nullptr},
-    {ImGuiKey_Menu, "Menu", nullptr},
-    {ImGuiKey_Tab, "Tab", nullptr},
-    // Hack: Report Qt's "Backtab" as Tab, we forward the shift so it gets mapped correctly
-    {ImGuiKey_Tab, "Backtab", nullptr},
-    {ImGuiKey_0, "0", nullptr},
-    {ImGuiKey_1, "1", nullptr},
-    {ImGuiKey_2, "2", nullptr},
-    {ImGuiKey_3, "3", nullptr},
-    {ImGuiKey_4, "4", nullptr},
-    {ImGuiKey_5, "5", nullptr},
-    {ImGuiKey_6, "6", nullptr},
-    {ImGuiKey_7, "7", nullptr},
-    {ImGuiKey_8, "8", nullptr},
-    {ImGuiKey_9, "9", nullptr},
-    {ImGuiKey_A, "A", nullptr},
-    {ImGuiKey_B, "B", nullptr},
-    {ImGuiKey_C, "C", nullptr},
-    {ImGuiKey_D, "D", nullptr},
-    {ImGuiKey_E, "E", nullptr},
-    {ImGuiKey_F, "F", nullptr},
-    {ImGuiKey_G, "G", nullptr},
-    {ImGuiKey_H, "H", nullptr},
-    {ImGuiKey_I, "I", nullptr},
-    {ImGuiKey_J, "J", nullptr},
-    {ImGuiKey_K, "K", nullptr},
-    {ImGuiKey_L, "L", nullptr},
-    {ImGuiKey_M, "M", nullptr},
-    {ImGuiKey_N, "N", nullptr},
-    {ImGuiKey_O, "O", nullptr},
-    {ImGuiKey_P, "P", nullptr},
-    {ImGuiKey_Q, "Q", nullptr},
-    {ImGuiKey_R, "R", nullptr},
-    {ImGuiKey_S, "S", nullptr},
-    {ImGuiKey_T, "T", nullptr},
-    {ImGuiKey_U, "U", nullptr},
-    {ImGuiKey_V, "V", nullptr},
-    {ImGuiKey_W, "W", nullptr},
-    {ImGuiKey_X, "X", nullptr},
-    {ImGuiKey_Y, "Y", nullptr},
-    {ImGuiKey_Z, "Z", nullptr},
-    {ImGuiKey_F1, "F1", nullptr},
-    {ImGuiKey_F2, "F2", nullptr},
-    {ImGuiKey_F3, "F3", nullptr},
-    {ImGuiKey_F4, "F4", nullptr},
-    {ImGuiKey_F5, "F5", nullptr},
-    {ImGuiKey_F6, "F6", nullptr},
-    {ImGuiKey_F7, "F7", nullptr},
-    {ImGuiKey_F8, "F8", nullptr},
-    {ImGuiKey_F9, "F9", nullptr},
-    {ImGuiKey_F10, "F10", nullptr},
-    {ImGuiKey_F11, "F11", nullptr},
-    {ImGuiKey_F12, "F12", nullptr},
-    {ImGuiKey_Apostrophe, "Apostrophe", nullptr},
-    {ImGuiKey_Comma, "Comma", nullptr},
-    {ImGuiKey_Minus, "Minus", nullptr},
-    {ImGuiKey_Period, "Period", nullptr},
-    {ImGuiKey_Slash, "Slash", nullptr},
-    {ImGuiKey_Semicolon, "Semicolon", nullptr},
-    {ImGuiKey_Equal, "Equal", nullptr},
-    {ImGuiKey_LeftBracket, "BracketLeft", nullptr},
-    {ImGuiKey_Backslash, "Backslash", nullptr},
-    {ImGuiKey_RightBracket, "BracketRight", nullptr},
-    {ImGuiKey_GraveAccent, "QuoteLeft", nullptr},
-    {ImGuiKey_CapsLock, "CapsLock", nullptr},
-    {ImGuiKey_ScrollLock, "ScrollLock", nullptr},
-    {ImGuiKey_NumLock, "NumLock", nullptr},
-    {ImGuiKey_PrintScreen, "PrintScreen", nullptr},
-    {ImGuiKey_Pause, "Pause", nullptr},
-    {ImGuiKey_Keypad0, "Keypad0", nullptr},
-    {ImGuiKey_Keypad1, "Keypad1", nullptr},
-    {ImGuiKey_Keypad2, "Keypad2", nullptr},
-    {ImGuiKey_Keypad3, "Keypad3", nullptr},
-    {ImGuiKey_Keypad4, "Keypad4", nullptr},
-    {ImGuiKey_Keypad5, "Keypad5", nullptr},
-    {ImGuiKey_Keypad6, "Keypad6", nullptr},
-    {ImGuiKey_Keypad7, "Keypad7", nullptr},
-    {ImGuiKey_Keypad8, "Keypad8", nullptr},
-    {ImGuiKey_Keypad9, "Keypad9", nullptr},
-    {ImGuiKey_KeypadDecimal, "KeypadPeriod", nullptr},
-    {ImGuiKey_KeypadDivide, "KeypadDivide", nullptr},
-    {ImGuiKey_KeypadMultiply, "KeypadMultiply", nullptr},
-    {ImGuiKey_KeypadSubtract, "KeypadMinus", nullptr},
-    {ImGuiKey_KeypadAdd, "KeypadPlus", nullptr},
-    {ImGuiKey_KeypadEnter, "KeypadReturn", nullptr},
-    {ImGuiKey_KeypadEqual, "KeypadEqual", nullptr}};
-
-  s_state.imgui_key_map.clear();
-  for (const KeyMapping& km : mapping)
-  {
-    std::optional<u32> map(InputManager::ConvertHostKeyboardStringToCode(km.name));
-    if (!map.has_value() && km.alt_name)
-      map = InputManager::ConvertHostKeyboardStringToCode(km.alt_name);
-    if (map.has_value())
-      s_state.imgui_key_map[map.value()] = km.index;
-  }
 }
 
 bool ImGuiManager::LoadFontData(Error* error)
@@ -1357,10 +1224,9 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
   if (!s_state.imgui_context)
     return false;
 
-  const auto iter = s_state.imgui_key_map.find(key.data);
-  if (iter != s_state.imgui_key_map.end())
+  if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(key.data))
   {
-    GPUThread::RunOnThread([imkey = iter->second, pressed = (value != 0.0f)]() {
+    GPUThread::RunOnThread([imkey = imkey.value(), pressed = (value != 0.0f)]() {
       if (!s_state.imgui_context)
         return;
 
@@ -1616,6 +1482,133 @@ std::string ImGuiManager::StripIconCharacters(std::string_view str)
   return result;
 }
 
+std::optional<ImGuiKey> ImGuiManager::MapHostKeyEventToImGuiKey(u32 key)
+{
+  // mapping of host key -> imgui key
+  static constexpr const std::pair<USBKeyCode, ImGuiKey> mapping[] = {
+    {USBKeyCode::Super, ImGuiKey_LeftSuper},
+    {USBKeyCode::A, ImGuiKey_A},
+    {USBKeyCode::B, ImGuiKey_B},
+    {USBKeyCode::C, ImGuiKey_C},
+    {USBKeyCode::D, ImGuiKey_D},
+    {USBKeyCode::E, ImGuiKey_E},
+    {USBKeyCode::F, ImGuiKey_F},
+    {USBKeyCode::G, ImGuiKey_G},
+    {USBKeyCode::H, ImGuiKey_H},
+    {USBKeyCode::I, ImGuiKey_I},
+    {USBKeyCode::J, ImGuiKey_J},
+    {USBKeyCode::K, ImGuiKey_K},
+    {USBKeyCode::L, ImGuiKey_L},
+    {USBKeyCode::M, ImGuiKey_M},
+    {USBKeyCode::N, ImGuiKey_N},
+    {USBKeyCode::O, ImGuiKey_O},
+    {USBKeyCode::P, ImGuiKey_P},
+    {USBKeyCode::Q, ImGuiKey_Q},
+    {USBKeyCode::R, ImGuiKey_R},
+    {USBKeyCode::S, ImGuiKey_S},
+    {USBKeyCode::T, ImGuiKey_T},
+    {USBKeyCode::U, ImGuiKey_U},
+    {USBKeyCode::V, ImGuiKey_V},
+    {USBKeyCode::W, ImGuiKey_W},
+    {USBKeyCode::X, ImGuiKey_X},
+    {USBKeyCode::Y, ImGuiKey_Y},
+    {USBKeyCode::Z, ImGuiKey_Z},
+    {USBKeyCode::Digit1, ImGuiKey_1},
+    {USBKeyCode::Digit2, ImGuiKey_2},
+    {USBKeyCode::Digit3, ImGuiKey_3},
+    {USBKeyCode::Digit4, ImGuiKey_4},
+    {USBKeyCode::Digit5, ImGuiKey_5},
+    {USBKeyCode::Digit6, ImGuiKey_6},
+    {USBKeyCode::Digit7, ImGuiKey_7},
+    {USBKeyCode::Digit8, ImGuiKey_8},
+    {USBKeyCode::Digit9, ImGuiKey_9},
+    {USBKeyCode::Digit0, ImGuiKey_0},
+    {USBKeyCode::Enter, ImGuiKey_Enter},
+    {USBKeyCode::Escape, ImGuiKey_Escape},
+    {USBKeyCode::Backspace, ImGuiKey_Backspace},
+    {USBKeyCode::Tab, ImGuiKey_Tab},
+    {USBKeyCode::Space, ImGuiKey_Space},
+    {USBKeyCode::Minus, ImGuiKey_Minus},
+    {USBKeyCode::Equal, ImGuiKey_Equal},
+    {USBKeyCode::BracketLeft, ImGuiKey_LeftBracket},
+    {USBKeyCode::BracketRight, ImGuiKey_RightBracket},
+    {USBKeyCode::Backslash, ImGuiKey_Backslash},
+    {USBKeyCode::Semicolon, ImGuiKey_Semicolon},
+    {USBKeyCode::Quote, ImGuiKey_Apostrophe},
+    {USBKeyCode::Backquote, ImGuiKey_GraveAccent},
+    {USBKeyCode::Comma, ImGuiKey_Comma},
+    {USBKeyCode::Period, ImGuiKey_Period},
+    {USBKeyCode::Slash, ImGuiKey_Slash},
+    {USBKeyCode::CapsLock, ImGuiKey_CapsLock},
+    {USBKeyCode::F1, ImGuiKey_F1},
+    {USBKeyCode::F2, ImGuiKey_F2},
+    {USBKeyCode::F3, ImGuiKey_F3},
+    {USBKeyCode::F4, ImGuiKey_F4},
+    {USBKeyCode::F5, ImGuiKey_F5},
+    {USBKeyCode::F6, ImGuiKey_F6},
+    {USBKeyCode::F7, ImGuiKey_F7},
+    {USBKeyCode::F8, ImGuiKey_F8},
+    {USBKeyCode::F9, ImGuiKey_F9},
+    {USBKeyCode::F10, ImGuiKey_F10},
+    {USBKeyCode::F11, ImGuiKey_F11},
+    {USBKeyCode::F12, ImGuiKey_F12},
+    {USBKeyCode::PrintScreen, ImGuiKey_PrintScreen},
+    {USBKeyCode::ScrollLock, ImGuiKey_ScrollLock},
+    {USBKeyCode::Pause, ImGuiKey_Pause},
+    {USBKeyCode::Insert, ImGuiKey_Insert},
+    {USBKeyCode::Home, ImGuiKey_Home},
+    {USBKeyCode::PageUp, ImGuiKey_PageUp},
+    {USBKeyCode::Delete, ImGuiKey_Delete},
+    {USBKeyCode::End, ImGuiKey_End},
+    {USBKeyCode::PageDown, ImGuiKey_PageDown},
+    {USBKeyCode::ArrowRight, ImGuiKey_RightArrow},
+    {USBKeyCode::ArrowLeft, ImGuiKey_LeftArrow},
+    {USBKeyCode::ArrowDown, ImGuiKey_DownArrow},
+    {USBKeyCode::ArrowUp, ImGuiKey_UpArrow},
+    {USBKeyCode::NumLock, ImGuiKey_NumLock},
+    {USBKeyCode::NumpadDivide, ImGuiKey_KeypadDivide},
+    {USBKeyCode::NumpadMultiply, ImGuiKey_KeypadMultiply},
+    {USBKeyCode::NumpadSubtract, ImGuiKey_KeypadSubtract},
+    {USBKeyCode::NumpadAdd, ImGuiKey_KeypadAdd},
+    {USBKeyCode::NumpadEnter, ImGuiKey_KeypadEnter},
+    {USBKeyCode::Numpad1, ImGuiKey_Keypad1},
+    {USBKeyCode::Numpad2, ImGuiKey_Keypad2},
+    {USBKeyCode::Numpad3, ImGuiKey_Keypad3},
+    {USBKeyCode::Numpad4, ImGuiKey_Keypad4},
+    {USBKeyCode::Numpad5, ImGuiKey_Keypad5},
+    {USBKeyCode::Numpad6, ImGuiKey_Keypad6},
+    {USBKeyCode::Numpad7, ImGuiKey_Keypad7},
+    {USBKeyCode::Numpad8, ImGuiKey_Keypad8},
+    {USBKeyCode::Numpad9, ImGuiKey_Keypad9},
+    {USBKeyCode::Numpad0, ImGuiKey_Keypad0},
+    {USBKeyCode::NumpadDecimal, ImGuiKey_KeypadDecimal},
+    {USBKeyCode::ContextMenu, ImGuiKey_Menu},
+    {USBKeyCode::NumpadEqual, ImGuiKey_KeypadEqual},
+    {USBKeyCode::ControlLeft, ImGuiKey_LeftCtrl},
+    {USBKeyCode::ShiftLeft, ImGuiKey_LeftShift},
+    {USBKeyCode::AltLeft, ImGuiKey_LeftAlt},
+    {USBKeyCode::ControlRight, ImGuiKey_RightCtrl},
+    {USBKeyCode::ShiftRight, ImGuiKey_RightShift},
+    {USBKeyCode::AltRight, ImGuiKey_RightAlt},
+  };
+
+  static_assert(
+    []() {
+      for (size_t i = 1; i < std::size(mapping); i++)
+      {
+        if (mapping[i].first <= mapping[i - 1].first)
+          return false;
+      }
+      return true;
+    }(),
+    "Key map must be sorted by USBKeyCode");
+
+  const auto it = std::lower_bound(std::begin(mapping), std::end(mapping), static_cast<USBKeyCode>(key),
+                                   [](const std::pair<USBKeyCode, ImGuiKey>& a, USBKeyCode b) { return a.first < b; });
+  return (it != std::end(mapping) && it->first == static_cast<USBKeyCode>(key)) ? std::optional<ImGuiKey>{it->second} :
+                                                                                  std::nullopt;
+}
+
 #ifndef __ANDROID__
 
 bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, std::string_view title,
@@ -1794,9 +1787,8 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     case Host::AuxiliaryRenderWindowEvent::KeyPressed:
     case Host::AuxiliaryRenderWindowEvent::KeyReleased:
     {
-      const auto iter = s_state.imgui_key_map.find(param1.uint_param);
-      if (iter != s_state.imgui_key_map.end())
-        SetImKeyState(io, iter->second, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
+      if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(param1.uint_param))
+        SetImKeyState(io, imkey.value(), (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
     }
     break;
 
