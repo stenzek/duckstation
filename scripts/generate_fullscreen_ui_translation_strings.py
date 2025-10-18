@@ -7,8 +7,12 @@ import re
 START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
 END_IDENT = "// TRANSLATION-STRING-AREA-END"
 SRC_FILES = ["src/core/fullscreenui.cpp",
+             "src/core/fullscreenui.h",
+             "src/core/fullscreenui_game_list.cpp",
+             "src/core/fullscreenui_private.h",
              "src/core/fullscreenui_settings.cpp",
-             "src/core/fullscreenui_widgets.cpp", "src/core/fullscreenui_widgets.h"]
+             "src/core/fullscreenui_widgets.cpp",
+             "src/core/fullscreenui_widgets.h"]
 DST_FILE = "src/core/fullscreenui.cpp"
 
 full_source = ""

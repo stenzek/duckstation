@@ -51,6 +51,7 @@ enum class SettingsPage : u8
 void SwitchToMainWindow(MainWindowType type);
 void ReturnToMainWindow();
 void ReturnToMainWindow(float transition_time);
+bool AreAnyDialogsOpen();
 
 void ExitFullscreenAndOpenURL(std::string_view url);
 void CopyTextToClipboard(std::string title, std::string_view text);
@@ -58,8 +59,33 @@ void CopyTextToClipboard(std::string title, std::string_view text);
 FileSelectorFilters GetDiscImageFilters();
 FileSelectorFilters GetImageFilters();
 
+//////////////////////////////////////////////////////////////////////////
+// Save State List
+//////////////////////////////////////////////////////////////////////////
+bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
+void OpenSaveStateSelector(const std::string& serial, const std::string& path, bool is_loading);
+void DoResume();
+
+//////////////////////////////////////////////////////////////////////////
+// Game List
+//////////////////////////////////////////////////////////////////////////
+
+bool ShouldOpenToGameList();
+
+void ClearGameListState();
+void SwitchToGameList();
+void DrawGameListWindow();
+
+void DoStartPath(std::string path, std::string state = std::string(),
+                        std::optional<bool> fast_boot = std::nullopt);
+
+GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
 void SetCoverCacheEntry(std::string path, std::string cover_path);
 void ClearCoverCache();
+
+//////////////////////////////////////////////////////////////////////////
+// Settings
+//////////////////////////////////////////////////////////////////////////
 
 void InitializeHotkeyList();
 void ClearSettingsState();
@@ -75,6 +101,7 @@ bool IsInputBindingDialogOpen();
 // TODO: Move to widgets or something
 inline constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
 inline constexpr const char* NONE_BACKGROUND_NAME = "None";
+ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = UIStyle.BackgroundColor);
 ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);
 void LoadBackground();
 
