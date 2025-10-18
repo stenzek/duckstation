@@ -297,7 +297,7 @@ public:
   void End();
 };
 
-struct ALIGN_TO_CACHE_LINE WidgetsState
+struct WidgetsState
 {
   std::recursive_mutex shared_state_mutex;
 
@@ -370,8 +370,8 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
 
 } // namespace
 
-UIStyles UIStyle = {};
-static WidgetsState s_state;
+ALIGN_TO_CACHE_LINE UIStyles UIStyle = {};
+ALIGN_TO_CACHE_LINE static WidgetsState s_state;
 
 } // namespace FullscreenUI
 

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui.h"
-#include "fullscreenui_private.h"
-#include "fullscreenui_widgets.h"
 #include "achievements_private.h"
 #include "controller.h"
+#include "fullscreenui_private.h"
+#include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"
 #include "system.h"
@@ -127,7 +127,7 @@ static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE Locals
+struct Locals
 {
   // Main
   MainWindowType current_main_window = MainWindowType::None;
@@ -154,7 +154,7 @@ struct ALIGN_TO_CACHE_LINE Locals
 
 } // namespace
 
-static Locals s_locals;
+ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 } // namespace FullscreenUI
 
@@ -1604,8 +1604,11 @@ void FullscreenUI::DrawPauseMenu()
           DoToggleAnalogMode();
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"), has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
+                                     has_game && !GPUThread::GetGameSerial().empty()))
+        {
           BeginTransition([]() { SwitchToGameSettings(); });
+        }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TROPHY, "Achievements"),
                                      Achievements::HasAchievementsOrLeaderboards()))

@@ -112,7 +112,6 @@ void SwitchToSettings();
 bool SwitchToGameSettings(SettingsPage page = SettingsPage::Summary);
 void SwitchToGameSettings(const GameList::Entry* entry, SettingsPage page = SettingsPage::Summary);
 bool SwitchToGameSettingsForPath(const std::string& path, SettingsPage page = SettingsPage::Summary);
-void SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash, SettingsPage page = SettingsPage::Summary);
 void DrawSettingsWindow();
 SettingsPage GetCurrentSettingsPage();
 bool IsInputBindingDialogOpen();

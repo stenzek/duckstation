@@ -33,6 +33,7 @@
 #include "IconsFontAwesome6.h"
 #include "IconsPromptFont.h"
 
+#include <limits>
 #include <mutex>
 
 LOG_CHANNEL(FullscreenUI);
@@ -186,14 +187,11 @@ static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievemen
 static constexpr std::string_view COVER_DOWNLOADER_DIALOG_NAME = "##cover_downloader";
 
 namespace {
-struct ALIGN_TO_CACHE_LINE SettingsLocals
+struct SettingsLocals
 {
   float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
-  std::string game_settings_serial;
-  GameHash game_settings_hash = 0;
-  const GameDatabase::Entry* game_settings_db_entry;
   std::unique_ptr<GameList::Entry> game_settings_entry;
   std::vector<std::pair<std::string, bool>> game_list_directories_cache;
   GPUDevice::AdapterInfoList graphics_adapter_list_cache;
@@ -213,7 +211,7 @@ struct ALIGN_TO_CACHE_LINE SettingsLocals
 
 } // namespace
 
-static SettingsLocals s_settings_locals;
+ALIGN_TO_CACHE_LINE static SettingsLocals s_settings_locals;
 
 } // namespace FullscreenUI
 
@@ -1564,10 +1562,7 @@ void FullscreenUI::ClearSettingsState()
   s_settings_locals.input_binding_dialog.ClearState();
   std::memset(s_settings_locals.controller_macro_expanded, 0, sizeof(s_settings_locals.controller_macro_expanded));
   s_settings_locals.game_list_directories_cache = {};
-  s_settings_locals.game_settings_db_entry = nullptr;
   s_settings_locals.game_settings_entry.reset();
-  s_settings_locals.game_settings_hash = 0;
-  s_settings_locals.game_settings_serial = {};
   s_settings_locals.game_settings_interface.reset();
   s_settings_locals.game_settings_changed = false;
   s_settings_locals.game_patch_list = {};
@@ -1585,9 +1580,6 @@ void FullscreenUI::SwitchToSettings()
 {
   s_settings_locals.game_settings_entry.reset();
   s_settings_locals.game_settings_interface.reset();
-  s_settings_locals.game_settings_serial = {};
-  s_settings_locals.game_settings_hash = 0;
-  s_settings_locals.game_settings_db_entry = nullptr;
   s_settings_locals.game_patch_list = {};
   s_settings_locals.enabled_game_patch_cache = {};
   s_settings_locals.game_cheats_list = {};
@@ -1609,45 +1601,20 @@ void FullscreenUI::SwitchToSettings()
   s_settings_locals.settings_last_bg_alpha = GetBackgroundAlpha();
 }
 
-void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash, SettingsPage page)
-{
-  s_settings_locals.game_settings_serial = serial;
-  s_settings_locals.game_settings_hash = hash;
-  s_settings_locals.game_settings_entry.reset();
-  s_settings_locals.game_settings_db_entry = GameDatabase::GetEntryForSerial(serial);
-  s_settings_locals.game_settings_interface =
-    System::GetGameSettingsInterface(s_settings_locals.game_settings_db_entry, serial, true, false);
-  PopulatePatchesAndCheatsList();
-  s_settings_locals.settings_page = page;
-  SwitchToMainWindow(MainWindowType::Settings);
-}
-
 bool FullscreenUI::SwitchToGameSettings(SettingsPage page)
 {
-  const std::string& serial = GPUThread::GetGameSerial();
-  if (serial.empty())
-    return false;
-
-  auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(GPUThread::GetGamePath());
-  if (!entry)
-  {
-    SwitchToGameSettingsForSerial(serial, GPUThread::GetGameHash(), page);
-    return true;
-  }
-  else
-  {
-    SwitchToGameSettings(entry, page);
-    return true;
-  }
+  return SwitchToGameSettingsForPath(GPUThread::GetGamePath());
 }
 
 bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, SettingsPage page)
 {
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(path);
-  if (!entry)
+  const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
+  if (!entry || entry->serial.empty())
+  {
+    ShowToast({}, FSUI_STR("Game properties is only available for scanned games."));
     return false;
+  }
 
   SwitchToGameSettings(entry, page);
   return true;
@@ -1655,8 +1622,12 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
 
 void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPage page)
 {
-  SwitchToGameSettingsForSerial(entry->serial, entry->hash, page);
   s_settings_locals.game_settings_entry = std::make_unique<GameList::Entry>(*entry);
+  s_settings_locals.game_settings_interface = System::GetGameSettingsInterface(
+    s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, true, false);
+  PopulatePatchesAndCheatsList();
+  s_settings_locals.settings_page = page;
+  SwitchToMainWindow(MainWindowType::Settings);
 }
 
 void FullscreenUI::PopulateGraphicsAdapterList()
@@ -1683,10 +1654,10 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
 
 void FullscreenUI::PopulatePatchesAndCheatsList()
 {
-  s_settings_locals.game_patch_list = Cheats::GetCodeInfoList(s_settings_locals.game_settings_serial,
-                                                              s_settings_locals.game_settings_hash, false, true, true);
+  s_settings_locals.game_patch_list = Cheats::GetCodeInfoList(
+    s_settings_locals.game_settings_entry->serial, s_settings_locals.game_settings_entry->hash, false, true, true);
   s_settings_locals.game_cheats_list = Cheats::GetCodeInfoList(
-    s_settings_locals.game_settings_serial, s_settings_locals.game_settings_hash, true,
+    s_settings_locals.game_settings_entry->serial, s_settings_locals.game_settings_entry->hash, true,
     s_settings_locals.game_settings_interface->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true),
     s_settings_locals.game_settings_interface->GetBoolValue("Cheats", "SortList", false));
   s_settings_locals.game_cheat_groups = Cheats::GetCodeListUniquePrefixes(s_settings_locals.game_cheats_list, true);
@@ -2064,11 +2035,12 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
 
   MenuHeading(FSUI_VSTR("Options"));
 
-  if (s_settings_locals.game_settings_db_entry && s_settings_locals.game_settings_db_entry->disc_set)
+  DebugAssert(s_settings_locals.game_settings_entry);
+  if (s_settings_locals.game_settings_entry->dbentry && s_settings_locals.game_settings_entry->dbentry->disc_set)
   {
     // only enable for first disc
-    const bool is_first_disc = (s_settings_locals.game_settings_db_entry->serial ==
-                                s_settings_locals.game_settings_db_entry->disc_set->serials.front());
+    const bool is_first_disc = (s_settings_locals.game_settings_entry->dbentry->serial ==
+                                s_settings_locals.game_settings_entry->dbentry->disc_set->serials.front());
     DrawToggleSetting(
       GetEditingSettingsInterface(), FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Use Separate Disc Settings"),
       FSUI_VSTR(
@@ -5180,8 +5152,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         bsi->SetBoolValue("Cheats", "SortList", true);
       SetSettingsChanged(bsi);
       s_settings_locals.game_cheats_list =
-        Cheats::GetCodeInfoList(s_settings_locals.game_settings_serial, s_settings_locals.game_settings_hash, true,
-                                load_database_cheats, sort_list);
+        Cheats::GetCodeInfoList(s_settings_locals.game_settings_entry->serial,
+                                s_settings_locals.game_settings_entry->hash, true, load_database_cheats, sort_list);
     }
 
     if (code_list.empty())

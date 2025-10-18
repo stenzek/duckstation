@@ -945,7 +945,7 @@ static constexpr const char* DATE_TIME_FORMAT =
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   std::shared_ptr<GPUTexture> placeholder_texture;
 
@@ -969,7 +969,7 @@ struct ALIGN_TO_CACHE_LINE State
 
 } // namespace
 
-static State s_state;
+ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace SaveStateSelectorUI
 
