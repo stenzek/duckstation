@@ -347,8 +347,12 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_blit_remaining_words);
   sw.Do(&m_render_command.bits);
 
-  sw.Do(&m_max_run_ahead);
-  sw.Do(&m_fifo_size);
+  if (sw.GetVersion() < 83) [[unlikely]]
+  {
+    // Removed in v83
+    DebugAssert(sw.IsReading());
+    sw.SkipBytes(sizeof(u32) * 2);
+  }
 
   if (!sw.DoMarker("GPU-VRAM"))
     return false;
