@@ -7,7 +7,7 @@
 #include "settingwidgetbinder.h"
 #include "ui_texturereplacementsettingsdialog.h"
 
-#include "core/fullscreenui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
 #include "core/gpu.h"
 #include "core/settings.h"
@@ -710,9 +710,9 @@ void GraphicsSettingsWidget::setupAdditionalUi()
 {
   // OSD Tab
 
-  const std::vector<std::string_view> fsui_theme_names = FullscreenUI::GetThemeNames();
-  const std::span<const char* const> fsui_theme_values = FullscreenUI::GetThemeConfigNames();
-  for (size_t i = 0; i < fsui_theme_names.size(); i++)
+  const std::span<const char* const> fsui_theme_values = FullscreenUI::GetThemeNames();
+  const std::vector<std::string_view> fsui_theme_names = FullscreenUI::GetLocalizedThemeDisplayNames();
+  for (size_t i = 0; i < fsui_theme_values.size(); i++)
   {
     m_ui.fullscreenUITheme->addItem(QtUtils::StringViewToQString(fsui_theme_names[i]),
                                     QString::fromUtf8(fsui_theme_values[i]));

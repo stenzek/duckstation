@@ -27,7 +27,7 @@ class Image;
 class GPUTexture;
 class ProgressCallback;
 
-namespace ImGuiFullscreen {
+namespace FullscreenUI {
 
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
@@ -189,8 +189,8 @@ public:
 };
 
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str))
-#define FSUI_ICONVSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).view()
-#define FSUI_ICONCSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).c_str()
+#define FSUI_ICONVSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).view()
+#define FSUI_ICONCSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).c_str()
 #define FSUI_STR(str) Host::TranslateToString(FSUI_TR_CONTEXT, std::string_view(str))
 #define FSUI_CSTR(str) Host::TranslateToCString(FSUI_TR_CONTEXT, std::string_view(str))
 #define FSUI_VSTR(str) Host::TranslateToStringView(FSUI_TR_CONTEXT, std::string_view(str))
@@ -207,17 +207,21 @@ ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 
 /// Initializes, setting up any state.
-bool Initialize(const char* placeholder_image_path);
+bool InitializeWidgets();
 
-void SetTheme(std::string_view theme);
+/// Shuts down, clearing all state.
+void ShutdownWidgets(bool clear_state);
+
+std::span<const char* const> GetThemeNames();
+std::span<const char* const> GetThemeDisplayNames();
+std::vector<std::string_view> GetLocalizedThemeDisplayNames();
+void UpdateTheme();
+
 void SetAnimations(bool enabled);
 void SetSmoothScrolling(bool enabled);
 void SetMenuBorders(bool enabled);
 void SetFont(ImFont* ui_font);
 bool UpdateLayoutScale();
-
-/// Shuts down, clearing all state.
-void Shutdown(bool clear_state);
 
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
@@ -455,10 +459,7 @@ bool IsBackgroundProgressDialogOpen(std::string_view str_id);
 /// such as compiling shaders when starting up.
 void RenderLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
                          s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
-void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1,
-                               s32 progress_max = -1, s32 progress_value = -1);
-void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
-                               s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
+
 bool IsLoadingScreenOpen();
 void CloseLoadingScreen();
 

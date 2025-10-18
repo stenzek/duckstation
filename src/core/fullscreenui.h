@@ -37,13 +37,13 @@ void InvalidateCoverCache();
 
 float GetBackgroundAlpha();
 
-void OpenLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
-                       s32 progress_value = -1);
-void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
-                         s32 progress_value = -1);
+void OpenLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
+                       s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
+void UpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
+                         s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
 void CloseLoadingScreen();
 
-void SetTheme();
+void UpdateTheme();
 void UpdateRunIdleState();
 void UpdateTransitionState();
 
@@ -68,9 +68,6 @@ GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
 void RenderTransitionBlend(GPUSwapChain* swap_chain);
 
 #ifndef __ANDROID__
-
-std::vector<std::string_view> GetThemeNames();
-std::span<const char* const> GetThemeConfigNames();
 
 void OpenPauseMenu();
 void OpenCheatsMenu();

@@ -33,7 +33,6 @@
   X(GameList)                                                                                                          \
   X(HTTPDownloader)                                                                                                    \
   X(Host)                                                                                                              \
-  X(ImGuiFullscreen)                                                                                                   \
   X(ImGuiManager)                                                                                                      \
   X(Image)                                                                                                             \
   X(InputManager)                                                                                                      \

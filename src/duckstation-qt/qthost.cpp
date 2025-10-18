@@ -1939,7 +1939,7 @@ void EmuThread::updateFullscreenUITheme()
 
   // don't bother if nothing is running
   if (GPUThread::IsFullscreenUIRequested() || GPUThread::IsGPUBackendRequested())
-    GPUThread::RunOnThread(&FullscreenUI::SetTheme);
+    GPUThread::RunOnThread(&FullscreenUI::UpdateTheme);
 }
 
 void EmuThread::start()
@@ -2157,7 +2157,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         return;
       }
 
-      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
+      FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
                                                 fmt::format(ICON_FA_CHECK " {}", yes_text),
                                                 fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();

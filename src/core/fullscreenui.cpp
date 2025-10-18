@@ -51,98 +51,6 @@
 
 LOG_CHANNEL(FullscreenUI);
 
-using ImGuiFullscreen::ChoiceDialogOptions;
-using ImGuiFullscreen::FocusResetType;
-
-using ImGuiFullscreen::LAYOUT_CENTER_ALIGN_TEXT;
-using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
-using ImGuiFullscreen::LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE;
-using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
-using ImGuiFullscreen::LAYOUT_LARGE_POPUP_PADDING;
-using ImGuiFullscreen::LAYOUT_LARGE_POPUP_ROUNDING;
-using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
-using ImGuiFullscreen::LAYOUT_MENU_BUTTON_SPACING;
-using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
-using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
-using ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING;
-using ImGuiFullscreen::LAYOUT_MENU_WINDOW_Y_PADDING;
-using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
-using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
-using ImGuiFullscreen::LAYOUT_SMALL_POPUP_PADDING;
-using ImGuiFullscreen::LAYOUT_WIDGET_FRAME_ROUNDING;
-using ImGuiFullscreen::UIStyle;
-
-using ImGuiFullscreen::AddNotification;
-using ImGuiFullscreen::BeginFixedPopupDialog;
-using ImGuiFullscreen::BeginFullscreenColumns;
-using ImGuiFullscreen::BeginFullscreenColumnWindow;
-using ImGuiFullscreen::BeginFullscreenWindow;
-using ImGuiFullscreen::BeginHorizontalMenu;
-using ImGuiFullscreen::BeginHorizontalMenuButtons;
-using ImGuiFullscreen::BeginMenuButtons;
-using ImGuiFullscreen::BeginNavBar;
-using ImGuiFullscreen::CancelPendingMenuClose;
-using ImGuiFullscreen::CenterImage;
-using ImGuiFullscreen::CloseFixedPopupDialog;
-using ImGuiFullscreen::CloseFixedPopupDialogImmediately;
-using ImGuiFullscreen::DarkerColor;
-using ImGuiFullscreen::EndFixedPopupDialog;
-using ImGuiFullscreen::EndFullscreenColumns;
-using ImGuiFullscreen::EndFullscreenColumnWindow;
-using ImGuiFullscreen::EndFullscreenWindow;
-using ImGuiFullscreen::EndHorizontalMenu;
-using ImGuiFullscreen::EndHorizontalMenuButtons;
-using ImGuiFullscreen::EndMenuButtons;
-using ImGuiFullscreen::EndNavBar;
-using ImGuiFullscreen::EnumChoiceButton;
-using ImGuiFullscreen::FloatingButton;
-using ImGuiFullscreen::ForceKeyNavEnabled;
-using ImGuiFullscreen::GetCachedTexture;
-using ImGuiFullscreen::GetCachedTextureAsync;
-using ImGuiFullscreen::GetPlaceholderTexture;
-using ImGuiFullscreen::HorizontalMenuButton;
-using ImGuiFullscreen::HorizontalMenuItem;
-using ImGuiFullscreen::IsAnyFixedPopupDialogOpen;
-using ImGuiFullscreen::IsFixedPopupDialogOpen;
-using ImGuiFullscreen::IsFocusResetFromWindowChange;
-using ImGuiFullscreen::IsFocusResetQueued;
-using ImGuiFullscreen::IsGamepadInputSource;
-using ImGuiFullscreen::LayoutScale;
-using ImGuiFullscreen::LayoutUnscale;
-using ImGuiFullscreen::LoadTexture;
-using ImGuiFullscreen::MenuButton;
-using ImGuiFullscreen::MenuButtonFrame;
-using ImGuiFullscreen::MenuButtonWithoutSummary;
-using ImGuiFullscreen::MenuButtonWithValue;
-using ImGuiFullscreen::MenuHeading;
-using ImGuiFullscreen::MenuHeadingButton;
-using ImGuiFullscreen::MenuImageButton;
-using ImGuiFullscreen::ModAlpha;
-using ImGuiFullscreen::MulAlpha;
-using ImGuiFullscreen::NavButton;
-using ImGuiFullscreen::NavTab;
-using ImGuiFullscreen::NavTitle;
-using ImGuiFullscreen::OpenChoiceDialog;
-using ImGuiFullscreen::OpenConfirmMessageDialog;
-using ImGuiFullscreen::OpenFileSelector;
-using ImGuiFullscreen::OpenFixedPopupDialog;
-using ImGuiFullscreen::OpenInfoMessageDialog;
-using ImGuiFullscreen::OpenInputStringDialog;
-using ImGuiFullscreen::PopPrimaryColor;
-using ImGuiFullscreen::PushPrimaryColor;
-using ImGuiFullscreen::QueueResetFocus;
-using ImGuiFullscreen::RangeButton;
-using ImGuiFullscreen::RenderMultiLineShadowedTextClipped;
-using ImGuiFullscreen::RenderShadowedTextClipped;
-using ImGuiFullscreen::ResetFocusHere;
-using ImGuiFullscreen::RightAlignNavButtons;
-using ImGuiFullscreen::SetFullscreenFooterText;
-using ImGuiFullscreen::SetWindowNavWrapping;
-using ImGuiFullscreen::ShowToast;
-using ImGuiFullscreen::ThreeWayToggleButton;
-using ImGuiFullscreen::ToggleButton;
-using ImGuiFullscreen::WantsToCloseMenu;
-
 #ifndef __ANDROID__
 
 namespace FullscreenUI {
@@ -256,8 +164,8 @@ static void UpdateCurrentTimeString();
 // Landing
 //////////////////////////////////////////////////////////////////////////
 static bool ShouldOpenToGameList();
-static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
-static ImGuiFullscreen::FileSelectorFilters GetImageFilters();
+static FileSelectorFilters GetDiscImageFilters();
+static FileSelectorFilters GetImageFilters();
 static void DoStartPath(std::string path, std::string state = std::string(),
                         std::optional<bool> fast_boot = std::nullopt);
 static void DoResume();
@@ -465,14 +373,6 @@ static constexpr const std::array s_ps_button_mapping{
   std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
 };
 
-static constexpr std::array s_theme_names = {
-  FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
-  FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"),
-  FSUI_NSTR("Dark Ruby"),  FSUI_NSTR("Purple Rain")};
-
-static constexpr std::array s_theme_values = {"",           "Dark",       "Light",     "AMOLED",   "CobaltSky",
-                                              "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain"};
-
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 static constexpr std::string_view ACHIEVEMENTS_LOGIN_DIALOG_NAME = "##achievements_login";
@@ -484,7 +384,7 @@ static constexpr std::string_view COVER_DOWNLOADER_DIALOG_NAME = "##cover_downlo
 
 namespace {
 
-class InputBindingDialog : public ImGuiFullscreen::PopupDialog
+class InputBindingDialog : public PopupDialog
 {
 public:
   InputBindingDialog();
@@ -508,7 +408,7 @@ private:
   InputBindingInfo::Type m_binding_type = InputBindingInfo::Type::Unknown;
 };
 
-struct ALIGN_TO_CACHE_LINE UIState
+struct ALIGN_TO_CACHE_LINE WidgetsState
 {
   // Main
   TransitionState transition_state = TransitionState::Inactive;
@@ -587,7 +487,7 @@ struct ALIGN_TO_CACHE_LINE UIState
 
 } // namespace
 
-static UIState s_state;
+static WidgetsState s_state;
 
 } // namespace FullscreenUI
 
@@ -599,7 +499,7 @@ void FullscreenUI::GetStandardSelectionFooterText(SmallStringBase& dest, bool ba
 {
   if (IsGamepadInputSource())
   {
-    ImGuiFullscreen::CreateFooterTextString(
+    CreateFooterTextString(
       dest,
       std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
                  std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
@@ -607,7 +507,7 @@ void FullscreenUI::GetStandardSelectionFooterText(SmallStringBase& dest, bool ba
   }
   else
   {
-    ImGuiFullscreen::CreateFooterTextString(
+    CreateFooterTextString(
       dest, std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
                        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
                        std::make_pair(ICON_PF_ESC, back_instead_of_cancel ? FSUI_VSTR("Back") : FSUI_VSTR("Cancel"))});
@@ -618,27 +518,26 @@ void FullscreenUI::SetStandardSelectionFooterText(bool back_instead_of_cancel)
 {
   SmallString text;
   GetStandardSelectionFooterText(text, back_instead_of_cancel);
-  ImGuiFullscreen::SetFullscreenFooterText(text, GetBackgroundAlpha());
+  SetFullscreenFooterText(text, GetBackgroundAlpha());
 }
 
-void ImGuiFullscreen::GetChoiceDialogHelpText(SmallStringBase& dest)
+void FullscreenUI::GetChoiceDialogHelpText(SmallStringBase& dest)
 {
   FullscreenUI::GetStandardSelectionFooterText(dest, false);
 }
 
-void ImGuiFullscreen::GetFileSelectorHelpText(SmallStringBase& dest)
+void FullscreenUI::GetFileSelectorHelpText(SmallStringBase& dest)
 {
   if (IsGamepadInputSource())
   {
-    ImGuiFullscreen::CreateFooterTextString(
-      dest, std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
-                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Parent Directory")),
-                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
-                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
+    CreateFooterTextString(dest, std::array{std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, FSUI_VSTR("Change Selection")),
+                                            std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Parent Directory")),
+                                            std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Select")),
+                                            std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
   }
   else
   {
-    ImGuiFullscreen::CreateFooterTextString(
+    CreateFooterTextString(
       dest,
       std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
                  std::make_pair(ICON_PF_BACKSPACE, FSUI_VSTR("Parent Directory")),
@@ -646,7 +545,7 @@ void ImGuiFullscreen::GetFileSelectorHelpText(SmallStringBase& dest)
   }
 }
 
-void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
+void FullscreenUI::GetInputDialogHelpText(SmallStringBase& dest)
 {
   if (IsGamepadInputSource())
   {
@@ -660,30 +559,6 @@ void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
                                             std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
                                             std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
-}
-
-std::vector<std::string_view> FullscreenUI::GetThemeNames()
-{
-  std::vector<std::string_view> ret;
-  ret.reserve(std::size(s_theme_names));
-  for (const char* name : s_theme_names)
-    ret.push_back(TRANSLATE_SV("FullscreenUI", name));
-  return ret;
-}
-
-std::span<const char* const> FullscreenUI::GetThemeConfigNames()
-{
-  return s_theme_values;
-}
-
-void FullscreenUI::SetTheme()
-{
-  TinyString theme =
-    Host::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
-  if (theme.empty())
-    theme = Host::GetDefaultFullscreenUITheme();
-
-  ImGuiFullscreen::SetTheme(theme);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -701,14 +576,14 @@ bool FullscreenUI::Initialize()
 
   s_state.show_localized_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowLocalizedTitles", true);
 
-  ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
-  ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
-  ImGuiFullscreen::SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false));
+  SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
+  SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
+  SetMenuBorders(Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false));
 
   if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
-    ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
+    SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
 
-  if (!ImGuiFullscreen::Initialize("images/placeholder.png") || !LoadResources())
+  if (!InitializeWidgets() || !LoadResources())
   {
     DestroyResources();
     Shutdown(true);
@@ -748,9 +623,8 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (s_state.input_binding_dialog.IsOpen() || ImGuiFullscreen::IsAnyFixedPopupDialogOpen() ||
-          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsInputDialogOpen() ||
-          ImGuiFullscreen::IsFileSelectorOpen() || ImGuiFullscreen::IsMessageBoxDialogOpen());
+  return (s_state.input_binding_dialog.IsOpen() || IsAnyFixedPopupDialogOpen() || IsChoiceDialogOpen() ||
+          IsInputDialogOpen() || IsFileSelectorOpen() || IsMessageBoxDialogOpen());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
@@ -760,8 +634,7 @@ void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 
 void FullscreenUI::UpdateRunIdleState()
 {
-  const bool new_run_idle =
-    (HasActiveWindow() || ImGuiFullscreen::HasToast() || ImGuiFullscreen::HasAnyNotifications());
+  const bool new_run_idle = (HasActiveWindow() || HasToast() || HasAnyNotifications());
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
 }
 
@@ -1205,7 +1078,7 @@ void FullscreenUI::Shutdown(bool clear_state)
   }
 
   DestroyResources();
-  ImGuiFullscreen::Shutdown(clear_state);
+  ShutdownWidgets(clear_state);
 
   s_state.initialized = false;
   s_state.tried_to_initialize = false;
@@ -1216,17 +1089,17 @@ void FullscreenUI::Render()
 {
   if (!s_state.initialized)
   {
-    ImGuiFullscreen::RenderLoadingScreen();
+    RenderLoadingScreen();
     return;
   }
 
-  ImGuiFullscreen::UploadAsyncTextures();
+  UploadAsyncTextures();
 
   // draw background before any overlays
   if (!GPUThread::HasGPUBackend() && s_state.current_main_window != MainWindowType::None)
     DrawBackground();
 
-  ImGuiFullscreen::BeginLayout();
+  BeginLayout();
 
   // Primed achievements must come first, because we don't want the pause screen to be behind them.
   if (s_state.current_main_window == MainWindowType::None)
@@ -1274,9 +1147,9 @@ void FullscreenUI::Render()
 
   s_state.input_binding_dialog.Draw();
 
-  ImGuiFullscreen::EndLayout();
+  EndLayout();
 
-  ImGuiFullscreen::RenderLoadingScreen();
+  RenderLoadingScreen();
 
   if (s_state.settings_changed.load(std::memory_order_relaxed))
   {
@@ -1320,7 +1193,7 @@ void FullscreenUI::Render()
     s_state.game_settings_changed.store(false, std::memory_order_release);
   }
 
-  ImGuiFullscreen::ResetCloseMenuIfNeeded();
+  ResetCloseMenuIfNeeded();
   UpdateTransitionState();
 }
 
@@ -1374,7 +1247,7 @@ void FullscreenUI::DestroyResources()
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
                                                   bool* is_colorable, const ImVec2& svg_size)
 {
-  GPUTexture* tex = ImGuiFullscreen::FindCachedTexture(png_name);
+  GPUTexture* tex = FindCachedTexture(png_name);
   if (tex)
   {
     if (is_colorable)
@@ -1385,7 +1258,7 @@ GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_nam
 
   const u32 svg_width = static_cast<u32>(svg_size.x);
   const u32 svg_height = static_cast<u32>(svg_size.y);
-  tex = ImGuiFullscreen::FindCachedTexture(svg_name, svg_width, svg_height);
+  tex = FindCachedTexture(svg_name, svg_width, svg_height);
   if (tex)
   {
     if (is_colorable)
@@ -1402,14 +1275,14 @@ GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_nam
     if (is_colorable)
       *is_colorable = false;
 
-    return ImGuiFullscreen::GetCachedTexture(png_name);
+    return GetCachedTexture(png_name);
   }
 
   // otherwise use the system/user svg
   if (is_colorable)
     *is_colorable = true;
 
-  return ImGuiFullscreen::GetCachedTexture(svg_name, svg_width, svg_height);
+  return GetCachedTexture(svg_name, svg_width, svg_height);
 }
 
 bool FullscreenUI::UserThemeableHorizontalButton(const std::string_view png_name, const std::string_view svg_name,
@@ -1438,13 +1311,13 @@ void FullscreenUI::UpdateCurrentTimeString()
 // Utility
 //////////////////////////////////////////////////////////////////////////
 
-ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
+FullscreenUI::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
   return {"*.bin",   "*.cue",    "*.iso", "*.img", "*.chd", "*.ecm",     "*.mds", "*.cpe", "*.elf",
           "*.psexe", "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
 }
 
-ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetImageFilters()
+FullscreenUI::FileSelectorFilters FullscreenUI::GetImageFilters()
 {
   return {"*.png", "*.jpg", "*.jpeg", "*.webp"};
 }
@@ -1534,7 +1407,7 @@ void FullscreenUI::DoStartDisc()
     return;
   }
 
-  ImGuiFullscreen::ChoiceDialogOptions options;
+  ChoiceDialogOptions options;
   std::vector<std::string> paths;
   options.reserve(devices.size());
   paths.reserve(paths.size());
@@ -1646,7 +1519,7 @@ void FullscreenUI::StartChangeDiscFromFile()
 
 void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
 {
-  ImGuiFullscreen::ChoiceDialogOptions options;
+  ChoiceDialogOptions options;
 
   auto pause_if_needed = [needs_pause]() {
     if (!needs_pause)
@@ -1858,9 +1731,9 @@ void FullscreenUI::DoSetCoverImage(std::string source_path, std::string existing
 
   // Ensure the old one wasn't cached.
   if (!existing_path.empty())
-    ImGuiFullscreen::InvalidateCachedTexture(existing_path);
+    InvalidateCachedTexture(existing_path);
   if (existing_path != new_path)
-    ImGuiFullscreen::InvalidateCachedTexture(new_path);
+    InvalidateCachedTexture(new_path);
   s_state.cover_image_map.clear();
 }
 
@@ -1925,7 +1798,7 @@ void FullscreenUI::LoadBackground()
   ERROR_LOG("No loader or file found for background '{}'", background_name);
 }
 
-ChoiceDialogOptions FullscreenUI::GetBackgroundOptions(const TinyString& current_value)
+FullscreenUI::ChoiceDialogOptions FullscreenUI::GetBackgroundOptions(const TinyString& current_value)
 {
   static constexpr const char* dir = FS_OSPATH_SEPARATOR_STR "fullscreenui" FS_OSPATH_SEPARATOR_STR "backgrounds";
 
@@ -2063,9 +1936,8 @@ void FullscreenUI::DrawBackground()
   {
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
     const ImVec2 size = ImGui::GetIO().DisplaySize;
-    const ImRect uv_rect =
-      ImGuiFullscreen::FitImage(size, ImVec2(static_cast<float>(s_state.app_background_texture->GetWidth()),
-                                             static_cast<float>(s_state.app_background_texture->GetHeight())));
+    const ImRect uv_rect = FitImage(size, ImVec2(static_cast<float>(s_state.app_background_texture->GetWidth()),
+                                                 static_cast<float>(s_state.app_background_texture->GetHeight())));
     dl->AddImage(s_state.app_background_texture.get(), ImVec2(0.0f, 0.0f), size, uv_rect.Min, uv_rect.Max);
   }
 }
@@ -2113,8 +1985,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
       const ImVec2 text_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
                                                            IMSTR_START_END(heading_text));
       const ImVec2 text_pos = ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y);
-      ImGuiFullscreen::RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, text_pos,
-                                                 text_pos + text_size, text_color, heading_text, &text_size);
+      RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, text_pos, text_pos + text_size,
+                                text_color, heading_text, &text_size);
     }
 
     // draw time
@@ -2126,9 +1998,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
                                                            IMSTR_START_END(s_state.current_time_string));
       time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
                         LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
-      ImGuiFullscreen::RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, time_pos,
-                                                 time_pos + time_size, text_color, s_state.current_time_string,
-                                                 &time_size);
+      RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, time_pos, time_pos + time_size,
+                                text_color, s_state.current_time_string, &time_size);
     }
 
     // draw achievements info
@@ -2142,8 +2013,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
           heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f, username);
         const ImVec2 name_pos =
           ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
-        ImGuiFullscreen::RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, name_pos,
-                                                   name_pos + name_size, text_color, username, &name_size);
+        RenderShadowedTextClipped(heading_font, heading_font_size, heading_font_weight, name_pos, name_pos + name_size,
+                                  text_color, username, &name_size);
 
         if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
           s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
@@ -2457,7 +2328,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   SmallString value = bsi->GetSmallStringValue(section, name);
   const bool oneline = value.count('&') <= 1;
   if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
-    InputManager::PrettifyInputBinding(value, &ImGuiFullscreen::GetControllerIconMapping);
+    InputManager::PrettifyInputBinding(value, &GetControllerIconMapping);
 
   if (show_type)
   {
@@ -2776,7 +2647,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
 
   if (MenuButtonWithValue(title, summary, value_text, enabled))
   {
-    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -2843,7 +2714,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
 
   if (MenuButtonWithValue(title, summary, value_text, enabled))
   {
-    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -2899,7 +2770,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   }
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
-  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
   ImGui::PopFont();
@@ -2968,7 +2839,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   }
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
-  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
   ImGui::PopFont();
@@ -3046,7 +2917,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   }
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
-  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
   ImGui::PopFont();
@@ -3290,7 +3161,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   }
 
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight);
-  ImGuiFullscreen::TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
+  TextAlignedMultiLine(0.0f, IMSTR_START_END(summary));
   ImGui::PushFont(UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.BoldFontWeight);
   ImGui::Text("%s: ", FSUI_CSTR("Value Range"));
   ImGui::PopFont();
@@ -3413,7 +3284,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
                                               FSUI_VSTR("Use Global Setting"),
                           enabled))
   {
-    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    ChoiceDialogOptions cd_options;
     cd_options.reserve(options.size() + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -3472,7 +3343,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                                                     FSUI_CSTR("Use Global Setting"),
                           enabled))
   {
-    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    ChoiceDialogOptions cd_options;
     cd_options.reserve(static_cast<u32>(option_count) + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -3541,7 +3412,7 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
           FSUI_VSTR("Use Global Setting"),
         enabled))
   {
-    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    ChoiceDialogOptions cd_options;
     cd_options.reserve(option_count + 1);
     if (game_settings)
       cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
@@ -3609,7 +3480,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
   }
 
   std::vector<std::string> names;
-  ImGuiFullscreen::ChoiceDialogOptions options;
+  ChoiceDialogOptions options;
   options.reserve(devices.size());
   names.reserve(devices.size());
   for (auto& [key, name, display_name] : devices)
@@ -3637,7 +3508,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
 
 void FullscreenUI::StartClearBindingsForPort(u32 port)
 {
-  ImGuiFullscreen::OpenConfirmMessageDialog(
+  OpenConfirmMessageDialog(
     FSUI_STR("Clear Mappings"),
     FSUI_STR("Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action."),
     [port](bool result) {
@@ -4145,7 +4016,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                             FSUI_VSTR("Chooses the language used for UI elements."),
                             Host::GetLanguageName(current_language)))
     {
-      ImGuiFullscreen::ChoiceDialogOptions options;
+      ChoiceDialogOptions options;
       for (const auto& [language, code] : language_list)
         options.emplace_back(Host::GetLanguageName(code), (current_language == code));
       OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
@@ -4161,8 +4032,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINTBRUSH, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                        "", s_theme_names, s_theme_values, true,
-                        [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::SetTheme); });
+                        "", FullscreenUI::GetThemeDisplayNames(), FullscreenUI::GetThemeNames(), true,
+                        [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::UpdateTheme); });
 
   if (const TinyString current_value =
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
@@ -4200,30 +4071,30 @@ void FullscreenUI::DrawInterfaceSettingsPage()
         "Main", "FullscreenUIDisplayPSIcons", false))
   {
     if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
-      ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
+      SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
     else
-      ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
+      SetFullscreenFooterTextIconMapping({});
   }
 
   if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WINDOW_RESTORE, "Window Animations"),
                         FSUI_VSTR("Animates windows opening/closing and changes between views in the Big Picture UI."),
                         "Main", "FullscreenUIAnimations", true))
   {
-    ImGuiFullscreen::SetAnimations(bsi->GetBoolValue("Main", "FullscreenUIAnimations", true));
+    SetAnimations(bsi->GetBoolValue("Main", "FullscreenUIAnimations", true));
   }
 
   if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST, "Smooth Scrolling"),
                         FSUI_VSTR("Enables smooth scrolling of menus in the Big Picture UI."), "Main",
                         "FullscreenUISmoothScrolling", true))
   {
-    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", true));
+    SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", true));
   }
 
   if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
                         FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
                         "FullscreenUIMenuBorders", false))
   {
-    ImGuiFullscreen::SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", false));
+    SetMenuBorders(bsi->GetBoolValue("Main", "FullscreenUIMenuBorders", false));
   }
 
   MenuHeading(FSUI_VSTR("Behavior"));
@@ -4365,7 +4236,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
                             filename.has_value() ? (filename->empty() ? FSUI_VSTR("Auto-Detect") : filename->view()) :
                                                    FSUI_VSTR("Use Global Setting")))
     {
-      ImGuiFullscreen::ChoiceDialogOptions options;
+      ChoiceDialogOptions options;
       auto images = BIOS::FindBIOSImagesInDirectory(EmuFolders::Bios.c_str());
       options.reserve(images.size() + 2);
       if (IsEditingGameSettings(bsi))
@@ -4721,7 +4592,7 @@ void FullscreenUI::DoLoadInputProfile()
     return;
   }
 
-  ImGuiFullscreen::ChoiceDialogOptions coptions;
+  ChoiceDialogOptions coptions;
   coptions.reserve(profiles.size());
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
@@ -4777,7 +4648,7 @@ void FullscreenUI::DoSaveInputProfile()
     return;
   }
 
-  ImGuiFullscreen::ChoiceDialogOptions coptions;
+  ChoiceDialogOptions coptions;
   coptions.reserve(profiles.size() + 1);
   coptions.emplace_back(FSUI_STR("Create New..."), false);
   for (std::string& name : profiles)
@@ -4931,7 +4802,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           FSUI_VSTR("Selects the type of emulated controller for this port."), value))
     {
       const auto& infos = Controller::GetControllerInfoList();
-      ImGuiFullscreen::ChoiceDialogOptions options;
+      ChoiceDialogOptions options;
       options.reserve(infos.size());
       for (const Controller::ControllerInfo* it : infos)
       {
@@ -5027,7 +4898,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                               pretty_binds_string.empty() ? FSUI_VSTR("-") : pretty_binds_string.view()))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
-        ImGuiFullscreen::ChoiceDialogOptions options;
+        ChoiceDialogOptions options;
         for (const Controller::ControllerBindingInfo& bi : ci->bindings)
         {
           if (bi.type != InputBindingInfo::Type::Button && bi.type != InputBindingInfo::Type::Axis &&
@@ -5284,7 +5155,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
                             FSUI_VSTR("The selected memory card image will be used in shared mode for this slot."),
                             path_value.has_value() ? path_value->view() : FSUI_VSTR("Use Global Setting"), is_shared))
     {
-      ImGuiFullscreen::ChoiceDialogOptions options;
+      ChoiceDialogOptions options;
       std::vector<std::string> names;
       if (IsEditingGameSettings(bsi))
         options.emplace_back("Use Global Setting", !path_value.has_value());
@@ -5381,7 +5252,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         current_adapter.has_value() ? (current_adapter->empty() ? FSUI_VSTR("Default") : current_adapter->view()) :
                                       FSUI_VSTR("Use Global Setting")))
   {
-    ImGuiFullscreen::ChoiceDialogOptions options;
+    ChoiceDialogOptions options;
     options.reserve(s_state.graphics_adapter_list_cache.size() + 2);
     if (game_settings)
       options.emplace_back(FSUI_STR("Use Global Setting"), !current_adapter.has_value());
@@ -5475,7 +5346,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                                 .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))))
   {
     static constexpr const DisplayAspectRatio INHERIT_ASPECT_RATIO = {0, -1};
-    ImGuiFullscreen::ChoiceDialogOptions options;
+    ChoiceDialogOptions options;
     const DisplayAspectRatio current_ar =
       (bsi && !bsi->ContainsValue(ASPECT_RATIO_SECTION, ASPECT_RATIO_KEY)) ?
         INHERIT_ASPECT_RATIO :
@@ -5591,7 +5462,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         selected_adapter = &s_state.graphics_adapter_list_cache.front();
     }
 
-    ImGuiFullscreen::ChoiceDialogOptions options;
+    ChoiceDialogOptions options;
     options.reserve((selected_adapter ? selected_adapter->fullscreen_modes.size() : 0) + 2);
     if (game_settings)
       options.emplace_back(FSUI_STR("Use Global Setting"), !strvalue.has_value());
@@ -5886,7 +5757,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   if (MenuButton(FSUI_ICONVSTR(ICON_PF_ADD, "Add Shader"), FSUI_VSTR("Adds a new shader to the chain.")))
   {
     std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
-    ImGuiFullscreen::ChoiceDialogOptions options;
+    ChoiceDialogOptions options;
     options.reserve(shaders.size());
     for (auto& [display_name, name] : shaders)
       options.emplace_back(std::move(display_name), false);
@@ -6396,8 +6267,7 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
 
   if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
   {
-    const ImRect badge_rect =
-      ImGuiFullscreen::CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
+    const ImRect badge_rect = CenterImage(ImRect(pos, pos + ImVec2(badge_size, badge_size)), badge_tex);
     dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_rect.Min, badge_rect.Max);
   }
 
@@ -6409,10 +6279,9 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
 
   pos.y += UIStyle.LargeFontSize + line_spacing;
 
-  ImGuiFullscreen::RenderAutoLabelText(dl, UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight,
-                                       UIStyle.BoldFontWeight, pos,
-                                       pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
-                                       ImGui::GetColorU32(ImGuiCol_Text), score_summary, ':');
+  RenderAutoLabelText(dl, UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight, UIStyle.BoldFontWeight,
+                      pos, pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
+                      ImGui::GetColorU32(ImGuiCol_Text), score_summary, ':');
 
   if (!IsEditingGameSettings(bsi))
   {
@@ -6540,8 +6409,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       Host::RunOnCPUThread([]() {
         Error error;
         if (!Achievements::RefreshAllProgressDatabase(&error))
-          ImGuiFullscreen::ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(),
-                                     Host::OSD_ERROR_DURATION);
+          ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(), Host::OSD_ERROR_DURATION);
       });
     }
 
@@ -6615,7 +6483,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   ImGui::ItemSize(ImVec2(0.0f, LayoutScale(LAYOUT_MENU_BUTTON_SPACING * 2.0f)));
 
-  const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
+  const bool is_logging_in = IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
   BeginMenuButtons();
   ResetFocusHere();
 
@@ -6645,14 +6513,13 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_KEY, "Login"), login_enabled, LAYOUT_CENTER_ALIGN_TEXT))
   {
-    ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
-                                                  0, 0, 0);
+    OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."), 0, 0, 0);
 
     Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
       Error error;
       const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
       GPUThread::RunOnThread([result, error = std::move(error)]() {
-        ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
+        CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
 
         if (result)
         {
@@ -6811,7 +6678,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
       if (MenuButtonWithValue(title.c_str(), ci.description.c_str(), visible_value))
       {
-        ImGuiFullscreen::ChoiceDialogOptions options;
+        ChoiceDialogOptions options;
         options.reserve(ci.options.size() + 1);
         options.emplace_back(FSUI_STR("Disabled"), !has_option);
 
@@ -7573,7 +7440,7 @@ void FullscreenUI::DrawSaveStateSelector()
           const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
           ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-          ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
+          DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
           ImGui::PopStyleColor();
         }
@@ -7629,48 +7496,47 @@ void FullscreenUI::DrawSaveStateSelector()
             options.emplace_back(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false);
           options.emplace_back(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
-          OpenChoiceDialog(
-            std::move(title), false, std::move(options),
-            [i](s32 index, const std::string& title, bool checked) mutable {
-              if (index < 0 || i >= s_state.save_state_selector_slots.size())
-                return;
+          OpenChoiceDialog(std::move(title), false, std::move(options),
+                           [i](s32 index, const std::string& title, bool checked) mutable {
+                             if (index < 0 || i >= s_state.save_state_selector_slots.size())
+                               return;
 
-              SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
-              if (index == 0)
-              {
-                // load state
-                if (s_state.save_state_selector_loading)
-                  do_load_state(std::move(entry.game_path), std::move(entry.state_path));
-                else
-                  do_save_state(entry.slot, entry.global);
-              }
-              else if (!entry.state_path.empty() && index == 1)
-              {
-                // delete state
-                if (!FileSystem::FileExists(entry.state_path.c_str()))
-                {
-                  ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
-                }
-                else if (FileSystem::DeleteFile(entry.state_path.c_str()))
-                {
-                  ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
+                             SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
+                             if (index == 0)
+                             {
+                               // load state
+                               if (s_state.save_state_selector_loading)
+                                 do_load_state(std::move(entry.game_path), std::move(entry.state_path));
+                               else
+                                 do_save_state(entry.slot, entry.global);
+                             }
+                             else if (!entry.state_path.empty() && index == 1)
+                             {
+                               // delete state
+                               if (!FileSystem::FileExists(entry.state_path.c_str()))
+                               {
+                                 ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), RemoveHash(entry.title)));
+                               }
+                               else if (FileSystem::DeleteFile(entry.state_path.c_str()))
+                               {
+                                 ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), RemoveHash(entry.title)));
 
-                  // need to preserve the texture, since it's going to be drawn this frame
-                  // TODO: do this with a transition for safety
-                  g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+                                 // need to preserve the texture, since it's going to be drawn this frame
+                                 // TODO: do this with a transition for safety
+                                 g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
 
-                  if (s_state.save_state_selector_loading)
-                    s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() + i);
-                  else
-                    InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
-                }
-                else
-                {
-                  ShowToast({},
-                            fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
-                }
-              }
-            });
+                                 if (s_state.save_state_selector_loading)
+                                   s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() +
+                                                                           i);
+                                 else
+                                   InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
+                               }
+                               else
+                               {
+                                 ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), RemoveHash(entry.title)));
+                               }
+                             }
+                           });
         }
       }
 
@@ -7760,7 +7626,7 @@ void FullscreenUI::DrawResumeStateSelector()
   sick.format(FSUI_FSTR("Do you want to continue from the automatic save created at {}?"),
               Host::FormatNumber(Host::NumberFormatType::LongDateTime, static_cast<s64>(entry.timestamp)));
   ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
-  ImGuiFullscreen::TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
+  TextAlignedMultiLine(0.5f, IMSTR_START_END(sick));
   ImGui::PopFont();
 
   const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
@@ -8100,8 +7966,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
           summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
       }
 
-      const ImGuiFullscreen::MenuButtonBounds mbb(entry->GetDisplayTitle(s_state.show_localized_titles), {}, summary,
-                                                  row_left_margin);
+      const MenuButtonBounds mbb(entry->GetDisplayTitle(s_state.show_localized_titles), {}, summary, row_left_margin);
 
       bool visible, hovered;
       bool pressed = MenuButtonFrame(GetKeyForGameListEntry(entry), true, mbb.frame_bb, &visible, &hovered);
@@ -8258,7 +8123,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       {
         const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGuiFullscreen::TextUnformatted(
+        TextUnformatted(
           FSUI_ICONVSTR(ICON_EMOJI_GLOBE, display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: ")));
         ImGui::PopFont();
         ImGui::SameLine();
@@ -8283,7 +8148,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         if (!selected_entry->dbentry->genre.empty())
         {
           ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-          ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_BOOKS, FSUI_VSTR("Genre: ")));
+          TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_BOOKS, FSUI_VSTR("Genre: ")));
           ImGui::PopFont();
           ImGui::SameLine();
           ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8295,7 +8160,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         if (selected_entry->dbentry->release_date != 0)
         {
           ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-          ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_CALENDAR, FSUI_VSTR("Release Date: ")));
+          TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_CALENDAR, FSUI_VSTR("Release Date: ")));
           ImGui::PopFont();
           ImGui::SameLine();
           ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8308,7 +8173,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->num_achievements > 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGuiFullscreen::TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_TROPHY, "Achievements: "));
+        TextUnformatted(FSUI_ICONVSTR(ICON_EMOJI_TROPHY, "Achievements: "));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8326,7 +8191,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // compatibility
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_STAR, FSUI_VSTR("Compatibility: ")));
+      TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_STAR, FSUI_VSTR("Compatibility: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16), LayoutScale(88.0f, 16.0f));
@@ -8339,14 +8204,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // play time
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_HOURGLASS, FSUI_VSTR("Time Played: ")));
+      TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_HOURGLASS, FSUI_VSTR("Time Played: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
       ImGui::TextUnformatted(GameList::FormatTimespan(selected_entry->total_played_time).c_str());
       ImGui::PopStyleColor();
       ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-      ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_CLOCK_FIVE_OCLOCK, FSUI_CSTR("Last Played: ")));
+      TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_CLOCK_FIVE_OCLOCK, FSUI_CSTR("Last Played: ")));
       ImGui::PopFont();
       ImGui::SameLine();
       ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8357,7 +8222,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->file_size >= 0)
       {
         ImGui::PushFont(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight);
-        ImGuiFullscreen::TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_FILE_FOLDER_OPEN, FSUI_VSTR("Size: ")));
+        TextUnformatted(FSUI_ICONSTR(ICON_EMOJI_FILE_FOLDER_OPEN, FSUI_VSTR("Size: ")));
         ImGui::PopFont();
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
@@ -8496,7 +8361,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
         ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-        ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
+        DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
         ImGui::PopStyleColor();
       }
@@ -8574,7 +8439,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
   if (!entry->IsDiscSet())
   {
-    ImGuiFullscreen::ChoiceDialogOptions options = {
+    ChoiceDialogOptions options = {
       {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
       {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open Containing Directory"), false},
       {FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"), false},
@@ -8628,7 +8493,7 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
   }
   else
   {
-    ImGuiFullscreen::ChoiceDialogOptions options = {
+    ChoiceDialogOptions options = {
       {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
       {FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"), false},
       {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc"), false},
@@ -8669,7 +8534,7 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
   if (entries.empty())
     return;
 
-  ImGuiFullscreen::ChoiceDialogOptions options;
+  ChoiceDialogOptions options;
   std::vector<std::string> paths;
   paths.reserve(entries.size());
 
@@ -8780,7 +8645,7 @@ void FullscreenUI::DrawGameListSettingsPage()
     if (MenuButton(SmallString::from_format(ICON_FA_FOLDER " {}", it.first),
                    it.second ? FSUI_VSTR("Scanning Subdirectories") : FSUI_VSTR("Not Scanning Subdirectories")))
     {
-      ImGuiFullscreen::ChoiceDialogOptions options = {
+      ChoiceDialogOptions options = {
         {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open in File Browser"), false},
         {it.second ? (FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Disable Subdirectory Scanning")) :
                      (FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Enable Subdirectory Scanning")),
@@ -8909,8 +8774,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), download_enabled))
   {
     // TODO: Remove release once using move_only_function
-    std::unique_ptr<ProgressCallback> progress =
-      ImGuiFullscreen::OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
+    std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
     System::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
                             use_serial_names = use_serial_names]() {
       GameList::DownloadCovers(
@@ -8962,7 +8826,7 @@ void FullscreenUI::SwitchToGameList()
   for (const auto& it : s_state.icon_image_map)
   {
     if (!it.second.empty())
-      ImGuiFullscreen::InvalidateCachedTexture(it.second);
+      InvalidateCachedTexture(it.second);
   }
   s_state.icon_image_map.clear();
 
@@ -9247,12 +9111,12 @@ void FullscreenUI::SwitchToLeaderboards()
 FullscreenUI::BackgroundProgressCallback::BackgroundProgressCallback(std::string name)
   : ProgressCallback(), m_name(std::move(name))
 {
-  ImGuiFullscreen::OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
+  OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
 }
 
 FullscreenUI::BackgroundProgressCallback::~BackgroundProgressCallback()
 {
-  ImGuiFullscreen::CloseBackgroundProgressDialog(m_name.c_str());
+  CloseBackgroundProgressDialog(m_name.c_str());
 }
 
 void FullscreenUI::BackgroundProgressCallback::SetStatusText(const std::string_view text)
@@ -9289,7 +9153,7 @@ void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
     return;
 
   m_last_progress_percent = percent;
-  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
+  UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
 }
 
 void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
@@ -9314,167 +9178,6 @@ void FullscreenUI::BackgroundProgressCallback::SetCancelled()
 }
 
 #endif // __ANDROID__
-
-LoadingScreenProgressCallback::LoadingScreenProgressCallback()
-  : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
-{
-  m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? GPUThread::GetGamePath() : System::GetGamePath());
-}
-
-LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
-{
-  Close();
-}
-
-void LoadingScreenProgressCallback::Close()
-{
-  // Did we activate?
-  if (m_last_progress_percent < 0)
-    return;
-
-  if (!m_on_gpu_thread)
-  {
-    GPUThread::RunOnThread([]() {
-      ImGuiFullscreen::CloseLoadingScreen();
-      Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-      GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, false);
-    });
-  }
-  else
-  {
-    // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
-    GPUThread::Internal::PresentFrameAndRestoreContext();
-  }
-
-  m_last_progress_percent = -1;
-}
-
-void LoadingScreenProgressCallback::PushState()
-{
-  ProgressCallback::PushState();
-}
-
-void LoadingScreenProgressCallback::PopState()
-{
-  ProgressCallback::PopState();
-  Redraw(true);
-}
-
-void LoadingScreenProgressCallback::SetCancellable(bool cancellable)
-{
-  ProgressCallback::SetCancellable(cancellable);
-  Redraw(true);
-}
-
-void LoadingScreenProgressCallback::SetTitle(const std::string_view title)
-{
-  ProgressCallback::SetTitle(title);
-  m_title = title;
-  Redraw(true);
-}
-
-void LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
-{
-  ProgressCallback::SetStatusText(text);
-  Redraw(true);
-}
-
-void LoadingScreenProgressCallback::SetProgressRange(u32 range)
-{
-  u32 last_range = m_progress_range;
-
-  ProgressCallback::SetProgressRange(range);
-
-  if (m_progress_range != last_range)
-    Redraw(false);
-}
-
-void LoadingScreenProgressCallback::SetProgressValue(u32 value)
-{
-  u32 lastValue = m_progress_value;
-
-  ProgressCallback::SetProgressValue(value);
-
-  if (m_progress_value != lastValue)
-    Redraw(false);
-}
-
-void LoadingScreenProgressCallback::Redraw(bool force)
-{
-  if (m_last_progress_percent < 0 &&
-      Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - m_open_time) < m_open_delay)
-  {
-    return;
-  }
-
-  const int percent =
-    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
-  DebugAssert(percent >= 0);
-  if (percent == m_last_progress_percent && !force)
-    return;
-
-  // activation?
-  if (m_last_progress_percent < 0 && !m_on_gpu_thread)
-  {
-    GPUThread::RunOnThread([]() {
-      Assert(!GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-      GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, true);
-    });
-  }
-
-  m_last_progress_percent = percent;
-  if (m_on_gpu_thread)
-  {
-    ImGuiFullscreen::RenderLoadingScreen(m_image, m_title, m_status_text, 0, static_cast<s32>(m_progress_range),
-                                         static_cast<s32>(m_progress_value));
-  }
-  else
-  {
-    GPUThread::RunOnThread([image = std::move(m_image), title = SmallString(std::string_view(m_title)),
-                            status_text = SmallString(std::string_view(m_status_text)),
-                            range = static_cast<s32>(m_progress_range), value = static_cast<s32>(m_progress_value)]() {
-      ImGuiFullscreen::OpenOrUpdateLoadingScreen(ImGuiManager::LOGO_IMAGE_NAME, title, status_text, 0, range, value);
-    });
-    m_image = {};
-  }
-}
-
-void LoadingScreenProgressCallback::ModalError(const std::string_view message)
-{
-  ERROR_LOG(message);
-  Host::ReportErrorAsync("Error", message);
-}
-
-bool LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  INFO_LOG(message);
-  return Host::ConfirmMessage("Confirm", message);
-}
-
-void FullscreenUI::OpenLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
-                                     s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
-{
-  Assert(GPUThread::IsOnThread());
-  Assert(!GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, true);
-  ImGuiFullscreen::OpenOrUpdateLoadingScreen(image, message, progress_min, progress_max, progress_value);
-}
-
-void FullscreenUI::UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
-                                       s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
-{
-  Assert(GPUThread::IsOnThread());
-  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-  ImGuiFullscreen::OpenOrUpdateLoadingScreen(image, message, progress_min, progress_max, progress_value);
-}
-
-void FullscreenUI::CloseLoadingScreen()
-{
-  Assert(GPUThread::IsOnThread());
-  Assert(GPUThread::GetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive));
-  ImGuiFullscreen::CloseLoadingScreen();
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::LoadingScreenActive, false);
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area

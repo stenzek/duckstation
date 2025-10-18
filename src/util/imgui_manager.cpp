@@ -222,8 +222,8 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   io.DisplaySize = ImVec2(s_state.window_width, s_state.window_height);
 
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
-  FullscreenUI::SetTheme();
-  ImGuiFullscreen::UpdateLayoutScale();
+  FullscreenUI::UpdateTheme();
+  FullscreenUI::UpdateLayoutScale();
 
   if (!CreateFontAtlas(error) || !CompilePipelines(error))
     return false;
@@ -240,7 +240,7 @@ void ImGuiManager::Shutdown()
 
   s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;
-  ImGuiFullscreen::SetFont(nullptr);
+  FullscreenUI::SetFont(nullptr);
 
   s_state.imgui_pipeline.reset();
 
@@ -320,7 +320,7 @@ void ImGuiManager::UpdateScale()
   const float scale = std::max(window_scale * s_state.global_prescale, 1.0f);
   const bool scale_changed = (scale != s_state.global_scale);
 
-  if (!ImGuiFullscreen::UpdateLayoutScale() && !scale_changed)
+  if (!FullscreenUI::UpdateLayoutScale() && !scale_changed)
     return;
 
   if (scale_changed)
@@ -801,7 +801,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
     return false;
   }
 
-  ImGuiFullscreen::SetFont(s_state.text_font);
+  FullscreenUI::SetFont(s_state.text_font);
 
   DEV_LOG("Creating font atlas took {} ms", load_timer.GetTimeMilliseconds());
   return true;
@@ -935,9 +935,9 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
-  using ImGuiFullscreen::ModAlpha;
-  using ImGuiFullscreen::RenderShadowedTextClipped;
-  using ImGuiFullscreen::UIStyle;
+  using FullscreenUI::ModAlpha;
+  using FullscreenUI::RenderShadowedTextClipped;
+  using FullscreenUI::UIStyle;
 
   static constexpr float MOVE_DURATION = 0.5f;
 

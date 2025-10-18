@@ -211,7 +211,7 @@ public:
     const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
-      ImGuiFullscreen::RenderLoadingScreen(
+      FullscreenUI::RenderLoadingScreen(
         m_image, TRANSLATE_SV("GPU_HW", "Compiling Shaders..."),
         SmallString::from_format(TRANSLATE_FS("GPU_HW", "{} of {} pipelines"), m_progress, m_total), 0,
         static_cast<int>(m_total), static_cast<int>(m_progress));

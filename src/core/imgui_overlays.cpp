@@ -234,7 +234,7 @@ void ImGuiManager::DestroyAllDebugWindows()
 void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
 {
   // Don't draw anything with loading screen open, it'll be nonsensical.
-  if (ImGuiFullscreen::IsLoadingScreenOpen())
+  if (FullscreenUI::IsLoadingScreenOpen())
     return;
 
   const bool paused = GPUThread::IsSystemPaused();
@@ -987,7 +987,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
     return;
 
   if (!s_state.placeholder_texture)
-    s_state.placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
+    s_state.placeholder_texture = FullscreenUI::LoadTexture("no-save.png");
 
   s_state.is_open = true;
   RefreshList();
@@ -1093,7 +1093,7 @@ void SaveStateSelectorUI::DestroyTextures()
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
   auto format_legend_entry = [](SmallString binding, std::string_view caption) {
-    InputManager::PrettifyInputBinding(binding, &ImGuiFullscreen::GetControllerIconMapping);
+    InputManager::PrettifyInputBinding(binding, &FullscreenUI::GetControllerIconMapping);
     return fmt::format("{} {}", binding, caption);
   };
 
@@ -1193,9 +1193,9 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const st
 
 void SaveStateSelectorUI::Draw()
 {
-  using ImGuiFullscreen::DarkerColor;
-  using ImGuiFullscreen::LayoutScale;
-  using ImGuiFullscreen::UIStyle;
+  using FullscreenUI::DarkerColor;
+  using FullscreenUI::LayoutScale;
+  using FullscreenUI::UIStyle;
 
   static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
   static constexpr float BG_ANIMATION_TIME = 0.15f;
@@ -1311,14 +1311,14 @@ void SaveStateSelectorUI::Draw()
         ImGui::PopFont();
 
         ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.NormalFontWeight);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
 
         if (entry.global)
           ImGui::TextUnformatted(IMSTR_START_END(entry.game_details));
 
         ImGui::TextUnformatted(IMSTR_START_END(entry.summary));
 
-        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
         ImGui::TextUnformatted(IMSTR_START_END(entry.filename));
         ImGui::PopFont();
         ImGui::PopStyleColor(2);
