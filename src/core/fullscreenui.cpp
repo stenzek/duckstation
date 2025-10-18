@@ -90,7 +90,6 @@ static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const Im
 //////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
-static void LoadResources();
 static void DestroyResources();
 static GPUTexture* GetUserThemeableTexture(
   const std::string_view png_name, const std::string_view svg_name, bool* is_colorable = nullptr,
@@ -167,12 +166,10 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
   PauseSubMenu current_pause_submenu = PauseSubMenu::None;
   MainWindowType previous_main_window = MainWindowType::None;
   bool initialized = false;
+  bool background_loaded = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
 
-  // Resources
-  std::shared_ptr<GPUTexture> app_icon_texture;
-  
   // Background
   std::unique_ptr<GPUTexture> app_background_texture;
   std::unique_ptr<GPUPipeline> app_background_shader;
@@ -204,9 +201,6 @@ void FullscreenUI::Initialize()
     return;
 
   s_state.initialized = true;
-
-  LoadResources();
-  LoadBackground();
 
   // in case we open the pause menu while the game is running
   if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
@@ -572,26 +566,10 @@ void FullscreenUI::Render()
   UpdateTransitionState();
 }
 
-void FullscreenUI::InvalidateCoverCache()
-{
-  if (!GPUThread::IsFullscreenUIRequested())
-    return;
-
-  GPUThread::RunOnThread(&FullscreenUI::ClearCoverCache);
-}
-
-void FullscreenUI::LoadResources()
-{
-  s_state.app_icon_texture = LoadTexture("images/duck.png");
-
-  InitializeHotkeyList();
-}
-
 void FullscreenUI::DestroyResources()
 {
   s_state.app_background_texture.reset();
   s_state.app_background_shader.reset();
-  s_state.app_icon_texture.reset();
 }
 
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
@@ -660,7 +638,6 @@ void FullscreenUI::UpdateCurrentTimeString()
 //////////////////////////////////////////////////////////////////////////
 // Utility
 //////////////////////////////////////////////////////////////////////////
-
 
 void FullscreenUI::DoStartPath(std::string path, std::string state, std::optional<bool> fast_boot)
 {
@@ -1018,13 +995,14 @@ bool FullscreenUI::HasBackground()
   return static_cast<bool>(s_state.app_background_texture || s_state.app_background_shader);
 }
 
-void FullscreenUI::LoadBackground()
+void FullscreenUI::UpdateBackground()
 {
   if (!IsInitialized())
     return;
 
   g_gpu_device->RecycleTexture(std::move(s_state.app_background_texture));
   s_state.app_background_shader.reset();
+  s_state.background_loaded = true;
 
   const TinyString background_name =
     Host::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
@@ -1199,6 +1177,9 @@ bool FullscreenUI::LoadBackgroundImage(const std::string& path, Error* error)
 
 void FullscreenUI::DrawBackground()
 {
+  if (!s_state.background_loaded)
+    UpdateBackground();
+
   if (s_state.app_background_shader)
   {
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
@@ -1251,7 +1232,9 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     {
       const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
       const ImVec2 logo_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
-      dl->AddImage(s_state.app_icon_texture.get(), logo_pos, logo_pos + logo_size);
+      GPUTexture* const logo_texture =
+        GetUserThemeableTexture("images/duck.png", "images/duck.svg", nullptr, logo_size);
+      dl->AddImage(logo_texture, logo_pos, logo_pos + logo_size);
 
       const std::string_view heading_text = "DuckStation";
       const ImVec2 text_size = heading_font->CalcTextSizeA(heading_font_size, heading_font_weight, FLT_MAX, 0.0f,
@@ -2270,7 +2253,6 @@ void FullscreenUI::DrawResumeStateSelector()
   EndFixedPopupDialog();
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // Overlays
 //////////////////////////////////////////////////////////////////////////
@@ -2303,7 +2285,8 @@ void FullscreenUI::DrawAboutWindow()
 
   const ImVec2 image_size = LayoutScale(64.0f, 64.0f);
   const float indent = image_size.x + LayoutScale(8.0f);
-  ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(),
+  GPUTexture* const logo_texture = GetUserThemeableTexture("images/duck.png", "images/duck.svg", nullptr, image_size);
+  ImGui::GetWindowDrawList()->AddImage(logo_texture, ImGui::GetCursorScreenPos(),
                                        ImGui::GetCursorScreenPos() + image_size);
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
   ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);

@@ -48,6 +48,10 @@ enum class SettingsPage : u8
   Count
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Utility
+//////////////////////////////////////////////////////////////////////////
+
 void SwitchToMainWindow(MainWindowType type);
 void ReturnToMainWindow();
 void ReturnToMainWindow(float transition_time);
@@ -56,12 +60,20 @@ bool AreAnyDialogsOpen();
 void ExitFullscreenAndOpenURL(std::string_view url);
 void CopyTextToClipboard(std::string title, std::string_view text);
 
-FileSelectorFilters GetDiscImageFilters();
-FileSelectorFilters GetImageFilters();
+//////////////////////////////////////////////////////////////////////////
+// Landing
+//////////////////////////////////////////////////////////////////////////
+
+inline constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
+inline constexpr const char* NONE_BACKGROUND_NAME = "None";
+ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = UIStyle.BackgroundColor);
+ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);
+void UpdateBackground();
 
 //////////////////////////////////////////////////////////////////////////
 // Save State List
 //////////////////////////////////////////////////////////////////////////
+
 bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
 void OpenSaveStateSelector(const std::string& serial, const std::string& path, bool is_loading);
 void DoResume();
@@ -71,6 +83,8 @@ void DoResume();
 //////////////////////////////////////////////////////////////////////////
 
 bool ShouldOpenToGameList();
+FileSelectorFilters GetDiscImageFilters();
+FileSelectorFilters GetImageFilters();
 
 void ClearGameListState();
 void SwitchToGameList();
@@ -87,7 +101,6 @@ void ClearCoverCache();
 // Settings
 //////////////////////////////////////////////////////////////////////////
 
-void InitializeHotkeyList();
 void ClearSettingsState();
 void SwitchToSettings();
 bool SwitchToGameSettings(SettingsPage page = SettingsPage::Summary);
@@ -97,12 +110,5 @@ void SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash, Setti
 void DrawSettingsWindow();
 SettingsPage GetCurrentSettingsPage();
 bool IsInputBindingDialogOpen();
-
-// TODO: Move to widgets or something
-inline constexpr const char* DEFAULT_BACKGROUND_NAME = "StaticGray";
-inline constexpr const char* NONE_BACKGROUND_NAME = "None";
-ImVec4 GetTransparentBackgroundColor(const ImVec4& no_background_color = UIStyle.BackgroundColor);
-ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);
-void LoadBackground();
 
 } // namespace FullscreenUI

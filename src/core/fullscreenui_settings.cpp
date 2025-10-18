@@ -73,6 +73,8 @@ struct PostProcessingStageInfo
 
 } // namespace
 
+static void PopulateHotkeyList();
+
 static void DrawSummarySettingsPage(bool show_localized_titles);
 static void DrawInterfaceSettingsPage();
 static void DrawGameListSettingsPage();
@@ -1519,8 +1521,11 @@ void FullscreenUI::StartClearBindingsForPort(u32 port)
     });
 }
 
-void FullscreenUI::InitializeHotkeyList()
+void FullscreenUI::PopulateHotkeyList()
 {
+  if (!s_settings_locals.hotkey_list_cache.empty())
+    return;
+
   // sort hotkeys by category so we don't duplicate the groups
   const auto hotkeys = InputManager::GetHotkeyList();
   s_settings_locals.hotkey_list_cache.reserve(hotkeys.size());
@@ -1589,6 +1594,7 @@ void FullscreenUI::SwitchToSettings()
 
   PopulateGraphicsAdapterList();
   PopulatePostProcessingChain(GetEditingSettingsInterface(), PostProcessing::Config::DISPLAY_CHAIN_SECTION);
+  PopulateHotkeyList();
 
   if (!IsEditingGameSettings(GetEditingSettingsInterface()))
   {
@@ -2137,7 +2143,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
                        // Have to defer the reload, because we've already drawn the bg for this frame.
                        BeginTransition(LONG_TRANSITION_TIME, {});
-                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
+                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::UpdateBackground); });
                      });
   }
 
