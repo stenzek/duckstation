@@ -67,8 +67,13 @@ static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 
 static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
 static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
                               s32 progress_min, s32 progress_max, s32 progress_value, bool is_persistent);
+
+// Returns true if any overlay windows are active, such as notifications or toasts.
+static bool AreAnyNotificationsActive();
+static void OnNotificationsActivated();
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
+
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
 
 static constexpr std::array s_theme_display_names = {
@@ -296,6 +301,7 @@ struct ALIGN_TO_CACHE_LINE WidgetsState
 {
   std::recursive_mutex shared_state_mutex;
 
+  bool has_initialized = false; // used to prevent notification queuing without GPU device
   CloseButtonState close_button_state = CloseButtonState::None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   TransitionState transition_state = TransitionState::Inactive;
@@ -378,6 +384,7 @@ bool FullscreenUI::InitializeWidgets(Error* error)
 {
   std::unique_lock lock(s_state.shared_state_mutex);
 
+  s_state.has_initialized = true;
   s_state.focus_reset_queued = FocusResetType::ViewChanged;
   s_state.close_button_state = CloseButtonState::None;
 
@@ -391,7 +398,6 @@ bool FullscreenUI::InitializeWidgets(Error* error)
 
   UpdateWidgetsSettings();
   ResetMenuButtonFrame();
-
   return true;
 }
 
@@ -410,6 +416,8 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
   UIStyle.Font = nullptr;
 
   s_state.texture_cache.Clear();
+
+  s_state.has_initialized = false;
 
   if (clear_state)
   {
@@ -1072,6 +1080,10 @@ void FullscreenUI::EndFixedPopupDialog()
 
 void FullscreenUI::RenderOverlays()
 {
+  std::unique_lock lock(s_state.shared_state_mutex);
+  if (!AreAnyNotificationsActive())
+    return;
+
   const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float notification_vertical_pos = GetNotificationVerticalPosition();
@@ -1080,6 +1092,10 @@ void FullscreenUI::RenderOverlays()
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
   DrawToast();
+
+  // cleared?
+  if (!AreAnyNotificationsActive())
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, false);
 }
 
 void FullscreenUI::PushResetLayout()
@@ -3263,12 +3279,6 @@ void FullscreenUI::FileSelectorDialog::PopulateItems()
   {
     for (std::string& root_path : FileSystem::GetRootDirectoryList())
     {
-#ifdef _WIN32A
-      // Remove trailing backslash on Windows.
-      while (!root_path.empty() && root_path.back() == FS_OSPATH_SEPARATOR_CHARACTER)
-        root_path.pop_back();
-#endif
-
       std::string label = fmt::format(ICON_EMOJI_FILE_FOLDER " {}", root_path);
       m_items.emplace_back(std::move(label), std::move(root_path), false);
     }
@@ -4040,6 +4050,7 @@ void FullscreenUI::OpenBackgroundProgressDialog(std::string_view str_id, std::st
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
   std::unique_lock lock(s_state.shared_state_mutex);
+  const bool was_active = AreAnyNotificationsActive();
 
 #if defined(_DEBUG) || defined(_DEVEL)
   for (const BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
@@ -4055,6 +4066,9 @@ void FullscreenUI::OpenBackgroundProgressDialog(std::string_view str_id, std::st
   data.max = max;
   data.value = value;
   s_state.background_progress_dialogs.push_back(std::move(data));
+
+  if (!was_active)
+    OnNotificationsActivated();
 }
 
 void FullscreenUI::UpdateBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max,
@@ -4083,7 +4097,7 @@ void FullscreenUI::CloseBackgroundProgressDialog(std::string_view str_id)
 {
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
-  std::unique_lock lock(s_state.shared_state_mutex);
+  const std::unique_lock lock(s_state.shared_state_mutex);
 
   for (auto it = s_state.background_progress_dialogs.begin(); it != s_state.background_progress_dialogs.end(); ++it)
   {
@@ -4114,7 +4128,6 @@ bool FullscreenUI::IsBackgroundProgressDialogOpen(std::string_view str_id)
 
 void FullscreenUI::DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
 {
-  std::unique_lock lock(s_state.shared_state_mutex);
   if (s_state.background_progress_dialogs.empty())
     return;
 
@@ -4591,9 +4604,28 @@ bool LoadingScreenProgressCallback::ModalConfirmation(const std::string_view mes
 static constexpr float NOTIFICATION_APPEAR_ANIMATION_TIME = 0.2f;
 static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
 
+bool FullscreenUI::AreAnyNotificationsActive()
+{
+  return (!s_state.notifications.empty() || !s_state.toast_title.empty() || !s_state.toast_message.empty() ||
+          !s_state.background_progress_dialogs.empty());
+}
+
+void FullscreenUI::OnNotificationsActivated()
+{
+  if (GPUThread::IsOnThread())
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, true);
+  else
+    GPUThread::RunOnThread([]() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, true); });
+}
+
 void FullscreenUI::AddNotification(std::string key, float duration, std::string title, std::string text,
                                    std::string image_path)
 {
+  const std::unique_lock lock(s_state.shared_state_mutex);
+  if (!s_state.has_initialized)
+    return;
+
+  const bool prev_had_notifications = AreAnyNotificationsActive();
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   if (!key.empty())
@@ -4627,17 +4659,9 @@ void FullscreenUI::AddNotification(std::string key, float duration, std::string 
   notif.target_y = -1.0f;
   notif.last_y = -1.0f;
   s_state.notifications.push_back(std::move(notif));
-  UpdateRunIdleState();
-}
 
-bool FullscreenUI::HasAnyNotifications()
-{
-  return !s_state.notifications.empty();
-}
-
-void FullscreenUI::ClearNotifications()
-{
-  s_state.notifications.clear();
+  if (!prev_had_notifications)
+    OnNotificationsActivated();
 }
 
 void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
@@ -4773,33 +4797,22 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
   }
-
-  // all gone?
-  if (s_state.notifications.empty())
-    FullscreenUI::UpdateRunIdleState();
 }
 
 void FullscreenUI::ShowToast(std::string title, std::string message, float duration)
 {
+  const std::unique_lock lock(s_state.shared_state_mutex);
+  if (!s_state.has_initialized)
+    return;
+
+  const bool prev_had_notifications = AreAnyNotificationsActive();
   s_state.toast_title = std::move(title);
   s_state.toast_message = std::move(message);
   s_state.toast_start_time = Timer::GetCurrentValue();
   s_state.toast_duration = duration;
-  FullscreenUI::UpdateRunIdleState();
-}
 
-bool FullscreenUI::HasToast()
-{
-  return (!s_state.toast_title.empty() || !s_state.toast_message.empty());
-}
-
-void FullscreenUI::ClearToast()
-{
-  s_state.toast_message = {};
-  s_state.toast_title = {};
-  s_state.toast_start_time = 0;
-  s_state.toast_duration = 0.0f;
-  FullscreenUI::UpdateRunIdleState();
+  if (!prev_had_notifications)
+    OnNotificationsActivated();
 }
 
 void FullscreenUI::DrawToast()
@@ -4811,7 +4824,10 @@ void FullscreenUI::DrawToast()
     static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.toast_start_time));
   if (elapsed >= s_state.toast_duration)
   {
-    ClearToast();
+    s_state.toast_message = {};
+    s_state.toast_title = {};
+    s_state.toast_start_time = 0;
+    s_state.toast_duration = 0.0f;
     return;
   }
 

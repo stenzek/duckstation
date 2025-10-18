@@ -542,7 +542,7 @@ void ImGuiManager::UpdateTextures()
         GPUTexture* const gtex = reinterpret_cast<GPUTexture*>(tex->GetTexID());
         for (const ImTextureRect& rc : tex->Updates)
         {
-          DEV_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
+          DEBUG_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
           if (!gtex->Update(rc.x, rc.y, rc.w, rc.h, tex->GetPixelsAt(rc.x, rc.y), tex->GetPitch())) [[unlikely]]
           {
             ERROR_LOG("Failed to update {}x{} rect @ {},{} in imgui texture", rc.w, rc.h, rc.x, rc.y);

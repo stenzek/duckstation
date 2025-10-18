@@ -486,6 +486,8 @@ void FullscreenUI::Initialize()
   {
     UpdateRunIdleState();
   }
+
+  INFO_LOG("Fullscreen UI initialized.");
 }
 
 bool FullscreenUI::IsInitialized()
@@ -512,8 +514,7 @@ void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 
 void FullscreenUI::UpdateRunIdleState()
 {
-  const bool new_run_idle = (HasActiveWindow() || HasToast() || HasAnyNotifications());
-  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, HasActiveWindow());
 }
 
 void FullscreenUI::OnSystemStarting()
@@ -8704,10 +8705,8 @@ void FullscreenUI::OpenAchievementsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasAchievements())
   {
-    GPUThread::RunOnThread([]() {
-      ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
-                                                          FSUI_STR("Achievements are not enabled."));
-    });
+    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
+                                                        FSUI_STR("Achievements are not enabled."));
     return;
   }
 
@@ -8740,10 +8739,8 @@ void FullscreenUI::OpenLeaderboardsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
-    GPUThread::RunOnThread([]() {
-      ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
-                                                          FSUI_STR("Achievements are not enabled."));
-    });
+    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
+                                                        FSUI_STR("Achievements are not enabled."));
     return;
   }
 
