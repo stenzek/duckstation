@@ -61,7 +61,8 @@ public:
   void
   DeclareFragmentEntryPoint(std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
                             const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs = {},
-                            bool declare_fragcoord = false, u32 num_color_outputs = 1, bool dual_source_output = false,
+                            bool declare_fragcoord = false, u32 num_color_outputs = 1,
+                            bool integer_color_output = false, bool dual_source_output = false,
                             bool depth_output = false, bool msaa = false, bool ssaa = false,
                             bool declare_sample_id = false, bool noperspective_color = false,
                             bool feedback_loop = false, bool rov = false) const;

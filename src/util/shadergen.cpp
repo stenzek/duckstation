@@ -625,10 +625,10 @@ void ShaderGen::DeclareVertexEntryPoint(
 void ShaderGen::DeclareFragmentEntryPoint(
   std::stringstream& ss, u32 num_color_inputs, u32 num_texcoord_inputs,
   const std::initializer_list<std::pair<const char*, const char*>>& additional_inputs /* =  */,
-  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool dual_source_output /* = false */,
-  bool depth_output /* = false */, bool msaa /* = false */, bool ssaa /* = false */,
-  bool declare_sample_id /* = false */, bool noperspective_color /* = false */, bool feedback_loop /* = false */,
-  bool rov /* = false */) const
+  bool declare_fragcoord /* = false */, u32 num_color_outputs /* = 1 */, bool integer_color_output /* = false */,
+  bool dual_source_output /* = false */, bool depth_output /* = false */, bool msaa /* = false */,
+  bool ssaa /* = false */, bool declare_sample_id /* = false */, bool noperspective_color /* = false */,
+  bool feedback_loop /* = false */, bool rov /* = false */) const
 {
   if (m_glsl)
   {
@@ -761,23 +761,26 @@ void ShaderGen::DeclareFragmentEntryPoint(
       {
         for (u32 i = 0; i < num_color_outputs; i++)
         {
-          ss << "layout(location = 0, index = " << i << ") " << ((i == 0) ? target_0_qualifier : "out")
-             << " float4 o_col" << i << ";\n";
+          ss << "layout(location = 0, index = " << i << ") " << ((i == 0) ? target_0_qualifier : "out") << " "
+             << (integer_color_output ? "uint4" : "float4") << " o_col" << i << ";\n";
         }
       }
       else
       {
         for (u32 i = 0; i < num_color_outputs; i++)
         {
-          ss << "layout(location = " << i << ") " << ((i == 0) ? target_0_qualifier : "out") << " float4 o_col" << i
-             << ";\n";
+          ss << "layout(location = " << i << ") " << ((i == 0) ? target_0_qualifier : "out") << " "
+             << (integer_color_output ? "uint4" : "float4") << " o_col" << i << ";\n";
         }
       }
     }
     else
     {
       for (u32 i = 0; i < num_color_outputs; i++)
-        ss << ((i == 0) ? target_0_qualifier : "out") << " float4 o_col" << i << ";\n";
+      {
+        ss << ((i == 0) ? target_0_qualifier : "out") << " " << (integer_color_output ? "uint4" : "float4") << " o_col"
+           << i << ";\n";
+      }
     }
 
     ss << "\n";
@@ -839,7 +842,8 @@ void ShaderGen::DeclareFragmentEntryPoint(
     }
     for (u32 i = 0; i < num_color_outputs; i++)
     {
-      ss << (first ? "" : ",\n") << "  out float4 o_col" << i << " : SV_Target" << i;
+      ss << (first ? "" : ",\n") << "  out " << (integer_color_output ? "uint4" : "float4") << " o_col" << i
+         << " : SV_Target" << i;
       first = false;
     }
 

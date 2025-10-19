@@ -47,6 +47,7 @@ static constexpr GPUTexture::Format VRAM_RT_FORMAT = GPUTexture::Format::RGBA8;
 static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
 static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
 static constexpr GPUTexture::Format VRAM_DS_COLOR_FORMAT = GPUTexture::Format::R32F;
+static constexpr GPUTexture::Format VRAM_TRANSFER_FORMAT = GPUTexture::Format::R16U;
 
 #if defined(_DEBUG) || defined(_DEVEL)
 
@@ -927,8 +928,8 @@ bool GPU_HW::CreateBuffers(Error* error)
           g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, GPUTexture::Type::Texture, VRAM_RT_FORMAT,
                                      read_texture_flags, nullptr, 0, error)) ||
       !(m_vram_readback_texture =
-          g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                     VRAM_RT_FORMAT, GPUTexture::Flags::None, nullptr, 0, error)))
+          g_gpu_device->FetchTexture(VRAM_WIDTH, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                     VRAM_TRANSFER_FORMAT, GPUTexture::Flags::None, nullptr, 0, error)))
   {
     Error::AddPrefix(error, "Failed to create VRAM textures: ");
     return false;
@@ -1773,7 +1774,7 @@ bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
-  plconfig.SetTargetFormats(VRAM_RT_FORMAT);
+  plconfig.SetTargetFormats(VRAM_TRANSFER_FORMAT);
 
   // VRAM read
   {
@@ -1792,6 +1793,7 @@ bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
   }
 
   // Display
+  plconfig.SetTargetFormats(VRAM_RT_FORMAT);
   {
     for (u8 shader = 0; shader < 3; shader++)
     {
@@ -3386,26 +3388,16 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
   // TODO: Only read if it's in the drawn area
 
   // Get bounds with wrap-around handled.
-  GSVector4i copy_rect = GetVRAMTransferBounds(x, y, width, height);
-
-  // Has to be aligned to an even pixel for the download, due to 32-bit packing.
-  if (copy_rect.left & 1)
-    copy_rect.left--;
-  if (copy_rect.right & 1)
-    copy_rect.right++;
-
-  DebugAssert((copy_rect.left % 2) == 0 && (copy_rect.width() % 2) == 0);
-  const u32 encoded_left = copy_rect.left / 2;
-  const u32 encoded_top = copy_rect.top;
-  const u32 encoded_width = copy_rect.width() / 2;
-  const u32 encoded_height = copy_rect.height();
+  const GSVector4i copy_rect = GetVRAMTransferBounds(x, y, width, height);
+  const u32 copy_width = static_cast<u32>(copy_rect.width());
+  const u32 copy_height = static_cast<u32>(copy_rect.height());
 
   // Encode the 24-bit texture as 16-bit.
   const s32 uniforms[4] = {copy_rect.left, copy_rect.top, copy_rect.width(), copy_rect.height()};
   g_gpu_device->SetRenderTarget(m_vram_readback_texture.get());
   g_gpu_device->SetPipeline(m_vram_readback_pipeline.get());
   g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
-  g_gpu_device->SetViewportAndScissor(0, 0, encoded_width, encoded_height);
+  g_gpu_device->SetViewportAndScissor(0, 0, copy_width, copy_height);
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
 
@@ -3413,18 +3405,17 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
   if (m_vram_readback_download_texture->IsImported())
   {
     // Fast path, read directly.
-    m_vram_readback_download_texture->CopyFromTexture(encoded_left, encoded_top, m_vram_readback_texture.get(), 0, 0,
-                                                      encoded_width, encoded_height, 0, 0, false);
+    m_vram_readback_download_texture->CopyFromTexture(copy_rect.x, copy_rect.y, m_vram_readback_texture.get(), 0, 0,
+                                                      copy_width, copy_height, 0, 0, false);
     m_vram_readback_download_texture->Flush();
   }
   else
   {
     // Copy to staging buffer, then to VRAM.
-    m_vram_readback_download_texture->CopyFromTexture(0, 0, m_vram_readback_texture.get(), 0, 0, encoded_width,
-                                                      encoded_height, 0, 0, true);
-    m_vram_readback_download_texture->ReadTexels(0, 0, encoded_width, encoded_height,
-                                                 &g_vram[copy_rect.top * VRAM_WIDTH + copy_rect.left],
-                                                 VRAM_WIDTH * sizeof(u16));
+    m_vram_readback_download_texture->CopyFromTexture(0, 0, m_vram_readback_texture.get(), 0, 0, copy_width,
+                                                      copy_height, 0, 0, true);
+    m_vram_readback_download_texture->ReadTexels(
+      0, 0, copy_width, copy_height, &g_vram[copy_rect.top * VRAM_WIDTH + copy_rect.left], VRAM_WIDTH * sizeof(u16));
   }
 
   RestoreDeviceContext();
@@ -3477,7 +3468,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   {
     map_index = 0;
     upload_texture =
-      g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::R16U,
+      g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, VRAM_TRANSFER_FORMAT,
                                             GPUTexture::Flags::None, data, data_pitch);
     if (!upload_texture)
     {

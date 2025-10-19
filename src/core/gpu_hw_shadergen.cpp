@@ -1395,13 +1395,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     if (uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "float4 v_uv_limits"}}, true, num_fragment_outputs,
-                                use_dual_source, write_mask_as_depth, msaa, per_sample_shading, false,
+                                false, use_dual_source, write_mask_as_depth, msaa, per_sample_shading, false,
                                 disable_color_perspective, shader_blending && !use_rov, use_rov);
     }
     else
     {
-      DeclareFragmentEntryPoint(ss, 1, 1, {}, true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
-                                per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
+      DeclareFragmentEntryPoint(ss, 1, 1, {}, true, num_fragment_outputs, false, use_dual_source, write_mask_as_depth,
+                                msaa, per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
                                 use_rov);
     }
   }
@@ -1415,21 +1415,22 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       DeclareFragmentEntryPoint(ss, 1, 1,
                                 {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"},
                                  {"nointerpolation", "float4 v_uv_limits"}},
-                                true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
+                                true, num_fragment_outputs, false, use_dual_source, write_mask_as_depth, msaa,
                                 per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
                                 use_rov);
     }
     else
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", palette ? "uint4 v_texpage" : "uint2 v_texpage"}}, true,
-                                num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa, per_sample_shading,
-                                false, disable_color_perspective, shader_blending && !use_rov, use_rov);
+                                num_fragment_outputs, false, use_dual_source, write_mask_as_depth, msaa,
+                                per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
+                                use_rov);
     }
   }
   else
   {
-    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, num_fragment_outputs, use_dual_source, write_mask_as_depth, msaa,
-                              per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
+    DeclareFragmentEntryPoint(ss, 1, 0, {}, true, num_fragment_outputs, false, use_dual_source, write_mask_as_depth,
+                              msaa, per_sample_shading, false, disable_color_perspective, shader_blending && !use_rov,
                               use_rov);
   }
 
@@ -1933,19 +1934,12 @@ uint SampleVRAM(uint2 coords)
 }
 )";
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, true);
   ss << R"(
 {
-  uint2 sample_coords = uint2(uint(v_pos.x) * 2u, uint(v_pos.y));
-  sample_coords += u_base_coords;
-
-  // We're encoding as 32-bit, so the output width is halved and we pack two 16-bit pixels in one 32-bit pixel.
-  uint left = SampleVRAM(sample_coords);
-  uint right = SampleVRAM(uint2(sample_coords.x + 1u, sample_coords.y));
-
-  o_col0 = float4(float(left & 0xFFu), float((left >> 8) & 0xFFu),
-                  float(right & 0xFFu), float((right >> 8) & 0xFFu))
-            / float4(255.0, 255.0, 255.0, 255.0);
+  uint2 sample_coords = uint2(v_pos.xy) + u_base_coords;
+  uint value = SampleVRAM(sample_coords);
+  o_col0 = uint4(value, 0u, 0u, 0u);
 })";
 
   return std::move(ss).str();
@@ -1997,7 +1991,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
     ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
   }
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, false, write_mask_as_depth);
   ss << R"(
 {
   float2 coords = floor(v_pos.xy / u_resolution_scale);
@@ -2051,8 +2045,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
                        true);
 
   DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth, false,
-                            false, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, false, write_mask_as_depth,
+                            false, false, msaa);
   ss << R"(
 {
   float2 dst_coords = floor(v_pos.xy);
@@ -2105,7 +2099,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   DeclareUniformBuffer(
     ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1 + BoolToUInt32(write_depth_as_rt), false,
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1 + BoolToUInt32(write_depth_as_rt), false, false,
                             write_mask_as_depth, false, false, false);
   ss << R"(
 {
@@ -2144,7 +2138,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
   WriteHeader(ss);
   DefineMacro(ss, "MULTISAMPLING", msaa);
   DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, false, true, false, false, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, false, false, true, false, false, msaa);
 
   ss << R"(
 {
@@ -2165,7 +2159,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyDepthFragmentShader(bool msaa) con
   WriteHeader(ss);
   DefineMacro(ss, "MULTISAMPLED", msaa);
   DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, msaa, 1, false, false, msaa, msaa, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, msaa, 1, false, false, false, msaa, msaa, msaa);
 
   ss << R"(
 {
@@ -2185,7 +2179,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMClearDepthFragmentShader(bool write_de
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, BoolToUInt32(write_depth_as_rt), false, false, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, BoolToUInt32(write_depth_as_rt), false, false, false, false, false,
+                            false);
 
   ss << R"(
 {
