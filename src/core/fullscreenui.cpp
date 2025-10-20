@@ -577,7 +577,10 @@ GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_nam
   if (is_colorable)
     *is_colorable = true;
 
-  return GetCachedTexture(svg_name, svg_width, svg_height);
+  if (!svg_name.empty())
+    return GetCachedTexture(svg_name, svg_width, svg_height);
+  else
+    return GetCachedTexture(png_name);
 }
 
 bool FullscreenUI::UserThemeableHorizontalButton(const std::string_view png_name, const std::string_view svg_name,
@@ -1199,8 +1202,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     {
       const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
       const ImVec2 logo_size = ImVec2(UIStyle.LargeFontSize, UIStyle.LargeFontSize);
-      GPUTexture* const logo_texture =
-        GetUserThemeableTexture("images/duck.png", "images/duck.svg", nullptr, logo_size);
+      GPUTexture* const logo_texture = GetUserThemeableTexture("images/duck.png", {}, nullptr, logo_size);
       dl->AddImage(logo_texture, logo_pos, logo_pos + logo_size);
 
       const std::string_view heading_text = "DuckStation";
