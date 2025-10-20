@@ -374,9 +374,9 @@ bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::
 bool MenuButtonWithVisibilityQuery(std::string_view str_id, std::string_view title, std::string_view summary,
                                    std::string_view value, bool* visible, bool enabled = true,
                                    const ImVec2& text_align = ImVec2(0.0f, 0.0f));
-bool MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
-                     const ImVec2& image_size, bool enabled = true, const ImVec2& uv0 = ImVec2(0.0f, 0.0f),
-                     const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
+bool MenuImageButton(std::string_view title, std::string_view summary, std::string_view value, ImTextureID image,
+                     const ImVec2& image_size = ImVec2(0.0f, 0.0f), bool enabled = true,
+                     const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
 bool FloatingButton(std::string_view text, float x, float y, float anchor_x = 0.0f, float anchor_y = 0.0f,
                     bool enabled = true, ImVec2* out_position = nullptr, bool repeat_button = false);
 bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true);

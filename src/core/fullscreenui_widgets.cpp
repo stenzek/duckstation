@@ -312,7 +312,6 @@ struct WidgetsState
   TransitionState transition_state = TransitionState::Inactive;
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
 
-  u32 menu_button_index = 0;
   ImVec2 horizontal_menu_button_size = {};
 
   LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
@@ -1581,8 +1580,6 @@ void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 
                                     float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */, float x_spacing /* = 0.0f */,
                                     float y_spacing /* = LAYOUT_MENU_BUTTON_SPACING */, bool prerender_frame /*= true*/)
 {
-  s_state.menu_button_index = 0;
-
   // If we're scrolling up and down, it's possible that the first menu item won't be enabled.
   // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
   if (GImGui->NavMoveDir != ImGuiDir_None)
@@ -2251,45 +2248,59 @@ bool FullscreenUI::MenuButtonWithVisibilityQuery(std::string_view str_id, std::s
                               text_align, bb.summary_size.x, &bb.summary_bb);
   }
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
-bool FullscreenUI::MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
-                                   const ImVec2& image_size, bool enabled /*= true*/,
+bool FullscreenUI::MenuImageButton(std::string_view title, std::string_view summary, std::string_view value,
+                                   ImTextureID image, const ImVec2& image_size, bool enabled /*= true*/,
                                    const ImVec2& uv0 /*= ImVec2(0.0f, 0.0f)*/,
                                    const ImVec2& uv1 /*= ImVec2(1.0f, 1.0f)*/)
 {
-  const float left_margin = image_size.x + LayoutScale(15.0f);
-  const MenuButtonBounds mbb(title, {}, summary, left_margin);
+  ImVec2 real_image_size = image_size;
+  if (real_image_size.x <= 0.0f || real_image_size.y <= 0.0f)
+  {
+    const float size =
+      summary.empty() ? MenuButtonBounds::GetSingleLineHeight(0.0f) : MenuButtonBounds::GetSummaryLineHeight(0.0f);
+    real_image_size = ImVec2(size, size);
+  }
+
+  const float image_margin = LayoutScale(15.0f);
+  const float left_margin = real_image_size.x + image_margin;
+  const MenuButtonBounds bb(title, value, summary, left_margin);
 
   bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, mbb.frame_bb, &visible, &hovered);
+  bool pressed = MenuButtonFrame(title, enabled, bb.frame_bb, &visible, &hovered);
   if (!visible)
     return false;
 
-  const ImRect image_rect(CenterImage(
-    ImRect(ImVec2(mbb.title_bb.Min.x - left_margin, mbb.title_bb.Min.y),
-           ImVec2(mbb.title_bb.Min.x - left_margin, mbb.title_bb.Min.y + image_size.x)),
-    ImVec2(static_cast<float>(user_texture_id->GetWidth()), static_cast<float>(user_texture_id->GetHeight()))));
+  const ImRect image_rect(
+    CenterImage(ImRect(ImVec2(bb.title_bb.Min.x - left_margin, bb.title_bb.Min.y),
+                       ImVec2(bb.title_bb.Min.x - image_margin, bb.title_bb.Min.y + real_image_size.x)),
+                ImVec2(static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()))));
 
-  ImGui::GetWindowDrawList()->AddImage(user_texture_id, image_rect.Min, image_rect.Max, uv0, uv1,
+  ImGui::GetWindowDrawList()->AddImage(image, image_rect.Min, image_rect.Max, uv0, uv1,
                                        enabled ? IM_COL32(255, 255, 255, 255) :
                                                  ImGui::GetColorU32(ImGuiCol_TextDisabled));
 
   const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, mbb.title_bb.Min,
-                            mbb.title_bb.Max, ImGui::GetColorU32(color), title, &mbb.title_size, ImVec2(0.0f, 0.0f),
-                            mbb.title_size.x, &mbb.title_bb);
+  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.title_bb.Min,
+                            bb.title_bb.Max, ImGui::GetColorU32(color), title, &bb.title_size, ImVec2(0.0f, 0.0f),
+                            bb.title_size.x, &bb.title_bb);
+
+  if (!value.empty())
+  {
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.value_bb.Min,
+                              bb.value_bb.Max, ImGui::GetColorU32(color), value, &bb.value_size, ImVec2(1.0f, 0.5f),
+                              bb.value_size.x, &bb.value_bb);
+  }
 
   if (!summary.empty())
   {
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, mbb.summary_bb.Min,
-                              mbb.summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)), summary, &mbb.summary_size,
-                              ImVec2(0.0f, 0.0f), mbb.summary_size.x, &mbb.summary_bb);
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, bb.summary_bb.Min,
+                              bb.summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)), summary, &bb.summary_size,
+                              ImVec2(0.0f, 0.0f), bb.summary_size.x, &bb.summary_bb);
   }
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
@@ -2433,7 +2444,6 @@ bool FullscreenUI::ToggleButton(std::string_view title, std::string_view summary
     ImVec2(toggle_pos.x + toggle_radius + t * (toggle_size.x - toggle_radius * 2.0f), toggle_pos.y + toggle_radius),
     toggle_radius - 1.5f, col_knob, 32);
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
@@ -2502,7 +2512,6 @@ bool FullscreenUI::ThreeWayToggleButton(std::string_view title, std::string_view
     ImVec2(toggle_pos.x + toggle_radius + t * (toggle_size.x - toggle_radius * 2.0f), toggle_pos.y + toggle_radius),
     toggle_radius - 1.5f, IM_COL32(255, 255, 255, 255), 32);
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
@@ -2632,8 +2641,6 @@ void FullscreenUI::BeginHorizontalMenuButtons(u32 num_items, float max_item_widt
                                               float x_spacing /* = LAYOUT_MENU_BUTTON_X_PADDING */,
                                               float x_margin /* = LAYOUT_MENU_WINDOW_X_PADDING */)
 {
-  s_state.menu_button_index = 0;
-
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(UIStyle.MenuBorders ? 1.0f : 0.0f));
@@ -2744,15 +2751,12 @@ bool FullscreenUI::HorizontalMenuButton(std::string_view title, bool enabled /* 
   RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max,
                             ImGui::GetColorU32(color), title, nullptr, text_align, 0.0f, &bb);
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
 void FullscreenUI::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*/,
                                float y_padding /*= LAYOUT_MENU_BUTTON_Y_PADDING*/)
 {
-  s_state.menu_button_index = 0;
-
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
@@ -2771,8 +2775,6 @@ void FullscreenUI::NavTitle(std::string_view title)
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
     return;
-
-  s_state.menu_button_index++;
 
   const ImVec2 text_size(UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
                                                      std::numeric_limits<float>::max(), 0.0f, IMSTR_START_END(title)));
@@ -2811,8 +2813,6 @@ bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enable
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
     return false;
-
-  s_state.menu_button_index++;
 
   const ImVec2 text_size(UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
                                                      std::numeric_limits<float>::max(), 0.0f, IMSTR_START_END(title)));
@@ -2875,8 +2875,6 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
   ImGuiWindow* const window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
     return false;
-
-  s_state.menu_button_index++;
 
   const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight,
                                                        std::numeric_limits<float>::max(), 0.0f, IMSTR_START_END(title));
@@ -2941,8 +2939,6 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
 bool FullscreenUI::BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size,
                                        const ImVec4& bg_color, u32 num_items)
 {
-  s_state.menu_button_index = 0;
-
   const float item_padding = LayoutScale(LAYOUT_HORIZONTAL_MENU_PADDING);
   const float item_width = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH);
   const float item_spacing = LayoutScale(40.0f);
@@ -3042,7 +3038,6 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
 
   ImGui::SameLine();
 
-  s_state.menu_button_index++;
   return pressed;
 }
 
