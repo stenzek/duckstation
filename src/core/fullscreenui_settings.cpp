@@ -2577,8 +2577,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
   static constexpr const std::array cdrom_read_speeds = {
     FSUI_NSTR("None (Double Speed)"), FSUI_NSTR("2x (Quad Speed)"), FSUI_NSTR("3x (6x Speed)"),
     FSUI_NSTR("4x (8x Speed)"),       FSUI_NSTR("5x (10x Speed)"),  FSUI_NSTR("6x (12x Speed)"),
-    FSUI_NSTR("7x (14x Speed)"),      FSUI_NSTR("8x (16x Speed)"),  FSUI_NSTR("9x (18x Speed)"),
-    FSUI_NSTR("10x (20x Speed)"),     FSUI_NSTR("Maximum"),
+    FSUI_NSTR("Maximum (Safer)"),
   };
 
   static constexpr const std::array cdrom_seek_speeds = {
@@ -2588,14 +2587,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
     FSUI_NSTR("4x"),
     FSUI_NSTR("5x"),
     FSUI_NSTR("6x"),
-    FSUI_NSTR("7x"),
-    FSUI_NSTR("8x"),
-    FSUI_NSTR("9x"),
-    FSUI_NSTR("10x"),
-    FSUI_NSTR("Maximum"),
+    FSUI_NSTR("Maximum (Safer)"),
   };
 
-  static constexpr std::array cdrom_read_seek_speed_values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0};
+  static constexpr std::array cdrom_read_seek_speed_values = {1, 2, 3, 4, 5, 6, 0};
 
   SettingsInterface* const bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);

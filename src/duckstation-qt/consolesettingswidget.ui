@@ -213,27 +213,7 @@
         </item>
         <item>
          <property name="text">
-          <string>7x (14x Speed)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8x (16x Speed)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9x (18x Speed)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10x (20x Speed)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Maximum</string>
+          <string>Maximum (Safer)</string>
          </property>
         </item>
        </widget>
@@ -282,27 +262,7 @@
         </item>
         <item>
          <property name="text">
-          <string>7x</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8x</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9x</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10x</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Maximum</string>
+          <string>Maximum (Safer)</string>
          </property>
         </item>
        </widget>
