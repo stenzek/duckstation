@@ -953,7 +953,13 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
     }
   }
 
-  return Bus::GetDMARAMTickCount(word_count);
+  TickCount ticks = Bus::GetDMARAMTickCount(word_count);
+  if constexpr (channel == Channel::CDROM)
+  {
+    if (g_settings.cdrom_read_speedup != 1)
+      ticks = (g_settings.cdrom_read_speedup == 0) ? 0 : (ticks / g_settings.cdrom_read_speedup);
+  }
+  return ticks;
 }
 
 void DMA::DrawDebugStateWindow(float scale)
