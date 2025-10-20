@@ -172,9 +172,9 @@ static void DrawFolderSetting(SettingsInterface* bsi, std::string_view title, co
                               const std::string& runtime_var);
 
 static void PopulateGraphicsAdapterList();
-static void PopulateGameListDirectoryCache(SettingsInterface* si);
+static void PopulateGameListDirectoryCache(const SettingsInterface& si);
 static void PopulatePatchesAndCheatsList();
-static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
+static void PopulatePostProcessingChain(const SettingsInterface& si, const char* section);
 static void BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                const char* key, std::string_view display_name);
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
@@ -1580,6 +1580,7 @@ void FullscreenUI::SwitchToSettings()
 {
   s_settings_locals.game_settings_entry.reset();
   s_settings_locals.game_settings_interface.reset();
+  s_settings_locals.settings_changed = false;
   s_settings_locals.game_patch_list = {};
   s_settings_locals.enabled_game_patch_cache = {};
   s_settings_locals.game_cheats_list = {};
@@ -1587,14 +1588,12 @@ void FullscreenUI::SwitchToSettings()
   s_settings_locals.game_cheat_groups = {};
 
   PopulateGraphicsAdapterList();
-  PopulatePostProcessingChain(GetEditingSettingsInterface(), PostProcessing::Config::DISPLAY_CHAIN_SECTION);
   PopulateHotkeyList();
 
-  if (!IsEditingGameSettings(GetEditingSettingsInterface()))
-  {
-    auto lock = Host::GetSettingsLock();
-    PopulateGameListDirectoryCache(Host::Internal::GetBaseSettingsLayer());
-  }
+  const auto lock = Host::GetSettingsLock();
+  const SettingsInterface* const sif = GetEditingSettingsInterface();
+  PopulateGameListDirectoryCache(*sif);
+  PopulatePostProcessingChain(*sif, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
 
   SwitchToMainWindow(MainWindowType::Settings);
   s_settings_locals.settings_page = SettingsPage::Interface;
@@ -1643,12 +1642,12 @@ void FullscreenUI::PopulateGraphicsAdapterList()
     GPUDevice::GetAdapterListForAPI(Settings::GetRenderAPIForRenderer(renderer));
 }
 
-void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
+void FullscreenUI::PopulateGameListDirectoryCache(const SettingsInterface& si)
 {
   s_settings_locals.game_list_directories_cache.clear();
-  for (std::string& dir : si->GetStringList("GameList", "Paths"))
+  for (std::string& dir : si.GetStringList("GameList", "Paths"))
     s_settings_locals.game_list_directories_cache.emplace_back(std::move(dir), false);
-  for (std::string& dir : si->GetStringList("GameList", "RecursivePaths"))
+  for (std::string& dir : si.GetStringList("GameList", "RecursivePaths"))
     s_settings_locals.game_list_directories_cache.emplace_back(std::move(dir), true);
 }
 
@@ -2318,7 +2317,7 @@ void FullscreenUI::DrawGameListSettingsPage()
         bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
         bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
         SetSettingsChanged(bsi);
-        PopulateGameListDirectoryCache(bsi);
+        PopulateGameListDirectoryCache(*bsi);
         Host::RefreshGameListAsync(false);
       }
     });
@@ -2363,7 +2362,7 @@ void FullscreenUI::DrawGameListSettingsPage()
                              }
 
                              SetSettingsChanged(bsi);
-                             PopulateGameListDirectoryCache(bsi);
+                             PopulateGameListDirectoryCache(*bsi);
                            }
 
                            Host::RefreshGameListAsync(false);
@@ -2376,7 +2375,7 @@ void FullscreenUI::DrawGameListSettingsPage()
                            bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
                            bsi->RemoveFromStringList("GameList", "RecursivePaths", dir.c_str());
                            SetSettingsChanged(bsi);
-                           PopulateGameListDirectoryCache(bsi);
+                           PopulateGameListDirectoryCache(*bsi);
                            Host::RefreshGameListAsync(false);
                          }
                        });
@@ -3980,16 +3979,16 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::PopulatePostProcessingChain(SettingsInterface* si, const char* section)
+void FullscreenUI::PopulatePostProcessingChain(const SettingsInterface& si, const char* section)
 {
-  const u32 stages = PostProcessing::Config::GetStageCount(*si, section);
+  const u32 stages = PostProcessing::Config::GetStageCount(si, section);
   s_settings_locals.postprocessing_stages.clear();
   s_settings_locals.postprocessing_stages.reserve(stages);
   for (u32 i = 0; i < stages; i++)
   {
     PostProcessingStageInfo psi;
-    psi.name = PostProcessing::Config::GetStageShaderName(*si, section, i);
-    psi.options = PostProcessing::Config::GetStageOptions(*si, section, i);
+    psi.name = PostProcessing::Config::GetStageShaderName(si, section, i);
+    psi.options = PostProcessing::Config::GetStageOptions(si, section, i);
     s_settings_locals.postprocessing_stages.push_back(std::move(psi));
   }
 }
@@ -4062,7 +4061,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                        {
                          ShowToast(std::string(), fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
                                                               PostProcessing::Config::GetStageCount(*bsi, section)));
-                         PopulatePostProcessingChain(bsi, section);
+                         PopulatePostProcessingChain(*bsi, section);
                          SetSettingsChanged(bsi);
                          queue_reload();
                        }
@@ -4086,7 +4085,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         SettingsInterface* bsi = GetEditingSettingsInterface();
         PostProcessing::Config::ClearStages(*bsi, section);
-        PopulatePostProcessingChain(bsi, section);
+        PopulatePostProcessingChain(*bsi, section);
         SetSettingsChanged(bsi);
         ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
         queue_reload();
@@ -4310,7 +4309,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       ShowToast(std::string(),
                 fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, si.name));
       PostProcessing::Config::RemoveStage(*bsi, section, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi, section);
+      PopulatePostProcessingChain(*bsi, section);
       SetSettingsChanged(bsi);
       reload_pending = true;
     }
@@ -4318,7 +4317,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     case POSTPROCESSING_ACTION_MOVE_UP:
     {
       PostProcessing::Config::MoveStageUp(*bsi, section, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi, section);
+      PopulatePostProcessingChain(*bsi, section);
       SetSettingsChanged(bsi);
       reload_pending = true;
     }
@@ -4326,7 +4325,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     case POSTPROCESSING_ACTION_MOVE_DOWN:
     {
       PostProcessing::Config::MoveStageDown(*bsi, section, postprocessing_action_index);
-      PopulatePostProcessingChain(bsi, section);
+      PopulatePostProcessingChain(*bsi, section);
       SetSettingsChanged(bsi);
       reload_pending = true;
     }
