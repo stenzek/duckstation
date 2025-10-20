@@ -8,6 +8,7 @@ START_IDENT = "// TRANSLATION-STRING-AREA-BEGIN"
 END_IDENT = "// TRANSLATION-STRING-AREA-END"
 SRC_FILES = ["src/core/fullscreenui.cpp",
              "src/core/fullscreenui.h",
+             "src/core/fullscreenui_achievements.cpp",
              "src/core/fullscreenui_game_list.cpp",
              "src/core/fullscreenui_private.h",
              "src/core/fullscreenui_settings.cpp",

@@ -1994,7 +1994,10 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
   {
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_WINDOW_MAXIMIZE, "Title"),
                    s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles), true))
-      CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."), s_settings_locals.game_settings_entry->title);
+    {
+      CopyTextToClipboard(FSUI_STR("Game title copied to clipboard."),
+                          s_settings_locals.game_settings_entry->GetDisplayTitle(show_localized_titles));
+    }
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_PAGER, "Serial"), s_settings_locals.game_settings_entry->serial, true))
       CopyTextToClipboard(FSUI_STR("Game serial copied to clipboard."), s_settings_locals.game_settings_entry->serial);
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Type"),
@@ -2704,7 +2707,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
   };
   static constexpr const std::array emulation_speed_titles = {
     FSUI_NSTR("Unlimited"),
-    "10% [6 FPS (NTSC) / 5 FPS (PAL)]",
+    FSUI_NSTR("10% [6 FPS (NTSC) / 5 FPS (PAL)]"),
     FSUI_NSTR("20% [12 FPS (NTSC) / 10 FPS (PAL)]"),
     FSUI_NSTR("30% [18 FPS (NTSC) / 15 FPS (PAL)]"),
     FSUI_NSTR("40% [24 FPS (NTSC) / 20 FPS (PAL)]"),
