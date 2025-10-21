@@ -2165,28 +2165,28 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
-      bool result;
-      {
-        QMessageBox msgbox(lock.getDialogParent());
-        msgbox.setIcon(QMessageBox::Question);
-        msgbox.setWindowTitle(title);
-        msgbox.setText(message);
+      QMessageBox* const msgbox =
+        QtUtils::NewMessageBox(QMessageBox::Question, title, message, QMessageBox::NoButton, QMessageBox::NoButton,
+                               Qt::WindowModal, lock.getDialogParent());
+      msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        QPushButton* const yes_button = msgbox.addButton(yes_text, QMessageBox::AcceptRole);
-        msgbox.addButton(no_text, QMessageBox::RejectRole);
-        msgbox.exec();
-        result = (msgbox.clickedButton() == yes_button);
-      }
+      QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
+      msgbox->addButton(no_text, QMessageBox::RejectRole);
 
-      callback(result);
+      QObject::connect(msgbox, &QMessageBox::finished, lock.getDialogParent(),
+                       [msgbox, yes_button, callback = std::move(callback), needs_pause]() {
+                         const bool result = (msgbox->clickedButton() == yes_button);
+                         callback(result);
 
-      if (needs_pause)
-      {
-        Host::RunOnCPUThread([]() {
-          if (System::IsValid())
-            System::PauseSystem(false);
-        });
-      }
+                         if (needs_pause)
+                         {
+                           Host::RunOnCPUThread([]() {
+                             if (System::IsValid())
+                               System::PauseSystem(false);
+                           });
+                         }
+                       });
+      msgbox->exec();
     });
   }
 }

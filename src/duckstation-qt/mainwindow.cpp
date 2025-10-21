@@ -1273,29 +1273,36 @@ void MainWindow::startFileOrChangeDisc(const QString& qpath)
 
 void MainWindow::promptForDiscChange(const QString& path)
 {
+  if (m_was_disc_change_request || System::IsGPUDumpPath(path.toStdString()))
+  {
+    switchToEmulationView();
+    g_emu_thread->changeDisc(path, false, true);
+  }
+
   SystemLock lock(pauseAndLockSystem());
 
-  bool reset_system = false;
-  if (!m_was_disc_change_request && !System::IsGPUDumpPath(path.toStdString()))
-  {
-    QMessageBox mb(QMessageBox::Question, tr("Confirm Disc Change"),
-                   tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton,
-                   this);
-    /*const QAbstractButton* const swap_button = */ mb.addButton(tr("Swap Disc"), QMessageBox::YesRole);
-    const QAbstractButton* const reset_button = mb.addButton(tr("Reset"), QMessageBox::NoRole);
-    const QAbstractButton* const cancel_button = mb.addButton(tr("Cancel"), QMessageBox::RejectRole);
-    mb.exec();
+  QMessageBox* const mb =
+    QtUtils::NewMessageBox(QMessageBox::Question, tr("Confirm Disc Change"),
+                           tr("Do you want to swap discs or boot the new image (via system reset)?"),
+                           QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, lock.getDialogParent());
+  mb->setAttribute(Qt::WA_DeleteOnClose, true);
 
-    const QAbstractButton* const clicked_button = mb.clickedButton();
+  /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
+  const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
+  const QAbstractButton* const cancel_button = mb->addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+  connect(mb, &QMessageBox::finished, this, [this, mb, reset_button, cancel_button, path, lock = std::move(lock)]() {
+    const QAbstractButton* const clicked_button = mb->clickedButton();
     if (!clicked_button || clicked_button == cancel_button)
       return;
 
-    reset_system = (clicked_button == reset_button);
-  }
+    const bool reset_system = (clicked_button == reset_button);
+    switchToEmulationView();
 
-  switchToEmulationView();
+    g_emu_thread->changeDisc(path, reset_system, true);
+  });
 
-  g_emu_thread->changeDisc(path, reset_system, true);
+  mb->show();
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -3038,20 +3045,15 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
     SystemLock lock(pauseAndLockSystem());
 
-    QMessageBox* msgbox = new QMessageBox(lock.getDialogParent());
-    msgbox->setWindowTitle(tr("Confirm Shutdown"));
-    msgbox->setWindowModality(Qt::WindowModal);
+    QMessageBox* msgbox = QtUtils::NewMessageBox(
+      QMessageBox::Question, tr("Confirm Shutdown"), tr("Are you sure you want to shut down the virtual machine?"),
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
     msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
-    msgbox->setIcon(QMessageBox::Question);
-    msgbox->setText(tr("Are you sure you want to shut down the virtual machine?"));
 
     QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);
     save_cb->setEnabled(allow_save_to_state);
     msgbox->setCheckBox(save_cb);
-    msgbox->addButton(QMessageBox::Yes);
-    msgbox->addButton(QMessageBox::No);
-    msgbox->setDefaultButton(QMessageBox::Yes);
     connect(msgbox, &QMessageBox::finished, this,
             [this, lock = std::move(lock), save_cb, allow_save_to_state, check_safety, check_pause, exit_fullscreen_ui,
              quit_afterwards](int result) mutable {
