@@ -74,12 +74,14 @@ void QtHost::SetStyleFromSettings()
 {
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
+  // Clear any existing stylesheet before applying new.
+  qApp->setStyleSheet(QString());
+
   if (theme == "qdarkstyle")
   {
     SetThemeAttributes(true, false, true);
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
@@ -90,7 +92,6 @@ void QtHost::SetStyleFromSettings()
     SetThemeAttributes(false, true, false);
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusion")
   {
@@ -126,7 +127,6 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusionblue")
   {
@@ -163,7 +163,6 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkerfusion")
   {
@@ -202,7 +201,6 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, window_color);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
 
     // menus are by far the ugliest part of fusion, so we style them manually
     const QString stylesheet = QStringLiteral(R"(
@@ -286,7 +284,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "greymatter")
   {
@@ -320,7 +317,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "greengiant")
   {
@@ -355,7 +351,6 @@ QToolBar {
     greenGiantPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
     qApp->setPalette(greenGiantPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "pinkypals")
   {
@@ -389,7 +384,6 @@ QToolBar {
     PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
 
     qApp->setPalette(PinkyPalsPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "AMOLED")
   {
@@ -426,7 +420,6 @@ QToolBar {
     AMOLEDPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
 
     qApp->setPalette(AMOLEDPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkruby")
   {
@@ -458,7 +451,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "purplerain")
   {
@@ -491,7 +483,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkPurple);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
 #ifdef _WIN32
   else if (theme == "windowsvista")
@@ -499,7 +490,6 @@ QToolBar {
     SetThemeAttributes(false, false, false);
     qApp->setStyle(QStyleFactory::create("windowsvista"));
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
   }
 #endif
   else
