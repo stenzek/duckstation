@@ -417,9 +417,9 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
   std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!http)
   {
-    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -442,18 +442,18 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
-        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
-                                .arg(status_code)
-                                .arg(QString::fromStdString(error.GetDescription())));
+        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                    qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
+                                      .arg(status_code)
+                                      .arg(QString::fromStdString(error.GetDescription())));
         download_result = false;
         return;
       }
 
       if (hdata.empty())
       {
-        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
+        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                    qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
 
         download_result = false;
         return;
@@ -491,10 +491,10 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
        !FileSystem::CreateDirectory(directory.c_str(), true, &error)) ||
       !FileSystem::WriteBinaryFile(path, data, &error))
   {
-    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to write '%1':\n%2")
-                            .arg(QString::fromUtf8(path))
-                            .arg(QString::fromUtf8(error.GetDescription())));
+    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                qApp->translate("QtHost", "Failed to write '%1':\n%2")
+                                  .arg(QString::fromUtf8(path))
+                                  .arg(QString::fromUtf8(error.GetDescription())));
     return false;
   }
 
@@ -1188,12 +1188,12 @@ void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel
   Host::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
     auto lock = g_main_window->pauseAndLockSystem();
 
-    const bool result =
-      (QMessageBox::question(lock.getDialogParent(), tr("Memory Card Busy"),
-                             tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
-                                "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
-                                "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
-                               .arg(action)) != QMessageBox::No);
+    const bool result = (QtUtils::MessageBoxQuestion(
+                           lock.getDialogParent(), tr("Memory Card Busy"),
+                           tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
+                              "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
+                              "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
+                             .arg(action)) != QMessageBox::No);
 
     if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
       lock.cancelResume();
@@ -1416,7 +1416,7 @@ void EmuThread::startControllerTest()
   Host::RunOnUIThread([path = std::move(path)]() mutable {
     {
       auto lock = g_main_window->pauseAndLockSystem();
-      if (QMessageBox::question(
+      if (QtUtils::MessageBoxQuestion(
             lock.getDialogParent(), tr("Confirm Download"),
             tr("Your DuckStation installation does not have the padtest application "
                "available.\n\nThis file is approximately 206KB, do you want to download it now?")) != QMessageBox::Yes)
@@ -2152,8 +2152,8 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
       };
 
       FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
-                                                fmt::format(ICON_FA_CHECK " {}", yes_text),
-                                                fmt::format(ICON_FA_XMARK " {}", no_text));
+                                             fmt::format(ICON_FA_CHECK " {}", yes_text),
+                                             fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
     });
   }
@@ -2335,7 +2335,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     QTranslator* base_translator = new QTranslator(qApp);
     if (!base_translator->load(base_path))
     {
-      QMessageBox::warning(
+      QtUtils::MessageBoxWarning(
         dialog_parent, QStringLiteral("Translation Error"),
         QStringLiteral("Failed to load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
       delete base_translator;
@@ -2350,7 +2350,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir).arg(qlanguage);
   if (!QFile::exists(path))
   {
-    QMessageBox::warning(
+    QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
       QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(qlanguage).arg(path));
     return;
@@ -2359,7 +2359,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   QTranslator* translator = new QTranslator(qApp);
   if (!translator->load(path))
   {
-    QMessageBox::warning(
+    QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
       QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(qlanguage).arg(path));
     delete translator;

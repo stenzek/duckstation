@@ -19,7 +19,6 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 
 #include "moc_postprocessingsettingswidget.cpp"
@@ -193,8 +192,8 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
         if (!PostProcessing::Config::AddStage(si, m_section, shader, &error))
         {
           lock.unlock();
-          QMessageBox::critical(this, tr("Error"),
-                                tr("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
+          QtUtils::MessageBoxCritical(
+            this, tr("Error"), tr("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
           return;
         }
 
@@ -230,8 +229,8 @@ void PostProcessingChainConfigWidget::onRemoveButtonClicked()
 
 void PostProcessingChainConfigWidget::onClearButtonClicked()
 {
-  if (QMessageBox::question(this, tr("Question"), tr("Are you sure you want to clear all shader stages?"),
-                            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(this, tr("Question"), tr("Are you sure you want to clear all shader stages?")) ==
+      QMessageBox::Yes)
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
@@ -630,7 +629,7 @@ void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
   if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toStdString().c_str(), output.toStdString(),
                                      &error))
   {
-    QMessageBox::critical(this, tr("Export Error"),
-                          tr("Failed to save file: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Export Error"),
+                                tr("Failed to save file: %1").arg(QString::fromStdString(error.GetDescription())));
   }
 }

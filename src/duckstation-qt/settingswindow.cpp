@@ -32,7 +32,6 @@
 #include "common/log.h"
 
 #include <QtGui/QWheelEvent>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
 
@@ -290,10 +289,9 @@ void SettingsWindow::onCategoryCurrentRowChanged(int row)
 
 void SettingsWindow::onRestoreDefaultsClicked()
 {
-  if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
-                            tr("Are you sure you want to restore the default settings? Any preferences will be "
-                               "lost.\n\nYou cannot undo this action."),
-                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(this, tr("Confirm Restore Defaults"),
+                                  tr("Are you sure you want to restore the default settings? Any preferences will be "
+                                     "lost.\n\nYou cannot undo this action.")) != QMessageBox::Yes)
   {
     return;
   }
@@ -306,11 +304,10 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
   if (!isPerGameSettings())
     return;
 
-  if (QMessageBox::question(
+  if (QtUtils::MessageBoxQuestion(
         this, tr("DuckStation Settings"),
         tr("The configuration for this game will be replaced by the current global settings.\n\nAny current setting "
-           "values will be overwritten.\n\nDo you want to continue?"),
-        QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+           "values will be overwritten.\n\nDo you want to continue?")) != QMessageBox::Yes)
   {
     return;
   }
@@ -325,7 +322,8 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 
   reloadPages();
 
-  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration copied from global settings."));
+  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"),
+                                 tr("Per-game configuration copied from global settings."));
 }
 
 void SettingsWindow::onClearSettingsClicked()
@@ -333,10 +331,10 @@ void SettingsWindow::onClearSettingsClicked()
   if (!isPerGameSettings())
     return;
 
-  if (QMessageBox::question(this, tr("DuckStation Settings"),
-                            tr("The configuration for this game will be cleared.\n\nAny current setting values will be "
-                               "lost.\n\nDo you want to continue?"),
-                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("DuckStation Settings"),
+        tr("The configuration for this game will be cleared.\n\nAny current setting values will be "
+           "lost.\n\nDo you want to continue?")) != QMessageBox::Yes)
   {
     return;
   }
@@ -346,7 +344,7 @@ void SettingsWindow::onClearSettingsClicked()
 
   reloadPages();
 
-  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
+  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
 }
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)

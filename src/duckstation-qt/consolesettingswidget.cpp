@@ -11,7 +11,6 @@
 
 #include "util/cd_image.h"
 
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
 #include "moc_consolesettingswidget.cpp"

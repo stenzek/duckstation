@@ -421,10 +421,10 @@ void InputBindingWidget::showEffectBindingDialog()
 {
   if (!g_emu_thread->getInputDeviceListModel()->hasEffectsOfType(m_bind_type))
   {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"),
-                          (m_bind_type == InputBindingInfo::Type::Motor) ?
-                            tr("No devices with vibration motors were detected.") :
-                            tr("No devices with LEDs were detected."));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                (m_bind_type == InputBindingInfo::Type::Motor) ?
+                                  tr("No devices with vibration motors were detected.") :
+                                  tr("No devices with LEDs were detected."));
     return;
   }
 

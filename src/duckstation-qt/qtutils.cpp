@@ -135,8 +135,8 @@ void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
   {
-    QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
-                          QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+    MessageBoxCritical(parent, QObject::tr("Failed to open URL"),
+                       QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
   }
 }
 
@@ -164,7 +164,7 @@ std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString
 
   if (!ok)
   {
-    QMessageBox::critical(
+    MessageBoxCritical(
       parent, title,
       qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
     return std::nullopt;

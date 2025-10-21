@@ -22,7 +22,6 @@
 #include <QtCore/QStringBuilder>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextBrowser>
 
 #include "moc_gamesummarywidget.cpp"
@@ -416,8 +415,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
         InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
         QWidget* dlg_parent = QtUtils::GetRootWidget(this);
-        QMessageBox::information(dlg_parent, dlg_parent->windowTitle(),
-                                 tr("Per-game controller configuration initialized with global settings."));
+        QtUtils::MessageBoxInformation(dlg_parent, dlg_parent->windowTitle(),
+                                       tr("Per-game controller configuration initialized with global settings."));
       }
     }
   }
@@ -461,7 +460,7 @@ void GameSummaryWidget::onComputeHashClicked()
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
   {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));
+    QtUtils::MessageBoxCritical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));
     return;
   }
 

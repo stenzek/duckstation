@@ -50,7 +50,6 @@
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
@@ -209,14 +208,14 @@ QMenu* MainWindow::createPopupMenu()
 
 void MainWindow::reportError(const QString& title, const QString& message)
 {
-  QMessageBox::critical(this, title, message, QMessageBox::Ok);
+  QtUtils::MessageBoxCritical(this, title, message);
 }
 
 bool MainWindow::confirmMessage(const QString& title, const QString& message)
 {
   SystemLock lock(pauseAndLockSystem());
 
-  return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
+  return (QtUtils::MessageBoxQuestion(this, title, message) == QMessageBox::Yes);
 }
 
 void MainWindow::onStatusMessage(const QString& message)
@@ -332,7 +331,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     wi = m_display_widget->getWindowInfo(render_api, error);
     if (!wi.has_value())
     {
-      QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
+      QtUtils::MessageBoxCritical(this, tr("Error"), tr("Failed to get window info from widget"));
       destroyDisplayWidget(true);
       return std::nullopt;
     }
@@ -743,9 +742,10 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
   auto devices = CDImage::GetDeviceList();
   if (devices.empty())
   {
-    QMessageBox::critical(this, title,
-                          tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
-                             "sufficient permissions to access it."));
+    QtUtils::MessageBoxCritical(
+      this, title,
+      tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
+         "sufficient permissions to access it."));
     return ret;
   }
 
@@ -965,11 +965,11 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
     if (has_any_states)
     {
       connect(delete_save_states_action, &QAction::triggered, [parent_window, serial = entry->serial] {
-        if (QMessageBox::warning(
+        if (QtUtils::MessageBoxWarning(
               parent_window, tr("Confirm Save State Deletion"),
               tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
                 .arg(QString::fromStdString(serial)),
-              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+              QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
         {
           return;
         }
@@ -1227,8 +1227,8 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
   connect(delboot, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
     if (!FileSystem::DeleteFile(save_state_path.c_str()))
     {
-      QMessageBox::critical(this, tr("Error"),
-                            tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
+      QtUtils::MessageBoxCritical(
+        this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
     }
     startFile(std::move(path), std::nullopt, std::nullopt);
     dlg->accept();
@@ -1592,7 +1592,7 @@ void MainWindow::onGameListEntryActivated()
     // change disc on double click
     if (!entry->IsDisc())
     {
-      QMessageBox::critical(this, tr("Error"), tr("You must select a disc to change discs."));
+      QtUtils::MessageBoxCritical(this, tr("Error"), tr("You must select a disc to change discs."));
       return;
     }
 
@@ -1765,13 +1765,14 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
   {
     if (QFileInfo(old_filename) == QFileInfo(filename))
     {
-      QMessageBox::critical(this, tr("Copy Error"), tr("You must select a different file to the current cover image."));
+      QtUtils::MessageBoxCritical(this, tr("Copy Error"),
+                                  tr("You must select a different file to the current cover image."));
       return;
     }
 
-    if (QMessageBox::question(this, tr("Cover Already Exists"),
-                              tr("A cover image for this game already exists, do you wish to replace it?"),
-                              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+    if (QtUtils::MessageBoxQuestion(this, tr("Cover Already Exists"),
+                                    tr("A cover image for this game already exists, do you wish to replace it?"),
+                                    QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
     {
       return;
     }
@@ -1779,17 +1780,18 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 
   if (QFile::exists(new_filename) && !QFile::remove(new_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
     return;
   }
   if (!QFile::copy(filename, new_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"),
+                                tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
     return;
   }
   if (!old_filename.isEmpty() && old_filename != new_filename && !QFile::remove(old_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
     return;
   }
   m_game_list_widget->refreshGridCovers();
@@ -1797,7 +1799,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 
 void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
 {
-  if (QMessageBox::question(
+  if (QtUtils::MessageBoxQuestion(
         this, tr("Confirm Reset"),
         tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
           .arg(QtUtils::StringViewToQString(
@@ -2778,7 +2780,7 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
   if (!entry)
   {
     lock.unlock();
-    QMessageBox::critical(this, tr("Error"), tr("Game properties is only available for scanned games."));
+    QtUtils::MessageBoxCritical(this, tr("Error"), tr("Game properties is only available for scanned games."));
     return;
   }
 
@@ -3147,18 +3149,18 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!card_path.isEmpty() && !QFile::exists(card_path))
     {
-      if (QMessageBox::question(
+      if (QtUtils::MessageBoxQuestion(
             this, tr("Memory Card Not Found"),
             tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
-            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
       {
         Error error;
         if (!MemoryCardEditorWindow::createMemoryCard(card_path, &error))
         {
-          QMessageBox::critical(this, tr("Memory Card Not Found"),
-                                tr("Failed to create memory card '%1': %2")
-                                  .arg(card_path)
-                                  .arg(QString::fromStdString(error.GetDescription())));
+          QtUtils::MessageBoxCritical(this, tr("Memory Card Not Found"),
+                                      tr("Failed to create memory card '%1': %2")
+                                        .arg(card_path)
+                                        .arg(QString::fromStdString(error.GetDescription())));
         }
       }
     }
@@ -3173,7 +3175,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!m_memory_card_editor_window->setCardA(card_a_path))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, tr("Memory Card Not Found"),
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_a_path));
     }
@@ -3182,7 +3184,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!m_memory_card_editor_window->setCardB(card_b_path))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, tr("Memory Card Not Found"),
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_b_path));
     }

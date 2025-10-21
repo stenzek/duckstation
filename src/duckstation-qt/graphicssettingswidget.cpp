@@ -1384,7 +1384,7 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
       if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toUtf8().constData(),
                                          idlg.textValue().toStdString(), &error))
       {
-        QMessageBox::critical(&dlg, tr("Write Failed"), QString::fromStdString(error.GetDescription()));
+        QtUtils::MessageBoxCritical(&dlg, tr("Write Failed"), QString::fromStdString(error.GetDescription()));
       }
     }
   });

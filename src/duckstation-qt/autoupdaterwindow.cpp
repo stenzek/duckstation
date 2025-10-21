@@ -247,7 +247,7 @@ std::string AutoUpdaterWindow::getCurrentUpdateTag() const
 
 void AutoUpdaterWindow::reportError(const std::string_view msg)
 {
-  QMessageBox::critical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
+  QtUtils::MessageBoxCritical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
 }
 
 bool AutoUpdaterWindow::ensureHttpReady()
@@ -353,8 +353,8 @@ void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error
         {
           if (display_errors)
           {
-            QMessageBox::information(this, tr("Automatic Updater"),
-                                     tr("No updates are currently available. Please try again later."));
+            QtUtils::MessageBoxInformation(this, tr("Automatic Updater"),
+                                           tr("No updates are currently available. Please try again later."));
           }
 
           emit updateCheckCompleted();
@@ -804,7 +804,7 @@ void AutoUpdaterWindow::cleanupAfterUpdate()
   Error error;
   if (!FileSystem::DeleteFile(updater_path.c_str(), &error))
   {
-    QMessageBox::critical(
+    QtUtils::MessageBoxCritical(
       nullptr, tr("Updater Error"),
       tr("Failed to remove updater exe after update:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return;

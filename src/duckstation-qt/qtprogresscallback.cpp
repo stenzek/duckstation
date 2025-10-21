@@ -8,7 +8,6 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtWidgets/QMessageBox>
 #include <array>
 
 #include "moc_qtprogresscallback.cpp"
@@ -74,18 +73,18 @@ void QtModalProgressCallback::SetProgressValue(u32 value)
 
 void QtModalProgressCallback::ModalError(const std::string_view message)
 {
-  QMessageBox::critical(&m_dialog, tr("Error"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxCritical(&m_dialog, tr("Error"), QtUtils::StringViewToQString(message));
 }
 
 bool QtModalProgressCallback::ModalConfirmation(const std::string_view message)
 {
-  return (QMessageBox::question(&m_dialog, tr("Question"), QtUtils::StringViewToQString(message), QMessageBox::Yes,
-                                QMessageBox::No) == QMessageBox::Yes);
+  return (QtUtils::MessageBoxQuestion(&m_dialog, tr("Question"), QtUtils::StringViewToQString(message)) ==
+          QMessageBox::Yes);
 }
 
 void QtModalProgressCallback::ModalInformation(const std::string_view message)
 {
-  QMessageBox::information(&m_dialog, tr("Information"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxInformation(&m_dialog, tr("Information"), QtUtils::StringViewToQString(message));
 }
 
 void QtModalProgressCallback::dialogCancelled()
@@ -153,18 +152,18 @@ void QtAsyncProgressThread::SetProgressValue(u32 value)
 
 void QtAsyncProgressThread::ModalError(const std::string_view message)
 {
-  QMessageBox::critical(parentWidget(), tr("Error"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxCritical(parentWidget(), tr("Error"), QtUtils::StringViewToQString(message));
 }
 
 bool QtAsyncProgressThread::ModalConfirmation(const std::string_view message)
 {
-  return (QMessageBox::question(parentWidget(), tr("Question"), QtUtils::StringViewToQString(message), QMessageBox::Yes,
-                                QMessageBox::No) == QMessageBox::Yes);
+  return (QtUtils::MessageBoxQuestion(parentWidget(), tr("Question"), QtUtils::StringViewToQString(message)) ==
+          QMessageBox::Yes);
 }
 
 void QtAsyncProgressThread::ModalInformation(const std::string_view message)
 {
-  QMessageBox::information(parentWidget(), tr("Information"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxInformation(parentWidget(), tr("Information"), QtUtils::StringViewToQString(message));
 }
 
 void QtAsyncProgressThread::start()

@@ -19,7 +19,6 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <algorithm>
 
 #include "moc_gamelistsettingswidget.cpp"
@@ -182,13 +181,13 @@ void GameListSettingsWidget::addSearchDirectory(QWidget* parent_widget)
   if (dir.isEmpty())
     return;
 
-  QMessageBox::StandardButton selection =
-    QMessageBox::question(this, tr("Scan Recursively?"),
-                          tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
-                             "more time, but will identify files in subdirectories.")
-                            .arg(dir),
-                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-  if (selection == QMessageBox::Cancel)
+  QMessageBox::StandardButton selection = QtUtils::MessageBoxQuestion(
+    this, tr("Scan Recursively?"),
+    tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
+       "more time, but will identify files in subdirectories.")
+      .arg(dir),
+    QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+  if (selection != QMessageBox::Yes && selection != QMessageBox::No)
     return;
 
   const bool recursive = (selection == QMessageBox::Yes);

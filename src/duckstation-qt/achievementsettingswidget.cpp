@@ -14,7 +14,6 @@
 #include "common/string_util.h"
 
 #include <QtCore/QDateTime>
-#include <QtWidgets/QMessageBox>
 
 #include "moc_achievementsettingswidget.cpp"
 
@@ -180,8 +179,8 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
       return;
   }
 
-  if (QMessageBox::question(
-        QtUtils::GetRootWidget(this), tr("Reset System"),
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("Reset System"),
         tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) !=
       QMessageBox::Yes)
   {

@@ -8,8 +8,6 @@
 
 #include "common/error.h"
 
-#include <QtWidgets/QMessageBox>
-
 #include "moc_achievementlogindialog.cpp"
 
 AchievementLoginDialog::AchievementLoginDialog(QWidget* parent, Achievements::LoginRequestReason reason)
@@ -74,7 +72,7 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 {
   if (!result)
   {
-    QMessageBox::critical(
+    QtUtils::MessageBoxCritical(
       this, tr("Login Error"),
       tr("Login failed.\nError: %1\n\nPlease check your username and password, and try again.").arg(message));
     m_ui.status->setText(tr("Login failed."));
@@ -83,10 +81,10 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
   }
 
   if (!Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false) &&
-      QMessageBox::question(this, tr("Enable Achievements"),
-                            tr("Achievement tracking is not currently enabled. Your login will have no effect until "
-                               "after tracking is enabled.\n\nDo you want to enable tracking now?"),
-                            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+      QtUtils::MessageBoxQuestion(
+        this, tr("Enable Achievements"),
+        tr("Achievement tracking is not currently enabled. Your login will have no effect until "
+           "after tracking is enabled.\n\nDo you want to enable tracking now?")) == QMessageBox::Yes)
   {
     Host::SetBaseBoolSettingValue("Cheevos", "Enabled", true);
     Host::CommitBaseSettingChanges();
@@ -94,12 +92,11 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
   }
 
   if (!Host::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false) &&
-      QMessageBox::question(
+      QtUtils::MessageBoxQuestion(
         this, tr("Enable Hardcore Mode"),
         tr("Hardcore mode is not currently enabled. Enabling hardcore mode allows you to set times, scores, and "
            "participate in game-specific leaderboards.\n\nHowever, hardcore mode also prevents the usage of save "
-           "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?"),
-        QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+           "states, cheats and slowdown functionality.\n\nDo you want to enable hardcore mode?")) == QMessageBox::Yes)
   {
     Host::SetBaseBoolSettingValue("Cheevos", "ChallengeMode", true);
     Host::CommitBaseSettingChanges();
@@ -112,8 +109,8 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
     }
 
     if (has_active_game &&
-        QMessageBox::question(
-          QtUtils::GetRootWidget(this), tr("Reset System"),
+        QtUtils::MessageBoxCritical(
+          this, tr("Reset System"),
           tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) ==
           QMessageBox::Yes)
     {
