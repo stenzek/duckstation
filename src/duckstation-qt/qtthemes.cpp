@@ -18,7 +18,6 @@ namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
 static void SetStyleFromSettings();
 static QString GetNativeThemeStylesheet();
-static bool NativeThemeStylesheetNeedsUpdate();
 
 namespace {
 struct State
@@ -561,7 +560,8 @@ bool QtHost::NativeThemeStylesheetNeedsUpdate()
 {
 #ifdef __APPLE__
   // See below, only used on MacOS.
-  return s_state.is_variable_color_theme;
+  // objectName() is empty after applying stylesheet.
+  return (s_state.is_variable_color_theme && QApplication::style()->objectName().isEmpty());
 #else
   return false;
 #endif
