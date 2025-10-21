@@ -14,6 +14,7 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtGui/QIcon>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QWidget>
 #include <functional>
 #include <initializer_list>
@@ -105,6 +106,27 @@ void SetWindowResizeable(QWidget* widget, bool resizeable);
 
 /// Adjusts the fixed size for a window if it's not resizeable.
 void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
+
+/// Replacement for QMessageBox::question() and friends that doesn't look terrible on MacOS.
+QMessageBox::StandardButton MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,
+                                                  QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                                  QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxWarning(QWidget* parent, const QString& title, const QString& text,
+                                              QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                              QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxCritical(QWidget* parent, const QString& title, const QString& text,
+                                               QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                               QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxQuestion(
+  QWidget* parent, const QString& title, const QString& text,
+  QMessageBox::StandardButtons buttons = QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No),
+  QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon icon, const QString& title,
+                                           const QString& text, QMessageBox::StandardButtons buttons,
+                                           QMessageBox::StandardButton defaultButton);
+QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+                           QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
+                           Qt::WindowModality modality, QWidget* parent);
 
 /// Returns icon for language.
 QIcon GetIconForTranslationLanguage(std::string_view language_name);

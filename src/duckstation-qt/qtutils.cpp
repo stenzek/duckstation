@@ -32,10 +32,10 @@
 #include <QtWidgets/QTreeView>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <map>
-#include <cmath>
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
@@ -49,7 +49,8 @@ LOG_CHANNEL(Host);
 
 namespace QtUtils {
 
-bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
+static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
+static void SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality);
 
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
@@ -237,6 +238,80 @@ void QtUtils::ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int h
     widget->setFixedSize(width, height);
 
   widget->resize(width, height);
+}
+
+void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality)
+{
+  dlg->setWindowModality(modality);
+#ifdef __APPLE__
+  // Can't have a stylesheet set even if it doesn't affect the widget.
+  if (QtHost::NativeThemeStylesheetNeedsUpdate())
+  {
+    dlg->setStyleSheet("");
+    dlg->setAttribute(Qt::WA_StyleSheet, false);
+  }
+#endif
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxIcon(QWidget* parent, QMessageBox::Icon icon, const QString& title,
+                                                    const QString& text, QMessageBox::StandardButtons buttons,
+                                                    QMessageBox::StandardButton defaultButton)
+{
+#ifndef __APPLE__
+  QMessageBox msgbox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+#else
+  QMessageBox msgbox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  msgbox.setInformativeText(text);
+#endif
+
+  // NOTE: Must be application modal, otherwise will lock up on MacOS.
+  SetMessageBoxStyle(&msgbox, Qt::ApplicationModal);
+  msgbox.setDefaultButton(defaultButton);
+  return static_cast<QMessageBox::StandardButton>(msgbox.exec());
+}
+
+QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+                                    QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
+                                    Qt::WindowModality modality, QWidget* parent)
+{
+#ifndef __APPLE__
+  QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+#else
+  QMessageBox* msgbox =
+    new QMessageBox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  msgbox->setInformativeText(text);
+#endif
+  msgbox->setIcon(icon);
+  SetMessageBoxStyle(msgbox, modality);
+  return msgbox;
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,
+                                                           QMessageBox::StandardButtons buttons,
+                                                           QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Information, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxWarning(QWidget* parent, const QString& title, const QString& text,
+                                                       QMessageBox::StandardButtons buttons,
+                                                       QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Warning, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxCritical(QWidget* parent, const QString& title, const QString& text,
+                                                        QMessageBox::StandardButtons buttons,
+                                                        QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Critical, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxQuestion(QWidget* parent, const QString& title, const QString& text,
+                                                        QMessageBox::StandardButtons buttons,
+                                                        QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Question, title, text, buttons, defaultButton);
 }
 
 QIcon QtUtils::GetIconForTranslationLanguage(std::string_view language_name)
