@@ -139,6 +139,7 @@ struct Notification
   std::string key;
   std::string title;
   std::string text;
+  std::string note;
   std::string badge_path;
   Timer::Value start_time;
   Timer::Value move_time;
@@ -4695,8 +4696,8 @@ void FullscreenUI::UpdateNotificationsRunIdle()
     []() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive()); });
 }
 
-void FullscreenUI::AddNotification(std::string key, float duration, std::string title, std::string text,
-                                   std::string image_path)
+void FullscreenUI::AddNotification(std::string key, float duration, std::string image_path, std::string title,
+                                   std::string text, std::string note)
 {
   const std::unique_lock lock(s_state.shared_state_mutex);
   if (!s_state.has_initialized)
@@ -4714,6 +4715,7 @@ void FullscreenUI::AddNotification(std::string key, float duration, std::string 
         it->duration = duration;
         it->title = std::move(title);
         it->text = std::move(text);
+        it->note = std::move(note);
         it->badge_path = std::move(image_path);
 
         // Don't fade it in again
@@ -4730,6 +4732,7 @@ void FullscreenUI::AddNotification(std::string key, float duration, std::string 
   notif.duration = duration;
   notif.title = std::move(title);
   notif.text = std::move(text);
+  notif.note = std::move(note);
   notif.badge_path = std::move(image_path);
   notif.start_time = current_time;
   notif.move_time = current_time;
@@ -4761,12 +4764,13 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float shadow_size = FullscreenUI::LayoutScale(2.0f);
   const float rounding = FullscreenUI::LayoutScale(20.0f);
 
-  ImFont* const title_font = UIStyle.Font;
-  const float title_font_size = UIStyle.LargeFontSize;
-  const float title_font_weight = UIStyle.BoldFontWeight;
-  ImFont* const text_font = UIStyle.Font;
-  const float text_font_size = UIStyle.MediumFontSize;
-  const float text_font_weight = UIStyle.NormalFontWeight;
+  ImFont*& font = UIStyle.Font;
+  const float& title_font_size = UIStyle.LargeFontSize;
+  const float& title_font_weight = UIStyle.BoldFontWeight;
+  const float& text_font_size = UIStyle.MediumFontSize;
+  const float& text_font_weight = UIStyle.NormalFontWeight;
+  const float& note_font_size = UIStyle.MediumFontSize;
+  const float& note_font_weight = UIStyle.BoldFontWeight;
 
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
@@ -4778,10 +4782,14 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
       continue;
     }
 
-    const ImVec2 title_size = title_font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width,
-                                                        max_text_width, IMSTR_START_END(notif.title));
-    const ImVec2 text_size = text_font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
-                                                      IMSTR_START_END(notif.text));
+    // place note to the right of the title
+    const ImVec2 note_size = notif.note.empty() ? ImVec2() :
+                                                  font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX, 0.0f,
+                                                                      IMSTR_START_END(notif.note));
+    const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
+                                                  max_text_width - note_size.x, IMSTR_START_END(notif.title));
+    const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
+                                                 IMSTR_START_END(notif.text));
 
     float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
                                  ImCeil(std::max(title_size.x, text_size.x)),
@@ -4860,13 +4868,21 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
 
     const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
     const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
-    RenderShadowedTextClipped(dl, title_font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
-                              notif.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width, &title_bb);
+    RenderShadowedTextClipped(dl, font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
+                              notif.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width - note_size.x, &title_bb);
 
     const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing);
     const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
-    RenderShadowedTextClipped(dl, text_font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
+    RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
                               notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
+
+    if (!notif.note.empty())
+    {
+      const ImVec2 note_pos = ImVec2(box_max.x - horizontal_padding - note_size.x, box_min.y + vertical_padding);
+      const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
+      RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
+                                notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
+    }
 
     if (clip_box)
       dl->PopClipRect();

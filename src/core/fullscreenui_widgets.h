@@ -491,7 +491,8 @@ bool IsLoadingScreenOpen();
 void CloseLoadingScreen();
 
 /// Notification and toast support.
-void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
+void AddNotification(std::string key, float duration, std::string image_path, std::string title, std::string text,
+                     std::string note);
 void ShowToast(std::string title, std::string message, float duration = 10.0f);
 
 // Wrapper for an animated popup dialog.

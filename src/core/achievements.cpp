@@ -1263,16 +1263,16 @@ void Achievements::DisplayAchievementSummary()
     FullscreenUI::AddNotification("AchievementsSummary",
                                   IsHardcoreModeActive() ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
                                                            ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME,
-                                  s_state.game_title, std::string(summary), s_state.game_icon);
+                                  s_state.game_icon, s_state.game_title, std::string(summary), {});
 
     if (s_state.game_summary.num_unsupported_achievements > 0)
     {
       FullscreenUI::AddNotification(
-        "UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME,
+        "UnsupportedAchievements", ACHIEVEMENT_SUMMARY_UNSUPPORTED_TIME, "images/warning.svg",
         TRANSLATE_STR("Achievements", "Unsupported Achievements"),
         TRANSLATE_PLURAL_STR("Achievements", "%n achievements are not supported by DuckStation.", "Achievement popup",
                              s_state.game_summary.num_unsupported_achievements),
-        "images/warning.svg");
+        {});
     }
   }
 
@@ -1312,9 +1312,12 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
     else
       title = cheevo->title;
 
+    std::string note = fmt::format(ICON_EMOJI_TROPHY " {}", cheevo->points);
+
     FullscreenUI::AddNotification(fmt::format("achievement_unlock_{}", cheevo->id),
-                                  static_cast<float>(g_settings.achievements_notification_duration), std::move(title),
-                                  cheevo->description, GetAchievementBadgePath(cheevo, false));
+                                  static_cast<float>(g_settings.achievements_notification_duration),
+                                  GetAchievementBadgePath(cheevo, false), std::move(title),
+                                  std::string(cheevo->description), std::move(note));
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1333,9 +1336,10 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
       TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
                            s_state.game_summary.num_unlocked_achievements),
       TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
+    std::string note = fmt::format(ICON_EMOJI_TROPHY " {}", s_state.game_summary.points_unlocked);
 
-    FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, s_state.game_title,
-                                  std::move(message), s_state.game_icon);
+    FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, s_state.game_icon,
+                                  s_state.game_title, std::move(message), std::move(note));
   }
 }
 
@@ -1364,8 +1368,8 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
                            s_state.game_summary.num_unlocked_achievements),
       TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
 
-    FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, event->subset->title,
-                                  std::move(message), std::move(badge_path));
+    FullscreenUI::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(badge_path),
+                                  std::string(event->subset->title), std::move(message), {});
   }
 }
 
@@ -1375,9 +1379,9 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    FullscreenUI::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                  LEADERBOARD_STARTED_NOTIFICATION_TIME, event->leaderboard->title,
-                                  TRANSLATE_STR("Achievements", "Leaderboard attempt started."), s_state.game_icon);
+    FullscreenUI::AddNotification(
+      fmt::format("leaderboard_{}", event->leaderboard->id), LEADERBOARD_STARTED_NOTIFICATION_TIME, s_state.game_icon,
+      std::string(event->leaderboard->title), TRANSLATE_STR("Achievements", "Leaderboard attempt started."), {});
   }
 }
 
@@ -1387,9 +1391,9 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 
   if (g_settings.achievements_leaderboard_notifications)
   {
-    FullscreenUI::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                  LEADERBOARD_FAILED_NOTIFICATION_TIME, event->leaderboard->title,
-                                  TRANSLATE_STR("Achievements", "Leaderboard attempt failed."), s_state.game_icon);
+    FullscreenUI::AddNotification(
+      fmt::format("leaderboard_{}", event->leaderboard->id), LEADERBOARD_FAILED_NOTIFICATION_TIME, s_state.game_icon,
+      std::string(event->leaderboard->title), TRANSLATE_STR("Achievements", "Leaderboard attempt failed."), {});
   }
 }
 
@@ -1413,8 +1417,8 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
       g_settings.achievements_spectator_mode ? std::string_view() : TRANSLATE_SV("Achievements", " (Submitting)"));
 
     FullscreenUI::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                  static_cast<float>(g_settings.achievements_leaderboard_duration),
-                                  event->leaderboard->title, std::move(message), s_state.game_icon);
+                                  static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_icon,
+                                  std::string(event->leaderboard->title), std::move(message), {});
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1444,8 +1448,8 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
       event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
 
     FullscreenUI::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
-                                  static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
-                                  std::move(message), s_state.game_icon);
+                                  static_cast<float>(g_settings.achievements_leaderboard_duration), s_state.game_icon,
+                                  std::move(title), std::move(message), {});
   }
 }
 
@@ -1518,11 +1522,11 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   // we still track these even if the option is disabled, so that they can be displayed in the pause menu
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification)
   {
-    FullscreenUI::AddNotification(
-      fmt::format("AchievementChallenge{}", event->achievement->id), CHALLENGE_STARTED_NOTIFICATION_TIME,
-      fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
-                  event->achievement->title ? event->achievement->title : ""),
-      event->achievement->description ? event->achievement->description : "", std::move(badge_path));
+    FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
+                                  CHALLENGE_STARTED_NOTIFICATION_TIME, std::move(badge_path),
+                                  fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
+                                              event->achievement->title ? event->achievement->title : ""),
+                                  event->achievement->description, {});
   }
 
   s_state.active_challenge_indicators.push_back(
@@ -1549,10 +1553,10 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
   {
     FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
                                   CHALLENGE_FAILED_NOTIFICATION_TIME,
+                                  GetAchievementBadgePath(event->achievement, false),
                                   fmt::format(TRANSLATE_FS("Achievements", "Challenge Failed: {}"),
                                               event->achievement->title ? event->achievement->title : ""),
-                                  event->achievement->description ? event->achievement->description : "",
-                                  GetAchievementBadgePath(event->achievement, false));
+                                  event->achievement->description, {});
   }
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification ||
       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Disabled)
@@ -1946,12 +1950,12 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
     if (System::IsValid())
     {
       FullscreenUI::AddNotification(
-        "AchievementsLoginFailed", Host::OSD_ERROR_DURATION,
+        "AchievementsLoginFailed", Host::OSD_ERROR_DURATION, "images/warning.svg",
         TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
         fmt::format(
           TRANSLATE_FS("Achievements", "Achievement unlocks will not be submitted for this session.\nError: {}"),
           error_message),
-        "images/warning.svg");
+        {});
     }
 
     return;
@@ -1990,8 +1994,8 @@ void Achievements::FinishLogin()
     std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {} ({} softcore)\nUnread messages: {}"),
                                       user->score, user->score_softcore, user->num_unread_messages);
 
-    FullscreenUI::AddNotification("achievements_login", LOGIN_NOTIFICATION_TIME, user->display_name, std::move(summary),
-                                  s_state.user_badge_path);
+    FullscreenUI::AddNotification("achievements_login", LOGIN_NOTIFICATION_TIME, s_state.user_badge_path,
+                                  user->display_name, std::move(summary), {});
   }
 }
 
