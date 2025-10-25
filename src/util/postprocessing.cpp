@@ -8,6 +8,7 @@
 #include "postprocessing_shader.h"
 #include "postprocessing_shader_fx.h"
 #include "postprocessing_shader_glsl.h"
+#include "postprocessing_shader_slang.h"
 #include "shadergen.h"
 
 // TODO: Remove me
@@ -191,6 +192,33 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
     {
       std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [ReShade]"), fd.FileName);
+      names.emplace_back(std::move(display_name), std::move(fd.FileName));
+    }
+  }
+
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "slang").c_str(), "*.slangp",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+  FileSystem::FindFiles(
+    Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "slang").c_str(), "*.slangp",
+    FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY,
+    &results);
+  std::sort(results.begin(), results.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
+
+  for (FILESYSTEM_FIND_DATA& fd : results)
+  {
+    size_t pos = fd.FileName.rfind('.');
+    if (pos != std::string::npos && pos > 0)
+      fd.FileName.erase(pos);
+
+#ifdef _WIN32
+    // swap any backslashes for forward slashes so the config is cross-platform
+    StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
+#endif
+
+    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
+    {
+      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [Slang]"), fd.FileName);
       names.emplace_back(std::move(display_name), std::move(fd.FileName));
     }
   }
@@ -770,6 +798,19 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
+  filename = Path::Combine(EmuFolders::Shaders, fmt::format("slang" FS_OSPATH_SEPARATOR_STR "{}.slangp", shader_name));
+  if (FileSystem::FileExists(filename.c_str()))
+  {
+    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
+    if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
+  }
+
   filename = Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name));
   if (FileSystem::FileExists(filename.c_str()))
   {
@@ -783,8 +824,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
-  filename =
-    fmt::format("shaders/reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name);
+  filename = fmt::format("shaders/reshade/Shaders/{}.fx", shader_name);
   resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {
@@ -798,7 +838,21 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
-  filename = fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name);
+  filename = fmt::format("shaders/slang/{}.slangp", shader_name);
+  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
+  if (resource_str.has_value())
+  {
+    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
+    if (!shader->LoadFromString(shader_name, filename, std::move(resource_str.value()), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
+  }
+
+  filename = fmt::format("shaders/{}.glsl", shader_name);
   resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {

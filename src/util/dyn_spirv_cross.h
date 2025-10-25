@@ -24,6 +24,11 @@ class Error;
   X(spvc_compiler_set_name)                                                                                            \
   X(spvc_compiler_set_decoration)                                                                                      \
   X(spvc_compiler_get_decoration)                                                                                      \
+  X(spvc_compiler_get_member_name)                                                                                     \
+  X(spvc_compiler_get_member_decoration)                                                                               \
+  X(spvc_compiler_get_declared_struct_size)                                                                            \
+  X(spvc_compiler_get_declared_struct_member_size)                                                                     \
+  X(spvc_compiler_get_type_handle)                                                                                     \
   X(spvc_resources_get_resource_list_for_type)
 
 #ifdef _WIN32

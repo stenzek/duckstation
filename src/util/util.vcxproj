@@ -89,6 +89,7 @@
     <ClInclude Include="postprocessing_shader.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />
     <ClInclude Include="postprocessing_shader_glsl.h" />
+    <ClInclude Include="postprocessing_shader_slang.h" />
     <ClInclude Include="sdl_input_source.h" />
     <ClInclude Include="shadergen.h" />
     <ClInclude Include="shiftjis.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="postprocessing_shader.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="postprocessing_shader_glsl.cpp" />
+    <ClCompile Include="postprocessing_shader_slang.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sdl_input_source.cpp" />
     <ClCompile Include="shadergen.cpp" />

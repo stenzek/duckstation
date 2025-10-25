@@ -690,6 +690,7 @@ public:
   static constexpr u32 MAX_IMAGE_RENDER_TARGETS = 2;
   static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
   static constexpr u32 PIPELINE_CACHE_HASH_SIZE = 20;
+  static constexpr u32 BASE_UNIFORM_BUFFER_ALIGNMENT = 16;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   GPUDevice();
