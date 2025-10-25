@@ -509,7 +509,13 @@ std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter, GPUDriverType* out
   {
     ret = StringUtil::WideStringToUTF8String(desc.Description);
     if (out_driver_type)
-      *out_driver_type = GPUDevice::GuessDriverType(desc.VendorId, {}, ret);
+    {
+      // Handle WARP here.
+      if (desc.VendorId == 0x1414)
+        *out_driver_type = GPUDriverType::WARP;
+      else
+        *out_driver_type = GPUDevice::GuessDriverType(desc.VendorId, {}, ret);
+    }
   }
   else
   {

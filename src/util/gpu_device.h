@@ -166,6 +166,7 @@ enum class GPUDriverType : u16
 
   LLVMPipe = SoftwareFlag | 1,
   SwiftShader = SoftwareFlag | 2,
+  WARP = SoftwareFlag | 3,
 };
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDriverType);
 
