@@ -767,7 +767,7 @@ void FullscreenUI::DrawAchievementsWindow()
       {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
       {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsupported")},
       {ICON_FA_CIRCLE_QUESTION, TRANSLATE_NOOP("Achievements", "Unofficial")},
-      {ICON_EMOJI_UNLOCKED, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
+      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
       {ICON_FA_STOPWATCH, TRANSLATE_NOOP("Achievements", "Active Challenges")},
       {ICON_FA_RULER_HORIZONTAL, TRANSLATE_NOOP("Achievements", "Almost There")},
       {ICON_FA_TRIANGLE_EXCLAMATION, TRANSLATE_NOOP("Achievements", "Unsynchronized")},
@@ -812,7 +812,7 @@ void FullscreenUI::DrawAchievementsWindow()
     std::make_pair(ICON_PF_ACHIEVEMENTS_PROGRESSION, TRANSLATE_SV("Achievements", "Progression")),
     std::make_pair(ICON_PF_ACHIEVEMENTS_WIN, TRANSLATE_SV("Achievements", "Win Condition")),
     std::make_pair(ICON_FA_LOCK, TRANSLATE_SV("Achievements", "Locked")),
-    std::make_pair(ICON_EMOJI_UNLOCKED, TRANSLATE_SV("Achievements", "Unlocked")),
+    std::make_pair(ICON_FA_UNLOCK, TRANSLATE_SV("Achievements", "Unlocked")),
   });
 
   if (IsGamepadInputSource())
@@ -910,7 +910,7 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
       // Just use the lock for standard achievements.
     case RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD:
     default:
-      right_icon_text = is_unlocked ? ICON_EMOJI_UNLOCKED : ICON_FA_LOCK;
+      right_icon_text = is_unlocked ? ICON_FA_UNLOCK : ICON_FA_LOCK;
       break;
   }
 
