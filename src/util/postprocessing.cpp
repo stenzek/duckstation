@@ -410,6 +410,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
 
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
   m_wants_depth_buffer = false;
+  m_wants_unscaled_input = false;
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
   if (stage_count == 0)
@@ -453,13 +454,18 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   // precompile shaders
   if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
-    CheckTargets(g_gpu_device->GetMainSwapChain()->GetFormat(), g_gpu_device->GetMainSwapChain()->GetWidth(),
-                 g_gpu_device->GetMainSwapChain()->GetHeight(), &progress);
+    const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
+    CheckTargets(swap_chain->GetFormat(), swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetFormat(),
+                 swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetWidth(), swap_chain->GetHeight(),
+                 &progress);
   }
 
   // must be down here, because we need to compile first, triggered by CheckTargets()
   for (std::unique_ptr<Shader>& shader : m_stages)
+  {
     m_wants_depth_buffer |= shader->WantsDepthBuffer();
+    m_wants_unscaled_input |= shader->WantsUnscaledInput();
+  }
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
     DEV_LOG("Depth buffer is needed.");
@@ -531,7 +537,10 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   }
 
   if (prev_format != GPUTexture::Format::Unknown)
-    CheckTargets(prev_format, m_target_width, m_target_height, &progress);
+  {
+    CheckTargets(prev_format, m_target_width, m_target_height, m_source_format, m_source_width, m_source_height,
+                 m_viewport_width, m_viewport_height, &progress);
+  }
 
   if (stage_count > 0)
   {
@@ -573,64 +582,120 @@ void PostProcessing::Chain::Toggle()
     s_start_time = Timer::GetCurrentValue();
 }
 
-bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
+bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 source_width, u32 source_height,
+                                         GPUTexture::Format target_format, u32 target_width, u32 target_height,
+                                         u32 viewport_width, u32 viewport_height,
                                          ProgressCallback* progress /* = nullptr */)
 {
-  if (m_target_format == target_format && m_target_width == target_width && m_target_height == target_height)
+  // might not have a source, this is okay
+  if (!m_wants_unscaled_input || source_width == 0 || source_height == 0)
+  {
+    source_format = target_format;
+    source_width = target_width;
+    source_height = target_height;
+    viewport_width = target_width;
+    viewport_height = target_height;
+  }
+
+  if (m_target_width == target_width && m_target_height == target_height && m_source_width == source_width &&
+      m_source_height == source_height && m_viewport_width == viewport_width && m_viewport_height == viewport_height &&
+      m_source_format == source_format && m_target_format == target_format)
+  {
     return true;
+  }
 
   Error error;
 
-  // In case any allocs fail.
-  DestroyTextures();
-
-  if (!(m_input_texture =
-          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                     target_format, GPUTexture::Flags::None, nullptr, 0, &error)) ||
-      !(m_output_texture =
-          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                     target_format, GPUTexture::Flags::None, nullptr, 0, &error)))
+  if (!g_gpu_device->ResizeTexture(&m_input_texture, source_width, source_height, GPUTexture::Type::RenderTarget,
+                                   source_format, GPUTexture::Flags::None, false, &error) ||
+      !g_gpu_device->ResizeTexture(&m_output_texture, target_width, target_height, GPUTexture::Type::RenderTarget,
+                                   target_format, GPUTexture::Flags::None, false, &error))
   {
-    ERROR_LOG("Failed to create input/output textures: {}", error.GetDescription());
+    ERROR_LOG("Failed to resize input/output textures: {}", error.GetDescription());
     DestroyTextures();
     return false;
   }
 
-  if (!progress)
-    progress = ProgressCallback::NullProgressCallback;
+  // we change source after the first pass, so save the original values here
+  m_source_width = source_width;
+  m_source_height = source_height;
+  m_source_format = source_format;
+  m_viewport_width = viewport_width;
+  m_viewport_height = viewport_height;
 
-  progress->SetProgressRange(static_cast<u32>(m_stages.size()));
-  progress->SetProgressValue(0);
-
-  m_wants_depth_buffer = false;
-
-  for (size_t i = 0; i < m_stages.size(); i++)
+  // shortcut if only the source size changed
+  if (m_target_width != target_width || m_target_height != target_height || m_target_format != target_format)
   {
-    Shader* const shader = m_stages[i].get();
+    if (!progress)
+      progress = ProgressCallback::NullProgressCallback;
 
-    progress->FormatStatusText("Compiling {}...", shader->GetName());
+    progress->SetProgressRange(static_cast<u32>(m_stages.size()));
+    progress->SetProgressValue(0);
 
-    if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
-        !shader->ResizeOutput(target_format, target_width, target_height, &error))
+    m_wants_depth_buffer = false;
+
+    for (size_t i = 0; i < m_stages.size(); i++)
     {
-      ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
-      Host::AddIconOSDMessage(
-        "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-        fmt::format(TRANSLATE_FS("PostProcessing",
-                                 "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
-                    shader->GetName(), error.GetDescription()),
-        Host::OSD_ERROR_DURATION);
-      m_enabled = false;
-      return false;
-    }
+      Shader* const shader = m_stages[i].get();
 
-    progress->SetProgressValue(static_cast<u32>(i + 1));
-    m_wants_depth_buffer |= shader->WantsDepthBuffer();
+      progress->FormatStatusText("Compiling {}...", shader->GetName());
+
+      if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
+          !shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
+                                 viewport_width, viewport_height, &error))
+      {
+        ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
+        Host::AddIconOSDMessage(
+          "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
+          fmt::format(TRANSLATE_FS("PostProcessing",
+                                   "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
+                      shader->GetName(), error.GetDescription()),
+          Host::OSD_ERROR_DURATION);
+        m_enabled = false;
+        DestroyTextures();
+        return false;
+      }
+
+      progress->SetProgressValue(static_cast<u32>(i + 1));
+      m_wants_depth_buffer |= shader->WantsDepthBuffer();
+
+      // First shader outputs at target size, so the input is now target size.
+      source_width = target_width;
+      source_height = target_height;
+      viewport_width = target_width;
+      viewport_height = target_height;
+    }
+  }
+  else
+  {
+    for (std::unique_ptr<Shader>& shader : m_stages)
+    {
+      if (!shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
+                                 viewport_width, viewport_height, &error))
+      {
+        ERROR_LOG("Failed to resize post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
+        Host::AddIconOSDMessage(
+          "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
+          fmt::format(TRANSLATE_FS("PostProcessing",
+                                   "Failed to resize post-processing shader '{}'. Disabling post-processing.\n{}"),
+                      shader->GetName(), error.GetDescription()),
+          Host::OSD_ERROR_DURATION);
+        m_enabled = false;
+        DestroyTextures();
+        return false;
+      }
+
+      // First shader outputs at target size, so the input is now target size.
+      source_width = target_width;
+      source_height = target_height;
+      viewport_width = target_width;
+      viewport_height = target_height;
+    }
   }
 
-  m_target_format = target_format;
   m_target_width = target_width;
   m_target_height = target_height;
+  m_target_format = target_format;
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   return true;
 }
@@ -646,8 +711,9 @@ void PostProcessing::Chain::DestroyTextures()
 }
 
 GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
-                                                      GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
-                                                      s32 orig_height, s32 native_width, s32 native_height)
+                                                      GPUTexture* final_target, const GSVector4i final_rect,
+                                                      s32 orig_width, s32 orig_height, s32 native_width,
+                                                      s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 

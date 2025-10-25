@@ -119,6 +119,7 @@ public:
 
   ALWAYS_INLINE bool HasStages() const { return !m_stages.empty(); }
   ALWAYS_INLINE bool NeedsDepthBuffer() const { return m_needs_depth_buffer; }
+  ALWAYS_INLINE bool WantsUnscaledInput() const { return m_wants_unscaled_input; }
   ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
   ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
 
@@ -135,8 +136,9 @@ public:
   /// Temporarily toggles post-processing on/off.
   void Toggle();
 
-  bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
-                    ProgressCallback* progress = nullptr);
+  bool CheckTargets(GPUTexture::Format source_format, u32 source_width, u32 source_height,
+                    GPUTexture::Format target_format, u32 target_width, u32 target_height, u32 viewport_width,
+                    u32 viewport_height, ProgressCallback* progress = nullptr);
 
   GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
                                  const GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
@@ -148,12 +150,18 @@ private:
 
   const char* m_section;
 
-  GPUTexture::Format m_target_format = GPUTexture::Format::Unknown;
+  u32 m_source_width = 0;
+  u32 m_source_height = 0;
   u32 m_target_width = 0;
   u32 m_target_height = 0;
+  u32 m_viewport_width = 0;
+  u32 m_viewport_height = 0;
+  GPUTexture::Format m_source_format = GPUTexture::Format::Unknown;
+  GPUTexture::Format m_target_format = GPUTexture::Format::Unknown;
   bool m_enabled = false;
   bool m_wants_depth_buffer = false;
   bool m_needs_depth_buffer = false;
+  bool m_wants_unscaled_input = false;
 
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;

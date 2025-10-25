@@ -114,7 +114,7 @@ private:
   void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i display_rect,
                    bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation);
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
-                                                   const GSVector4i display_rect);
+                                                   const GSVector4i display_rect, const GSVector2i postfx_size);
 
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
