@@ -1729,6 +1729,32 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 #ifdef _WIN32
     case GPUShaderLanguage::HLSL:
     {
+      if (execmodel == SpvExecutionModelVertex)
+      {
+        const spvc_reflected_resource* inputs;
+        size_t inputs_count;
+        if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT,
+                                                                        &inputs, &inputs_count)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() for vertex attributes failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+
+        for (const spvc_reflected_resource& res : std::span<const spvc_reflected_resource>(inputs, inputs_count))
+        {
+          const unsigned location = dyn_libs::spvc_compiler_get_decoration(scompiler, res.id, SpvDecorationLocation);
+          const TinyString name = TinyString::from_format("ATTR{}", location);
+          const spvc_hlsl_vertex_attribute_remap va = {.location = location, .semantic = name.c_str()};
+          if ((sres = dyn_libs::spvc_compiler_hlsl_add_vertex_attribute_remap(scompiler, &va, 1)) != SPVC_SUCCESS)
+          {
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_vertex_attribute_remap() failed: {}",
+                                static_cast<int>(sres));
+            return {};
+          }
+        }
+      }
+
       if ((sres = dyn_libs::spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL,
                                                            target_version)) != SPVC_SUCCESS)
       {
