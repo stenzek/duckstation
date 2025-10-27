@@ -52,6 +52,7 @@ const char* GPUTexture::GetFormatName(Format format)
     "RGBA16F", // RGBA16F
     "RGBA32F", // RGBA32F
     "RGB10A2", // RGB10A2
+    "SRGBA8",  // SRGBA8
     "BC1",     // BC1
     "BC2",     // BC2
     "BC3",     // BC3
@@ -194,6 +195,7 @@ ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
     ImageFormat::None,   // RGBA16F
     ImageFormat::None,   // RGBA32F
     ImageFormat::None,   // RGB10A2
+    ImageFormat::None,   // SRGBA8
     ImageFormat::BC1,    // BC1
     ImageFormat::BC2,    // BC2
     ImageFormat::BC3,    // BC3
@@ -277,6 +279,7 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
     8,  // RGBA16F
     16, // RGBA32F
     4,  // RGB10A2
+    4,  // SRGBA8
     8,  // BC1 - 16 pixels in 64 bits
     16, // BC2 - 16 pixels in 128 bits
     16, // BC3 - 16 pixels in 128 bits
