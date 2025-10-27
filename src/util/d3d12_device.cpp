@@ -65,33 +65,28 @@ static u32 s_debug_scope_depth = 0;
 #endif
 
 static constexpr const u32 s_mipmap_blit_vs[] = {
-  0x43425844, 0xe0f571cf, 0x51234ef3, 0x3a6beab4, 0x141cd2ef, 0x00000001, 0x000003ac, 0x00000005, 0x00000034,
-  0x00000144, 0x00000178, 0x000001d0, 0x00000310, 0x46454452, 0x00000108, 0x00000001, 0x00000068, 0x00000001,
-  0x0000003c, 0xfffe0500, 0x00008100, 0x000000e0, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
-  0x00000024, 0x0000000c, 0x00000000, 0x0000005c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000001, 0x00000001, 0x424f4255, 0x6b636f6c, 0xababab00, 0x0000005c, 0x00000001, 0x00000080, 0x00000010,
-  0x00000000, 0x00000000, 0x000000a8, 0x00000000, 0x00000010, 0x00000002, 0x000000bc, 0x00000000, 0xffffffff,
-  0x00000000, 0xffffffff, 0x00000000, 0x72735f75, 0x65725f63, 0x66007463, 0x74616f6c, 0xabab0034, 0x00030001,
-  0x00040001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000b3, 0x7263694d,
-  0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072, 0x6c69706d, 0x31207265, 0x00312e30,
-  0x4e475349, 0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000006, 0x00000001, 0x00000000,
-  0x00000101, 0x565f5653, 0x65747265, 0x00444978, 0x4e47534f, 0x00000050, 0x00000002, 0x00000008, 0x00000038,
-  0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000c03, 0x00000041, 0x00000000, 0x00000001, 0x00000003,
-  0x00000001, 0x0000000f, 0x43584554, 0x44524f4f, 0x5f565300, 0x69736f50, 0x6e6f6974, 0xababab00, 0x58454853,
-  0x00000138, 0x00010050, 0x0000004e, 0x0100086a, 0x04000059, 0x00208e46, 0x00000000, 0x00000001, 0x04000060,
+  0x43425844, 0x1790f572, 0x2810683a, 0xdff0fe9d, 0x8f210489, 0x00000001, 0x000002e0, 0x00000005, 0x00000034,
+  0x000000a0, 0x000000d4, 0x0000012c, 0x00000244, 0x46454452, 0x00000064, 0x00000000, 0x00000000, 0x00000000,
+  0x0000003c, 0xfffe0500, 0x00008100, 0x0000003c, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
+  0x00000024, 0x0000000c, 0x00000000, 0x7263694d, 0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168,
+  0x6f432072, 0x6c69706d, 0x31207265, 0x00312e30, 0x4e475349, 0x0000002c, 0x00000001, 0x00000008, 0x00000020,
+  0x00000000, 0x00000006, 0x00000001, 0x00000000, 0x00000101, 0x565f5653, 0x65747265, 0x00444978, 0x4e47534f,
+  0x00000050, 0x00000002, 0x00000008, 0x00000038, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000c03,
+  0x00000041, 0x00000000, 0x00000001, 0x00000003, 0x00000001, 0x0000000f, 0x43584554, 0x44524f4f, 0x5f565300,
+  0x69736f50, 0x6e6f6974, 0xababab00, 0x58454853, 0x00000110, 0x00010050, 0x00000044, 0x0100086a, 0x04000060,
   0x00101012, 0x00000000, 0x00000006, 0x03000065, 0x00102032, 0x00000000, 0x04000067, 0x001020f2, 0x00000001,
   0x00000001, 0x02000068, 0x00000001, 0x0b00008c, 0x00100012, 0x00000000, 0x00004001, 0x00000001, 0x00004001,
   0x00000001, 0x0010100a, 0x00000000, 0x00004001, 0x00000000, 0x07000001, 0x00100042, 0x00000000, 0x0010100a,
-  0x00000000, 0x00004001, 0x00000002, 0x05000056, 0x00100032, 0x00000000, 0x00100086, 0x00000000, 0x0b000032,
-  0x00102032, 0x00000000, 0x00100046, 0x00000000, 0x00208ae6, 0x00000000, 0x00000000, 0x00208046, 0x00000000,
-  0x00000000, 0x0f000032, 0x00102032, 0x00000001, 0x00100046, 0x00000000, 0x00004002, 0x40000000, 0xc0000000,
-  0x00000000, 0x00000000, 0x00004002, 0xbf800000, 0x3f800000, 0x00000000, 0x00000000, 0x08000036, 0x001020c2,
-  0x00000001, 0x00004002, 0x00000000, 0x00000000, 0x00000000, 0x3f800000, 0x0100003e, 0x54415453, 0x00000094,
-  0x00000007, 0x00000001, 0x00000000, 0x00000003, 0x00000002, 0x00000000, 0x00000001, 0x00000001, 0x00000000,
+  0x00000000, 0x00004001, 0x00000002, 0x05000056, 0x00100032, 0x00000000, 0x00100086, 0x00000000, 0x05000036,
+  0x00102032, 0x00000000, 0x00100046, 0x00000000, 0x0f000032, 0x00102032, 0x00000001, 0x00100046, 0x00000000,
+  0x00004002, 0x40000000, 0xc0000000, 0x00000000, 0x00000000, 0x00004002, 0xbf800000, 0x3f800000, 0x00000000,
+  0x00000000, 0x08000036, 0x001020c2, 0x00000001, 0x00004002, 0x00000000, 0x00000000, 0x00000000, 0x3f800000,
+  0x0100003e, 0x54415453, 0x00000094, 0x00000007, 0x00000001, 0x00000000, 0x00000003, 0x00000001, 0x00000000,
+  0x00000001, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000001, 0x00000000, 0x00000000,
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000, 0x00000001, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000};
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+};
 
 static constexpr const u32 s_mipmap_blit_ps[] = {
   0x43425844, 0x25500f77, 0x71f24271, 0x5f83f8b8, 0x3f405943, 0x00000001, 0x0000026c, 0x00000005, 0x00000034,
@@ -1786,11 +1781,23 @@ bool D3D12Device::CreateRootSignatures(Error* error)
     D3D12::SetObjectName(rs.Get(), "Compute Multi Texture Pipeline Layout");
   }
 
+  {
+    auto& rs = m_mipmap_render_root_signature;
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddStaticSampler(0, D3D12Sampler::GetD3DSamplerDesc(GPUSampler::GetLinearConfig()), D3D12_SHADER_VISIBILITY_PIXEL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Render Mipmap Pipeline Layout");
+  }
+
   return true;
 }
 
 void D3D12Device::DestroyRootSignatures()
 {
+  for (ComPtr<ID3D12PipelineState>& it : m_mipmap_render_pipelines)
+    it.Reset();
+  m_mipmap_render_root_signature.Reset();
   m_root_signatures.enumerate([](auto& it) { it.Reset(); });
 }
 
@@ -2213,17 +2220,15 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
 void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height,
                                       u32 src_level, u32 src_width, u32 src_height)
 {
-  ID3D12RootSignature* rootsig =
-    m_root_signatures[0][static_cast<size_t>(GPUPipeline::Layout::SingleTextureAndPushConstants)].Get();
   ComPtr<ID3D12PipelineState>& pipeline = m_mipmap_render_pipelines[static_cast<size_t>(texture->GetFormat())];
   if (!pipeline)
   {
     D3D12::GraphicsPipelineBuilder gpb;
-    gpb.SetRootSignature(rootsig);
+    gpb.SetRootSignature(m_mipmap_render_root_signature.Get());
     gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     gpb.SetRenderTarget(0, texture->GetDXGIFormat());
-    gpb.SetVertexShader(s_mipmap_blit_vs, std::size(s_mipmap_blit_vs));
-    gpb.SetPixelShader(s_mipmap_blit_ps, std::size(s_mipmap_blit_ps));
+    gpb.SetVertexShader(s_mipmap_blit_vs, sizeof(s_mipmap_blit_vs));
+    gpb.SetPixelShader(s_mipmap_blit_ps, sizeof(s_mipmap_blit_ps));
     gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
     gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
     gpb.SetBlendState(0, false, D3D12_BLEND_ZERO, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_BLEND_ZERO,
@@ -2266,17 +2271,26 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
     }
   }
 
-  EndRenderPass();
+  if (InRenderPass())
+    EndRenderPass();
 
   // we need a temporary SRV and RTV for each mip level
   // Safe to use the init buffer after exec, because everything will be done with the texture.
   D3D12DescriptorHandle rtv_handle;
   while (!GetRTVHeapManager().Allocate(&rtv_handle))
+  {
     SubmitCommandList(false, "Allocate RTV for RenderTextureMipmap()");
+    if (m_device_was_lost)
+      return;
+  }
 
   D3D12DescriptorHandle srv_handle;
-  while (!GetDescriptorHeapManager().Allocate(&srv_handle))
-    SubmitCommandList(false, "Allocate SRV for RenderTextureMipmap()");
+  while (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &srv_handle))
+  {
+    SubmitCommandList(false, "Allocate SRV/sampler for RenderTextureMipmap()");
+    if (m_device_was_lost)
+      return;
+  }
 
   // Setup views. This will be a partial view for the SRV.
   const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {.Format = texture->GetDXGIFormat(),
@@ -2317,8 +2331,8 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   cmdlist->RSSetScissorRects(1, &scissor);
 
   cmdlist->SetPipelineState(pipeline.Get());
+  cmdlist->SetGraphicsRootSignature(m_mipmap_render_root_signature.Get());
   cmdlist->SetGraphicsRootDescriptorTable(0, srv_handle);
-  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12Sampler*>(m_linear_sampler)->GetDescriptor());
   cmdlist->DrawInstanced(3, 1, 0, 0);
 
   cmdlist->EndRenderPass();
@@ -2335,7 +2349,6 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   }
 
   // Must destroy after current cmdlist.
-  DeferDescriptorDestruction(m_descriptor_heap_manager, &srv_handle);
   DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
 
   // Restore for next normal draw.

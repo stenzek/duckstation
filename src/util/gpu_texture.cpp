@@ -344,9 +344,9 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
     return false;
   }
 
-  if (levels > 1 && type != Type::Texture)
+  if (levels > 1 && type == Type::DepthStencil)
   {
-    Error::SetStringView(error, "Mipmaps are not supported on targets.");
+    Error::SetStringView(error, "Mipmaps are not supported on depth stencil.");
     return false;
   }
 

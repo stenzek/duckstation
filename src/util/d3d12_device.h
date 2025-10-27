@@ -363,6 +363,7 @@ private:
 
   D3D12SwapChain* m_current_swap_chain = nullptr;
 
+  ComPtr<ID3D12RootSignature> m_mipmap_render_root_signature;
   std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(GPUTexture::Format::MaxCount)> m_mipmap_render_pipelines =
     {};
 };

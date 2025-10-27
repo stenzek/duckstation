@@ -74,7 +74,6 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     case GPUTexture::Type::RenderTarget:
     {
       // RT's tend to be larger, so we'll keep them committed for speed.
-      DebugAssert(levels == 1);
       allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
       desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
       optimized_clear_value.Format = fm.rtv_format;
@@ -566,8 +565,6 @@ void D3D12Texture::Unmap()
 
 void D3D12Texture::GenerateMipmaps()
 {
-  Panic("Not implemented");
-
   for (u32 layer = 0; layer < m_layers; layer++)
   {
     for (u32 dst_level = 1; dst_level < m_levels; dst_level++)
@@ -718,7 +715,7 @@ void D3D12Sampler::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
+D3D12_SAMPLER_DESC D3D12Sampler::GetD3DSamplerDesc(const GPUSampler::Config& config)
 {
   static constexpr std::array<D3D12_TEXTURE_ADDRESS_MODE, static_cast<u8>(GPUSampler::AddressMode::MaxCount)> ta = {{
     D3D12_TEXTURE_ADDRESS_MODE_WRAP,   // Repeat
@@ -742,7 +739,7 @@ std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config&
   desc.AddressU = ta[static_cast<u8>(config.address_u.GetValue())];
   desc.AddressV = ta[static_cast<u8>(config.address_v.GetValue())];
   desc.AddressW = ta[static_cast<u8>(config.address_w.GetValue())];
-  std::memcpy(desc.BorderColor, RGBA8ToFloat(config.border_color).data(), sizeof(desc.BorderColor));
+  std::memcpy(desc.BorderColor, GPUDevice::RGBA8ToFloat(config.border_color).data(), sizeof(desc.BorderColor));
   desc.MinLOD = static_cast<float>(config.min_lod);
   desc.MaxLOD = static_cast<float>(config.max_lod);
 
@@ -758,9 +755,15 @@ std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config&
     desc.MaxAnisotropy = 1;
   }
 
+  return desc;
+}
+
+std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
+{
   D3D12DescriptorHandle handle;
   if (m_sampler_heap_manager.Allocate(&handle)) [[likely]]
   {
+    const D3D12_SAMPLER_DESC desc = D3D12Sampler::GetD3DSamplerDesc(config);
     m_device->CreateSampler(&desc, handle);
     return std::unique_ptr<GPUSampler>(new D3D12Sampler(handle));
   }
