@@ -356,13 +356,13 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
 
     if (vkGetPhysicalDeviceProperties2)
     {
+      props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
       driver_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
       Vulkan::AddPointerToChain(&props, &driver_props);
       vkGetPhysicalDeviceProperties2(device, &props);
     }
 
     // just in case the chained version fails
-    props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
     vkGetPhysicalDeviceProperties(device, &props.properties);
 
     VkPhysicalDeviceFeatures available_features = {};
