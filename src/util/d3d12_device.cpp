@@ -148,9 +148,8 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
-                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                               bool allow_present_throttle,
+bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -1340,7 +1339,8 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self =
-    /*!HasCreateFlag(create_flags, CreateFlag::DisableTextureCopyToSelf)*/ false; // TODO: Support with Enhanced Barriers
+    /*!HasCreateFlag(create_flags, CreateFlag::DisableTextureCopyToSelf)*/ false; // TODO: Support with Enhanced
+                                                                                  // Barriers
   m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
@@ -1369,8 +1369,8 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
      (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
       SupportsTextureFormat(GPUTexture::Format::BC3)));
-  m_features.bptc_textures =
-    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && SupportsTextureFormat(GPUTexture::Format::BC7));
+  m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
+                              SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
@@ -1905,8 +1905,8 @@ void D3D12Device::BeginRenderPass()
       ds->SetUseFenceValue(GetCurrentFenceValue());
       ds_desc.cpuDescriptor = ds->GetWriteDescriptor();
       ds_desc.DepthEndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
-      ds_desc.StencilBeginningAccess = {};
-      ds_desc.StencilEndingAccess = {};
+      ds_desc.StencilBeginningAccess = {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, {}};
+      ds_desc.StencilEndingAccess = {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, {}};
 
       switch (ds->GetState())
       {
