@@ -1891,6 +1891,29 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           static_cast<int>(sres));
         return {};
       }
+
+      if (ubos_count > 0)
+      {
+        // Set name of UBO block to match our shaders, so that drivers without binding info can still find it.
+        dyn_libs::spvc_compiler_set_name(scompiler, ubos[0].id, "UBOBlock");
+      }
+
+      if (push_constants_count > 0)
+      {
+        // Set name of push constant block to match our shaders, so that drivers without binding info can still find it.
+        dyn_libs::spvc_compiler_set_name(scompiler, push_constants[0].id, "PushConstants");
+        dyn_libs::spvc_compiler_set_decoration(scompiler, push_constants[0].id, SpvDecorationBinding, 1);
+
+        if ((sres = dyn_libs::spvc_compiler_options_set_bool(
+               soptions, SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER, SPVC_TRUE)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(
+            error,
+            "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER) failed: {}",
+            static_cast<int>(sres));
+          return {};
+        }
+      }
     }
     break;
 #endif

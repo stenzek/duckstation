@@ -21,6 +21,8 @@ class Error;
   X(spvc_compiler_install_compiler_options)                                                                            \
   X(spvc_compiler_require_extension)                                                                                   \
   X(spvc_compiler_compile)                                                                                             \
+  X(spvc_compiler_set_name)                                                                                            \
+  X(spvc_compiler_set_decoration)                                                                                      \
   X(spvc_compiler_get_decoration)                                                                                      \
   X(spvc_resources_get_resource_list_for_type)
 
