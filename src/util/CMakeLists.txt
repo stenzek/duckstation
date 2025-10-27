@@ -65,6 +65,8 @@ add_library(util
   shiftjis.h
   sockets.cpp
   sockets.h
+  spirv_module.cpp
+  spirv_module.h
   state_wrapper.cpp
   state_wrapper.h
   texture_decompress.cpp

@@ -93,6 +93,7 @@
     <ClInclude Include="shadergen.h" />
     <ClInclude Include="shiftjis.h" />
     <ClInclude Include="sockets.h" />
+    <ClInclude Include="spirv_module.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="texture_decompress.h" />
     <ClInclude Include="vulkan_builders.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="sockets.cpp" />
+    <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="texture_decompress.cpp" />
     <ClCompile Include="vulkan_builders.cpp" />

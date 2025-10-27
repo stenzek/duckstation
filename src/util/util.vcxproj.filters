@@ -77,6 +77,7 @@
     <ClInclude Include="animated_image.h" />
     <ClInclude Include="dyn_shaderc.h" />
     <ClInclude Include="dyn_spirv_cross.h" />
+    <ClInclude Include="spirv_module.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="texture_decompress.cpp" />
     <ClCompile Include="opengl_context_sdl.cpp" />
     <ClCompile Include="animated_image.cpp" />
+    <ClCompile Include="spirv_module.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />
