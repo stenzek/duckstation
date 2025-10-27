@@ -1820,13 +1820,15 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
       {
         for (u32 i = 0; i < textures_count; i++)
         {
+          const u32 binding = dyn_libs::spvc_compiler_get_decoration(scompiler, textures[i].id, SpvDecorationBinding);
+
           const spvc_hlsl_resource_binding rb = {.stage = execmodel,
                                                  .desc_set = TEXTURE_DESCRIPTOR_SET,
-                                                 .binding = i,
+                                                 .binding = binding,
                                                  .cbv = {},
                                                  .uav = {},
-                                                 .srv = {.register_space = 0, .register_binding = i},
-                                                 .sampler = {.register_space = 0, .register_binding = i}};
+                                                 .srv = {.register_space = 0, .register_binding = binding},
+                                                 .sampler = {.register_space = 0, .register_binding = binding}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
             Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for texture failed: {}",
