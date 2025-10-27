@@ -90,7 +90,7 @@ static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> Create
       if (rapi == RenderAPI::D3D12 && rapi_version >= 1200)
       {
         return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_spirv(
-                                 true, debug_info, uniforms_to_spec_constants, false, false)),
+                                 true, debug_info, uniforms_to_spec_constants, false, false, true)),
                                GPUShaderLanguage::SPV);
       }
       else

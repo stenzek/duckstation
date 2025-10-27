@@ -138,12 +138,13 @@ class codegen_spirv final : public codegen
 	static_assert(sizeof(id) == sizeof(spv::Id), "unexpected SPIR-V id type size");
 
 public:
-	codegen_spirv(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y) :
+	codegen_spirv(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y, bool discard_is_demote) :
 		_debug_info(debug_info),
 		_vulkan_semantics(vulkan_semantics),
 		_uniforms_to_spec_constants(uniforms_to_spec_constants),
 		_enable_16bit_types(enable_16bit_types),
-		_flip_vert_y(flip_vert_y)
+		_flip_vert_y(flip_vert_y),
+		_discard_is_demote(discard_is_demote)
 	{
 		_glsl_ext = make_id();
 	}
@@ -185,6 +186,7 @@ private:
 	bool _uniforms_to_spec_constants = false;
 	bool _enable_16bit_types = false;
 	bool _flip_vert_y = false;
+	bool _discard_is_demote = false;
 
 	spirv_basic_block _entries;
 	spirv_basic_block _execution_modes;
@@ -2519,7 +2521,19 @@ private:
 		if (!is_in_block())
 			return 0;
 
-		add_instruction_without_result(spv::OpKill);
+		// DXC chokes when discarding inside a function. Return a null value and use demote instead, since that's
+		// what the HLSL discard instruction compiles to anyway.
+		if (!_discard_is_demote || _current_function_blocks->return_type.is_void())
+		{
+			add_instruction_without_result(spv::OpKill);
+		}
+		else
+		{
+			add_instruction_without_result(spv::OpDemoteToHelperInvocation);
+
+			const id return_id = emit_constant(_current_function_blocks->return_type, constant{}, false);
+			add_instruction_without_result(spv::OpReturnValue).add(return_id);
+		}
 
 		return set_block(0);
 	}
@@ -2601,7 +2615,7 @@ private:
 	}
 };
 
-codegen *reshadefx::create_codegen_spirv(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y)
+codegen *reshadefx::create_codegen_spirv(bool vulkan_semantics, bool debug_info, bool uniforms_to_spec_constants, bool enable_16bit_types, bool flip_vert_y, bool discard_is_demote)
 {
-	return new codegen_spirv(vulkan_semantics, debug_info, uniforms_to_spec_constants, enable_16bit_types, flip_vert_y);
+	return new codegen_spirv(vulkan_semantics, debug_info, uniforms_to_spec_constants, enable_16bit_types, flip_vert_y, discard_is_demote);
 }
