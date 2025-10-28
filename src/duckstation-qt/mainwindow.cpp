@@ -3437,22 +3437,14 @@ void MainWindow::checkForUpdates(bool display_message)
   }
 
   m_auto_updater_dialog = new AutoUpdaterWindow();
-  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
+  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this,
+          [this] { QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog); });
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }
 
 void* MainWindow::getNativeWindowId()
 {
   return (void*)winId();
-}
-
-void MainWindow::onUpdateCheckComplete()
-{
-  if (!m_auto_updater_dialog)
-    return;
-
-  m_auto_updater_dialog->deleteLater();
-  m_auto_updater_dialog = nullptr;
 }
 
 void MainWindow::onDebugLogChannelsMenuAboutToShow()
