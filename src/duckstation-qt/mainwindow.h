@@ -311,8 +311,6 @@ private:
   void onGameListEntryContextMenuRequested(const QPoint& point);
   void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
-  void onUpdateCheckComplete();
-
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
 
