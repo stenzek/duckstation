@@ -199,8 +199,6 @@ protected:
   void wheelEvent(QWheelEvent* e) override;
 
 private:
-  void setFixedColumnWidth(int column, int width);
-
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
 
