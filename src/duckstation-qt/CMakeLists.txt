@@ -254,23 +254,27 @@ if(WIN32)
   endif()
 elseif(APPLE)
   # Don't generate a bundle for XCode, it makes code signing fail...
-  if(NOT CMAKE_GENERATOR MATCHES "Xcode")
-    get_scm_version()
-    set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
-    set_target_properties(duckstation-qt PROPERTIES
-      MACOSX_BUNDLE true
-      MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
-      OUTPUT_NAME DuckStation
-    )
+  get_scm_version()
+  set(BUNDLE_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DuckStation.app)
+  set_target_properties(duckstation-qt PROPERTIES
+    MACOSX_BUNDLE true
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+    OUTPUT_NAME DuckStation
+  )
 
+  if(CMAKE_GENERATOR MATCHES "Xcode")
+    set_target_properties(duckstation-qt PROPERTIES
+      XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
+      XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED NO
+      XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED NO
+    )
+  elseif(NOT SKIP_POSTPROCESS_BUNDLE)
     # Inject Qt Libraries into bundle.
-    if(NOT SKIP_POSTPROCESS_BUNDLE)
-      find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
-      add_custom_target(duckstation-postprocess-bundle ALL
-        COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}" -no-strip
-      )
-      add_dependencies(duckstation-postprocess-bundle duckstation-qt)
-    endif()
+    find_program(MACDEPLOYQT_EXE macdeployqt HINTS "${QT_BINARY_DIRECTORY}")
+    add_custom_target(duckstation-postprocess-bundle ALL
+      COMMAND "${MACDEPLOYQT_EXE}" "${BUNDLE_PATH}" -no-strip
+    )
+    add_dependencies(duckstation-postprocess-bundle duckstation-qt)
   endif()
 
   # Copy icon into the bundle
