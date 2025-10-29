@@ -3347,6 +3347,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
     u32 u_end_y;
     std::array<float, 4> u_fill_color;
     u32 u_interlaced_displayed_field;
+    u32 pad[3];
   };
   VRAMFillUBOData uniforms;
   uniforms.u_dst_x = (x % VRAM_WIDTH) * m_resolution_scale;
@@ -3357,6 +3358,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
   uniforms.u_fill_color =
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
   uniforms.u_interlaced_displayed_field = active_line_lsb;
+  std::memset(uniforms.pad, 0, sizeof(uniforms.pad));
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
@@ -3589,6 +3591,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       float u_resolution_scale;
       u32 u_set_mask_bit;
       float u_depth_value;
+      u32 pad;
     };
     const VRAMCopyUBOData uniforms = {static_cast<float>((src_x % VRAM_WIDTH) * m_resolution_scale),
                                       static_cast<float>((src_y % VRAM_HEIGHT) * m_resolution_scale),
