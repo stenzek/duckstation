@@ -65,6 +65,10 @@ static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 static constexpr int MIN_COVER_CACHE_ROW_BUFFER = 4;
 
+static constexpr QSize FLAG_PIXMAP_SIZE(30, 20);
+static constexpr QSize ACHIEVEMENT_PIXMAP_SIZE(16, 16);
+static constexpr QSize COMPATIBILITY_PIXMAP_SIZE(96, 24);
+
 static const char* SUPPORTED_FORMATS_STRING =
   QT_TRANSLATE_NOOP(GameListWidget, ".cue (Cue Sheets)\n"
                                     ".iso/.img (Single Track Image)\n"
@@ -359,6 +363,7 @@ void GameListModel::setDevicePixelRatio(qreal dpr)
   m_device_pixel_ratio = dpr;
   m_placeholder_image.setDevicePixelRatio(dpr);
   m_loading_pixmap.setDevicePixelRatio(dpr);
+  m_flag_pixmap_cache.clear();
   loadCommonImages();
   refreshCovers();
   refreshIcons();
@@ -552,16 +557,13 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
 
 const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) const
 {
-  static constexpr u32 FLAG_PIXMAP_WIDTH = 30;
-  static constexpr u32 FLAG_PIXMAP_HEIGHT = 20;
-
   const std::string_view name = ge->GetLanguageIcon();
   auto it = m_flag_pixmap_cache.find(name);
   if (it != m_flag_pixmap_cache.end())
     return it->second;
 
   const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconName(), true)));
-  it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_WIDTH, FLAG_PIXMAP_HEIGHT)).first;
+  it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_SIZE, m_device_pixel_ratio)).first;
   return it->second;
 }
 
@@ -1155,21 +1157,19 @@ void GameListModel::loadCommonImages()
 {
   loadSizeDependentPixmaps();
 
-  constexpr QSize COMPATIBILITY_ICON_SIZE(96, 24);
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
   {
     m_compatibility_pixmaps[i] = QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i))
-                                   .pixmap(COMPATIBILITY_ICON_SIZE, m_device_pixel_ratio);
+                                   .pixmap(COMPATIBILITY_PIXMAP_SIZE, m_device_pixel_ratio);
   }
 
-  constexpr QSize ACHIEVEMENT_ICON_SIZE(16, 16);
   m_no_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-gray.svg", true)))
-                               .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
+                               .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
   m_has_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon.svg", true)))
-                                .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
+                                .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
   m_mastered_achievements_pixmap =
     QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-star.svg", true)))
-      .pixmap(ACHIEVEMENT_ICON_SIZE, m_device_pixel_ratio);
+      .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
 }
 
 class GameListSortModel final : public QSortFilterProxyModel
@@ -2147,19 +2147,15 @@ QFontMetrics GameListListView::fontMetricsForHorizontalHeader() const
   return QFontMetrics(font);
 }
 
-void GameListListView::setFixedColumnWidth(int column, int width)
-{
-  horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);
-  setColumnWidth(column, width);
-}
-
 void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, int str_width)
 {
+  horizontalHeader()->setSectionResizeMode(column, QHeaderView::Fixed);
+
   const int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
   const int header_width = fm.size(0, m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString()).width() +
                            style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this) + // sort indicator
                            3 * margin; // left/right margins + space between text and sort indicator
-  setFixedColumnWidth(column, std::max(header_width, str_width));
+  setColumnWidth(column, std::max(header_width, str_width));
 }
 
 void GameListListView::updateFixedColumnWidths()
@@ -2193,10 +2189,10 @@ void GameListListView::updateFixedColumnWidths()
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_DataSize, size_width);
 
-  setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconSizeWithPadding());
-  setFixedColumnWidth(GameListModel::Column_Region, 55);
-  setFixedColumnWidth(GameListModel::Column_Achievements, 100);
-  setFixedColumnWidth(GameListModel::Column_Compatibility, 100);
+  setFixedColumnWidth(fm, GameListModel::Column_Icon, m_model->getIconSizeWithPadding());
+  setFixedColumnWidth(fm, GameListModel::Column_Region, FLAG_PIXMAP_SIZE.width());
+  setFixedColumnWidth(fm, GameListModel::Column_Achievements, 100);
+  setFixedColumnWidth(fm, GameListModel::Column_Compatibility, COMPATIBILITY_PIXMAP_SIZE.width());
   setColumnWidth(GameListModel::Column_Developer, 200);
   setColumnWidth(GameListModel::Column_Publisher, 200);
   setColumnWidth(GameListModel::Column_Genre, 200);
