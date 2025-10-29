@@ -821,11 +821,11 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
 
   const float transition_alpha = s_state.transition_remaining_time / s_state.transition_total_time;
   const float uniforms[2] = {1.0f - transition_alpha, transition_alpha};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetPipeline(s_state.transition_blend_pipeline.get());
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
   g_gpu_device->SetTextureSampler(0, curr, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
 
   const GSVector2i size = swap_chain->GetSizeVec();
   const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
