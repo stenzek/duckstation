@@ -212,6 +212,11 @@ GameListModel::GameListModel(GameListWidget* parent)
 
 GameListModel::~GameListModel() = default;
 
+bool GameListModel::getShowLocalizedTitles() const
+{
+  return m_show_localized_titles;
+}
+
 void GameListModel::setShowLocalizedTitles(bool enabled)
 {
   m_show_localized_titles = enabled;
@@ -223,25 +228,25 @@ void GameListModel::setShowLocalizedTitles(bool enabled)
   refreshCovers();
 }
 
+bool GameListModel::getShowCoverTitles() const
+{
+  return m_show_titles_for_covers;
+}
+
 void GameListModel::setShowCoverTitles(bool enabled)
 {
   m_show_titles_for_covers = enabled;
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DisplayRole});
 }
 
-void GameListModel::setShowGameIcons(bool enabled)
+int GameListModel::getRowHeight() const
 {
-  m_show_game_icons = enabled;
-
-  if (enabled)
-    GameList::ReloadMemcardTimestampCache();
-  refreshIcons();
+  return getIconSizeWithPadding();
 }
 
-void GameListModel::refreshIcons()
+int GameListModel::getIconSize() const
 {
-  m_icon_pixmap_cache.Clear();
-  emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
+  return m_icon_size;
 }
 
 int GameListModel::getIconSizeWithPadding() const
@@ -267,6 +272,17 @@ void GameListModel::setIconSize(int size)
 
   loadSizeDependentPixmaps();
   refreshIcons();
+}
+
+void GameListModel::refreshIcons()
+{
+  m_icon_pixmap_cache.Clear();
+  emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
+}
+
+float GameListModel::getCoverScale() const
+{
+  return m_cover_scale;
 }
 
 void GameListModel::setCoverScale(float scale)
@@ -351,6 +367,11 @@ void GameListModel::updateCacheSize(int num_rows, int num_columns, QSortFilterPr
   }
 
   m_cover_pixmap_cache.SetMaxCapacity(static_cast<u32>(cache_size));
+}
+
+qreal GameListModel::getDevicePixelRatio() const
+{
+  return m_device_pixel_ratio;
 }
 
 void GameListModel::setDevicePixelRatio(qreal dpr)
@@ -563,6 +584,20 @@ const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) c
   const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconName(), true)));
   it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_SIZE, m_device_pixel_ratio)).first;
   return it->second;
+}
+
+bool GameListModel::getShowGameIcons() const
+{
+  return m_show_game_icons;
+}
+
+void GameListModel::setShowGameIcons(bool enabled)
+{
+  m_show_game_icons = enabled;
+
+  if (enabled)
+    GameList::ReloadMemcardTimestampCache();
+  refreshIcons();
 }
 
 QIcon GameListModel::getIconForGame(const QString& path)
@@ -905,6 +940,21 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
     ret = qApp->translate("GameListModel", s_column_names[static_cast<u32>(section)]);
 
   return ret;
+}
+
+const QPixmap& GameListModel::getNoAchievementsPixmap() const
+{
+  return m_no_achievements_pixmap;
+}
+
+const QPixmap& GameListModel::getHasAchievementsPixmap() const
+{
+  return m_has_achievements_pixmap;
+}
+
+const QPixmap& GameListModel::getMasteredAchievementsPixmap() const
+{
+  return m_mastered_achievements_pixmap;
 }
 
 const GameList::Entry* GameListModel::getTakenGameListEntry(u32 index) const

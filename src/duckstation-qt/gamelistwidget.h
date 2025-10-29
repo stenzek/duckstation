@@ -74,9 +74,9 @@ public:
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-  ALWAYS_INLINE const QPixmap& getNoAchievementsPixmap() const { return m_no_achievements_pixmap; }
-  ALWAYS_INLINE const QPixmap& getHasAchievementsPixmap() const { return m_has_achievements_pixmap; }
-  ALWAYS_INLINE const QPixmap& getMasteredAchievementsPixmap() const { return m_mastered_achievements_pixmap; }
+  const QPixmap& getNoAchievementsPixmap() const;
+  const QPixmap& getHasAchievementsPixmap() const;
+  const QPixmap& getMasteredAchievementsPixmap() const;
 
   const GameList::Entry* getTakenGameListEntry(u32 index) const;
   bool hasTakenGameList() const;
@@ -87,32 +87,33 @@ public:
 
   bool titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const;
   bool lessThan(const GameList::Entry* left, const GameList::Entry* right, int column) const;
-
   bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
 
-  bool getShowLocalizedTitles() const { return m_show_localized_titles; }
+  bool getShowLocalizedTitles() const;
   void setShowLocalizedTitles(bool enabled);
 
-  bool getShowCoverTitles() const { return m_show_titles_for_covers; }
+  bool getShowCoverTitles() const;
   void setShowCoverTitles(bool enabled);
 
-  int getRowHeight() const { return getIconSizeWithPadding(); }
-  int getIconSize() const { return m_icon_size; }
+  int getRowHeight() const;
+
+  int getIconSize() const;
   int getIconSizeWithPadding() const;
+  void refreshIcons();
   void setIconSize(int size);
-  bool getShowGameIcons() const { return m_show_game_icons; }
+
+  bool getShowGameIcons() const;
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
-  void refreshIcons();
 
-  float getCoverScale() const { return m_cover_scale; }
+  float getCoverScale() const;
   void setCoverScale(float scale);
   QSize getCoverArtSize() const;
   int getCoverArtSpacing() const;
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 
-  qreal getDevicePixelRatio() const { return m_device_pixel_ratio; }
+  qreal getDevicePixelRatio() const;
   void setDevicePixelRatio(qreal dpr);
 
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
