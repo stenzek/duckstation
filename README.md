@@ -114,7 +114,7 @@ You will need to re-add your game directories after switching to the AppImage.
 
 Universal macOS builds are provided for both x86_64 (Intel) and ARM64 (Apple Silicon).
 
-macOS Big Sur (11.0) is required, as this is also the minimum requirement for Qt.
+macOS Ventura (13.0) is required, as this is also the minimum requirement for Qt.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
