@@ -2162,15 +2162,16 @@ void GameListListView::setFixedColumnWidth(const QFontMetrics& fm, int column, i
   const int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, nullptr, this);
   const int header_width = fm.size(0, m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString()).width() +
                            style()->pixelMetric(QStyle::PM_HeaderMarkSize, nullptr, this) + // sort indicator
-                           margin;                                  // space between text and sort indicator
-  const int width = std::max(header_width, str_width) + 2 * margin; // left and right margins
-  setFixedColumnWidth(column, width);
+                           3 * margin; // left/right margins + space between text and sort indicator
+  setFixedColumnWidth(column, std::max(header_width, str_width));
 }
 
 void GameListListView::updateFixedColumnWidths()
 {
   const QFontMetrics fm = fontMetricsForHorizontalHeader();
-  const auto width_for = [&fm](const QString& text) { return fm.size(0, text).width(); };
+  // See QCommonStylePrivate::viewItemSize()
+  const int margins = 1 + 2 * (style()->pixelMetric(QStyle::PM_FocusFrameHMargin, nullptr, this) + 1);
+  const auto width_for = [&](const QString& text) { return fm.size(0, text).width() + margins; };
 
   setFixedColumnWidth(fm, GameListModel::Column_Serial, width_for(QStringLiteral("SWWW-00000")));
   setFixedColumnWidth(fm, GameListModel::Column_Year,
