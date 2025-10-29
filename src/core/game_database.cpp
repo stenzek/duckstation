@@ -41,7 +41,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 31,
+  GAME_DATABASE_CACHE_VERSION = 32,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -90,6 +90,7 @@ static constexpr const std::array s_trait_names = {
   "ForceFullBoot",
   "DisableAutoAnalogMode",
   "DisableMultitap",
+  "DisableFastForwardMemoryCardAccess",
   "DisableCDROMReadSpeedup",
   "DisableCDROMSeekSpeedup",
   "DisableCDROMSpeedupOnMDEC",
@@ -126,6 +127,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Multitap", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Fast Forward Memory Card Access", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable CD-ROM Read Speedup", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable CD-ROM Seek Speedup", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable CD-ROM Speedup on MDEC", "GameDatabase::Trait"),
@@ -548,6 +550,14 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Multitap disabled."));
 
     settings.multitap_mode = MultitapMode::Disabled;
+  }
+
+  if (HasTrait(Trait::DisableFastForwardMemoryCardAccess) && g_settings.memory_card_fast_forward_access)
+  {
+    if (display_osd_messages)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Fast forward memory card access disabled."));
+
+    settings.memory_card_fast_forward_access = false;
   }
 
   if (HasTrait(Trait::DisableCDROMReadSpeedup))
