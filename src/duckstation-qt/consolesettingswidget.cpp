@@ -88,15 +88,15 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),
                                tr("Fast forwards through the early loading process when fast booting, saving time. "
                                   "Results may vary between games."));
+  m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
+                               tr("Fast forwards through memory card access, both loading and saving. Can reduce "
+                                  "waiting times in games that frequently access memory cards."));
   dialog->registerWidgetHelp(
     m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
     tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
        "to use a larger heap size for "
        "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
-  m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
-                               tr("Fast forwards through memory card access, both loading and saving. Can reduce "
-                                  "waiting times in games that frequently access memory cards."));
 
   dialog->registerWidgetHelp(m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
                              tr("Determines how the emulated CPU executes instructions."));
@@ -143,6 +143,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::SetAvailability(m_ui.fastBoot, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
   SettingWidgetBinder::SetAvailability(m_ui.fastForwardBoot,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
+  SettingWidgetBinder::SetAvailability(
+    m_ui.fastForwardMemoryCardAccess, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableFastForwardMemoryCardAccess));
   SettingWidgetBinder::SetAvailability(
     m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
   SettingWidgetBinder::SetAvailability(m_ui.cdromReadSpeedup,
