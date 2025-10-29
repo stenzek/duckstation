@@ -51,7 +51,9 @@ static constexpr int GAME_ICON_MIN_SIZE = 16;
 static constexpr int GAME_ICON_DEFAULT_SIZE = 16;
 static constexpr int GAME_ICON_MAX_SIZE = 80;
 static constexpr int GAME_ICON_SIZE_STEP = 4;
-static constexpr int GAME_ICON_PADDING = 12;
+// Nasty magic number here, +8 gets us a height of 24 at 16 icon size, which looks good.
+static constexpr int GAME_ICON_EXTRA_SIZE = 8;
+static constexpr int GAME_ICON_PADDING = 3;
 static constexpr int GAME_ICON_ANIMATION_LOOPS = 5;
 
 static constexpr float MIN_COVER_SCALE = 0.1f;
@@ -225,12 +227,6 @@ void GameListModel::setShowCoverTitles(bool enabled)
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DisplayRole});
 }
 
-void GameListModel::updateRowHeight(const QWidget* const widget)
-{
-  m_row_height =
-    m_icon_size + GAME_ICON_PADDING + widget->style()->pixelMetric(QStyle::PM_FocusFrameVMargin, nullptr, widget);
-}
-
 void GameListModel::setShowGameIcons(bool enabled)
 {
   m_show_game_icons = enabled;
@@ -244,6 +240,11 @@ void GameListModel::refreshIcons()
 {
   m_icon_pixmap_cache.Clear();
   emit dataChanged(index(0, Column_Icon), index(rowCount() - 1, Column_Icon), {Qt::DecorationRole});
+}
+
+int GameListModel::getIconSizeWithPadding() const
+{
+  return m_icon_size + GAME_ICON_EXTRA_SIZE + GAME_ICON_PADDING * 2;
 }
 
 void GameListModel::setIconSize(int size)
@@ -264,11 +265,6 @@ void GameListModel::setIconSize(int size)
 
   loadSizeDependentPixmaps();
   refreshIcons();
-}
-
-int GameListModel::getIconColumnWidth() const
-{
-  return m_icon_size + GAME_ICON_PADDING * 2;
 }
 
 void GameListModel::setCoverScale(float scale)
@@ -533,7 +529,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        resizeGameIcon(pm, m_icon_size, m_device_pixel_ratio);
+        resizeGameIcon(pm, m_icon_size + GAME_ICON_EXTRA_SIZE, m_device_pixel_ratio);
         return m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
@@ -780,7 +776,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       switch (index.column())
       {
         case Column_Icon:
-          return QSize(getIconColumnWidth(), m_row_height);
+        {
+          const int sz = getIconSizeWithPadding();
+          return QSize(sz, sz);
+        }
         default:
           return {};
       }
@@ -1144,8 +1143,7 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
 void GameListModel::loadSizeDependentPixmaps()
 {
-  // nasty magic number here, +8 gets us a height of 24 at 16 icon size, which looks good.
-  const QSize icon_size = QSize(m_icon_size + 8, m_icon_size + 8);
+  const QSize icon_size = QSize(m_icon_size + GAME_ICON_EXTRA_SIZE, m_icon_size + GAME_ICON_EXTRA_SIZE);
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
   {
     m_type_pixmaps[i] =
@@ -1448,7 +1446,7 @@ public:
     {
       QPixmap pm = QPixmap::fromImage(QImage(reinterpret_cast<uchar*>(image.GetPixels(i)), image.GetWidth(),
                                              image.GetHeight(), QImage::Format::Format_RGBA8888));
-      resizeGameIcon(pm, m_model->getIconSize(), m_model->getDevicePixelRatio());
+      resizeGameIcon(pm, m_model->getIconSize() + GAME_ICON_EXTRA_SIZE, m_model->getDevicePixelRatio());
       m_frame_pixmaps.push_back(std::move(pm));
     }
 
@@ -2037,10 +2035,8 @@ void GameListWidget::onScaleChanged()
 
 void GameListWidget::onIconSizeChanged(int size)
 {
-  // update size of rows
-  m_model->updateRowHeight(m_list_view);
   m_list_view->setFixedColumnWidth(m_list_view->fontMetricsForHorizontalHeader(), GameListModel::Column_Icon,
-                                   m_model->getIconColumnWidth());
+                                   m_model->getIconSizeWithPadding());
   m_list_view->verticalHeader()->setDefaultSectionSize(m_model->getRowHeight());
   onScaleChanged();
 }
@@ -2197,7 +2193,7 @@ void GameListListView::updateFixedColumnWidths()
   setFixedColumnWidth(fm, GameListModel::Column_FileSize, size_width);
   setFixedColumnWidth(fm, GameListModel::Column_DataSize, size_width);
 
-  setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconColumnWidth());
+  setFixedColumnWidth(GameListModel::Column_Icon, m_model->getIconSizeWithPadding());
   setFixedColumnWidth(GameListModel::Column_Region, 55);
   setFixedColumnWidth(GameListModel::Column_Achievements, 100);
   setFixedColumnWidth(GameListModel::Column_Compatibility, 100);

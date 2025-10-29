@@ -96,11 +96,10 @@ public:
   bool getShowCoverTitles() const { return m_show_titles_for_covers; }
   void setShowCoverTitles(bool enabled);
 
-  void updateRowHeight(const QWidget* const widget);
-  int getRowHeight() const { return m_row_height; }
+  int getRowHeight() const { return getIconSizeWithPadding(); }
   int getIconSize() const { return m_icon_size; }
+  int getIconSizeWithPadding() const;
   void setIconSize(int size);
-  int getIconColumnWidth() const;
   bool getShowGameIcons() const { return m_show_game_icons; }
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
@@ -155,7 +154,6 @@ private:
 
   float m_cover_scale = 0.0f;
   int m_icon_size = 0;
-  int m_row_height = 0;
   bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
