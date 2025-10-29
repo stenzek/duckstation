@@ -51,9 +51,7 @@ static constexpr int GAME_ICON_MIN_SIZE = 16;
 static constexpr int GAME_ICON_DEFAULT_SIZE = 16;
 static constexpr int GAME_ICON_MAX_SIZE = 80;
 static constexpr int GAME_ICON_SIZE_STEP = 4;
-// Nasty magic number here, +8 gets us a height of 24 at 16 icon size, which looks good.
-static constexpr int GAME_ICON_EXTRA_SIZE = 8;
-static constexpr int GAME_ICON_PADDING = 3;
+static constexpr int GAME_ICON_PADDING = 12;
 static constexpr int GAME_ICON_ANIMATION_LOOPS = 5;
 
 static constexpr float MIN_COVER_SCALE = 0.1f;
@@ -248,7 +246,7 @@ void GameListModel::refreshIcons()
 
 int GameListModel::getIconSizeWithPadding() const
 {
-  return m_icon_size + GAME_ICON_EXTRA_SIZE + GAME_ICON_PADDING * 2;
+  return m_icon_size + GAME_ICON_PADDING;
 }
 
 void GameListModel::setIconSize(int size)
@@ -534,7 +532,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
-        resizeGameIcon(pm, m_icon_size + GAME_ICON_EXTRA_SIZE, m_device_pixel_ratio);
+        resizeGameIcon(pm, m_icon_size, m_device_pixel_ratio);
         return m_icon_pixmap_cache.Insert(ge->serial, std::move(pm));
       }
 
@@ -1145,7 +1143,7 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
 void GameListModel::loadSizeDependentPixmaps()
 {
-  const QSize icon_size = QSize(m_icon_size + GAME_ICON_EXTRA_SIZE, m_icon_size + GAME_ICON_EXTRA_SIZE);
+  const QSize icon_size = QSize(m_icon_size, m_icon_size);
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
   {
     m_type_pixmaps[i] =
@@ -1446,7 +1444,7 @@ public:
     {
       QPixmap pm = QPixmap::fromImage(QImage(reinterpret_cast<uchar*>(image.GetPixels(i)), image.GetWidth(),
                                              image.GetHeight(), QImage::Format::Format_RGBA8888));
-      resizeGameIcon(pm, m_model->getIconSize() + GAME_ICON_EXTRA_SIZE, m_model->getDevicePixelRatio());
+      resizeGameIcon(pm, m_model->getIconSize(), m_model->getDevicePixelRatio());
       m_frame_pixmaps.push_back(std::move(pm));
     }
 
