@@ -452,8 +452,8 @@ Login token generated at:</source>
         <translation>得分</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2070"/>
-        <location filename="../../core/achievements.cpp" line="2084"/>
+        <location filename="../../core/achievements.cpp" line="2074"/>
+        <location filename="../../core/achievements.cpp" line="2088"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>当硬核模式处于活动状态时，无法执行{0}。您想要禁用硬核模式吗？如果您选择“否”，{0}将会被取消。</translation>
     </message>
@@ -466,7 +466,7 @@ Login token generated at:</source>
         <translation type="vanished">确认硬核模式</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1675"/>
+        <location filename="../../core/achievements.cpp" line="1679"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>硬核模式现已禁用。</translation>
     </message>
@@ -507,113 +507,113 @@ Login token generated at:</source>
         <translation type="vanished">{}成就，{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1380"/>
+        <location filename="../../core/achievements.cpp" line="1384"/>
         <source>Leaderboard attempt started.</source>
         <translation>排行榜尝试开始。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1392"/>
+        <location filename="../../core/achievements.cpp" line="1396"/>
         <source>Leaderboard attempt failed.</source>
         <translation>排行榜尝试失败。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1403"/>
+        <location filename="../../core/achievements.cpp" line="1407"/>
         <source>Your Time: {}{}</source>
         <translation>您的时间: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1404"/>
+        <location filename="../../core/achievements.cpp" line="1408"/>
         <source>Your Score: {}{}</source>
         <translation>您的得分: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1405"/>
+        <location filename="../../core/achievements.cpp" line="1409"/>
         <source>Your Value: {}{}</source>
         <translation>您的值: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1413"/>
+        <location filename="../../core/achievements.cpp" line="1417"/>
         <source> (Submitting)</source>
         <translation> (提交中)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1432"/>
+        <location filename="../../core/achievements.cpp" line="1436"/>
         <source>Your Time: {} (Best: {})</source>
         <translation>您的时间: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1433"/>
+        <location filename="../../core/achievements.cpp" line="1437"/>
         <source>Your Score: {} (Best: {})</source>
         <translation>您的得分: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1434"/>
+        <location filename="../../core/achievements.cpp" line="1438"/>
         <source>Your Value: {} (Best: {})</source>
         <translation>您的值: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1439"/>
+        <location filename="../../core/achievements.cpp" line="1443"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
 排行榜位置: {}/{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1523"/>
+        <location filename="../../core/achievements.cpp" line="1527"/>
         <source>Challenge Started: {}</source>
         <translation>挑战开始: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1552"/>
+        <location filename="../../core/achievements.cpp" line="1557"/>
         <source>Challenge Failed: {}</source>
         <translation>挑战失败: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1617"/>
+        <location filename="../../core/achievements.cpp" line="1621"/>
         <source>Server error in {}:
 {}</source>
         <translation>服务器错误在{}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1629"/>
+        <location filename="../../core/achievements.cpp" line="1633"/>
         <source>Achievements Disconnected</source>
         <translation>成就断开连接</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1630"/>
+        <location filename="../../core/achievements.cpp" line="1634"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation>解锁请求无法完成。我们将继续重试提交此请求。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1639"/>
+        <location filename="../../core/achievements.cpp" line="1643"/>
         <source>Achievements Reconnected</source>
         <translation>成就重新连接</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1640"/>
+        <location filename="../../core/achievements.cpp" line="1644"/>
         <source>All pending unlock requests have completed.</source>
         <translation>全部挂起的解锁请求已完成。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1732"/>
+        <location filename="../../core/achievements.cpp" line="1736"/>
         <source>Downloading achievements data...</source>
         <translation>正在下载成就数据...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1952"/>
+        <location filename="../../core/achievements.cpp" line="1956"/>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
         <translation>本次阶段将不会提交成就解锁.
 错误: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1950"/>
+        <location filename="../../core/achievements.cpp" line="1954"/>
         <source>RetroAchievements Login Failed</source>
         <translation>RetroAchievements登录失败</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1990"/>
+        <location filename="../../core/achievements.cpp" line="1994"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
@@ -621,7 +621,7 @@ Unread messages: {}</source>
 未读消息: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2021"/>
+        <location filename="../../core/achievements.cpp" line="2025"/>
         <source>Score: {} ({} softcore)</source>
         <extracomment>Score summary, shown in Big Picture mode.</extracomment>
         <translation>得分: {} ({}软核)</translation>
@@ -661,27 +661,27 @@ Unread messages: {}</source>
         <translation>非同步的</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2548"/>
+        <location filename="../../core/achievements.cpp" line="2552"/>
         <source>User is not logged in.</source>
         <translation>用户未登录。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2554"/>
+        <location filename="../../core/achievements.cpp" line="2558"/>
         <source>Progress is already being updated.</source>
         <translation>进度正在被更新。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2573"/>
+        <location filename="../../core/achievements.cpp" line="2577"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2574"/>
+        <location filename="../../core/achievements.cpp" line="2578"/>
         <source>Refresh all progress failed</source>
         <translation>刷新所有进度失败</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2586"/>
+        <location filename="../../core/achievements.cpp" line="2590"/>
         <source>Updated achievement progress database.</source>
         <translation>更新了成就进度数据库。</translation>
     </message>
@@ -801,8 +801,8 @@ Unread messages: {}</source>
         <translation type="vanished">{0}, {1}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1333"/>
-        <location filename="../../core/achievements.cpp" line="1363"/>
+        <location filename="../../core/achievements.cpp" line="1336"/>
+        <location filename="../../core/achievements.cpp" line="1367"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -810,8 +810,8 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1335"/>
-        <location filename="../../core/achievements.cpp" line="1365"/>
+        <location filename="../../core/achievements.cpp" line="1338"/>
+        <location filename="../../core/achievements.cpp" line="1369"/>
         <location filename="../../core/fullscreenui_achievements.cpp" line="889"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
@@ -820,15 +820,15 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1362"/>
+        <location filename="../../core/achievements.cpp" line="1366"/>
         <source>Subset complete.
 {0}, {1}.</source>
         <translation>子集已完成。
 {0}，{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2069"/>
-        <location filename="../../core/achievements.cpp" line="2083"/>
+        <location filename="../../core/achievements.cpp" line="2073"/>
+        <location filename="../../core/achievements.cpp" line="2087"/>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>确认硬核模式禁用</translation>
     </message>
@@ -1041,14 +1041,14 @@ Unread messages: {}</source>
         <translation>此游戏没有成就。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1332"/>
+        <location filename="../../core/achievements.cpp" line="1335"/>
         <source>Game complete.
 {0}, {1}.</source>
         <translation>游戏已完成。
 {0}，{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1674"/>
+        <location filename="../../core/achievements.cpp" line="1678"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>硬核模式现已启用。</translation>
     </message>
@@ -3331,7 +3331,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <location filename="../consolesettingswidget.ui" line="296"/>
         <location filename="../consolesettingswidget.cpp" line="129"/>
         <source>Switch to Next Disc on Stop</source>
-        <translation>在停止时切换到后一张光盘</translation>
+        <translation>在停止时切换到下一张光盘</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="106"/>
@@ -3410,7 +3410,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
     <message>
         <location filename="../consolesettingswidget.cpp" line="130"/>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. No switch will occur if the last disc in the game is already selected. &lt;strong&gt;Does not work for all games.&lt;/strong&gt;</source>
-        <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的后一张光盘。如果已经选择了游戏中的最后一张光盘，则不会进行切换。&lt;strong&gt;并非对所有游戏都有效。&lt;/strong&gt;</translation>
+        <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的下一张光盘。如果已经选择了游戏中的最后一张光盘，则不会进行切换。&lt;strong&gt;并非对所有游戏都有效。&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="134"/>
@@ -7450,7 +7450,7 @@ You cannot undo this action.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="140"/>
         <source>Automatically switches to the next disc in the game when the game stops the CD-ROM motor. Does not work for all games.</source>
-        <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的后一张光盘。并非对所有游戏都有效。</translation>
+        <translation>当游戏停止CD-ROM电机时，自动切换到游戏中的下一张光盘。并非对所有游戏都有效。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="151"/>
@@ -11002,7 +11002,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="733"/>
         <source>Switch to Next Disc on Stop</source>
-        <translation>在停止时切换到后一张光盘</translation>
+        <translation>在停止时切换到下一张光盘</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="737"/>
@@ -11530,7 +11530,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="331"/>
         <source>Exit And Save State</source>
-        <translation>退出同时保存即时档案</translation>
+        <translation>保存即时档案并退出</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="549"/>
@@ -11558,7 +11558,7 @@ Do you want to load this save and continue?</source>
         <translation>快进速度</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4426"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4427"/>
         <source>%n seconds remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -11566,7 +11566,7 @@ Do you want to load this save and continue?</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4431"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4432"/>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -16072,12 +16072,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="240"/>
         <source>Switch to Previous Disc</source>
-        <translation>切换到前一张光盘</translation>
+        <translation>切换到上一张光盘</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="246"/>
         <source>Switch to Next Disc</source>
-        <translation>切换到后一张光盘</translation>
+        <translation>切换到下一张光盘</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="272"/>
@@ -17648,12 +17648,12 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.ui" line="901"/>
         <source>Controls whether labels are displayed alongside toolbar icons.</source>
-        <translation>控制是否在工具栏图标旁边显示标签。</translation>
+        <translation>控制标签是否显示在工具栏图标旁边。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="909"/>
         <source>Toolbar Labels &amp;Beside Icons</source>
-        <translation>工具栏标签与旁边图标(&amp;B)</translation>
+        <translation>工具栏标签并列图标(&amp;B)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="912"/>
@@ -17668,7 +17668,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.ui" line="940"/>
         <source>Switches to the list of available games in table view.</source>
-        <translation>切换到表格视图中的可用游戏列表。</translation>
+        <translation>切换到表格视图下的可用游戏列表。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="957"/>
@@ -18262,7 +18262,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.ui" line="718"/>
         <source>Switches to a disc in the game list.</source>
-        <translation>切换到游戏列表中的光盘。</translation>
+        <translation>切换到游戏列表中的某张光盘。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="726"/>
@@ -18419,7 +18419,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../mainwindow.ui" line="1087"/>
         <source>Ends the current session without the option to save state.</source>
-        <translation>结束当前会话且不提供保存即时档案的选项。</translation>
+        <translation>结束当前会话，无保存即时档案的选项。</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="1098"/>
@@ -24257,12 +24257,12 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
     <message>
         <location filename="../../core/system.cpp" line="4310"/>
         <source>There is no previous disc to switch to.</source>
-        <translation>没有前一张光盘可切换。</translation>
+        <translation>没有上一张光盘可切换。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4311"/>
         <source>There is no next disc to switch to.</source>
-        <translation>没有后一张光盘可切换。</translation>
+        <translation>没有下一张光盘可切换。</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4326"/>
