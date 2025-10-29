@@ -699,7 +699,7 @@ void FullscreenUI::DrawAchievementsWindow()
         if (summary.completed_time > 0)
         {
           const std::string completion_time =
-            Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(summary.beaten_time));
+            Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(summary.completed_time));
           text.append_format(TRANSLATE_FS("Achievements", "Game was beaten on {0}, and completed on {1}."), beaten_time,
                              completion_time);
         }
