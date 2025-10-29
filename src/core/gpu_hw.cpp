@@ -3522,16 +3522,17 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
                                      GetCurrentNormalizedVertexDepth()};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetScissor(scaled_bounds);
+
   g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
   if (upload_texture)
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
   else
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
 
-  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
-  g_gpu_device->SetScissor(scaled_bounds);
+  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
   DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
 
   RestoreDeviceContext();
@@ -4039,6 +4040,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
     }
 
+    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
+
     const u32 reinterpret_start_x = cmd->X * resolution_scale;
     const u32 skip_x = (cmd->display_vram_left - cmd->X) * resolution_scale;
     GL_INS_FMT("VRAM extract, depth = {}, 24bpp = {}, skip_x = {}, line_skip = {}", depth_source ? "yes" : "no",
@@ -4058,7 +4061,6 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
                                       static_cast<float>(line_skip ? 2 : 1)};
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
-    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
     g_gpu_device->Draw(3, 0);
 
     m_vram_extract_texture->MakeReadyForSampling();
