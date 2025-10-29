@@ -1331,7 +1331,7 @@ public:
                                                                m_model->getHasAchievementsPixmap()) :
                                                    m_model->getNoAchievementsPixmap();
     const QSize icon_size = icon.deviceIndependentSize().toSize();
-    painter->drawPixmap(r.topLeft() + QPoint(4, (r.height() - icon_size.height()) / 2), icon);
+    painter->drawPixmap(r.topLeft() + QPoint(5, (r.height() - icon_size.height() + 2) / 2), icon);
     r.setLeft(r.left() + 12 + icon_size.width());
 
     const QPalette& palette = static_cast<QWidget*>(parent())->palette();
