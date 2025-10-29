@@ -1088,7 +1088,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
                                                        GPUTexture::Flags flags, const void* data, u32 data_stride,
                                                        Error* error)
 {
-  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format, flags, error))
+  if (!GPUTexture::ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return {};
 
   const MTLPixelFormat pixel_format = s_pixel_format_mapping[static_cast<u8>(format)];
