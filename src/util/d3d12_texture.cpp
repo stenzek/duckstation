@@ -687,14 +687,12 @@ void D3D12Texture::TransitionSubresourceToState(ID3D12GraphicsCommandList* cmdli
 
 void D3D12Texture::MakeReadyForSampling()
 {
-  if (m_resource_state == D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+  if (m_resource_state == D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE && m_state != State::Cleared)
     return;
 
-  D3D12Device& dev = D3D12Device::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
-
-  TransitionToState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandBufferForUpdate();
+  CommitClear(cmdlist);
+  TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 D3D12Sampler::D3D12Sampler(D3D12DescriptorHandle descriptor) : m_descriptor(descriptor)

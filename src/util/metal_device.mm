@@ -1053,11 +1053,13 @@ void MetalTexture::Unmap()
 void MetalTexture::MakeReadyForSampling()
 {
   MetalDevice& dev = MetalDevice::GetInstance();
-  if (!dev.InRenderPass())
-    return;
+  if (dev.InRenderPass())
+  {
+    if (IsRenderTarget() ? dev.IsRenderTargetBound(this) : (dev.m_current_depth_target == this))
+      dev.EndRenderPass();
+  }
 
-  if (IsRenderTarget() ? dev.IsRenderTargetBound(this) : (dev.m_current_depth_target == this))
-    dev.EndRenderPass();
+  dev.CommitClear(this);
 }
 
 void MetalTexture::GenerateMipmaps()
@@ -1631,10 +1633,7 @@ void MetalDevice::CommitClear(MetalTexture* tex)
     tex->SetState(GPUTexture::State::Dirty);
 
     // TODO: We could combine it with the current render pass.
-    if (InRenderPass())
-      EndRenderPass();
-    else if (InComputePass())
-      EndComputePass();
+    EndAnyEncoding();
 
     @autoreleasepool
     {

@@ -425,15 +425,12 @@ void VulkanTexture::CommitClear()
   if (m_state != GPUTexture::State::Cleared)
     return;
 
-  VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
-
-  CommitClear(dev.GetCurrentCommandBuffer());
+  CommitClear(GetCommandBufferForUpdate());
 }
 
 void VulkanTexture::CommitClear(VkCommandBuffer cmdbuf)
 {
+  DebugAssert(m_state == State::Cleared);
   TransitionToLayout(cmdbuf, Layout::ClearDst);
 
   if (IsDepthStencil())
@@ -707,14 +704,14 @@ VkDescriptorSet VulkanTexture::GetDescriptorSetWithSampler(VkSampler sampler)
 
 void VulkanTexture::MakeReadyForSampling()
 {
-  if (m_layout == Layout::ShaderReadOnly)
+  if (m_layout == Layout::ShaderReadOnly && m_state != State::Cleared)
     return;
 
-  VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
+  const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
+  if (m_state == State::Cleared)
+    CommitClear(cmdbuf);
 
-  TransitionToLayout(Layout::ShaderReadOnly);
+  TransitionToLayout(cmdbuf, Layout::ShaderReadOnly);
 }
 
 void VulkanTexture::GenerateMipmaps()
