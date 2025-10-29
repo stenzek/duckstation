@@ -3046,7 +3046,9 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
     SystemLock lock(pauseAndLockSystem());
 
     QMessageBox* msgbox = QtUtils::NewMessageBox(
-      QMessageBox::Question, tr("Confirm Shutdown"), tr("Are you sure you want to shut down the virtual machine?"),
+      QMessageBox::Question, tr("Confirm Shutdown"),
+      quit_afterwards ? tr("Are you sure you want to exit the application?") :
+                        tr("Are you sure you want to shut down the virtual machine?"),
       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
     msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 
