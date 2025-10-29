@@ -645,6 +645,8 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
     create_flags |= GPUDevice::CreateFlags::EnableDebugDevice;
   if (g_gpu_settings.gpu_use_debug_device && g_gpu_settings.gpu_use_debug_device_gpu_validation)
     create_flags |= GPUDevice::CreateFlags::EnableGPUValidation;
+  if (g_gpu_settings.gpu_disable_shader_cache)
+    create_flags |= GPUDevice::CreateFlags::DisableShaderCache;
   if (g_gpu_settings.gpu_disable_dual_source_blend)
     create_flags |= GPUDevice::CreateFlags::DisableDualSourceBlend;
   if (g_gpu_settings.gpu_disable_framebuffer_fetch)
@@ -662,7 +664,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (g_gpu_settings.gpu_disable_compressed_textures)
     create_flags |= GPUDevice::CreateFlags::DisableCompressedTextures;
 
-  // Don't dump shaders on debug builds for Android, users will complain about storage...
+  // Only dump shaders on debug builds for Android, users will complain about storage...
 #if !defined(__ANDROID__) || defined(_DEBUG)
   const std::string_view shader_dump_directory(EmuFolders::DataRoot);
 #else
@@ -674,8 +676,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory,
-        g_gpu_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
+        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
         SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
         fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {

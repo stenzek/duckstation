@@ -5,6 +5,7 @@
 #include "compress_helpers.h"
 #include "gpu_framebuffer_manager.h"
 #include "image.h"
+#include "imgui_manager.h"
 #include "shadergen.h"
 
 #include "common/assert.h"
@@ -22,6 +23,8 @@
 #include "shaderc/shaderc.h"
 #include "spirv_cross_c.h"
 #include "xxhash.h"
+
+#include "IconsEmoji.h"
 
 LOG_CHANNEL(GPUDevice);
 
@@ -459,33 +462,32 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
 
   if (create_flags != CreateFlags::None) [[unlikely]]
   {
-    WARNING_LOG("One or more non-standard creation flags are set:");
-    if (HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice))
-      WARNING_LOG("  - Use debug device");
-    if (HasCreateFlag(create_flags, CreateFlags::EnableGPUValidation))
-      WARNING_LOG("  - Enable GPU validation");
-    if (HasCreateFlag(create_flags, CreateFlags::PreferGLESContext))
-      WARNING_LOG("  - Prefer OpenGL ES context");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend))
-      WARNING_LOG("  - Disable dual source blend");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops))
-      WARNING_LOG("  - Disable feedback loops");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch))
-      WARNING_LOG("  - Disable framebuffer fetch");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers))
-      WARNING_LOG("  - Disable texture buffers");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders))
-      WARNING_LOG("  - Disable geometry shaders");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders))
-      WARNING_LOG("  - Disable compute shaders");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf))
-      WARNING_LOG("  - Disable texture copy to self");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableMemoryImport))
-      WARNING_LOG("  - Disable memory import");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
-      WARNING_LOG("  - Disable raster order views");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures))
-      WARNING_LOG("  - Disable compressed textures");
+#define FLAG_MSG(flag, text)                                                                                           \
+  if (HasCreateFlag(create_flags, flag))                                                                               \
+  {                                                                                                                    \
+    message += "\n        \u2022 " text;                                                                               \
+  }
+
+    std::string message = "One or more non-standard GPU device flags are set:";
+    FLAG_MSG(CreateFlags::EnableDebugDevice, "Use Debug Device");
+    FLAG_MSG(CreateFlags::EnableGPUValidation, "Enable GPU Validation");
+    FLAG_MSG(CreateFlags::PreferGLESContext, "Prefer OpenGL ES context");
+    FLAG_MSG(CreateFlags::DisableShaderCache, "Disable Shader Cache");
+    FLAG_MSG(CreateFlags::DisableDualSourceBlend, "Disable Dual Source Blend");
+    FLAG_MSG(CreateFlags::DisableFeedbackLoops, "Disable Feedback Loops");
+    FLAG_MSG(CreateFlags::DisableFramebufferFetch, "Disable Framebuffer Fetch");
+    FLAG_MSG(CreateFlags::DisableTextureBuffers, "Disable Texture Buffers");
+    FLAG_MSG(CreateFlags::DisableGeometryShaders, "Disable Geometry Shaders");
+    FLAG_MSG(CreateFlags::DisableComputeShaders, "Disable Compute Shaders");
+    FLAG_MSG(CreateFlags::DisableTextureCopyToSelf, "Disable Texture Copy To Self");
+    FLAG_MSG(CreateFlags::DisableMemoryImport, "Disable Memory Import");
+    FLAG_MSG(CreateFlags::DisableRasterOrderViews, "Disable Raster Order Views");
+    FLAG_MSG(CreateFlags::DisableCompressedTextures, "Disable Compressed Textures");
+
+    Host::AddIconOSDMessage("GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING, std::move(message),
+                            Host::OSD_WARNING_DURATION);
+
+#undef FLAG_MSG
   }
 
   if (!CreateDeviceAndMainSwapChain(adapter, create_flags, wi, vsync, allow_present_throttle, exclusive_fullscreen_mode,
@@ -499,7 +501,8 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
   INFO_LOG("Render API: {} Version {}", RenderAPIToString(m_render_api), m_render_api_version);
   INFO_LOG("Graphics Driver Info:\n{}", GetDriverInfo());
 
-  OpenShaderCache(shader_cache_path, shader_cache_version);
+  OpenShaderCache(HasCreateFlag(create_flags, CreateFlags::DisableShaderCache) ? std::string_view() : shader_cache_path,
+                  shader_cache_version);
 
   if (!CreateResources(error))
   {
