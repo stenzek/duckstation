@@ -400,7 +400,7 @@ bool ImGuiManager::CompilePipelines(Error* error)
   };
 
   GPUPipeline::GraphicsConfig plconfig;
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBO;
   plconfig.input_layout.vertex_attributes = imgui_attributes;
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
@@ -454,7 +454,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
                                                                    static_cast<float>(window_height), 0.0f, 1.0f);
   if (prerotated)
     mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * mproj;
-  g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+  g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();
@@ -492,7 +492,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
       if (pcmd->UserCallback) [[unlikely]]
       {
         pcmd->UserCallback(cmd_list, pcmd);
-        g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+        g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
         g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
       }
       else

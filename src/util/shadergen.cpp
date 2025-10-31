@@ -948,7 +948,7 @@ std::string ShaderGen::GenerateImGuiVertexShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, true);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false);
   DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0", "float4 a_col0"}, 1, 1, {}, false);
   ss << R"(
 {
