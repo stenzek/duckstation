@@ -1277,6 +1277,7 @@ void MainWindow::promptForDiscChange(const QString& path)
   {
     switchToEmulationView();
     g_emu_thread->changeDisc(path, false, true);
+    return;
   }
 
   SystemLock lock(pauseAndLockSystem());
