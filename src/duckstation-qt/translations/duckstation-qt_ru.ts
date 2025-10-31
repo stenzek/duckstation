@@ -8763,7 +8763,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="458"/>
         <source>Maximum (Safer)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Максимальный (безопасный)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="461"/>
@@ -16356,6 +16356,7 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../mainwindow.cpp" line="1746"/>
         <source>Select Disc...</source>
+        <translatorcomment>*Выбор диска</translatorcomment>
         <translation type="unfinished">Выбрать диск...</translation>
     </message>
     <message>
@@ -16401,12 +16402,12 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../mainwindow.cpp" line="3070"/>
         <source>Confirm Exit</source>
-        <translation type="unfinished">Подтверждать выход</translation>
+        <translation>Подтвердить выход</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3070"/>
         <source>Confirm Close</source>
-        <translation type="unfinished">Подтверждать закрытие</translation>
+        <translation>Подтвердить закрытие</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3071"/>
