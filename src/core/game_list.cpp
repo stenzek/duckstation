@@ -1157,6 +1157,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     set_entry.last_played_time = 0;
     set_entry.total_played_time = 0;
     set_entry.achievements_hash = entry.achievements_hash;
+    set_entry.achievements_game_id = entry.achievements_game_id;
     set_entry.num_achievements = entry.num_achievements;
     set_entry.unlocked_achievements = entry.unlocked_achievements;
     set_entry.unlocked_achievements_hc = entry.unlocked_achievements_hc;
