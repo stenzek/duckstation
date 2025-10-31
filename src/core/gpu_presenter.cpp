@@ -153,7 +153,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
       return g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
     };
 
-    std::unique_ptr<GPUShader> fso = compile_display_shader(shadergen, fs, g_settings.display_scaling, error);
+    std::unique_ptr<GPUShader> fso = compile_display_shader(shadergen, fs, g_gpu_settings.display_scaling, error);
     if (!fso)
       return false;
     GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
@@ -169,7 +169,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     std::unique_ptr<GPUShader> fso_24bit;
     if (g_gpu_settings.display_scaling_24bit != g_gpu_settings.display_scaling)
     {
-      fso_24bit = compile_display_shader(shadergen, fs, g_settings.display_scaling_24bit, error);
+      fso_24bit = compile_display_shader(shadergen, fs, g_gpu_settings.display_scaling_24bit, error);
       if (!fso_24bit)
         return false;
       GL_OBJECT_NAME_FMT(fso_24bit, "Display Fragment Shader 24bit [{}]",
