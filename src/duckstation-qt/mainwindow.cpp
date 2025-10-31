@@ -1615,6 +1615,7 @@ void MainWindow::onGameListEntryActivated()
     // change disc on double click
     if (!entry->IsDisc())
     {
+      lock.unlock();
       QtUtils::MessageBoxCritical(this, tr("Error"), tr("You must select a disc to change discs."));
       return;
     }
