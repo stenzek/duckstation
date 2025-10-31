@@ -12206,13 +12206,13 @@ Are you sure you want to continue?</source>
 
 除非您取消勾选“加载数据库金手指”选项，否则任何数据库金手指仍将加载并显示。
 
-您确定要继续吗？</translation>
+您确定想要继续吗？</translation>
     </message>
 </context>
 <context>
     <name>GameDatabase</name>
     <message>
-        <location filename="../../core/game_database.cpp" line="379"/>
+        <location filename="../../core/game_database.cpp" line="381"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
@@ -12345,18 +12345,18 @@ Are you sure you want to continue?</source>
         <translation type="vanished">受LibCrypt保护</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="586"/>
+        <location filename="../../core/game_database.cpp" line="596"/>
         <source>Display cropping set to {}.</source>
         <translation>显示裁剪设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="623"/>
-        <location filename="../../core/game_database.cpp" line="636"/>
+        <location filename="../../core/game_database.cpp" line="633"/>
+        <location filename="../../core/game_database.cpp" line="646"/>
         <source>Deinterlacing set to {}.</source>
         <translation>逐行扫描设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="532"/>
+        <location filename="../../core/game_database.cpp" line="534"/>
         <source>CPU recompiler disabled.</source>
         <translation>CPU重新编译器已禁用。</translation>
     </message>
@@ -12397,25 +12397,25 @@ Are you sure you want to continue?</source>
         <translation>没有错误</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="119"/>
+        <location filename="../../core/game_database.cpp" line="120"/>
         <source>Force Interpreter</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制解释器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="120"/>
+        <location filename="../../core/game_database.cpp" line="121"/>
         <source>Force Software Renderer</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制软件渲染器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="121"/>
+        <location filename="../../core/game_database.cpp" line="122"/>
         <source>Force Software Renderer For Readbacks</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制软件渲染器进行回读</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="122"/>
+        <location filename="../../core/game_database.cpp" line="123"/>
         <source>Force Round Texture Coordinates</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制取整纹理坐标</translation>
@@ -12426,121 +12426,121 @@ Are you sure you want to continue?</source>
         <translation type="vanished">强制精确混合</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="125"/>
+        <location filename="../../core/game_database.cpp" line="126"/>
         <source>Force Deinterlacing</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制逐行扫描</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="126"/>
+        <location filename="../../core/game_database.cpp" line="127"/>
         <source>Force Full Boot</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制完全启动</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="127"/>
+        <location filename="../../core/game_database.cpp" line="128"/>
         <source>Disable Automatic Analog Mode</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用自动模拟模式</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="128"/>
+        <location filename="../../core/game_database.cpp" line="129"/>
         <source>Disable Multitap</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用多接头</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="129"/>
+        <location filename="../../core/game_database.cpp" line="131"/>
         <source>Disable CD-ROM Read Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用CD-ROM读取加速</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="130"/>
+        <location filename="../../core/game_database.cpp" line="132"/>
         <source>Disable CD-ROM Seek Speedup</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用CD-ROM搜寻加速</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="131"/>
+        <location filename="../../core/game_database.cpp" line="133"/>
         <source>Disable CD-ROM Speedup on MDEC</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用MDEC上的CD-ROM加速</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="132"/>
+        <location filename="../../core/game_database.cpp" line="134"/>
         <source>Disable True Color</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用真彩色</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="133"/>
+        <location filename="../../core/game_database.cpp" line="135"/>
         <source>Disable Full True Color</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用全真彩色</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="134"/>
+        <location filename="../../core/game_database.cpp" line="136"/>
         <source>Disable Upscaling</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用放大</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="135"/>
+        <location filename="../../core/game_database.cpp" line="137"/>
         <source>Disable Texture Filtering</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用纹理过滤</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="136"/>
+        <location filename="../../core/game_database.cpp" line="138"/>
         <source>Disable Sprite Texture Filtering</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用精灵纹理过滤</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="137"/>
+        <location filename="../../core/game_database.cpp" line="139"/>
         <source>Disable Scaled Dithering</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用缩放色彩抖动</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="138"/>
+        <location filename="../../core/game_database.cpp" line="140"/>
         <source>Disable Scaled Interlacing</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用缩放隔行扫描</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="139"/>
+        <location filename="../../core/game_database.cpp" line="141"/>
         <source>Disable Widescreen</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用宽屏</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="140"/>
+        <location filename="../../core/game_database.cpp" line="142"/>
         <source>Disable PGXP</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="141"/>
+        <location filename="../../core/game_database.cpp" line="143"/>
         <source>Disable PGXP Culling</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP剔除</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="142"/>
+        <location filename="../../core/game_database.cpp" line="144"/>
         <source>Disable PGXP Texture Correction</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP纹理校正</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="143"/>
+        <location filename="../../core/game_database.cpp" line="145"/>
         <source>Disable PGXP Color Correction</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP颜色校正</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="144"/>
+        <location filename="../../core/game_database.cpp" line="146"/>
         <source>Disable PGXP Depth Buffer</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP深度缓冲</translation>
@@ -12551,19 +12551,19 @@ Are you sure you want to continue?</source>
         <translation type="vanished">禁用PGXP保留投影浮点</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="145"/>
+        <location filename="../../core/game_database.cpp" line="147"/>
         <source>Disable PGXP on 2D Polygons</source>
         <comment>GameDatabase::Trait</comment>
         <translation>禁用PGXP在2D多边形</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="146"/>
+        <location filename="../../core/game_database.cpp" line="148"/>
         <source>Force PGXP Vertex Cache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制PGXP顶点缓存</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="147"/>
+        <location filename="../../core/game_database.cpp" line="149"/>
         <source>Force PGXP CPU Mode</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制PGXP处于CPU模式</translation>
@@ -12574,7 +12574,7 @@ Are you sure you want to continue?</source>
         <translation type="vanished">强制重编译器内存异常</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="148"/>
+        <location filename="../../core/game_database.cpp" line="150"/>
         <source>Force Recompiler ICache</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制重编译器ICache</translation>
@@ -12585,34 +12585,34 @@ Are you sure you want to continue?</source>
         <translation type="vanished">强制重编译器LUT快速内存</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="149"/>
+        <location filename="../../core/game_database.cpp" line="151"/>
         <source>Force CD-ROM SubQ Skew</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制CD-ROM子通道Q偏斜</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="150"/>
+        <location filename="../../core/game_database.cpp" line="152"/>
         <source>Is LibCrypt Protected</source>
         <comment>GameDatabase::Trait</comment>
         <translation>受LibCrypt保护</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="540"/>
+        <location filename="../../core/game_database.cpp" line="542"/>
         <source>Fast boot disabled.</source>
         <translation>快速启动已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="548"/>
+        <location filename="../../core/game_database.cpp" line="550"/>
         <source>Multitap disabled.</source>
         <translation>多接头已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="596"/>
+        <location filename="../../core/game_database.cpp" line="606"/>
         <source>Hardware rendering disabled.</source>
         <translation>硬件渲染已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="604"/>
+        <location filename="../../core/game_database.cpp" line="614"/>
         <source>Software renderer readbacks enabled.</source>
         <translation>软件渲染器回读已启用。</translation>
     </message>
@@ -12625,12 +12625,12 @@ Are you sure you want to continue?</source>
         <translation type="vanished">缩放色彩抖动已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="723"/>
+        <location filename="../../core/game_database.cpp" line="733"/>
         <source>Scaled interlacing disabled.</source>
         <translation>缩放隔行扫描已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="907"/>
+        <location filename="../../core/game_database.cpp" line="917"/>
         <source>Controller in Port {0} ({1}) is not supported for this game.
 Supported controllers: {2}
 Please configure a supported controller from the list above.</source>
@@ -12639,7 +12639,7 @@ Please configure a supported controller from the list above.</source>
 请从以上列表中配置支持的控制器。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="918"/>
+        <location filename="../../core/game_database.cpp" line="928"/>
         <source>This game does not support multitap, but multitap is enabled.
        This may result in dropped controller inputs.</source>
         <translation>此游戏不支持多接头，但已启用多接头。
@@ -12654,17 +12654,17 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">真彩色已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="686"/>
+        <location filename="../../core/game_database.cpp" line="696"/>
         <source>Upscaling disabled.</source>
         <translation>放大已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="701"/>
+        <location filename="../../core/game_database.cpp" line="711"/>
         <source>Texture filtering disabled.</source>
         <translation>纹理过滤已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="712"/>
+        <location filename="../../core/game_database.cpp" line="722"/>
         <source>Sprite texture filtering disabled.</source>
         <translation>精灵纹理过滤已禁用。</translation>
     </message>
@@ -12673,7 +12673,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">缩放色彩抖动。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="732"/>
+        <location filename="../../core/game_database.cpp" line="742"/>
         <source>Widescreen rendering disabled.</source>
         <translation>宽屏渲染已禁用。</translation>
     </message>
@@ -12682,99 +12682,99 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">强制NTSC计时已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="741"/>
+        <location filename="../../core/game_database.cpp" line="751"/>
         <source>PGXP geometry correction disabled.</source>
         <translation>PGXP几何校正已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="749"/>
+        <location filename="../../core/game_database.cpp" line="759"/>
         <source>PGXP culling correction disabled.</source>
         <translation>PGXP剔除校正已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="757"/>
+        <location filename="../../core/game_database.cpp" line="767"/>
         <source>PGXP perspective correct textures disabled.</source>
         <translation>PGXP透视校正纹理已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="767"/>
+        <location filename="../../core/game_database.cpp" line="777"/>
         <source>PGXP perspective correct colors disabled.</source>
         <translation>PGXP透视校正颜色已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="839"/>
+        <location filename="../../core/game_database.cpp" line="849"/>
         <source>PGXP preserve projection precision disabled.</source>
         <translation>PGXP保留投影精度已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="776"/>
+        <location filename="../../core/game_database.cpp" line="786"/>
         <source>PGXP vertex cache enabled.</source>
         <translation>PGXP顶点缓存已启用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="123"/>
+        <location filename="../../core/game_database.cpp" line="124"/>
         <source>Force Shader Blending</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制着色器混合</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="124"/>
+        <location filename="../../core/game_database.cpp" line="125"/>
         <source>Force Full True Color</source>
         <comment>GameDatabase::Trait</comment>
         <translation>强制全真彩色</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="556"/>
+        <location filename="../../core/game_database.cpp" line="566"/>
         <source>CD-ROM read speedup disabled.</source>
         <translation>CD-ROM读取加速已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="564"/>
+        <location filename="../../core/game_database.cpp" line="574"/>
         <source>CD-ROM seek speedup disabled.</source>
         <translation>CD-ROM搜寻加速已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="578"/>
+        <location filename="../../core/game_database.cpp" line="588"/>
         <source>Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game.</source>
         <translation>禁用MDEC上的CD-ROM加速已启用，但该游戏并不需要此功能。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="676"/>
+        <location filename="../../core/game_database.cpp" line="686"/>
         <source>Dithering set to {}.</source>
         <translation>色彩抖动设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="688"/>
+        <location filename="../../core/game_database.cpp" line="698"/>
         <source>MSAA disabled.</source>
         <translation>MSAA已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="784"/>
+        <location filename="../../core/game_database.cpp" line="794"/>
         <source>PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>PGXP顶点缓存已启用，但此游戏不需要它。这可能会导致渲染错误。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="795"/>
+        <location filename="../../core/game_database.cpp" line="805"/>
         <source>PGXP CPU mode enabled.</source>
         <translation>PGXP的CPU模式已启用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="810"/>
+        <location filename="../../core/game_database.cpp" line="820"/>
         <source>PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors.</source>
         <translation>PGXP的CPU模式已启用，但此游戏不需要它。这可能会导致渲染错误。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="818"/>
+        <location filename="../../core/game_database.cpp" line="828"/>
         <source>PGXP depth buffer disabled.</source>
         <translation>PGXP深度缓冲已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="826"/>
+        <location filename="../../core/game_database.cpp" line="836"/>
         <source>PGXP disabled on 2D polygons.</source>
         <translation>PGXP已禁用在2D多边形。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="861"/>
+        <location filename="../../core/game_database.cpp" line="871"/>
         <source>Compatibility settings for this game have been applied.</source>
         <translation>此游戏的兼容性设置已经被应用。</translation>
     </message>
@@ -12791,127 +12791,138 @@ Please configure a supported controller from the list above.</source>
 请从以上列表中配置支持的控制器。</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="933"/>
+        <location filename="../../core/game_database.cpp" line="943"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="983"/>
+        <location filename="../../core/game_database.cpp" line="993"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="982"/>
+        <location filename="../../core/game_database.cpp" line="992"/>
         <source>Serial</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="985"/>
+        <location filename="../../core/game_database.cpp" line="130"/>
+        <source>Disable Fast Forward Memory Card Access</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>禁用快进记忆卡访问</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="558"/>
+        <source>Fast forward memory card access disabled.</source>
+        <translation>快进记忆卡访问已禁用。</translation>
+    </message>
+    <message>
+        <location filename="../../core/game_database.cpp" line="995"/>
         <source>Sort Title</source>
         <translation>排序标题</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="987"/>
+        <location filename="../../core/game_database.cpp" line="997"/>
         <source>Localized Title</source>
         <translation>本地化标题</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="989"/>
+        <location filename="../../core/game_database.cpp" line="999"/>
         <source>Save Title</source>
         <translation>保存标题</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="992"/>
+        <location filename="../../core/game_database.cpp" line="1002"/>
         <source>Languages</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="994"/>
+        <location filename="../../core/game_database.cpp" line="1004"/>
         <source>Rating</source>
         <translation>评定</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="998"/>
+        <location filename="../../core/game_database.cpp" line="1008"/>
         <source>Version Tested</source>
         <translation>已测试版本</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1001"/>
+        <location filename="../../core/game_database.cpp" line="1011"/>
         <source>Comments</source>
         <translation>注释</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1005"/>
+        <location filename="../../core/game_database.cpp" line="1015"/>
         <source>Supported Controllers</source>
         <translation>支持的控制器</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1023"/>
+        <location filename="../../core/game_database.cpp" line="1033"/>
         <source>Traits</source>
         <translation>特性</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1033"/>
+        <location filename="../../core/game_database.cpp" line="1043"/>
         <source>Display Active Start Offset</source>
         <translation>显示活动的起始偏移量</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1035"/>
+        <location filename="../../core/game_database.cpp" line="1045"/>
         <source>Display Active End Offset</source>
         <translation>显示活动的结束偏移量</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1037"/>
+        <location filename="../../core/game_database.cpp" line="1047"/>
         <source>Display Line Start Offset</source>
         <translation>显示线起始偏移量</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1039"/>
+        <location filename="../../core/game_database.cpp" line="1049"/>
         <source>Display Line End Offset</source>
         <translation>显示线结束偏移量</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1041"/>
+        <location filename="../../core/game_database.cpp" line="1051"/>
         <source>Display Crop Mode</source>
         <translation>显示裁剪模式</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1043"/>
+        <location filename="../../core/game_database.cpp" line="1053"/>
         <source>Display Deinterlacing Mode</source>
         <translation>显示逐行扫描模式</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1045"/>
+        <location filename="../../core/game_database.cpp" line="1055"/>
         <source>CPU Overclock Percent</source>
         <translation>CPU超频百分比</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1046"/>
+        <location filename="../../core/game_database.cpp" line="1056"/>
         <source>DMA Max Slice Ticks</source>
         <translation>DMA最大片段时数</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1047"/>
+        <location filename="../../core/game_database.cpp" line="1057"/>
         <source>DMA Halt Ticks</source>
         <translation>DMA停顿时数</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1048"/>
+        <location filename="../../core/game_database.cpp" line="1058"/>
         <source>CD-ROM Max Seek Speedup Cycles</source>
         <translation>CD-ROM最大搜寻加速周期</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1050"/>
+        <location filename="../../core/game_database.cpp" line="1060"/>
         <source>CD-ROM Max Read Speedup Cycles</source>
         <translation>CD-ROM最大读取加速周期</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1052"/>
+        <location filename="../../core/game_database.cpp" line="1062"/>
         <source>GPU FIFO Size</source>
         <translation>GPU的FIFO大小</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1053"/>
+        <location filename="../../core/game_database.cpp" line="1063"/>
         <source>GPU Max Runahead</source>
         <translation>GPU最大超前运行</translation>
     </message>
@@ -12924,27 +12935,27 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">GPU的PGXP深度阈值</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1054"/>
+        <location filename="../../core/game_database.cpp" line="1064"/>
         <source>GPU Line Detect Mode</source>
         <translation>GPU线检测模式</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1056"/>
+        <location filename="../../core/game_database.cpp" line="1066"/>
         <source>PGXP Tolerance</source>
         <translation>PGXP公差</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1057"/>
+        <location filename="../../core/game_database.cpp" line="1067"/>
         <source>PGXP Depth Clear Threshold</source>
         <translation>PGXP深度清除阈值</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1059"/>
+        <location filename="../../core/game_database.cpp" line="1069"/>
         <source>PGXP Preserve Projection Precision</source>
         <translation>PGXP保留投影精度</translation>
     </message>
     <message>
-        <location filename="../../core/game_database.cpp" line="1067"/>
+        <location filename="../../core/game_database.cpp" line="1077"/>
         <source>Disc Set</source>
         <translation>光盘设置</translation>
     </message>
@@ -12970,7 +12981,7 @@ Please configure a supported controller from the list above.</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2194"/>
+        <location filename="../gamelistwidget.cpp" line="2231"/>
         <location filename="../../core/game_list.cpp" line="1587"/>
         <source>Never</source>
         <translation>从未</translation>
@@ -13028,13 +13039,13 @@ Please configure a supported controller from the list above.</source>
 {}</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2192"/>
+        <location filename="../gamelistwidget.cpp" line="2230"/>
         <location filename="../../core/game_list.cpp" line="1595"/>
         <source>Today</source>
         <translation>今天</translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2184"/>
+        <location filename="../gamelistwidget.cpp" line="2223"/>
         <location filename="../../core/game_list.cpp" line="1639"/>
         <source>%n seconds</source>
         <translation>
@@ -13083,7 +13094,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">PS-EXE</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2193"/>
+        <location filename="../gamelistwidget.cpp" line="2230"/>
         <location filename="../../core/game_list.cpp" line="1601"/>
         <source>Yesterday</source>
         <translation>昨天</translation>
@@ -13093,7 +13104,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">{}小时</translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2186"/>
+        <location filename="../gamelistwidget.cpp" line="2225"/>
         <location filename="../../core/game_list.cpp" line="1635"/>
         <source>%n hours</source>
         <translation>
@@ -13101,7 +13112,7 @@ Please configure a supported controller from the list above.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2185"/>
+        <location filename="../gamelistwidget.cpp" line="2224"/>
         <location filename="../../core/game_list.cpp" line="1637"/>
         <source>%n minutes</source>
         <translation>
@@ -13139,7 +13150,7 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>GameListListView</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2199"/>
+        <location filename="../gamelistwidget.cpp" line="2236"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
@@ -13147,7 +13158,7 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="72"/>
+        <location filename="../gamelistwidget.cpp" line="84"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
@@ -13156,12 +13167,12 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">格式</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="70"/>
+        <location filename="../gamelistwidget.cpp" line="82"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="70"/>
+        <location filename="../gamelistwidget.cpp" line="82"/>
         <source>Genre</source>
         <translation>游戏类型</translation>
     </message>
@@ -13170,52 +13181,52 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">文件大小</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="171"/>
+        <location filename="../gamelistwidget.cpp" line="175"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="881"/>
+        <location filename="../gamelistwidget.cpp" line="915"/>
         <source>No Achievements</source>
         <translation>无成就</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="883"/>
+        <location filename="../gamelistwidget.cpp" line="917"/>
         <source>%1/%2 achievements unlocked</source>
         <translation>%1/%2成就解锁</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="887"/>
+        <location filename="../gamelistwidget.cpp" line="921"/>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1在硬核模式下解锁</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="67"/>
+        <location filename="../gamelistwidget.cpp" line="79"/>
         <source>Icon</source>
         <translation>图标</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="68"/>
+        <location filename="../gamelistwidget.cpp" line="80"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="73"/>
+        <location filename="../gamelistwidget.cpp" line="85"/>
         <source>Data Size</source>
         <translation>数据大小</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="74"/>
+        <location filename="../gamelistwidget.cpp" line="86"/>
         <source>Achievements</source>
         <translation>成就</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="72"/>
+        <location filename="../gamelistwidget.cpp" line="84"/>
         <source>Last Played</source>
         <translation>最近游玩</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="71"/>
+        <location filename="../gamelistwidget.cpp" line="83"/>
         <source>Time Played</source>
         <translation>游玩时长</translation>
     </message>
@@ -13224,37 +13235,37 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">Raw大小</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="73"/>
+        <location filename="../gamelistwidget.cpp" line="85"/>
         <source>Region</source>
         <translation>区域</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="67"/>
+        <location filename="../gamelistwidget.cpp" line="79"/>
         <source>Serial</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="74"/>
+        <location filename="../gamelistwidget.cpp" line="86"/>
         <source>Compatibility</source>
         <translation>兼容性</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="71"/>
+        <location filename="../gamelistwidget.cpp" line="83"/>
         <source>Players</source>
         <translation>玩家</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="68"/>
+        <location filename="../gamelistwidget.cpp" line="80"/>
         <source>File Title</source>
         <translation>文件标题</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="69"/>
+        <location filename="../gamelistwidget.cpp" line="81"/>
         <source>Publisher</source>
         <translation>出版商</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="69"/>
+        <location filename="../gamelistwidget.cpp" line="81"/>
         <source>Developer</source>
         <translation>开发商</translation>
     </message>
@@ -13407,12 +13418,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>全部格式</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2007"/>
+        <location filename="../gamelistwidget.cpp" line="2051"/>
         <source>Cover scale: %1%</source>
         <translation>封面比例: %1%</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2009"/>
+        <location filename="../gamelistwidget.cpp" line="2053"/>
         <source>Icon size: %1%</source>
         <translation>图标大小: %1%</translation>
     </message>
@@ -17496,8 +17507,8 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>确认更换光盘</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3182"/>
-        <location filename="../mainwindow.cpp" line="3191"/>
+        <location filename="../mainwindow.cpp" line="3184"/>
+        <location filename="../mainwindow.cpp" line="3193"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
         <translation>找不到记忆卡&apos;%1&apos;。尝试开始游戏并保存创建它。</translation>
     </message>
@@ -17586,7 +17597,7 @@ Do you want to load this state, or start from a fresh boot?</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3053"/>
+        <location filename="../mainwindow.cpp" line="3055"/>
         <source>Save State For Resume</source>
         <translation>保存即时档案以便下次继续</translation>
     </message>
@@ -17768,7 +17779,7 @@ This action cannot be undone.</source>
         <translation type="vanished">刷新封面 (网格视图)(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3156"/>
+        <location filename="../mainwindow.cpp" line="3158"/>
         <source>Memory card &apos;%1&apos; does not exist. Do you want to create an empty memory card?</source>
         <translation>记忆卡&apos;%1&apos;不存在。您想要创建一个空的记忆卡吗？</translation>
     </message>
@@ -17980,7 +17991,7 @@ Are you sure you want to continue?</source>
         <translation>显示显存</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3208"/>
+        <location filename="../mainwindow.cpp" line="3210"/>
         <source>RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.</source>
         <translation>RA: 以%1 (%2, %3软核) 登录。%4未读消息。</translation>
     </message>
@@ -18702,17 +18713,22 @@ Are you sure you want to continue?</source>
         <translation>选择背景图片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3163"/>
+        <location filename="../mainwindow.cpp" line="3050"/>
+        <source>Are you sure you want to exit the application?</source>
+        <translation>您确定想要退出本应用程序吗?</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3165"/>
         <source>Failed to create memory card &apos;%1&apos;: %2</source>
         <translation>无法创建记忆卡&apos;%1&apos;: %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3243"/>
+        <location filename="../mainwindow.cpp" line="3245"/>
         <source>RA: Updated achievement progress database.</source>
         <translation>RA: 更新了成就进度数据库。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3322"/>
+        <location filename="../mainwindow.cpp" line="3324"/>
         <source>%1 Files (*.%2)</source>
         <translation>%1文件 (*.%2)</translation>
     </message>
@@ -18721,17 +18737,17 @@ Are you sure you want to continue?</source>
         <translation type="vanished">视频捕获</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3408"/>
+        <location filename="../mainwindow.cpp" line="3410"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3415"/>
+        <location filename="../mainwindow.cpp" line="3417"/>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;Please download an official release from from &lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;.&lt;/p&gt;</source>
         <translation>&lt;p&gt;抱歉，您正在尝试更新的DuckStation版本不是由官方GitHub所发行。为防止不兼容，自动更新程序仅在正式版本上启用。&lt;/p&gt;&lt;p&gt;请从&lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;下载官方版本。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3422"/>
+        <location filename="../mainwindow.cpp" line="3424"/>
         <source>Automatic updating is not supported on the current platform.</source>
         <translation>当前平台不支持自动更新。</translation>
     </message>
@@ -18843,10 +18859,10 @@ Are you sure you want to continue?</source>
         <translation>快速启动</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3155"/>
-        <location filename="../mainwindow.cpp" line="3162"/>
-        <location filename="../mainwindow.cpp" line="3181"/>
-        <location filename="../mainwindow.cpp" line="3190"/>
+        <location filename="../mainwindow.cpp" line="3157"/>
+        <location filename="../mainwindow.cpp" line="3164"/>
+        <location filename="../mainwindow.cpp" line="3183"/>
+        <location filename="../mainwindow.cpp" line="3192"/>
         <source>Memory Card Not Found</source>
         <translation>没有找到记忆卡</translation>
     </message>
@@ -18972,9 +18988,9 @@ Are you sure you want to continue?</source>
         <translation>关机(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3049"/>
+        <location filename="../mainwindow.cpp" line="3051"/>
         <source>Are you sure you want to shut down the virtual machine?</source>
-        <translation>您确定想要关闭虚拟机吗？</translation>
+        <translation>您确定想要关闭本虚拟机吗？</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="94"/>
@@ -19088,7 +19104,7 @@ Are you sure you want to continue?</source>
         <translation>无法移除现有封面&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3326"/>
+        <location filename="../mainwindow.cpp" line="3328"/>
         <source>Media Capture</source>
         <translation>媒体捕获</translation>
     </message>
@@ -21296,19 +21312,19 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
         <translation type="vanished">通过游戏设置禁用强制模拟模式。控制器将以数字模式启动。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="787"/>
+        <location filename="../../core/gpu_thread.cpp" line="788"/>
         <source>Failed to initialize {} renderer, falling back to software renderer.</source>
         <translation>无法初始化{}渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="867"/>
+        <location filename="../../core/gpu_thread.cpp" line="868"/>
         <source>Failed to create {} GPU device, reverting to {}.
 {}</source>
         <translation>无法创建{}GPU设备，恢复到{}。
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="1355"/>
+        <location filename="../../core/gpu_thread.cpp" line="1356"/>
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
         <translation>无法切换到独占全屏，改为使用无边框模式。</translation>
     </message>
@@ -21498,7 +21514,7 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="232"/>
         <source>Are you sure you want to clear all shader stages?</source>
-        <translation>您确定想要清除全部着色器层？</translation>
+        <translation>您确定想要清除全部着色器层吗？</translation>
     </message>
 </context>
 <context>
@@ -24570,7 +24586,7 @@ DuckStation需要PS1或PS2 BIOS才能够运行。
         <translation>没有找到适用{}区域的BIOS文件。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="691"/>
+        <location filename="../../core/gpu_thread.cpp" line="692"/>
         <source>Failed to create render device:
 
 {0}
