@@ -2565,12 +2565,14 @@ bool System::DoState(StateWrapper& sw, bool update_display)
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddIconOSDMessage(
-      "StateOverclockDifference", ICON_FA_TRIANGLE_EXCLAMATION,
-      fmt::format(TRANSLATE_FS("System", "WARNING: CPU overclock ({}%) was different in save state ({}%)."),
-                  g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
-                  cpu_overclock_active ?
-                    Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
-                    100u),
+      "StateOverclockDifference", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "CPU Overclock Changed"),
+      fmt::format(
+        TRANSLATE_FS("System",
+                     "The save state does not match the current configuration.\nSave State: {0}%\nConfiguration: {1}%"),
+        g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
+        cpu_overclock_active ?
+          Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
+          100u),
       Host::OSD_WARNING_DURATION);
     UpdateOverclock();
   }
@@ -3010,11 +3012,12 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
       {
         if (CDROM::HasMedia())
         {
-          Host::AddOSDMessage(
-            fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
-                                                   "existing image '{}', this may result in instability."),
-                        buffer.media_path, error ? error->GetDescription() : local_error.GetDescription(),
-                        Path::GetFileName(CDROM::GetMediaPath())),
+          Host::AddIconOSDMessage(
+            "UsingExistingCDImage", ICON_EMOJI_WARNING,
+            TRANSLATE_STR("System", "Failed to open CD image from save state."),
+            fmt::format(
+              TRANSLATE_FS("System", "Path: {0}\nError: {1}\nUsing current CD image, this may result in instability."),
+              buffer.media_path, error ? error->GetDescription() : local_error.GetDescription()),
             Host::OSD_CRITICAL_ERROR_DURATION);
         }
         else
@@ -4742,30 +4745,31 @@ void System::WarnAboutStateTaints(u32 state_taints)
     if (!(taints_active_in_file & (1u << i)))
       continue;
 
-    if (messages.empty())
-    {
-      messages.append_format(
-        "{} {}\n", ICON_EMOJI_WARNING,
-        TRANSLATE_SV("System", "This save state was created with the following tainted options, and may\n"
-                               "       be unstable. You will need to reset the system to clear any effects."));
-    }
-
-    messages.append("        \u2022 ");
+    messages.append(" \u2022 ");
     messages.append(GetTaintDisplayName(static_cast<Taint>(i)));
     messages.append('\n');
   }
 
-  Host::AddKeyedOSDWarning("SystemTaintsFromState", std::string(messages.view()), Host::OSD_WARNING_DURATION);
+  if (messages.empty())
+    return;
+
+  Host::AddIconOSDWarning(
+    "SystemTaintsFromState", ICON_EMOJI_WARNING,
+    TRANSLATE_STR("System", "This save state was created with the following tainted options, and may be unstable. You "
+                            "will need to reset the system to clear any effects."),
+    std::string(messages.view()), Host::OSD_ERROR_DURATION);
 }
 
 void System::WarnAboutUnsafeSettings()
 {
   LargeString messages;
-  const auto append = [&messages](const char* icon, std::string_view msg) {
-    messages.append_format("{} {}\n", icon, msg);
+  const auto append = [&messages](std::string_view msg) {
+    messages.append(" \u2022 ");
+    messages.append(msg);
+    messages.append('\n');
   };
-  const auto append_format = [&messages]<typename... T>(const char* icon, fmt::format_string<T...> fmt, T&&... args) {
-    messages.append_format("{} ", icon);
+  const auto append_format = [&messages]<typename... T>(fmt::format_string<T...> fmt, T&&... args) {
+    messages.append(" \u2022 ");
     messages.append_vformat(fmt, fmt::make_format_args(args...));
     messages.append('\n');
   };
@@ -4774,139 +4778,125 @@ void System::WarnAboutUnsafeSettings()
             s_state.running_game_entry->HasTrait(trait));
   };
 
+  // Force the message, but use a reduced duration if they have OSD messages disabled.
+  const float osd_duration = g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION;
+  static constexpr std::string_view safe_mode_osd_key = "SafeModeWarn";
+
+  if (g_settings.disable_all_enhancements)
+  {
+    if (g_settings.cpu_overclock_active)
+      append(TRANSLATE_SV("System", "Overclock disabled."));
+    if (g_settings.cpu_enable_8mb_ram)
+      append(TRANSLATE_SV("System", "8MB RAM disabled."));
+    if (g_settings.gpu_resolution_scale != 1)
+      append(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+    if (g_settings.gpu_multisamples != 1)
+      append(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+    if (g_settings.gpu_dithering_mode != GPUDitheringMode::Unscaled)
+      append(TRANSLATE_SV("System", "Dithering set to unscaled."));
+    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      append(TRANSLATE_SV("System", "Texture filtering disabled."));
+    }
+    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+      append(TRANSLATE_SV("System", "Interlaced rendering enabled."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      append(TRANSLATE_SV("System", "Video timings set to default."));
+    if (g_settings.gpu_widescreen_hack)
+      append(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+    if (g_settings.gpu_pgxp_enable)
+      append(TRANSLATE_SV("System", "PGXP disabled."));
+    if (g_settings.gpu_texture_cache)
+      append(TRANSLATE_SV("System", "GPU texture cache disabled."));
+    if (g_settings.display_24bit_chroma_smoothing)
+      append(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+    if (g_settings.cdrom_read_speedup != 1)
+      append(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+    if (g_settings.cdrom_seek_speedup != 1)
+      append(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+    if (g_settings.cdrom_mute_cd_audio)
+      append(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
+      append(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+    if (g_settings.mdec_use_old_routines)
+      append(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+    if (g_settings.pio_device_type != PIODeviceType::None)
+      append(TRANSLATE_SV("System", "PIO device removed."));
+    if (g_settings.pcdrv_enable)
+      append(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.bios_patch_fast_boot)
+      append(TRANSLATE_SV("System", "Fast boot disabled."));
+
+    Host::AddIconOSDWarning(std::string(safe_mode_osd_key), ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "Safe mode is enabled."), std::string(messages.view()),
+                            osd_duration);
+    messages.clear();
+  }
+  else
+  {
+    Host::RemoveKeyedOSDWarning(std::string(safe_mode_osd_key));
+  }
+
   if (!g_settings.disable_all_enhancements)
   {
     if (g_settings.cpu_overclock_active)
     {
-      append_format(
-        ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-        g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
+      append_format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                    g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                    g_settings.cpu_overclock_denominator);
     }
     if ((g_settings.cdrom_read_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMReadSpeedup)) ||
         (g_settings.cdrom_seek_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMSeekSpeedup)))
     {
-      append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
+      append(TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
     }
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      append(ICON_FA_TV,
-             TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
+      append(TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
     if (!g_settings.IsUsingSoftwareRenderer())
     {
       if (g_settings.gpu_multisamples != 1)
       {
-        append(ICON_EMOJI_WARNING,
-               TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
+        append(TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
       }
       if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
       {
         append(
-          ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
       }
       if (g_settings.gpu_pgxp_tolerance >= 0.0f)
       {
         append(
-          ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "PGXP Geometry Tolerance is not set to default. This may cause rendering errors."));
       }
     }
     if (g_settings.cpu_enable_8mb_ram)
-    {
-      append(ICON_EMOJI_WARNING,
-             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
-    }
+      append(TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
     if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
-    {
-      append(ICON_EMOJI_WARNING,
-             TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
-    }
+      append(TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
 
     // Always display TC warning.
     if (g_settings.gpu_texture_cache)
     {
-      append(
-        ICON_FA_PAINT_ROLLER,
-        TRANSLATE_SV("System",
-                     "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
+      append(TRANSLATE_SV(
+        "System", "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
     }
 
     // Potential performance issues.
     if (g_settings.cpu_fastmem_mode != Settings::DEFAULT_CPU_FASTMEM_MODE)
     {
-      append_format(ICON_EMOJI_WARNING,
-                    TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
+      append_format(TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
                     Settings::GetCPUFastmemModeName(g_settings.cpu_fastmem_mode));
     }
   }
 
-  if (g_settings.disable_all_enhancements)
-  {
-    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "Safe mode is enabled."));
-
-#define APPEND_SUBMESSAGE(msg)                                                                                         \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    messages.append("        \u2022 ");                                                                                \
-    messages.append(msg);                                                                                              \
-    messages.append('\n');                                                                                             \
-  } while (0)
-
-    if (g_settings.cpu_overclock_active)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-    if (g_settings.cpu_enable_8mb_ram)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-    if (g_settings.gpu_resolution_scale != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
-    if (g_settings.gpu_multisamples != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
-    if (g_settings.gpu_dithering_mode != GPUDitheringMode::Unscaled)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Dithering set to unscaled."));
-    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
-        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
-    {
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
-    }
-    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
-    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
-    if (g_settings.gpu_widescreen_hack)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
-    if (g_settings.gpu_pgxp_enable)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
-    if (g_settings.gpu_texture_cache)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
-    if (g_settings.display_24bit_chroma_smoothing)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
-    if (g_settings.cdrom_read_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
-    if (g_settings.cdrom_seek_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
-    if (g_settings.cdrom_mute_cd_audio)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
-    if (g_settings.texture_replacements.enable_vram_write_replacements)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-    if (g_settings.mdec_use_old_routines)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
-    if (g_settings.pio_device_type != PIODeviceType::None)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
-    if (g_settings.pcdrv_enable)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
-    if (g_settings.bios_patch_fast_boot)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
-
-#undef APPEND_SUBMESSAGE
-  }
-
   if (!g_settings.apply_compatibility_settings)
-  {
-    append(ICON_EMOJI_WARNING,
-           TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
-  }
+    append(TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
 
   if (g_settings.cdrom_subq_skew)
-    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM SubQ Skew is enabled. This will break games."));
+    append(TRANSLATE_SV("System", "CD-ROM SubQ Skew is enabled. This will break games."));
 
+  static constexpr std::string_view osd_key = "UnsafeCfgWarn";
   if (!messages.empty())
   {
     if (messages.back() == '\n')
@@ -4914,13 +4904,13 @@ void System::WarnAboutUnsafeSettings()
 
     LogUnsafeSettingsToConsole(messages);
 
-    // Force the message, but use a reduced duration if they have OSD messages disabled.
-    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()),
-                             g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
+    Host::AddIconOSDWarning(std::string(osd_key), ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "One or more unsafe settings is enabled."),
+                            std::string(messages.view()), osd_duration);
   }
   else
   {
-    Host::RemoveKeyedOSDWarning("performance_settings_warning");
+    Host::RemoveKeyedOSDWarning(std::string(osd_key));
   }
 }
 

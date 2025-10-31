@@ -1101,10 +1101,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     if (s_locals.active_cheat_count > 0)
     {
       System::SetTaint(System::Taint::Cheats);
-      Host::AddIconOSDMessage("LoadCheats", ICON_EMOJI_WARNING,
-                              TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled. This may crash games.",
-                                                   "OSD Message", s_locals.active_cheat_count),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(
+        "LoadCheats", ICON_EMOJI_WARNING,
+        TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled.", "OSD Message", s_locals.active_cheat_count),
+        TRANSLATE_STR("Cheats", "This may crash games."), Host::OSD_WARNING_DURATION);
     }
     else if (s_locals.active_patch_count == 0)
     {

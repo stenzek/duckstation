@@ -464,11 +464,9 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
   {
 #define FLAG_MSG(flag, text)                                                                                           \
   if (HasCreateFlag(create_flags, flag))                                                                               \
-  {                                                                                                                    \
-    message += "\n        \u2022 " text;                                                                               \
-  }
+    message += " \u2022 " text "\n";
 
-    std::string message = "One or more non-standard GPU device flags are set:";
+    std::string message;
     FLAG_MSG(CreateFlags::EnableDebugDevice, "Use Debug Device");
     FLAG_MSG(CreateFlags::EnableGPUValidation, "Enable GPU Validation");
     FLAG_MSG(CreateFlags::PreferGLESContext, "Prefer OpenGL ES context");
@@ -484,8 +482,14 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
     FLAG_MSG(CreateFlags::DisableRasterOrderViews, "Disable Raster Order Views");
     FLAG_MSG(CreateFlags::DisableCompressedTextures, "Disable Compressed Textures");
 
-    Host::AddIconOSDMessage("GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING, std::move(message),
-                            Host::OSD_WARNING_DURATION);
+    if (!message.empty())
+    {
+      message.pop_back(); // Remove last newline.
+
+      Host::AddIconOSDMessage("GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING,
+                              "One or more non-standard GPU device flags are enabled.", std::move(message),
+                              Host::OSD_WARNING_DURATION);
+    }
 
 #undef FLAG_MSG
   }

@@ -694,8 +694,8 @@ void GPU_HW::CheckSettings()
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU.\nIt requires framebuffer fetch, "
-                              "feedback loops, or rasterizer order views."),
+      TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU."),
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
       Host::OSD_WARNING_DURATION);
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
@@ -713,8 +713,8 @@ void GPU_HW::CheckSettings()
   {
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "PGXP depth buffer is not supported by your current GPU or renderer.\nIt requires "
-                              "framebuffer fetch, feedback loops, or rasterizer order views."),
+      TRANSLATE_STR("GPU_HW", "PGXP depth buffer is not supported by your current GPU or renderer."),
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
       Host::OSD_WARNING_DURATION);
     m_pgxp_depth_buffer = false;
   }
