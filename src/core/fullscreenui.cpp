@@ -1128,8 +1128,7 @@ void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, c
     static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_locals.app_background_load_time));
 
   g_gpu_device->SetPipeline(s_locals.app_background_shader.get());
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
 }
 
 bool FullscreenUI::LoadBackgroundImage(const std::string& path, Error* error)

@@ -2040,8 +2040,7 @@ void GPU_HW::CopyAndClearDepthBuffer(bool only_drawing_area)
       g_gpu_device->SetPipeline(m_copy_depth_pipeline.get());
 
       const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-      g_gpu_device->Draw(3, 0);
+      g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
       RestoreDeviceContext();
     }
 
@@ -2064,12 +2063,12 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
     // need to re-bind for rov, because we can't turn colour writes off for only the first target
     if (!m_use_rov_for_shader_blend)
     {
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero(), nullptr, 0);
     }
     else
     {
       g_gpu_device->SetRenderTarget(m_vram_depth_texture.get());
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero(), nullptr, 0);
       SetVRAMRenderTarget();
     }
   }
@@ -3114,7 +3113,7 @@ bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u
 
   const GSVector4i rect(dst_x, dst_y, dst_x + width, dst_y + height);
   g_gpu_device->SetScissor(rect);
-  DrawScreenQuad(rect, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(rect, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), nullptr, 0);
   RestoreDeviceContext();
   return true;
 }
@@ -3359,11 +3358,10 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
   uniforms.u_interlaced_displayed_field = active_line_lsb;
   std::memset(uniforms.pad, 0, sizeof(uniforms.pad));
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
   g_gpu_device->SetScissor(scaled_bounds);
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 }
@@ -3408,8 +3406,7 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
   g_gpu_device->SetPipeline(m_vram_readback_pipeline.get());
   g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, encoded_width, encoded_height);
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   // Stage the readback and copy it into our shadow buffer.
   if (m_vram_readback_download_texture->IsImported())
@@ -3532,8 +3529,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   else
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
 
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 }
@@ -3610,11 +3606,11 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     // VRAM read texture should already be bound.
     g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
     g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
     const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
     g_gpu_device->SetScissor(dst_bounds_scaled);
-    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec());
+    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), &uniforms,
+                   sizeof(uniforms));
     RestoreDeviceContext();
 
     if (check_mask && !m_pgxp_depth_buffer)
@@ -4060,9 +4056,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     };
     const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
                                       static_cast<float>(line_skip ? 2 : 1)};
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
 
     m_vram_extract_texture->MakeReadyForSampling();
     if (depth_source)
@@ -4216,8 +4210,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, level_width, level_height));
     g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     g_gpu_device->CopyTextureRegion(level_texture.get(), 0, 0, 0, level, m_downsample_texture.get(), 0, 0, 0, 0,
                                     level_width, level_height);
   }
@@ -4245,8 +4238,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, last_width, last_height));
     g_gpu_device->SetPipeline(m_downsample_blur_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     weight_texture->MakeReadyForSampling();
   }
 
@@ -4266,8 +4258,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetTextureSampler(1, weight_texture.get(), m_downsample_lod_sampler.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, width, height));
     g_gpu_device->SetPipeline(m_downsample_composite_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     m_downsample_texture->MakeReadyForSampling();
   }
 
@@ -4300,8 +4291,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 

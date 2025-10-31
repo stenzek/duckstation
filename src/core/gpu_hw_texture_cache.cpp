@@ -3463,7 +3463,7 @@ void GPUTextureCache::PreloadReplacementTextures()
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
   {                                                                                                                    \
-    FullscreenUI::RenderLoadingScreen(                                                                              \
+    FullscreenUI::RenderLoadingScreen(                                                                                 \
       image_path, TRANSLATE_SV("GPU_HW", "Preloading replacement textures..."),                                        \
       TinyString::from_format(TRANSLATE_FS("GPU_HW", "{0} of {1} textures"), num_textures_loaded, total_textures), 0,  \
       static_cast<int>(total_textures), static_cast<int>(num_textures_loaded));                                        \
@@ -3837,9 +3837,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   GSVector2::store<true>(&uniforms[6], GSVector2::cxpr(1.0f) / texture_size);
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
   g_gpu_device->SetPipeline(s_state.replacement_upscale_pipeline.get());
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetTextureSampler(0, entry->texture.get(), g_gpu_device->GetNearestSampler());
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   for (const TextureReplacementSubImage& si : subimages)
   {
@@ -3860,8 +3859,7 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
                                                                                      g_gpu_device->GetNearestSampler());
     g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
                                                 s_state.replacement_draw_pipeline.get());
-    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
   }
 
   g_gpu_device->CopyTextureRegion(replacement_tex.get(), 0, 0, 0, 0, s_state.replacement_texture_render_target.get(), 0,

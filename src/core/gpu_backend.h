@@ -117,8 +117,8 @@ public:
   static void SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config);
   static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
 
-  static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                             const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
+  static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                             const void* push_constants, u32 push_constants_size);
 
 protected:
   enum : u32

@@ -93,7 +93,7 @@ public:
   // Draws the specified bounding box with display rotation and pre-rotation.
   static void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
                              const GSVector2i final_target_size, DisplayRotation uv_rotation,
-                             WindowInfo::PreRotation prerotation);
+                             WindowInfo::PreRotation prerotation, const void* push_constants, u32 push_constants_size);
 
 private:
   enum : u32

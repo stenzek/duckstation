@@ -874,7 +874,6 @@ public:
   void UploadIndexBuffer(const DrawIndex* indices, u32 index_count, u32* base_index);
 
   /// Uniform buffer abstraction.
-  virtual void PushUniformBuffer(const void* data, u32 data_size) = 0;
   virtual void* MapUniformBuffer(u32 size) = 0;
   virtual void UnmapUniformBuffer(u32 size) = 0;
   void UploadUniformBuffer(const void* data, u32 data_size);
@@ -896,10 +895,20 @@ public:
 
   // Drawing abstraction.
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
+  virtual void DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                     u32 push_constants_size) = 0;
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
-  virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
+  virtual void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                            const void* push_constants, u32 push_constants_size) = 0;
+  virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type);
+  virtual void DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                       const void* push_constants, u32 push_constants_size,
+                                                       DrawBarrier type);
   virtual void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                         u32 group_size_z) = 0;
+  virtual void DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                         u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                         u32 push_constants_size) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;

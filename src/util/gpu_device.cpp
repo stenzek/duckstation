@@ -771,6 +771,18 @@ void GPUDevice::SetViewportAndScissor(const GSVector4i rc)
   SetScissor(rc);
 }
 
+void GPUDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barrier draws are not supported on this API.");
+}
+
+void GPUDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                        const void* push_constants, u32 push_constants_size,
+                                                        DrawBarrier type)
+{
+  Panic("Barrier draws are not supported on this API.");
+}
+
 void GPUDevice::ClearRenderTarget(GPUTexture* t, u32 c)
 {
   t->SetClearColor(c);

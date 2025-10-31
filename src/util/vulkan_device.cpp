@@ -2860,12 +2860,13 @@ void VulkanDevice::UnmapIndexBuffer(u32 used_index_count)
   m_index_buffer.CommitMemory(size);
 }
 
-void VulkanDevice::PushUniformBuffer(const void* data, u32 data_size)
+void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data_size)
 {
   DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
-  vkCmdPushConstants(m_current_command_buffer, GetCurrentVkPipelineLayout(), UNIFORM_PUSH_CONSTANTS_STAGES, 0,
-                     data_size, data);
+  vkCmdPushConstants(m_current_command_buffer, GetCurrentVkPipelineLayout(is_compute),
+                     is_compute ? VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT : UNIFORM_PUSH_CONSTANTS_STAGES, 0, data_size,
+                     data);
 }
 
 void* VulkanDevice::MapUniformBuffer(u32 size)
@@ -3667,11 +3668,9 @@ VulkanDevice::PipelineLayoutType VulkanDevice::GetPipelineLayoutType(GPUPipeline
                                                        PipelineLayoutType::Normal);
 }
 
-VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout() const
+VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout(bool is_compute) const
 {
-  return m_pipeline_layouts[IsComputeLayout(m_current_pipeline_layout) ?
-                              0 :
-                              static_cast<size_t>(GetPipelineLayoutType(m_current_render_pass_flags))]
+  return m_pipeline_layouts[is_compute ? 0 : static_cast<size_t>(GetPipelineLayoutType(m_current_render_pass_flags))]
                            [static_cast<size_t>(m_current_pipeline_layout)];
 }
 
@@ -3885,9 +3884,10 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
 {
   [[maybe_unused]] bool new_dynamic_offsets = false;
 
+  constexpr bool is_compute = IsComputeLayout(layout);
   constexpr VkPipelineBindPoint vk_bind_point =
-    (IsComputeLayout(layout) ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
-  const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout();
+    (is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
+  const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout(is_compute);
   std::array<VkDescriptorSet, 3> ds;
   u32 first_ds = 0;
   u32 num_ds = 0;
@@ -4053,10 +4053,29 @@ void VulkanDevice::Draw(u32 vertex_count, u32 base_vertex)
   vkCmdDraw(m_current_command_buffer, vertex_count, 1, base_vertex, 0);
 }
 
+void VulkanDevice::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                         u32 push_constants_size)
+{
+  PreDrawCheck();
+  s_stats.num_draws++;
+
+  PushUniformBuffer(false, push_constants, push_constants_size);
+  vkCmdDraw(m_current_command_buffer, vertex_count, 1, base_vertex, 0);
+}
+
 void VulkanDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
   s_stats.num_draws++;
+  vkCmdDrawIndexed(m_current_command_buffer, index_count, 1, base_index, base_vertex, 0);
+}
+
+void VulkanDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                const void* push_constants, u32 push_constants_size)
+{
+  PreDrawCheck();
+  s_stats.num_draws++;
+  PushUniformBuffer(false, push_constants, push_constants_size);
   vkCmdDrawIndexed(m_current_command_buffer, index_count, 1, base_index, base_vertex, 0);
 }
 
@@ -4082,9 +4101,20 @@ VkImageMemoryBarrier VulkanDevice::GetColorBufferBarrier(const VulkanTexture* rt
 void VulkanDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   PreDrawCheck();
+  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
+}
 
-  // TODO: The first barrier is unnecessary if we're starting the render pass.
+void VulkanDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                           const void* push_constants, u32 push_constants_size,
+                                                           DrawBarrier type)
+{
+  PreDrawCheck();
+  PushUniformBuffer(false, push_constants, push_constants_size);
+  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
+}
 
+void VulkanDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
   switch (type)
   {
     case GPUDevice::DrawBarrier::None:
@@ -4140,6 +4170,21 @@ void VulkanDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 gro
 {
   PreDispatchCheck();
   s_stats.num_draws++;
+
+  const u32 groups_x = threads_x / group_size_x;
+  const u32 groups_y = threads_y / group_size_y;
+  const u32 groups_z = threads_z / group_size_z;
+  vkCmdDispatch(m_current_command_buffer, groups_x, groups_y, groups_z);
+}
+
+void VulkanDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                             u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                             u32 push_constants_size)
+{
+  PreDispatchCheck();
+  s_stats.num_draws++;
+
+  PushUniformBuffer(true, push_constants, push_constants_size);
 
   const u32 groups_x = threads_x / group_size_x;
   const u32 groups_y = threads_y / group_size_y;

@@ -1600,7 +1600,8 @@ void D3D12Device::UnmapIndexBuffer(u32 used_index_count)
   m_index_buffer.CommitMemory(upload_size);
 }
 
-void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
+void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, bool compute, const void* data,
+                                    u32 data_size)
 {
   static constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> push_parameters = {
     0, // SingleTextureAndUBO
@@ -1611,19 +1612,11 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
     2, // ComputeSingleTextureAndPushConstants
   };
 
-  DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
-  if (m_dirty_flags & DIRTY_FLAG_PIPELINE_LAYOUT)
-  {
-    m_dirty_flags &= ~DIRTY_FLAG_PIPELINE_LAYOUT;
-    UpdateRootSignature();
-  }
-
   s_stats.buffer_streamed += data_size;
 
   const u32 push_param =
     push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(IsUsingROVRootSignature());
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-  if (!IsUsingComputeRootSignature())
+  if (!compute)
     cmdlist->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
   else
     cmdlist->SetComputeRoot32BitConstants(push_param, data_size / 4u, data, 0);
@@ -2633,6 +2626,17 @@ void D3D12Device::Draw(u32 vertex_count, u32 base_vertex)
   GetCommandList()->DrawInstanced(vertex_count, 1, base_vertex, 0);
 }
 
+void D3D12Device::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                        u32 push_constants_size)
+{
+  PreDrawCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, false, push_constants, push_constants_size);
+  cmdlist->DrawInstanced(vertex_count, 1, base_vertex, 0);
+}
+
 void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
@@ -2640,9 +2644,15 @@ void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   GetCommandList()->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
 }
 
-void D3D12Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+void D3D12Device::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                               const void* push_constants, u32 push_constants_size)
 {
-  Panic("Barriers are not supported");
+  PreDrawCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, false, push_constants, push_constants_size);
+  cmdlist->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
 }
 
 void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
@@ -2655,4 +2665,20 @@ void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   const u32 groups_y = threads_y / group_size_y;
   const u32 groups_z = threads_z / group_size_z;
   GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
+}
+
+void D3D12Device::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                            u32 push_constants_size)
+{
+  PreDispatchCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, true, push_constants, push_constants_size);
+
+  const u32 groups_x = threads_x / group_size_x;
+  const u32 groups_y = threads_y / group_size_y;
+  const u32 groups_z = threads_z / group_size_z;
+  cmdlist->Dispatch(groups_x, groups_y, groups_z);
 }

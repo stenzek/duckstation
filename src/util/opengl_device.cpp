@@ -1032,6 +1032,13 @@ void OpenGLDevice::Draw(u32 vertex_count, u32 base_vertex)
   glDrawArrays(m_current_pipeline->GetTopology(), 0, vertex_count);
 }
 
+void OpenGLDevice::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                         u32 push_constants_size)
+{
+  PushUniformBuffer(push_constants, push_constants_size);
+  Draw(vertex_count, base_vertex);
+}
+
 void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   s_stats.num_draws++;
@@ -1049,13 +1056,22 @@ void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   glDrawElements(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices);
 }
 
-void OpenGLDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+void OpenGLDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                const void* push_constants, u32 push_constants_size)
 {
-  Panic("Barriers are not supported");
+  PushUniformBuffer(push_constants, push_constants_size);
+  DrawIndexed(index_count, base_index, base_vertex);
 }
 
 void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                             u32 group_size_z)
+{
+  Panic("Compute shaders are not supported");
+}
+
+void OpenGLDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                             u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                             u32 push_constants_size)
 {
   Panic("Compute shaders are not supported");
 }

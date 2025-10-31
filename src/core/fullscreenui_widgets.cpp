@@ -825,14 +825,13 @@ void FullscreenUI::RenderTransitionBlend(GPUSwapChain* swap_chain)
   g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
   g_gpu_device->SetTextureSampler(0, curr, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetTextureSampler(1, s_state.transition_prev_texture.get(), g_gpu_device->GetNearestSampler());
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
 
   const GSVector2i size = swap_chain->GetSizeVec();
   const GSVector2i postrotated_size = swap_chain->GetPostRotatedSizeVec();
   const GSVector4 uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
                                                                   GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
   GPUPresenter::DrawScreenQuad(GSVector4i::loadh(size), uv_rect, size, postrotated_size, DisplayRotation::Normal,
-                               swap_chain->GetPreRotation());
+                               swap_chain->GetPreRotation(), uniforms, sizeof(uniforms));
 }
 
 void FullscreenUI::UpdateTransitionState()

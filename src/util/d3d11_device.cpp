@@ -1169,6 +1169,13 @@ void D3D11Device::Draw(u32 vertex_count, u32 base_vertex)
   m_context->Draw(vertex_count, base_vertex);
 }
 
+void D3D11Device::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                        u32 push_constants_size)
+{
+  PushUniformBuffer(push_constants, push_constants_size);
+  Draw(vertex_count, base_vertex);
+}
+
 void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped() && !m_current_compute_shader);
@@ -1176,9 +1183,11 @@ void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   m_context->DrawIndexed(index_count, base_index, base_vertex);
 }
 
-void D3D11Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+void D3D11Device::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                               const void* push_constants, u32 push_constants_size)
 {
-  Panic("Barriers are not supported");
+  PushUniformBuffer(push_constants, push_constants_size);
+  DrawIndexed(index_count, base_index, base_vertex);
 }
 
 void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
@@ -1191,4 +1200,12 @@ void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   const u32 groups_y = threads_y / group_size_y;
   const u32 groups_z = threads_z / group_size_z;
   m_context->Dispatch(groups_x, groups_y, groups_z);
+}
+
+void D3D11Device::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                            u32 push_constants_size)
+{
+  PushUniformBuffer(push_constants, push_constants_size);
+  Dispatch(threads_x, threads_y, threads_z, group_size_x, group_size_y, group_size_z);
 }

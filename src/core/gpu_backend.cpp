@@ -85,8 +85,8 @@ GSVector4 GPUBackend::GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds,
   return GSVector4::xyxy(x, y).xzyw();
 }
 
-void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                                const GSVector4 uv_bounds /* = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f) */)
+void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                                const void* push_constants, u32 push_constants_size)
 {
   const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
 
@@ -101,7 +101,11 @@ void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_siz
   vertices[3].Set(xy.zw(), uv_bounds.zw());
 
   g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
-  g_gpu_device->Draw(4, base_vertex);
+
+  if (push_constants_size > 0)
+    g_gpu_device->DrawWithPushConstants(4, base_vertex, push_constants, push_constants_size);
+  else
+    g_gpu_device->Draw(4, base_vertex);
 }
 
 bool GPUBackend::Initialize(bool clear_vram, Error* error)

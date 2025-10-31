@@ -554,12 +554,12 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
         g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
         g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
         DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, final_target_size,
-                       DisplayRotation::Normal, prerotation);
+                       DisplayRotation::Normal, prerotation, nullptr, 0);
 
         g_gpu_device->SetPipeline(m_present_copy_blend_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
         DrawScreenQuad(overlay_display_rect, src_uv_rect, target_size, final_target_size, DisplayRotation::Normal,
-                       prerotation);
+                       prerotation, nullptr, 0);
       }
       else
       {
@@ -568,7 +568,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
         g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
         DrawScreenQuad(GSVector4i::loadh(postfx_size), src_uv_rect, target_size, final_target_size,
-                       DisplayRotation::Normal, prerotation);
+                       DisplayRotation::Normal, prerotation, nullptr, 0);
       }
 
       // All done
@@ -594,7 +594,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
 
       DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, final_target_size,
-                     DisplayRotation::Normal, prerotation);
+                     DisplayRotation::Normal, prerotation, nullptr, 0);
 
       if (!overlay_display_rect.eq(draw_rect))
       {
@@ -762,13 +762,14 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
   GSVector4::store<true>(uniforms.src_size,
                          GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
 
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  DrawScreenQuad(display_rect, uv_rect, target_size, final_target_size, rotation, prerotation);
+  DrawScreenQuad(display_rect, uv_rect, target_size, final_target_size, rotation, prerotation, &uniforms,
+                 sizeof(uniforms));
 }
 
 void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
                                   const GSVector2i final_target_size, DisplayRotation rotation,
-                                  WindowInfo::PreRotation prerotation)
+                                  WindowInfo::PreRotation prerotation, const void* push_constants,
+                                  u32 push_constants_size)
 {
   const GSVector4i real_rect = GPUSwapChain::PreRotateClipRect(prerotation, target_size, rect);
   g_gpu_device->SetScissor(
@@ -818,7 +819,10 @@ void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect
   }
 
   g_gpu_device->UnmapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4);
-  g_gpu_device->Draw(4, base_vertex);
+  if (push_constants_size > 0)
+    g_gpu_device->DrawWithPushConstants(4, base_vertex, push_constants, push_constants_size);
+  else
+    g_gpu_device->Draw(4, base_vertex);
 }
 
 GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
@@ -922,10 +926,10 @@ bool GPUPresenter::Deinterlace(u32 field)
       g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
       g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
       g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
-      const u32 uniforms[4] = {x, y, field, 0};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
       g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
-      g_gpu_device->Draw(3, 0);
+
+      const u32 uniforms[4] = {x, y, field, 0};
+      g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
       m_deinterlace_texture->MakeReadyForSampling();
       SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
@@ -987,10 +991,10 @@ bool GPUPresenter::Deinterlace(u32 field)
                                       g_gpu_device->GetNearestSampler());
       g_gpu_device->SetTextureSampler(3, m_deinterlace_buffers[(this_buffer - 3) % DEINTERLACE_BUFFER_COUNT].get(),
                                       g_gpu_device->GetNearestSampler());
-      const u32 uniforms[] = {field, full_height};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
       g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
-      g_gpu_device->Draw(3, 0);
+
+      const u32 uniforms[] = {field, full_height};
+      g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
       m_deinterlace_texture->MakeReadyForSampling();
       SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
@@ -1036,10 +1040,10 @@ bool GPUPresenter::ApplyChromaSmoothing()
   g_gpu_device->SetRenderTarget(m_chroma_smoothing_texture.get());
   g_gpu_device->SetPipeline(m_chroma_smoothing_pipeline.get());
   g_gpu_device->SetTextureSampler(0, m_display_texture, g_gpu_device->GetNearestSampler());
-  const u32 uniforms[] = {x, y, width - 1, height - 1};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetViewportAndScissor(0, 0, width, height);
-  g_gpu_device->Draw(3, 0);
+
+  const u32 uniforms[] = {x, y, width - 1, height - 1};
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   m_chroma_smoothing_texture->MakeReadyForSampling();
   SetDisplayTexture(m_chroma_smoothing_texture.get(), 0, 0, width, height);
