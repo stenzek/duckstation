@@ -2153,8 +2153,8 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   MenuHeading(FSUI_VSTR("Behavior"));
 
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Confirm Game Close"),
-                    FSUI_VSTR("Determines whether a prompt will be displayed to confirm shutting down the game."),
-                    "Main", "ConfirmPowerOff", true);
+                    FSUI_VSTR("Determines whether a prompt will be displayed to confirm closing the game."), "Main",
+                    "ConfirmPowerOff", true);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Save State On Game Close"),
                     FSUI_VSTR("Automatically saves the system state when closing the game or exiting. You can then "
                               "resume directly from where you left off next time."),

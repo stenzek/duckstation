@@ -96,7 +96,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   onRenderToSeparateWindowChanged();
 
   dialog->registerWidgetHelp(m_ui.confirmGameClose, tr("Confirm Game Close"), tr("Checked"),
-                             tr("Determines whether a prompt will be displayed to confirm shutting down the game."));
+                             tr("Determines whether a prompt will be displayed to confirm closing the game."));
   dialog->registerWidgetHelp(m_ui.saveStateOnGameClose, tr("Save State On Game Close"), tr("Checked"),
                              tr("Automatically saves the system state when closing the game or exiting. You can then "
                                 "resume directly from where you left off next time."));

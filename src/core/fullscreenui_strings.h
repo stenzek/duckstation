@@ -253,7 +253,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black
 TRANSLATE_NOOP("FullscreenUI", "Determines the rotation of the simulated TV screen.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the scaling algorithm used when 24-bit content is active, typically FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by DuckStation.");
-TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the game.");
+TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm closing the game.");
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
