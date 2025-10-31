@@ -44,6 +44,7 @@
 #include "common/threading.h"
 
 #include "util/audio_stream.h"
+#include "util/cd_image.h"
 #include "util/http_downloader.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -3310,7 +3311,8 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   LoadResources();
 
   // Check the file we're starting actually exists.
-  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
+  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()) &&
+      !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
     QMessageBox::critical(
       nullptr, qApp->translate("QtHost", "Error"),

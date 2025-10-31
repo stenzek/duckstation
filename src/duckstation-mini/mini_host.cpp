@@ -18,6 +18,7 @@
 #include "core/system.h"
 #include "core/system_private.h"
 
+#include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
@@ -1766,7 +1767,8 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
 
   // Check the file we're starting actually exists.
 
-  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
+  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()) &&
+      !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
     Host::ReportFatalError("Error", fmt::format("File '{}' does not exist.", autoboot->path));
     return false;
