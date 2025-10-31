@@ -63,8 +63,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection, "Main",
                                                "PauseOnControllerDisconnection", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnStart, "Main", "StartPaused", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnExit, "Main", "SaveStateOnExit", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmPowerOff, "Main", "ConfirmPowerOff", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.saveStateOnGameClose, "Main", "SaveStateOnExit", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.confirmGameClose, "Main", "ConfirmPowerOff", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "Main", "StartFullscreen", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "Main",
                                                "DoubleClickTogglesFullscreen", true);
@@ -95,12 +95,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   onRenderToSeparateWindowChanged();
 
-  dialog->registerWidgetHelp(
-    m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
-    tr("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
-       "when the hotkey is pressed."));
-  dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Shutdown"), tr("Checked"),
-                             tr("Automatically saves the emulator state when powering down or exiting. You can then "
+  dialog->registerWidgetHelp(m_ui.confirmGameClose, tr("Confirm Game Close"), tr("Checked"),
+                             tr("Determines whether a prompt will be displayed to confirm shutting down the game."));
+  dialog->registerWidgetHelp(m_ui.saveStateOnGameClose, tr("Save State On Game Close"), tr("Checked"),
+                             tr("Automatically saves the system state when closing the game or exiting. You can then "
                                 "resume directly from where you left off next time."));
   dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
                              tr("Automatically switches to fullscreen mode when a game is started."));

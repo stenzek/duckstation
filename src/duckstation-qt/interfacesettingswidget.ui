@@ -30,16 +30,16 @@
      </property>
      <layout class="QGridLayout" name="formLayout_4">
       <item row="0" column="0">
-       <widget class="QCheckBox" name="confirmPowerOff">
+       <widget class="QCheckBox" name="confirmGameClose">
         <property name="text">
-         <string>Confirm Power Off</string>
+         <string>Confirm Game Close</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QCheckBox" name="saveStateOnExit">
+       <widget class="QCheckBox" name="saveStateOnGameClose">
         <property name="text">
-         <string>Save State On Shutdown</string>
+         <string>Save State On Game Close</string>
         </property>
        </widget>
       </item>

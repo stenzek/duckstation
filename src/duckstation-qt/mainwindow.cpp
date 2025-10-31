@@ -77,9 +77,9 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"StartDisc", &Ui::MainWindow::actionStartDisc},
   {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
   {nullptr, nullptr},
-  {"PowerOff", &Ui::MainWindow::actionPowerOff},
-  {"PowerOffWithoutSaving", &Ui::MainWindow::actionPowerOffWithoutSaving},
-  {"Reset", &Ui::MainWindow::actionReset},
+  {"PowerOff", &Ui::MainWindow::actionCloseGameToolbar},
+  {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSavingToolbar},
+  {"Reset", &Ui::MainWindow::actionResetGameToolbar},
   {"Pause", &Ui::MainWindow::actionPause},
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
   {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
@@ -1411,6 +1411,21 @@ void MainWindow::onFullscreenUIStartedOrStopped(bool running)
   m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
 }
 
+void MainWindow::onCloseGameActionTriggered()
+{
+  requestShutdown(true, true, g_settings.save_state_on_exit, true, true, false, false);
+}
+
+void MainWindow::onCloseGameWithoutSavingActionTriggered()
+{
+  requestShutdown(false, false, false, true, false, false, false);
+}
+
+void MainWindow::onResetGameActionTriggered()
+{
+  g_emu_thread->resetSystem(true);
+}
+
 void MainWindow::onPauseActionToggled(bool checked)
 {
   if (s_system_paused == checked)
@@ -2020,7 +2035,7 @@ void MainWindow::updateToolbarActions()
 
     // only one of resume/poweroff should be present depending on system state
     QAction* action = (m_ui.*action_ptr);
-    if (action == m_ui.actionPowerOff && !s_system_valid)
+    if (action == m_ui.actionCloseGameToolbar && !s_system_valid)
       action = m_ui.actionResumeLastState;
 
     m_ui.toolBar->addAction(action);
@@ -2189,9 +2204,12 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
   m_ui.actionStartFullscreenUI2->setDisabled(starting_or_running);
 
-  m_ui.actionPowerOff->setDisabled(starting_or_not_running);
-  m_ui.actionPowerOffWithoutSaving->setDisabled(starting_or_not_running);
-  m_ui.actionReset->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGame->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameToolbar->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameWithoutSaving->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameWithoutSavingToolbar->setDisabled(starting_or_not_running);
+  m_ui.actionResetGame->setDisabled(starting_or_not_running);
+  m_ui.actionResetGameToolbar->setDisabled(starting_or_not_running);
   m_ui.actionPause->setDisabled(starting_or_not_running);
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
   m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2231,16 +2249,16 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   {
     if (m_ui.toolBar->widgetForAction(m_ui.actionResumeLastState))
     {
-      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionPowerOff);
+      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionCloseGameToolbar);
       m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
     }
   }
   else
   {
-    if (m_ui.toolBar->widgetForAction(m_ui.actionPowerOff))
+    if (m_ui.toolBar->widgetForAction(m_ui.actionCloseGameToolbar))
     {
-      m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
-      m_ui.toolBar->removeAction(m_ui.actionPowerOff);
+      m_ui.toolBar->insertAction(m_ui.actionCloseGameToolbar, m_ui.actionResumeLastState);
+      m_ui.toolBar->removeAction(m_ui.actionCloseGameToolbar);
     }
 
     m_ui.actionViewGameProperties->setEnabled(false);
@@ -2461,11 +2479,14 @@ void MainWindow::connectSignals()
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
-  connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, true, false, false); });
-  connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false, true, false, false, false); });
-  connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
+  connect(m_ui.actionCloseGame, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
+  connect(m_ui.actionCloseGameToolbar, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
+  connect(m_ui.actionCloseGameWithoutSaving, &QAction::triggered, this,
+          &MainWindow::onCloseGameWithoutSavingActionTriggered);
+  connect(m_ui.actionCloseGameWithoutSavingToolbar, &QAction::triggered, this,
+          &MainWindow::onCloseGameWithoutSavingActionTriggered);
+  connect(m_ui.actionResetGame, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
+  connect(m_ui.actionResetGameToolbar, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
   connect(m_ui.actionPause, &QAction::toggled, this, &MainWindow::onPauseActionToggled);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
@@ -3046,9 +3067,9 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
     SystemLock lock(pauseAndLockSystem());
 
     QMessageBox* msgbox = QtUtils::NewMessageBox(
-      QMessageBox::Question, tr("Confirm Shutdown"),
+      QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
       quit_afterwards ? tr("Are you sure you want to exit the application?") :
-                        tr("Are you sure you want to shut down the virtual machine?"),
+                        tr("Are you sure you want to close the current game?"),
       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
     msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 

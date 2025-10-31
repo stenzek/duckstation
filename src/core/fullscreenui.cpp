@@ -1655,13 +1655,13 @@ void FullscreenUI::DrawPauseMenu()
         else
           ImGui::SetItemDefaultFocus();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reset System")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Reset Game")))
           RequestReset();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Exit And Save State")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Close and Save State")))
           BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(true); });
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Exit Without Saving")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_POWER_OFF, "Close Without Saving")))
           BeginTransition(LONG_TRANSITION_TIME, []() { RequestShutdown(false); });
       }
       break;

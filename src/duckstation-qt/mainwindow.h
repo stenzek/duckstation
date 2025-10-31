@@ -271,6 +271,9 @@ private:
   void onCheatsActionTriggered();
   void onCheatsMenuAboutToShow();
   void onStartFullscreenUITriggered();
+  void onCloseGameActionTriggered();
+  void onCloseGameWithoutSavingActionTriggered();
+  void onResetGameActionTriggered();
   void onPauseActionToggled(bool checked);
   void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();

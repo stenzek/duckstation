@@ -75,9 +75,9 @@
     <addaction name="actionStartFullscreenUI"/>
     <addaction name="actionResumeLastState"/>
     <addaction name="separator"/>
-    <addaction name="actionPowerOff"/>
-    <addaction name="actionPowerOffWithoutSaving"/>
-    <addaction name="actionReset"/>
+    <addaction name="actionCloseGame"/>
+    <addaction name="actionCloseGameWithoutSaving"/>
+    <addaction name="actionResetGame"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
@@ -340,23 +340,45 @@
     <string>Rescans all games, discarding any cached information.</string>
    </property>
   </action>
-  <action name="actionPowerOff">
+  <action name="actionCloseGame">
    <property name="icon">
     <iconset theme="shut-down-line"/>
    </property>
    <property name="text">
-    <string>Power &amp;Off</string>
+    <string>Cl&amp;ose Game</string>
    </property>
    <property name="toolTip">
     <string>Ends the current session.</string>
    </property>
   </action>
-  <action name="actionReset">
+  <action name="actionCloseGameToolbar">
+   <property name="icon">
+    <iconset theme="shut-down-line"/>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="toolTip">
+    <string>Ends the current session.</string>
+   </property>
+  </action>
+  <action name="actionResetGame">
    <property name="icon">
     <iconset theme="restart-line"/>
    </property>
    <property name="text">
-    <string>&amp;Reset</string>
+    <string>&amp;Reset Game</string>
+   </property>
+   <property name="toolTip">
+    <string>Restarts the emulated system.</string>
+   </property>
+  </action>
+  <action name="actionResetGameToolbar">
+   <property name="icon">
+    <iconset theme="restart-line"/>
+   </property>
+   <property name="text">
+    <string>Reset</string>
    </property>
    <property name="toolTip">
     <string>Restarts the emulated system.</string>
@@ -1076,12 +1098,23 @@
     <string>Opens the directory containing application data in your file browser.</string>
    </property>
   </action>
-  <action name="actionPowerOffWithoutSaving">
+  <action name="actionCloseGameWithoutSaving">
    <property name="icon">
     <iconset theme="close-line"/>
    </property>
    <property name="text">
-    <string>Power Off &amp;Without Saving</string>
+    <string>Close Game &amp;Without Saving</string>
+   </property>
+   <property name="toolTip">
+    <string>Ends the current session without the option to save state.</string>
+   </property>
+  </action>
+  <action name="actionCloseGameWithoutSavingToolbar">
+   <property name="icon">
+    <iconset theme="close-line"/>
+   </property>
+   <property name="text">
+    <string>Close (No Save)</string>
    </property>
    <property name="toolTip">
     <string>Ends the current session without the option to save state.</string>
