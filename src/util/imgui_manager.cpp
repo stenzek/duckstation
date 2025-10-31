@@ -58,6 +58,8 @@ struct SoftwareCursor
 struct OSDMessage
 {
   std::string key;
+  std::string icon;
+  std::string title;
   std::string text;
   Timer::Value start_time;
   Timer::Value move_time;
@@ -83,7 +85,8 @@ static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
 static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
-static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
+static void AddOSDMessage(std::string key, std::string icon, std::string title, std::string message, float duration,
+                          bool is_warning);
 static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
 static void ClearOSDMessages(bool clear_warnings);
 static void AcquirePendingOSDMessages(Timer::Value current_time);
@@ -826,17 +829,20 @@ void ImGuiManager::ReloadFontDataIfActive()
   NewFrame();
 }
 
-void ImGuiManager::AddOSDMessage(std::string key, std::string message, float duration, bool is_warning)
+void ImGuiManager::AddOSDMessage(std::string key, std::string icon, std::string title, std::string message,
+                                 float duration, bool is_warning)
 {
   if (!key.empty())
-    INFO_LOG("OSD [{}]: {}", key, message);
+    INFO_LOG("OSD [{}]: {}{}{}", key, title.empty() ? "" : "\n", title, message);
   else
-    INFO_LOG("OSD: {}", message);
+    INFO_LOG("OSD: {}{}{}", title.empty() ? "" : "\n", title, message);
 
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   OSDMessage msg;
   msg.key = std::move(key);
+  msg.icon = std::move(icon);
+  msg.title = std::move(title);
   msg.text = std::move(message);
   msg.duration = duration;
   msg.start_time = current_time;
@@ -915,6 +921,8 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
                              [&new_msg](const OSDMessage& other) { return new_msg.key == other.key; })) !=
           s_state.osd_active_messages.end())
     {
+      iter->icon = std::move(new_msg.icon);
+      iter->title = std::move(new_msg.title);
       iter->text = std::move(new_msg.text);
       iter->duration = new_msg.duration;
 
@@ -945,13 +953,17 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
   ImFont* const font = s_state.text_font;
   const float font_size = GetOSDFontSize();
-  const float font_weight = UIStyle.NormalFontWeight;
+  const float large_icon_size = font_size * 2.0f;
+  constexpr float title_font_weight = UIStyle.BoldFontWeight;
+  constexpr float body_font_weight = UIStyle.NormalFontWeight;
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
   const float margin = std::ceil(s_state.screen_margin * scale);
   const float padding = std::ceil(10.0f * scale);
   const float rounding = std::ceil(10.0f * scale);
-  const float max_width = s_state.window_width - (margin + padding) * 2.0f;
+  const float normal_icon_margin = std::ceil(4.0f * scale);
+  const float large_icon_margin = std::ceil(8.0f * scale);
+  const float max_width = (s_state.window_width * 0.6f) - (margin + padding) * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
   float position_y = margin;
@@ -969,10 +981,26 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ++iter;
 
-    const ImVec2 text_size =
-      font->CalcTextSizeA(font_size, font_weight, max_width, max_width, IMSTR_START_END(msg.text));
-    float box_width = text_size.x + padding + padding;
-    const float box_height = text_size.y + padding + padding;
+    // Use larger icon when we have multiple lines.
+    const bool use_large_icon = !msg.title.empty() && !msg.text.empty();
+    const float icon_font_size = use_large_icon ? large_icon_size : font_size;
+    const ImVec2 icon_size = msg.text.empty() ? ImVec2() :
+                                                font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f,
+                                                                    IMSTR_START_END(msg.icon));
+    const float icon_size_with_margin =
+      msg.text.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
+    const float max_text_width = max_width - icon_size_with_margin;
+
+    // bold the message if there's no title
+    const float text_font_weight = msg.title.empty() ? title_font_weight : body_font_weight;
+    const ImVec2 title_size = msg.title.empty() ? ImVec2() :
+                                                  font->CalcTextSizeA(font_size, title_font_weight, max_text_width,
+                                                                      max_text_width, IMSTR_START_END(msg.title));
+    const ImVec2 text_size = msg.text.empty() ? ImVec2() :
+                                                font->CalcTextSizeA(font_size, text_font_weight, max_text_width,
+                                                                    max_text_width, IMSTR_START_END(msg.text));
+    float box_width = icon_size_with_margin + std::max(text_size.x, title_size.x) + padding + padding;
+    const float box_height = std::max(icon_size.y, title_size.y + text_size.y) + padding + padding;
 
     float opacity;
     bool clip_box = false;
@@ -1039,8 +1067,6 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     const ImVec2 pos = ImVec2(position_x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
-    const ImRect text_rect =
-      ImRect(pos.x + padding, pos.y + padding, pos.x + box_width - padding, pos.y + box_height - padding);
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
@@ -1049,9 +1075,32 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
                       rounding);
-    RenderShadowedTextClipped(dl, font, font_size, font_weight, text_rect.Min, text_rect.Max,
-                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
-                              ImVec2(0.0f, 0.0f), max_width, &text_rect, scale);
+
+    const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
+    const ImU32 color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+    if (!msg.icon.empty())
+    {
+      const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
+      RenderShadowedTextClipped(dl, font, icon_font_size, body_font_weight, icon_rect.Min, icon_rect.Max, color,
+                                msg.icon, &icon_size, ImVec2(0.0f, 0.0f), 0.0f, &icon_rect, scale);
+    }
+
+    if (!msg.title.empty())
+    {
+      const ImVec2 title_pos = ImVec2(base_pos.x + icon_size_with_margin, base_pos.y);
+      const ImRect title_rect = ImRect(title_pos, title_pos + title_size);
+      RenderShadowedTextClipped(dl, font, font_size, title_font_weight, title_rect.Min, title_rect.Max, color,
+                                msg.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width, &title_rect, scale);
+    }
+
+    if (!msg.text.empty())
+    {
+      const ImVec2 text_pos = ImVec2(base_pos.x + icon_size_with_margin, base_pos.y + title_size.y);
+      const ImRect text_rect = ImRect(text_pos, text_pos + text_size);
+      RenderShadowedTextClipped(dl, font, font_size, text_font_weight, text_rect.Min, text_rect.Max,
+                                ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
+                                ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
+    }
 
     if (clip_box)
       dl->PopClipRect();
@@ -1069,27 +1118,39 @@ void ImGuiManager::RenderOSDMessages()
 
 void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 {
-  ImGuiManager::AddOSDMessage(std::string(), std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(std::string(), {}, {}, std::move(message), duration, false);
 }
 
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, false);
 }
 
 void Host::AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), fmt::format("{}  {}", icon, message), duration, false);
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, false);
+}
+
+void Host::AddIconOSDMessage(std::string key, const char* icon, std::string title, std::string message,
+                             float duration /* = 2.0f */)
+{
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, false);
 }
 
 void Host::AddKeyedOSDWarning(std::string key, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::move(message), duration, true);
+  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, true);
 }
 
 void Host::AddIconOSDWarning(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), fmt::format("{}  {}", icon, message), duration, true);
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, true);
+}
+
+void Host::AddIconOSDWarning(std::string key, const char* icon, std::string title, std::string message,
+                             float duration /* = 2.0f */)
+{
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, true);
 }
 
 void Host::RemoveKeyedOSDMessage(std::string key)
