@@ -2044,7 +2044,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../audiosettingswidget.cpp" line="78"/>
         <source>Buffer Size</source>
-        <translation type="unfinished">Размер буфера</translation>
+        <translation>Размер буфера</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="85"/>
@@ -2670,7 +2670,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <location filename="../consolesettingswidget.ui" line="108"/>
         <location filename="../consolesettingswidget.cpp" line="104"/>
         <source>Enable Clock Speed Control (Overclocking/Underclocking)</source>
-        <translation>Включить управление тактовой частотой (разгон/понижение)</translation>
+        <translation>Включить управление тактовой частотой (разгон/замедление)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="128"/>
@@ -2766,7 +2766,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <location filename="../consolesettingswidget.ui" line="216"/>
         <location filename="../consolesettingswidget.ui" line="265"/>
         <source>Maximum (Safer)</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимальный (безопасный)</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="231"/>
@@ -2827,7 +2827,7 @@ Trying to use this cheat will not work as expected. Do you want to continue?</so
         <location filename="../consolesettingswidget.ui" line="64"/>
         <location filename="../consolesettingswidget.cpp" line="91"/>
         <source>Fast Forward Memory Card Access</source>
-        <translation>Перемотка доступа к карте памяти</translation>
+        <translation>Перемотка при доступе к карте памяти</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="45"/>
@@ -4529,12 +4529,12 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="308"/>
         <source>Select</source>
-        <translation type="unfinished">Select</translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="309"/>
         <source>Start</source>
-        <translation type="unfinished">Start</translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="310"/>
@@ -4764,7 +4764,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <location filename="../debuggerwindow.ui" line="14"/>
         <source>CPU Debugger</source>
         <translatorcomment>*Отладчик ЦП</translatorcomment>
-        <translation type="unfinished">Отладчик процессора</translation>
+        <translation>Отладчик процессора</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="31"/>
@@ -8151,7 +8151,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="138"/>
         <source>Automatically saves the system state when closing the game or exiting. You can then resume directly from where you left off next time.</source>
-        <translation type="unfinished"></translation>
+        <translation>Автоматически сохраняет состояние системы при закрытии игры или выходе из нее. В следующий раз вы сможете возобновить игру прямо с того места, на котором остановились.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="163"/>
@@ -8189,12 +8189,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="179"/>
         <source>Close Without Saving</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть без сохранения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="180"/>
         <source>Close and Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть и сохранить состояние</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="181"/>
@@ -8211,7 +8211,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="186"/>
         <source>Confirm Game Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Подтверждать закрытие игры</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="188"/>
@@ -8279,7 +8279,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="256"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the game.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет, будет ли выводиться подсказка, подтверждающая завершение игры.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="257"/>
@@ -9225,17 +9225,18 @@ Please check your username and password, and try again.</source>
         <location filename="../../core/fullscreenui_strings.h" line="569"/>
         <source>Rendering</source>
         <translatorcomment>*Визуализация</translatorcomment>
-        <translation type="unfinished">Отрисовка</translation>
+        <translation>Отрисовка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="571"/>
         <source>Rescan All Games</source>
-        <translation type="unfinished">Повторное сканирование всех игр</translation>
+        <translation>Повторное сканирование всех игр</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="573"/>
         <source>Reset Game</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Перезагрузить/Cбросить игру</translatorcomment>
+        <translation type="unfinished">Перезагрузка игры</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="574"/>
@@ -9250,6 +9251,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="576"/>
         <source>Reset Settings</source>
+        <translatorcomment>*Сброс настроек</translatorcomment>
         <translation type="unfinished">Сбросить настройки</translation>
     </message>
     <message>
@@ -9337,7 +9339,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="609"/>
         <source>Save State On Game Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение состояния при закрытии игры</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="611"/>
@@ -9357,7 +9359,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="616"/>
         <source>Scan For New Games</source>
-        <translation type="unfinished">Поиск новых игр</translation>
+        <translation>Сканирование новых игр</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="617"/>
@@ -10820,7 +10822,7 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="130"/>
         <source>Disable Fast Forward Memory Card Access</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отключить: Перемотка доступа к карте памяти</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="131"/>
@@ -13822,7 +13824,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="499"/>
         <source>Freecam Toggle</source>
-        <translation type="unfinished">Свободная камера: Переключить</translation>
+        <translation>Свободная камера: Переключить</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="499"/>
@@ -13840,7 +13842,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../../core/hotkeys.cpp" line="579"/>
         <location filename="../../core/hotkeys.cpp" line="586"/>
         <source>Free Camera</source>
-        <translation type="unfinished">Свободная камера</translation>
+        <translation>Свободная камера</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="504"/>
@@ -13870,12 +13872,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="538"/>
         <source>Freecam Move Forward</source>
-        <translation type="unfinished">Свободная камера: Move Forward</translation>
+        <translation type="unfinished">Свободная камера: Двигать вперед</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="545"/>
         <source>Freecam Move Backward</source>
-        <translation type="unfinished">Свободная камера: Move Backward</translation>
+        <translation type="unfinished">Свободная камера: Двигать назад</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="552"/>
@@ -13905,7 +13907,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="587"/>
         <source>Freecam Roll Right</source>
-        <translation type="unfinished">Свободная камера: Roll Left</translation>
+        <translation type="unfinished">Свободная камера: Roll Right</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="659"/>
@@ -14517,13 +14519,13 @@ Shift-click to set multiple bindings.</source>
         <location filename="../interfacesettingswidget.ui" line="35"/>
         <location filename="../interfacesettingswidget.cpp" line="98"/>
         <source>Confirm Game Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Подтверждать закрытие игры</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="42"/>
         <location filename="../interfacesettingswidget.cpp" line="100"/>
         <source>Save State On Game Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение состояния при закрытии игры</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="94"/>
@@ -14692,12 +14694,12 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="99"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Определяет, будет ли выводиться подсказка, подтверждающая завершение игры.</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="101"/>
         <source>Automatically saves the system state when closing the game or exiting. You can then resume directly from where you left off next time.</source>
-        <translation type="unfinished"></translation>
+        <translation>Автоматически сохраняет состояние системы при закрытии игры или выходе из нее. В следующий раз вы сможете возобновить игру прямо с того места, на котором остановились.</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="147"/>
@@ -15578,7 +15580,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="1106"/>
         <source>Close Game &amp;Without Saving</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть игру &amp;без сохранения</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="1109"/>
@@ -15589,7 +15591,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="1117"/>
         <source>Close (No Save)</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть (без сохранения)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="1158"/>
@@ -15812,7 +15814,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="1312"/>
         <source>Refresh Achievement &amp;Progress</source>
-        <translation type="unfinished">Обновить достижения и &amp;прогресс</translation>
+        <translation>Обновить достижения и &amp;прогресс</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="531"/>
@@ -15952,17 +15954,18 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="348"/>
         <source>Cl&amp;ose Game</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Закрыть игру</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="359"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="370"/>
         <source>&amp;Reset Game</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Перезагрузить/Cбросить игру</translatorcomment>
+        <translation type="unfinished">&amp;Перезагрузка игры</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="450"/>
@@ -16398,22 +16401,22 @@ The saves will not be recoverable.</source>
     <message>
         <location filename="../mainwindow.cpp" line="3070"/>
         <source>Confirm Exit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Подтверждать выход</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3070"/>
         <source>Confirm Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Подтверждать закрытие</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3071"/>
         <source>Are you sure you want to exit the application?</source>
-        <translation type="unfinished"></translation>
+        <translation>Уверены, что хотите выйти из приложения?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3072"/>
         <source>Are you sure you want to close the current game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Уверены, что хотите закрыть текущую игру?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="3231"/>
@@ -17378,7 +17381,7 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../memoryeditorwindow.ui" line="124"/>
         <source>ASCII Character:</source>
-        <translation type="unfinished"></translation>
+        <translation>ASCII-символ:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.ui" line="152"/>
@@ -17463,7 +17466,7 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../memoryeditorwindow.cpp" line="98"/>
         <source>Enter memory address:</source>
-        <translation type="unfinished">Введите адрес памяти:</translation>
+        <translation>Введите адрес памяти:</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.cpp" line="175"/>
@@ -17474,7 +17477,7 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../memoryeditorwindow.cpp" line="214"/>
         <source>Pattern not found in memory.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Шаблон не найден в памяти.</translation>
     </message>
     <message>
         <location filename="../memoryeditorwindow.cpp" line="231"/>
@@ -21224,10 +21227,10 @@ The name of the SBI file must match the name of the disc image.</source>
     <message numerus="yes">
         <location filename="../../core/system.cpp" line="1697"/>
         <source>You cannot pause until another %n second(s) have passed.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Вы не можете сделать паузу, пока не пройдет еще %n секунда.</numerusform>
+            <numerusform>Вы не можете сделать паузу, пока не пройдет еще %n секунды.</numerusform>
+            <numerusform>Вы не можете сделать паузу, пока не пройдет еще %n секунд.</numerusform>
         </translation>
     </message>
     <message>
