@@ -207,8 +207,6 @@ static std::string GetMemoryCardPathForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
 static std::string GetMediaPathFromSaveState(const char* path);
-static bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
-static bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
 static bool LoadOneRewindState();

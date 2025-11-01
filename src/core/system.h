@@ -282,6 +282,10 @@ bool SaveResumeState(Error* error);
 void LoadStateFromSlot(bool global, s32 slot);
 void SaveStateToSlot(bool global, s32 slot);
 
+/// State data access, use with care as the media path is not updated.
+bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
+bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
+
 /// Runs the VM until the CPU execution is canceled.
 void Execute();
 
