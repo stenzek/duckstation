@@ -328,7 +328,7 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(u32 index, std::string path)
   {
     Host::AddIconOSDMessage(
       GetOSDMessageKey(index), ICON_EMOJI_WARNING,
-      fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card {} could not be read."), index),
+      fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card {} could not be read."), index + 1),
       fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}\nError: {1}\nThe memory card will NOT be saved.\nYou must "
                                              "delete the memory card manually if you want to save."),
                   Path::GetFileName(mc->m_path), error.GetDescription()),
