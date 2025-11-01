@@ -73,7 +73,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-  dialog->registerWidgetHelp(m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Persistent Icons"),
+  dialog->registerWidgetHelp(m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
                              tr("Shows a notification or icons in the lower-right corner of the screen when a "
                                 "challenge/primed achievement is active."));
   dialog->registerWidgetHelp(
