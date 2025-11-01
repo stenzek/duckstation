@@ -207,6 +207,8 @@ static std::string GetMemoryCardPathForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
 static std::string GetMediaPathFromSaveState(const char* path);
+static bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
+static bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
 static bool LoadOneRewindState();
@@ -2960,11 +2962,6 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state, boo
 
   INFO_LOG("Loading state from '{}'...", path);
 
-  Host::AddIconOSDMessage(
-    "LoadState", ICON_EMOJI_FILE_FOLDER_OPEN,
-    fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
-    Host::OSD_QUICK_DURATION);
-
   if (save_undo_state)
     SaveUndoLoadState();
 
@@ -3228,7 +3225,8 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
   return true;
 }
 
-bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
+bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
+                       std::function<void(bool, const Error& error)> completion_callback)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -3249,16 +3247,13 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
 
   VERBOSE_LOG("Preparing state save took {:.2f} msec", save_timer.GetTimeMilliseconds());
 
-  std::string osd_key = fmt::format("save_state_{}", path);
-  Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
-                          fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
-
   // ensure multiple saves to the same path do not overlap
   FlushSaveStates();
 
   s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
-  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
-                                       backup_existing_save, compression = g_settings.save_state_compression]() {
+  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer),
+                                       completion_callback = std::move(completion_callback), backup_existing_save,
+                                       compression = g_settings.save_state_compression]() {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;
@@ -3291,27 +3286,114 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
     VERBOSE_LOG("Saving state took {:.2f} msec", lsave_timer.GetTimeMilliseconds());
 
     s_state.outstanding_save_state_tasks.fetch_sub(1, std::memory_order_acq_rel);
+    if (completion_callback)
+      completion_callback(result, lerror);
+  });
 
+  return true;
+}
+
+static std::string GetSaveStateOSDKey(bool global, s32 slot)
+{
+  return fmt::format("{}Slot{}", global ? "GlobalSave" : "GameSave", slot);
+}
+
+static std::string GetSaveStateOSDTitle(bool global, s32 slot)
+{
+  std::string ret;
+  if (global)
+    ret = fmt::format(TRANSLATE_FS("System", "Global Save Slot {}"), slot);
+  else
+    ret = fmt::format(TRANSLATE_FS("System", "Save Slot {}"), slot);
+  return ret;
+}
+
+void System::LoadStateFromSlot(bool global, s32 slot)
+{
+  if (!IsValid())
+    return;
+
+  if (!global && s_state.running_game_serial.empty())
+  {
+    Host::AddIconOSDWarning(
+      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
+      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    return;
+  }
+
+  std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
+  if (!FileSystem::FileExists(path.c_str()))
+  {
+    Host::AddIconOSDWarning(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "No save state found in slot {}."), slot),
+                            Host::OSD_INFO_DURATION);
+    return;
+  }
+
+  Error error;
+  if (System::LoadState(path.c_str(), &error, true, false))
+  {
+    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
+                            GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)),
+                            Host::OSD_QUICK_DURATION);
+  }
+  else
+  {
+    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "Failed to load state from {0}:\n{1}"),
+                                        Path::GetFileName(path), error.GetDescription()),
+                            Host::OSD_ERROR_DURATION);
+  }
+}
+
+void System::SaveStateToSlot(bool global, s32 slot)
+{
+  if (!IsValid())
+    return;
+
+  if (!global && s_state.running_game_serial.empty())
+  {
+    Host::AddIconOSDWarning(
+      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
+      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    return;
+  }
+
+  std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
+
+  Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
+                          fmt::format(TRANSLATE_FS("System", "Saving state to {}..."), Path::GetFileName(path)), 60.0f);
+
+  static constexpr auto display_result = [](bool global, s32 slot, std::string_view filename, bool success,
+                                            const Error& error) {
     // don't display a resume state saved message in FSUI
     if (!IsValid())
       return;
 
-    if (result)
+    if (success)
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
-                              fmt::format(TRANSLATE_FS("System", "State saved to '{}'."), Path::GetFileName(path)),
-                              Host::OSD_QUICK_DURATION);
+      Host::AddIconOSDMessage(
+        GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "State saved to {}."), filename), Host::OSD_QUICK_DURATION);
     }
     else
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_WARNING,
-                              fmt::format(TRANSLATE_FS("System", "Failed to save state to '{0}':\n{1}"),
-                                          Path::GetFileName(path), lerror.GetDescription()),
-                              Host::OSD_ERROR_DURATION);
+      Host::AddIconOSDMessage(
+        GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "Failed to save state to {0}:\n{1}"), filename, error.GetDescription()),
+        Host::OSD_ERROR_DURATION);
     }
-  });
+  };
 
-  return true;
+  auto completion_callback = [global, slot, filename = std::string(Path::GetFileName(path))](bool success,
+                                                                                             const Error& error) {
+    display_result(global, slot, filename, success, error);
+  };
+
+  Error error;
+  if (!SaveState(std::move(path), &error, g_settings.create_save_state_backups, false, std::move(completion_callback)))
+    display_result(global, slot, Path::GetFileName(path), false, error);
 }
 
 void System::FlushSaveStates()
@@ -3846,16 +3928,16 @@ void System::UpdateMemoryCards()
     if (current_card)
     {
       Host::AddIconOSDMessage(fmt::format("MemoryCardChange{}", i), ICON_PF_MEMORY_CARD,
-                              fmt::format(TRANSLATE_FS("OSDMessage", "Memory card in slot {} changed to '{}'."), i + 1,
-                                          Path::GetFileName(path)),
+                              fmt::format(TRANSLATE_FS("System", "Memory Card Slot {}"), i + 1),
+                              fmt::format(TRANSLATE_FS("System", "Card changed to {}."), Path::GetFileName(path)),
                               Host::OSD_INFO_DURATION);
     }
 
     std::unique_ptr<MemoryCard> card;
     if (!path.empty())
-      card = MemoryCard::Open(std::move(path));
+      card = MemoryCard::Open(i, std::move(path));
     else
-      card = MemoryCard::Create();
+      card = MemoryCard::Create(i);
 
     Pad::SetMemoryCard(i, std::move(card));
   }
@@ -5197,34 +5279,43 @@ std::optional<ExtendedSaveStateInfo> System::GetUndoSaveStateInfo()
     ssi->serial = s_state.undo_load_state->serial;
     ssi->media_path = s_state.undo_load_state->media_path;
     ssi->screenshot = s_state.undo_load_state->screenshot;
-    ssi->timestamp = 0;
+    ssi->timestamp = s_state.undo_load_state->timestamp;
   }
 
   return ssi;
 }
 
-bool System::UndoLoadState()
+void System::UndoLoadState()
 {
-  if (!s_state.undo_load_state.has_value())
-    return false;
+  if (!IsValid() || !s_state.undo_load_state.has_value())
+    return;
 
-  Assert(IsValid());
+  std::string osd_key = "UndoLoadState";
+  std::string osd_title = TRANSLATE_STR("System", "Undo Load State");
 
   Error error;
   if (!LoadStateFromBuffer(s_state.undo_load_state.value(), &error, IsPaused()))
   {
-    Host::ReportErrorAsync("Error",
-                           fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
+    Host::AddIconOSDWarning(
+      std::move(osd_key), ICON_EMOJI_WARNING, std::move(osd_title),
+      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, resetting system.\n{}"), error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
     s_state.undo_load_state.reset();
     Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     ResetSystem();
-    return false;
+    return;
   }
 
   INFO_LOG("Loaded undo save state.");
+
+  Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_ROTATE_LEFT, std::move(osd_title),
+                          fmt::format(TRANSLATE_FS("System", "Loaded undo save state created at {}."),
+                                      Host::FormatNumber(Host::NumberFormatType::ShortTime,
+                                                         static_cast<s64>(s_state.undo_load_state->timestamp))),
+                          Host::OSD_INFO_DURATION);
+
   s_state.undo_load_state.reset();
   Host::OnSystemUndoStateAvailabilityChanged(false, 0);
-  return true;
 }
 
 bool System::SaveUndoLoadState()
@@ -5718,18 +5809,21 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
   std::string ret;
   std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
 
+  static constexpr auto get_message_title = [](u32 slot) {
+    return fmt::format(TRANSLATE_FS("System", "Memory Card Slot {}"), slot + 1);
+  };
+  static constexpr auto get_shared_card_message = []() {
+    return TRANSLATE_STR("System", "Cannot use per-game memory card without a disc.\nUsing shared card instead.");
+  };
+
   switch (type)
   {
     case MemoryCardType::PerGame:
     {
       if (s_state.running_game_serial.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no code. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5744,12 +5838,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
     {
       if (s_state.running_game_title.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no title. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5776,7 +5866,7 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
             if (g_settings.memory_card_use_playlist_title && !card_path.empty())
             {
               Host::AddIconOSDMessage(
-                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
+                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD, get_message_title(slot),
                 fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
                             Path::GetFileName(disc_card_path)),
                 Host::OSD_INFO_DURATION);
@@ -5798,11 +5888,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
       const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no path. Using shared card instead."),
-                      slot + 1u));
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else

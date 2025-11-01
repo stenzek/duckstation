@@ -1516,8 +1516,11 @@ void EmuThread::loadState(bool global, qint32 slot)
   }
 
   // shouldn't even get here if we don't have a running game
-  if (!global && System::GetGameSerial().empty())
+  if (System::IsValid())
+  {
+    System::LoadStateFromSlot(global, slot);
     return;
+  }
 
   bootOrLoadState(global ? System::GetGlobalSaveStatePath(slot) :
                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
@@ -1537,7 +1540,9 @@ void EmuThread::saveState(const QString& path, bool block_until_done /* = false 
     return;
 
   Error error;
-  if (!System::SaveState(path.toStdString(), &error, g_settings.create_save_state_backups, false))
+  if (System::SaveState(path.toStdString(), &error, g_settings.create_save_state_backups, false))
+    emit statusMessage(tr("State saved to %1.").arg(QFileInfo(path).fileName()));
+  else
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
@@ -1551,17 +1556,7 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
     return;
   }
 
-  if (!global && System::GetGameSerial().empty())
-    return;
-
-  Error error;
-  if (!System::SaveState(
-        (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(System::GetGameSerial(), slot))
-          .c_str(),
-        &error, g_settings.create_save_state_backups, false))
-  {
-    emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
-  }
+  System::SaveStateToSlot(global, slot);
 }
 
 void EmuThread::undoLoadState()

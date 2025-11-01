@@ -1776,7 +1776,8 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
   {
     SaveStateListEntry li;
     li.title = FSUI_STR("Undo Load State");
-    li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
+    li.summary = fmt::format(FSUI_FSTR("Saved {}"), Host::FormatNumber(Host::NumberFormatType::ShortDateTime,
+                                                                       static_cast<s64>(undo_save_state->timestamp)));
     if (undo_save_state->screenshot.IsValid())
       li.preview_texture = g_gpu_device->FetchAndUploadTextureImage(undo_save_state->screenshot);
     s_locals.save_state_selector_slots.push_back(std::move(li));
@@ -1840,61 +1841,34 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
 
 void FullscreenUI::DrawSaveStateSelector()
 {
-  static constexpr auto do_load_state = [](std::string game_path, std::string state_path) {
+  static constexpr auto do_load_state = [](const SaveStateListEntry& entry) {
     if (GPUThread::HasGPUBackend())
     {
-      ClearSaveStateEntryList();
+      const s32 slot = entry.slot;
+      const bool global = entry.global;
+      const bool is_undo = entry.state_path.empty();
+      ClearSaveStateEntryList(); // entry no longer valid
       ReturnToMainWindow(LONG_TRANSITION_TIME);
 
-      Host::RunOnCPUThread([game_path = std::move(game_path), state_path = std::move(state_path)]() mutable {
-        if (System::IsValid())
-        {
-          if (state_path.empty())
-          {
-            // Loading undo state.
-            if (!System::UndoLoadState())
-            {
-              GPUThread::RunOnThread(
-                []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
-            }
-          }
-          else
-          {
-            Error error;
-            if (!System::LoadState(state_path.c_str(), &error, true, false))
-            {
-              GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-                ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
-              });
-            }
-          }
-        }
-      });
+      // Loading undo state?
+      if (is_undo)
+        Host::RunOnCPUThread(&System::UndoLoadState);
+      else
+        Host::RunOnCPUThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
     }
     else
     {
-      DoStartPath(std::move(game_path), std::move(state_path));
+      DoStartPath(entry.game_path, entry.state_path);
     }
   };
 
-  static constexpr auto do_save_state = [](s32 slot, bool global) {
-    ClearSaveStateEntryList();
+  static constexpr auto do_save_state = [](const SaveStateListEntry& entry) {
+    const s32 slot = entry.slot;
+    const bool global = entry.global;
+    ClearSaveStateEntryList(); // entry no longer valid
     ReturnToMainWindow(LONG_TRANSITION_TIME);
 
-    Host::RunOnCPUThread([slot, global]() {
-      if (!System::IsValid())
-        return;
-
-      std::string path(global ? System::GetGlobalSaveStatePath(slot) :
-                                System::GetGameSaveStatePath(System::GetGameSerial(), slot));
-      Error error;
-      if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
-      {
-        GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-          ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error_desc));
-        });
-      }
-    });
+    Host::RunOnCPUThread([slot, global]() { System::SaveStateToSlot(global, slot); });
   };
 
   ImGuiIO& io = ImGui::GetIO();
@@ -2045,9 +2019,9 @@ void FullscreenUI::DrawSaveStateSelector()
                              {
                                // load state
                                if (s_locals.save_state_selector_loading)
-                                 do_load_state(std::move(entry.game_path), std::move(entry.state_path));
+                                 do_load_state(entry);
                                else
-                                 do_save_state(entry.slot, entry.global);
+                                 do_save_state(entry);
                              }
                              else if (!entry.state_path.empty() && index == 1)
                              {
@@ -2126,9 +2100,9 @@ void FullscreenUI::DrawSaveStateSelector()
   if (pressed_entry)
   {
     if (s_locals.save_state_selector_loading)
-      do_load_state(std::move(pressed_entry->game_path), std::move(pressed_entry->state_path));
+      do_load_state(*pressed_entry);
     else
-      do_save_state(pressed_entry->slot, pressed_entry->global);
+      do_save_state(*pressed_entry);
   }
   else if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {

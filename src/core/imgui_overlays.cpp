@@ -938,7 +938,6 @@ static void DestroyTextures();
 static void RefreshHotkeyLegend();
 static void Draw();
 static void ShowSlotOSDMessage();
-static std::string GetCurrentSlotPath();
 
 static constexpr const char* DATE_TIME_FORMAT =
   TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
@@ -1389,77 +1388,29 @@ bool SaveStateSelectorUI::IsCurrentSlotGlobal()
   return s_state.current_slot_global;
 }
 
-std::string SaveStateSelectorUI::GetCurrentSlotPath()
-{
-  std::string filename;
-  if (!s_state.current_slot_global)
-  {
-    if (const std::string& serial = GPUThread::GetGameSerial(); !serial.empty())
-      filename = System::GetGameSaveStatePath(serial, s_state.current_slot + 1);
-  }
-  else
-  {
-    filename = System::GetGlobalSaveStatePath(s_state.current_slot + 1);
-  }
-
-  return filename;
-}
-
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
   DebugAssert(GPUThread::IsOnThread());
 
-  if (std::string path = GetCurrentSlotPath(); !path.empty())
-  {
-    if (FileSystem::FileExists(path.c_str()))
-    {
-      Host::RunOnCPUThread([path = std::move(path)]() {
-        Error error;
-        if (!System::LoadState(path.c_str(), &error, true, false))
-        {
-          Host::AddKeyedOSDMessage("LoadState",
-                                   fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"),
-                                               GetCurrentSlot(), error.GetDescription()),
-                                   Host::OSD_ERROR_DURATION);
-        }
-      });
-    }
-    else
-    {
-      Host::AddIconOSDMessage(
-        "LoadState", ICON_EMOJI_FLOPPY_DISK,
-        IsCurrentSlotGlobal() ?
-          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Global Slot {}."), GetCurrentSlot()) :
-          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Slot {}."), GetCurrentSlot()),
-        Host::OSD_INFO_DURATION);
-    }
-  }
+  Host::RunOnCPUThread(
+    [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::LoadStateFromSlot(global, slot); });
 
   Close();
 }
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  if (std::string path = GetCurrentSlotPath(); !path.empty())
-  {
-    Host::RunOnCPUThread([path = std::move(path)]() {
-      Error error;
-      if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
-      {
-        Host::AddIconOSDMessage("SaveState", ICON_EMOJI_WARNING,
-                                fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
-                                            GetCurrentSlot(), error.GetDescription()),
-                                Host::OSD_ERROR_DURATION);
-      }
-    });
-  }
+  Host::RunOnCPUThread(
+    [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::SaveStateToSlot(global, slot); });
 
   Close();
 }
 
 void SaveStateSelectorUI::ShowSlotOSDMessage()
 {
-  const std::string path = GetCurrentSlotPath();
+  const std::string path = IsCurrentSlotGlobal() ?
+                             System::GetGlobalSaveStatePath(GetCurrentSlot()) :
+                             System::GetGameSaveStatePath(GPUThread::GetGameSerial(), GetCurrentSlot());
   FILESYSTEM_STAT_DATA sd;
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
@@ -1469,15 +1420,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   }
   else
   {
-    date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
+    date = TRANSLATE_STR("SaveStateSelectorUI", "No save in this slot.");
   }
 
   Host::AddIconOSDMessage(
     "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,
     IsCurrentSlotGlobal() ?
-      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {0} selected ({1})."), GetCurrentSlot(), date) :
-      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected ({1})."), GetCurrentSlot(), date),
-    Host::OSD_QUICK_DURATION);
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {} selected."), GetCurrentSlot()) :
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected."), GetCurrentSlot()),
+    std::move(date), Host::OSD_QUICK_DURATION);
 }
 
 void ImGuiManager::RenderOverlayWindows()
