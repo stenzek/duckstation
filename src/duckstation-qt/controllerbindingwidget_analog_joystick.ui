@@ -378,7 +378,7 @@
      <item>
       <spacer name="verticalSpacer_5">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -941,7 +941,7 @@
      <item>
       <spacer name="verticalSpacer_4">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -958,7 +958,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -986,7 +986,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="resources/resources.qrc">:/controllers/analog_joystick.svg</pixmap>
+        <pixmap resource="resources/duckstation-qt.qrc">:/controllers/analog_joystick.svg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -996,7 +996,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -1093,7 +1093,7 @@
      <item row="1" column="0" colspan="4">
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Vertical</enum>
+        <enum>Qt::Orientation::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -1109,6 +1109,18 @@
         <string>Mode</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_33">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
         <item row="0" column="0">
          <widget class="InputBindingWidget" name="Mode">
           <property name="maximumSize">
