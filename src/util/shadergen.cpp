@@ -970,6 +970,7 @@ std::string ShaderGen::GenerateImGuiFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float4x4 ProjectionMatrix"}, false); // needs the descriptor set defined
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 1, 1);
 
