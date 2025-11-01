@@ -3604,7 +3604,8 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                                       static_cast<float>(m_vram_texture->GetHeight()),
                                       static_cast<float>(m_resolution_scale),
                                       BoolToUInt32(set_mask),
-                                      GetCurrentNormalizedVertexDepth()};
+                                      GetCurrentNormalizedVertexDepth(),
+                                      0u};
 
     // VRAM read texture should already be bound.
     g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
