@@ -428,7 +428,7 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y
 }
 
 GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                                     bool apply_aspect_ratio)
+                                                     bool apply_aspect_ratio) const
 {
   GL_SCOPE_FMT("RenderDisplay: {}x{}", target_size.x, target_size.y);
 
@@ -450,9 +450,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   GL_INS_FMT("Final target size: {}x{}", target_size.x, target_size.y);
 
   // Compute draw area.
-  GSVector4i display_rect;
-  GSVector4i draw_rect;
-  GSVector4i real_draw_rect;
+  GSVector4i display_rect, display_rect_without_overlay;
+  GSVector4i draw_rect, draw_rect_without_overlay;
   GSVector4i overlay_display_rect = GSVector4i::zero();
   GSVector4i overlay_rect = GSVector4i::zero();
   if (have_overlay)
@@ -472,31 +471,56 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
     // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
     CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, integer_scale,
-                      false, &display_rect, &real_draw_rect);
+                      false, &display_rect_without_overlay, &draw_rect_without_overlay);
 
     // Apply overlay area offset.
-    display_rect = display_rect.add32(overlay_display_rect.xyxy());
-    draw_rect = real_draw_rect.add32(overlay_display_rect.xyxy());
+    display_rect = display_rect_without_overlay.add32(overlay_display_rect.xyxy());
+    draw_rect = draw_rect_without_overlay.add32(overlay_display_rect.xyxy());
   }
   else
   {
-    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, integer_scale, true, &display_rect, &draw_rect);
-    real_draw_rect = draw_rect;
+    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, integer_scale, true,
+                      &display_rect_without_overlay, &draw_rect_without_overlay);
+    display_rect = display_rect_without_overlay;
+    draw_rect = draw_rect_without_overlay;
   }
 
   // There's a bunch of scenarios where we need to use intermediate buffers.
   // If we have post-processing and overlays enabled, postfx needs to happen on an intermediate buffer first.
   // If pre-rotation is enabled with post-processing, we need to draw to an intermediate buffer, and apply the
-  // rotation at the end.
-  const GSVector2i postfx_size = have_overlay ? overlay_display_rect.rsize() : target_size;
-  const bool really_postfx =
-    (postfx && !is_vram_view && m_display_postfx && m_display_postfx->IsActive() && m_display_postfx &&
-     m_display_postfx->CheckTargets(m_display_texture ? m_display_texture->GetFormat() : GPUTexture::Format::Unknown,
-                                    m_display_texture_view_width, m_display_texture_view_height, m_present_format,
-                                    postfx_size.x, postfx_size.y, m_display_texture ? real_draw_rect.width() : 0,
-                                    m_display_texture ? real_draw_rect.height() : 0));
-  GL_INS(really_postfx ? "Post-processing is ENABLED" : "Post-processing is disabled");
-  GL_INS_FMT("Post-processing render target size: {}x{}", postfx_size.x, postfx_size.y);
+  // rotation at the end. Unscaled/slang post-processing applies rotation after post-processing.
+  bool postfx_active = (postfx && !is_vram_view && m_display_postfx && m_display_postfx->IsActive());
+  bool postfx_delayed_rotation = false;
+  if (postfx_active)
+  {
+    // Viewport is consistent, but dependent on border overlay.
+    GSVector2i postfx_source_size = CalculateDisplayPostProcessSourceSize();
+    GSVector2i postfx_viewport_size = display_rect.rsize();
+    GSVector2i postfx_target_size = (have_overlay ? overlay_display_rect.rsize() : target_size);
+
+    // If we're using unscaled post-processing, then we do the post-processing without rotation and apply it later.
+    if (m_display_postfx->WantsUnscaledInput() &&
+        (postfx_delayed_rotation = (g_gpu_settings.display_rotation == DisplayRotation::Rotate90 ||
+                                    g_gpu_settings.display_rotation == DisplayRotation::Rotate270)))
+    {
+      postfx_target_size = postfx_target_size.yx();
+      postfx_viewport_size = postfx_viewport_size.yx();
+    }
+
+    // This could fail if we run out of VRAM.
+    if ((postfx_active = m_display_postfx->CheckTargets(
+           m_display_texture ? m_display_texture->GetFormat() : GPUTexture::Format::Unknown, postfx_source_size.x,
+           postfx_source_size.y, m_present_format, postfx_target_size.x, postfx_target_size.y, postfx_viewport_size.x,
+           postfx_viewport_size.y)))
+    {
+      GL_INS("Post-processing is ACTIVE this frame");
+      GL_INS_FMT("Post-processing source size: {}x{}", postfx_source_size.x, postfx_source_size.y);
+      GL_INS_FMT("Post-processing target size: {}x{}", postfx_target_size.x, postfx_target_size.y);
+      GL_INS_FMT("Post-processing viewport size: {}x{}", postfx_viewport_size.x, postfx_viewport_size.y);
+      GL_INS_FMT("Post-processing input texture size: {}x{}", m_display_postfx->GetInputTexture()->GetWidth(),
+                 m_display_postfx->GetInputTexture()->GetHeight());
+    }
+  }
 
   // Helper to bind swap chain/final target.
   const auto bind_final_target = [&target, &swap_chain, &final_target_size](bool clear) {
@@ -520,63 +544,20 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   };
 
   // If postfx is enabled, we need to draw to an intermediate buffer first.
-  if (really_postfx)
+  if (postfx_active)
   {
     // Display is always drawn to the postfx input.
-    GPUTexture* postfx_input;
-    if (!m_display_postfx->WantsUnscaledInput() || !m_display_texture)
-    {
-      postfx_input = m_display_postfx->GetInputTexture();
-      g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
-      g_gpu_device->SetRenderTarget(postfx_input);
-      g_gpu_device->SetViewport(GSVector4i::loadh(postfx_size));
-      if (m_display_texture)
-      {
-        DrawDisplay(postfx_size, postfx_size, real_draw_rect, false, g_gpu_settings.display_rotation,
-                    WindowInfo::PreRotation::Identity);
-      }
-    }
-    else
-    {
-      // TODO: If there's padding, it needs to be applied here.
-      // TODO: If rotating, we need to apply it here too.
-      postfx_input = m_display_texture;
-      if (g_gpu_device->UsesLowerLeftOrigin() || g_settings.display_rotation != DisplayRotation::Normal)
-      {
-        // OpenGL needs to flip the correct way around.
-        const GSVector2i input_size = GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
-        const GSVector4 src_uv_rect = GSVector4(GSVector4i(m_display_texture_view_x, m_display_texture_view_y,
-                                                           m_display_texture_view_x + m_display_texture_view_width,
-                                                           m_display_texture_view_y + m_display_texture_view_height)) /
-                                      GSVector4::xyxy(GSVector2(m_display_texture->GetSizeVec()));
-
-        postfx_input = m_display_postfx->GetInputTexture();
-        m_display_texture->MakeReadyForSampling();
-        g_gpu_device->SetRenderTarget(postfx_input);
-        g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(input_size));
-        g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
-        g_gpu_device->SetTextureSampler(0, m_display_texture, g_gpu_device->GetNearestSampler());
-        DrawScreenQuad(GSVector4i::loadh(input_size), src_uv_rect, input_size, input_size, g_settings.display_rotation,
-                       prerotation, nullptr, 0);
-      }
-      else if (m_display_texture_view_x != 0 || m_display_texture_view_y != 0 ||
-               m_display_texture->GetWidth() != static_cast<u32>(m_display_texture_view_width) ||
-               m_display_texture->GetHeight() != static_cast<u32>(m_display_texture_view_height))
-      {
-        postfx_input = m_display_postfx->GetInputTexture();
-        g_gpu_device->CopyTextureRegion(postfx_input, 0, 0, 0, 0, m_display_texture, m_display_texture_view_x,
-                                        m_display_texture_view_y, 0, 0, m_display_texture_view_width,
-                                        m_display_texture_view_height);
-      }
-    }
-
+    GPUTexture* postfx_input = GetDisplayPostProcessInputTexture(
+      draw_rect_without_overlay, postfx_delayed_rotation ? DisplayRotation::Normal : g_gpu_settings.display_rotation);
     postfx_input->MakeReadyForSampling();
 
     // Apply postprocessing to an intermediate texture if we're prerotating or have an overlay.
-    if (have_prerotation || have_overlay)
+    if (have_prerotation || have_overlay || postfx_delayed_rotation)
     {
       GPUTexture* const postfx_output = m_display_postfx->GetTextureUnusedAtEndOfChain();
-      ApplyDisplayPostProcess(postfx_output, postfx_input, real_draw_rect, postfx_size);
+      const GSVector4i postfx_final_rect =
+        postfx_delayed_rotation ? display_rect_without_overlay.yxwz() : display_rect_without_overlay;
+      ApplyDisplayPostProcess(postfx_output, postfx_input, postfx_final_rect, postfx_output->GetSizeVec());
       postfx_output->MakeReadyForSampling();
 
       // Start draw to final buffer.
@@ -588,6 +569,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
                                                                           GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
 
       // If we have an overlay, draw it, and then copy the postprocessed framebuffer in.
+      const DisplayRotation present_rotation =
+        postfx_delayed_rotation ? g_gpu_settings.display_rotation : DisplayRotation::Normal;
       if (have_overlay)
       {
         GL_SCOPE_FMT("Draw overlay and postfx buffer");
@@ -598,8 +581,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
         g_gpu_device->SetPipeline(m_present_copy_blend_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
-        DrawScreenQuad(overlay_display_rect, src_uv_rect, target_size, final_target_size, DisplayRotation::Normal,
-                       prerotation, nullptr, 0);
+        DrawScreenQuad(overlay_display_rect, src_uv_rect, target_size, final_target_size, present_rotation, prerotation,
+                       nullptr, 0);
       }
       else
       {
@@ -607,8 +590,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
         GL_SCOPE_FMT("Copy framebuffer for prerotation");
         g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
-        DrawScreenQuad(GSVector4i::loadh(postfx_size), src_uv_rect, target_size, final_target_size,
-                       DisplayRotation::Normal, prerotation, nullptr, 0);
+        DrawScreenQuad(GSVector4i::loadh(target_size), src_uv_rect, target_size, final_target_size, present_rotation,
+                       prerotation, nullptr, 0);
       }
 
       // All done
@@ -617,7 +600,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     else
     {
       // Otherwise apply postprocessing directly to swap chain.
-      return ApplyDisplayPostProcess(target, postfx_input, display_rect, postfx_size);
+      return ApplyDisplayPostProcess(target, postfx_input, display_rect, target_size);
     }
   }
   else
@@ -655,7 +638,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
 void GPUPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                                       const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
-                                      const WindowInfo::PreRotation prerotation)
+                                      const WindowInfo::PreRotation prerotation) const
 {
   GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
 
@@ -727,7 +710,7 @@ void GPUPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVect
 
 void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size,
                                const GSVector4i display_rect, bool dst_alpha_blend, DisplayRotation rotation,
-                               WindowInfo::PreRotation prerotation)
+                               WindowInfo::PreRotation prerotation) const
 {
   bool texture_filter_linear = false;
 
@@ -865,9 +848,106 @@ void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect
     g_gpu_device->Draw(4, base_vertex);
 }
 
+GSVector2i GPUPresenter::CalculateDisplayPostProcessSourceSize() const
+{
+  DebugAssert(m_display_postfx);
+
+  // Unscaled is easy.
+  if (!m_display_postfx->WantsUnscaledInput())
+  {
+    // Render to an input texture that's viewport sized. Source is the "real" input texture.
+    return GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
+  }
+  else
+  {
+    // Need to include the borders in the size. This is very janky, since we need to correct upscaling.
+    // Source and input is the full display texture size (including padding).
+    const GSVector2i input_size = GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
+    const GSVector2i native_size = GSVector2i(m_display_vram_width, m_display_vram_height);
+    const GSVector2i native_display_size = GSVector2i(m_display_width, m_display_height);
+    const GSVector2 scale = GSVector2(input_size) / GSVector2(native_size);
+    return GSVector2i((GSVector2(native_display_size) * scale).ceil());
+  }
+}
+
+GPUTexture* GPUPresenter::GetDisplayPostProcessInputTexture(const GSVector4i draw_rect_without_overlay,
+                                                            DisplayRotation rotation) const
+{
+  DebugAssert(m_display_postfx);
+
+  GPUTexture* postfx_input;
+  if (!m_display_postfx->WantsUnscaledInput() || !m_display_texture)
+  {
+    // Render to postfx input as if it was the final display.
+    postfx_input = m_display_postfx->GetInputTexture();
+    g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
+    if (m_display_texture)
+    {
+      const GSVector2i postfx_input_size = postfx_input->GetSizeVec();
+      g_gpu_device->SetRenderTarget(postfx_input);
+      g_gpu_device->SetViewport(GSVector4i::loadh(postfx_input_size));
+
+      DrawDisplay(postfx_input_size, postfx_input_size, draw_rect_without_overlay, false, rotation,
+                  WindowInfo::PreRotation::Identity);
+    }
+  }
+  else
+  {
+    postfx_input = m_display_texture;
+
+    // OpenGL needs to flip the correct way around. If the source is exactly the same size without
+    // any correction, we can pass it through to the chain directly.
+    if (g_gpu_device->UsesLowerLeftOrigin() || rotation != DisplayRotation::Normal || m_display_origin_left != 0 ||
+        m_display_origin_top != 0 || m_display_vram_width != m_display_texture_view_width ||
+        m_display_vram_height != m_display_texture_view_height)
+    {
+      GL_SCOPE_FMT("Pre-process postfx source");
+
+      const GSVector2i input_size = GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
+      const GSVector2i native_size = GSVector2i(m_display_vram_width, m_display_vram_height);
+      const GSVector2 input_scale = GSVector2(input_size) / GSVector2(native_size);
+      const GSVector4i input_draw_rect = GSVector4i(
+        (GSVector4(GSVector4i(m_display_origin_left, m_display_origin_top, m_display_origin_left + m_display_vram_width,
+                              m_display_origin_top + m_display_vram_height)) *
+         GSVector4::xyxy(input_scale))
+          .floor());
+
+      const GSVector4 src_uv_rect = GSVector4(GSVector4i(m_display_texture_view_x, m_display_texture_view_y,
+                                                         m_display_texture_view_x + m_display_texture_view_width,
+                                                         m_display_texture_view_y + m_display_texture_view_height)) /
+                                    GSVector4::xyxy(GSVector2(m_display_texture->GetSizeVec()));
+
+      postfx_input = m_display_postfx->GetInputTexture();
+      m_display_texture->MakeReadyForSampling();
+
+      const GSVector2i postfx_input_size = postfx_input->GetSizeVec();
+      g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
+      g_gpu_device->SetRenderTarget(postfx_input);
+      g_gpu_device->SetViewportAndScissor(GSVector4i::loadh(postfx_input_size));
+      g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+      g_gpu_device->SetTextureSampler(0, m_display_texture, g_gpu_device->GetNearestSampler());
+      DrawScreenQuad(input_draw_rect, src_uv_rect, postfx_input_size, postfx_input_size, rotation,
+                     WindowInfo::PreRotation::Identity, nullptr, 0);
+    }
+    else if (m_display_texture_view_x != 0 || m_display_texture_view_y != 0 ||
+             m_display_texture->GetWidth() != static_cast<u32>(m_display_texture_view_width) ||
+             m_display_texture->GetHeight() != static_cast<u32>(m_display_texture_view_height))
+    {
+      GL_SCOPE_FMT("Copy postfx source");
+
+      postfx_input = m_display_postfx->GetInputTexture();
+      g_gpu_device->CopyTextureRegion(postfx_input, 0, 0, 0, 0, m_display_texture, m_display_texture_view_x,
+                                      m_display_texture_view_y, 0, 0, m_display_texture_view_width,
+                                      m_display_texture_view_height);
+    }
+  }
+
+  return postfx_input;
+}
+
 GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
                                                                const GSVector4i display_rect,
-                                                               const GSVector2i postfx_size)
+                                                               const GSVector2i postfx_size) const
 {
   DebugAssert(!g_gpu_settings.gpu_show_vram);
 

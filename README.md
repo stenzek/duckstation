@@ -33,7 +33,7 @@ Other features include:
  - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
  - Screen rotation for vertical or "TATE" shmup games.
- - Post processing shader chains (GLSL and Reshade FX).
+ - Post processing shader chains (GLSL, Reshade FX and Slang Presets).
  - Border overlays/bezels displayed around game content.
  - "Fast boot" for skipping BIOS splash/intro.
  - Save state support, with runahead and rewind.

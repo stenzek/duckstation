@@ -107,14 +107,18 @@ private:
   bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
   GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
-                                         bool apply_aspect_ratio);
+                                         bool apply_aspect_ratio) const;
   void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                           const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
-                          const WindowInfo::PreRotation prerotation);
+                          const WindowInfo::PreRotation prerotation) const;
   void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i display_rect,
-                   bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation);
-  GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
-                                                   const GSVector4i display_rect, const GSVector2i postfx_size);
+                   bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation) const;
+
+  GSVector2i CalculateDisplayPostProcessSourceSize() const;
+  GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i draw_rect_without_overlay,
+                                                DisplayRotation rotation) const;
+  GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input, const GSVector4i display_rect,
+                                                   const GSVector2i postfx_size) const;
 
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
