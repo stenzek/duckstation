@@ -16,6 +16,7 @@
 #include "core/host.h"
 #include "core/settings.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
 #include "common/assert.h"
 #include "common/error.h"
@@ -421,11 +422,12 @@ bool PostProcessing::Chain::IsActive() const
 void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
-  Host::AddIconOSDMessage(
-    "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-    fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load post-processing chain: {}"),
-                msg.empty() ? TRANSLATE_SV("PostProcessing", "Unknown Error") : std::string_view(msg)),
-    Host::OSD_ERROR_DURATION);
+  if (msg.empty())
+    msg = TRANSLATE_SV("PostProcessing", "Unknown Error");
+
+  Host::AddIconOSDMessage("PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
+                          TRANSLATE_STR("OSDMessage", "Failed to load post-processing chain."), std::move(msg),
+                          Host::OSD_ERROR_DURATION);
   DestroyTextures();
   m_stages.clear();
 }
@@ -674,11 +676,10 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 s
       {
         ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
         Host::AddIconOSDMessage(
-          "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-          fmt::format(TRANSLATE_FS("PostProcessing",
-                                   "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
-                      shader->GetName(), error.GetDescription()),
-          Host::OSD_ERROR_DURATION);
+          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("PostProcessing", "Failed to compile post-processing shader '{}'."),
+                      shader->GetName()),
+          error.TakeDescription(), Host::OSD_ERROR_DURATION);
         m_enabled = false;
         DestroyTextures();
         return false;
@@ -703,11 +704,10 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 s
       {
         ERROR_LOG("Failed to resize post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
         Host::AddIconOSDMessage(
-          "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-          fmt::format(TRANSLATE_FS("PostProcessing",
-                                   "Failed to resize post-processing shader '{}'. Disabling post-processing.\n{}"),
-                      shader->GetName(), error.GetDescription()),
-          Host::OSD_ERROR_DURATION);
+          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("PostProcessing", "Failed to resize post-processing shader '{}'."),
+                      shader->GetName()),
+          error.TakeDescription(), Host::OSD_ERROR_DURATION);
         m_enabled = false;
         DestroyTextures();
         return false;
