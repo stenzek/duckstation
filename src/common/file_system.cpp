@@ -323,11 +323,15 @@ bool Path::IsAbsolute(std::string_view path)
 std::string Path::RealPath(std::string_view path)
 {
   // Resolve non-absolute paths first.
+  std::string abs_path;
   std::vector<std::string_view> components;
   if (!IsAbsolute(path))
-    components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
-  else
-    components = Path::SplitNativePath(path);
+  {
+    abs_path = Path::Combine(FileSystem::GetWorkingDirectory(), path);
+    path = abs_path;
+  }
+
+  components = Path::SplitNativePath(path);
 
   std::string realpath;
   if (components.empty())
