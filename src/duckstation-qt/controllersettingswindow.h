@@ -79,10 +79,6 @@ public:
   void clearSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
 
-Q_SIGNALS:
-  void windowClosed();
-  void inputProfileSwitched();
-
 protected:
   void closeEvent(QCloseEvent* event) override;
 

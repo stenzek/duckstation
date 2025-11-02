@@ -47,6 +47,8 @@ SettingsWindow::SettingsWindow() : QWidget()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   addPages();
   connectUi();
+
+  QtUtils::RestoreWindowGeometry("SettingsWindow", this);
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
@@ -78,6 +80,8 @@ void SettingsWindow::closeEvent(QCloseEvent* event)
   // we need to clean up ourselves, since we're not modal
   if (isPerGameSettings())
     deleteLater();
+  else
+    QtUtils::SaveWindowGeometry("SettingsWindow", this);
 }
 
 void SettingsWindow::addPages()

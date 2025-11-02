@@ -102,6 +102,9 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
   }
 
   createWidgets();
+
+  if (isEditingGlobalSettings())
+    QtUtils::RestoreWindowGeometry("ControllerSettingsWindow", this);
 }
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
@@ -498,7 +501,9 @@ void ControllerSettingsWindow::createWidgets()
 void ControllerSettingsWindow::closeEvent(QCloseEvent* event)
 {
   QWidget::closeEvent(event);
-  emit windowClosed();
+
+  if (isEditingGlobalSettings())
+    QtUtils::SaveWindowGeometry("ControllerSettingsWindow", this);
 }
 
 void ControllerSettingsWindow::updateListDescription(u32 global_slot, ControllerBindingWidget* widget)
