@@ -104,7 +104,8 @@ void MemoryScannerWindow::setupAdditionalUi()
 {
   QtUtils::SetColumnWidthsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
   QtUtils::SetColumnWidthsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
-  QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this);
+  if (!QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 void MemoryScannerWindow::connectUi()

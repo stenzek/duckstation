@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "isobrowserwindow.h"
+#include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
 
@@ -39,6 +40,8 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
   connect(m_ui.fileView, &QTreeWidget::itemSelectionChanged, this, &ISOBrowserWindow::onFileItemSelectionChanged);
   connect(m_ui.fileView, &QTreeWidget::customContextMenuRequested, this, &ISOBrowserWindow::onFileContextMenuRequested);
   connect(m_ui.close, &QAbstractButton::clicked, this, &ISOBrowserWindow::close);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 ISOBrowserWindow::~ISOBrowserWindow() = default;

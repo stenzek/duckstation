@@ -104,7 +104,10 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
   createWidgets();
 
   if (isEditingGlobalSettings())
-    QtUtils::RestoreWindowGeometry("ControllerSettingsWindow", this);
+  {
+    if (!QtUtils::RestoreWindowGeometry("ControllerSettingsWindow", this))
+      QtUtils::CenterWindowRelativeToParent(this, g_main_window);
+  }
 }
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;

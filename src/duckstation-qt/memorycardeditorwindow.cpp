@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memorycardeditorwindow.h"
+#include "mainwindow.h"
 #include "qtutils.h"
 
 #include "core/host.h"
@@ -166,6 +167,8 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_animation_timer = new QTimer(this);
   m_animation_timer->setInterval(MEMORY_CARD_ICON_FRAME_DURATION_MS);
   connect(m_animation_timer, &QTimer::timeout, this, &MemoryCardEditorWindow::incrementAnimationFrame);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 MemoryCardEditorWindow::~MemoryCardEditorWindow() = default;

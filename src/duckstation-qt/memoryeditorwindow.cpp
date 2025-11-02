@@ -399,7 +399,8 @@ void MemoryEditorWindow::setupAdditionalUi()
 #endif
   m_ui.memoryView->setFont(fixedFont);
 
-  QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this);
+  if (!QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 
   // Set minimum width for data inspector.
   m_ui.dataInspectorAddress->setFont(fixedFont);

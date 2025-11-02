@@ -156,6 +156,9 @@ void SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto
 /// Restores a window's geometry from configuration. Returns false if it was not found in the configuration.
 bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
+/// Positions a window in the center of its parent or the screen.
+void CenterWindowRelativeToParent(QWidget* window, QWidget* parent_window);
+
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>
 inline void ProcessEventsWithSleep(QEventLoop::ProcessEventsFlags flags, const Predicate& pred, int sleep_time_ms = 10)

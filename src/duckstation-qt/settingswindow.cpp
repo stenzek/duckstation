@@ -48,7 +48,8 @@ SettingsWindow::SettingsWindow() : QWidget()
   addPages();
   connectUi();
 
-  QtUtils::RestoreWindowGeometry("SettingsWindow", this);
+  if (!QtUtils::RestoreWindowGeometry("SettingsWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
@@ -67,6 +68,8 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
   connectUi();
 
   s_open_game_properties_dialogs.push_back(this);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::~SettingsWindow()

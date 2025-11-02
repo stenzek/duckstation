@@ -77,7 +77,7 @@ static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
 
 LOG_CHANNEL(Host);
 
-AutoUpdaterWindow::AutoUpdaterWindow(QWidget* parent /* = nullptr */) : QWidget(parent)
+AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
 {
   m_ui.setupUi(this);
   setWindowIcon(QtHost::GetAppIcon());
@@ -91,6 +91,8 @@ AutoUpdaterWindow::AutoUpdaterWindow(QWidget* parent /* = nullptr */) : QWidget(
   m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!m_http)
     ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available:\n{}", error.GetDescription());
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 AutoUpdaterWindow::~AutoUpdaterWindow() = default;
