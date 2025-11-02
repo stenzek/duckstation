@@ -3306,13 +3306,17 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   LoadResources();
 
   // Check the file we're starting actually exists.
-  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()) &&
-      !CDImage::IsDeviceName(autoboot->path.c_str()))
+  if (autoboot && !autoboot->path.empty() && !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
-    QMessageBox::critical(
-      nullptr, qApp->translate("QtHost", "Error"),
-      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->path)));
-    return false;
+    autoboot->path = Path::RealPath(autoboot->path);
+
+    if (!FileSystem::FileExists(autoboot->path.c_str()))
+    {
+      QMessageBox::critical(
+        nullptr, qApp->translate("QtHost", "Error"),
+        qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->path)));
+      return false;
+    }
   }
 
   if (state_index.has_value())
