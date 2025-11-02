@@ -945,17 +945,23 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
+  using FullscreenUI::DarkerColor;
   using FullscreenUI::ModAlpha;
   using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
 
   static constexpr float MOVE_DURATION = 0.5f;
 
+  if (s_state.osd_active_messages.empty())
+    return;
+
   ImFont* const font = s_state.text_font;
   const float font_size = GetOSDFontSize();
   const float large_icon_size = font_size * 2.0f;
-  constexpr float title_font_weight = UIStyle.BoldFontWeight;
-  constexpr float body_font_weight = UIStyle.NormalFontWeight;
+  static constexpr float title_font_weight = UIStyle.BoldFontWeight;
+  static constexpr float body_font_weight = UIStyle.NormalFontWeight;
+  static constexpr ImVec4& text_color = UIStyle.ToastTextColor;
+  const ImVec4 subtext_color = DarkerColor(text_color, 0.85f);
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
   const float margin = std::ceil(s_state.screen_margin * scale);
@@ -1077,7 +1083,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
                       rounding);
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
-    const ImU32 color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+    const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
     if (!msg.icon.empty())
     {
       const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
@@ -1097,9 +1103,9 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     {
       const ImVec2 text_pos = ImVec2(base_pos.x + icon_size_with_margin, base_pos.y + title_size.y);
       const ImRect text_rect = ImRect(text_pos, text_pos + text_size);
-      RenderShadowedTextClipped(dl, font, font_size, text_font_weight, text_rect.Min, text_rect.Max,
-                                ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
-                                ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
+      const ImU32 actual_text_color = msg.title.empty() ? color : ImGui::GetColorU32(ModAlpha(subtext_color, opacity));
+      RenderShadowedTextClipped(dl, font, font_size, text_font_weight, text_rect.Min, text_rect.Max, actual_text_color,
+                                msg.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
     }
 
     if (clip_box)
