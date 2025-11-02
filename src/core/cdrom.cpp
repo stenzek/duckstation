@@ -1023,7 +1023,7 @@ bool CDROM::PrecacheMedia()
     return false;
   }
 
-  LoadingScreenProgressCallback callback;
+  FullscreenUI::LoadingScreenProgressCallback callback;
   if (!s_reader.Precache(&callback))
   {
     Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),

@@ -4543,18 +4543,18 @@ void FullscreenUI::DrawLoadingScreen(std::string_view image, std::string_view ti
   }
 }
 
-LoadingScreenProgressCallback::LoadingScreenProgressCallback()
+FullscreenUI::LoadingScreenProgressCallback::LoadingScreenProgressCallback()
   : ProgressCallback(), m_open_time(Timer::GetCurrentValue()), m_on_gpu_thread(GPUThread::IsOnThread())
 {
   m_image = System::GetImageForLoadingScreen(m_on_gpu_thread ? GPUThread::GetGamePath() : System::GetGamePath());
 }
 
-LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
+FullscreenUI::LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
 {
   Close();
 }
 
-void LoadingScreenProgressCallback::Close()
+void FullscreenUI::LoadingScreenProgressCallback::Close()
 {
   // Did we activate?
   if (m_last_progress_percent < 0)
@@ -4573,37 +4573,37 @@ void LoadingScreenProgressCallback::Close()
   m_last_progress_percent = -1;
 }
 
-void LoadingScreenProgressCallback::PushState()
+void FullscreenUI::LoadingScreenProgressCallback::PushState()
 {
   ProgressCallback::PushState();
 }
 
-void LoadingScreenProgressCallback::PopState()
+void FullscreenUI::LoadingScreenProgressCallback::PopState()
 {
   ProgressCallback::PopState();
   Redraw(true);
 }
 
-void LoadingScreenProgressCallback::SetCancellable(bool cancellable)
+void FullscreenUI::LoadingScreenProgressCallback::SetCancellable(bool cancellable)
 {
   ProgressCallback::SetCancellable(cancellable);
   Redraw(true);
 }
 
-void LoadingScreenProgressCallback::SetTitle(const std::string_view title)
+void FullscreenUI::LoadingScreenProgressCallback::SetTitle(const std::string_view title)
 {
   ProgressCallback::SetTitle(title);
   m_title = title;
   Redraw(true);
 }
 
-void LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
+void FullscreenUI::LoadingScreenProgressCallback::SetStatusText(const std::string_view text)
 {
   ProgressCallback::SetStatusText(text);
   Redraw(true);
 }
 
-void LoadingScreenProgressCallback::SetProgressRange(u32 range)
+void FullscreenUI::LoadingScreenProgressCallback::SetProgressRange(u32 range)
 {
   u32 last_range = m_progress_range;
 
@@ -4613,7 +4613,7 @@ void LoadingScreenProgressCallback::SetProgressRange(u32 range)
     Redraw(false);
 }
 
-void LoadingScreenProgressCallback::SetProgressValue(u32 value)
+void FullscreenUI::LoadingScreenProgressCallback::SetProgressValue(u32 value)
 {
   u32 lastValue = m_progress_value;
 
@@ -4623,7 +4623,7 @@ void LoadingScreenProgressCallback::SetProgressValue(u32 value)
     Redraw(false);
 }
 
-void LoadingScreenProgressCallback::Redraw(bool force)
+void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
 {
   if (m_last_progress_percent < 0 &&
       Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - m_open_time) < m_open_delay)
@@ -4656,13 +4656,13 @@ void LoadingScreenProgressCallback::Redraw(bool force)
   m_last_progress_percent = percent;
 }
 
-void LoadingScreenProgressCallback::ModalError(const std::string_view message)
+void FullscreenUI::LoadingScreenProgressCallback::ModalError(const std::string_view message)
 {
   ERROR_LOG(message);
   Host::ReportErrorAsync("Error", message);
 }
 
-bool LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
+bool FullscreenUI::LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
 {
   INFO_LOG(message);
   return Host::ConfirmMessage("Confirm", message);

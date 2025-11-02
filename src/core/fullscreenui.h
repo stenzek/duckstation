@@ -70,8 +70,7 @@ private:
 
 #endif // __ANDROID__
 
-} // namespace FullscreenUI
-
+// NOTE: Not in widgets.h so that clients can use it without pulling in imgui etc.
 class LoadingScreenProgressCallback final : public ProgressCallback
 {
 public:
@@ -104,6 +103,8 @@ private:
   std::string m_image;
   std::string m_title;
 };
+
+} // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.
 namespace Host {

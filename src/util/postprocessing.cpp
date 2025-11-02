@@ -447,7 +447,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
     return;
 
   Error error;
-  LoadingScreenProgressCallback progress;
+  FullscreenUI::LoadingScreenProgressCallback progress;
   progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
@@ -521,7 +521,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   m_stages.resize(stage_count);
 
-  LoadingScreenProgressCallback progress;
+  FullscreenUI::LoadingScreenProgressCallback progress;
   progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
