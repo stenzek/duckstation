@@ -457,6 +457,12 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
   {
+#ifdef _WIN32
+    // Frame pointer setup is needed on Windows
+    armAsm->stp(x29, x30, MemOperand(sp, -16, PreIndex));
+    armAsm->mov(x29, sp);
+#endif
+
     // Need the CPU state for basically everything :-)
     armMoveAddressToReg(armAsm, RSTATE, &g_state);
 
@@ -571,13 +577,20 @@ void CPU::ARM64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 c
   // Need to wipe it out so it's correct when toggling fastmem.
   m_host_regs = {};
 
+  // Frame pointer must be valid on Windows.
+#ifdef _WIN32
+  constexpr u32 max_reg_idx = 28;
+#else
+  constexpr u32 max_reg_idx = 29;
+#endif
+
   const u32 membase_idx = CodeCache::IsUsingFastmem() ? RMEMBASE.GetCode() : NUM_HOST_REGS;
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
     HostRegAlloc& ra = m_host_regs[i];
 
     if (i == RWARG1.GetCode() || i == RWARG1.GetCode() || i == RWARG2.GetCode() || i == RWARG3.GetCode() ||
-        i == RWSCRATCH.GetCode() || i == RSTATE.GetCode() || i == membase_idx || i == x18.GetCode() || i >= 30)
+        i == RWSCRATCH.GetCode() || i == RSTATE.GetCode() || i == membase_idx || i == x18.GetCode() || i > max_reg_idx)
     {
       continue;
     }
