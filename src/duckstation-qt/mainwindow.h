@@ -339,6 +339,7 @@ private:
     QShortcut* game_list_search = nullptr;
     QShortcut* game_list_zoom_in = nullptr;
     QShortcut* game_list_zoom_out = nullptr;
+    QShortcut* settings = nullptr;
   } m_shortcuts;
 
   SettingsWindow* m_settings_window = nullptr;
