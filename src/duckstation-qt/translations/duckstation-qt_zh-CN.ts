@@ -107,9 +107,9 @@ Please check your username and password, and try again.</source>
         <source>Achievement tracking is not currently enabled. Your login will have no effect until after tracking is enabled.
 
 Do you want to enable tracking now?</source>
-        <translation>成就追踪当前没有启用。在启用追踪之前，您的登录将没有效果。
+        <translation>成就跟踪当前没有启用。在启用跟踪之前，您的登录将没有效果。
 
-您想要现在启用追踪吗？</translation>
+您想要现在启用跟踪吗？</translation>
     </message>
     <message>
         <location filename="../achievementlogindialog.cpp" line="96"/>
@@ -196,7 +196,7 @@ Do you want to enable hardcore mode?</source>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="54"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>成就的“挑战”模式，包括排行榜追踪。禁用即时存档，金手指，和减速功能。</translation>
+        <translation>成就的“挑战”模式，包括排行榜跟踪。禁用即时存档，金手指，和减速功能。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="63"/>
@@ -259,12 +259,12 @@ Do you want to enable hardcore mode?</source>
         <location filename="../achievementsettingswidget.ui" line="178"/>
         <location filename="../achievementsettingswidget.cpp" line="71"/>
         <source>Show Leaderboard Trackers</source>
-        <translation>显示排行榜追踪器</translation>
+        <translation>显示排行榜跟踪器</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="195"/>
         <source>Progress Tracking</source>
-        <translation>进度追踪</translation>
+        <translation>进度跟踪</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.ui" line="201"/>
@@ -402,7 +402,7 @@ Do you want to enable hardcore mode?</source>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="63"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-        <translation>当启用时，DuckStation将列出非官方集的成就。请注意，这些成就不会被RetroAchievements追踪，所以它们每次都会解锁。</translation>
+        <translation>当启用时，DuckStation将列出非官方集的成就。请注意，这些成就不会被RetroAchievements跟踪，所以它们每次都会解锁。</translation>
     </message>
     <message>
         <location filename="../achievementsettingswidget.cpp" line="219"/>
@@ -482,7 +482,7 @@ Login token generated at:</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1255"/>
         <source>Hardcore mode is disabled. Leaderboards will not be tracked.</source>
-        <translation>硬核模式已禁用。排行榜将不会被追踪。</translation>
+        <translation>硬核模式已禁用。排行榜将不会被跟踪。</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1272"/>
@@ -2575,8 +2575,8 @@ Unread messages: {}</source>
     <name>AutoUpdaterWindow</name>
     <message>
         <location filename="../autoupdaterwindow.ui" line="14"/>
-        <location filename="../autoupdaterwindow.cpp" line="356"/>
-        <location filename="../autoupdaterwindow.cpp" line="565"/>
+        <location filename="../autoupdaterwindow.cpp" line="358"/>
+        <location filename="../autoupdaterwindow.cpp" line="567"/>
         <source>Automatic Updater</source>
         <translation>自动更新程序</translation>
     </message>
@@ -2616,58 +2616,58 @@ Unread messages: {}</source>
         <translation>稍后提醒我</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="187"/>
+        <location filename="../autoupdaterwindow.cpp" line="189"/>
         <source>Do not show again</source>
         <translation>不再显示</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="250"/>
-        <location filename="../autoupdaterwindow.cpp" line="808"/>
+        <location filename="../autoupdaterwindow.cpp" line="252"/>
+        <location filename="../autoupdaterwindow.cpp" line="810"/>
         <source>Updater Error</source>
         <translation>更新程序错误</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="357"/>
+        <location filename="../autoupdaterwindow.cpp" line="359"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation>当前没有可用的更新。请稍后再试。</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="431"/>
+        <location filename="../autoupdaterwindow.cpp" line="433"/>
         <source>Current Version: %1 (%2)</source>
         <translation>当前版本: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="435"/>
+        <location filename="../autoupdaterwindow.cpp" line="437"/>
         <source>New Version: %1 (%2)</source>
         <translation>新版本: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="437"/>
+        <location filename="../autoupdaterwindow.cpp" line="439"/>
         <source>Download Size: %1 MB</source>
         <translation>下载大小: %1MB</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="442"/>
+        <location filename="../autoupdaterwindow.cpp" line="444"/>
         <source>Download...</source>
         <translation>下载...</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="446"/>
+        <location filename="../autoupdaterwindow.cpp" line="448"/>
         <source>Loading...</source>
         <translation>载入中…</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="489"/>
+        <location filename="../autoupdaterwindow.cpp" line="491"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation>&lt;h2&gt;更改:&lt;/h2&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="522"/>
+        <location filename="../autoupdaterwindow.cpp" line="524"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;保存即时档案警告&lt;/h2&gt;&lt;p&gt;安装此更新将导致您的即时存档&lt;b&gt;不兼容&lt;/b&gt;。在安装此更新之前，请确保您已经将您的游戏保存到记忆卡，否则您将失去进度。&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="530"/>
+        <location filename="../autoupdaterwindow.cpp" line="532"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;设置警告&lt;/h2&gt;&lt;p&gt;安装此更新将重置您的程序配置。请注意，您必须在此更新后重新配置您的设置。&lt;/p&gt;</translation>
     </message>
@@ -2676,12 +2676,12 @@ Unread messages: {}</source>
         <translation type="vanished">&lt;h4&gt;安装此更新将通过您的互联网连接下载%1MB。&lt;/h4&gt;</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="566"/>
+        <location filename="../autoupdaterwindow.cpp" line="568"/>
         <source>Downloading %1...</source>
         <translation>下载中%1…</translation>
     </message>
     <message>
-        <location filename="../autoupdaterwindow.cpp" line="809"/>
+        <location filename="../autoupdaterwindow.cpp" line="811"/>
         <source>Failed to remove updater exe after update:
 %1</source>
         <translation>无法在升级后删除exe更新程序:
@@ -5059,7 +5059,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
     <name>ControllerSettingsWindow</name>
     <message>
         <location filename="../controllersettingswindow.ui" line="20"/>
-        <location filename="../controllersettingswindow.cpp" line="322"/>
+        <location filename="../controllersettingswindow.cpp" line="328"/>
         <source>DuckStation Controller Settings</source>
         <translation>DuckStation控制器设置</translation>
     </message>
@@ -5117,7 +5117,7 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <translation>套用全局设置</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="293"/>
+        <location filename="../controllersettingswindow.cpp" line="299"/>
         <source>Restore Defaults</source>
         <translation>恢复默认值</translation>
     </message>
@@ -5130,10 +5130,10 @@ The &quot;alternate&quot; color is used when analog mode is active.</source>
         <translation type="vanished">输入新输入控制方案的名称:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="180"/>
-        <location filename="../controllersettingswindow.cpp" line="235"/>
-        <location filename="../controllersettingswindow.cpp" line="281"/>
-        <location filename="../controllersettingswindow.cpp" line="586"/>
+        <location filename="../controllersettingswindow.cpp" line="186"/>
+        <location filename="../controllersettingswindow.cpp" line="241"/>
+        <location filename="../controllersettingswindow.cpp" line="287"/>
+        <location filename="../controllersettingswindow.cpp" line="594"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -5182,7 +5182,7 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="282"/>
+        <location filename="../controllersettingswindow.cpp" line="288"/>
         <source>Failed to delete &apos;%1&apos;.</source>
         <translation>无法删除&apos;%1&apos;。</translation>
     </message>
@@ -5199,7 +5199,7 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="324"/>
+        <location filename="../controllersettingswindow.cpp" line="330"/>
         <source>Per-game controller configuration reset to global settings.</source>
         <translation>游戏各自控制器配置重置为全局设置。</translation>
     </message>
@@ -5208,7 +5208,7 @@ You cannot undo this action.</source>
         <translation type="vanished">游戏各自控制器配置重置为默认设置。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="443"/>
+        <location filename="../controllersettingswindow.cpp" line="449"/>
         <source>Global Settings</source>
         <translation>全局设置</translation>
     </message>
@@ -5224,44 +5224,44 @@ You cannot undo this action.</source>
         <translation>DuckStation控制器预设</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="171"/>
-        <location filename="../controllersettingswindow.cpp" line="185"/>
-        <location filename="../controllersettingswindow.cpp" line="199"/>
+        <location filename="../controllersettingswindow.cpp" line="177"/>
+        <location filename="../controllersettingswindow.cpp" line="191"/>
+        <location filename="../controllersettingswindow.cpp" line="205"/>
         <source>Create Controller Preset</source>
         <translation>创建控制器预设</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="171"/>
+        <location filename="../controllersettingswindow.cpp" line="177"/>
         <source>Enter the name for the new controller preset:</source>
         <translation>输入新控制器预设的名称:</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="180"/>
+        <location filename="../controllersettingswindow.cpp" line="186"/>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
         <translation>已经存在一个名称为&apos;%1&apos;的预设。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="186"/>
+        <location filename="../controllersettingswindow.cpp" line="192"/>
         <source>Do you want to copy all bindings from the currently-selected preset to the new preset? Selecting No will create a completely empty preset.</source>
         <translation>您想要将全部绑定从当前选择的预设复制到一个新的预设吗？选择“否”将创建一个完全空的预设。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="200"/>
+        <location filename="../controllersettingswindow.cpp" line="206"/>
         <source>Do you want to copy the current hotkey bindings from global settings to the new controller preset?</source>
         <translation>您想要将当前热键绑定从全局设置复制到一个新的控制器预设吗？</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="235"/>
+        <location filename="../controllersettingswindow.cpp" line="241"/>
         <source>Failed to save the new preset to &apos;%1&apos;.</source>
         <translation>无法保存新预设到&apos;%1&apos;。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="245"/>
+        <location filename="../controllersettingswindow.cpp" line="251"/>
         <source>Load Controller Preset</source>
         <translation>加载控制器预设</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="246"/>
+        <location filename="../controllersettingswindow.cpp" line="252"/>
         <source>Are you sure you want to apply the controller preset named &apos;%1&apos;?
 
 All current global bindings will be removed, and the preset bindings loaded.
@@ -5274,12 +5274,12 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="270"/>
+        <location filename="../controllersettingswindow.cpp" line="276"/>
         <source>Delete Controller Preset</source>
         <translation>删除控制器预设</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="271"/>
+        <location filename="../controllersettingswindow.cpp" line="277"/>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
@@ -5288,7 +5288,7 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="294"/>
+        <location filename="../controllersettingswindow.cpp" line="300"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All bindings and configuration will be lost. You cannot undo this action.</source>
@@ -5297,25 +5297,25 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
 全部绑定和配置都将丢失，您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="325"/>
+        <location filename="../controllersettingswindow.cpp" line="331"/>
         <source>Controller preset reset to global settings.</source>
         <translation>控制器预设重置为全局设置。</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="469"/>
-        <location filename="../controllersettingswindow.cpp" line="518"/>
+        <location filename="../controllersettingswindow.cpp" line="475"/>
+        <location filename="../controllersettingswindow.cpp" line="526"/>
         <source>Controller Port %1
 %2</source>
         <translation>控制器接口%1
 %2</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="482"/>
+        <location filename="../controllersettingswindow.cpp" line="488"/>
         <source>Hotkeys</source>
         <translation>热键</translation>
     </message>
     <message>
-        <location filename="../controllersettingswindow.cpp" line="587"/>
+        <location filename="../controllersettingswindow.cpp" line="595"/>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
         <translation>无法找到名称为&apos;%1&apos;的控制器预设。</translation>
     </message>
@@ -6076,12 +6076,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation>跟随加载/存储(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="737"/>
+        <location filename="../debuggerwindow.cpp" line="738"/>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
         <translation>无法添加断点。在该地址可能已经存在一个断点。</translation>
     </message>
     <message>
-        <location filename="../debuggerwindow.cpp" line="758"/>
+        <location filename="../debuggerwindow.cpp" line="759"/>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>无法删除断点。此断点可能不存在。</translation>
     </message>
@@ -7939,7 +7939,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="817"/>
         <source>&quot;Challenge&quot; mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions.</source>
-        <translation>成就的“挑战”模式，包括排行榜追踪。禁用即时存档，金手指，和减速功能。</translation>
+        <translation>成就的“挑战”模式，包括排行榜跟踪。禁用即时存档，金手指，和减速功能。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="366"/>
@@ -7973,7 +7973,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="734"/>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
-        <translation>当双击窗口时，在全屏和窗口之间切换。</translation>
+        <translation>当双击窗口时，在全屏模式与窗口模式之间切换。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="474"/>
@@ -10045,7 +10045,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="805"/>
         <source>When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.</source>
-        <translation>当启用时，DuckStation将列出非官方集的成就。这些成就不会被RetroAchievements追踪。</translation>
+        <translation>当启用时，DuckStation将列出非官方集的成就。这些成就不会被RetroAchievements跟踪。</translation>
     </message>
     <message>
         <source>Restores the state of the system prior to the last state loaded.</source>
@@ -10350,7 +10350,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="357"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation>强制启用纹理上传追踪，无论是否需要。</translation>
+        <translation>强制启用纹理上传跟踪，无论是否需要。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="362"/>
@@ -10449,7 +10449,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="425"/>
         <source>Leaderboard Trackers</source>
-        <translation>排行榜追踪器</translation>
+        <translation>排行榜跟踪器</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="427"/>
@@ -16431,74 +16431,74 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="54"/>
-        <location filename="../isobrowserwindow.cpp" line="95"/>
-        <location filename="../isobrowserwindow.cpp" line="212"/>
+        <location filename="../isobrowserwindow.cpp" line="57"/>
+        <location filename="../isobrowserwindow.cpp" line="98"/>
+        <location filename="../isobrowserwindow.cpp" line="215"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="54"/>
-        <location filename="../isobrowserwindow.cpp" line="95"/>
+        <location filename="../isobrowserwindow.cpp" line="57"/>
+        <location filename="../isobrowserwindow.cpp" line="98"/>
         <source>Failed to open %1:
 %2</source>
         <translation>无法打开%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="76"/>
+        <location filename="../isobrowserwindow.cpp" line="79"/>
         <source>ISO Browser - %1</source>
         <translation>ISO浏览器 -%1</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="86"/>
+        <location filename="../isobrowserwindow.cpp" line="89"/>
         <source>Select File</source>
         <translation>选择文件</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="160"/>
+        <location filename="../isobrowserwindow.cpp" line="163"/>
         <source>&amp;Open</source>
         <translation>打开(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="165"/>
+        <location filename="../isobrowserwindow.cpp" line="168"/>
         <source>&amp;Extract</source>
         <translation>提取(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="167"/>
+        <location filename="../isobrowserwindow.cpp" line="170"/>
         <source>Extract (&amp;XA)</source>
         <translation>提取 (&amp;XA)</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="169"/>
+        <location filename="../isobrowserwindow.cpp" line="172"/>
         <source>Extract (&amp;Raw)</source>
         <translation>提取 (&amp;Raw)</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="181"/>
+        <location filename="../isobrowserwindow.cpp" line="184"/>
         <source>Extract File</source>
         <translation>提取文件</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="195"/>
+        <location filename="../isobrowserwindow.cpp" line="198"/>
         <source>Extracting %1...</source>
         <translation>提取%1...</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="212"/>
+        <location filename="../isobrowserwindow.cpp" line="215"/>
         <source>Failed to save %1:
 %2</source>
         <translation>无法保存%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="320"/>
+        <location filename="../isobrowserwindow.cpp" line="323"/>
         <source>%1 KB</source>
         <translation>%1KB</translation>
     </message>
     <message>
-        <location filename="../isobrowserwindow.cpp" line="328"/>
+        <location filename="../isobrowserwindow.cpp" line="331"/>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;上级 目录&gt;</translation>
     </message>
@@ -16698,7 +16698,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="63"/>
-        <location filename="../interfacesettingswidget.cpp" line="116"/>
+        <location filename="../interfacesettingswidget.cpp" line="108"/>
         <source>Pause On Focus Loss</source>
         <translation>失去焦点时暂停</translation>
     </message>
@@ -16708,19 +16708,19 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="77"/>
-        <location filename="../interfacesettingswidget.cpp" line="123"/>
+        <location filename="../interfacesettingswidget.cpp" line="115"/>
         <source>Create Save State Backups</source>
         <translation>创建即时存档备份</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="49"/>
-        <location filename="../interfacesettingswidget.cpp" line="108"/>
+        <location filename="../interfacesettingswidget.cpp" line="104"/>
         <source>Inhibit Screensaver</source>
         <translation>禁用屏幕保护程序</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="56"/>
-        <location filename="../interfacesettingswidget.cpp" line="114"/>
+        <location filename="../interfacesettingswidget.cpp" line="106"/>
         <source>Pause On Start</source>
         <translation>开始时暂停</translation>
     </message>
@@ -16730,13 +16730,13 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="84"/>
-        <location filename="../interfacesettingswidget.cpp" line="125"/>
+        <location filename="../interfacesettingswidget.cpp" line="117"/>
         <source>Enable Discord Presence</source>
         <translation>启用Discord-Presence</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="70"/>
-        <location filename="../interfacesettingswidget.cpp" line="119"/>
+        <location filename="../interfacesettingswidget.cpp" line="111"/>
         <source>Pause On Controller Disconnection</source>
         <translation>控制器断开连接时暂停</translation>
     </message>
@@ -16759,34 +16759,37 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="100"/>
-        <location filename="../interfacesettingswidget.cpp" line="103"/>
+        <location filename="../interfacesettingswidget.cpp" line="120"/>
         <source>Start Fullscreen</source>
         <translation>全屏启动</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="107"/>
+        <location filename="../interfacesettingswidget.cpp" line="122"/>
         <source>Double-Click Toggles Fullscreen</source>
         <translation>双击切换全屏</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="114"/>
-        <location filename="../interfacesettingswidget.cpp" line="111"/>
+        <location filename="../interfacesettingswidget.cpp" line="125"/>
         <source>Render To Separate Window</source>
         <translation>渲染到分离窗口</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="121"/>
+        <location filename="../interfacesettingswidget.cpp" line="129"/>
         <source>Hide Main Window When Running</source>
         <translation>运行时隐藏主窗口</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="128"/>
+        <location filename="../interfacesettingswidget.cpp" line="131"/>
         <source>Disable Window Resizing</source>
         <translation>禁用窗口大小调整</translation>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="135"/>
-        <location filename="../interfacesettingswidget.cpp" line="105"/>
+        <location filename="../interfacesettingswidget.cpp" line="133"/>
         <source>Hide Cursor In Fullscreen</source>
         <translation>全屏时隐藏光标</translation>
     </message>
@@ -16826,7 +16829,7 @@ Shift-click to set multiple bindings.</source>
     </message>
     <message>
         <location filename="../interfacesettingswidget.ui" line="206"/>
-        <location filename="../interfacesettingswidget.cpp" line="130"/>
+        <location filename="../interfacesettingswidget.cpp" line="177"/>
         <source>Enable Automatic Update Check</source>
         <translation>启用自动更新检查</translation>
     </message>
@@ -16838,11 +16841,12 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../interfacesettingswidget.cpp" line="98"/>
         <location filename="../interfacesettingswidget.cpp" line="100"/>
-        <location filename="../interfacesettingswidget.cpp" line="105"/>
-        <location filename="../interfacesettingswidget.cpp" line="108"/>
-        <location filename="../interfacesettingswidget.cpp" line="111"/>
-        <location filename="../interfacesettingswidget.cpp" line="123"/>
-        <location filename="../interfacesettingswidget.cpp" line="130"/>
+        <location filename="../interfacesettingswidget.cpp" line="104"/>
+        <location filename="../interfacesettingswidget.cpp" line="115"/>
+        <location filename="../interfacesettingswidget.cpp" line="122"/>
+        <location filename="../interfacesettingswidget.cpp" line="125"/>
+        <location filename="../interfacesettingswidget.cpp" line="133"/>
+        <location filename="../interfacesettingswidget.cpp" line="177"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
@@ -16869,56 +16873,73 @@ Shift-click to set multiple bindings.</source>
         <translation>在关闭游戏或退出本应用程序时，系统自动保存即时档案。您下次可直接从上次中断的地方继续。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="103"/>
-        <location filename="../interfacesettingswidget.cpp" line="114"/>
-        <location filename="../interfacesettingswidget.cpp" line="116"/>
+        <location filename="../interfacesettingswidget.cpp" line="106"/>
+        <location filename="../interfacesettingswidget.cpp" line="108"/>
+        <location filename="../interfacesettingswidget.cpp" line="112"/>
+        <location filename="../interfacesettingswidget.cpp" line="117"/>
         <location filename="../interfacesettingswidget.cpp" line="120"/>
-        <location filename="../interfacesettingswidget.cpp" line="125"/>
+        <location filename="../interfacesettingswidget.cpp" line="129"/>
+        <location filename="../interfacesettingswidget.cpp" line="131"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="104"/>
+        <location filename="../interfacesettingswidget.cpp" line="121"/>
         <source>Automatically switches to fullscreen mode when a game is started.</source>
         <translation>在游戏开始时自动切换为全屏模式。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="106"/>
+        <location filename="../interfacesettingswidget.cpp" line="123"/>
+        <source>Switches between full screen and windowed when the window is double-clicked.</source>
+        <translation>当双击窗口时，在全屏模式与窗口模式之间切换。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="130"/>
+        <source>Hides the main window of the application while the game is displayed in a separate window.</source>
+        <translation>隐藏本应用程序的主窗口，同时在单独的窗口中显示游戏。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="132"/>
+        <source>Prevents resizing of the window while a game is running.</source>
+        <translation>禁止在游戏运行时调整窗口大小。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="134"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
         <translation>在模拟器处于全屏模式时隐藏鼠标指针/光标。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="109"/>
+        <location filename="../interfacesettingswidget.cpp" line="105"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
         <translation>禁止激活屏幕保护程序，同时防止本机在模拟运行时休眠。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="112"/>
+        <location filename="../interfacesettingswidget.cpp" line="126"/>
         <source>Renders the display of the simulated console to the main window of the application, over the game list. If checked, the display will render in a separate window.</source>
         <translation>将模拟游戏机的显示内容渲染到本应用程序的主窗口中，并覆盖游戏列表。若勾选此选项，则显示内容将在分离窗口中渲染。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="115"/>
+        <location filename="../interfacesettingswidget.cpp" line="107"/>
         <source>Pauses the emulator when a game is started.</source>
         <translation>在游戏开始时暂停模拟器。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="117"/>
+        <location filename="../interfacesettingswidget.cpp" line="109"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
         <translation>在最小化窗口或切换到其他应用程序时暂停模拟器，在切换回模拟器时取消暂停。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="121"/>
+        <location filename="../interfacesettingswidget.cpp" line="113"/>
         <source>Pauses the emulator when a controller with bindings is disconnected.</source>
         <translation>当带有绑定的控制器断开连接时，暂停模拟器。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="124"/>
+        <location filename="../interfacesettingswidget.cpp" line="116"/>
         <source>Backs up any previous save state when creating a new save state, with a .bak extension.</source>
         <translation>当创建新的即时存档时，备份之前的即时存档，扩展名为 .bak。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="147"/>
+        <location filename="../interfacesettingswidget.cpp" line="148"/>
         <source>Unavailable</source>
         <translation>不可用</translation>
     </message>
@@ -16927,12 +16948,47 @@ Shift-click to set multiple bindings.</source>
         <translation type="vanished">启用后，每个游戏将会应用各自独立的设置，并且不兼容的增强将被禁用。您应当保持此选项处于启用状态，除非要用不兼容游戏去测试增强功能。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="126"/>
+        <location filename="../interfacesettingswidget.cpp" line="118"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
         <translation>显示您当前正在玩的游戏并将它们作为您在Discord的个人资料的一部分。</translation>
     </message>
     <message>
-        <location filename="../interfacesettingswidget.cpp" line="131"/>
+        <location filename="../interfacesettingswidget.cpp" line="155"/>
+        <source>Language</source>
+        <translation>语言</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="155"/>
+        <source>System Language</source>
+        <translation>系统语言</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="156"/>
+        <source>Selects the language for the application. Please note that not all parts of the application may be translated for a given language.</source>
+        <translation>选择本应用程序的语言。请注意，并非本应用程序的所有部分都已翻译成给定的语言。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="169"/>
+        <source>Theme</source>
+        <translation>主题</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="170"/>
+        <source>Selects the theme for the application.</source>
+        <translation>选择本应用程序的主题。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="172"/>
+        <source>Update Channel</source>
+        <translation>更新频道</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="174"/>
+        <source>Selects the channel that will be checked for updates to the application. The &lt;strong&gt;preview&lt;/strong&gt; channel contains the latest changes, and may be unstable. The &lt;strong&gt;latest&lt;/strong&gt; channel tracks the latest release.</source>
+        <translation>选择用于检查本应用程序更新的频道。&lt;strong&gt;preview&lt;/strong&gt;频道包含最新更改，但可能不稳定。&lt;strong&gt;latest&lt;/strong&gt;频道则跟踪最近的正式版本。</translation>
+    </message>
+    <message>
+        <location filename="../interfacesettingswidget.cpp" line="178"/>
         <source>Automatically checks for updates to the program on startup. Updates can be deferred until later or skipped entirely.</source>
         <translation>启动时自动检查程序的更新，可以选择稍后更新或完全跳过。</translation>
     </message>
@@ -19542,93 +19598,93 @@ Error: {1}</source>
         <translation type="vanished">全部可导入记忆卡格式 (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="33"/>
+        <location filename="../memorycardeditorwindow.cpp" line="34"/>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
         <translation>单个保存文件 (*.mcs);;全部文件 (*.*)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="131"/>
-        <location filename="../memorycardeditorwindow.cpp" line="811"/>
+        <location filename="../memorycardeditorwindow.cpp" line="132"/>
+        <location filename="../memorycardeditorwindow.cpp" line="814"/>
         <source>Delete File</source>
         <translation>删除文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="132"/>
-        <location filename="../memorycardeditorwindow.cpp" line="814"/>
+        <location filename="../memorycardeditorwindow.cpp" line="133"/>
+        <location filename="../memorycardeditorwindow.cpp" line="817"/>
         <source>Undelete File</source>
         <translation>还原文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="133"/>
-        <location filename="../memorycardeditorwindow.cpp" line="817"/>
+        <location filename="../memorycardeditorwindow.cpp" line="134"/>
+        <location filename="../memorycardeditorwindow.cpp" line="820"/>
         <source>Rename File</source>
         <translation>重命名文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="134"/>
-        <location filename="../memorycardeditorwindow.cpp" line="820"/>
+        <location filename="../memorycardeditorwindow.cpp" line="135"/>
+        <location filename="../memorycardeditorwindow.cpp" line="823"/>
         <source>Export File</source>
         <translation>导出文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="135"/>
+        <location filename="../memorycardeditorwindow.cpp" line="136"/>
         <source>&lt;&lt;</source>
         <translation>&lt;&lt;复制</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="136"/>
+        <location filename="../memorycardeditorwindow.cpp" line="137"/>
         <source>&gt;&gt;</source>
         <translation>复制&gt;&gt;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="159"/>
+        <location filename="../memorycardeditorwindow.cpp" line="160"/>
         <source>New Card...</source>
         <translation>新建记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="160"/>
+        <location filename="../memorycardeditorwindow.cpp" line="161"/>
         <source>Open Card...</source>
         <translation>打开记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="236"/>
+        <location filename="../memorycardeditorwindow.cpp" line="239"/>
         <source>Format Card</source>
         <translation>格式化记忆卡</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="237"/>
+        <location filename="../memorycardeditorwindow.cpp" line="240"/>
         <source>Import File...</source>
         <translation>导入文件…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="238"/>
+        <location filename="../memorycardeditorwindow.cpp" line="241"/>
         <source>Import Card...</source>
         <translation>导入记忆卡…</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="239"/>
+        <location filename="../memorycardeditorwindow.cpp" line="242"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="366"/>
-        <location filename="../memorycardeditorwindow.cpp" line="519"/>
-        <location filename="../memorycardeditorwindow.cpp" line="549"/>
-        <location filename="../memorycardeditorwindow.cpp" line="586"/>
-        <location filename="../memorycardeditorwindow.cpp" line="596"/>
-        <location filename="../memorycardeditorwindow.cpp" line="607"/>
-        <location filename="../memorycardeditorwindow.cpp" line="616"/>
-        <location filename="../memorycardeditorwindow.cpp" line="638"/>
-        <location filename="../memorycardeditorwindow.cpp" line="659"/>
-        <location filename="../memorycardeditorwindow.cpp" line="687"/>
-        <location filename="../memorycardeditorwindow.cpp" line="708"/>
-        <location filename="../memorycardeditorwindow.cpp" line="735"/>
-        <location filename="../memorycardeditorwindow.cpp" line="787"/>
+        <location filename="../memorycardeditorwindow.cpp" line="369"/>
+        <location filename="../memorycardeditorwindow.cpp" line="522"/>
+        <location filename="../memorycardeditorwindow.cpp" line="552"/>
+        <location filename="../memorycardeditorwindow.cpp" line="589"/>
+        <location filename="../memorycardeditorwindow.cpp" line="599"/>
+        <location filename="../memorycardeditorwindow.cpp" line="610"/>
+        <location filename="../memorycardeditorwindow.cpp" line="619"/>
+        <location filename="../memorycardeditorwindow.cpp" line="641"/>
+        <location filename="../memorycardeditorwindow.cpp" line="662"/>
+        <location filename="../memorycardeditorwindow.cpp" line="690"/>
+        <location filename="../memorycardeditorwindow.cpp" line="711"/>
+        <location filename="../memorycardeditorwindow.cpp" line="738"/>
+        <location filename="../memorycardeditorwindow.cpp" line="790"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="822"/>
+        <location filename="../memorycardeditorwindow.cpp" line="825"/>
         <source>Copy File</source>
         <translation>复制文件</translation>
     </message>
@@ -19637,20 +19693,20 @@ Error: {1}</source>
         <translation type="vanished">无法读取记忆卡文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="403"/>
+        <location filename="../memorycardeditorwindow.cpp" line="406"/>
         <source> (Deleted)</source>
         <translation> (已删除)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="470"/>
+        <location filename="../memorycardeditorwindow.cpp" line="473"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n格 空余%1</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="484"/>
-        <location filename="../memorycardeditorwindow.cpp" line="511"/>
+        <location filename="../memorycardeditorwindow.cpp" line="487"/>
+        <location filename="../memorycardeditorwindow.cpp" line="514"/>
         <source>Select Memory Card</source>
         <translation>选择记忆卡</translation>
     </message>
@@ -19659,120 +19715,120 @@ Error: {1}</source>
         <translation type="vanished">无法写入记忆卡到&apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="563"/>
+        <location filename="../memorycardeditorwindow.cpp" line="566"/>
         <source>Save memory card?</source>
         <translation>保存记忆卡？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="564"/>
+        <location filename="../memorycardeditorwindow.cpp" line="567"/>
         <source>Memory card &apos;%1&apos; is not saved, do you want to save before closing?</source>
         <translation>记忆卡&apos;%1&apos;未保存，您想要在关闭前保存吗？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="587"/>
+        <location filename="../memorycardeditorwindow.cpp" line="590"/>
         <source>Destination memory card already contains a save file with the same name (%1) as the one you are attempting to copy. Please delete this file from the destination memory card before copying.</source>
         <translation>目标记忆卡已经包含一个与您正在尝试复制的文件同名 (%1) 的保存文件。复制前请先在目标记忆卡中删除该文件。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="597"/>
+        <location filename="../memorycardeditorwindow.cpp" line="600"/>
         <source>Insufficient blocks, this file needs %1 but only %2 are available.</source>
         <translation>块不足，此文件需要%1格，但仅有%2格可用。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="608"/>
+        <location filename="../memorycardeditorwindow.cpp" line="611"/>
         <source>Failed to read file %1:
 %2</source>
         <translation>无法读取文件%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="617"/>
+        <location filename="../memorycardeditorwindow.cpp" line="620"/>
         <source>Failed to write file %1:
 %2</source>
         <translation>无法写入文件%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="688"/>
+        <location filename="../memorycardeditorwindow.cpp" line="691"/>
         <source>Failed to export save file %1:
 %2</source>
         <translation>无法导出保存文件%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="709"/>
+        <location filename="../memorycardeditorwindow.cpp" line="712"/>
         <source>Failed to rename save file %1:
 %2</source>
         <translation>无法重命名保存文件%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="736"/>
+        <location filename="../memorycardeditorwindow.cpp" line="739"/>
         <source>Failed to import memory card from %1:
 %2</source>
         <translation>无法导入记忆卡来自%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="779"/>
+        <location filename="../memorycardeditorwindow.cpp" line="782"/>
         <source>Select Save File</source>
         <translation>选择保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="788"/>
+        <location filename="../memorycardeditorwindow.cpp" line="791"/>
         <source>Failed to import save from %1:
 %2</source>
         <translation>无法导入保存来自%1:
 %2</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="639"/>
+        <location filename="../memorycardeditorwindow.cpp" line="642"/>
         <source>Failed to delete file %1</source>
         <translation>无法删除文件%1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="28"/>
+        <location filename="../memorycardeditorwindow.cpp" line="29"/>
         <source>DuckStation Memory Card (*.mcd)</source>
         <translation>DuckStation记忆卡 (*.mcd)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="29"/>
+        <location filename="../memorycardeditorwindow.cpp" line="30"/>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
         <translation>全部记忆卡格式 (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="366"/>
-        <location filename="../memorycardeditorwindow.cpp" line="519"/>
+        <location filename="../memorycardeditorwindow.cpp" line="369"/>
+        <location filename="../memorycardeditorwindow.cpp" line="522"/>
         <source>Failed to load memory card: %1</source>
         <translation>无法读取记忆卡: %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="549"/>
+        <location filename="../memorycardeditorwindow.cpp" line="552"/>
         <source>Failed to save memory card: %1</source>
         <translation>无法保存记忆卡: %1</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="660"/>
+        <location filename="../memorycardeditorwindow.cpp" line="663"/>
         <source>Failed to undelete file %1. The file may have been partially overwritten by another save.</source>
         <translation>无法还原文件%1。该文件可能已被其他保存部分覆盖。</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="675"/>
+        <location filename="../memorycardeditorwindow.cpp" line="678"/>
         <source>Select Single Savefile</source>
         <translation>选择单个保存文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="727"/>
+        <location filename="../memorycardeditorwindow.cpp" line="730"/>
         <source>Select Import File</source>
         <translation>选择导入文件</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="757"/>
+        <location filename="../memorycardeditorwindow.cpp" line="760"/>
         <source>Format memory card?</source>
         <translation>格式化记忆卡？</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="758"/>
+        <location filename="../memorycardeditorwindow.cpp" line="761"/>
         <source>Formatting the memory card will destroy all saves, and they will not be recoverable. The memory card which will be formatted is located at &apos;%1&apos;.</source>
         <translation>格式化记忆卡会破坏全部存档，而且它们是无法恢复的。将被格式化的记忆卡位于&apos;%1&apos;。</translation>
     </message>
@@ -19815,7 +19871,7 @@ Error: {1}</source>
         <translation>完整文件名称:</translation>
     </message>
     <message>
-        <location filename="../memorycardeditorwindow.cpp" line="941"/>
+        <location filename="../memorycardeditorwindow.cpp" line="944"/>
         <source>Unknown (%1)</source>
         <translation>未知 (%1)</translation>
     </message>
@@ -20464,37 +20520,37 @@ Error: {1}</source>
         <translation>HxD使用的内存地址: 0x%1</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="331"/>
+        <location filename="../memoryscannerwindow.cpp" line="332"/>
         <source>Enter manual address:</source>
         <translation>输入手动地址:</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="340"/>
+        <location filename="../memoryscannerwindow.cpp" line="341"/>
         <source>Select data size:</source>
         <translation>选择数据大小:</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="404"/>
+        <location filename="../memoryscannerwindow.cpp" line="405"/>
         <source>Failed to open memory editor at specified address.</source>
         <translation>无法在指定地址打开内存编辑器。</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="558"/>
+        <location filename="../memoryscannerwindow.cpp" line="559"/>
         <source>%1 (only showing first %2)</source>
         <translation>%1 (仅显示第一个%2)</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="676"/>
+        <location filename="../memoryscannerwindow.cpp" line="677"/>
         <source>Failed to create watches directory: %1</source>
         <translation>无法创建监视数据目录: %1</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="699"/>
+        <location filename="../memoryscannerwindow.cpp" line="700"/>
         <source>Failed to save watches to file: %1</source>
         <translation>无法保存监视数据到文件: %1</translation>
     </message>
     <message>
-        <location filename="../memoryscannerwindow.cpp" line="717"/>
+        <location filename="../memoryscannerwindow.cpp" line="718"/>
         <source>Failed to load watches from file: %1</source>
         <translation>无法从文件加载监视数据: %1</translation>
     </message>
@@ -21141,27 +21197,31 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation type="vanished">金手指&apos;%s&apos;已经启用。</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="426"/>
         <source>Failed to load post-processing chain: {}</source>
-        <translation>无法加载后处理链: {}</translation>
+        <translation type="vanished">无法加载后处理链: {}</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="597"/>
+        <location filename="../../util/postprocessing.cpp" line="429"/>
+        <source>Failed to load post-processing chain.</source>
+        <translation>无法加载后处理链。</translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="599"/>
         <source>No post-processing shaders are selected.</source>
         <translation>未选择任何后处理着色器。</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="604"/>
+        <location filename="../../util/postprocessing.cpp" line="606"/>
         <source>Post-processing is now enabled.</source>
         <translation>后处理现已启用。</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="605"/>
+        <location filename="../../util/postprocessing.cpp" line="607"/>
         <source>Post-processing is now disabled.</source>
         <translation>后处理现已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_presenter.cpp" line="1440"/>
+        <location filename="../../core/gpu_presenter.cpp" line="1520"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>后处理着色器已重新加载。</translation>
     </message>
@@ -21616,37 +21676,45 @@ Your dump may be corrupted, or the physical disc is scratched.</source>
 <context>
     <name>PostProcessing</name>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="165"/>
+        <location filename="../../util/postprocessing.cpp" line="166"/>
         <source>{} [GLSL]</source>
         <translation>{} [GLSL]</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="194"/>
+        <location filename="../../util/postprocessing.cpp" line="195"/>
         <source>{} [ReShade]</source>
         <translation>{} [重新着色]</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="221"/>
+        <location filename="../../util/postprocessing.cpp" line="222"/>
         <source>{} [Slang]</source>
         <translation>{} [俚语]</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="427"/>
+        <location filename="../../util/postprocessing.cpp" line="426"/>
         <source>Unknown Error</source>
         <translation>未知错误</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="678"/>
+        <location filename="../../util/postprocessing.cpp" line="680"/>
+        <source>Failed to compile post-processing shader &apos;{}&apos;.</source>
+        <translation>无法编译后处理着色器&apos;{}&apos;。</translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="708"/>
+        <source>Failed to resize post-processing shader &apos;{}&apos;.</source>
+        <translation>无法调整后处理着色器&apos;{}&apos;大小。</translation>
+    </message>
+    <message>
         <source>Failed to compile post-processing shader &apos;{}&apos;. Disabling post-processing.
 {}</source>
-        <translation>无法编译后处理着色器&apos;{}&apos;。正在禁用后处理。
+        <translation type="vanished">无法编译后处理着色器&apos;{}&apos;。正在禁用后处理。
 {}</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="707"/>
         <source>Failed to resize post-processing shader &apos;{}&apos;. Disabling post-processing.
 {}</source>
-        <translation>无法调整后处理着色器&apos;{}&apos;大小。正在禁用后处理。
+        <translation type="vanished">无法调整后处理着色器&apos;{}&apos;大小。正在禁用后处理。
 {}</translation>
     </message>
 </context>
@@ -22027,9 +22095,9 @@ URL: %1</translation>
         <location filename="../qthost.cpp" line="456"/>
         <location filename="../qthost.cpp" line="495"/>
         <location filename="../qthost.cpp" line="1120"/>
-        <location filename="../qthost.cpp" line="3313"/>
-        <location filename="../qthost.cpp" line="3339"/>
-        <location filename="../qthost.cpp" line="3358"/>
+        <location filename="../qthost.cpp" line="3316"/>
+        <location filename="../qthost.cpp" line="3343"/>
+        <location filename="../qthost.cpp" line="3362"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -22159,22 +22227,22 @@ URL: %1</translation>
         <translation>控制器{}已断开连接。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3340"/>
+        <location filename="../qthost.cpp" line="3344"/>
         <source>The specified save state does not exist.</source>
         <translation>指定的即时存档不存在。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3360"/>
+        <location filename="../qthost.cpp" line="3364"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>无法使用no-gui模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3361"/>
+        <location filename="../qthost.cpp" line="3365"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>无法使用批处理模式，因为没有指定的启动文件名。</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="3314"/>
+        <location filename="../qthost.cpp" line="3317"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>文件&apos;%1&apos;不存在。</translation>
     </message>
@@ -23471,16 +23539,16 @@ Do you want to create this directory?</source>
     <name>SettingsWindow</name>
     <message>
         <location filename="../settingswindow.ui" line="20"/>
-        <location filename="../settingswindow.cpp" line="308"/>
-        <location filename="../settingswindow.cpp" line="325"/>
-        <location filename="../settingswindow.cpp" line="335"/>
-        <location filename="../settingswindow.cpp" line="347"/>
+        <location filename="../settingswindow.cpp" line="315"/>
+        <location filename="../settingswindow.cpp" line="332"/>
+        <location filename="../settingswindow.cpp" line="342"/>
+        <location filename="../settingswindow.cpp" line="354"/>
         <source>DuckStation Settings</source>
         <translation>DuckStation设置</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="73"/>
-        <location filename="../settingswindow.cpp" line="182"/>
+        <location filename="../settingswindow.cpp" line="189"/>
         <source>Safe Mode</source>
         <translation>安全模式</translation>
     </message>
@@ -23505,52 +23573,52 @@ Do you want to create this directory?</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="60"/>
+        <location filename="../settingswindow.cpp" line="63"/>
         <source>Summary</source>
         <translation>摘要</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="62"/>
+        <location filename="../settingswindow.cpp" line="65"/>
         <source>&lt;strong&gt;Summary&lt;/strong&gt;&lt;hr&gt;This page shows information about the selected game, and allows you to validate your disc was dumped correctly.</source>
         <translation>&lt;strong&gt;摘要&lt;/strong&gt;&lt;hr&gt;此页面显示所选游戏的相关信息，并允许您验证您的光盘是否被正确转储。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="94"/>
+        <location filename="../settingswindow.cpp" line="101"/>
         <source>Game List</source>
         <translation>游戏列表</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="96"/>
+        <location filename="../settingswindow.cpp" line="103"/>
         <source>&lt;strong&gt;Game List Settings&lt;/strong&gt;&lt;hr&gt;The list above shows the directories which will be searched by DuckStation to populate the game list. Search directories can be added, removed, and switched to recursive/non-recursive.</source>
         <translation>&lt;strong&gt;游戏列表设置&lt;/strong&gt;&lt;hr&gt;上面的列表显示了DuckStation即将搜索的目录，用于其构成游戏列表。搜索目录可以添加、删除，并切换为深度搜索/非深度搜索。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="101"/>
+        <location filename="../settingswindow.cpp" line="108"/>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="103"/>
+        <location filename="../settingswindow.cpp" line="110"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;BIOS设置&lt;/strong&gt;&lt;hr&gt;这些选项控制使用哪个BIOS和扩展端口。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="106"/>
+        <location filename="../settingswindow.cpp" line="113"/>
         <source>Console</source>
         <translation>游戏机</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="111"/>
+        <location filename="../settingswindow.cpp" line="118"/>
         <source>Emulation</source>
         <translation>模拟</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="86"/>
+        <location filename="../settingswindow.cpp" line="93"/>
         <source>Interface</source>
         <translation>界面</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="88"/>
+        <location filename="../settingswindow.cpp" line="95"/>
         <source>&lt;strong&gt;Interface Settings&lt;/strong&gt;&lt;hr&gt;These options control how the emulator looks and behaves.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;界面设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的外观和行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
@@ -23559,57 +23627,57 @@ Do you want to create this directory?</source>
         <translation type="vanished">&lt;strong&gt;BIOS设置&lt;/strong&gt;&lt;hr&gt;这些选项控制使用哪个BIOS以及如何打补丁。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="108"/>
+        <location filename="../settingswindow.cpp" line="115"/>
         <source>&lt;strong&gt;Console Settings&lt;/strong&gt;&lt;hr&gt;These options determine the configuration of the simulated console.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;游戏机设置&lt;/strong&gt;&lt;hr&gt;这些选项决定了模拟游戏机的配置。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="113"/>
+        <location filename="../settingswindow.cpp" line="120"/>
         <source>&lt;strong&gt;Emulation Settings&lt;/strong&gt;&lt;hr&gt;These options determine the speed and runahead behavior of the system.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;模拟设置&lt;/strong&gt;&lt;hr&gt;这些选项决定了系统的速度和超前运行行为。&lt;br&gt;&lt;br&gt;将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="118"/>
+        <location filename="../settingswindow.cpp" line="125"/>
         <source>Patches</source>
         <translation>补丁</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="120"/>
+        <location filename="../settingswindow.cpp" line="127"/>
         <source>&lt;strong&gt;Patches&lt;/strong&gt;&lt;hr&gt;This section allows you to select optional patches to apply to the game, which may provide performance, visual, or gameplay improvements. Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, no support will be provided to users who have enabled game patches.</source>
         <translation>&lt;strong&gt;补丁&lt;/strong&gt;&lt;hr&gt;此部分允许您选择应用于游戏的可选补丁，这些补丁可能会提供性能、视觉或游戏体验方面的改进。激活游戏补丁可能会导致不可预测的行为，崩溃、软锁定或损坏保存的游戏。使用补丁的风险由您自行承担，启用游戏补丁的用户将不会获得任何支持。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="124"/>
+        <location filename="../settingswindow.cpp" line="131"/>
         <source>Cheats</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="126"/>
+        <location filename="../settingswindow.cpp" line="133"/>
         <source>&lt;strong&gt;Cheats&lt;/strong&gt;&lt;hr&gt;This section allows you to select which cheats you wish to enable. &lt;strong&gt;Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves.&lt;/strong&gt; Cheats also persist through save states even after being disabled, please remember to reset/reboot the game after turning off any codes.</source>
         <translation>&lt;strong&gt;金手指&lt;/strong&gt;&lt;hr&gt;本部分允许您选择要启用的金手指。&lt;strong&gt;使用金手指会对游戏产生不可预测的影响，导致崩溃，图形故障，以及存档损坏。&lt;/strong&gt;即使在被禁用后，金手指仍会通过即时存档而持续存在，请记得在关闭任何代码后重置/重启游戏。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="133"/>
+        <location filename="../settingswindow.cpp" line="140"/>
         <source>Memory Cards</source>
         <translation>记忆卡</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="135"/>
+        <location filename="../settingswindow.cpp" line="142"/>
         <source>&lt;strong&gt;Memory Card Settings&lt;/strong&gt;&lt;hr&gt;This page lets you control what mode the memory card emulation will function in, and where the images for these cards will be stored on disk.</source>
         <translation>&lt;strong&gt;记忆卡设置&lt;/strong&gt;&lt;hr&gt;此页允许您分配记忆卡的工作模式，以及指定这些记忆卡将要存储在磁盘上的文件位置。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="137"/>
+        <location filename="../settingswindow.cpp" line="144"/>
         <source>Graphics</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="139"/>
+        <location filename="../settingswindow.cpp" line="146"/>
         <source>&lt;strong&gt;Graphics Settings&lt;/strong&gt;&lt;hr&gt;These options control how the graphics of the emulated console are rendered. Not all options are available for the software renderer. Mouse over each option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;图像设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟游戏机图像的渲染方式。并非所有选项都适用于软件渲染器。将鼠标移至每个选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="145"/>
+        <location filename="../settingswindow.cpp" line="152"/>
         <source>&lt;strong&gt;Post-Processing Settings&lt;/strong&gt;&lt;hr&gt;Post processing allows you to alter the appearance of the image displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be downloaded from &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;.</source>
         <translation>&lt;strong&gt;后处理设置&lt;/strong&gt;&lt;hr&gt;后处理允许您使用各种过滤器改变屏幕上显示图像的外观。着色器将按顺序执行。更多着色器可从&lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;下载。</translation>
     </message>
@@ -23618,12 +23686,12 @@ Do you want to create this directory?</source>
         <translation type="vanished">&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进度。要使用成就，请在retroachievements.org注册一个账户。要查看游戏中的成就列表，按下热键&lt;strong&gt;打开暂停菜单&lt;/strong&gt;并从菜单中选择&lt;strong&gt;成就&lt;/strong&gt;。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="174"/>
+        <location filename="../settingswindow.cpp" line="181"/>
         <source>&lt;strong&gt;Advanced Settings&lt;/strong&gt;&lt;hr&gt;These options control logging and internal behavior of the emulator. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;高级设置&lt;/strong&gt;&lt;hr&gt;这些选项控制模拟器的日志记录和内置行为。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="293"/>
+        <location filename="../settingswindow.cpp" line="300"/>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.
 
 You cannot undo this action.</source>
@@ -23632,7 +23700,7 @@ You cannot undo this action.</source>
 您无法撤销此操作。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="143"/>
+        <location filename="../settingswindow.cpp" line="150"/>
         <source>Post-Processing</source>
         <translation>后处理</translation>
     </message>
@@ -23641,52 +23709,52 @@ You cannot undo this action.</source>
         <translation type="vanished">&lt;strong&gt;后处理设置&lt;/strong&gt;&lt;hr&gt;后处理允许您使用各种过滤器改变屏幕上显示图像的外观。着色器将按顺序执行。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="150"/>
+        <location filename="../settingswindow.cpp" line="157"/>
         <source>Audio</source>
         <translation>声音</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="152"/>
+        <location filename="../settingswindow.cpp" line="159"/>
         <source>&lt;strong&gt;Audio Settings&lt;/strong&gt;&lt;hr&gt;These options control the audio output of the console. Mouse over an option for additional information.</source>
         <translation>&lt;strong&gt;音频设置&lt;/strong&gt;&lt;hr&gt;这些选项控制游戏机的音频输出。将鼠标移至选项上可获取更多信息。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="155"/>
+        <location filename="../settingswindow.cpp" line="162"/>
         <source>Achievements</source>
         <translation>成就</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="157"/>
+        <location filename="../settingswindow.cpp" line="164"/>
         <source>&lt;strong&gt;Achievement Settings&lt;/strong&gt;&lt;hr&gt;DuckStation uses RetroAchievements as an achievement database and for tracking progress. To use achievements, please sign up for an account at &lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;. To view the achievement list in-game, press the hotkey for &lt;strong&gt;Open Pause Menu&lt;/strong&gt; and select &lt;strong&gt;Achievements&lt;/strong&gt; from the menu. Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;DuckStation使用RetroAchievements作为成就数据库并以此来追踪进度。要使用成就，请在&lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;注册一个账户。要查看游戏中的成就列表，按下热键&lt;strong&gt;打开暂停菜单&lt;/strong&gt;并从菜单中选择&lt;strong&gt;成就&lt;/strong&gt;。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
+        <translation>&lt;strong&gt;成就设置&lt;/strong&gt;&lt;hr&gt;DuckStation使用RetroAchievements作为成就数据库并以此来跟踪进度。要使用成就，请在&lt;a href=&quot;%1&quot;&gt;%1&lt;/a&gt;注册一个账户。要查看游戏中的成就列表，按下热键&lt;strong&gt;打开暂停菜单&lt;/strong&gt;并从菜单中选择&lt;strong&gt;成就&lt;/strong&gt;。将鼠标移至选项上可获取更多信息，Shift键+滚轮可滚动该面板。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="167"/>
+        <location filename="../settingswindow.cpp" line="174"/>
         <source>Folders</source>
         <translation>文件夹</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="169"/>
+        <location filename="../settingswindow.cpp" line="176"/>
         <source>&lt;strong&gt;Folder Settings&lt;/strong&gt;&lt;hr&gt;These options control where DuckStation will save runtime data files.</source>
         <translation>&lt;strong&gt;文件夹设置&lt;/strong&gt;&lt;hr&gt;这些选项控制DuckStation将在何处保存运行时数据文件。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="172"/>
+        <location filename="../settingswindow.cpp" line="179"/>
         <source>Advanced</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="182"/>
+        <location filename="../settingswindow.cpp" line="189"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="183"/>
+        <location filename="../settingswindow.cpp" line="190"/>
         <source>Disables all enhancement options, simulating the system as accurately as possible. Use to quickly determine whether an enhancement is responsible for game bugs.</source>
         <translation>禁用所有增强选项，尽可能精确地模拟系统。用于快速确定增强功能是否导致游戏错误。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="292"/>
+        <location filename="../settingswindow.cpp" line="299"/>
         <source>Confirm Restore Defaults</source>
         <translation>确认恢复默认值</translation>
     </message>
@@ -23695,7 +23763,7 @@ You cannot undo this action.</source>
         <translation type="vanished">您确定想要恢复默认设置吗？任何偏好设置都将会被抹去。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="309"/>
+        <location filename="../settingswindow.cpp" line="316"/>
         <source>The configuration for this game will be replaced by the current global settings.
 
 Any current setting values will be overwritten.
@@ -23708,12 +23776,12 @@ Do you want to continue?</source>
 您想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="326"/>
+        <location filename="../settingswindow.cpp" line="333"/>
         <source>Per-game configuration copied from global settings.</source>
         <translation>游戏各自配置套用全局设置。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="336"/>
+        <location filename="../settingswindow.cpp" line="343"/>
         <source>The configuration for this game will be cleared.
 
 Any current setting values will be lost.
@@ -23726,17 +23794,17 @@ Do you want to continue?</source>
 您想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="347"/>
+        <location filename="../settingswindow.cpp" line="354"/>
         <source>Per-game configuration cleared.</source>
         <translation>游戏各自配置已清除。</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="360"/>
+        <location filename="../settingswindow.cpp" line="367"/>
         <source>Recommended Value</source>
         <translation>推荐值</translation>
     </message>
     <message>
-        <location filename="../settingswindow.cpp" line="652"/>
+        <location filename="../settingswindow.cpp" line="659"/>
         <source>%1 [%2]</source>
         <translation>%1 [%2]</translation>
     </message>
@@ -24000,7 +24068,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../setupwizarddialog.ui" line="994"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation支持通过RetroAchievements获得成就和追踪排行榜。&lt;/p&gt;&lt;p&gt;如果您有RetroAchievements帐户，您可以使用下面的表格登录。如果没有，您可以在&lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;进行注册。&lt;/p&gt;&lt;p&gt;使用DuckStation&lt;span style=&quot; font-weight:700;&quot;&gt;不&lt;/span&gt;需要RetroAchievements帐户。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation支持通过RetroAchievements获得成就和跟踪排行榜。&lt;/p&gt;&lt;p&gt;如果您有RetroAchievements帐户，您可以使用下面的表格登录。如果没有，您可以在&lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;进行注册。&lt;/p&gt;&lt;p&gt;使用DuckStation&lt;span style=&quot; font-weight:700;&quot;&gt;不&lt;/span&gt;需要RetroAchievements帐户。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../setupwizarddialog.ui" line="1004"/>
@@ -24978,7 +25046,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="112"/>
         <source>Write Tracking Options</source>
-        <translation>写入追踪选项</translation>
+        <translation>写入跟踪选项</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="118"/>
