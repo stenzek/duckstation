@@ -23,6 +23,9 @@
    <iconset resource="resources/duckstation-qt.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
+  <property name="class" stdset="0">
+   <string>settings-window</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QListWidget" name="settingsCategory">
