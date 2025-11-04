@@ -88,9 +88,13 @@ void GamePatchSettingsWidget::reloadList()
   std::vector<std::string> enabled_list =
     m_dialog->getSettingsInterface()->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
-  QWidget* container = new QWidget;
+  QWidget* container = new QWidget(m_ui.scrollArea);
+  container->setObjectName(QStringLiteral("patches_container"));
   QVBoxLayout* layout = new QVBoxLayout(container);
   m_ui.scrollArea->setWidget(container);
+
+  // for some reason, has to happen after the setWidget()...
+  container->setAutoFillBackground(false);
 
   if (!patches.empty())
   {

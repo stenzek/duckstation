@@ -434,6 +434,51 @@ QTabBar::tab:hover {
   background: #3a3a3a;
 }
 
+QProgressBar {
+  border: none;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  text-align: center;
+}
+QProgressBar::chunk {
+  background-color: #1464a0;
+  border-radius: 8px;
+}
+
+QSlider {
+  margin: 2px 0; /* to make room for the handle */
+}
+QSlider::groove {
+  border: none;
+  height: 8px;
+  background-color: #414141;
+  border-radius: 4px;
+}
+QSlider::handle {
+  background-color: #606060;
+  border: none;
+  width: 16px;
+  margin: -4px 0; /* handle is placed by default on the groove, so we need to offset it */
+  border-radius: 8px;
+}
+QSlider::handle:hover {
+  background-color: #707070;
+}
+QSlider::handle:pressed {
+  background-color: #808080;
+}
+
+QTextBrowser {
+  border: none;
+  border-radius: 8px;
+  padding: 2px 4px;
+  background-color: #2d2d2d;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  color: #ffffff;
+}
+
 .settings-window QListView {
   border: none;
   border-radius: 8px;
@@ -455,22 +500,45 @@ QTabBar::tab:hover {
   background-color: #414141;
   color: #ffffff;
 }
-.settings-window QTextBrowser {
-  border: none;
-  border-radius: 8px;
-  padding: 2px 4px;
-  background-color: #2d2d2d;
-  selection-background-color: #414141;
-  selection-color: #ffffff;
-  color: #ffffff;
-}
-
 /* Remove dotted focus rectangle / outline around QListView items when focused/selected */
 .settings-window QListView:focus,
 .settings-window QListView::item:focus,
 .settings-window QListView::item:selected:focus {
   outline: none;
   border: none;
+}
+
+.settings-window QTreeView {
+  border: none;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  padding: 4px;
+}
+.settings-window QTreeView::item {
+  border: none;
+  padding: 2px 4px;
+}
+.settings-window QTreeView::item:hover {
+  background-color: #3a3a3a;
+}
+.settings-window QTreeView::item:selected {
+  background-color: #414141;
+  color: #ffffff;
+}
+
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  border: none;
+  border-radius: 8px;
+  background: #2d2d2d;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border: none;
+  border-bottom: 1px solid #414141;
+  margin: 0px 8px;
 }
     )");
 
