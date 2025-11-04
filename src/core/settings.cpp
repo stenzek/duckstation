@@ -2656,6 +2656,7 @@ void EmuFolders::EnsureFoldersExist()
   EnsureFolderExists(Path::Combine(Shaders, "reshade"));
   EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
   EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures"));
+  EnsureFolderExists(Path::Combine(Shaders, "slang"));
   EnsureFolderExists(Subchannels);
   EnsureFolderExists(Textures);
   EnsureFolderExists(UserResources);
