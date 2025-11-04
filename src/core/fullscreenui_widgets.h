@@ -106,6 +106,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   bool Animations;
   bool SmoothScrolling;
   bool MenuBorders;
+  bool IsDarkTheme;
 };
 
 extern UIStyles UIStyle;
@@ -150,8 +151,7 @@ ALWAYS_INLINE u32 ModAlpha(u32 col32, float a)
 // lighter in light themes
 ALWAYS_INLINE ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
 {
-  // light theme
-  f = (UIStyle.PrimaryTextColor.x < UIStyle.PrimaryColor.x) ? (1.0f / f) : f;
+  f = UIStyle.IsDarkTheme ? f : (1.0f / f);
   return ImVec4(std::max(v.x, 1.0f / 255.0f) * f, std::max(v.y, 1.0f / 255.0f) * f, std::max(v.z, 1.0f / 255.0f) * f,
                 v.w);
 }

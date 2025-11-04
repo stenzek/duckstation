@@ -5026,6 +5026,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.IsDarkTheme = true;
   }
   else if (theme == "CobaltSky")
   {
@@ -5049,6 +5050,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x2d4183, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.IsDarkTheme = true;
   }
   else if (theme == "GreyMatter")
   {
@@ -5072,6 +5074,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PinkyPals")
   {
@@ -5095,6 +5098,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.IsDarkTheme = false;
   }
   else if (theme == "GreenGiant")
   {
@@ -5117,6 +5121,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.IsDarkTheme = false;
   }
   else if (theme == "DarkRuby")
   {
@@ -5140,6 +5145,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.IsDarkTheme = true;
   }
   else if (theme == "PurpleRain")
   {
@@ -5163,6 +5169,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x8e65cb, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.IsDarkTheme = true;
   }
   else if (theme == "Light")
   {
@@ -5187,6 +5194,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+    UIStyle.IsDarkTheme = false;
   }
   else
   {
@@ -5211,5 +5219,6 @@ void FullscreenUI::UpdateTheme()
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(0, 0, 0, 100);
+    UIStyle.IsDarkTheme = true;
   }
 }
