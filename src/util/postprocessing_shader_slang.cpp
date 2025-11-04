@@ -1236,6 +1236,13 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
       return false;
     }
 
+    if (binding >= GPUDevice::MAX_TEXTURE_SAMPLERS)
+    {
+      Error::SetStringFmt(error, "Texture '{}' has binding {} which exceeds the maximum of {}", tex.name, binding,
+                          GPUDevice::MAX_TEXTURE_SAMPLERS - 1);
+      return false;
+    }
+
     if (const auto iter =
           std::ranges::find_if(pass.samplers, [&binding](const auto& it) { return (it.second == binding); });
         iter != pass.samplers.end())
