@@ -109,28 +109,22 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QToolButton" name="automaticBinding">
+         <widget class="QPushButton" name="automaticBinding">
           <property name="text">
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
            <iconset theme="controller-digital-line"/>
           </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-          </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="clearBindings">
+         <widget class="QPushButton" name="clearBindings">
           <property name="text">
            <string>Clear Mapping</string>
           </property>
           <property name="icon">
            <iconset theme="trash-fill"/>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
          </widget>
         </item>
