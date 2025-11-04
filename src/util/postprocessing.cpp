@@ -485,9 +485,8 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
     const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
-    CheckTargets(swap_chain->GetFormat(), swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetFormat(),
-                 swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetWidth(), swap_chain->GetHeight(),
-                 &progress);
+    CheckTargets(swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetFormat(), swap_chain->GetWidth(),
+                 swap_chain->GetHeight(), swap_chain->GetWidth(), swap_chain->GetHeight(), &progress);
   }
 
   // must be down here, because we need to compile first, triggered by CheckTargets()
@@ -568,8 +567,8 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   if (prev_format != GPUTexture::Format::Unknown)
   {
-    CheckTargets(prev_format, m_target_width, m_target_height, m_source_format, m_source_width, m_source_height,
-                 m_viewport_width, m_viewport_height, &progress);
+    CheckTargets(m_target_width, m_target_height, prev_format, m_source_width, m_source_height, m_viewport_width,
+                 m_viewport_height, &progress);
   }
 
   if (stage_count > 0)
@@ -612,15 +611,13 @@ void PostProcessing::Chain::Toggle()
     s_start_time = Timer::GetCurrentValue();
 }
 
-bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 source_width, u32 source_height,
-                                         GPUTexture::Format target_format, u32 target_width, u32 target_height,
-                                         u32 viewport_width, u32 viewport_height,
+bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format,
+                                         u32 target_width, u32 target_height, u32 viewport_width, u32 viewport_height,
                                          ProgressCallback* progress /* = nullptr */)
 {
   // might not have a source, this is okay
   if (!m_wants_unscaled_input || source_width == 0 || source_height == 0)
   {
-    source_format = target_format;
     source_width = target_width;
     source_height = target_height;
     viewport_width = target_width;
@@ -629,7 +626,7 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 s
 
   if (m_target_width == target_width && m_target_height == target_height && m_source_width == source_width &&
       m_source_height == source_height && m_viewport_width == viewport_width && m_viewport_height == viewport_height &&
-      m_source_format == source_format && m_target_format == target_format)
+      m_target_format == target_format)
   {
     return true;
   }
@@ -637,7 +634,7 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 s
   Error error;
 
   if (!g_gpu_device->ResizeTexture(&m_input_texture, source_width, source_height, GPUTexture::Type::RenderTarget,
-                                   source_format, GPUTexture::Flags::None, false, &error) ||
+                                   target_format, GPUTexture::Flags::None, false, &error) ||
       !g_gpu_device->ResizeTexture(&m_output_texture, target_width, target_height, GPUTexture::Type::RenderTarget,
                                    target_format, GPUTexture::Flags::None, false, &error))
   {
@@ -649,7 +646,6 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format source_format, u32 s
   // we change source after the first pass, so save the original values here
   m_source_width = source_width;
   m_source_height = source_height;
-  m_source_format = source_format;
   m_viewport_width = viewport_width;
   m_viewport_height = viewport_height;
 

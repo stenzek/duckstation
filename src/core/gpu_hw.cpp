@@ -4072,9 +4072,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     // Apply internal postfx if enabled.
     if (m_internal_postfx && m_internal_postfx->IsActive() &&
-        m_internal_postfx->CheckTargets(m_vram_texture->GetFormat(), scaled_display_width, scaled_display_height,
-                                        m_vram_texture->GetFormat(), scaled_display_width, scaled_display_height,
-                                        scaled_display_width, scaled_display_height))
+        m_internal_postfx->CheckTargets(scaled_display_width, scaled_display_height, m_vram_texture->GetFormat(),
+                                        scaled_display_width, scaled_display_height, scaled_display_width,
+                                        scaled_display_height))
     {
       GPUTexture* const postfx_output = m_internal_postfx->GetOutputTexture();
       m_internal_postfx->Apply(

@@ -508,10 +508,9 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     }
 
     // This could fail if we run out of VRAM.
-    if ((postfx_active = m_display_postfx->CheckTargets(
-           m_display_texture ? m_display_texture->GetFormat() : GPUTexture::Format::Unknown, postfx_source_size.x,
-           postfx_source_size.y, m_present_format, postfx_target_size.x, postfx_target_size.y, postfx_viewport_size.x,
-           postfx_viewport_size.y)))
+    if ((postfx_active = m_display_postfx->CheckTargets(postfx_source_size.x, postfx_source_size.y, m_present_format,
+                                                        postfx_target_size.x, postfx_target_size.y,
+                                                        postfx_viewport_size.x, postfx_viewport_size.y)))
     {
       GL_INS("Post-processing is ACTIVE this frame");
       GL_INS_FMT("Post-processing source size: {}x{}", postfx_source_size.x, postfx_source_size.y);
@@ -895,11 +894,11 @@ GPUTexture* GPUPresenter::GetDisplayPostProcessInputTexture(const GSVector4i dra
   {
     postfx_input = m_display_texture;
 
-    // OpenGL needs to flip the correct way around. If the source is exactly the same size without
-    // any correction, we can pass it through to the chain directly.
+    // OpenGL needs to flip the correct way around. If the source is exactly the same size without any correction we can
+    // pass it through to the chain directly. Except if the swap chain isn't using BGRA8, then we need to blit too.
     if (g_gpu_device->UsesLowerLeftOrigin() || rotation != DisplayRotation::Normal || m_display_origin_left != 0 ||
         m_display_origin_top != 0 || m_display_vram_width != m_display_texture_view_width ||
-        m_display_vram_height != m_display_texture_view_height)
+        m_display_vram_height != m_display_texture_view_height || m_display_texture->GetFormat() != m_present_format)
     {
       GL_SCOPE_FMT("Pre-process postfx source");
 
