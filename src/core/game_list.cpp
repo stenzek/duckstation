@@ -1506,7 +1506,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   }
 
   if (!changed_indices.empty())
-    Host::OnGameListEntriesChanged(std::span<const u32>(changed_indices.begin(), changed_indices.end()));
+    Host::OnGameListEntriesChanged(changed_indices);
 }
 
 void GameList::ClearPlayedTimeForSerial(const std::string& serial)

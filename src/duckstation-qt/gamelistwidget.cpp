@@ -476,7 +476,9 @@ void GameListModel::coverLoaded(const std::string& path, const QImage& image, fl
 
 void GameListModel::rowsChanged(const QList<int>& rows)
 {
-  const QList<int> roles_changed = {Qt::DisplayRole};
+  QList<int> roles_changed{Qt::DisplayRole, Qt::ToolTipRole};
+  if (m_show_game_icons)
+    roles_changed.append(Qt::DecorationRole);
 
   // try to collapse multiples
   size_t start = 0;
@@ -1526,8 +1528,8 @@ public:
         m_animation_timer.stop();
     }
 
-    emit m_model->dataChanged(m_model->index(m_source_row, GameListModel::Column_Icon),
-                              m_model->index(m_source_row, GameListModel::Column_Icon), {Qt::DecorationRole});
+    const QModelIndex mi = m_model->index(m_source_row, GameListModel::Column_Icon);
+    emit m_model->dataChanged(mi, mi, {Qt::DecorationRole});
   }
 
   void pauseAnimation()
