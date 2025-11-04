@@ -1125,7 +1125,7 @@ void FullscreenUI::PushResetLayout()
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.SecondaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.DisabledColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, UIStyle.BackgroundColor);
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.BackgroundHighlight, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.BackgroundHighlight);
   ImGui::PushStyleColor(ImGuiCol_Border, UIStyle.BackgroundLineColor);
   ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
@@ -1261,7 +1261,7 @@ void FullscreenUI::PushPrimaryColor()
 {
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, UIStyle.PrimaryColor);
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, DarkerColor(UIStyle.PrimaryLightColor, 1.2f));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, UIStyle.PrimaryLightColor);
   ImGui::PushStyleColor(ImGuiCol_Border, UIStyle.PrimaryLightColor);
 }
@@ -3172,7 +3172,8 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
   ImGui::PushStyleColor(ImGuiCol_PopupBg, ModAlpha(UIStyle.PopupBackgroundColor, 1.0f));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ModAlpha(DarkerColor(UIStyle.PopupBackgroundColor), 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ModAlpha(DarkerColor(UIStyle.PopupBackgroundColor, 1.8f), 1.0f));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ModAlpha(DarkerColor(UIStyle.PopupBackgroundColor, 1.3f), 1.0f));
   ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.PopupFrameBackgroundColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -3206,7 +3207,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
       ImGui::EndPopup();
     }
 
-    ImGui::PopStyleColor(6);
+    ImGui::PopStyleColor(7);
     ImGui::PopStyleVar(6);
     ImGui::PopFont();
     QueueResetFocus(FocusResetType::PopupClosed);
@@ -3228,7 +3229,7 @@ bool FullscreenUI::PopupDialog::BeginRender(float scaled_window_padding /* = Lay
 void FullscreenUI::PopupDialog::EndRender()
 {
   ImGui::EndPopup();
-  ImGui::PopStyleColor(6);
+  ImGui::PopStyleColor(7);
   ImGui::PopStyleVar(6);
   ImGui::PopFont();
 }
@@ -3549,7 +3550,8 @@ void FullscreenUI::ChoiceDialog::Draw()
           continue;
         }
 
-        ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(), ImGui::GetColorU32(UIStyle.PrimaryColor), false,
+        ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(),
+                           ImGui::GetColorU32(DarkerColor(UIStyle.PopupBackgroundColor, 0.6f)), false,
                            LayoutScale(MENU_ITEM_BORDER_ROUNDING));
         break;
       }
