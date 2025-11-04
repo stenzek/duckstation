@@ -217,8 +217,8 @@ inline bool PostProcessing::SlangPresetParser::Parse(std::string_view path, std:
 
     if (m_options.find(key) != m_options.end())
     {
-      Error::SetStringFmt(error, "{}:{} Duplicate preset key '{}'", Path::GetFileName(path), line_number, key);
-      return false;
+      WARNING_LOG("{}:{} Duplicate preset key '{}'", Path::GetFileName(path), line_number, key);
+      continue;
     }
 
     // quotes appear in some...
@@ -586,8 +586,8 @@ inline bool PostProcessing::SlangShaderPreprocessor::HandlePragmaParameter(std::
   }
   else if (std::ranges::any_of(m_options, [&tokens](const ShaderOption& opt) { return opt.name == tokens[0]; }))
   {
-    SetError("Duplicate shader option name '{}'", tokens[0]);
-    return false;
+    WARNING_LOG("Duplicate shader option name '{}'", tokens[0]);
+    return true;
   }
 
   ShaderOption option = {};
