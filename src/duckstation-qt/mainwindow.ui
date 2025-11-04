@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -576,6 +576,9 @@
    <property name="toolTip">
     <string>Displays copyright and license notices for Qt.</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutQtRole</enum>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
@@ -587,6 +590,9 @@
    </property>
    <property name="toolTip">
     <string>Displays copyright and license notices for the application.</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutRole</enum>
    </property>
   </action>
   <action name="actionChangeDisc">
@@ -713,7 +719,7 @@
     <string>Opens the settings window.</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::MenuRole::PreferencesRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionChangeDiscFromFile">

@@ -1957,6 +1957,7 @@ void MainWindow::setupAdditionalUi()
     new QShortcut(QKeySequence::ZoomIn, this, this, &MainWindow::onViewZoomInActionTriggered);
   m_shortcuts.game_list_zoom_out =
     new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewZoomOutActionTriggered);
+  m_shortcuts.settings = new QShortcut(QKeySequence::Preferences, this, [this] { doSettings(); });
 
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
