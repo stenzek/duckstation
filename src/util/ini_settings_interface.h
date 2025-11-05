@@ -66,7 +66,9 @@ public:
   using SettingsInterface::GetUIntValue;
 
 private:
+  using IniStorage = CSimpleIniCaseA;
+
   std::string m_path;
-  CSimpleIniA m_ini;
+  IniStorage m_ini;
   bool m_dirty = false;
 };
