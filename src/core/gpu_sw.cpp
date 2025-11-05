@@ -385,14 +385,18 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 {
   if (!g_gpu_settings.gpu_show_vram)
   {
+    const u32 field = BoolToUInt32(cmd->interlaced_display_field);
+
     if (cmd->display_disabled)
     {
       m_presenter.ClearDisplayTexture();
+      if (cmd->interlaced_display_enabled)
+        m_presenter.Deinterlace(field);
+
       return;
     }
 
     const bool is_24bit = cmd->display_24bit;
-    const u32 field = BoolToUInt32(cmd->interlaced_display_field);
     const u32 line_skip = BoolToUInt32(cmd->interlaced_display_interleaved);
     const u32 src_x = is_24bit ? cmd->X : cmd->display_vram_left;
     const u32 skip_x = is_24bit ? (cmd->display_vram_left - cmd->X) : 0;

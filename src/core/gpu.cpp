@@ -1512,9 +1512,6 @@ void GPU::WriteGP1(u32 value)
       DEBUG_LOG("Display {}", disable ? "disabled" : "enabled");
       SynchronizeCRTC();
 
-      if (!m_GPUSTAT.display_disable && disable && IsInterlacedDisplayEnabled())
-        ClearDisplay();
-
       m_GPUSTAT.display_disable = disable;
     }
     break;

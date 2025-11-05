@@ -1006,13 +1006,16 @@ void GPUPresenter::DestroyDeinterlaceTextures()
 
 bool GPUPresenter::Deinterlace(u32 field)
 {
-  GPUTexture* src = m_display_texture;
+  GPUTexture* const src = m_display_texture;
+  if (src)
+    src->MakeReadyForSampling();
+
   const u32 x = m_display_texture_view_x;
   const u32 y = m_display_texture_view_y;
   const u32 width = m_display_texture_view_width;
   const u32 height = m_display_texture_view_height;
 
-  const auto copy_to_field_buffer = [&](u32 buffer) {
+  const auto copy_to_field_buffer = [this, &src, &x, &y, &width, &height](u32 buffer) {
     if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[buffer], width, height, GPUTexture::Type::Texture,
                                      src->GetFormat(), GPUTexture::Flags::None, false)) [[unlikely]]
     {
@@ -1026,8 +1029,6 @@ bool GPUPresenter::Deinterlace(u32 field)
                                     width, height);
     return true;
   };
-
-  src->MakeReadyForSampling();
 
   switch (g_gpu_settings.display_deinterlacing_mode)
   {
@@ -1072,13 +1073,20 @@ bool GPUPresenter::Deinterlace(u32 field)
       const u32 this_buffer = m_current_deinterlace_buffer;
       m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % NUM_BLEND_BUFFERS;
       GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceSetTargetSize(width, height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
+      if (src)
       {
-        ClearDisplayTexture();
-        return false;
+        if (!DeinterlaceSetTargetSize(width, height, false) || !copy_to_field_buffer(this_buffer))
+        {
+          ClearDisplayTexture();
+          return false;
+        }
       }
-
-      copy_to_field_buffer(this_buffer);
+      else
+      {
+        // Clear the buffer, make it sample black.
+        GL_INS("No source texture, clearing deinterlace buffer");
+        g_gpu_device->RecycleTexture(std::move(m_deinterlace_buffers[this_buffer]));
+      }
 
       // TODO: could be implemented with alpha blending instead..
       g_gpu_device->InvalidateRenderTarget(m_deinterlace_texture.get());
@@ -1103,10 +1111,20 @@ bool GPUPresenter::Deinterlace(u32 field)
       const u32 full_height = height * 2;
       m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % DEINTERLACE_BUFFER_COUNT;
       GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
+
+      if (src)
       {
-        ClearDisplayTexture();
-        return false;
+        if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
+        {
+          ClearDisplayTexture();
+          return false;
+        }
+      }
+      else
+      {
+        // Clear the buffer, make it sample black.
+        GL_INS("No source texture, clearing deinterlace buffer");
+        g_gpu_device->RecycleTexture(std::move(m_deinterlace_buffers[this_buffer]));
       }
 
       g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());

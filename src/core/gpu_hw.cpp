@@ -3976,6 +3976,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   if (cmd->display_disabled)
   {
     m_presenter.ClearDisplayTexture();
+    if (interlaced)
+      m_presenter.Deinterlace(interlaced_field);
+
     return;
   }
   else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() &&
