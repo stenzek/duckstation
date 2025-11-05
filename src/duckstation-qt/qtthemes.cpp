@@ -896,6 +896,14 @@ QToolButton {
     background: transparent;
     padding: 5px;
     border-radius: 10px;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  border: none;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border: none;
+  margin: 0px 8px;
 })");
   if (IsDarkApplicationTheme())
   {
@@ -929,6 +937,13 @@ QToolButton:hover {
 }
 QToolButton:pressed {
     background-color: #808180;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  background: #171717;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border-bottom: 1px solid #414141;
 })");
   }
   else
@@ -963,6 +978,13 @@ QToolButton:hover {
 }
 QToolButton:pressed {
     background-color: #8c8c8c;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  background: #ffffff;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border-bottom: 1px solid #414141;
 })");
   }
 #endif
