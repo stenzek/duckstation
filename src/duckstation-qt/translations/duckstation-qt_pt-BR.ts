@@ -20328,7 +20328,7 @@ Erro: {1}</translation>
     <message>
         <source>Failed to load state from slot {0}:
 {1}</source>
-        <translation type="vanished">Falha ao carregar o estado do compartimento {0}:
+        <translation type="vanished">Falha ao carregar o estado em {0}:
 {1}</translation>
     </message>
     <message>
