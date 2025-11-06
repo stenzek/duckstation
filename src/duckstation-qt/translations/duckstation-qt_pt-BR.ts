@@ -23672,7 +23672,7 @@ Usando imagem de disco, isso pode resultar em instabilidade.</translation>
         <location filename="../../core/system.cpp" line="3342"/>
         <source>Failed to load state from {0}:
 {1}</source>
-        <translation>Falha ao carregar estado de {0}:
+        <translation>Falha ao carregar estado de {1}:
 </translation>
     </message>
     <message>
