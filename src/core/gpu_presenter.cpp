@@ -1007,9 +1007,6 @@ void GPUPresenter::DestroyDeinterlaceTextures()
 bool GPUPresenter::Deinterlace(u32 field)
 {
   GPUTexture* const src = m_display_texture;
-  if (src)
-    src->MakeReadyForSampling();
-
   const u32 x = m_display_texture_view_x;
   const u32 y = m_display_texture_view_y;
   const u32 width = m_display_texture_view_width;
@@ -1075,6 +1072,8 @@ bool GPUPresenter::Deinterlace(u32 field)
       GL_INS_FMT("Current buffer: {}", this_buffer);
       if (src)
       {
+        src->MakeReadyForSampling();
+
         if (!DeinterlaceSetTargetSize(width, height, false) || !copy_to_field_buffer(this_buffer))
         {
           ClearDisplayTexture();
@@ -1083,6 +1082,12 @@ bool GPUPresenter::Deinterlace(u32 field)
       }
       else
       {
+        if (!m_deinterlace_texture)
+        {
+          DebugAssert(!m_display_texture);
+          return false;
+        }
+
         // Clear the buffer, make it sample black.
         GL_INS("No source texture, clearing deinterlace buffer");
         g_gpu_device->RecycleTexture(std::move(m_deinterlace_buffers[this_buffer]));
@@ -1114,6 +1119,8 @@ bool GPUPresenter::Deinterlace(u32 field)
 
       if (src)
       {
+        src->MakeReadyForSampling();
+
         if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
         {
           ClearDisplayTexture();
@@ -1122,6 +1129,12 @@ bool GPUPresenter::Deinterlace(u32 field)
       }
       else
       {
+        if (!m_deinterlace_texture)
+        {
+          DebugAssert(!m_display_texture);
+          return false;
+        }
+
         // Clear the buffer, make it sample black.
         GL_INS("No source texture, clearing deinterlace buffer");
         g_gpu_device->RecycleTexture(std::move(m_deinterlace_buffers[this_buffer]));
