@@ -3,6 +3,7 @@
 
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
+#include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
@@ -81,6 +82,8 @@ void PostProcessingChainConfigWidget::triggerSettingsReload()
 void PostProcessingChainConfigWidget::connectUi()
 {
   connect(m_ui.reload, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onReloadButtonClicked);
+  connect(m_ui.openDirectory, &QPushButton::clicked, this,
+          &PostProcessingChainConfigWidget::onOpenDirectoryButtonClicked);
   connect(m_ui.add, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onAddButtonClicked);
   connect(m_ui.remove, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onRemoveButtonClicked);
   connect(m_ui.clear, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onClearButtonClicked);
@@ -268,6 +271,11 @@ void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 void PostProcessingChainConfigWidget::onReloadButtonClicked()
 {
   g_emu_thread->reloadPostProcessingShaders();
+}
+
+void PostProcessingChainConfigWidget::onOpenDirectoryButtonClicked()
+{
+  QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Shaders)));
 }
 
 void PostProcessingChainConfigWidget::onSelectedShaderChanged()

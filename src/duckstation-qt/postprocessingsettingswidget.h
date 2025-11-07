@@ -51,6 +51,7 @@ private:
   void onMoveUpButtonClicked();
   void onMoveDownButtonClicked();
   void onReloadButtonClicked();
+  void onOpenDirectoryButtonClicked();
   void onSelectedShaderChanged();
   void triggerSettingsReload();
 

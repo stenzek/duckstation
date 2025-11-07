@@ -46,6 +46,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="openDirectory">
+       <property name="text">
+        <string>Open Directory</string>
+       </property>
+       <property name="icon">
+        <iconset theme="folder-open-line"/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="reload">
        <property name="text">
         <string>&amp;Reload Shaders</string>
@@ -185,7 +195,7 @@
         <x>0</x>
         <y>0</y>
         <width>630</width>
-        <height>237</height>
+        <height>246</height>
        </rect>
       </property>
      </widget>
@@ -207,7 +217,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>
