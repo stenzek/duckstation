@@ -4044,18 +4044,21 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
   if (MenuButton(FSUI_ICONVSTR(ICON_PF_ADD, "Add Shader"), FSUI_VSTR("Adds a new shader to the chain.")))
   {
-    std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
+    std::vector<std::pair<std::string, PostProcessing::ShaderType>> shaders = PostProcessing::GetAvailableShaderNames();
     ChoiceDialogOptions options;
     options.reserve(shaders.size());
-    for (auto& [display_name, name] : shaders)
+    for (auto& [name, type] : shaders)
+    {
+      std::string display_name = fmt::format("{} [{}]", name, PostProcessing::GetShaderTypeDisplayName(type));
       options.emplace_back(std::move(display_name), false);
+    }
 
     OpenChoiceDialog(FSUI_ICONVSTR(ICON_PF_ADD, "Add Shader"), false, std::move(options),
                      [shaders = std::move(shaders)](s32 index, const std::string& title, bool checked) {
                        if (index < 0 || static_cast<u32>(index) >= shaders.size())
                          return;
 
-                       const std::string& shader_name = shaders[index].second;
+                       const std::string& shader_name = shaders[index].first;
                        SettingsInterface* bsi = GetEditingSettingsInterface();
                        Error error;
                        if (PostProcessing::Config::AddStage(*bsi, section, shader_name, &error))

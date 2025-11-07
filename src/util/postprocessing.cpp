@@ -136,9 +136,9 @@ TinyString PostProcessing::ValueToString(ShaderOption::Type type, u32 vector_siz
   return ret;
 }
 
-std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableShaderNames()
+std::vector<std::pair<std::string, PostProcessing::ShaderType>> PostProcessing::GetAvailableShaderNames()
 {
-  std::vector<std::pair<std::string, std::string>> names;
+  std::vector<std::pair<std::string, ShaderType>> names;
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "shaders").c_str(), "*.glsl",
@@ -147,8 +147,6 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS |
                           FILESYSTEM_FIND_KEEP_ARRAY,
                         &results);
-  std::sort(results.begin(), results.end(),
-            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
 
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -161,11 +159,8 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
 #endif
 
-    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
-    {
-      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [GLSL]"), fd.FileName);
-      names.emplace_back(std::move(display_name), std::move(fd.FileName));
-    }
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::GLSL);
   }
 
   FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), "*.fx",
@@ -176,8 +171,6 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     "*.fx",
     FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY,
     &results);
-  std::sort(results.begin(), results.end(),
-            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
 
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -190,11 +183,8 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
 #endif
 
-    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
-    {
-      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [ReShade]"), fd.FileName);
-      names.emplace_back(std::move(display_name), std::move(fd.FileName));
-    }
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::Reshade);
   }
 
   FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "slang").c_str(), "*.slangp",
@@ -217,19 +207,34 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
 #endif
 
-    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
-    {
-      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [Slang]"), fd.FileName);
-      names.emplace_back(std::move(display_name), std::move(fd.FileName));
-    }
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::Slang);
   }
 
   std::sort(names.begin(), names.end(),
-            [](const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) {
-              return (StringUtil::Strcasecmp(lhs.first.c_str(), rhs.first.c_str()) < 0);
+            [](const std::pair<std::string, ShaderType>& lhs, const std::pair<std::string, ShaderType>& rhs) {
+              return (StringUtil::CompareNoCase(lhs.first, rhs.first) < 0);
             });
 
   return names;
+}
+
+std::string_view PostProcessing::GetShaderTypeDisplayName(ShaderType type)
+{
+  switch (type)
+  {
+    case ShaderType::GLSL:
+      return TRANSLATE_SV("PostProcessing", "GLSL");
+
+    case ShaderType::Reshade:
+      return TRANSLATE_SV("PostProcessing", "ReShade");
+
+    case ShaderType::Slang:
+      return TRANSLATE_SV("PostProcessing", "Slang");
+
+    default:
+      return "Unknown";
+  }
 }
 
 TinyString PostProcessing::GetStageConfigSection(const char* section, u32 index)

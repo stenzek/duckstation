@@ -131,6 +131,7 @@ set(SRCS
   postprocessingsettingswidget.h
   postprocessingchainconfigwidget.ui
   postprocessingoverlayconfigwidget.ui
+  postprocessingselectshaderdialog.ui
   qthost.cpp
   qthost.h
   qtprogresscallback.cpp

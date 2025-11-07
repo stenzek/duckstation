@@ -5,6 +5,7 @@
 
 #include "ui_postprocessingchainconfigwidget.h"
 #include "ui_postprocessingoverlayconfigwidget.h"
+#include "ui_postprocessingselectshaderdialog.h"
 
 #include "util/postprocessing.h"
 
@@ -103,4 +104,35 @@ private:
 
   Ui::PostProcessingOverlayConfigWidget m_ui;
   SettingsWindow* m_dialog;
+};
+
+class PostProcessingSelectShaderDialog final : public QDialog
+{
+  Q_OBJECT
+public:
+  explicit PostProcessingSelectShaderDialog(QWidget* parent);
+  ~PostProcessingSelectShaderDialog();
+
+  std::string getSelectedShader() const;
+
+private:
+  enum ItemRoles
+  {
+    NameRole = Qt::UserRole,
+    TypeRole,
+  };
+
+  void populateShaderList();
+
+  void updateShaderVisibility();
+  void updateAddButtonEnabled();
+
+  static QIcon shaderIconFromType(const PostProcessing::ShaderType type);
+  static void updateTreeItemVisibility(const std::optional<PostProcessing::ShaderType>& type_filter,
+                                       const QString& name_filter, QTreeWidgetItem* item);
+  static bool hasAnyVisibleChildren(QTreeWidgetItem* item);
+
+  QTreeWidgetItem* createTreeItem(const QString& name, const QString& display_name, bool is_directory) const;
+
+  Ui::PostProcessingSelectShaderDialog m_ui;
 };

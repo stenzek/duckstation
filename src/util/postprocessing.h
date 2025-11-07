@@ -24,6 +24,14 @@ class ProgressCallback;
 namespace PostProcessing {
 class Shader;
 
+enum class ShaderType
+{
+  GLSL,
+  Reshade,
+  Slang,
+  MaxCount
+};
+
 struct ShaderOption
 {
   enum : u32
@@ -168,7 +176,7 @@ private:
   static Timer::Value s_start_time;
 };
 
-// [display_name, filename]
-std::vector<std::pair<std::string, std::string>> GetAvailableShaderNames();
+std::vector<std::pair<std::string, ShaderType>> GetAvailableShaderNames();
+std::string_view GetShaderTypeDisplayName(ShaderType type);
 
 }; // namespace PostProcessing
