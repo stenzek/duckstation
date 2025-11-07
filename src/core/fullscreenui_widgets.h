@@ -23,11 +23,13 @@
 #include <utility>
 #include <vector>
 
+class Error;
 class Image;
 class GPUTexture;
+class GPUSwapChain;
 class ProgressCallback;
 
-namespace ImGuiFullscreen {
+namespace FullscreenUI {
 
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
   ImVec4(static_cast<float>((hex >> 16) & 0xFFu) / 255.0f, static_cast<float>((hex >> 8) & 0xFFu) / 255.0f,            \
@@ -104,6 +106,7 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   bool Animations;
   bool SmoothScrolling;
   bool MenuBorders;
+  bool IsDarkTheme;
 };
 
 extern UIStyles UIStyle;
@@ -148,8 +151,7 @@ ALWAYS_INLINE u32 ModAlpha(u32 col32, float a)
 // lighter in light themes
 ALWAYS_INLINE ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
 {
-  // light theme
-  f = (UIStyle.PrimaryTextColor.x < UIStyle.PrimaryColor.x) ? (1.0f / f) : f;
+  f = UIStyle.IsDarkTheme ? f : (1.0f / f);
   return ImVec4(std::max(v.x, 1.0f / 255.0f) * f, std::max(v.y, 1.0f / 255.0f) * f, std::max(v.z, 1.0f / 255.0f) * f,
                 v.w);
 }
@@ -189,8 +191,8 @@ public:
 };
 
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str))
-#define FSUI_ICONVSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).view()
-#define FSUI_ICONCSTR(icon, str) ::ImGuiFullscreen::IconStackString(icon, str).c_str()
+#define FSUI_ICONVSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).view()
+#define FSUI_ICONCSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).c_str()
 #define FSUI_STR(str) Host::TranslateToString(FSUI_TR_CONTEXT, std::string_view(str))
 #define FSUI_CSTR(str) Host::TranslateToCString(FSUI_TR_CONTEXT, std::string_view(str))
 #define FSUI_VSTR(str) Host::TranslateToStringView(FSUI_TR_CONTEXT, std::string_view(str))
@@ -207,17 +209,21 @@ ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 
 /// Initializes, setting up any state.
-bool Initialize(const char* placeholder_image_path);
-
-void SetTheme(std::string_view theme);
-void SetAnimations(bool enabled);
-void SetSmoothScrolling(bool enabled);
-void SetMenuBorders(bool enabled);
-void SetFont(ImFont* ui_font);
-bool UpdateLayoutScale();
+bool InitializeWidgets(Error* error);
 
 /// Shuts down, clearing all state.
-void Shutdown(bool clear_state);
+void ShutdownWidgets(bool clear_state);
+
+/// Loads settings from the settings interface.
+void UpdateWidgetsSettings();
+
+std::span<const char* const> GetThemeNames();
+std::span<const char* const> GetThemeDisplayNames();
+std::vector<std::string_view> GetLocalizedThemeDisplayNames();
+void UpdateTheme();
+
+void SetFont(ImFont* ui_font);
+bool UpdateLayoutScale();
 
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
@@ -232,6 +238,29 @@ bool InvalidateCachedTexture(std::string_view path);
 bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();
 
+/// Screen transitions.
+inline constexpr float SHORT_TRANSITION_TIME = 0.08f;
+inline constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
+inline constexpr float LONG_TRANSITION_TIME = 0.3f;
+
+enum class TransitionState : u8
+{
+  Inactive,
+  Starting,
+  Active,
+};
+
+using TransitionStartCallback = std::function<void()>;
+void BeginTransition(TransitionStartCallback func, float time = DEFAULT_TRANSITION_TIME);
+void BeginTransition(float time, TransitionStartCallback func);
+void CancelTransition();
+bool IsTransitionActive();
+TransitionState GetTransitionState();
+GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
+void RenderTransitionBlend(GPUSwapChain* swap_chain);
+void UpdateTransitionState();
+
+/// Layout helpers.
 void BeginLayout();
 void EndLayout();
 
@@ -293,10 +322,9 @@ void SetWindowNavWrapping(bool allow_wrap_x = false, bool allow_wrap_y = true);
 
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
-void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
-void SetFullscreenFooterText(std::string_view text, float background_alpha);
-void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha);
-void SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping);
+void SetFullscreenFooterText(std::string_view text);
+void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 void SetFullscreenStatusText(std::string_view text);
 void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
 void DrawFullscreenFooter();
@@ -346,9 +374,9 @@ bool MenuButtonWithValue(std::string_view title, std::string_view summary, std::
 bool MenuButtonWithVisibilityQuery(std::string_view str_id, std::string_view title, std::string_view summary,
                                    std::string_view value, bool* visible, bool enabled = true,
                                    const ImVec2& text_align = ImVec2(0.0f, 0.0f));
-bool MenuImageButton(std::string_view title, std::string_view summary, ImTextureID user_texture_id,
-                     const ImVec2& image_size, bool enabled = true, const ImVec2& uv0 = ImVec2(0.0f, 0.0f),
-                     const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
+bool MenuImageButton(std::string_view title, std::string_view summary, std::string_view value, ImTextureID image,
+                     const ImVec2& image_size = ImVec2(0.0f, 0.0f), bool enabled = true,
+                     const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
 bool FloatingButton(std::string_view text, float x, float y, float anchor_x = 0.0f, float anchor_y = 0.0f,
                     bool enabled = true, ImVec2* out_position = nullptr, bool repeat_button = false);
 bool ToggleButton(std::string_view title, std::string_view summary, bool* v, bool enabled = true);
@@ -453,28 +481,19 @@ bool IsBackgroundProgressDialogOpen(std::string_view str_id);
 
 /// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
 /// such as compiling shaders when starting up.
-void RenderLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
-                         s32 progress_value = -1);
-void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1,
-                               s32 progress_max = -1, s32 progress_value = -1);
+void RenderLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
+                         s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
+
+/// Opens or updates a loading screen, rendering is managed by FullscreenUI. Safe to call from CPU thread.
+void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view title, std::string_view caption = {},
+                               s32 progress_min = -1, s32 progress_max = -1, s32 progress_value = -1);
 bool IsLoadingScreenOpen();
 void CloseLoadingScreen();
 
-/// Renders a previously-configured loading screen.
-void RenderLoadingScreen();
-
-void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
-bool HasAnyNotifications();
-void ClearNotifications();
-
+/// Notification and toast support.
+void AddNotification(std::string key, float duration, std::string image_path, std::string title, std::string text,
+                     std::string note);
 void ShowToast(std::string title, std::string message, float duration = 10.0f);
-bool HasToast();
-void ClearToast();
-
-// Message callbacks.
-void GetChoiceDialogHelpText(SmallStringBase& dest);
-void GetFileSelectorHelpText(SmallStringBase& dest);
-void GetInputDialogHelpText(SmallStringBase& dest);
 
 // Wrapper for an animated popup dialog.
 class PopupDialog
@@ -551,7 +570,7 @@ struct MenuButtonBounds
   void CalcSummarySize(const std::string_view& summary, float font_size);
 };
 
-} // namespace ImGuiFullscreen
+} // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.
 namespace Host {

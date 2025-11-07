@@ -16,13 +16,10 @@
 
 class SmallStringBase;
 
-class GPUSwapChain;
-class GPUTexture;
-
 struct GPUSettings;
 
 namespace FullscreenUI {
-bool Initialize();
+void Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
@@ -37,48 +34,16 @@ void InvalidateCoverCache();
 
 float GetBackgroundAlpha();
 
-void OpenLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
-                       s32 progress_value = -1);
-void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
-                         s32 progress_value = -1);
-void CloseLoadingScreen();
-
-void SetTheme();
+void UpdateTheme();
 void UpdateRunIdleState();
-void UpdateTransitionState();
-
-inline constexpr float SHORT_TRANSITION_TIME = 0.08f;
-inline constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
-inline constexpr float LONG_TRANSITION_TIME = 0.3f;
-
-enum class TransitionState : u8
-{
-  Inactive,
-  Starting,
-  Active,
-};
-
-using TransitionStartCallback = std::function<void()>;
-void BeginTransition(TransitionStartCallback func, float time = DEFAULT_TRANSITION_TIME);
-void BeginTransition(float time, TransitionStartCallback func);
-void CancelTransition();
-bool IsTransitionActive();
-TransitionState GetTransitionState();
-GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
-void RenderTransitionBlend(GPUSwapChain* swap_chain);
 
 #ifndef __ANDROID__
-
-std::vector<std::string_view> GetThemeNames();
-std::span<const char* const> GetThemeConfigNames();
 
 void OpenPauseMenu();
 void OpenCheatsMenu();
 void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
-void ReturnToPreviousWindow();
-void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 
 class BackgroundProgressCallback final : public ProgressCallback
 {
@@ -105,8 +70,7 @@ private:
 
 #endif // __ANDROID__
 
-} // namespace FullscreenUI
-
+// NOTE: Not in widgets.h so that clients can use it without pulling in imgui etc.
 class LoadingScreenProgressCallback final : public ProgressCallback
 {
 public:
@@ -137,7 +101,10 @@ private:
   s32 m_last_progress_percent = -1;
   bool m_on_gpu_thread = false;
   std::string m_image;
+  std::string m_title;
 };
+
+} // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.
 namespace Host {

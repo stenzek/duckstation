@@ -317,6 +317,9 @@
     <QtUi Include="memoryeditorwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="postprocessingselectshaderdialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_sv.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />

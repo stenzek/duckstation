@@ -71,7 +71,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
     return false;
   }
 
-  progress->SetStatusText("Preloading CD image to RAM...");
+  progress->SetTitle("Preloading CD image to RAM...");
   progress->SetProgressRange(m_memory_sectors);
   progress->SetProgressValue(0);
 

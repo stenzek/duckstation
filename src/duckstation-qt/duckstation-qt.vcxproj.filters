@@ -165,6 +165,7 @@
     <QtUi Include="isobrowserwindow.ui" />
     <QtUi Include="postprocessingoverlayconfigwidget.ui" />
     <QtUi Include="memoryeditorwindow.ui" />
+    <QtUi Include="postprocessingselectshaderdialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

@@ -509,7 +509,13 @@ std::string D3DCommon::GetAdapterName(IDXGIAdapter1* adapter, GPUDriverType* out
   {
     ret = StringUtil::WideStringToUTF8String(desc.Description);
     if (out_driver_type)
-      *out_driver_type = GPUDevice::GuessDriverType(desc.VendorId, {}, ret);
+    {
+      // Handle WARP here.
+      if (desc.VendorId == 0x1414)
+        *out_driver_type = GPUDriverType::WARP;
+      else
+        *out_driver_type = GPUDevice::GuessDriverType(desc.VendorId, {}, ret);
+    }
   }
   else
   {
@@ -825,6 +831,7 @@ static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTe
   {DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT,      DXGI_FORMAT_R16G16B16A16_FLOAT,       DXGI_FORMAT_UNKNOWN               }, // RGBA16F
   {DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT,      DXGI_FORMAT_R32G32B32A32_FLOAT,       DXGI_FORMAT_UNKNOWN               }, // RGBA32F
   {DXGI_FORMAT_R10G10B10A2_UNORM,  DXGI_FORMAT_R10G10B10A2_UNORM,       DXGI_FORMAT_R10G10B10A2_UNORM,        DXGI_FORMAT_UNKNOWN               }, // RGB10A2
+  {DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,      DXGI_FORMAT_UNKNOWN               }, // SRGBA8
   {DXGI_FORMAT_BC1_UNORM,          DXGI_FORMAT_BC1_UNORM,               DXGI_FORMAT_UNKNOWN,                  DXGI_FORMAT_UNKNOWN               }, // BC1
   {DXGI_FORMAT_BC2_UNORM,          DXGI_FORMAT_BC2_UNORM,               DXGI_FORMAT_UNKNOWN,                  DXGI_FORMAT_UNKNOWN               }, // BC2
   {DXGI_FORMAT_BC3_UNORM,          DXGI_FORMAT_BC3_UNORM,               DXGI_FORMAT_UNKNOWN,                  DXGI_FORMAT_UNKNOWN               }, // BC3

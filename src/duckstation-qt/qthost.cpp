@@ -14,7 +14,8 @@
 #include "core/bus.h"
 #include "core/cheats.h"
 #include "core/controller.h"
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
 #include "core/gdb_server.h"
@@ -43,8 +44,8 @@
 #include "common/threading.h"
 
 #include "util/audio_stream.h"
+#include "util/cd_image.h"
 #include "util/http_downloader.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -74,6 +75,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
+
+#ifdef _WIN32
+#include <objbase.h> // CoInitializeEx
+#endif
 
 #include "moc_qthost.cpp"
 
@@ -109,8 +114,10 @@ static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
 // Local function declarations
 //////////////////////////////////////////////////////////////////////////
 namespace QtHost {
+static bool VeryEarlyProcessStartup();
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
+static void ProcessShutdown();
 static void MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 static void RegisterTypes();
 static bool InitializeConfig();
@@ -205,6 +212,24 @@ bool QtHost::PerformEarlyHardwareChecks()
   return okay;
 }
 
+bool QtHost::VeryEarlyProcessStartup()
+{
+  CrashHandler::Install(&Bus::CleanupMemoryMap);
+
+#ifdef _WIN32
+  // Ensure COM is initialized before Qt gets a chance to do it, since this could change in the future.
+  HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  if (FAILED(hr)) [[unlikely]]
+  {
+    MessageBoxA(nullptr, fmt::format("CoInitializeEx failed: 0x{:08X}", hr).c_str(), "Error", MB_ICONERROR);
+    return false;
+  }
+#endif
+
+  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  return true;
+}
+
 bool QtHost::EarlyProcessStartup()
 {
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -247,6 +272,19 @@ bool QtHost::EarlyProcessStartup()
   }
 
   return true;
+}
+
+void QtHost::ProcessShutdown()
+{
+  System::ProcessShutdown();
+
+  // Ensure log is flushed.
+  Log::SetFileOutputParams(false, nullptr);
+
+  // Clean up CoInitializeEx() from VeryEarlyProcessStartup().
+#ifdef _WIN32
+  CoUninitialize();
+#endif
 }
 
 void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
@@ -380,9 +418,9 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
   std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!http)
   {
-    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -405,18 +443,18 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
-        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
-                                .arg(status_code)
-                                .arg(QString::fromStdString(error.GetDescription())));
+        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                    qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
+                                      .arg(status_code)
+                                      .arg(QString::fromStdString(error.GetDescription())));
         download_result = false;
         return;
       }
 
       if (hdata.empty())
       {
-        QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
+        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                    qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
 
         download_result = false;
         return;
@@ -454,10 +492,10 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
        !FileSystem::CreateDirectory(directory.c_str(), true, &error)) ||
       !FileSystem::WriteBinaryFile(path, data, &error))
   {
-    QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to write '%1':\n%2")
-                            .arg(QString::fromUtf8(path))
-                            .arg(QString::fromUtf8(error.GetDescription())));
+    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
+                                qApp->translate("QtHost", "Failed to write '%1':\n%2")
+                                  .arg(QString::fromUtf8(path))
+                                  .arg(QString::fromUtf8(error.GetDescription())));
     return false;
   }
 
@@ -1151,12 +1189,12 @@ void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel
   Host::RunOnUIThread([action, cancel_resume_on_accept, callback = std::move(callback)]() mutable {
     auto lock = g_main_window->pauseAndLockSystem();
 
-    const bool result =
-      (QMessageBox::question(lock.getDialogParent(), tr("Memory Card Busy"),
-                             tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
-                                "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
-                                "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
-                               .arg(action)) != QMessageBox::No);
+    const bool result = (QtUtils::MessageBoxQuestion(
+                           lock.getDialogParent(), tr("Memory Card Busy"),
+                           tr("WARNING: Your game is still saving to the memory card. Continuing to %1 may "
+                              "IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 "
+                              "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
+                             .arg(action)) != QMessageBox::No);
 
     if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
       lock.cancelResume();
@@ -1379,7 +1417,7 @@ void EmuThread::startControllerTest()
   Host::RunOnUIThread([path = std::move(path)]() mutable {
     {
       auto lock = g_main_window->pauseAndLockSystem();
-      if (QMessageBox::question(
+      if (QtUtils::MessageBoxQuestion(
             lock.getDialogParent(), tr("Confirm Download"),
             tr("Your DuckStation installation does not have the padtest application "
                "available.\n\nThis file is approximately 206KB, do you want to download it now?")) != QMessageBox::Yes)
@@ -1478,8 +1516,11 @@ void EmuThread::loadState(bool global, qint32 slot)
   }
 
   // shouldn't even get here if we don't have a running game
-  if (!global && System::GetGameSerial().empty())
+  if (System::IsValid())
+  {
+    System::LoadStateFromSlot(global, slot);
     return;
+  }
 
   bootOrLoadState(global ? System::GetGlobalSaveStatePath(slot) :
                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
@@ -1499,7 +1540,9 @@ void EmuThread::saveState(const QString& path, bool block_until_done /* = false 
     return;
 
   Error error;
-  if (!System::SaveState(path.toStdString(), &error, g_settings.create_save_state_backups, false))
+  if (System::SaveState(path.toStdString(), &error, g_settings.create_save_state_backups, false))
+    emit statusMessage(tr("State saved to %1.").arg(QFileInfo(path).fileName()));
+  else
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
@@ -1513,17 +1556,7 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
     return;
   }
 
-  if (!global && System::GetGameSerial().empty())
-    return;
-
-  Error error;
-  if (!System::SaveState(
-        (global ? System::GetGlobalSaveStatePath(slot) : System::GetGameSaveStatePath(System::GetGameSerial(), slot))
-          .c_str(),
-        &error, g_settings.create_save_state_backups, false))
-  {
-    emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
-  }
+  System::SaveStateToSlot(global, slot);
 }
 
 void EmuThread::undoLoadState()
@@ -1902,7 +1935,7 @@ void EmuThread::updateFullscreenUITheme()
 
   // don't bother if nothing is running
   if (GPUThread::IsFullscreenUIRequested() || GPUThread::IsGPUBackendRequested())
-    GPUThread::RunOnThread(&FullscreenUI::SetTheme);
+    GPUThread::RunOnThread(&FullscreenUI::UpdateTheme);
 }
 
 void EmuThread::start()
@@ -2114,15 +2147,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         callback(result);
       };
 
-      if (!FullscreenUI::Initialize())
-      {
-        final_callback(false);
-        return;
-      }
-
-      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
-                                                fmt::format(ICON_FA_CHECK " {}", yes_text),
-                                                fmt::format(ICON_FA_XMARK " {}", no_text));
+      FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
+                                             fmt::format(ICON_FA_CHECK " {}", yes_text),
+                                             fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
     });
   }
@@ -2134,28 +2161,28 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
-      bool result;
-      {
-        QMessageBox msgbox(lock.getDialogParent());
-        msgbox.setIcon(QMessageBox::Question);
-        msgbox.setWindowTitle(title);
-        msgbox.setText(message);
+      QMessageBox* const msgbox =
+        QtUtils::NewMessageBox(QMessageBox::Question, title, message, QMessageBox::NoButton, QMessageBox::NoButton,
+                               Qt::WindowModal, lock.getDialogParent());
+      msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        QPushButton* const yes_button = msgbox.addButton(yes_text, QMessageBox::AcceptRole);
-        msgbox.addButton(no_text, QMessageBox::RejectRole);
-        msgbox.exec();
-        result = (msgbox.clickedButton() == yes_button);
-      }
+      QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
+      msgbox->addButton(no_text, QMessageBox::RejectRole);
 
-      callback(result);
+      QObject::connect(msgbox, &QMessageBox::finished, lock.getDialogParent(),
+                       [msgbox, yes_button, callback = std::move(callback), needs_pause]() {
+                         const bool result = (msgbox->clickedButton() == yes_button);
+                         callback(result);
 
-      if (needs_pause)
-      {
-        Host::RunOnCPUThread([]() {
-          if (System::IsValid())
-            System::PauseSystem(false);
-        });
-      }
+                         if (needs_pause)
+                         {
+                           Host::RunOnCPUThread([]() {
+                             if (System::IsValid())
+                               System::PauseSystem(false);
+                           });
+                         }
+                       });
+      msgbox->exec();
     });
   }
 }
@@ -2304,7 +2331,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
     QTranslator* base_translator = new QTranslator(qApp);
     if (!base_translator->load(base_path))
     {
-      QMessageBox::warning(
+      QtUtils::MessageBoxWarning(
         dialog_parent, QStringLiteral("Translation Error"),
         QStringLiteral("Failed to load base translation file for '%1':\n%2").arg(qlanguage).arg(base_path));
       delete base_translator;
@@ -2319,7 +2346,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   const QString path = QStringLiteral("%1/duckstation-qt_%3.qm").arg(base_dir).arg(qlanguage);
   if (!QFile::exists(path))
   {
-    QMessageBox::warning(
+    QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
       QStringLiteral("Failed to find translation file for language '%1':\n%2").arg(qlanguage).arg(path));
     return;
@@ -2328,7 +2355,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   QTranslator* translator = new QTranslator(qApp);
   if (!translator->load(path))
   {
-    QMessageBox::warning(
+    QtUtils::MessageBoxWarning(
       dialog_parent, QStringLiteral("Translation Error"),
       QStringLiteral("Failed to load translation file for language '%1':\n%2").arg(qlanguage).arg(path));
     delete translator;
@@ -3279,12 +3306,17 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
   LoadResources();
 
   // Check the file we're starting actually exists.
-  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
+  if (autoboot && !autoboot->path.empty() && !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
-    QMessageBox::critical(
-      nullptr, qApp->translate("QtHost", "Error"),
-      qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->path)));
-    return false;
+    autoboot->path = Path::RealPath(autoboot->path);
+
+    if (!FileSystem::FileExists(autoboot->path.c_str()))
+    {
+      QMessageBox::critical(
+        nullptr, qApp->translate("QtHost", "Error"),
+        qApp->translate("QtHost", "File '%1' does not exist.").arg(QString::fromStdString(autoboot->path)));
+      return false;
+    }
   }
 
   if (state_index.has_value())
@@ -3351,9 +3383,8 @@ bool QtHost::RunSetupWizard()
 
 int main(int argc, char* argv[])
 {
-  CrashHandler::Install(&Bus::CleanupMemoryMap);
-
-  QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  if (!QtHost::VeryEarlyProcessStartup())
+    return EXIT_FAILURE;
 
   QApplication app(argc, argv);
   if (!QtHost::PerformEarlyHardwareChecks())
@@ -3437,10 +3468,7 @@ shutdown_and_exit:
   delete g_main_window;
   Assert(!g_main_window);
 
-  // Ensure log is flushed.
-  Log::SetFileOutputParams(false, nullptr);
-
-  System::ProcessShutdown();
+  QtHost::ProcessShutdown();
 
   return result;
 }

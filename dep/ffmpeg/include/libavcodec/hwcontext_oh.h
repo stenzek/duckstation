@@ -1,7 +1,7 @@
 /*
- * Version macros.
- *
  * This file is part of FFmpeg.
+ *
+ * Copyright (c) 2025 Zhao Zhili <quinkblack@foxmail.com>
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef POSTPROC_VERSION_MAJOR_H
-#define POSTPROC_VERSION_MAJOR_H
+#ifndef AVUTIL_HWCONTEXT_OH_H
+#define AVUTIL_HWCONTEXT_OH_H
 
 /**
- * @file
- * Libpostproc version macros
+ * OpenHarmony codec device
  */
+typedef struct AVOHCodecDeviceContext {
+    /**
+     * Pointer to OHNativeWindow
+     */
+    void *native_window;
+} AVOHCodecDeviceContext;
 
-#define LIBPOSTPROC_VERSION_MAJOR  58
-
-#endif /* POSTPROC_VERSION_MAJOR_H */
+#endif /* AVUTIL_HWCONTEXT_OH_H */

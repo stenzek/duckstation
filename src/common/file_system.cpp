@@ -323,11 +323,15 @@ bool Path::IsAbsolute(std::string_view path)
 std::string Path::RealPath(std::string_view path)
 {
   // Resolve non-absolute paths first.
+  std::string abs_path;
   std::vector<std::string_view> components;
   if (!IsAbsolute(path))
-    components = Path::SplitNativePath(Path::Combine(FileSystem::GetWorkingDirectory(), path));
-  else
-    components = Path::SplitNativePath(path);
+  {
+    abs_path = Path::Combine(FileSystem::GetWorkingDirectory(), path);
+    path = abs_path;
+  }
+
+  components = Path::SplitNativePath(path);
 
   std::string realpath;
   if (components.empty())
@@ -1463,6 +1467,98 @@ s64 FileSystem::GetPathFileSize(const char* path)
 
   return sd.Size;
 }
+
+FileSystem::LockedFile FileSystem::OpenLockedFile(const char* path, bool for_write, Error* error /* = nullptr */)
+{
+  static constexpr u32 DEFAULT_FILE_LOCK_TIMEOUT = 100;
+  return OpenLockedFile(path, for_write, DEFAULT_FILE_LOCK_TIMEOUT, error);
+}
+
+FileSystem::LockedFile FileSystem::OpenLockedFile(const char* path, bool for_write, u32 timeout_ms, Error* error)
+{
+  const FileSystem::FileShareMode share_mode =
+    for_write ? FileSystem::FileShareMode::DenyReadWrite : FileSystem::FileShareMode::DenyWrite;
+#ifdef _WIN32
+  const char* mode = for_write ? "r+b" : "rb";
+#else
+  // Always open read/write on Linux, since we need it for flock().
+  const char* mode = "r+b";
+#endif
+
+  std::FILE* fp = FileSystem::OpenSharedCFile(path, mode, share_mode, error);
+
+  if (!fp)
+  {
+    // Doesn't exist? Create it.
+    if (errno == ENOENT)
+    {
+      if (!for_write)
+        return {};
+
+      mode = "w+b";
+      fp = FileSystem::OpenSharedCFile(path, mode, share_mode, error);
+    }
+  }
+
+  if (!fp)
+  {
+    // If there's a sharing violation, try again for 100ms.
+    if (errno != EACCES)
+      return {};
+
+    Timer timer;
+    while (timer.GetTimeMilliseconds() <= static_cast<float>(timeout_ms))
+    {
+      fp = FileSystem::OpenSharedCFile(path, mode, share_mode, error);
+      if (fp)
+        break;
+
+      if (errno != EACCES)
+        return {};
+    }
+
+    if (!fp)
+    {
+      Error::SetStringFmt(error, "Timed out while trying to open file", Path::GetFileTitle(path));
+      return {};
+    }
+  }
+
+  Error lock_error;
+  LockedFile ret(fp, &lock_error);
+  if (!ret.IsLocked())
+    ERROR_LOG("Failed to lock file {}: {}", Path::GetFileTitle(path), lock_error.GetDescription());
+
+  return ret;
+}
+
+FileSystem::LockedFile::LockedFile(std::FILE* fp, Error* lock_error)
+  : ManagedCFilePtr(fp)
+#ifdef HAS_POSIX_FILE_LOCK
+    ,
+    m_lock(fp, true, lock_error)
+#endif
+{
+}
+
+std::FILE* FileSystem::LockedFile::release()
+{
+  return nullptr;
+}
+
+#ifdef HAS_POSIX_FILE_LOCK
+
+void FileSystem::LockedFile::reset()
+{
+  // avoid race where the file isn't flushed before it's unlocked
+  if (*this)
+    std::fflush(get());
+
+  m_lock.Unlock();
+  ManagedCFilePtr::reset();
+}
+
+#endif
 
 std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* path, Error* error)
 {

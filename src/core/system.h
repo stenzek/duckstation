@@ -274,8 +274,13 @@ size_t GetMaxMemorySaveStateSize();
 
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
-bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);
+bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
+               std::function<void(bool, const Error& error)> completion_callback = {});
 bool SaveResumeState(Error* error);
+
+/// Saves/load state to/from slot.
+void LoadStateFromSlot(bool global, s32 slot);
+void SaveStateToSlot(bool global, s32 slot);
 
 /// State data access, use with care as the media path is not updated.
 bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
@@ -378,7 +383,7 @@ bool CanUndoLoadState();
 std::optional<ExtendedSaveStateInfo> GetUndoSaveStateInfo();
 
 /// Undoes a load state, i.e. restores the state prior to the load.
-bool UndoLoadState();
+void UndoLoadState();
 
 /// Returns a list of save states for the specified game code.
 std::vector<SaveStateInfo> GetAvailableSaveStates(std::string_view serial);

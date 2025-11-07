@@ -65,6 +65,7 @@ public:
     RGBA16F,
     RGBA32F,
     RGB10A2,
+    SRGBA8,
     BC1, ///< BC1, aka DXT1 compressed texture
     BC2, ///< BC2, aka DXT2/3 compressed texture
     BC3, ///< BC3, aka DXT4/5 compressed texture

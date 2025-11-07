@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggermodels.h"
+#include "qtutils.h"
 
 #include "core/cpu_core.h"
 #include "core/cpu_core_private.h"
@@ -13,7 +14,6 @@
 #include <QtGui/QIcon>
 #include <QtGui/QPalette>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
 #include "moc_debuggermodels.cpp"
@@ -201,8 +201,8 @@ void DebuggerAddBreakpointDialog::okClicked()
 
     if (!ok)
     {
-      QMessageBox::critical(this, tr("Error"),
-                            tr("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
+      QtUtils::MessageBoxCritical(
+        this, tr("Error"), tr("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
       return;
     }
 

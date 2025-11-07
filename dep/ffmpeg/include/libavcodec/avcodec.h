@@ -187,17 +187,6 @@ struct AVCodecParameters;
  * @{
  */
 
-#if FF_API_BUFFER_MIN_SIZE
-/**
- * @ingroup lavc_encoding
- * minimum encoding buffer size
- * Used to avoid some checks during header writing.
- * @deprecated Unused: avcodec_receive_packet() does not work
- *             with preallocated packet buffers.
- */
-#define AV_INPUT_BUFFER_MIN_SIZE 16384
-#endif
-
 /**
  * @ingroup lavc_encoding
  */
@@ -234,18 +223,9 @@ typedef struct RcOverride{
  * Use qpel MC.
  */
 #define AV_CODEC_FLAG_QPEL            (1 <<  4)
-#if FF_API_DROPCHANGED
-/**
- * Don't output frames whose parameters differ from first
- * decoded frame in stream.
- *
- * @deprecated callers should implement this functionality in their own code
- */
-#define AV_CODEC_FLAG_DROPCHANGED     (1 <<  5)
-#endif
 /**
  * Request the encoder to output reconstructed frames, i.e.\ frames that would
- * be produced by decoding the encoded bistream. These frames may be retrieved
+ * be produced by decoding the encoded bitstream. These frames may be retrieved
  * by calling avcodec_receive_frame() immediately after a successful call to
  * avcodec_receive_packet().
  *
@@ -515,16 +495,21 @@ typedef struct AVCodecContext {
     int flags2;
 
     /**
-     * some codecs need / can use extradata like Huffman tables.
-     * MJPEG: Huffman tables
-     * rv10: additional flags
-     * MPEG-4: global headers (they can be in the bitstream or here)
-     * The allocated memory should be AV_INPUT_BUFFER_PADDING_SIZE bytes larger
-     * than extradata_size to avoid problems if it is read with the bitstream reader.
-     * The bytewise contents of extradata must not depend on the architecture or CPU endianness.
-     * Must be allocated with the av_malloc() family of functions.
-     * - encoding: Set/allocated/freed by libavcodec.
-     * - decoding: Set/allocated/freed by user.
+     * Out-of-band global headers that may be used by some codecs.
+     *
+     * - decoding: Should be set by the caller when available (typically from a
+     *   demuxer) before opening the decoder; some decoders require this to be
+     *   set and will fail to initialize otherwise.
+     *
+     *   The array must be allocated with the av_malloc() family of functions;
+     *   allocated size must be at least AV_INPUT_BUFFER_PADDING_SIZE bytes
+     *   larger than extradata_size.
+     *
+     * - encoding: May be set by the encoder in avcodec_open2() (possibly
+     *   depending on whether the AV_CODEC_FLAG_GLOBAL_HEADER flag is set).
+     *
+     * After being set, the array is owned by the codec and freed in
+     * avcodec_free_context().
      */
     uint8_t *extradata;
     int extradata_size;
@@ -564,23 +549,6 @@ typedef struct AVCodecContext {
      *             encoder.
      */
     AVRational framerate;
-
-#if FF_API_TICKS_PER_FRAME
-    /**
-     * For some codecs, the time base is closer to the field rate than the frame rate.
-     * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
-     * if no telecine is used ...
-     *
-     * Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
-     *
-     * @deprecated
-     * - decoding: Use AVCodecDescriptor.props & AV_CODEC_PROP_FIELDS
-     * - encoding: Set AVCodecContext.framerate instead
-     *
-     */
-    attribute_deprecated
-    int ticks_per_frame;
-#endif
 
     /**
      * Codec delay.
@@ -1648,165 +1616,29 @@ typedef struct AVCodecContext {
      * See the AV_PROFILE_* defines in defs.h.
      */
      int profile;
-#if FF_API_FF_PROFILE_LEVEL
-    /** @deprecated The following defines are deprecated; use AV_PROFILE_*
-     * in defs.h instead. */
-#define FF_PROFILE_UNKNOWN -99
-#define FF_PROFILE_RESERVED -100
-
-#define FF_PROFILE_AAC_MAIN 0
-#define FF_PROFILE_AAC_LOW  1
-#define FF_PROFILE_AAC_SSR  2
-#define FF_PROFILE_AAC_LTP  3
-#define FF_PROFILE_AAC_HE   4
-#define FF_PROFILE_AAC_HE_V2 28
-#define FF_PROFILE_AAC_LD   22
-#define FF_PROFILE_AAC_ELD  38
-#define FF_PROFILE_MPEG2_AAC_LOW 128
-#define FF_PROFILE_MPEG2_AAC_HE  131
-
-#define FF_PROFILE_DNXHD         0
-#define FF_PROFILE_DNXHR_LB      1
-#define FF_PROFILE_DNXHR_SQ      2
-#define FF_PROFILE_DNXHR_HQ      3
-#define FF_PROFILE_DNXHR_HQX     4
-#define FF_PROFILE_DNXHR_444     5
-
-#define FF_PROFILE_DTS                20
-#define FF_PROFILE_DTS_ES             30
-#define FF_PROFILE_DTS_96_24          40
-#define FF_PROFILE_DTS_HD_HRA         50
-#define FF_PROFILE_DTS_HD_MA          60
-#define FF_PROFILE_DTS_EXPRESS        70
-#define FF_PROFILE_DTS_HD_MA_X        61
-#define FF_PROFILE_DTS_HD_MA_X_IMAX   62
-
-
-#define FF_PROFILE_EAC3_DDP_ATMOS         30
-
-#define FF_PROFILE_TRUEHD_ATMOS           30
-
-#define FF_PROFILE_MPEG2_422    0
-#define FF_PROFILE_MPEG2_HIGH   1
-#define FF_PROFILE_MPEG2_SS     2
-#define FF_PROFILE_MPEG2_SNR_SCALABLE  3
-#define FF_PROFILE_MPEG2_MAIN   4
-#define FF_PROFILE_MPEG2_SIMPLE 5
-
-#define FF_PROFILE_H264_CONSTRAINED  (1<<9)  // 8+1; constraint_set1_flag
-#define FF_PROFILE_H264_INTRA        (1<<11) // 8+3; constraint_set3_flag
-
-#define FF_PROFILE_H264_BASELINE             66
-#define FF_PROFILE_H264_CONSTRAINED_BASELINE (66|FF_PROFILE_H264_CONSTRAINED)
-#define FF_PROFILE_H264_MAIN                 77
-#define FF_PROFILE_H264_EXTENDED             88
-#define FF_PROFILE_H264_HIGH                 100
-#define FF_PROFILE_H264_HIGH_10              110
-#define FF_PROFILE_H264_HIGH_10_INTRA        (110|FF_PROFILE_H264_INTRA)
-#define FF_PROFILE_H264_MULTIVIEW_HIGH       118
-#define FF_PROFILE_H264_HIGH_422             122
-#define FF_PROFILE_H264_HIGH_422_INTRA       (122|FF_PROFILE_H264_INTRA)
-#define FF_PROFILE_H264_STEREO_HIGH          128
-#define FF_PROFILE_H264_HIGH_444             144
-#define FF_PROFILE_H264_HIGH_444_PREDICTIVE  244
-#define FF_PROFILE_H264_HIGH_444_INTRA       (244|FF_PROFILE_H264_INTRA)
-#define FF_PROFILE_H264_CAVLC_444            44
-
-#define FF_PROFILE_VC1_SIMPLE   0
-#define FF_PROFILE_VC1_MAIN     1
-#define FF_PROFILE_VC1_COMPLEX  2
-#define FF_PROFILE_VC1_ADVANCED 3
-
-#define FF_PROFILE_MPEG4_SIMPLE                     0
-#define FF_PROFILE_MPEG4_SIMPLE_SCALABLE            1
-#define FF_PROFILE_MPEG4_CORE                       2
-#define FF_PROFILE_MPEG4_MAIN                       3
-#define FF_PROFILE_MPEG4_N_BIT                      4
-#define FF_PROFILE_MPEG4_SCALABLE_TEXTURE           5
-#define FF_PROFILE_MPEG4_SIMPLE_FACE_ANIMATION      6
-#define FF_PROFILE_MPEG4_BASIC_ANIMATED_TEXTURE     7
-#define FF_PROFILE_MPEG4_HYBRID                     8
-#define FF_PROFILE_MPEG4_ADVANCED_REAL_TIME         9
-#define FF_PROFILE_MPEG4_CORE_SCALABLE             10
-#define FF_PROFILE_MPEG4_ADVANCED_CODING           11
-#define FF_PROFILE_MPEG4_ADVANCED_CORE             12
-#define FF_PROFILE_MPEG4_ADVANCED_SCALABLE_TEXTURE 13
-#define FF_PROFILE_MPEG4_SIMPLE_STUDIO             14
-#define FF_PROFILE_MPEG4_ADVANCED_SIMPLE           15
-
-#define FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_0   1
-#define FF_PROFILE_JPEG2000_CSTREAM_RESTRICTION_1   2
-#define FF_PROFILE_JPEG2000_CSTREAM_NO_RESTRICTION  32768
-#define FF_PROFILE_JPEG2000_DCINEMA_2K              3
-#define FF_PROFILE_JPEG2000_DCINEMA_4K              4
-
-#define FF_PROFILE_VP9_0                            0
-#define FF_PROFILE_VP9_1                            1
-#define FF_PROFILE_VP9_2                            2
-#define FF_PROFILE_VP9_3                            3
-
-#define FF_PROFILE_HEVC_MAIN                        1
-#define FF_PROFILE_HEVC_MAIN_10                     2
-#define FF_PROFILE_HEVC_MAIN_STILL_PICTURE          3
-#define FF_PROFILE_HEVC_REXT                        4
-#define FF_PROFILE_HEVC_SCC                         9
-
-#define FF_PROFILE_VVC_MAIN_10                      1
-#define FF_PROFILE_VVC_MAIN_10_444                 33
-
-#define FF_PROFILE_AV1_MAIN                         0
-#define FF_PROFILE_AV1_HIGH                         1
-#define FF_PROFILE_AV1_PROFESSIONAL                 2
-
-#define FF_PROFILE_MJPEG_HUFFMAN_BASELINE_DCT            0xc0
-#define FF_PROFILE_MJPEG_HUFFMAN_EXTENDED_SEQUENTIAL_DCT 0xc1
-#define FF_PROFILE_MJPEG_HUFFMAN_PROGRESSIVE_DCT         0xc2
-#define FF_PROFILE_MJPEG_HUFFMAN_LOSSLESS                0xc3
-#define FF_PROFILE_MJPEG_JPEG_LS                         0xf7
-
-#define FF_PROFILE_SBC_MSBC                         1
-
-#define FF_PROFILE_PRORES_PROXY     0
-#define FF_PROFILE_PRORES_LT        1
-#define FF_PROFILE_PRORES_STANDARD  2
-#define FF_PROFILE_PRORES_HQ        3
-#define FF_PROFILE_PRORES_4444      4
-#define FF_PROFILE_PRORES_XQ        5
-
-#define FF_PROFILE_ARIB_PROFILE_A 0
-#define FF_PROFILE_ARIB_PROFILE_C 1
-
-#define FF_PROFILE_KLVA_SYNC 0
-#define FF_PROFILE_KLVA_ASYNC 1
-
-#define FF_PROFILE_EVC_BASELINE             0
-#define FF_PROFILE_EVC_MAIN                 1
-#endif
 
     /**
      * Encoding level descriptor.
      * - encoding: Set by user, corresponds to a specific level defined by the
      *   codec, usually corresponding to the profile level, if not specified it
-     *   is set to FF_LEVEL_UNKNOWN.
+     *   is set to AV_LEVEL_UNKNOWN.
      * - decoding: Set by libavcodec.
      * See AV_LEVEL_* in defs.h.
      */
      int level;
-#if FF_API_FF_PROFILE_LEVEL
-    /** @deprecated The following define is deprecated; use AV_LEVEL_UNKOWN
-     * in defs.h instead. */
-#define FF_LEVEL_UNKNOWN -99
-#endif
 
+#if FF_API_CODEC_PROPS
     /**
      * Properties of the stream that gets decoded
      * - encoding: unused
      * - decoding: set by libavcodec
      */
+    attribute_deprecated
     unsigned properties;
 #define FF_CODEC_PROPERTY_LOSSLESS        0x00000001
 #define FF_CODEC_PROPERTY_CLOSED_CAPTIONS 0x00000002
 #define FF_CODEC_PROPERTY_FILM_GRAIN      0x00000004
+#endif
 
     /**
      * Skip loop filtering for selected frames.
@@ -1895,8 +1727,13 @@ typedef struct AVCodecContext {
      * For SUBTITLE_ASS subtitle type, it should contain the whole ASS
      * [Script Info] and [V4+ Styles] section, plus the [Events] line and
      * the Format line following. It shouldn't include any Dialogue line.
-     * - encoding: Set/allocated/freed by user (before avcodec_open2())
-     * - decoding: Set/allocated/freed by libavcodec (by avcodec_open2())
+     *
+     * - encoding: May be set by the caller before avcodec_open2() to an array
+     *   allocated with the av_malloc() family of functions.
+     * - decoding: May be set by libavcodec in avcodec_open2().
+     *
+     * After being set, the array is owned by the codec and freed in
+     * avcodec_free_context().
      */
     int subtitle_header_size;
     uint8_t *subtitle_header;
@@ -2379,24 +2216,6 @@ int avcodec_parameters_to_context(AVCodecContext *codec,
  *      av_dict_set(), av_opt_set(), av_opt_find(), avcodec_parameters_to_context()
  */
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
-
-#if FF_API_AVCODEC_CLOSE
-/**
- * Close a given AVCodecContext and free all the data associated with it
- * (but not the AVCodecContext itself).
- *
- * Calling this function on an AVCodecContext that hasn't been opened will free
- * the codec-specific data allocated in avcodec_alloc_context3() with a non-NULL
- * codec. Subsequent calls will do nothing.
- *
- * @deprecated Do not use this function. Use avcodec_free_context() to destroy a
- * codec context (either open or closed). Opening and closing a codec context
- * multiple times is not supported anymore -- use multiple codec contexts
- * instead.
- */
-attribute_deprecated
-int avcodec_close(AVCodecContext *avctx);
-#endif
 
 /**
  * Free all allocated data in the given subtitle struct.
@@ -3081,7 +2900,7 @@ int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels,
  *
  * @note for encoders, this function will only do something if the encoder
  * declares support for AV_CODEC_CAP_ENCODER_FLUSH. When called, the encoder
- * will drain any remaining packets, and can then be re-used for a different
+ * will drain any remaining packets, and can then be reused for a different
  * stream (as opposed to sending a null frame which will leave the encoder
  * in a permanent EOF state after draining). This can be desirable if the
  * cost of tearing down and replacing the encoder instance is high.
@@ -3116,8 +2935,8 @@ void av_fast_padded_malloc(void *ptr, unsigned int *size, size_t min_size);
 void av_fast_padded_mallocz(void *ptr, unsigned int *size, size_t min_size);
 
 /**
- * @return a positive value if s is open (i.e. avcodec_open2() was called on it
- * with no corresponding avcodec_close()), 0 otherwise.
+ * @return a positive value if s is open (i.e. avcodec_open2() was called on it),
+ * 0 otherwise.
  */
 int avcodec_is_open(AVCodecContext *s);
 

@@ -166,6 +166,7 @@ enum class GPUDriverType : u16
 
   LLVMPipe = SoftwareFlag | 1,
   SwiftShader = SoftwareFlag | 2,
+  WARP = SoftwareFlag | 3,
 };
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDriverType);
 
@@ -211,6 +212,9 @@ public:
 
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
+
+    // Multiple textures, 1 streamed UBO, 128 byte push constants.
+    MultiTextureAndUBOAndPushConstants,
 
     // Multiple textures, 1 streamed UBO, compute shader.
     ComputeMultiTextureAndUBO,
@@ -586,16 +590,17 @@ public:
     PreferGLESContext = (1 << 0),
     EnableDebugDevice = (1 << 1),
     EnableGPUValidation = (1 << 2),
-    DisableDualSourceBlend = (1 << 3),
-    DisableFeedbackLoops = (1 << 4),
-    DisableFramebufferFetch = (1 << 5),
-    DisableTextureBuffers = (1 << 6),
-    DisableGeometryShaders = (1 << 7),
-    DisableComputeShaders = (1 << 8),
-    DisableTextureCopyToSelf = (1 << 9),
-    DisableMemoryImport = (1 << 10),
-    DisableRasterOrderViews = (1 << 11),
-    DisableCompressedTextures = (1 << 12),
+    DisableShaderCache = (1 << 3),
+    DisableDualSourceBlend = (1 << 4),
+    DisableFeedbackLoops = (1 << 5),
+    DisableFramebufferFetch = (1 << 6),
+    DisableTextureBuffers = (1 << 7),
+    DisableGeometryShaders = (1 << 8),
+    DisableComputeShaders = (1 << 9),
+    DisableTextureCopyToSelf = (1 << 10),
+    DisableMemoryImport = (1 << 11),
+    DisableRasterOrderViews = (1 << 12),
+    DisableCompressedTextures = (1 << 13),
   };
 
   enum class DrawBarrier : u32
@@ -685,6 +690,7 @@ public:
   static constexpr u32 MAX_IMAGE_RENDER_TARGETS = 2;
   static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
   static constexpr u32 PIPELINE_CACHE_HASH_SIZE = 20;
+  static constexpr u32 BASE_UNIFORM_BUFFER_ALIGNMENT = 16;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   GPUDevice();
@@ -732,6 +738,7 @@ public:
       0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
+      MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBOAndPushConstants
       MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // ComputeMultiTextureAndPushConstants
     };
@@ -872,7 +879,6 @@ public:
   void UploadIndexBuffer(const DrawIndex* indices, u32 index_count, u32* base_index);
 
   /// Uniform buffer abstraction.
-  virtual void PushUniformBuffer(const void* data, u32 data_size) = 0;
   virtual void* MapUniformBuffer(u32 size) = 0;
   virtual void UnmapUniformBuffer(u32 size) = 0;
   void UploadUniformBuffer(const void* data, u32 data_size);
@@ -894,10 +900,20 @@ public:
 
   // Drawing abstraction.
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
+  virtual void DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                     u32 push_constants_size) = 0;
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
-  virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
+  virtual void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                            const void* push_constants, u32 push_constants_size) = 0;
+  virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type);
+  virtual void DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                       const void* push_constants, u32 push_constants_size,
+                                                       DrawBarrier type);
   virtual void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                         u32 group_size_z) = 0;
+  virtual void DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                         u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                         u32 push_constants_size) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;

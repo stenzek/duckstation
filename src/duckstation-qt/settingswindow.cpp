@@ -32,7 +32,6 @@
 #include "common/log.h"
 
 #include <QtGui/QWheelEvent>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
 
@@ -48,10 +47,14 @@ SettingsWindow::SettingsWindow() : QWidget()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   addPages();
   connectUi();
+
+  if (!QtUtils::RestoreWindowGeometry("SettingsWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_serial(entry->serial), m_hash(entry->hash)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry->dbentry), m_path(entry->path), m_serial(entry->serial),
+    m_hash(entry->hash)
 {
   m_ui.setupUi(this);
   setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
@@ -65,6 +68,8 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
   connectUi();
 
   s_open_game_properties_dialogs.push_back(this);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::~SettingsWindow()
@@ -78,6 +83,8 @@ void SettingsWindow::closeEvent(QCloseEvent* event)
   // we need to clean up ourselves, since we're not modal
   if (isPerGameSettings())
     deleteLater();
+  else
+    QtUtils::SaveWindowGeometry("SettingsWindow", this);
 }
 
 void SettingsWindow::addPages()
@@ -289,10 +296,9 @@ void SettingsWindow::onCategoryCurrentRowChanged(int row)
 
 void SettingsWindow::onRestoreDefaultsClicked()
 {
-  if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
-                            tr("Are you sure you want to restore the default settings? Any preferences will be "
-                               "lost.\n\nYou cannot undo this action."),
-                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(this, tr("Confirm Restore Defaults"),
+                                  tr("Are you sure you want to restore the default settings? Any preferences will be "
+                                     "lost.\n\nYou cannot undo this action.")) != QMessageBox::Yes)
   {
     return;
   }
@@ -305,11 +311,10 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
   if (!isPerGameSettings())
     return;
 
-  if (QMessageBox::question(
+  if (QtUtils::MessageBoxQuestion(
         this, tr("DuckStation Settings"),
         tr("The configuration for this game will be replaced by the current global settings.\n\nAny current setting "
-           "values will be overwritten.\n\nDo you want to continue?"),
-        QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+           "values will be overwritten.\n\nDo you want to continue?")) != QMessageBox::Yes)
   {
     return;
   }
@@ -324,7 +329,8 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 
   reloadPages();
 
-  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration copied from global settings."));
+  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"),
+                                 tr("Per-game configuration copied from global settings."));
 }
 
 void SettingsWindow::onClearSettingsClicked()
@@ -332,10 +338,10 @@ void SettingsWindow::onClearSettingsClicked()
   if (!isPerGameSettings())
     return;
 
-  if (QMessageBox::question(this, tr("DuckStation Settings"),
-                            tr("The configuration for this game will be cleared.\n\nAny current setting values will be "
-                               "lost.\n\nDo you want to continue?"),
-                            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("DuckStation Settings"),
+        tr("The configuration for this game will be cleared.\n\nAny current setting values will be "
+           "lost.\n\nDo you want to continue?")) != QMessageBox::Yes)
   {
     return;
   }
@@ -345,7 +351,7 @@ void SettingsWindow::onClearSettingsClicked()
 
   reloadPages();
 
-  QMessageBox::information(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
+  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
 }
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)
@@ -660,6 +666,11 @@ bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
 {
   return (m_database_entry && m_database_entry->HasTrait(trait) &&
           m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
+}
+
+bool SettingsWindow::isGameHashStable() const
+{
+  return (m_path.empty() || !CDImage::HasOverlayablePatch(m_path.c_str()));
 }
 
 SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* entry,

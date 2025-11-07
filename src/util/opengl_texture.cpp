@@ -59,6 +59,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                                                     // RGBA16F
       {GL_RGBA32F, GL_RGBA, GL_FLOAT},                                                          // RGBA32F
       {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
+      {GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE},                                             // SRGBA8
       {GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_UNSIGNED_BYTE},   // BC1
       {GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_UNSIGNED_BYTE},   // BC2
       {GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_UNSIGNED_BYTE},   // BC3
@@ -94,6 +95,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},                                                     // RGBA16F
       {GL_RGBA32F, GL_RGBA, GL_FLOAT},                                                          // RGBA32F
       {GL_RGB10_A2, GL_BGRA, GL_UNSIGNED_INT_2_10_10_10_REV},                                   // RGB10A2
+      {GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE},                                             // SRGBA8
       {GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_UNSIGNED_BYTE},   // BC1
       {GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_UNSIGNED_BYTE},   // BC2
       {GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_UNSIGNED_BYTE},   // BC3

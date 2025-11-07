@@ -45,7 +45,13 @@
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="ledSettings">
+         <widget class="QPushButton" name="ledSettings">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="toolTip">
            <string>Controller LED Settings</string>
           </property>
@@ -317,7 +323,7 @@
       </item>
      </layout>
     </widget>
-   </item>  
+   </item>
    <item row="5" column="0">
     <widget class="QGroupBox" name="profileSettings">
      <property name="title">

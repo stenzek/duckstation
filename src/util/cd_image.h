@@ -221,6 +221,9 @@ public:
   /// Returns true if the specified filename is a CD-ROM device name.
   static bool IsDeviceName(const char* filename);
 
+  /// Returns true if an overlayable patch file exists for the specified image path.
+  static bool HasOverlayablePatch(const char* path);
+
   // Opening disc image.
   static std::unique_ptr<CDImage> Open(const char* path, bool allow_patches, Error* error);
   static std::unique_ptr<CDImage> OpenBinImage(const char* path, Error* error);

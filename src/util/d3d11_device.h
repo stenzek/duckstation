@@ -89,7 +89,6 @@ public:
   void UnmapVertexBuffer(u32 vertex_size, u32 vertex_count) override;
   void MapIndexBuffer(u32 index_count, DrawIndex** map_ptr, u32* map_space, u32* map_base_index) override;
   void UnmapIndexBuffer(u32 used_index_count) override;
-  void PushUniformBuffer(const void* data, u32 data_size) override;
   void* MapUniformBuffer(u32 size) override;
   void UnmapUniformBuffer(u32 size) override;
   void SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
@@ -100,10 +99,15 @@ public:
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
+  void DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                             u32 push_constants_size) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
-  void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
+  void DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex, const void* push_constants,
+                                    u32 push_constants_size) override;
   void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                 u32 group_size_z) override;
+  void DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                                 u32 group_size_z, const void* push_constants, u32 push_constants_size) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -140,6 +144,7 @@ private:
   static constexpr u32 MIN_UNIFORM_BUFFER_SIZE = 16;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT_DISCARD = 16;
+  static constexpr u32 PUSH_CONSTANT_BUFFER_SIZE = 128;
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
   void SetFeatures(CreateFlags create_flags);
@@ -147,6 +152,7 @@ private:
   bool CreateBuffers(Error* error);
   void DestroyBuffers();
   void BindUniformBuffer(u32 offset, u32 size);
+  void PushUniformBuffer(const void* data, u32 data_size);
   void UnbindComputePipeline();
 
   bool IsRenderTargetBound(const D3D11Texture* tex) const;
@@ -178,6 +184,7 @@ private:
   D3D11StreamBuffer m_vertex_buffer;
   D3D11StreamBuffer m_index_buffer;
   D3D11StreamBuffer m_uniform_buffer;
+  ComPtr<ID3D11Buffer> m_push_constant_buffer;
 
   D3D11Pipeline* m_current_pipeline = nullptr;
   std::array<D3D11Texture*, MAX_RENDER_TARGETS> m_current_render_targets = {};

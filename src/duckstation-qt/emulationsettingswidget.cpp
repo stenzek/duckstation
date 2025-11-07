@@ -7,7 +7,6 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
-#include <QtWidgets/QMessageBox>
 #include <limits>
 
 #include "moc_emulationsettingswidget.cpp"

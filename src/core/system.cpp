@@ -12,7 +12,7 @@
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
 #include "dma.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "game_database.h"
 #include "game_list.h"
 #include "gpu.h"
@@ -1681,17 +1681,22 @@ void System::PauseSystem(bool paused)
 
 bool System::CanPauseSystem(bool display_message)
 {
+  // Don't add to the pause timer when we're already paused.
+  if (IsPaused())
+    return true;
+
   const u32 frames_until_pause_allowed = Achievements::GetPauseThrottleFrames();
   if (frames_until_pause_allowed == 0)
     return true;
 
   if (display_message)
   {
-    const float seconds = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
+    const float time_until_pause_allowed = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
+    const int seconds_until_pause_allowed = static_cast<int>(std::ceil(time_until_pause_allowed));
     Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
-                            TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
-                                                 "", static_cast<int>(std::ceil(seconds))),
-                            std::max(seconds, Host::OSD_QUICK_DURATION));
+                            TRANSLATE_PLURAL_STR("System", "You cannot pause until another %n second(s) have passed.",
+                                                 "", seconds_until_pause_allowed),
+                            std::max(time_until_pause_allowed, Host::OSD_QUICK_DURATION));
   }
 
   return false;
@@ -2560,12 +2565,14 @@ bool System::DoState(StateWrapper& sw, bool update_display)
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddIconOSDMessage(
-      "StateOverclockDifference", ICON_FA_TRIANGLE_EXCLAMATION,
-      fmt::format(TRANSLATE_FS("System", "WARNING: CPU overclock ({}%) was different in save state ({}%)."),
-                  g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
-                  cpu_overclock_active ?
-                    Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
-                    100u),
+      "StateOverclockDifference", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "CPU Overclock Changed"),
+      fmt::format(
+        TRANSLATE_FS("System",
+                     "The save state does not match the current configuration.\nSave State: {0}%\nConfiguration: {1}%"),
+        g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
+        cpu_overclock_active ?
+          Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
+          100u),
       Host::OSD_WARNING_DURATION);
     UpdateOverclock();
   }
@@ -2953,11 +2960,6 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state, boo
 
   INFO_LOG("Loading state from '{}'...", path);
 
-  Host::AddIconOSDMessage(
-    "LoadState", ICON_EMOJI_FILE_FOLDER_OPEN,
-    fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
-    Host::OSD_QUICK_DURATION);
-
   if (save_undo_state)
     SaveUndoLoadState();
 
@@ -3005,11 +3007,12 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
       {
         if (CDROM::HasMedia())
         {
-          Host::AddOSDMessage(
-            fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
-                                                   "existing image '{}', this may result in instability."),
-                        buffer.media_path, error ? error->GetDescription() : local_error.GetDescription(),
-                        Path::GetFileName(CDROM::GetMediaPath())),
+          Host::AddIconOSDMessage(
+            "UsingExistingCDImage", ICON_EMOJI_WARNING,
+            TRANSLATE_STR("System", "Failed to open CD image from save state."),
+            fmt::format(
+              TRANSLATE_FS("System", "Path: {0}\nError: {1}\nUsing current CD image, this may result in instability."),
+              buffer.media_path, error ? error->GetDescription() : local_error.GetDescription()),
             Host::OSD_CRITICAL_ERROR_DURATION);
         }
         else
@@ -3220,7 +3223,8 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
   return true;
 }
 
-bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
+bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
+                       std::function<void(bool, const Error& error)> completion_callback)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -3241,16 +3245,13 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
 
   VERBOSE_LOG("Preparing state save took {:.2f} msec", save_timer.GetTimeMilliseconds());
 
-  std::string osd_key = fmt::format("save_state_{}", path);
-  Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
-                          fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
-
   // ensure multiple saves to the same path do not overlap
   FlushSaveStates();
 
   s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
-  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
-                                       backup_existing_save, compression = g_settings.save_state_compression]() {
+  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer),
+                                       completion_callback = std::move(completion_callback), backup_existing_save,
+                                       compression = g_settings.save_state_compression]() {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;
@@ -3283,27 +3284,114 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
     VERBOSE_LOG("Saving state took {:.2f} msec", lsave_timer.GetTimeMilliseconds());
 
     s_state.outstanding_save_state_tasks.fetch_sub(1, std::memory_order_acq_rel);
+    if (completion_callback)
+      completion_callback(result, lerror);
+  });
 
+  return true;
+}
+
+static std::string GetSaveStateOSDKey(bool global, s32 slot)
+{
+  return fmt::format("{}Slot{}", global ? "GlobalSave" : "GameSave", slot);
+}
+
+static std::string GetSaveStateOSDTitle(bool global, s32 slot)
+{
+  std::string ret;
+  if (global)
+    ret = fmt::format(TRANSLATE_FS("System", "Global Save Slot {}"), slot);
+  else
+    ret = fmt::format(TRANSLATE_FS("System", "Save Slot {}"), slot);
+  return ret;
+}
+
+void System::LoadStateFromSlot(bool global, s32 slot)
+{
+  if (!IsValid())
+    return;
+
+  if (!global && s_state.running_game_serial.empty())
+  {
+    Host::AddIconOSDWarning(
+      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
+      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    return;
+  }
+
+  std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
+  if (!FileSystem::FileExists(path.c_str()))
+  {
+    Host::AddIconOSDWarning(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "No save state found in slot {}."), slot),
+                            Host::OSD_INFO_DURATION);
+    return;
+  }
+
+  Error error;
+  if (System::LoadState(path.c_str(), &error, true, false))
+  {
+    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
+                            GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)),
+                            Host::OSD_QUICK_DURATION);
+  }
+  else
+  {
+    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "Failed to load state from {0}:\n{1}"),
+                                        Path::GetFileName(path), error.GetDescription()),
+                            Host::OSD_ERROR_DURATION);
+  }
+}
+
+void System::SaveStateToSlot(bool global, s32 slot)
+{
+  if (!IsValid())
+    return;
+
+  if (!global && s_state.running_game_serial.empty())
+  {
+    Host::AddIconOSDWarning(
+      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
+      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    return;
+  }
+
+  std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
+
+  Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
+                          fmt::format(TRANSLATE_FS("System", "Saving state to {}..."), Path::GetFileName(path)), 60.0f);
+
+  static constexpr auto display_result = [](bool global, s32 slot, std::string_view filename, bool success,
+                                            const Error& error) {
     // don't display a resume state saved message in FSUI
     if (!IsValid())
       return;
 
-    if (result)
+    if (success)
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
-                              fmt::format(TRANSLATE_FS("System", "State saved to '{}'."), Path::GetFileName(path)),
-                              Host::OSD_QUICK_DURATION);
+      Host::AddIconOSDMessage(
+        GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "State saved to {}."), filename), Host::OSD_QUICK_DURATION);
     }
     else
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_WARNING,
-                              fmt::format(TRANSLATE_FS("System", "Failed to save state to '{0}':\n{1}"),
-                                          Path::GetFileName(path), lerror.GetDescription()),
-                              Host::OSD_ERROR_DURATION);
+      Host::AddIconOSDMessage(
+        GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "Failed to save state to {0}:\n{1}"), filename, error.GetDescription()),
+        Host::OSD_ERROR_DURATION);
     }
-  });
+  };
 
-  return true;
+  auto completion_callback = [global, slot, filename = std::string(Path::GetFileName(path))](bool success,
+                                                                                             const Error& error) {
+    display_result(global, slot, filename, success, error);
+  };
+
+  Error error;
+  if (!SaveState(std::move(path), &error, g_settings.create_save_state_backups, false, std::move(completion_callback)))
+    display_result(global, slot, Path::GetFileName(path), false, error);
 }
 
 void System::FlushSaveStates()
@@ -3838,16 +3926,16 @@ void System::UpdateMemoryCards()
     if (current_card)
     {
       Host::AddIconOSDMessage(fmt::format("MemoryCardChange{}", i), ICON_PF_MEMORY_CARD,
-                              fmt::format(TRANSLATE_FS("OSDMessage", "Memory card in slot {} changed to '{}'."), i + 1,
-                                          Path::GetFileName(path)),
+                              fmt::format(TRANSLATE_FS("System", "Memory Card Slot {}"), i + 1),
+                              fmt::format(TRANSLATE_FS("System", "Card changed to {}."), Path::GetFileName(path)),
                               Host::OSD_INFO_DURATION);
     }
 
     std::unique_ptr<MemoryCard> card;
     if (!path.empty())
-      card = MemoryCard::Open(std::move(path));
+      card = MemoryCard::Open(i, std::move(path));
     else
-      card = MemoryCard::Create();
+      card = MemoryCard::Create(i);
 
     Pad::SetMemoryCard(i, std::move(card));
   }
@@ -4737,30 +4825,31 @@ void System::WarnAboutStateTaints(u32 state_taints)
     if (!(taints_active_in_file & (1u << i)))
       continue;
 
-    if (messages.empty())
-    {
-      messages.append_format(
-        "{} {}\n", ICON_EMOJI_WARNING,
-        TRANSLATE_SV("System", "This save state was created with the following tainted options, and may\n"
-                               "       be unstable. You will need to reset the system to clear any effects."));
-    }
-
-    messages.append("        \u2022 ");
+    messages.append(" \u2022 ");
     messages.append(GetTaintDisplayName(static_cast<Taint>(i)));
     messages.append('\n');
   }
 
-  Host::AddKeyedOSDWarning("SystemTaintsFromState", std::string(messages.view()), Host::OSD_WARNING_DURATION);
+  if (messages.empty())
+    return;
+
+  Host::AddIconOSDWarning(
+    "SystemTaintsFromState", ICON_EMOJI_WARNING,
+    TRANSLATE_STR("System", "This save state was created with the following tainted options, and may be unstable. You "
+                            "will need to reset the system to clear any effects."),
+    std::string(messages.view()), Host::OSD_ERROR_DURATION);
 }
 
 void System::WarnAboutUnsafeSettings()
 {
   LargeString messages;
-  const auto append = [&messages](const char* icon, std::string_view msg) {
-    messages.append_format("{} {}\n", icon, msg);
+  const auto append = [&messages](std::string_view msg) {
+    messages.append(" \u2022 ");
+    messages.append(msg);
+    messages.append('\n');
   };
-  const auto append_format = [&messages]<typename... T>(const char* icon, fmt::format_string<T...> fmt, T&&... args) {
-    messages.append_format("{} ", icon);
+  const auto append_format = [&messages]<typename... T>(fmt::format_string<T...> fmt, T&&... args) {
+    messages.append(" \u2022 ");
     messages.append_vformat(fmt, fmt::make_format_args(args...));
     messages.append('\n');
   };
@@ -4769,139 +4858,125 @@ void System::WarnAboutUnsafeSettings()
             s_state.running_game_entry->HasTrait(trait));
   };
 
+  // Force the message, but use a reduced duration if they have OSD messages disabled.
+  const float osd_duration = g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION;
+  static constexpr std::string_view safe_mode_osd_key = "SafeModeWarn";
+
+  if (g_settings.disable_all_enhancements)
+  {
+    if (g_settings.cpu_overclock_active)
+      append(TRANSLATE_SV("System", "Overclock disabled."));
+    if (g_settings.cpu_enable_8mb_ram)
+      append(TRANSLATE_SV("System", "8MB RAM disabled."));
+    if (g_settings.gpu_resolution_scale != 1)
+      append(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+    if (g_settings.gpu_multisamples != 1)
+      append(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+    if (g_settings.gpu_dithering_mode != GPUDitheringMode::Unscaled)
+      append(TRANSLATE_SV("System", "Dithering set to unscaled."));
+    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      append(TRANSLATE_SV("System", "Texture filtering disabled."));
+    }
+    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+      append(TRANSLATE_SV("System", "Interlaced rendering enabled."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      append(TRANSLATE_SV("System", "Video timings set to default."));
+    if (g_settings.gpu_widescreen_hack)
+      append(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+    if (g_settings.gpu_pgxp_enable)
+      append(TRANSLATE_SV("System", "PGXP disabled."));
+    if (g_settings.gpu_texture_cache)
+      append(TRANSLATE_SV("System", "GPU texture cache disabled."));
+    if (g_settings.display_24bit_chroma_smoothing)
+      append(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+    if (g_settings.cdrom_read_speedup != 1)
+      append(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+    if (g_settings.cdrom_seek_speedup != 1)
+      append(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+    if (g_settings.cdrom_mute_cd_audio)
+      append(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
+      append(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+    if (g_settings.mdec_use_old_routines)
+      append(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+    if (g_settings.pio_device_type != PIODeviceType::None)
+      append(TRANSLATE_SV("System", "PIO device removed."));
+    if (g_settings.pcdrv_enable)
+      append(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.bios_patch_fast_boot)
+      append(TRANSLATE_SV("System", "Fast boot disabled."));
+
+    Host::AddIconOSDWarning(std::string(safe_mode_osd_key), ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "Safe mode is enabled."), std::string(messages.view()),
+                            osd_duration);
+    messages.clear();
+  }
+  else
+  {
+    Host::RemoveKeyedOSDWarning(std::string(safe_mode_osd_key));
+  }
+
   if (!g_settings.disable_all_enhancements)
   {
     if (g_settings.cpu_overclock_active)
     {
-      append_format(
-        ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-        g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
+      append_format(TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                    g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                    g_settings.cpu_overclock_denominator);
     }
     if ((g_settings.cdrom_read_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMReadSpeedup)) ||
         (g_settings.cdrom_seek_speedup != 1 && !has_trait(GameDatabase::Trait::DisableCDROMSeekSpeedup)))
     {
-      append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
+      append(TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
     }
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      append(ICON_FA_TV,
-             TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
+      append(TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
     if (!g_settings.IsUsingSoftwareRenderer())
     {
       if (g_settings.gpu_multisamples != 1)
       {
-        append(ICON_EMOJI_WARNING,
-               TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
+        append(TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
       }
       if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
       {
         append(
-          ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
       }
       if (g_settings.gpu_pgxp_tolerance >= 0.0f)
       {
         append(
-          ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "PGXP Geometry Tolerance is not set to default. This may cause rendering errors."));
       }
     }
     if (g_settings.cpu_enable_8mb_ram)
-    {
-      append(ICON_EMOJI_WARNING,
-             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
-    }
+      append(TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
     if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
-    {
-      append(ICON_EMOJI_WARNING,
-             TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
-    }
+      append(TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
 
     // Always display TC warning.
     if (g_settings.gpu_texture_cache)
     {
-      append(
-        ICON_FA_PAINT_ROLLER,
-        TRANSLATE_SV("System",
-                     "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
+      append(TRANSLATE_SV(
+        "System", "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
     }
 
     // Potential performance issues.
     if (g_settings.cpu_fastmem_mode != Settings::DEFAULT_CPU_FASTMEM_MODE)
     {
-      append_format(ICON_EMOJI_WARNING,
-                    TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
+      append_format(TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
                     Settings::GetCPUFastmemModeName(g_settings.cpu_fastmem_mode));
     }
   }
 
-  if (g_settings.disable_all_enhancements)
-  {
-    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "Safe mode is enabled."));
-
-#define APPEND_SUBMESSAGE(msg)                                                                                         \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    messages.append("        \u2022 ");                                                                                \
-    messages.append(msg);                                                                                              \
-    messages.append('\n');                                                                                             \
-  } while (0)
-
-    if (g_settings.cpu_overclock_active)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-    if (g_settings.cpu_enable_8mb_ram)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-    if (g_settings.gpu_resolution_scale != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
-    if (g_settings.gpu_multisamples != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
-    if (g_settings.gpu_dithering_mode != GPUDitheringMode::Unscaled)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Dithering set to unscaled."));
-    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
-        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
-    {
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
-    }
-    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
-    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
-    if (g_settings.gpu_widescreen_hack)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
-    if (g_settings.gpu_pgxp_enable)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
-    if (g_settings.gpu_texture_cache)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
-    if (g_settings.display_24bit_chroma_smoothing)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
-    if (g_settings.cdrom_read_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
-    if (g_settings.cdrom_seek_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
-    if (g_settings.cdrom_mute_cd_audio)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
-    if (g_settings.texture_replacements.enable_vram_write_replacements)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-    if (g_settings.mdec_use_old_routines)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
-    if (g_settings.pio_device_type != PIODeviceType::None)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
-    if (g_settings.pcdrv_enable)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
-    if (g_settings.bios_patch_fast_boot)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
-
-#undef APPEND_SUBMESSAGE
-  }
-
   if (!g_settings.apply_compatibility_settings)
-  {
-    append(ICON_EMOJI_WARNING,
-           TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
-  }
+    append(TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
 
   if (g_settings.cdrom_subq_skew)
-    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM SubQ Skew is enabled. This will break games."));
+    append(TRANSLATE_SV("System", "CD-ROM SubQ Skew is enabled. This will break games."));
 
+  static constexpr std::string_view osd_key = "UnsafeCfgWarn";
   if (!messages.empty())
   {
     if (messages.back() == '\n')
@@ -4909,13 +4984,13 @@ void System::WarnAboutUnsafeSettings()
 
     LogUnsafeSettingsToConsole(messages);
 
-    // Force the message, but use a reduced duration if they have OSD messages disabled.
-    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()),
-                             g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
+    Host::AddIconOSDWarning(std::string(osd_key), ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "One or more unsafe settings is enabled."),
+                            std::string(messages.view()), osd_duration);
   }
   else
   {
-    Host::RemoveKeyedOSDWarning("performance_settings_warning");
+    Host::RemoveKeyedOSDWarning(std::string(osd_key));
   }
 }
 
@@ -5202,34 +5277,43 @@ std::optional<ExtendedSaveStateInfo> System::GetUndoSaveStateInfo()
     ssi->serial = s_state.undo_load_state->serial;
     ssi->media_path = s_state.undo_load_state->media_path;
     ssi->screenshot = s_state.undo_load_state->screenshot;
-    ssi->timestamp = 0;
+    ssi->timestamp = s_state.undo_load_state->timestamp;
   }
 
   return ssi;
 }
 
-bool System::UndoLoadState()
+void System::UndoLoadState()
 {
-  if (!s_state.undo_load_state.has_value())
-    return false;
+  if (!IsValid() || !s_state.undo_load_state.has_value())
+    return;
 
-  Assert(IsValid());
+  std::string osd_key = "UndoLoadState";
+  std::string osd_title = TRANSLATE_STR("System", "Undo Load State");
 
   Error error;
   if (!LoadStateFromBuffer(s_state.undo_load_state.value(), &error, IsPaused()))
   {
-    Host::ReportErrorAsync("Error",
-                           fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
+    Host::AddIconOSDWarning(
+      std::move(osd_key), ICON_EMOJI_WARNING, std::move(osd_title),
+      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, resetting system.\n{}"), error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
     s_state.undo_load_state.reset();
     Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     ResetSystem();
-    return false;
+    return;
   }
 
   INFO_LOG("Loaded undo save state.");
+
+  Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_ROTATE_LEFT, std::move(osd_title),
+                          fmt::format(TRANSLATE_FS("System", "Loaded undo save state created at {}."),
+                                      Host::FormatNumber(Host::NumberFormatType::ShortTime,
+                                                         static_cast<s64>(s_state.undo_load_state->timestamp))),
+                          Host::OSD_INFO_DURATION);
+
   s_state.undo_load_state.reset();
   Host::OnSystemUndoStateAvailabilityChanged(false, 0);
-  return true;
 }
 
 bool System::SaveUndoLoadState()
@@ -5723,18 +5807,21 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
   std::string ret;
   std::string message_key = fmt::format("MemoryCard{}SharedWarning", slot);
 
+  static constexpr auto get_message_title = [](u32 slot) {
+    return fmt::format(TRANSLATE_FS("System", "Memory Card Slot {}"), slot + 1);
+  };
+  static constexpr auto get_shared_card_message = []() {
+    return TRANSLATE_STR("System", "Cannot use per-game memory card without a disc.\nUsing shared card instead.");
+  };
+
   switch (type)
   {
     case MemoryCardType::PerGame:
     {
       if (s_state.running_game_serial.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no code. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5749,12 +5836,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
     {
       if (s_state.running_game_title.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no title. Using shared card instead."),
-                      slot + 1u),
-          Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5781,7 +5864,7 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
             if (g_settings.memory_card_use_playlist_title && !card_path.empty())
             {
               Host::AddIconOSDMessage(
-                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
+                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD, get_message_title(slot),
                 fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
                             Path::GetFileName(disc_card_path)),
                 Host::OSD_INFO_DURATION);
@@ -5803,11 +5886,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
       const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
-        Host::AddIconOSDMessage(
-          std::move(message_key), ICON_PF_MEMORY_CARD,
-          fmt::format(TRANSLATE_FS("System", "Per-game memory card cannot be used for slot {} as the running "
-                                             "game has no path. Using shared card instead."),
-                      slot + 1u));
+        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                                get_shared_card_message(), Host::OSD_INFO_DURATION);
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else

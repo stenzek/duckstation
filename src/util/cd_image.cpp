@@ -129,6 +129,19 @@ std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Err
   return image;
 }
 
+bool CDImage::HasOverlayablePatch(const char* path)
+{
+  // Annoying handling because of storage access framework.
+#ifdef __ANDROID__
+  const std::string ppf_path =
+    Path::BuildRelativePath(path, Path::ReplaceExtension(FileSystem::GetDisplayNameFromPath(path), "ppf"));
+#else
+  const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(Path::GetFileName(path), "ppf"));
+#endif
+
+  return FileSystem::FileExists(ppf_path.c_str());
+}
+
 CDImage::LBA CDImage::GetTrackStartPosition(u8 track) const
 {
   Assert(track > 0 && track <= m_tracks.size());

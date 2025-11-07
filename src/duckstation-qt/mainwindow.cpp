@@ -50,7 +50,6 @@
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QStyleFactory>
 #include <cmath>
@@ -78,9 +77,9 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"StartDisc", &Ui::MainWindow::actionStartDisc},
   {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
   {nullptr, nullptr},
-  {"PowerOff", &Ui::MainWindow::actionPowerOff},
-  {"PowerOffWithoutSaving", &Ui::MainWindow::actionPowerOffWithoutSaving},
-  {"Reset", &Ui::MainWindow::actionReset},
+  {"PowerOff", &Ui::MainWindow::actionCloseGameToolbar},
+  {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSavingToolbar},
+  {"Reset", &Ui::MainWindow::actionResetGameToolbar},
   {"Pause", &Ui::MainWindow::actionPause},
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
   {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
@@ -209,14 +208,14 @@ QMenu* MainWindow::createPopupMenu()
 
 void MainWindow::reportError(const QString& title, const QString& message)
 {
-  QMessageBox::critical(this, title, message, QMessageBox::Ok);
+  QtUtils::MessageBoxCritical(this, title, message);
 }
 
 bool MainWindow::confirmMessage(const QString& title, const QString& message)
 {
   SystemLock lock(pauseAndLockSystem());
 
-  return (QMessageBox::question(this, title, message) == QMessageBox::Yes);
+  return (QtUtils::MessageBoxQuestion(this, title, message) == QMessageBox::Yes);
 }
 
 void MainWindow::onStatusMessage(const QString& message)
@@ -332,7 +331,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     wi = m_display_widget->getWindowInfo(render_api, error);
     if (!wi.has_value())
     {
-      QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
+      QtUtils::MessageBoxCritical(this, tr("Error"), tr("Failed to get window info from widget"));
       destroyDisplayWidget(true);
       return std::nullopt;
     }
@@ -743,9 +742,10 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
   auto devices = CDImage::GetDeviceList();
   if (devices.empty())
   {
-    QMessageBox::critical(this, title,
-                          tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
-                             "sufficient permissions to access it."));
+    QtUtils::MessageBoxCritical(
+      this, title,
+      tr("Could not find any CD-ROM devices. Please ensure you have a CD-ROM drive connected and "
+         "sufficient permissions to access it."));
     return ret;
   }
 
@@ -965,11 +965,11 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
     if (has_any_states)
     {
       connect(delete_save_states_action, &QAction::triggered, [parent_window, serial = entry->serial] {
-        if (QMessageBox::warning(
+        if (QtUtils::MessageBoxWarning(
               parent_window, tr("Confirm Save State Deletion"),
               tr("Are you sure you want to delete all save states for %1?\n\nThe saves will not be recoverable.")
                 .arg(QString::fromStdString(serial)),
-              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+              QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
         {
           return;
         }
@@ -1227,8 +1227,8 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
   connect(delboot, &QPushButton::clicked, [this, dlg, path, save_state_path]() mutable {
     if (!FileSystem::DeleteFile(save_state_path.c_str()))
     {
-      QMessageBox::critical(this, tr("Error"),
-                            tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
+      QtUtils::MessageBoxCritical(
+        this, tr("Error"), tr("Failed to delete save state file '%1'.").arg(QString::fromStdString(save_state_path)));
     }
     startFile(std::move(path), std::nullopt, std::nullopt);
     dlg->accept();
@@ -1273,29 +1273,37 @@ void MainWindow::startFileOrChangeDisc(const QString& qpath)
 
 void MainWindow::promptForDiscChange(const QString& path)
 {
+  if (m_was_disc_change_request || System::IsGPUDumpPath(path.toStdString()))
+  {
+    switchToEmulationView();
+    g_emu_thread->changeDisc(path, false, true);
+    return;
+  }
+
   SystemLock lock(pauseAndLockSystem());
 
-  bool reset_system = false;
-  if (!m_was_disc_change_request && !System::IsGPUDumpPath(path.toStdString()))
-  {
-    QMessageBox mb(QMessageBox::Question, tr("Confirm Disc Change"),
-                   tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton,
-                   this);
-    /*const QAbstractButton* const swap_button = */ mb.addButton(tr("Swap Disc"), QMessageBox::YesRole);
-    const QAbstractButton* const reset_button = mb.addButton(tr("Reset"), QMessageBox::NoRole);
-    const QAbstractButton* const cancel_button = mb.addButton(tr("Cancel"), QMessageBox::RejectRole);
-    mb.exec();
+  QMessageBox* const mb =
+    QtUtils::NewMessageBox(QMessageBox::Question, tr("Confirm Disc Change"),
+                           tr("Do you want to swap discs or boot the new image (via system reset)?"),
+                           QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, lock.getDialogParent());
+  mb->setAttribute(Qt::WA_DeleteOnClose, true);
 
-    const QAbstractButton* const clicked_button = mb.clickedButton();
+  /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
+  const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
+  const QAbstractButton* const cancel_button = mb->addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+  connect(mb, &QMessageBox::finished, this, [this, mb, reset_button, cancel_button, path, lock = std::move(lock)]() {
+    const QAbstractButton* const clicked_button = mb->clickedButton();
     if (!clicked_button || clicked_button == cancel_button)
       return;
 
-    reset_system = (clicked_button == reset_button);
-  }
+    const bool reset_system = (clicked_button == reset_button);
+    switchToEmulationView();
 
-  switchToEmulationView();
+    g_emu_thread->changeDisc(path, reset_system, true);
+  });
 
-  g_emu_thread->changeDisc(path, reset_system, true);
+  mb->show();
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -1402,6 +1410,21 @@ void MainWindow::onFullscreenUIStartedOrStopped(bool running)
   s_fullscreen_ui_started = running;
   m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture Mode"));
   m_ui.actionStartFullscreenUI2->setText(running ? tr("Exit Big Picture") : tr("Big Picture"));
+}
+
+void MainWindow::onCloseGameActionTriggered()
+{
+  requestShutdown(true, true, g_settings.save_state_on_exit, true, true, false, false);
+}
+
+void MainWindow::onCloseGameWithoutSavingActionTriggered()
+{
+  requestShutdown(false, false, false, true, false, false, false);
+}
+
+void MainWindow::onResetGameActionTriggered()
+{
+  g_emu_thread->resetSystem(true);
 }
 
 void MainWindow::onPauseActionToggled(bool checked)
@@ -1592,7 +1615,8 @@ void MainWindow::onGameListEntryActivated()
     // change disc on double click
     if (!entry->IsDisc())
     {
-      QMessageBox::critical(this, tr("Error"), tr("You must select a disc to change discs."));
+      lock.unlock();
+      QtUtils::MessageBoxCritical(this, tr("Error"), tr("You must select a disc to change discs."));
       return;
     }
 
@@ -1765,13 +1789,14 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
   {
     if (QFileInfo(old_filename) == QFileInfo(filename))
     {
-      QMessageBox::critical(this, tr("Copy Error"), tr("You must select a different file to the current cover image."));
+      QtUtils::MessageBoxCritical(this, tr("Copy Error"),
+                                  tr("You must select a different file to the current cover image."));
       return;
     }
 
-    if (QMessageBox::question(this, tr("Cover Already Exists"),
-                              tr("A cover image for this game already exists, do you wish to replace it?"),
-                              QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+    if (QtUtils::MessageBoxQuestion(this, tr("Cover Already Exists"),
+                                    tr("A cover image for this game already exists, do you wish to replace it?"),
+                                    QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
     {
       return;
     }
@@ -1779,17 +1804,18 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 
   if (QFile::exists(new_filename) && !QFile::remove(new_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"), tr("Failed to remove existing cover '%1'").arg(new_filename));
     return;
   }
   if (!QFile::copy(filename, new_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"),
+                                tr("Failed to copy '%1' to '%2'").arg(filename).arg(new_filename));
     return;
   }
   if (!old_filename.isEmpty() && old_filename != new_filename && !QFile::remove(old_filename))
   {
-    QMessageBox::critical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
+    QtUtils::MessageBoxCritical(this, tr("Copy Error"), tr("Failed to remove '%1'").arg(old_filename));
     return;
   }
   m_game_list_widget->refreshGridCovers();
@@ -1797,7 +1823,7 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 
 void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
 {
-  if (QMessageBox::question(
+  if (QtUtils::MessageBoxQuestion(
         this, tr("Confirm Reset"),
         tr("Are you sure you want to reset the play time for '%1'?\n\nThis action cannot be undone.")
           .arg(QtUtils::StringViewToQString(
@@ -1837,8 +1863,8 @@ void MainWindow::setupAdditionalUi()
 
   m_game_list_widget =
     new GameListWidget(m_ui.mainContainer, m_ui.actionViewGameList, m_ui.actionViewGameGrid, m_ui.actionMergeDiscSets,
-                       m_ui.actionShowGameIcons, m_ui.actionAnimateGameIcons, m_ui.actionGridViewShowTitles,
-                       m_ui.actionShowLocalizedTitles);
+                       m_ui.actionShowGameIcons, m_ui.actionAnimateGameIcons, m_ui.actionPreferAchievementGameIcons,
+                       m_ui.actionGridViewShowTitles, m_ui.actionShowLocalizedTitles);
   m_ui.mainContainer->addWidget(m_game_list_widget);
 
   m_status_progress_widget = new QProgressBar(m_ui.statusBar);
@@ -1931,6 +1957,7 @@ void MainWindow::setupAdditionalUi()
     new QShortcut(QKeySequence::ZoomIn, this, this, &MainWindow::onViewZoomInActionTriggered);
   m_shortcuts.game_list_zoom_out =
     new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewZoomOutActionTriggered);
+  m_shortcuts.settings = new QShortcut(QKeySequence::Preferences, this, [this] { doSettings(); });
 
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
@@ -2011,7 +2038,7 @@ void MainWindow::updateToolbarActions()
 
     // only one of resume/poweroff should be present depending on system state
     QAction* action = (m_ui.*action_ptr);
-    if (action == m_ui.actionPowerOff && !s_system_valid)
+    if (action == m_ui.actionCloseGameToolbar && !s_system_valid)
       action = m_ui.actionResumeLastState;
 
     m_ui.toolBar->addAction(action);
@@ -2180,14 +2207,19 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
   m_ui.actionStartFullscreenUI2->setDisabled(starting_or_running);
 
-  m_ui.actionPowerOff->setDisabled(starting_or_not_running);
-  m_ui.actionPowerOffWithoutSaving->setDisabled(starting_or_not_running);
-  m_ui.actionReset->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGame->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameToolbar->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameWithoutSaving->setDisabled(starting_or_not_running);
+  m_ui.actionCloseGameWithoutSavingToolbar->setDisabled(starting_or_not_running);
+  m_ui.actionResetGame->setDisabled(starting_or_not_running);
+  m_ui.actionResetGameToolbar->setDisabled(starting_or_not_running);
   m_ui.actionPause->setDisabled(starting_or_not_running);
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
   m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionScreenshot->setDisabled(starting_or_not_running);
+  m_ui.menuChangeDisc->menuAction()->setDisabled(starting_or_not_running);
   m_ui.menuChangeDisc->setDisabled(starting_or_not_running);
+  m_ui.menuCheats->menuAction()->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.menuCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionCPUDebugger->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryEditor->setDisabled(achievements_hardcore_mode);
@@ -2199,8 +2231,10 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.actionCaptureGPUFrame->setDisabled(starting_or_not_running);
 
   m_ui.actionLoadState->setDisabled(starting);
+  m_ui.menuLoadState->menuAction()->setDisabled(starting);
   m_ui.menuLoadState->setDisabled(starting);
   m_ui.actionSaveState->setDisabled(starting_or_not_running);
+  m_ui.menuSaveState->menuAction()->setDisabled(starting_or_not_running);
   m_ui.menuSaveState->setDisabled(starting_or_not_running);
   m_ui.menuWindowSize->setDisabled(starting_or_not_running);
   m_ui.actionViewGameList->setDisabled(starting);
@@ -2218,16 +2252,16 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   {
     if (m_ui.toolBar->widgetForAction(m_ui.actionResumeLastState))
     {
-      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionPowerOff);
+      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionCloseGameToolbar);
       m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
     }
   }
   else
   {
-    if (m_ui.toolBar->widgetForAction(m_ui.actionPowerOff))
+    if (m_ui.toolBar->widgetForAction(m_ui.actionCloseGameToolbar))
     {
-      m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
-      m_ui.toolBar->removeAction(m_ui.actionPowerOff);
+      m_ui.toolBar->insertAction(m_ui.actionCloseGameToolbar, m_ui.actionResumeLastState);
+      m_ui.toolBar->removeAction(m_ui.actionCloseGameToolbar);
     }
 
     m_ui.actionViewGameProperties->setEnabled(false);
@@ -2448,11 +2482,14 @@ void MainWindow::connectSignals()
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
-  connect(m_ui.actionPowerOff, &QAction::triggered, this,
-          [this]() { requestShutdown(true, true, g_settings.save_state_on_exit, true, true, false, false); });
-  connect(m_ui.actionPowerOffWithoutSaving, &QAction::triggered, this,
-          [this]() { requestShutdown(false, false, false, true, false, false, false); });
-  connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
+  connect(m_ui.actionCloseGame, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
+  connect(m_ui.actionCloseGameToolbar, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
+  connect(m_ui.actionCloseGameWithoutSaving, &QAction::triggered, this,
+          &MainWindow::onCloseGameWithoutSavingActionTriggered);
+  connect(m_ui.actionCloseGameWithoutSavingToolbar, &QAction::triggered, this,
+          &MainWindow::onCloseGameWithoutSavingActionTriggered);
+  connect(m_ui.actionResetGame, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
+  connect(m_ui.actionResetGameToolbar, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
   connect(m_ui.actionPause, &QAction::toggled, this, &MainWindow::onPauseActionToggled);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
@@ -2517,6 +2554,9 @@ void MainWindow::connectSignals()
           &GameListWidget::setShowLocalizedTitles);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionAnimateGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setAnimateGameIcons);
+  connect(m_ui.actionPreferAchievementGameIcons, &QAction::triggered, m_game_list_widget,
+          &GameListWidget::setPreferAchievementGameIcons);
+  connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);
   connect(m_ui.actionViewZoomOut, &QAction::triggered, this, &MainWindow::onViewZoomOutActionTriggered);
@@ -2771,7 +2811,7 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
   if (!entry)
   {
     lock.unlock();
-    QMessageBox::critical(this, tr("Error"), tr("Game properties is only available for scanned games."));
+    QtUtils::MessageBoxCritical(this, tr("Error"), tr("Game properties is only available for scanned games."));
     return;
   }
 
@@ -2887,7 +2927,7 @@ void MainWindow::changeEvent(QEvent* event)
 
   if (event->type() == QEvent::StyleChange)
   {
-    QtHost::SetIconThemeFromStyle();
+    QtHost::UpdateThemeOnStyleChange();
     emit themeChanged(QtHost::IsDarkApplicationTheme());
   }
 
@@ -3029,20 +3069,17 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
     SystemLock lock(pauseAndLockSystem());
 
-    QMessageBox* msgbox = new QMessageBox(lock.getDialogParent());
-    msgbox->setWindowTitle(tr("Confirm Shutdown"));
-    msgbox->setWindowModality(Qt::WindowModal);
+    QMessageBox* msgbox = QtUtils::NewMessageBox(
+      QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
+      quit_afterwards ? tr("Are you sure you want to exit the application?") :
+                        tr("Are you sure you want to close the current game?"),
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
     msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
-    msgbox->setIcon(QMessageBox::Question);
-    msgbox->setText(tr("Are you sure you want to shut down the virtual machine?"));
 
     QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);
     save_cb->setEnabled(allow_save_to_state);
     msgbox->setCheckBox(save_cb);
-    msgbox->addButton(QMessageBox::Yes);
-    msgbox->addButton(QMessageBox::No);
-    msgbox->setDefaultButton(QMessageBox::Yes);
     connect(msgbox, &QMessageBox::finished, this,
             [this, lock = std::move(lock), save_cb, allow_save_to_state, check_safety, check_pause, exit_fullscreen_ui,
              quit_afterwards](int result) mutable {
@@ -3140,18 +3177,18 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!card_path.isEmpty() && !QFile::exists(card_path))
     {
-      if (QMessageBox::question(
+      if (QtUtils::MessageBoxQuestion(
             this, tr("Memory Card Not Found"),
             tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
-            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
       {
         Error error;
         if (!MemoryCardEditorWindow::createMemoryCard(card_path, &error))
         {
-          QMessageBox::critical(this, tr("Memory Card Not Found"),
-                                tr("Failed to create memory card '%1': %2")
-                                  .arg(card_path)
-                                  .arg(QString::fromStdString(error.GetDescription())));
+          QtUtils::MessageBoxCritical(this, tr("Memory Card Not Found"),
+                                      tr("Failed to create memory card '%1': %2")
+                                        .arg(card_path)
+                                        .arg(QString::fromStdString(error.GetDescription())));
         }
       }
     }
@@ -3166,7 +3203,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!m_memory_card_editor_window->setCardA(card_a_path))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, tr("Memory Card Not Found"),
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_a_path));
     }
@@ -3175,7 +3212,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   {
     if (!m_memory_card_editor_window->setCardB(card_b_path))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, tr("Memory Card Not Found"),
         tr("Memory card '%1' could not be found. Try starting the game and saving to create it.").arg(card_b_path));
     }
@@ -3426,22 +3463,14 @@ void MainWindow::checkForUpdates(bool display_message)
   }
 
   m_auto_updater_dialog = new AutoUpdaterWindow();
-  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, &MainWindow::onUpdateCheckComplete);
+  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this,
+          [this] { QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog); });
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }
 
 void* MainWindow::getNativeWindowId()
 {
   return (void*)winId();
-}
-
-void MainWindow::onUpdateCheckComplete()
-{
-  if (!m_auto_updater_dialog)
-    return;
-
-  m_auto_updater_dialog->deleteLater();
-  m_auto_updater_dialog = nullptr;
 }
 
 void MainWindow::onDebugLogChannelsMenuAboutToShow()

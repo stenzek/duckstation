@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_thread.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"
@@ -17,7 +17,6 @@
 #include "system_private.h"
 
 #include "util/gpu_device.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
@@ -646,6 +645,8 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
     create_flags |= GPUDevice::CreateFlags::EnableDebugDevice;
   if (g_gpu_settings.gpu_use_debug_device && g_gpu_settings.gpu_use_debug_device_gpu_validation)
     create_flags |= GPUDevice::CreateFlags::EnableGPUValidation;
+  if (g_gpu_settings.gpu_disable_shader_cache)
+    create_flags |= GPUDevice::CreateFlags::DisableShaderCache;
   if (g_gpu_settings.gpu_disable_dual_source_blend)
     create_flags |= GPUDevice::CreateFlags::DisableDualSourceBlend;
   if (g_gpu_settings.gpu_disable_framebuffer_fetch)
@@ -663,7 +664,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (g_gpu_settings.gpu_disable_compressed_textures)
     create_flags |= GPUDevice::CreateFlags::DisableCompressedTextures;
 
-  // Don't dump shaders on debug builds for Android, users will complain about storage...
+  // Only dump shaders on debug builds for Android, users will complain about storage...
 #if !defined(__ANDROID__) || defined(_DEBUG)
   const std::string_view shader_dump_directory(EmuFolders::DataRoot);
 #else
@@ -675,8 +676,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory,
-        g_gpu_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
+        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
         SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
         fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {
@@ -697,19 +697,20 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   }
 
   if (!ImGuiManager::Initialize(g_gpu_settings.display_osd_scale / 100.0f, g_gpu_settings.display_osd_margin,
-                                &create_error) ||
-      (s_state.requested_fullscreen_ui && !FullscreenUI::Initialize()))
+                                &create_error))
   {
     ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
-    FullscreenUI::Shutdown(clear_fsui_state_on_failure);
-    ImGuiManager::Shutdown();
+    ImGuiManager::Shutdown(clear_fsui_state_on_failure);
     g_gpu_device->Destroy();
     g_gpu_device.reset();
     if (wi.has_value())
       Host::ReleaseRenderWindow();
     return false;
   }
+
+  if (s_state.requested_fullscreen_ui)
+    FullscreenUI::Initialize();
 
   InputManager::SetDisplayWindowSize(ImGuiManager::GetWindowWidth(), ImGuiManager::GetWindowHeight());
 
@@ -737,7 +738,7 @@ void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
   Assert(!s_state.gpu_presenter);
 
   FullscreenUI::Shutdown(clear_fsui_state);
-  ImGuiManager::Shutdown();
+  ImGuiManager::Shutdown(clear_fsui_state);
 
   INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
@@ -911,10 +912,9 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   }
   else if (s_state.requested_fullscreen_ui)
   {
-    const bool had_gpu_device = static_cast<bool>(g_gpu_device);
-    if (!g_gpu_device && !CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr))
+    if (!(*cmd->out_result =
+            g_gpu_device || CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr)))
     {
-      *cmd->out_result = false;
       return;
     }
 
@@ -925,12 +925,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     // Don't need timing to run FSUI.
     g_gpu_device->SetGPUTimingEnabled(false);
 
-    if (!(*cmd->out_result = FullscreenUI::IsInitialized() || FullscreenUI::Initialize()))
-    {
-      Error::SetStringView(cmd->error_ptr, "Failed to initialize FullscreenUI.");
-      if (!had_gpu_device)
-        DestroyDeviceOnThread(true);
-    }
+    // Ensure FSUI is initialized.
+    FullscreenUI::Initialize();
   }
 }
 
@@ -1477,8 +1473,9 @@ void GPUThread::UpdateRunIdle()
   static constexpr u8 REQUIRE_MASK = static_cast<u8>(RunIdleReason::NoGPUBackend) |
                                      static_cast<u8>(RunIdleReason::SystemPaused) |
                                      static_cast<u8>(RunIdleReason::LoadingScreenActive);
-  static constexpr u8 ACTIVATE_MASK =
-    static_cast<u8>(RunIdleReason::FullscreenUIActive) | static_cast<u8>(RunIdleReason::LoadingScreenActive);
+  static constexpr u8 ACTIVATE_MASK = static_cast<u8>(RunIdleReason::FullscreenUIActive) |
+                                      static_cast<u8>(RunIdleReason::NotificationsActive) |
+                                      static_cast<u8>(RunIdleReason::LoadingScreenActive);
 
   const bool new_flag = (g_gpu_device && ((s_state.run_idle_reasons & REQUIRE_MASK) != 0) &&
                          ((s_state.run_idle_reasons & ACTIVATE_MASK) != 0));
@@ -1486,7 +1483,11 @@ void GPUThread::UpdateRunIdle()
     return;
 
   s_state.run_idle_flag = new_flag;
-  DEV_LOG("GPU thread now {} idle", new_flag ? "running" : "NOT running");
+  if (new_flag)
+    DEV_COLOR_LOG(StrongYellow, "GPU thread now running idle");
+  else
+    DEV_COLOR_LOG(StrongOrange, "GPU thread now NOT running idle");
+
   Host::OnGPUThreadRunIdleChanged(new_flag);
 }
 

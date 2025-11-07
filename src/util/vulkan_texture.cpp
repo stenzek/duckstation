@@ -104,7 +104,6 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
 
     case Type::RenderTarget:
     {
-      DebugAssert(levels == 1);
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                   VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                   VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
@@ -426,15 +425,12 @@ void VulkanTexture::CommitClear()
   if (m_state != GPUTexture::State::Cleared)
     return;
 
-  VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
-
-  CommitClear(dev.GetCurrentCommandBuffer());
+  CommitClear(GetCommandBufferForUpdate());
 }
 
 void VulkanTexture::CommitClear(VkCommandBuffer cmdbuf)
 {
+  DebugAssert(m_state == State::Cleared);
   TransitionToLayout(cmdbuf, Layout::ClearDst);
 
   if (IsDepthStencil())
@@ -708,14 +704,14 @@ VkDescriptorSet VulkanTexture::GetDescriptorSetWithSampler(VkSampler sampler)
 
 void VulkanTexture::MakeReadyForSampling()
 {
-  if (m_layout == Layout::ShaderReadOnly)
+  if (m_layout == Layout::ShaderReadOnly && m_state != State::Cleared)
     return;
 
-  VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
+  const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
+  if (m_state == State::Cleared)
+    CommitClear(cmdbuf);
 
-  TransitionToLayout(Layout::ShaderReadOnly);
+  TransitionToLayout(cmdbuf, Layout::ShaderReadOnly);
 }
 
 void VulkanTexture::GenerateMipmaps()

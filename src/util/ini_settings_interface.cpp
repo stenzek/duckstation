@@ -293,9 +293,9 @@ void INISettingsInterface::RemoveSection(const char* section)
 
 void INISettingsInterface::RemoveEmptySections()
 {
-  std::list<CSimpleIniA::Entry> entries;
+  std::list<IniStorage::Entry> entries;
   m_ini.GetAllSections(entries);
-  for (const CSimpleIniA::Entry& entry : entries)
+  for (const IniStorage::Entry& entry : entries)
   {
     if (m_ini.GetSectionSize(entry.pItem) > 0)
       continue;
@@ -307,13 +307,13 @@ void INISettingsInterface::RemoveEmptySections()
 
 std::vector<std::string> INISettingsInterface::GetStringList(const char* section, const char* key) const
 {
-  std::list<CSimpleIniA::Entry> entries;
+  std::list<IniStorage::Entry> entries;
   if (!m_ini.GetAllValues(section, key, entries))
     return {};
 
   std::vector<std::string> ret;
   ret.reserve(entries.size());
-  for (const CSimpleIniA::Entry& entry : entries)
+  for (const IniStorage::Entry& entry : entries)
     ret.emplace_back(entry.pItem);
   return ret;
 }
@@ -335,10 +335,10 @@ bool INISettingsInterface::RemoveFromStringList(const char* section, const char*
 
 bool INISettingsInterface::AddToStringList(const char* section, const char* key, const char* item)
 {
-  std::list<CSimpleIniA::Entry> entries;
+  std::list<IniStorage::Entry> entries;
   if (m_ini.GetAllValues(section, key, entries) &&
       std::find_if(entries.begin(), entries.end(),
-                   [item](const CSimpleIniA::Entry& e) { return (std::strcmp(e.pItem, item) == 0); }) != entries.end())
+                   [item](const IniStorage::Entry& e) { return (std::strcmp(e.pItem, item) == 0); }) != entries.end())
   {
     return false;
   }
@@ -350,7 +350,7 @@ bool INISettingsInterface::AddToStringList(const char* section, const char* key,
 
 std::vector<std::pair<std::string, std::string>> INISettingsInterface::GetKeyValueList(const char* section) const
 {
-  using Entry = CSimpleIniA::Entry;
+  using Entry = IniStorage::Entry;
   using KVEntry = std::pair<const char*, Entry>;
   std::vector<KVEntry> entries;
   std::vector<std::pair<std::string, std::string>> output;

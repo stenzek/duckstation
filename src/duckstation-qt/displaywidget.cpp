@@ -6,7 +6,7 @@
 #include "qthost.h"
 #include "qtutils.h"
 
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 
 #include "util/imgui_manager.h"
 

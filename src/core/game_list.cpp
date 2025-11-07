@@ -4,7 +4,7 @@
 #include "game_list.h"
 #include "achievements.h"
 #include "bios.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "host.h"
 #include "memory_card_image.h"
 #include "psf_loader.h"
@@ -26,6 +26,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/progress_callback.h"
+#include "common/string_pool.h"
 #include "common/string_util.h"
 #include "common/thirdparty/SmallVector.h"
 #include "common/time_helpers.h"
@@ -123,20 +124,22 @@ static bool LoadEntriesFromCache(BinaryFileReader& reader);
 static bool WriteEntryToCache(const Entry* entry, const std::string& entry_path, BinaryFileWriter& writer);
 static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map);
 
-static std::string GetPlayedTimeFile();
-static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
-static std::string MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry);
-static PlayedTimeMap LoadPlayedTimeMap(const std::string& path);
-static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& path, const std::string& serial, std::time_t last_time,
-                                            std::time_t add_time);
+static std::string GetPlayedTimePath();
+static bool ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry);
+static std::string MakePlayedTimeLine(std::string_view serial, const PlayedTimeEntry& entry);
+static PlayedTimeMap LoadPlayedTimeMap();
+static PlayedTimeEntry UpdatePlayedTimeFile(std::string_view serial, std::time_t last_time, std::time_t add_time);
 
 static std::string GetCustomPropertiesFile();
 static const std::string& GetCustomPropertiesSection(const std::string& path, std::string* temp_path);
 static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
                                      const char* value);
 
-static FileSystem::ManagedCFilePtr OpenMemoryCardTimestampCache(bool for_write);
+static std::string GetMemcardTimestampCachePath();
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
+
+static std::string GetAchievementGameBadgeCachePath();
+static void LoadAchievementGameBadges();
 
 struct State
 {
@@ -145,7 +148,12 @@ struct State
   CacheMap cache_map;
   std::vector<MemcardTimestampCacheEntry> memcard_timestamp_cache_entries;
 
+  // TODO: Turn this into a proper cache of achievement data, not just the badge names.
+  std::vector<std::pair<u32, u32>> achievement_game_id_badges; // game_id, string_pool_offset
+  BumpStringPool achievement_game_badge_names;
+
   bool game_list_loaded = false;
+  bool achievement_game_badges_loaded = false;
 };
 
 ALIGN_TO_CACHE_LINE static State s_state;
@@ -186,6 +194,17 @@ bool GameList::ShouldShowLocalizedTitles()
   return Host::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
 }
 
+bool GameList::ShouldLoadAchievementsProgress()
+{
+  return Host::ContainsBaseSettingValue("Cheevos", "Token");
+}
+
+bool GameList::PreferAchievementGameBadgesForIcons()
+{
+  return (ShouldLoadAchievementsProgress() &&
+          Host::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
+}
+
 bool GameList::IsScannableFilename(std::string_view path)
 {
   // we don't scan bin files because they'll duplicate
@@ -193,11 +212,6 @@ bool GameList::IsScannableFilename(std::string_view path)
     return false;
 
   return (System::IsDiscPath(path) || System::IsExePath(path) || System::IsPsfPath(path));
-}
-
-bool GameList::ShouldLoadAchievementsProgress()
-{
-  return Host::ContainsBaseSettingValue("Cheevos", "Token");
 }
 
 bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
@@ -702,7 +716,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
   entry.path = path;
   entry.last_modified_time = sd.ModificationTime;
 
-  const PlayedTimeMap played_time_map(LoadPlayedTimeMap(GetPlayedTimeFile()));
+  const PlayedTimeMap played_time_map = LoadPlayedTimeMap();
   const auto iter = played_time_map.find(entry.serial);
   if (iter != played_time_map.end())
   {
@@ -1023,25 +1037,13 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
     progress = ProgressCallback::NullProgressCallback;
 
   Error error;
-  FileSystem::ManagedCFilePtr cache_file =
-    FileSystem::OpenExistingOrCreateManagedCFile(Path::Combine(EmuFolders::Cache, "gamelist.cache").c_str(), 0, &error);
+  FileSystem::LockedFile cache_file =
+    FileSystem::OpenLockedFile(Path::Combine(EmuFolders::Cache, "gamelist.cache").c_str(), true, &error);
   if (!cache_file)
     ERROR_LOG("Failed to open game list cache: {}", error.GetDescription());
+  else if (!LoadOrInitializeCache(cache_file.get(), invalidate_cache))
+    cache_file.reset();
 
-#ifdef HAS_POSIX_FILE_LOCK
-  // Lock cache file for multi-instance on Linux. Implicitly done on Windows.
-  std::optional<FileSystem::POSIXLock> cache_file_lock;
-  if (cache_file)
-    cache_file_lock.emplace(cache_file.get());
-  if (!LoadOrInitializeCache(cache_file.get(), invalidate_cache))
-  {
-    cache_file_lock.reset();
-    cache_file.reset();
-  }
-#else
-  if (!LoadOrInitializeCache(cache_file.get(), invalidate_cache))
-    cache_file.reset();
-#endif
   BinaryFileWriter cache_writer(cache_file.get());
 
   // don't delete the old entries, since the frontend might still access them
@@ -1054,7 +1056,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
   std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
   std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
-  const PlayedTimeMap played_time(LoadPlayedTimeMap(GetPlayedTimeFile()));
+  const PlayedTimeMap played_time = LoadPlayedTimeMap();
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
 
@@ -1155,6 +1157,7 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     set_entry.last_played_time = 0;
     set_entry.total_played_time = 0;
     set_entry.achievements_hash = entry.achievements_hash;
+    set_entry.achievements_game_id = entry.achievements_game_id;
     set_entry.num_achievements = entry.num_achievements;
     set_entry.unlocked_achievements = entry.unlocked_achievements;
     set_entry.unlocked_achievements_hc = entry.unlocked_achievements_hc;
@@ -1336,12 +1339,12 @@ std::string GameList::Entry::GetReleaseDateString() const
   return ret;
 }
 
-std::string GameList::GetPlayedTimeFile()
+std::string GameList::GetPlayedTimePath()
 {
   return Path::Combine(EmuFolders::DataRoot, "playtime.dat");
 }
 
-bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry)
+bool GameList::ParsePlayedTimeLine(char* line, std::string_view& serial, PlayedTimeEntry& entry)
 {
   size_t len = std::strlen(line);
   if (len != (PLAYED_TIME_LINE_LENGTH + 1)) // \n
@@ -1370,34 +1373,29 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
   return true;
 }
 
-std::string GameList::MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry)
+std::string GameList::MakePlayedTimeLine(std::string_view serial, const PlayedTimeEntry& entry)
 {
   return fmt::format("{:<{}} {:<{}} {:<{}}\n", serial, static_cast<unsigned>(PLAYED_TIME_SERIAL_LENGTH),
                      entry.total_played_time, static_cast<unsigned>(PLAYED_TIME_TOTAL_TIME_LENGTH),
                      entry.last_played_time, static_cast<unsigned>(PLAYED_TIME_LAST_TIME_LENGTH));
 }
 
-GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
+GameList::PlayedTimeMap GameList::LoadPlayedTimeMap()
 {
   PlayedTimeMap ret;
 
-  // Use write mode here, even though we're not writing, so we can lock the file from other updates.
   Error error;
-  auto fp = FileSystem::OpenExistingOrCreateManagedCFile(path.c_str(), 0, &error);
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetPlayedTimePath().c_str(), false, &error);
   if (!fp)
   {
-    ERROR_LOG("Failed to open '{}' for load: {}", Path::GetFileName(path), error.GetDescription());
+    ERROR_LOG("Failed to load played time map: {}", error.GetDescription());
     return ret;
   }
-
-#ifdef HAS_POSIX_FILE_LOCK
-  FileSystem::POSIXLock flock(fp.get());
-#endif
 
   char line[256];
   while (std::fgets(line, sizeof(line), fp.get()))
   {
-    std::string serial;
+    std::string_view serial;
     PlayedTimeEntry entry;
     if (!ParsePlayedTimeLine(line, serial, entry))
       continue;
@@ -1408,28 +1406,24 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
       continue;
     }
 
-    ret.emplace(std::move(serial), entry);
+    ret.emplace(std::string(serial), entry);
   }
 
   return ret;
 }
 
-GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path, const std::string& serial,
-                                                         std::time_t last_time, std::time_t add_time)
+GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string_view serial, std::time_t last_time,
+                                                         std::time_t add_time)
 {
   const PlayedTimeEntry new_entry{last_time, add_time};
 
   Error error;
-  auto fp = FileSystem::OpenExistingOrCreateManagedCFile(path.c_str(), 0, &error);
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetPlayedTimePath().c_str(), true, &error);
   if (!fp)
   {
-    ERROR_LOG("Failed to open '{}' for update: {}", Path::GetFileName(path), error.GetDescription());
+    ERROR_LOG("Failed to open played time map for update: {}", error.GetDescription());
     return new_entry;
   }
-
-#ifdef HAS_POSIX_FILE_LOCK
-  FileSystem::POSIXLock flock(fp.get());
-#endif
 
   for (;;)
   {
@@ -1438,7 +1432,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     if (!std::fgets(line, sizeof(line), fp.get()))
       break;
 
-    std::string line_serial;
+    std::string_view line_serial;
     PlayedTimeEntry line_entry;
     if (!ParsePlayedTimeLine(line, line_serial, line_entry))
       continue;
@@ -1450,11 +1444,11 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     line_entry.last_played_time = (last_time != 0) ? last_time : 0;
     line_entry.total_played_time = (last_time != 0) ? (line_entry.total_played_time + add_time) : 0;
 
-    std::string new_line(MakePlayedTimeLine(serial, line_entry));
+    const std::string new_line = MakePlayedTimeLine(serial, line_entry);
     if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      ERROR_LOG("Failed to update '{}'.", path);
+      ERROR_LOG("Failed to update '{}' in played time map.", serial);
     }
 
     return line_entry;
@@ -1463,11 +1457,11 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
   if (last_time != 0)
   {
     // new entry.
-    std::string new_line(MakePlayedTimeLine(serial, new_entry));
+    const std::string new_line = MakePlayedTimeLine(serial, new_entry);
     if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 ||
         std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
     {
-      ERROR_LOG("Failed to write '{}'.", path);
+      ERROR_LOG("Failed to append '{}' to played time map.", serial);
     }
   }
 
@@ -1479,7 +1473,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   if (serial.empty())
     return;
 
-  const PlayedTimeEntry pt(UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, last_time, add_time));
+  const PlayedTimeEntry pt = UpdatePlayedTimeFile(serial, last_time, add_time);
   VERBOSE_LOG("Add {} seconds play time to {} -> now {}", static_cast<unsigned>(add_time), serial.c_str(),
               static_cast<unsigned>(pt.total_played_time));
 
@@ -1512,7 +1506,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
   }
 
   if (!changed_indices.empty())
-    Host::OnGameListEntriesChanged(std::span<const u32>(changed_indices.begin(), changed_indices.end()));
+    Host::OnGameListEntriesChanged(changed_indices);
 }
 
 void GameList::ClearPlayedTimeForSerial(const std::string& serial)
@@ -1520,7 +1514,7 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
   if (serial.empty())
     return;
 
-  UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, 0, 0);
+  UpdatePlayedTimeFile(serial, 0, 0);
 
   std::unique_lock lock(s_state.mutex);
   for (GameList::Entry& entry : s_state.entries)
@@ -1536,27 +1530,28 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
 void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
 {
   std::unique_lock lock(s_state.mutex);
-  std::vector<std::string> serials;
+  llvm::SmallVector<std::string_view, 8> serials;
 
   if (entry->IsDiscSet())
   {
     for (const GameList::Entry* member : GetDiscSetMembers(entry->dbentry->disc_set))
     {
       if (!member->serial.empty())
-        serials.push_back(member->serial);
+      {
+        if (std::find(serials.begin(), serials.end(), member->serial) == serials.end())
+          serials.emplace_back(member->serial);
+      }
     }
   }
-  else
+  else if (!entry->serial.empty())
   {
-    if (!entry->serial.empty())
-      serials.push_back(entry->serial);
+    serials.emplace_back(entry->serial);
   }
 
-  auto played_time_file = GetPlayedTimeFile();
   for (const auto& serial : serials)
   {
     VERBOSE_LOG("Resetting played time for {}", serial);
-    UpdatePlayedTimeFile(played_time_file, serial, 0, 0);
+    UpdatePlayedTimeFile(serial, 0, 0);
   }
 
   for (GameList::Entry& list_entry : s_state.entries)
@@ -1977,64 +1972,22 @@ std::optional<DiscRegion> GameList::GetCustomRegionForPath(const std::string_vie
 
 static constexpr const char MEMCARD_TIMESTAMP_CACHE_SIGNATURE[] = {'M', 'C', 'D', 'I', 'C', 'N', '0', '3'};
 
-FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_write)
+std::string GameList::GetMemcardTimestampCachePath()
 {
-  const std::string filename = Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
-  const FileSystem::FileShareMode share_mode =
-    for_write ? FileSystem::FileShareMode::DenyReadWrite : FileSystem::FileShareMode::DenyWrite;
-#ifdef _WIN32
-  const char* mode = for_write ? "r+b" : "rb";
-#else
-  // Always open read/write on Linux, since we need it for flock().
-  const char* mode = "r+b";
-#endif
-
-  FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
-  if (fp)
-    return fp;
-
-  // Doesn't exist? Create it.
-  if (errno == ENOENT)
-  {
-    if (!for_write)
-      return nullptr;
-
-    mode = "w+b";
-    fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
-    if (fp)
-      return fp;
-  }
-
-  // If there's a sharing violation, try again for 100ms.
-  if (errno != EACCES)
-    return nullptr;
-
-  Timer timer;
-  while (timer.GetTimeMilliseconds() <= 100.0f)
-  {
-    fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);
-    if (fp)
-      return fp;
-
-    if (errno != EACCES)
-      return nullptr;
-  }
-
-  ERROR_LOG("Timed out while trying to open memory card cache file.");
-  return nullptr;
+  return Path::Combine(EmuFolders::Cache, "memcard_icons.cache");
 }
 
 void GameList::ReloadMemcardTimestampCache()
 {
   s_state.memcard_timestamp_cache_entries.clear();
 
-  FileSystem::ManagedCFilePtr fp = OpenMemoryCardTimestampCache(false);
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetMemcardTimestampCachePath().c_str(), false, &error);
   if (!fp)
+  {
+    ERROR_LOG("Failed to open memory card cache for read: {}", error.GetDescription());
     return;
-
-#ifdef HAS_POSIX_FILE_LOCK
-  FileSystem::POSIXLock lock(fp.get());
-#endif
+  }
 
   const s64 file_size = FileSystem::FSize64(fp.get());
   if (file_size < static_cast<s64>(sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)))
@@ -2066,12 +2019,20 @@ void GameList::ReloadMemcardTimestampCache()
     entry.serial[sizeof(entry.serial) - 1] = 0;
 }
 
-std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path)
+std::string GameList::GetGameIconPath(std::string_view serial, std::string_view path, u32 achievements_game_id)
 {
   std::string ret;
 
+  std::string fallback_path;
+  if (achievements_game_id != 0)
+  {
+    fallback_path = GetAchievementGameBadgePath(achievements_game_id);
+    if (!fallback_path.empty() && PreferAchievementGameBadgesForIcons())
+      return (ret = std::move(fallback_path));
+  }
+
   if (serial.empty())
-    return ret;
+    return (ret = std::move(fallback_path));
 
   // might exist already, or the user used a custom icon
   ret = Path::Combine(EmuFolders::GameIcons, TinyString::from_format("{}.png", serial));
@@ -2084,8 +2045,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
   if (memcard_path.empty() || type == MemoryCardType::Shared ||
       !FileSystem::StatFile(memcard_path.c_str(), &memcard_sd))
   {
-    ret = {};
-    return ret;
+    return (ret = std::move(fallback_path));
   }
 
   const s64 timestamp = memcard_sd.ModificationTime;
@@ -2101,10 +2061,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
       // user might've deleted the file, so re-extract it if so
       // otherwise, card hasn't changed, still no icon
       if (entry.memcard_timestamp == timestamp && !entry.icon_was_extracted)
-      {
-        ret = {};
-        return ret;
-      }
+        return (ret = std::move(fallback_path));
 
       serial_entry = &entry;
       break;
@@ -2154,20 +2111,19 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
     ERROR_LOG("Failed to load memory card '{}': {}", Path::GetFileName(memcard_path), error.GetDescription());
   }
 
-  ret = {};
   UpdateMemcardTimestampCache(*serial_entry);
-  return ret;
+  return (ret = std::move(fallback_path));
 }
 
 bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry)
 {
-  FileSystem::ManagedCFilePtr fp = OpenMemoryCardTimestampCache(true);
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetMemcardTimestampCachePath().c_str(), true, &error);
   if (!fp)
+  {
+    ERROR_LOG("Failed to open memory card cache for update: {}", error.GetDescription());
     return false;
-
-#ifdef HAS_POSIX_FILE_LOCK
-  FileSystem::POSIXLock lock(fp.get());
-#endif
+  }
 
   // check signature, write it if it's non-existent or invalid
   char signature[sizeof(MEMCARD_TIMESTAMP_CACHE_SIGNATURE)];
@@ -2209,4 +2165,146 @@ bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& ent
 
   // append it.
   return (std::fwrite(&entry, sizeof(entry), 1, fp.get()) == 1);
+}
+
+std::string GameList::GetAchievementGameBadgeCachePath()
+{
+  return Path::Combine(EmuFolders::Cache, "achievement_game_badges.cache");
+}
+
+std::string GameList::GetAchievementGameBadgePath(u32 game_id)
+{
+  LoadAchievementGameBadges();
+
+  std::string ret;
+
+  const auto iter =
+    std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
+                     [](const auto& entry, u32 search) { return entry.first < search; });
+  if (iter != s_state.achievement_game_id_badges.end() && iter->first == game_id)
+  {
+    const std::string_view badge_name = s_state.achievement_game_badge_names.GetString(iter->second);
+    if (!badge_name.empty())
+    {
+      ret = Achievements::GetGameBadgePath(badge_name);
+      if (!FileSystem::FileExists(ret.c_str()))
+        ret.clear();
+    }
+  }
+
+  return ret;
+}
+
+void GameList::LoadAchievementGameBadges()
+{
+  if (s_state.achievement_game_badges_loaded)
+    return;
+
+  s_state.achievement_game_badges_loaded = true;
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetAchievementGameBadgeCachePath().c_str(), false, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to load cache: {}", error.GetDescription());
+    return;
+  }
+
+  // avoid heap allocations by using the file size as a guide
+  static constexpr u32 MAX_RESERVE_SIZE = 1 * 1024 * 1024;
+  s_state.achievement_game_badge_names.Reserve(
+    static_cast<size_t>(std::clamp<s64>(FileSystem::FSize64(fp.get()), 0, MAX_RESERVE_SIZE)));
+
+  char line[256];
+  while (std::fgets(line, sizeof(line), fp.get()))
+  {
+    const std::string_view line_sv = StringUtil::StripWhitespace(line);
+    if (line_sv.empty())
+      continue;
+
+    const std::string_view::size_type pos = line_sv.find(',');
+    if (pos != std::string_view::npos)
+    {
+      const std::optional<u32> game_id = StringUtil::FromChars<u32>(line_sv.substr(0, pos));
+      const std::string_view badge_name = StringUtil::StripWhitespace(line_sv.substr(pos + 1));
+      if (game_id.has_value() && !badge_name.empty())
+      {
+        s_state.achievement_game_id_badges.emplace_back(
+          game_id.value(), static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name)));
+        continue;
+      }
+    }
+
+    WARNING_LOG("Malformed line in cache: '{}'", line_sv);
+  }
+
+  DEV_LOG("Loaded {} achievement badge names", s_state.achievement_game_id_badges.size());
+
+  // the file may not be sorted, so sort it now.
+  std::sort(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(),
+            [](const auto& a, const auto& b) { return a.first < b.first; });
+}
+
+void GameList::UpdateAchievementBadgeName(u32 game_id, std::string_view badge_name)
+{
+  if (game_id == 0)
+    return;
+
+  std::unique_lock lock(s_state.mutex);
+
+  LoadAchievementGameBadges();
+
+  const auto iter =
+    std::lower_bound(s_state.achievement_game_id_badges.begin(), s_state.achievement_game_id_badges.end(), game_id,
+                     [](const auto& entry, u32 search) { return entry.first < search; });
+  bool game_exists = false;
+  if (iter != s_state.achievement_game_id_badges.end() && iter->first == game_id)
+  {
+    if (s_state.achievement_game_badge_names.GetString(iter->second) == badge_name)
+      return;
+
+    iter->second = static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name));
+    game_exists = true;
+  }
+  else
+  {
+    s_state.achievement_game_id_badges.insert(
+      iter, {game_id, static_cast<u32>(s_state.achievement_game_badge_names.AddString(badge_name))});
+  }
+
+  Error error;
+  FileSystem::LockedFile fp = FileSystem::OpenLockedFile(GetAchievementGameBadgeCachePath().c_str(), true, &error);
+  if (!fp)
+  {
+    ERROR_LOG("Failed to open cache for update: {}", error.GetDescription());
+    return;
+  }
+
+  // this is really terrible, but the case where a badge name changes is so rare that it's not worth handling well
+  if (game_exists)
+  {
+    if (!FileSystem::FTruncate64(fp.get(), 0, &error))
+    {
+      ERROR_LOG("Failed to truncate cache: {}", error.GetDescription());
+      return;
+    }
+
+    for (const auto& entry : s_state.achievement_game_id_badges)
+    {
+      const std::string_view entry_badge = s_state.achievement_game_badge_names.GetString(entry.second);
+      if (std::fprintf(fp.get(), "%u,%.*s\n", entry.first, static_cast<int>(entry_badge.size()), entry_badge.data()) <
+          0)
+      {
+        ERROR_LOG("Failed to rewrite cache: errno {}", errno);
+      }
+    }
+  }
+  else
+  {
+    if (!FileSystem::FSeek64(fp.get(), 0, SEEK_END, &error) ||
+        std::fprintf(fp.get(), "%u,%.*s\n", game_id, static_cast<int>(badge_name.size()), badge_name.data()) < 0)
+    {
+      ERROR_LOG("Failed to append to cache: errno {}", errno);
+    }
+  }
 }

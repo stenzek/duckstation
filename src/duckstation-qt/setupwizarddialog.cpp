@@ -22,8 +22,6 @@
 
 #include "fmt/format.h"
 
-#include <QtWidgets/QMessageBox>
-
 #include "moc_setupwizarddialog.cpp"
 
 SetupWizardDialog::SetupWizardDialog()
@@ -45,7 +43,7 @@ bool SetupWizardDialog::canShowNextPage()
     {
       if (!BIOS::HasAnyBIOSImages())
       {
-        if (QMessageBox::question(
+        if (QtUtils::MessageBoxQuestion(
               this, tr("Warning"),
               tr("No BIOS images were found. DuckStation WILL NOT be able to run games without a BIOS image.\n\nAre "
                  "you sure you wish to continue without selecting a BIOS image?")) != QMessageBox::Yes)
@@ -60,7 +58,7 @@ bool SetupWizardDialog::canShowNextPage()
     {
       if (m_ui.searchDirectoryList->rowCount() == 0)
       {
-        if (QMessageBox::question(
+        if (QtUtils::MessageBoxQuestion(
               this, tr("Warning"),
               tr("No game directories have been selected. You will have to manually open any game dumps you "
                  "want to play, DuckStation's list will be empty.\n\nAre you sure you want to continue?")) !=
@@ -132,9 +130,10 @@ void SetupWizardDialog::updatePageButtons()
 
 void SetupWizardDialog::confirmCancel()
 {
-  if (QMessageBox::question(this, tr("Cancel Setup"),
-                            tr("Are you sure you want to cancel DuckStation setup?\n\nAny changes have been saved, and "
-                               "the wizard will run again next time you start DuckStation.")) != QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("Cancel Setup"),
+        tr("Are you sure you want to cancel DuckStation setup?\n\nAny changes have been saved, and "
+           "the wizard will run again next time you start DuckStation.")) != QMessageBox::Yes)
   {
     return;
   }
@@ -285,12 +284,12 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
     return;
 
   QMessageBox::StandardButton selection =
-    QMessageBox::question(this, tr("Scan Recursively?"),
+    QtUtils::MessageBoxQuestion(this, tr("Scan Recursively?"),
                           tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
                              "more time, but will identify files in subdirectories.")
                             .arg(dir),
                           QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-  if (selection == QMessageBox::Cancel)
+  if (selection != QMessageBox::Yes && selection != QMessageBox::No)
     return;
 
   const bool recursive = (selection == QMessageBox::Yes);
@@ -380,7 +379,7 @@ void SetupWizardDialog::setupControllerPage(bool initial)
   {
     QComboBox* type_combo;
     QLabel* mapping_result;
-    QToolButton* mapping_button;
+    QPushButton* mapping_button;
   };
   const PadWidgets pad_widgets[NUM_PADS] = {
     {m_ui.controller1Type, m_ui.controller1Mapping, m_ui.controller1AutomaticMapping},
@@ -473,7 +472,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
     InputManager::GetGenericBindingMapping(device.toStdString());
   if (mapping.empty())
   {
-    QMessageBox::critical(
+    QtUtils::MessageBoxCritical(
       this, tr("Automatic Binding"),
       tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic "
          "mapping.")

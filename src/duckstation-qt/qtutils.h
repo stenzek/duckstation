@@ -14,6 +14,7 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 #include <QtGui/QIcon>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QWidget>
 #include <functional>
 #include <initializer_list>
@@ -91,6 +92,9 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
 /// Converts a std::string_view to a QString safely.
 QString StringViewToQString(std::string_view str);
 
+/// Ensures line endings are normalized in \n format.
+QString NormalizeLineEndings(QString str);
+
 /// Sets a widget to italics if the setting value is inherited.
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
 
@@ -102,6 +106,27 @@ void SetWindowResizeable(QWidget* widget, bool resizeable);
 
 /// Adjusts the fixed size for a window if it's not resizeable.
 void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height);
+
+/// Replacement for QMessageBox::question() and friends that doesn't look terrible on MacOS.
+QMessageBox::StandardButton MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,
+                                                  QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                                  QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxWarning(QWidget* parent, const QString& title, const QString& text,
+                                              QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                              QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxCritical(QWidget* parent, const QString& title, const QString& text,
+                                               QMessageBox::StandardButtons buttons = QMessageBox::Ok,
+                                               QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxQuestion(
+  QWidget* parent, const QString& title, const QString& text,
+  QMessageBox::StandardButtons buttons = QMessageBox::StandardButtons(QMessageBox::Yes | QMessageBox::No),
+  QMessageBox::StandardButton defaultButton = QMessageBox::NoButton);
+QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon icon, const QString& title,
+                                           const QString& text, QMessageBox::StandardButtons buttons,
+                                           QMessageBox::StandardButton defaultButton);
+QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+                           QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
+                           Qt::WindowModality modality, QWidget* parent);
 
 /// Returns icon for language.
 QIcon GetIconForTranslationLanguage(std::string_view language_name);
@@ -130,6 +155,9 @@ void SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto
 
 /// Restores a window's geometry from configuration. Returns false if it was not found in the configuration.
 bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
+
+/// Positions a window in the center of its parent or the screen.
+void CenterWindowRelativeToParent(QWidget* window, QWidget* parent_window);
 
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>

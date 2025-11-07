@@ -77,7 +77,7 @@ static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
 
 LOG_CHANNEL(Host);
 
-AutoUpdaterWindow::AutoUpdaterWindow(QWidget* parent /* = nullptr */) : QWidget(parent)
+AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
 {
   m_ui.setupUi(this);
   setWindowIcon(QtHost::GetAppIcon());
@@ -91,6 +91,8 @@ AutoUpdaterWindow::AutoUpdaterWindow(QWidget* parent /* = nullptr */) : QWidget(
   m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!m_http)
     ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available:\n{}", error.GetDescription());
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 AutoUpdaterWindow::~AutoUpdaterWindow() = default;
@@ -247,7 +249,7 @@ std::string AutoUpdaterWindow::getCurrentUpdateTag() const
 
 void AutoUpdaterWindow::reportError(const std::string_view msg)
 {
-  QMessageBox::critical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
+  QtUtils::MessageBoxCritical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
 }
 
 bool AutoUpdaterWindow::ensureHttpReady()
@@ -353,8 +355,8 @@ void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error
         {
           if (display_errors)
           {
-            QMessageBox::information(this, tr("Automatic Updater"),
-                                     tr("No updates are currently available. Please try again later."));
+            QtUtils::MessageBoxInformation(this, tr("Automatic Updater"),
+                                           tr("No updates are currently available. Please try again later."));
           }
 
           emit updateCheckCompleted();
@@ -804,7 +806,7 @@ void AutoUpdaterWindow::cleanupAfterUpdate()
   Error error;
   if (!FileSystem::DeleteFile(updater_path.c_str(), &error))
   {
-    QMessageBox::critical(
+    QtUtils::MessageBoxCritical(
       nullptr, tr("Updater Error"),
       tr("Failed to remove updater exe after update:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return;

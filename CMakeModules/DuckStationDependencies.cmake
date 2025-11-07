@@ -30,7 +30,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
 
 # Bundled dependencies.
-find_package(SDL3 3.2.24 REQUIRED)
+find_package(SDL3 3.2.26 REQUIRED)
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(PNG 1.6.50 REQUIRED)
@@ -66,7 +66,10 @@ set(CMAKE_FIND_ROOT_PATH ${FIND_ROOT_PATH_BACKUP})
 
 # Qt has transitive dependencies on system libs, so do it afterwards.
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.9.3 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  # All our builds include Qt, so this is not a problem.
+  set(QT_NO_PRIVATE_MODULE_WARNING ON)
+
+  find_package(Qt6 6.10.0 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
 
   # Have to verify it down here, don't want users using unpatched Qt.
   if(NOT Qt6_DIR MATCHES "^${CMAKE_PREFIX_PATH}")
@@ -98,7 +101,7 @@ if(NOT WIN32)
 endif()
 
 if(NOT WIN32)
-  find_package(FFMPEG 7.0.0 COMPONENTS avcodec avformat avutil swresample swscale)
+  find_package(FFMPEG 8.0.0 COMPONENTS avcodec avformat avutil swresample swscale)
   if(NOT FFMPEG_FOUND)
     message(WARNING "FFmpeg not found, using bundled headers.")
   endif()

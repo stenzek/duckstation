@@ -97,6 +97,18 @@ inline bool ContainsNoCase(std::string_view s1, std::string_view s2)
                       [](char lhs, char rhs) { return (ToLower(lhs) == ToLower(rhs)); }) != s1.end());
 }
 
+/// Constexpr version of strcmp, suitable for use in static_assert.
+inline constexpr int ConstexprCompare(const char* s1, const char* s2)
+{
+  const size_t len1 = std::char_traits<char>::length(s1);
+  const size_t len2 = std::char_traits<char>::length(s2);
+  const size_t clen = std::min(len1, len2);
+  if (const int res = std::char_traits<char>::compare(s1, s2, clen); res != 0)
+    return res;
+
+  return (len1 < len2) ? -1 : ((len1 > len2) ? 1 : 0);
+}
+
 /// Wrapper around std::from_chars
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline std::optional<T> FromChars(const std::string_view str, int base = 10)

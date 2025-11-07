@@ -1188,7 +1188,13 @@
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="textureReplacementOptions">
+             <widget class="QPushButton" name="textureReplacementOptions">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="icon">
                <iconset theme="settings-3-line"/>
               </property>

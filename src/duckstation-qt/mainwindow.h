@@ -271,6 +271,9 @@ private:
   void onCheatsActionTriggered();
   void onCheatsMenuAboutToShow();
   void onStartFullscreenUITriggered();
+  void onCloseGameActionTriggered();
+  void onCloseGameWithoutSavingActionTriggered();
+  void onResetGameActionTriggered();
   void onPauseActionToggled(bool checked);
   void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();
@@ -311,8 +314,6 @@ private:
   void onGameListEntryContextMenuRequested(const QPoint& point);
   void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
-  void onUpdateCheckComplete();
-
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
 
@@ -338,6 +339,7 @@ private:
     QShortcut* game_list_search = nullptr;
     QShortcut* game_list_zoom_in = nullptr;
     QShortcut* game_list_zoom_out = nullptr;
+    QShortcut* settings = nullptr;
   } m_shortcuts;
 
   SettingsWindow* m_settings_window = nullptr;

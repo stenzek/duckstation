@@ -22,7 +22,8 @@ public:
   enum : u32
   {
     MAX_PARAMETERS = 16,
-    MAX_DESCRIPTOR_RANGES = 16
+    MAX_DESCRIPTOR_RANGES = 16,
+    MAX_STATIC_SAMPLERS = 1,
   };
 
   RootSignatureBuilder();
@@ -38,11 +39,13 @@ public:
   u32 AddSRVParameter(u32 shader_reg, D3D12_SHADER_VISIBILITY visibility);
   u32 AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE rt, u32 start_shader_reg, u32 num_shader_regs,
                          D3D12_SHADER_VISIBILITY visibility);
+  u32 AddStaticSampler(u32 shader_reg, const D3D12_SAMPLER_DESC& sampler_desc, D3D12_SHADER_VISIBILITY visibility);
 
 private:
   D3D12_ROOT_SIGNATURE_DESC m_desc{};
   std::array<D3D12_ROOT_PARAMETER, MAX_PARAMETERS> m_params{};
   std::array<D3D12_DESCRIPTOR_RANGE, MAX_DESCRIPTOR_RANGES> m_descriptor_ranges{};
+  std::array<D3D12_STATIC_SAMPLER_DESC, MAX_STATIC_SAMPLERS> m_static_samplers{};
   u32 m_num_descriptor_ranges = 0;
 };
 

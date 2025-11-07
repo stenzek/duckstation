@@ -35,7 +35,6 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpinBox>
 #include <algorithm>
@@ -293,8 +292,8 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
 
 void ControllerBindingWidget::onClearBindingsClicked()
 {
-  if (QMessageBox::question(
-        QtUtils::GetRootWidget(this), tr("Clear Mapping"),
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("Clear Mapping"),
         tr("Are you sure you want to clear all mappings for this controller? This action cannot be undone.")) !=
       QMessageBox::Yes)
   {
@@ -344,8 +343,8 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
     InputManager::GetGenericBindingMapping(device.toStdString());
   if (mapping.empty())
   {
-    QMessageBox::critical(
-      QtUtils::GetRootWidget(this), tr("Automatic Mapping"),
+    QtUtils::MessageBoxCritical(
+      this, tr("Automatic Mapping"),
       tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.")
         .arg(device));
     return;
@@ -431,10 +430,11 @@ bool ControllerBindingWidget::doMultipleDeviceAutomaticBinding(QWidget* parent, 
     if (mapping.empty())
     {
       lock.unlock();
-      QMessageBox::critical(QtUtils::GetRootWidget(parent), tr("Automatic Mapping"),
-                            tr("No generic bindings were generated for device '%1'. The controller/source may not "
-                               "support automatic mapping.")
-                              .arg(identifier));
+      QtUtils::MessageBoxCritical(
+        parent, tr("Automatic Mapping"),
+        tr("No generic bindings were generated for device '%1'. The controller/source may not "
+           "support automatic mapping.")
+          .arg(identifier));
       lock.lock();
       continue;
     }
@@ -446,7 +446,7 @@ bool ControllerBindingWidget::doMultipleDeviceAutomaticBinding(QWidget* parent, 
 
   if (!tried_any)
   {
-    QMessageBox::information(QtUtils::GetRootWidget(parent), tr("Automatic Mapping"), tr("No devices were selected."));
+    QtUtils::MessageBoxInformation(parent, tr("Automatic Mapping"), tr("No devices were selected."));
     return false;
   }
 
@@ -641,6 +641,8 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   : QWidget(parent), m_parent(parent), m_bwidget(bwidget), m_index(index)
 {
   m_ui.setupUi(this);
+  m_ui.increaseFrequency->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
+  m_ui.decreateFrequency->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
 
   ControllerSettingsWindow* dialog = m_bwidget->getDialog();
   const std::string& section = m_bwidget->getConfigSection();

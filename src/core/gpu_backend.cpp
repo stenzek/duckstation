@@ -85,8 +85,8 @@ GSVector4 GPUBackend::GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds,
   return GSVector4::xyxy(x, y).xzyw();
 }
 
-void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                                const GSVector4 uv_bounds /* = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f) */)
+void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                                const void* push_constants, u32 push_constants_size)
 {
   const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
 
@@ -101,7 +101,11 @@ void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_siz
   vertices[3].Set(xy.zw(), uv_bounds.zw());
 
   g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
-  g_gpu_device->Draw(4, base_vertex);
+
+  if (push_constants_size > 0)
+    g_gpu_device->DrawWithPushConstants(4, base_vertex, push_constants, push_constants_size);
+  else
+    g_gpu_device->Draw(4, base_vertex);
 }
 
 bool GPUBackend::Initialize(bool clear_vram, Error* error)
@@ -543,6 +547,8 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
 
 void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd)
 {
+  s_stats.gpu_busy_pct = cmd->gpu_busy_pct;
+
   // Height has to be doubled because we halved it on the GPU side.
   m_presenter.SetDisplayParameters(cmd->display_width, cmd->display_height, cmd->display_origin_left,
                                    cmd->display_origin_top, cmd->display_vram_width,
@@ -586,27 +592,26 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
   {
     if (g_gpu_settings.gpu_pgxp_depth_buffer)
     {
-      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | "
-                 "\x01{}\x02 C | \x01{}\x02 W | \x01{}\x02 DBC",
+      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W | "
+                 "\x01{}%\x02 U | \x01{}\x02 DBC",
                  GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
-                 s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
-                 s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes,
-                 s_stats.num_depth_buffer_clears);
+                 s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_downloads, s_stats.num_copies,
+                 s_stats.num_writes, s_stats.gpu_busy_pct, s_stats.num_depth_buffer_clears);
     }
     else
     {
-      str.format("\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 RB | "
-                 "\x01{}\x02 C | \x01{}\x02 W",
-                 GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
-                 s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
-                 s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes);
+      str.format(
+        "\x02{}{} HW | \x01{}\x02 P | \x01{}\x02 DC | \x01{}\x02 RB | \x01{}\x02 C | \x01{}\x02 W | \x01{}%\x02 U",
+        GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
+        s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_downloads, s_stats.num_copies,
+        s_stats.num_writes, s_stats.gpu_busy_pct);
     }
   }
   else
   {
-    str.format("{}{} SW | {} P | {} R | {} C | {} W", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()),
-               g_gpu_settings.gpu_use_thread ? "-MT" : "", s_stats.num_primitives, s_stats.num_reads,
-               s_stats.num_copies, s_stats.num_writes);
+    str.format("\x02{}{} SW | \x01{}\x02 P | \x01{}\x02 R | \x01{}\x02 C | \x01{}\x02 W | \x01{}%\x02 U",
+               GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
+               s_stats.num_primitives, s_stats.num_reads, s_stats.num_copies, s_stats.num_writes, s_stats.gpu_busy_pct);
   }
 }
 
@@ -615,8 +620,9 @@ void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
   const u32 vram_usage_mb = static_cast<u32>((g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
   const u32 stream_kb = static_cast<u32>((s_stats.host_buffer_streamed + (1024 - 1)) / 1024);
 
-  str.format("{} MB VRAM | {} KB STR | {} TC | {} TU", vram_usage_mb, stream_kb, s_stats.host_num_copies,
-             s_stats.host_num_uploads);
+  str.format("\x01{}\x02 MB VRAM | \x01{}\x02 KB STR | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 TC | \x01{}\x02 TU",
+             vram_usage_mb, stream_kb, s_stats.host_num_barriers, s_stats.host_num_render_passes,
+             s_stats.host_num_copies, s_stats.host_num_uploads);
 }
 
 void GPUBackend::ResetStatistics()

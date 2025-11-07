@@ -25,7 +25,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
 
@@ -1435,14 +1434,13 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     if (!new_value.empty())
     {
       if (FileSystem::DirectoryExists(new_value.c_str()) ||
-          QMessageBox::question(
+          QtUtils::MessageBoxQuestion(
             QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Confirm Folder"),
             qApp
               ->translate(
                 "SettingWidgetBinder",
                 "The chosen directory does not currently exist:\n\n%1\n\nDo you want to create this directory?")
-              .arg(QString::fromStdString(new_value)),
-            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+              .arg(QString::fromStdString(new_value))) == QMessageBox::Yes)
       {
         if (use_relative)
         {
@@ -1461,8 +1459,8 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     }
     else
     {
-      QMessageBox::critical(QtUtils::GetRootWidget(widget), qApp->translate("SettingWidgetBinder", "Error"),
-                            qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
+      QtUtils::MessageBoxCritical(widget, qApp->translate("SettingWidgetBinder", "Error"),
+                                  qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
     }
 
     // reset to old value

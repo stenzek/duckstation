@@ -8,13 +8,15 @@
 #include "postprocessing_shader.h"
 #include "postprocessing_shader_fx.h"
 #include "postprocessing_shader_glsl.h"
+#include "postprocessing_shader_slang.h"
 #include "shadergen.h"
 
 // TODO: Remove me
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
 #include "core/host.h"
 #include "core/settings.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
 #include "common/assert.h"
 #include "common/error.h"
@@ -134,9 +136,9 @@ TinyString PostProcessing::ValueToString(ShaderOption::Type type, u32 vector_siz
   return ret;
 }
 
-std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableShaderNames()
+std::vector<std::pair<std::string, PostProcessing::ShaderType>> PostProcessing::GetAvailableShaderNames()
 {
-  std::vector<std::pair<std::string, std::string>> names;
+  std::vector<std::pair<std::string, ShaderType>> names;
 
   FileSystem::FindResultsArray results;
   FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "shaders").c_str(), "*.glsl",
@@ -145,8 +147,6 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS |
                           FILESYSTEM_FIND_KEEP_ARRAY,
                         &results);
-  std::sort(results.begin(), results.end(),
-            [](const auto& lhs, const auto& rhs) { return lhs.FileName < rhs.FileName; });
 
   for (FILESYSTEM_FIND_DATA& fd : results)
   {
@@ -159,11 +159,8 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
 #endif
 
-    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
-    {
-      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [GLSL]"), fd.FileName);
-      names.emplace_back(std::move(display_name), std::move(fd.FileName));
-    }
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::GLSL);
   }
 
   FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), "*.fx",
@@ -172,6 +169,28 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "reshade" FS_OSPATH_SEPARATOR_STR "Shaders")
       .c_str(),
     "*.fx",
+    FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY,
+    &results);
+
+  for (FILESYSTEM_FIND_DATA& fd : results)
+  {
+    size_t pos = fd.FileName.rfind('.');
+    if (pos != std::string::npos && pos > 0)
+      fd.FileName.erase(pos);
+
+#ifdef _WIN32
+    // swap any backslashes for forward slashes so the config is cross-platform
+    StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
+#endif
+
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::Reshade);
+  }
+
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Shaders, "slang").c_str(), "*.slangp",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+  FileSystem::FindFiles(
+    Path::Combine(EmuFolders::Resources, "shaders" FS_OSPATH_SEPARATOR_STR "slang").c_str(), "*.slangp",
     FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY,
     &results);
   std::sort(results.begin(), results.end(),
@@ -188,19 +207,34 @@ std::vector<std::pair<std::string, std::string>> PostProcessing::GetAvailableSha
     StringUtil::ReplaceAll(&fd.FileName, '\\', '/');
 #endif
 
-    if (std::none_of(names.begin(), names.end(), [&fd](const auto& other) { return fd.FileName == other.second; }))
-    {
-      std::string display_name = fmt::format(TRANSLATE_FS("PostProcessing", "{} [ReShade]"), fd.FileName);
-      names.emplace_back(std::move(display_name), std::move(fd.FileName));
-    }
+    if (std::ranges::none_of(names, [&fd](const auto& other) { return fd.FileName == other.first; }))
+      names.emplace_back(std::move(fd.FileName), ShaderType::Slang);
   }
 
   std::sort(names.begin(), names.end(),
-            [](const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) {
-              return (StringUtil::Strcasecmp(lhs.first.c_str(), rhs.first.c_str()) < 0);
+            [](const std::pair<std::string, ShaderType>& lhs, const std::pair<std::string, ShaderType>& rhs) {
+              return (StringUtil::CompareNoCase(lhs.first, rhs.first) < 0);
             });
 
   return names;
+}
+
+std::string_view PostProcessing::GetShaderTypeDisplayName(ShaderType type)
+{
+  switch (type)
+  {
+    case ShaderType::GLSL:
+      return TRANSLATE_SV("PostProcessing", "GLSL");
+
+    case ShaderType::Reshade:
+      return TRANSLATE_SV("PostProcessing", "ReShade");
+
+    case ShaderType::Slang:
+      return TRANSLATE_SV("PostProcessing", "Slang");
+
+    default:
+      return "Unknown";
+  }
 }
 
 TinyString PostProcessing::GetStageConfigSection(const char* section, u32 index)
@@ -393,11 +427,12 @@ bool PostProcessing::Chain::IsActive() const
 void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
-  Host::AddIconOSDMessage(
-    "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-    fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load post-processing chain: {}"),
-                msg.empty() ? TRANSLATE_SV("PostProcessing", "Unknown Error") : std::string_view(msg)),
-    Host::OSD_ERROR_DURATION);
+  if (msg.empty())
+    msg = TRANSLATE_SV("PostProcessing", "Unknown Error");
+
+  Host::AddIconOSDMessage("PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
+                          TRANSLATE_STR("OSDMessage", "Failed to load post-processing chain."), std::move(msg),
+                          Host::OSD_ERROR_DURATION);
   DestroyTextures();
   m_stages.clear();
 }
@@ -410,13 +445,15 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
 
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
   m_wants_depth_buffer = false;
+  m_wants_unscaled_input = false;
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
   if (stage_count == 0)
     return;
 
   Error error;
-  LoadingScreenProgressCallback progress;
+  FullscreenUI::LoadingScreenProgressCallback progress;
+  progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
   for (u32 i = 0; i < stage_count; i++)
@@ -452,13 +489,17 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   // precompile shaders
   if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
-    CheckTargets(g_gpu_device->GetMainSwapChain()->GetFormat(), g_gpu_device->GetMainSwapChain()->GetWidth(),
-                 g_gpu_device->GetMainSwapChain()->GetHeight(), &progress);
+    const GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
+    CheckTargets(swap_chain->GetWidth(), swap_chain->GetHeight(), swap_chain->GetFormat(), swap_chain->GetWidth(),
+                 swap_chain->GetHeight(), swap_chain->GetWidth(), swap_chain->GetHeight(), &progress);
   }
 
   // must be down here, because we need to compile first, triggered by CheckTargets()
   for (std::unique_ptr<Shader>& shader : m_stages)
+  {
     m_wants_depth_buffer |= shader->WantsDepthBuffer();
+    m_wants_unscaled_input |= shader->WantsUnscaledInput();
+  }
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
     DEV_LOG("Depth buffer is needed.");
@@ -484,7 +525,8 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   m_stages.resize(stage_count);
 
-  LoadingScreenProgressCallback progress;
+  FullscreenUI::LoadingScreenProgressCallback progress;
+  progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
   const GPUTexture::Format prev_format = m_target_format;
@@ -529,7 +571,10 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   }
 
   if (prev_format != GPUTexture::Format::Unknown)
-    CheckTargets(prev_format, m_target_width, m_target_height, &progress);
+  {
+    CheckTargets(m_target_width, m_target_height, prev_format, m_source_width, m_source_height, m_viewport_width,
+                 m_viewport_height, &progress);
+  }
 
   if (stage_count > 0)
   {
@@ -571,64 +616,115 @@ void PostProcessing::Chain::Toggle()
     s_start_time = Timer::GetCurrentValue();
 }
 
-bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
+bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format,
+                                         u32 target_width, u32 target_height, u32 viewport_width, u32 viewport_height,
                                          ProgressCallback* progress /* = nullptr */)
 {
-  if (m_target_format == target_format && m_target_width == target_width && m_target_height == target_height)
+  // might not have a source, this is okay
+  if (!m_wants_unscaled_input || source_width == 0 || source_height == 0)
+  {
+    source_width = target_width;
+    source_height = target_height;
+    viewport_width = target_width;
+    viewport_height = target_height;
+  }
+
+  if (m_target_width == target_width && m_target_height == target_height && m_source_width == source_width &&
+      m_source_height == source_height && m_viewport_width == viewport_width && m_viewport_height == viewport_height &&
+      m_target_format == target_format)
+  {
     return true;
+  }
 
   Error error;
 
-  // In case any allocs fail.
-  DestroyTextures();
-
-  if (!(m_input_texture =
-          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                     target_format, GPUTexture::Flags::None, nullptr, 0, &error)) ||
-      !(m_output_texture =
-          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                     target_format, GPUTexture::Flags::None, nullptr, 0, &error)))
+  if (!g_gpu_device->ResizeTexture(&m_input_texture, source_width, source_height, GPUTexture::Type::RenderTarget,
+                                   target_format, GPUTexture::Flags::None, false, &error) ||
+      !g_gpu_device->ResizeTexture(&m_output_texture, target_width, target_height, GPUTexture::Type::RenderTarget,
+                                   target_format, GPUTexture::Flags::None, false, &error))
   {
-    ERROR_LOG("Failed to create input/output textures: {}", error.GetDescription());
+    ERROR_LOG("Failed to resize input/output textures: {}", error.GetDescription());
     DestroyTextures();
     return false;
   }
 
-  if (!progress)
-    progress = ProgressCallback::NullProgressCallback;
+  // we change source after the first pass, so save the original values here
+  m_source_width = source_width;
+  m_source_height = source_height;
+  m_viewport_width = viewport_width;
+  m_viewport_height = viewport_height;
 
-  progress->SetProgressRange(static_cast<u32>(m_stages.size()));
-  progress->SetProgressValue(0);
-
-  m_wants_depth_buffer = false;
-
-  for (size_t i = 0; i < m_stages.size(); i++)
+  // shortcut if only the source size changed
+  if (m_target_width != target_width || m_target_height != target_height || m_target_format != target_format)
   {
-    Shader* const shader = m_stages[i].get();
+    if (!progress)
+      progress = ProgressCallback::NullProgressCallback;
 
-    progress->FormatStatusText("Compiling {}...", shader->GetName());
+    progress->SetProgressRange(static_cast<u32>(m_stages.size()));
+    progress->SetProgressValue(0);
 
-    if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
-        !shader->ResizeOutput(target_format, target_width, target_height, &error))
+    m_wants_depth_buffer = false;
+
+    for (size_t i = 0; i < m_stages.size(); i++)
     {
-      ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
-      Host::AddIconOSDMessage(
-        "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-        fmt::format(TRANSLATE_FS("PostProcessing",
-                                 "Failed to compile post-processing shader '{}'. Disabling post-processing.\n{}"),
-                    shader->GetName(), error.GetDescription()),
-        Host::OSD_ERROR_DURATION);
-      m_enabled = false;
-      return false;
-    }
+      Shader* const shader = m_stages[i].get();
 
-    progress->SetProgressValue(static_cast<u32>(i + 1));
-    m_wants_depth_buffer |= shader->WantsDepthBuffer();
+      progress->FormatStatusText("Compiling {}...", shader->GetName());
+
+      if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
+          !shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
+                                 viewport_width, viewport_height, &error))
+      {
+        ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
+        Host::AddIconOSDMessage(
+          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("PostProcessing", "Failed to compile post-processing shader '{}'."),
+                      shader->GetName()),
+          error.TakeDescription(), Host::OSD_ERROR_DURATION);
+        m_enabled = false;
+        DestroyTextures();
+        return false;
+      }
+
+      progress->SetProgressValue(static_cast<u32>(i + 1));
+      m_wants_depth_buffer |= shader->WantsDepthBuffer();
+
+      // First shader outputs at target size, so the input is now target size.
+      source_width = target_width;
+      source_height = target_height;
+      viewport_width = target_width;
+      viewport_height = target_height;
+    }
+  }
+  else
+  {
+    for (std::unique_ptr<Shader>& shader : m_stages)
+    {
+      if (!shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
+                                 viewport_width, viewport_height, &error))
+      {
+        ERROR_LOG("Failed to resize post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
+        Host::AddIconOSDMessage(
+          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("PostProcessing", "Failed to resize post-processing shader '{}'."),
+                      shader->GetName()),
+          error.TakeDescription(), Host::OSD_ERROR_DURATION);
+        m_enabled = false;
+        DestroyTextures();
+        return false;
+      }
+
+      // First shader outputs at target size, so the input is now target size.
+      source_width = target_width;
+      source_height = target_height;
+      viewport_width = target_width;
+      viewport_height = target_height;
+    }
   }
 
-  m_target_format = target_format;
   m_target_width = target_width;
   m_target_height = target_height;
+  m_target_format = target_format;
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   return true;
 }
@@ -644,8 +740,9 @@ void PostProcessing::Chain::DestroyTextures()
 }
 
 GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
-                                                      GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
-                                                      s32 orig_height, s32 native_width, s32 native_height)
+                                                      GPUTexture* final_target, const GSVector4i final_rect,
+                                                      s32 orig_width, s32 orig_height, s32 native_width,
+                                                      s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
@@ -702,6 +799,19 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
+  filename = Path::Combine(EmuFolders::Shaders, fmt::format("slang" FS_OSPATH_SEPARATOR_STR "{}.slangp", shader_name));
+  if (FileSystem::FileExists(filename.c_str()))
+  {
+    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
+    if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
+  }
+
   filename = Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name));
   if (FileSystem::FileExists(filename.c_str()))
   {
@@ -715,8 +825,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
-  filename =
-    fmt::format("shaders/reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name);
+  filename = fmt::format("shaders/reshade/Shaders/{}.fx", shader_name);
   resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {
@@ -730,7 +839,21 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
     return shader;
   }
 
-  filename = fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name);
+  filename = fmt::format("shaders/slang/{}.slangp", shader_name);
+  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
+  if (resource_str.has_value())
+  {
+    std::unique_ptr<SlangShader> shader = std::make_unique<SlangShader>();
+    if (!shader->LoadFromString(shader_name, filename, std::move(resource_str.value()), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
+  }
+
+  filename = fmt::format("shaders/{}.glsl", shader_name);
   resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {

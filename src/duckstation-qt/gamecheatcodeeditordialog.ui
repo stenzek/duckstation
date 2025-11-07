@@ -32,6 +32,9 @@
      <property name="text">
       <string>Description:</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+     </property>
     </widget>
    </item>
    <item row="1" column="1">
@@ -41,6 +44,9 @@
        <width>16777215</width>
        <height>48</height>
       </size>
+     </property>
+     <property name="tabChangesFocus">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -126,7 +132,11 @@
     </layout>
    </item>
    <item row="6" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="instructions"/>
+    <widget class="QPlainTextEdit" name="instructions">
+     <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item row="7" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">

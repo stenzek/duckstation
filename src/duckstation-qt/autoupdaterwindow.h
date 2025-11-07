@@ -26,7 +26,7 @@ class AutoUpdaterWindow final : public QWidget
   Q_OBJECT
 
 public:
-  explicit AutoUpdaterWindow(QWidget* parent = nullptr);
+  explicit AutoUpdaterWindow();
   ~AutoUpdaterWindow();
 
   void queueUpdateCheck(bool display_errors);

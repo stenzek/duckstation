@@ -3,7 +3,7 @@
 
 #include "qthost.h"
 
-#include "util/imgui_fullscreen.h"
+#include "core/fullscreenui_widgets.h"
 
 #include "common/path.h"
 
@@ -17,11 +17,11 @@
 namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
 static void SetStyleFromSettings();
+static QString GetNativeThemeStylesheet();
 
 namespace {
 struct State
 {
-  std::string current_theme_name;
   QString unthemed_style_name;
   QPalette unthemed_palette;
   bool is_stylesheet_theme = false;
@@ -37,7 +37,11 @@ static State s_state;
 
 const char* QtHost::GetDefaultThemeName()
 {
+#ifndef __APPLE__
   return "darkerfusion";
+#else
+  return "";
+#endif
 }
 
 void QtHost::UpdateApplicationTheme()
@@ -50,7 +54,7 @@ void QtHost::UpdateApplicationTheme()
   }
 
   SetStyleFromSettings();
-  SetIconThemeFromStyle();
+  UpdateThemeOnStyleChange();
 }
 
 void QtHost::SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme)
@@ -69,12 +73,14 @@ void QtHost::SetStyleFromSettings()
 {
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
+  // Clear any existing stylesheet before applying new.
+  qApp->setStyleSheet(QString());
+
   if (theme == "qdarkstyle")
   {
     SetThemeAttributes(true, false, true);
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
@@ -85,7 +91,6 @@ void QtHost::SetStyleFromSettings()
     SetThemeAttributes(false, true, false);
     qApp->setStyle(QStyleFactory::create("Fusion"));
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusion")
   {
@@ -121,7 +126,6 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkfusionblue")
   {
@@ -158,7 +162,6 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkerfusion")
   {
@@ -197,49 +200,345 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, window_color);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
 
     // menus are by far the ugliest part of fusion, so we style them manually
     const QString stylesheet = QStringLiteral(R"(
 QMenu {
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 6px 10px;
-    background-color: #232323;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background-color: #232323;
 }
+
 QMenu::icon,
 QMenu::indicator {
-    left: 8px;
+  left: 8px;
 }
 QMenu::item {
-    padding: 6px 18px;
-    border-radius: 8px;
+  padding: 6px 18px;
+  border-radius: 8px;
 }
 QMenu::item:selected {
-    background-color: #414141;
+  background-color: #414141;
 }
 QMenu::icon:checked {
-    background: #414141;
-    border: 1px solid #777;
-    border-radius: 4px;
+  background: #414141;
+  border: 1px solid #777;
+  border-radius: 4px;
 }
+
 QMenuBar::item {
-    padding: 4px 6px;
-    border-radius: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
 }
 QMenuBar::item:selected, QMenuBar::item:pressed {
-    background: #414141;
-    border-radius: 4px;
+  background: #303030;
+  border-radius: 4px;
 }
+
 QToolTip {
-    color: #ffffff;
-    background-color: #232323;
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 2px;
+  color: #ffffff;
+  background-color: #232323;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 2px;
 }
+
 QToolBar {
-    border: none;
+  border: none;
+}
+QToolButton {
+  border: none;
+  background: transparent;
+  padding: 3px;
+  border-radius: 8px;
+}
+QToolButton:checked {
+  background-color: #303030;
+}
+QToolButton:hover {
+  background-color: #414141;
+}
+QToolButton:pressed {
+  background-color: #515151;
+}
+
+QPushButton {
+  border: none;
+  background-color: #303030;
+  padding: 5px 10px;
+  border-radius: 8px;
+  color: #ffffff;
+}
+QPushButton:hover {
+  background-color: #484848;
+}
+QPushButton:pressed {
+  background-color: #515151;
+}
+QPushButton:disabled {
+  background-color: #2d2d2d;
+  color: #777777;
+}
+QDialog QPushButton {
+  min-width: 50px;
+  padding: 6px 12px;
+}
+
+QLineEdit {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 8px;
+  background-color: #2d2d2d;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  color: #ffffff;
+}
+QLineEdit::hover {
+  background-color: #3a3a3a;
+}
+QLineEdit:disabled {
+  background-color: #1e1e1e;
+  color: #777777;
+}
+
+QAbstractSpinBox {
+  border: none;
+  border-radius: 8px;
+  padding: 3px 8px;
+  background-color: #2d2d2d;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  color: #ffffff;
+}
+QAbstractSpinBox::hover {
+  background-color: #3a3a3a;
+}
+QAbstractSpinBox:disabled {
+  background-color: #1e1e1e;
+  color: #777777;
+}
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button {
+  subcontrol-origin: border;
+  width: 8px;
+  border: none;
+  padding: 0 8px;
+}
+QAbstractSpinBox::up-button {
+  subcontrol-position: top right; /* position at the top right corner */
+}
+QAbstractSpinBox::up-arrow {
+  width: 8px;
+  height: 8px;
+  image: url(":/qdarkstyle/arrow_up.png");
+}
+QAbstractSpinBox::up-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_up_disabled.png");
+}
+QAbstractSpinBox::down-button {
+  subcontrol-position: bottom right; /* position at the top right corner */
+}
+QAbstractSpinBox::down-arrow {
+  width: 8px;
+  height: 8px;
+  image: url(":/qdarkstyle/arrow_down.png");
+}
+QAbstractSpinBox::down-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_down_disabled.png");
+}
+
+QComboBox {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px 4px 8px; /* leave space for drop-down */
+  background-color: #2d2d2d;
+  color: #ffffff;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+}
+QComboBox:hover {
+  background-color: #3a3a3a;
+}
+QComboBox:disabled {
+  background-color: #1e1e1e;
+  color: #777777;
+}
+QComboBox::drop-down {
+  subcontrol-origin: padding;
+  subcontrol-position: top right;
+  width: 16px;
+  border: none;
+  padding: 0 6px;
+  background: transparent;
+}
+QComboBox::down-arrow {
+  width: 10px;
+  height: 10px;
+  image: url(":/qdarkstyle/arrow_down.png");
+}
+QComboBox::down-arrow:disabled {
+  image: url(":/qdarkstyle/arrow_down_disabled.png");
+}
+QScrollBar {
+  background: #2d2d2d;
+  width: 12px;
+  margin: 0px;
+  border-radius: 6px;
+}
+QScrollBar::handle {
+  background-color: #414141;
+  min-height: 20px;
+  border-radius: 6px;
+}
+QScrollBar::handle:hover {
+  background: #515151;
+}
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+  height: 0;
+}
+QHeaderView {
+  background-color: #2d2d2d;
+}
+QHeaderView::section {
+  background-color: #303030;
+  padding: 2px 4px;
+  color: #ffffff;
+  border: none;
+}
+QHeaderView::section:middle,
+QHeaderView::section:last {
+  border-left: 1px solid #3d3d3d;
+}
+QHeaderView::section:hover {
+  background-color: #414141;
+}
+QHeaderView::section:pressed {
+  background-color: #515151;
+}
+QTabBar::tab {
+  background: #303030;
+  padding: 6px 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-right: 1px solid transparent;
+  color: #ffffff;
+}
+QTabBar::tab:selected {
+  background: #414141;
+}
+QTabBar::tab:hover {
+  background: #3a3a3a;
+}
+
+QProgressBar {
+  border: none;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  text-align: center;
+}
+QProgressBar::chunk {
+  background-color: #1464a0;
+  border-radius: 8px;
+}
+
+QSlider {
+  margin: 2px 0; /* to make room for the handle */
+}
+QSlider::groove {
+  border: none;
+  height: 8px;
+  background-color: #414141;
+  border-radius: 4px;
+}
+QSlider::handle {
+  background-color: #606060;
+  border: none;
+  width: 16px;
+  margin: -4px 0; /* handle is placed by default on the groove, so we need to offset it */
+  border-radius: 8px;
+}
+QSlider::handle:hover {
+  background-color: #707070;
+}
+QSlider::handle:pressed {
+  background-color: #808080;
+}
+
+QTextBrowser {
+  border: none;
+  border-radius: 8px;
+  padding: 2px 4px;
+  background-color: #2d2d2d;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  color: #ffffff;
+}
+
+.settings-window QListView {
+  border: none;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  padding: 4px;
+}
+.settings-window QListView::item {
+  border: none;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+.settings-window QListView::item:hover {
+  background-color: #3a3a3a;
+}
+.settings-window QListView::item:selected {
+  background-color: #414141;
+  color: #ffffff;
+}
+/* Remove dotted focus rectangle / outline around QListView items when focused/selected */
+.settings-window QListView:focus,
+.settings-window QListView::item:focus,
+.settings-window QListView::item:selected:focus {
+  outline: none;
+  border: none;
+}
+
+.settings-window QTreeView {
+  border: none;
+  border-radius: 8px;
+  background-color: #2d2d2d;
+  color: #ffffff;
+  selection-background-color: #414141;
+  selection-color: #ffffff;
+  padding: 4px;
+}
+.settings-window QTreeView::item {
+  border: none;
+  padding: 2px 4px;
+}
+.settings-window QTreeView::item:hover {
+  background-color: #3a3a3a;
+}
+.settings-window QTreeView::item:selected {
+  background-color: #414141;
+  color: #ffffff;
+}
+
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  border: none;
+  border-radius: 8px;
+  background: #2d2d2d;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border: none;
+  border-bottom: 1px solid #414141;
+  margin: 0px 8px;
 }
     )");
 
@@ -281,7 +580,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "greymatter")
   {
@@ -315,7 +613,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkGray);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "greengiant")
   {
@@ -350,7 +647,6 @@ QToolBar {
     greenGiantPalette.setColor(QPalette::Disabled, QPalette::Light, gray);
 
     qApp->setPalette(greenGiantPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "pinkypals")
   {
@@ -384,7 +680,6 @@ QToolBar {
     PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
 
     qApp->setPalette(PinkyPalsPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "AMOLED")
   {
@@ -421,7 +716,6 @@ QToolBar {
     AMOLEDPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
 
     qApp->setPalette(AMOLEDPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "darkruby")
   {
@@ -453,7 +747,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, slate.lighter());
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
   else if (theme == "purplerain")
   {
@@ -486,7 +779,6 @@ QToolBar {
     darkPalette.setColor(QPalette::Disabled, QPalette::Light, darkPurple);
 
     qApp->setPalette(darkPalette);
-    qApp->setStyleSheet(QString());
   }
 #ifdef _WIN32
   else if (theme == "windowsvista")
@@ -494,7 +786,6 @@ QToolBar {
     SetThemeAttributes(false, false, false);
     qApp->setStyle(QStyleFactory::create("windowsvista"));
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
   }
 #endif
   else
@@ -502,7 +793,7 @@ QToolBar {
     SetThemeAttributes(false, true, false);
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(QString());
+    qApp->setStyleSheet(GetNativeThemeStylesheet());
   }
 }
 
@@ -524,9 +815,18 @@ bool QtHost::IsStyleSheetApplicationTheme()
   return s_state.is_stylesheet_theme;
 }
 
-void QtHost::SetIconThemeFromStyle()
+void QtHost::UpdateThemeOnStyleChange()
 {
-  QIcon::setThemeName(IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black"));
+  const QString new_theme_name = IsDarkApplicationTheme() ? QStringLiteral("white") : QStringLiteral("black");
+  if (QIcon::themeName() != new_theme_name)
+    QIcon::setThemeName(new_theme_name);
+
+  if (NativeThemeStylesheetNeedsUpdate())
+  {
+    const QString stylesheet = GetNativeThemeStylesheet();
+    if (qApp->styleSheet() != stylesheet)
+      qApp->setStyleSheet(stylesheet);
+  }
 }
 
 const char* Host::GetDefaultFullscreenUITheme()
@@ -551,4 +851,142 @@ const char* Host::GetDefaultFullscreenUITheme()
     return "AMOLED";
   else
     return IsDarkApplicationTheme() ? "Dark" : "Light";
+}
+
+bool QtHost::NativeThemeStylesheetNeedsUpdate()
+{
+#ifdef __APPLE__
+  // See below, only used on MacOS.
+  // objectName() is empty after applying stylesheet.
+  return (s_state.is_variable_color_theme && QApplication::style()->objectName().isEmpty());
+#else
+  return false;
+#endif
+}
+
+QString QtHost::GetNativeThemeStylesheet()
+{
+  QString ret;
+#ifdef __APPLE__
+  // Qt's native style on MacOS is... not great.
+  // We re-theme the tool buttons to look like Cocoa tool buttons, and fix up popup menus.
+  ret = QStringLiteral(R"(
+QMenu {
+    border-radius: 10px;
+    padding: 4px 0;
+}
+QMenu::item {
+    padding: 4px 15px;
+    border-radius: 8px;
+    margin: 0 2px;
+}
+QMenu::icon,
+QMenu::indicator {
+    left: 8px;
+}
+QMenu::icon:checked {
+    border-radius: 4px;
+}
+QMenu::separator {
+    height: 1px;
+    margin: 4px 8px;
+}
+QToolButton {
+    border: none;
+    background: transparent;
+    padding: 5px;
+    border-radius: 10px;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  border: none;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border: none;
+  margin: 0px 8px;
+})");
+  if (IsDarkApplicationTheme())
+  {
+    ret += QStringLiteral(R"(
+QMenu {
+    background-color: #161616;
+    border: 1px solid #2c2c2c;
+}
+QMenu::item {
+    color: #dcdcdc;
+}
+QMenu::item:selected {
+    background-color: #2b4ab3;
+    color: #ffffff;
+}
+QMenu::item:disabled {
+    color: #585858;
+}
+QMenu::icon:checked {
+    background: #414141;
+    border: 1px solid #777;
+}
+QMenu::separator {
+    background: #3b3b3b;
+}
+QToolButton:checked {
+    background-color: #454645;
+}
+QToolButton:hover {
+    background-color: #393c3c;
+}
+QToolButton:pressed {
+    background-color: #808180;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  background: #171717;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border-bottom: 1px solid #414141;
+})");
+  }
+  else
+  {
+    ret += QStringLiteral(R"(
+QMenu {
+    background-color: #bdbdbd;
+    border: 1px solid #d5d5d4;
+}
+QMenu::item {
+    color: #1d1d1d;
+}
+QMenu::item:selected {
+    background-color: #2e5dc9;
+    color: #ffffff;
+}
+QMenu::icon:checked {
+    background: #414141;
+    border: 1px solid #777;
+}
+QMenu::item:disabled {
+    color: #909090;
+}
+QMenu::separator {
+    background: #a9a9a9;
+}
+QToolButton:checked {
+    background-color: #e2e2e2;
+}
+QToolButton:hover {
+    background-color: #f0f0f0;
+}
+QToolButton:pressed {
+    background-color: #8c8c8c;
+}
+.settings-window GamePatchSettingsWidget QScrollArea,
+.settings-window GamePatchSettingsWidget #patches_container {
+  background: #ffffff;
+}
+.settings-window GamePatchSettingsWidget #patches_container > QFrame {
+  border-bottom: 1px solid #414141;
+})");
+  }
+#endif
+  return ret;
 }

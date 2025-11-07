@@ -165,6 +165,8 @@ struct GPUBackendUpdateDisplayCommand : public GPUThreadCommand
 
   u16 X; // TODO: Can we get rid of this?
 
+  u8 gpu_busy_pct;
+
   bool interlaced_display_enabled : 1;
   bool interlaced_display_field : 1;
   bool interlaced_display_interleaved : 1;

@@ -32,7 +32,6 @@ struct GPUSettings
   u8 gpu_resolution_scale = 1;
   u8 gpu_multisamples = 1;
 
-  ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUTextureFilter gpu_sprite_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUDitheringMode gpu_dithering_mode = DEFAULT_GPU_DITHERING_MODE;
@@ -217,7 +216,6 @@ struct GPUSettings
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayRotation DEFAULT_DISPLAY_ROTATION = DisplayRotation::Normal;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
-  static constexpr ForceVideoTimingMode DEFAULT_FORCE_VIDEO_TIMING_MODE = ForceVideoTimingMode::Disabled;
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;
@@ -248,6 +246,7 @@ struct Settings : public GPUSettings
   TickCount gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
 
   ConsoleRegion region = DEFAULT_CONSOLE_REGION;
+  ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
 
   CPUExecutionMode cpu_execution_mode = DEFAULT_CPU_EXECUTION_MODE;
   CPUFastmemMode cpu_fastmem_mode = DEFAULT_CPU_FASTMEM_MODE;
@@ -276,6 +275,7 @@ struct Settings : public GPUSettings
   bool cdrom_subq_skew : 1 = false;
   bool cdrom_load_image_to_ram : 1 = false;
   bool cdrom_load_image_patches : 1 = false;
+  bool cdrom_ignore_host_subcode : 1 = false;
   bool cdrom_mute_cd_audio : 1 = false;
   bool cdrom_auto_disc_change : 1 = false;
 
@@ -290,8 +290,8 @@ struct Settings : public GPUSettings
   bool apply_game_settings : 1 = true;
   bool load_devices_from_save_states : 1 = false;
 
-  u8 runahead_frames = 0;
   u16 rewind_save_slots = 10;
+  u8 runahead_frames = 0;
 
   SaveStateCompressionMode save_state_compression = DEFAULT_SAVE_STATE_COMPRESSION_MODE;
 
@@ -557,6 +557,7 @@ struct Settings : public GPUSettings
   static const char* GetPIODeviceTypeModeDisplayName(PIODeviceType type);
 
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
+  static constexpr ForceVideoTimingMode DEFAULT_FORCE_VIDEO_TIMING_MODE = ForceVideoTimingMode::Disabled;
 
   // Prefer recompiler when supported.
 #ifdef ENABLE_RECOMPILER

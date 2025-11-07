@@ -57,16 +57,6 @@ bool PostProcessing::GLSLShader::LoadFromString(std::string name, std::string co
   return true;
 }
 
-bool PostProcessing::GLSLShader::IsValid() const
-{
-  return !m_name.empty() && !m_code.empty();
-}
-
-bool PostProcessing::GLSLShader::WantsDepthBuffer() const
-{
-  return false;
-}
-
 u32 PostProcessing::GLSLShader::GetUniformsSize() const
 {
   // lazy packing. todo improve.
@@ -124,8 +114,11 @@ void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, s32 viewport_x,
 bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
                                                  ProgressCallback* progress)
 {
-  if (m_pipeline)
-    m_pipeline.reset();
+  if (m_output_format == format)
+    return true;
+
+  m_pipeline.reset();
+  m_output_format = GPUTexture::Format::Unknown;
 
   PostProcessingGLSLShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
                                         g_gpu_device->GetFeatures().framebuffer_fetch);
@@ -164,6 +157,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
       return false;
   }
 
+  m_output_format = format;
   return true;
 }
 
@@ -205,11 +199,6 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   g_gpu_device->UnmapUniformBuffer(uniforms_size);
   g_gpu_device->Draw(3, 0);
   return GPUDevice::PresentResult::OK;
-}
-
-bool PostProcessing::GLSLShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height, Error* error)
-{
-  return true;
 }
 
 void PostProcessing::GLSLShader::LoadOptions()

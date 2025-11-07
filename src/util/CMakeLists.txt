@@ -19,6 +19,8 @@ add_library(util
   compress_helpers.h
   cue_parser.cpp
   cue_parser.h
+  dyn_shaderc.h
+  dyn_spirv_cross.h
   elf_file.cpp
   elf_file.h
   gpu_device.cpp
@@ -34,8 +36,6 @@ add_library(util
   http_downloader.h
   image.cpp
   image.h
-  imgui_fullscreen.cpp
-  imgui_fullscreen.h
   imgui_manager.cpp
   imgui_manager.h
   ini_settings_interface.cpp
@@ -59,12 +59,16 @@ add_library(util
   postprocessing_shader_fx.h
   postprocessing_shader_glsl.cpp
   postprocessing_shader_glsl.h
+  postprocessing_shader_slang.cpp
+  postprocessing_shader_slang.h
   shadergen.cpp
   shadergen.h
   shiftjis.cpp
   shiftjis.h
   sockets.cpp
   sockets.h
+  spirv_module.cpp
+  spirv_module.h
   state_wrapper.cpp
   state_wrapper.h
   texture_decompress.cpp

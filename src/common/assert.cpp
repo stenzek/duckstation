@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#if !defined(__APPLE__) && !defined(__ANDROID__)
+
 #include "assert.h"
 #include "crash_handler.h"
 
@@ -71,27 +73,6 @@ static void ResumeThreads(HANDLE hSnapshot)
   }
 }
 
-#else
-
-#ifdef __ANDROID__
-// Define as a weak symbol for ancient devices that don't have it.
-extern "C" __attribute__((weak)) void android_set_abort_message(const char*);
-#endif
-
-[[noreturn]] ALWAYS_INLINE static void AbortWithMessage(const char* szMsg)
-{
-#ifndef __ANDROID__
-  std::fputs(szMsg, stderr);
-  std::fflush(stderr);
-  std::abort();
-#else
-  if (&android_set_abort_message)
-    android_set_abort_message(szMsg);
-
-  std::abort();
-#endif
-}
-
 #endif // _WIN32
 
 void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
@@ -125,7 +106,9 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 
   ResumeThreads(pHandle);
 #else
-  AbortWithMessage(szMsg);
+  std::fputs(szMsg, stderr);
+  std::fflush(stderr);
+  std::abort();
 #endif
 }
 
@@ -157,6 +140,10 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 
   ResumeThreads(pHandle);
 #else
-  AbortWithMessage(szMsg);
+  std::fputs(szMsg, stderr);
+  std::fflush(stderr);
+  std::abort();
 #endif
 }
+
+#endif // !defined(__APPLE__) && !defined(__ANDROID__)

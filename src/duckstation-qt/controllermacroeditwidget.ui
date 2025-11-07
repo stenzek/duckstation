@@ -10,7 +10,7 @@
     <height>433</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -75,10 +75,10 @@
            <number>100</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>10</number>
@@ -111,7 +111,7 @@
            <string>Select the trigger to activate this macro. This can be a single button, or combination of buttons (chord). Shift-click for multiple triggers.</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
@@ -119,7 +119,7 @@
          </widget>
         </item>
         <item>
-        <widget class="QCheckBox" name="triggerToggle">
+         <widget class="QCheckBox" name="triggerToggle">
           <property name="text">
            <string>Press To Toggle</string>
           </property>
@@ -155,10 +155,10 @@
            <number>100</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>10</number>
@@ -200,28 +200,22 @@
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="increaseFrequency">
+         <widget class="QPushButton" name="increaseFrequency">
           <property name="minimumSize">
            <size>
             <width>0</width>
             <height>20</height>
            </size>
-          </property>
-          <property name="arrowType">
-           <enum>Qt::UpArrow</enum>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="decreateFrequency">
+         <widget class="QPushButton" name="decreateFrequency">
           <property name="minimumSize">
            <size>
             <width>0</width>
             <height>20</height>
            </size>
-          </property>
-          <property name="arrowType">
-           <enum>Qt::DownArrow</enum>
           </property>
          </widget>
         </item>

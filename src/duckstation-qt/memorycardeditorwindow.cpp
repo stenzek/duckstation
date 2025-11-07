@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memorycardeditorwindow.h"
+#include "mainwindow.h"
 #include "qtutils.h"
 
 #include "core/host.h"
@@ -18,7 +19,6 @@
 #include <QtGui/QPainter>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStyledItemDelegate>
 
 #include "moc_memorycardeditorwindow.cpp"
@@ -155,6 +155,7 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   connectCardUi(&m_card_b, m_ui.buttonBoxB);
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
+  updateButtonState();
 
   const QString new_card_hover_text(tr("New Card..."));
   const QString open_card_hover_text(tr("Open Card..."));
@@ -166,6 +167,8 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_animation_timer = new QTimer(this);
   m_animation_timer->setInterval(MEMORY_CARD_ICON_FRAME_DURATION_MS);
   connect(m_animation_timer, &QTimer::timeout, this, &MemoryCardEditorWindow::incrementAnimationFrame);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 MemoryCardEditorWindow::~MemoryCardEditorWindow() = default;
@@ -347,8 +350,8 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
 
   card->table->setRowCount(0);
   card->dirty = false;
-  card->blocks_free_label->clear();
   card->save_button->setEnabled(false);
+  card->blocks_free_label->clear();
 
   card->filename.clear();
 
@@ -362,8 +365,8 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
   std::string filename_str = filename.toStdString();
   if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      this, tr("Error"), tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -515,8 +518,8 @@ void MemoryCardEditorWindow::openCard(Card* card)
   Error error;
   if (!MemoryCardImage::LoadFromFile(&card->data, filename.toUtf8().constData(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      this, tr("Error"), tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -529,6 +532,8 @@ void MemoryCardEditorWindow::openCard(Card* card)
   }
 
   card->filename = filename.toStdString();
+  card->save_button->setEnabled(false);
+  card->dirty = false;
   updateCardTable(card);
   updateCardBlocksFree(card);
   updateButtonState();
@@ -543,8 +548,8 @@ void MemoryCardEditorWindow::saveCard(Card* card)
   Error error;
   if (!MemoryCardImage::SaveToFile(card->data, card->filename.c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      this, tr("Error"), tr("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -558,10 +563,9 @@ void MemoryCardEditorWindow::promptForSave(Card* card)
   if (card->filename.empty() || !card->dirty)
     return;
 
-  if (QMessageBox::question(this, tr("Save memory card?"),
-                            tr("Memory card '%1' is not saved, do you want to save before closing?")
-                              .arg(QString::fromStdString(card->filename)),
-                            QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+  if (QtUtils::MessageBoxQuestion(this, tr("Save memory card?"),
+                                  tr("Memory card '%1' is not saved, do you want to save before closing?")
+                                    .arg(QString::fromStdString(card->filename))) == QMessageBox::No)
   {
     return;
   }
@@ -581,7 +585,7 @@ void MemoryCardEditorWindow::doCopyFile()
   {
     if (dst_fi.filename == fi->filename)
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, tr("Error"),
         tr("Destination memory card already contains a save file with the same name (%1) as the one you are attempting "
            "to copy. Please delete this file from the destination memory card before copying.")
@@ -592,10 +596,10 @@ void MemoryCardEditorWindow::doCopyFile()
 
   if (dst->blocks_free < fi->num_blocks)
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Insufficient blocks, this file needs %1 but only %2 are available.")
-                            .arg(fi->num_blocks)
-                            .arg(dst->blocks_free));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Insufficient blocks, this file needs %1 but only %2 are available.")
+                                  .arg(fi->num_blocks)
+                                  .arg(dst->blocks_free));
     return;
   }
 
@@ -603,19 +607,19 @@ void MemoryCardEditorWindow::doCopyFile()
   std::vector<u8> buffer;
   if (!MemoryCardImage::ReadFile(src->data, *fi, &buffer, &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to read file %1:\n%2")
-                            .arg(QString::fromStdString(fi->filename))
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to read file %1:\n%2")
+                                  .arg(QString::fromStdString(fi->filename))
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
   if (!MemoryCardImage::WriteFile(&dst->data, fi->filename, buffer, &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to write file %1:\n%2")
-                            .arg(QString::fromStdString(fi->filename))
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to write file %1:\n%2")
+                                  .arg(QString::fromStdString(fi->filename))
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -634,7 +638,8 @@ void MemoryCardEditorWindow::doDeleteFile()
 
   if (!MemoryCardImage::DeleteFile(&card->data, *fi, fi->deleted))
   {
-    QMessageBox::critical(this, tr("Error"), tr("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
     return;
   }
 
@@ -653,7 +658,7 @@ void MemoryCardEditorWindow::doUndeleteFile()
 
   if (!MemoryCardImage::UndeleteFile(&card->data, *fi))
   {
-    QMessageBox::critical(
+    QtUtils::MessageBoxCritical(
       this, tr("Error"),
       tr("Failed to undelete file %1. The file may have been partially overwritten by another save.")
         .arg(QString::fromStdString(fi->filename)));
@@ -682,10 +687,10 @@ void MemoryCardEditorWindow::doExportSaveFile()
   Error error;
   if (!MemoryCardImage::ExportSave(&card->data, *fi, filename.toStdString().c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to export save file %1:\n%2")
-                            .arg(QString::fromStdString(fi->filename))
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to export save file %1:\n%2")
+                                  .arg(QString::fromStdString(fi->filename))
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 }
@@ -703,10 +708,10 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   Error error;
   if (!MemoryCardImage::RenameFile(&card->data, *fi, new_name, &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to rename save file %1:\n%2")
-                            .arg(QString::fromStdString(fi->filename))
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to rename save file %1:\n%2")
+                                  .arg(QString::fromStdString(fi->filename))
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -730,10 +735,10 @@ void MemoryCardEditorWindow::importCard(Card* card)
   std::unique_ptr<MemoryCardImage::DataArray> temp = std::make_unique<MemoryCardImage::DataArray>();
   if (!MemoryCardImage::ImportCard(temp.get(), filename.toStdString().c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to import memory card from %1:\n%2")
-                            .arg(QFileInfo(filename).fileName())
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to import memory card from %1:\n%2")
+                                  .arg(QFileInfo(filename).fileName())
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -751,11 +756,11 @@ void MemoryCardEditorWindow::formatCard(Card* card)
 {
   promptForSave(card);
 
-  if (QMessageBox::question(this, tr("Format memory card?"),
-                            tr("Formatting the memory card will destroy all saves, and they will not be recoverable. "
-                               "The memory card which will be formatted is located at '%1'.")
-                              .arg(QString::fromStdString(card->filename)),
-                            QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("Format memory card?"),
+        tr("Formatting the memory card will destroy all saves, and they will not be recoverable. "
+           "The memory card which will be formatted is located at '%1'.")
+          .arg(QString::fromStdString(card->filename))) != QMessageBox::Yes)
   {
     return;
   }
@@ -782,10 +787,10 @@ void MemoryCardEditorWindow::importSaveFile(Card* card)
   Error error;
   if (!MemoryCardImage::ImportSave(&card->data, filename.toStdString().c_str(), &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to import save from %1:\n%2")
-                            .arg(QFileInfo(filename).fileName())
-                            .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(this, tr("Error"),
+                                tr("Failed to import save from %1:\n%2")
+                                  .arg(QFileInfo(filename).fileName())
+                                  .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 

@@ -19,7 +19,6 @@
 #include <QtGui/QShortcut>
 #include <QtWidgets/QAbstractScrollArea>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 #include <bit>
 
 #include "moc_memoryeditorwindow.cpp"
@@ -172,8 +171,8 @@ void MemoryEditorWindow::onMemorySearchTriggered()
     }
     else
     {
-      QMessageBox::critical(this, windowTitle(),
-                            tr("Invalid search pattern. It should contain hex digits or question marks."));
+      QtUtils::MessageBoxCritical(this, windowTitle(),
+                                  tr("Invalid search pattern. It should contain hex digits or question marks."));
       return;
     }
 
@@ -199,8 +198,8 @@ void MemoryEditorWindow::onMemorySearchTriggered()
 
   if (pattern.empty())
   {
-    QMessageBox::critical(this, windowTitle(),
-                          tr("Invalid search pattern. It should contain hex digits or question marks."));
+    QtUtils::MessageBoxCritical(this, windowTitle(),
+                                tr("Invalid search pattern. It should contain hex digits or question marks."));
     return;
   }
 
@@ -212,7 +211,7 @@ void MemoryEditorWindow::onMemorySearchTriggered()
     found_address = Bus::SearchMemory(0, pattern.data(), mask.data(), static_cast<u32>(pattern.size()));
     if (!found_address.has_value())
     {
-      QMessageBox::critical(this, windowTitle(), tr("Pattern not found in memory."));
+      QtUtils::MessageBoxCritical(this, windowTitle(), tr("Pattern not found in memory."));
       return;
     }
 
@@ -228,13 +227,13 @@ void MemoryEditorWindow::onMemorySearchTriggered()
 
   if (wrapped_around)
   {
-    QMessageBox::information(this, windowTitle(),
-                             tr("Pattern found at 0x%1 (passed the end of memory).")
-                               .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
+    QtUtils::MessageBoxInformation(this, windowTitle(),
+                                   tr("Pattern found at 0x%1 (passed the end of memory).")
+                                     .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
   else
   {
-    QMessageBox::information(
+    QtUtils::MessageBoxInformation(
       this, windowTitle(),
       tr("Pattern found at 0x%1.").arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
@@ -400,7 +399,8 @@ void MemoryEditorWindow::setupAdditionalUi()
 #endif
   m_ui.memoryView->setFont(fixedFont);
 
-  QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this);
+  if (!QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 
   // Set minimum width for data inspector.
   m_ui.dataInspectorAddress->setFont(fixedFont);

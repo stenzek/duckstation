@@ -26,7 +26,6 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
 #include <utility>
@@ -105,7 +104,8 @@ void MemoryScannerWindow::setupAdditionalUi()
 {
   QtUtils::SetColumnWidthsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
   QtUtils::SetColumnWidthsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
-  QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this);
+  if (!QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this))
+    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 void MemoryScannerWindow::connectUi()
@@ -402,7 +402,7 @@ void MemoryScannerWindow::tryOpenAddressInMemoryEditor(VirtualMemoryAddress addr
   MemoryEditorWindow* const editor = g_main_window->getMemoryEditorWindow();
   if (!editor->scrollToMemoryAddress(address))
   {
-    QMessageBox::critical(this, windowTitle(), tr("Failed to open memory editor at specified address."));
+    QtUtils::MessageBoxCritical(this, windowTitle(), tr("Failed to open memory editor at specified address."));
     return;
   }
 
@@ -672,7 +672,7 @@ std::string MemoryScannerWindow::getWatchSavePath(bool saving)
     Error error;
     if (!FileSystem::CreateDirectory(dir.c_str(), false, &error))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, windowTitle(),
         tr("Failed to create watches directory: %1").arg(QString::fromStdString(error.GetDescription())));
       return ret;
@@ -695,8 +695,9 @@ void MemoryScannerWindow::saveWatches()
   Error error;
   if (!m_watch.SaveToFile(path.c_str(), &error))
   {
-    QMessageBox::critical(this, windowTitle(),
-                          tr("Failed to save watches to file: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      this, windowTitle(),
+      tr("Failed to save watches to file: %1").arg(QString::fromStdString(error.GetDescription())));
   }
 }
 
@@ -712,7 +713,7 @@ void MemoryScannerWindow::reloadWatches()
     Error error;
     if (!m_watch.LoadFromFile(path.c_str(), &error))
     {
-      QMessageBox::critical(
+      QtUtils::MessageBoxCritical(
         this, windowTitle(),
         tr("Failed to load watches from file: %1").arg(QString::fromStdString(error.GetDescription())));
     }

@@ -65,33 +65,28 @@ static u32 s_debug_scope_depth = 0;
 #endif
 
 static constexpr const u32 s_mipmap_blit_vs[] = {
-  0x43425844, 0xe0f571cf, 0x51234ef3, 0x3a6beab4, 0x141cd2ef, 0x00000001, 0x000003ac, 0x00000005, 0x00000034,
-  0x00000144, 0x00000178, 0x000001d0, 0x00000310, 0x46454452, 0x00000108, 0x00000001, 0x00000068, 0x00000001,
-  0x0000003c, 0xfffe0500, 0x00008100, 0x000000e0, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
-  0x00000024, 0x0000000c, 0x00000000, 0x0000005c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000001, 0x00000001, 0x424f4255, 0x6b636f6c, 0xababab00, 0x0000005c, 0x00000001, 0x00000080, 0x00000010,
-  0x00000000, 0x00000000, 0x000000a8, 0x00000000, 0x00000010, 0x00000002, 0x000000bc, 0x00000000, 0xffffffff,
-  0x00000000, 0xffffffff, 0x00000000, 0x72735f75, 0x65725f63, 0x66007463, 0x74616f6c, 0xabab0034, 0x00030001,
-  0x00040001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000b3, 0x7263694d,
-  0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072, 0x6c69706d, 0x31207265, 0x00312e30,
-  0x4e475349, 0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000006, 0x00000001, 0x00000000,
-  0x00000101, 0x565f5653, 0x65747265, 0x00444978, 0x4e47534f, 0x00000050, 0x00000002, 0x00000008, 0x00000038,
-  0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000c03, 0x00000041, 0x00000000, 0x00000001, 0x00000003,
-  0x00000001, 0x0000000f, 0x43584554, 0x44524f4f, 0x5f565300, 0x69736f50, 0x6e6f6974, 0xababab00, 0x58454853,
-  0x00000138, 0x00010050, 0x0000004e, 0x0100086a, 0x04000059, 0x00208e46, 0x00000000, 0x00000001, 0x04000060,
+  0x43425844, 0x1790f572, 0x2810683a, 0xdff0fe9d, 0x8f210489, 0x00000001, 0x000002e0, 0x00000005, 0x00000034,
+  0x000000a0, 0x000000d4, 0x0000012c, 0x00000244, 0x46454452, 0x00000064, 0x00000000, 0x00000000, 0x00000000,
+  0x0000003c, 0xfffe0500, 0x00008100, 0x0000003c, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
+  0x00000024, 0x0000000c, 0x00000000, 0x7263694d, 0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168,
+  0x6f432072, 0x6c69706d, 0x31207265, 0x00312e30, 0x4e475349, 0x0000002c, 0x00000001, 0x00000008, 0x00000020,
+  0x00000000, 0x00000006, 0x00000001, 0x00000000, 0x00000101, 0x565f5653, 0x65747265, 0x00444978, 0x4e47534f,
+  0x00000050, 0x00000002, 0x00000008, 0x00000038, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000c03,
+  0x00000041, 0x00000000, 0x00000001, 0x00000003, 0x00000001, 0x0000000f, 0x43584554, 0x44524f4f, 0x5f565300,
+  0x69736f50, 0x6e6f6974, 0xababab00, 0x58454853, 0x00000110, 0x00010050, 0x00000044, 0x0100086a, 0x04000060,
   0x00101012, 0x00000000, 0x00000006, 0x03000065, 0x00102032, 0x00000000, 0x04000067, 0x001020f2, 0x00000001,
   0x00000001, 0x02000068, 0x00000001, 0x0b00008c, 0x00100012, 0x00000000, 0x00004001, 0x00000001, 0x00004001,
   0x00000001, 0x0010100a, 0x00000000, 0x00004001, 0x00000000, 0x07000001, 0x00100042, 0x00000000, 0x0010100a,
-  0x00000000, 0x00004001, 0x00000002, 0x05000056, 0x00100032, 0x00000000, 0x00100086, 0x00000000, 0x0b000032,
-  0x00102032, 0x00000000, 0x00100046, 0x00000000, 0x00208ae6, 0x00000000, 0x00000000, 0x00208046, 0x00000000,
-  0x00000000, 0x0f000032, 0x00102032, 0x00000001, 0x00100046, 0x00000000, 0x00004002, 0x40000000, 0xc0000000,
-  0x00000000, 0x00000000, 0x00004002, 0xbf800000, 0x3f800000, 0x00000000, 0x00000000, 0x08000036, 0x001020c2,
-  0x00000001, 0x00004002, 0x00000000, 0x00000000, 0x00000000, 0x3f800000, 0x0100003e, 0x54415453, 0x00000094,
-  0x00000007, 0x00000001, 0x00000000, 0x00000003, 0x00000002, 0x00000000, 0x00000001, 0x00000001, 0x00000000,
+  0x00000000, 0x00004001, 0x00000002, 0x05000056, 0x00100032, 0x00000000, 0x00100086, 0x00000000, 0x05000036,
+  0x00102032, 0x00000000, 0x00100046, 0x00000000, 0x0f000032, 0x00102032, 0x00000001, 0x00100046, 0x00000000,
+  0x00004002, 0x40000000, 0xc0000000, 0x00000000, 0x00000000, 0x00004002, 0xbf800000, 0x3f800000, 0x00000000,
+  0x00000000, 0x08000036, 0x001020c2, 0x00000001, 0x00004002, 0x00000000, 0x00000000, 0x00000000, 0x3f800000,
+  0x0100003e, 0x54415453, 0x00000094, 0x00000007, 0x00000001, 0x00000000, 0x00000003, 0x00000001, 0x00000000,
+  0x00000001, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000001, 0x00000000, 0x00000000,
   0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000, 0x00000001, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-  0x00000000};
+  0x00000000, 0x00000000, 0x00000000, 0x00000000,
+};
 
 static constexpr const u32 s_mipmap_blit_ps[] = {
   0x43425844, 0x25500f77, 0x71f24271, 0x5f83f8b8, 0x3f405943, 0x00000001, 0x0000026c, 0x00000005, 0x00000034,
@@ -148,9 +143,8 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
-                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                               bool allow_present_throttle,
+bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -1340,7 +1334,8 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self =
-    /*!HasCreateFlag(create_flags, CreateFlag::DisableTextureCopyToSelf)*/ false; // TODO: Support with Enhanced Barriers
+    /*!HasCreateFlag(create_flags, CreateFlag::DisableTextureCopyToSelf)*/ false; // TODO: Support with Enhanced
+                                                                                  // Barriers
   m_features.texture_buffers = !HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
@@ -1369,8 +1364,8 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
      (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
       SupportsTextureFormat(GPUTexture::Format::BC3)));
-  m_features.bptc_textures =
-    (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && SupportsTextureFormat(GPUTexture::Format::BC7));
+  m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
+                              SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
@@ -1600,7 +1595,8 @@ void D3D12Device::UnmapIndexBuffer(u32 used_index_count)
   m_index_buffer.CommitMemory(upload_size);
 }
 
-void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
+void D3D12Device::PushUniformBuffer(ID3D12GraphicsCommandList4* const cmdlist, bool compute, const void* data,
+                                    u32 data_size)
 {
   static constexpr std::array<u8, static_cast<u8>(GPUPipeline::Layout::MaxCount)> push_parameters = {
     0, // SingleTextureAndUBO
@@ -1608,22 +1604,16 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
     1, // SingleTextureBufferAndPushConstants
     0, // MultiTextureAndUBO
     2, // MultiTextureAndPushConstants
+    3, // MultiTextureAndUBOAndPushConstants
+    0, // ComputeMultiTextureAndUBO
     2, // ComputeSingleTextureAndPushConstants
   };
-
-  DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
-  if (m_dirty_flags & DIRTY_FLAG_PIPELINE_LAYOUT)
-  {
-    m_dirty_flags &= ~DIRTY_FLAG_PIPELINE_LAYOUT;
-    UpdateRootSignature();
-  }
 
   s_stats.buffer_streamed += data_size;
 
   const u32 push_param =
     push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(IsUsingROVRootSignature());
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-  if (!IsUsingComputeRootSignature())
+  if (!compute)
     cmdlist->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
   else
     cmdlist->SetComputeRoot32BitConstants(push_param, data_size / 4u, data, 0);
@@ -1689,7 +1679,7 @@ bool D3D12Device::CreateRootSignatures(Error* error)
         rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
                                D3D12_SHADER_VISIBILITY_PIXEL);
       }
-      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
       if (!(rs = rsb.Create(error, true)))
         return false;
       D3D12::SetObjectName(rs.Get(), "Single Texture Pipeline Layout");
@@ -1705,7 +1695,7 @@ bool D3D12Device::CreateRootSignatures(Error* error)
         rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
                                D3D12_SHADER_VISIBILITY_PIXEL);
       }
-      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
       if (!(rs = rsb.Create(error, true)))
         return false;
       D3D12::SetObjectName(rs.Get(), "Single Texture Buffer + UBO Pipeline Layout");
@@ -1741,10 +1731,29 @@ bool D3D12Device::CreateRootSignatures(Error* error)
         rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
                                D3D12_SHADER_VISIBILITY_PIXEL);
       }
-      rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
       if (!(rs = rsb.Create(error, true)))
         return false;
-      D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
+      D3D12::SetObjectName(rs.Get(), "Multi Texture + Push Constant Pipeline Layout");
+    }
+
+    {
+      auto& rs = m_root_signatures[rov][static_cast<u8>(GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants)];
+
+      rsb.SetInputAssemblerFlag();
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS,
+                             D3D12_SHADER_VISIBILITY_PIXEL);
+      rsb.AddCBVParameter(0, D3D12_SHADER_VISIBILITY_ALL);
+      if (rov)
+      {
+        rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS,
+                               D3D12_SHADER_VISIBILITY_PIXEL);
+      }
+      rsb.Add32BitConstants(1, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+      if (!(rs = rsb.Create(error, true)))
+        return false;
+      D3D12::SetObjectName(rs.Get(), "Multi Texture + UBO + Push Constant Pipeline Layout");
     }
   }
 
@@ -1772,11 +1781,23 @@ bool D3D12Device::CreateRootSignatures(Error* error)
     D3D12::SetObjectName(rs.Get(), "Compute Multi Texture Pipeline Layout");
   }
 
+  {
+    auto& rs = m_mipmap_render_root_signature;
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddStaticSampler(0, D3D12Sampler::GetD3DSamplerDesc(GPUSampler::GetLinearConfig()), D3D12_SHADER_VISIBILITY_PIXEL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Render Mipmap Pipeline Layout");
+  }
+
   return true;
 }
 
 void D3D12Device::DestroyRootSignatures()
 {
+  for (ComPtr<ID3D12PipelineState>& it : m_mipmap_render_pipelines)
+    it.Reset();
+  m_mipmap_render_root_signature.Reset();
   m_root_signatures.enumerate([](auto& it) { it.Reset(); });
 }
 
@@ -1905,8 +1926,8 @@ void D3D12Device::BeginRenderPass()
       ds->SetUseFenceValue(GetCurrentFenceValue());
       ds_desc.cpuDescriptor = ds->GetWriteDescriptor();
       ds_desc.DepthEndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
-      ds_desc.StencilBeginningAccess = {};
-      ds_desc.StencilEndingAccess = {};
+      ds_desc.StencilBeginningAccess = {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS, {}};
+      ds_desc.StencilEndingAccess = {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS, {}};
 
       switch (ds->GetState())
       {
@@ -2199,17 +2220,15 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
 void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height,
                                       u32 src_level, u32 src_width, u32 src_height)
 {
-  ID3D12RootSignature* rootsig =
-    m_root_signatures[0][static_cast<size_t>(GPUPipeline::Layout::SingleTextureAndPushConstants)].Get();
   ComPtr<ID3D12PipelineState>& pipeline = m_mipmap_render_pipelines[static_cast<size_t>(texture->GetFormat())];
   if (!pipeline)
   {
     D3D12::GraphicsPipelineBuilder gpb;
-    gpb.SetRootSignature(rootsig);
+    gpb.SetRootSignature(m_mipmap_render_root_signature.Get());
     gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
     gpb.SetRenderTarget(0, texture->GetDXGIFormat());
-    gpb.SetVertexShader(s_mipmap_blit_vs, std::size(s_mipmap_blit_vs));
-    gpb.SetPixelShader(s_mipmap_blit_ps, std::size(s_mipmap_blit_ps));
+    gpb.SetVertexShader(s_mipmap_blit_vs, sizeof(s_mipmap_blit_vs));
+    gpb.SetPixelShader(s_mipmap_blit_ps, sizeof(s_mipmap_blit_ps));
     gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
     gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
     gpb.SetBlendState(0, false, D3D12_BLEND_ZERO, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_BLEND_ZERO,
@@ -2252,17 +2271,26 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
     }
   }
 
-  EndRenderPass();
+  if (InRenderPass())
+    EndRenderPass();
 
   // we need a temporary SRV and RTV for each mip level
   // Safe to use the init buffer after exec, because everything will be done with the texture.
   D3D12DescriptorHandle rtv_handle;
   while (!GetRTVHeapManager().Allocate(&rtv_handle))
+  {
     SubmitCommandList(false, "Allocate RTV for RenderTextureMipmap()");
+    if (m_device_was_lost)
+      return;
+  }
 
   D3D12DescriptorHandle srv_handle;
-  while (!GetDescriptorHeapManager().Allocate(&srv_handle))
-    SubmitCommandList(false, "Allocate SRV for RenderTextureMipmap()");
+  while (!m_command_lists[m_current_command_list].descriptor_allocator.Allocate(1, &srv_handle))
+  {
+    SubmitCommandList(false, "Allocate SRV/sampler for RenderTextureMipmap()");
+    if (m_device_was_lost)
+      return;
+  }
 
   // Setup views. This will be a partial view for the SRV.
   const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {.Format = texture->GetDXGIFormat(),
@@ -2303,8 +2331,8 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   cmdlist->RSSetScissorRects(1, &scissor);
 
   cmdlist->SetPipelineState(pipeline.Get());
+  cmdlist->SetGraphicsRootSignature(m_mipmap_render_root_signature.Get());
   cmdlist->SetGraphicsRootDescriptorTable(0, srv_handle);
-  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12Sampler*>(m_linear_sampler)->GetDescriptor());
   cmdlist->DrawInstanced(3, 1, 0, 0);
 
   cmdlist->EndRenderPass();
@@ -2321,7 +2349,6 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
   }
 
   // Must destroy after current cmdlist.
-  DeferDescriptorDestruction(m_descriptor_heap_manager, &srv_handle);
   DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
 
   // Restore for next normal draw.
@@ -2480,6 +2507,7 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
 
   if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
                 layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+                layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants ||
                 layout == GPUPipeline::Layout::ComputeMultiTextureAndUBO)
   {
     if (dirty & DIRTY_FLAG_CONSTANT_BUFFER)
@@ -2584,7 +2612,8 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
         2 :
         ((layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants) ?
            1 :
-           ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO) ?
+           ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO ||
+             layout == GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants) ?
               3 :
               2));
     if constexpr (!IsComputeLayout(layout))
@@ -2615,6 +2644,9 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
     case GPUPipeline::Layout::MultiTextureAndPushConstants:
       return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndPushConstants>(dirty);
 
+    case GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants:
+      return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndUBOAndPushConstants>(dirty);
+
     case GPUPipeline::Layout::ComputeMultiTextureAndUBO:
       return UpdateParametersForLayout<GPUPipeline::Layout::ComputeMultiTextureAndUBO>(dirty);
 
@@ -2633,6 +2665,17 @@ void D3D12Device::Draw(u32 vertex_count, u32 base_vertex)
   GetCommandList()->DrawInstanced(vertex_count, 1, base_vertex, 0);
 }
 
+void D3D12Device::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                        u32 push_constants_size)
+{
+  PreDrawCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, false, push_constants, push_constants_size);
+  cmdlist->DrawInstanced(vertex_count, 1, base_vertex, 0);
+}
+
 void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   PreDrawCheck();
@@ -2640,9 +2683,15 @@ void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   GetCommandList()->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
 }
 
-void D3D12Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+void D3D12Device::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                               const void* push_constants, u32 push_constants_size)
 {
-  Panic("Barriers are not supported");
+  PreDrawCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, false, push_constants, push_constants_size);
+  cmdlist->DrawIndexedInstanced(index_count, 1, base_index, base_vertex, 0);
 }
 
 void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
@@ -2655,4 +2704,20 @@ void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   const u32 groups_y = threads_y / group_size_y;
   const u32 groups_z = threads_z / group_size_z;
   GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
+}
+
+void D3D12Device::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                            u32 push_constants_size)
+{
+  PreDispatchCheck();
+  s_stats.num_draws++;
+
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+  PushUniformBuffer(cmdlist, true, push_constants, push_constants_size);
+
+  const u32 groups_x = threads_x / group_size_x;
+  const u32 groups_y = threads_y / group_size_y;
+  const u32 groups_z = threads_z / group_size_z;
+  cmdlist->Dispatch(groups_x, groups_y, groups_z);
 }

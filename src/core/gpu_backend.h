@@ -117,8 +117,8 @@ public:
   static void SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config);
   static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
 
-  static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                             const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
+  static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size, const GSVector4 uv_bounds,
+                             const void* push_constants, u32 push_constants_size);
 
 protected:
   enum : u32
@@ -145,6 +145,8 @@ protected:
     u32 host_num_copies;
     u32 host_num_downloads;
     u32 host_num_uploads;
+
+    u8 gpu_busy_pct;
   };
 
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;

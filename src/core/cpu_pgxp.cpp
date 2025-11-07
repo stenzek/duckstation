@@ -61,6 +61,8 @@ enum : u32
 #define SET_LOWORD(val, loword) ((static_cast<u32>(val) & 0xFFFF0000u) | static_cast<u32>(static_cast<u16>(loword)))
 #define SET_HIWORD(val, hiword) ((static_cast<u32>(val) & 0x0000FFFFu) | (static_cast<u32>(hiword) << 16))
 
+#define PGXP_GTE_REGISTER(field) g_state.pgxp_gte[offsetof(GTE::Regs, field) / sizeof(u32)]
+
 static bool ShouldSavePGXPState();
 
 static double f16Sign(double val);
@@ -79,10 +81,7 @@ static PGXPValue& ValidateAndGetRtValue(Instruction instr, u32 rtVal);
 static PGXPValue& ValidateAndGetRsValue(Instruction instr, u32 rsVal);
 static void SetRtValue(Instruction instr, const PGXPValue& val);
 static void SetRtValue(Instruction instr, const PGXPValue& val, u32 rtVal);
-static PGXPValue& GetSXY0();
-static PGXPValue& GetSXY1();
-static PGXPValue& GetSXY2();
-static PGXPValue& PushSXY();
+static void PushScreenXYFIFO();
 
 static PGXPValue* GetPtr(u32 addr);
 static const PGXPValue& ValidateAndLoadMem(u32 addr, u32 value);
@@ -133,6 +132,12 @@ static std::FILE* s_log;
 
 void CPU::PGXP::Initialize()
 {
+  // Just in case due to memory layout...
+  static_assert(&PGXP_GTE_REGISTER(SXY0) == &g_state.pgxp_gte[12]);
+  static_assert(&PGXP_GTE_REGISTER(SXY1) == &g_state.pgxp_gte[13]);
+  static_assert(&PGXP_GTE_REGISTER(SXY2) == &g_state.pgxp_gte[14]);
+  static_assert(&PGXP_GTE_REGISTER(SXYP) == &g_state.pgxp_gte[15]);
+
   std::memset(g_state.pgxp_gpr, 0, sizeof(g_state.pgxp_gpr));
   std::memset(g_state.pgxp_cop0, 0, sizeof(g_state.pgxp_cop0));
   std::memset(g_state.pgxp_gte, 0, sizeof(g_state.pgxp_gte));
@@ -277,26 +282,11 @@ ALWAYS_INLINE void CPU::PGXP::SetRtValue(Instruction instr, const PGXPValue& val
   prtVal.value = rtVal;
 }
 
-ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY0()
+ALWAYS_INLINE void CPU::PGXP::PushScreenXYFIFO()
 {
-  return g_state.pgxp_gte[12];
-}
-
-ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY1()
-{
-  return g_state.pgxp_gte[13];
-}
-
-ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::GetSXY2()
-{
-  return g_state.pgxp_gte[14];
-}
-
-ALWAYS_INLINE CPU::PGXPValue& CPU::PGXP::PushSXY()
-{
-  g_state.pgxp_gte[12] = g_state.pgxp_gte[13];
-  g_state.pgxp_gte[13] = g_state.pgxp_gte[14];
-  return g_state.pgxp_gte[14];
+  PGXP_GTE_REGISTER(SXY0) = PGXP_GTE_REGISTER(SXY1); // SXY0 = SXY1
+  PGXP_GTE_REGISTER(SXY1) = PGXP_GTE_REGISTER(SXY2); // SXY1 = SXY2
+  PGXP_GTE_REGISTER(SXY2) = PGXP_GTE_REGISTER(SXYP); // SXY2 = SXYP
 }
 
 ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetPtr(u32 addr)
@@ -498,24 +488,25 @@ void CPU::PGXP::LogValueStr(SmallStringBase& str, const char* name, u32 rval, co
 
 void CPU::PGXP::GTE_RTPS(float x, float y, float z, u32 value)
 {
-  PGXPValue& pvalue = PushSXY();
-  pvalue.x = x;
-  pvalue.y = y;
-  pvalue.z = z;
-  pvalue.value = value;
-  pvalue.flags = VALID_ALL;
+  PGXPValue& SXYP = PGXP_GTE_REGISTER(SXYP);
+  SXYP.x = x;
+  SXYP.y = y;
+  SXYP.z = z;
+  SXYP.value = value;
+  SXYP.flags = VALID_ALL;
+  PushScreenXYFIFO();
 
   if (g_settings.gpu_pgxp_vertex_cache)
-    CacheVertex(value, pvalue);
+    CacheVertex(value, SXYP);
 }
 
 bool CPU::PGXP::GTE_HasPreciseVertices(u32 sxy0, u32 sxy1, u32 sxy2)
 {
-  PGXPValue& SXY0 = GetSXY0();
+  PGXPValue& SXY0 = PGXP_GTE_REGISTER(SXY0);
   SXY0.Validate(sxy0);
-  PGXPValue& SXY1 = GetSXY1();
+  PGXPValue& SXY1 = PGXP_GTE_REGISTER(SXY1);
   SXY1.Validate(sxy1);
-  PGXPValue& SXY2 = GetSXY2();
+  PGXPValue& SXY2 = PGXP_GTE_REGISTER(SXY2);
   SXY2.Validate(sxy2);
 
   // Don't use accurate clipping for game-constructed values, which don't have a valid Z.
@@ -524,9 +515,9 @@ bool CPU::PGXP::GTE_HasPreciseVertices(u32 sxy0, u32 sxy1, u32 sxy2)
 
 float CPU::PGXP::GTE_NCLIP()
 {
-  const PGXPValue& SXY0 = GetSXY0();
-  const PGXPValue& SXY1 = GetSXY1();
-  const PGXPValue& SXY2 = GetSXY2();
+  const PGXPValue& SXY0 = PGXP_GTE_REGISTER(SXY0);
+  const PGXPValue& SXY1 = PGXP_GTE_REGISTER(SXY1);
+  const PGXPValue& SXY2 = PGXP_GTE_REGISTER(SXY2);
   float nclip = ((SXY0.x * SXY1.y) + (SXY1.x * SXY2.y) + (SXY2.x * SXY0.y) - (SXY0.x * SXY2.y) - (SXY1.x * SXY0.y) -
                  (SXY2.x * SXY1.y));
 
@@ -545,8 +536,8 @@ ALWAYS_INLINE_RELEASE void CPU::PGXP::CPU_MTC2(u32 reg, const PGXPValue& value, 
     case 15:
     {
       // push FIFO
-      PGXPValue& SXY2 = PushSXY();
-      SXY2 = value;
+      PGXP_GTE_REGISTER(SXYP) = value;
+      PushScreenXYFIFO();
       return;
     }
 

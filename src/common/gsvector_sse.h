@@ -12,6 +12,10 @@
 
 #include <algorithm>
 
+#ifndef CPU_ARCH_SSE41
+#include <cmath>
+#endif
+
 #ifdef CPU_ARCH_SSE41
 #define GSVECTOR_HAS_FAST_INT_SHUFFLE8 1
 #endif
@@ -741,10 +745,21 @@ public:
   ALWAYS_INLINE GSVector2 neg() const { return *this ^ cast(GSVector2i::cxpr(0x80000000)); }
   ALWAYS_INLINE GSVector2 floor() const
   {
+#ifdef CPU_ARCH_SSE41
     return GSVector2(_mm_round_ps(m, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC));
+#else
+    return GSVector2(std::floor(x), std::floor(y));
+#endif
   }
 
-  ALWAYS_INLINE GSVector2 ceil() const { return GSVector2(_mm_round_ps(m, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC)); }
+  ALWAYS_INLINE GSVector2 ceil() const
+  {
+#ifdef CPU_ARCH_SSE41
+    return GSVector2(_mm_round_ps(m, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC));
+#else
+    return GSVector2(std::ceil(x), std::ceil(y));
+#endif
+  }
 
   ALWAYS_INLINE GSVector2 sat(const GSVector2& min, const GSVector2& max) const
   {
@@ -2026,10 +2041,21 @@ public:
 
   ALWAYS_INLINE GSVector4 floor() const
   {
+#ifdef CPU_ARCH_SSE41
     return GSVector4(_mm_round_ps(m, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC));
+#else
+    return GSVector4(std::floor(x), std::floor(y), std::floor(z), std::floor(w));
+#endif
   }
 
-  ALWAYS_INLINE GSVector4 ceil() const { return GSVector4(_mm_round_ps(m, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC)); }
+  ALWAYS_INLINE GSVector4 ceil() const
+  {
+#ifdef CPU_ARCH_SSE41
+    return GSVector4(_mm_round_ps(m, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC));
+#else
+    return GSVector4(std::ceil(x), std::ceil(y), std::ceil(z), std::ceil(w));
+#endif
+  }
 
   ALWAYS_INLINE GSVector4 hadd() const { return GSVector4(_mm_hadd_ps(m, m)); }
 

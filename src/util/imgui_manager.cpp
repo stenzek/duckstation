@@ -5,12 +5,12 @@
 #include "gpu_device.h"
 #include "host.h"
 #include "image.h"
-#include "imgui_fullscreen.h"
 #include "input_manager.h"
 #include "shadergen.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"
@@ -22,6 +22,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/string_util.h"
+#include "common/thirdparty/usb_key_code_data.h"
 #include "common/timer.h"
 
 #include "IconsFontAwesome6.h"
@@ -34,10 +35,9 @@
 #include <chrono>
 #include <cmath>
 #include <deque>
-#include <mutex>
 #include <limits>
+#include <mutex>
 #include <type_traits>
-#include <unordered_map>
 
 LOG_CHANNEL(ImGuiManager);
 
@@ -58,6 +58,8 @@ struct SoftwareCursor
 struct OSDMessage
 {
   std::string key;
+  std::string icon;
+  std::string title;
   std::string text;
   Timer::Value start_time;
   Timer::Value move_time;
@@ -73,7 +75,6 @@ static_assert(std::is_same_v<WCharType, ImWchar>);
 
 static void UpdateScale();
 static void SetStyle(ImGuiStyle& style, float scale);
-static void SetKeyMap();
 static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool CreateFontAtlas(Error* error);
@@ -84,7 +85,8 @@ static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
 static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
-static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
+static void AddOSDMessage(std::string key, std::string icon, std::string title, std::string message, float duration,
+                          bool is_warning);
 static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
 static void ClearOSDMessages(bool clear_warnings);
 static void AcquirePendingOSDMessages(Timer::Value current_time);
@@ -93,6 +95,7 @@ static void CreateSoftwareCursorTextures();
 static void UpdateSoftwareCursorTexture(SoftwareCursor& cursor, const std::string& image_path);
 static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
+static std::optional<ImGuiKey> MapHostKeyEventToImGuiKey(u32 key);
 
 static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
@@ -145,9 +148,6 @@ struct ALIGN_TO_CACHE_LINE State
   std::deque<OSDMessage> osd_active_messages;
 
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
-
-  // mapping of host key -> imgui key
-  ALIGN_TO_CACHE_LINE std::unordered_map<u32, ImGuiKey> imgui_key_map;
 
   TextFontOrder text_font_order = ImGuiManager::GetDefaultTextFontOrder();
 
@@ -224,12 +224,11 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
   io.DisplaySize = ImVec2(s_state.window_width, s_state.window_height);
 
-  SetKeyMap();
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
-  FullscreenUI::SetTheme();
-  ImGuiFullscreen::UpdateLayoutScale();
+  FullscreenUI::UpdateTheme();
+  FullscreenUI::UpdateLayoutScale();
 
-  if (!CreateFontAtlas(error) || !CompilePipelines(error))
+  if (!CreateFontAtlas(error) || !CompilePipelines(error) || !FullscreenUI::InitializeWidgets(error))
     return false;
 
   NewFrame();
@@ -238,13 +237,15 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   return true;
 }
 
-void ImGuiManager::Shutdown()
+void ImGuiManager::Shutdown(bool clear_fsui_state)
 {
   DestroySoftwareCursorTextures();
 
+  FullscreenUI::ShutdownWidgets(clear_fsui_state);
+
   s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;
-  ImGuiFullscreen::SetFont(nullptr);
+  FullscreenUI::SetFont(nullptr);
 
   s_state.imgui_pipeline.reset();
 
@@ -324,7 +325,7 @@ void ImGuiManager::UpdateScale()
   const float scale = std::max(window_scale * s_state.global_prescale, 1.0f);
   const bool scale_changed = (scale != s_state.global_scale);
 
-  if (!ImGuiFullscreen::UpdateLayoutScale() && !scale_changed)
+  if (!FullscreenUI::UpdateLayoutScale() && !scale_changed)
     return;
 
   if (scale_changed)
@@ -399,7 +400,7 @@ bool ImGuiManager::CompilePipelines(Error* error)
   };
 
   GPUPipeline::GraphicsConfig plconfig;
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBO;
   plconfig.input_layout.vertex_attributes = imgui_attributes;
   plconfig.input_layout.vertex_stride = sizeof(ImDrawVert);
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
@@ -453,7 +454,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
                                                                    static_cast<float>(window_height), 0.0f, 1.0f);
   if (prerotated)
     mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(prerotation)) * mproj;
-  g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+  g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
   const bool flip = g_gpu_device->UsesLowerLeftOrigin();
@@ -491,7 +492,7 @@ void ImGuiManager::RenderDrawLists(u32 window_width, u32 window_height, WindowIn
       if (pcmd->UserCallback) [[unlikely]]
       {
         pcmd->UserCallback(cmd_list, pcmd);
-        g_gpu_device->PushUniformBuffer(&mproj, sizeof(mproj));
+        g_gpu_device->UploadUniformBuffer(&mproj, sizeof(mproj));
         g_gpu_device->SetPipeline(s_state.imgui_pipeline.get());
       }
       else
@@ -544,7 +545,7 @@ void ImGuiManager::UpdateTextures()
         GPUTexture* const gtex = reinterpret_cast<GPUTexture*>(tex->GetTexID());
         for (const ImTextureRect& rc : tex->Updates)
         {
-          DEV_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
+          DEBUG_LOG("Update {}x{} @ {},{} in {}x{} ImGui texture", rc.w, rc.h, rc.x, rc.y, tex->Width, tex->Height);
           if (!gtex->Update(rc.x, rc.y, rc.w, rc.h, tex->GetPixelsAt(rc.x, rc.y), tex->GetPitch())) [[unlikely]]
           {
             ERROR_LOG("Failed to update {}x{} rect @ {},{} in imgui texture", rc.w, rc.h, rc.x, rc.y);
@@ -637,135 +638,6 @@ void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
   style.ScaleAllSizes(scale);
-}
-
-void ImGuiManager::SetKeyMap()
-{
-  struct KeyMapping
-  {
-    ImGuiKey index;
-    const char* name;
-    const char* alt_name;
-  };
-
-  static constexpr KeyMapping mapping[] = {
-    {ImGuiKey_LeftArrow, "Left", nullptr},
-    {ImGuiKey_RightArrow, "Right", nullptr},
-    {ImGuiKey_UpArrow, "Up", nullptr},
-    {ImGuiKey_DownArrow, "Down", nullptr},
-    {ImGuiKey_PageUp, "PageUp", nullptr},
-    {ImGuiKey_PageDown, "PageDown", nullptr},
-    {ImGuiKey_Home, "Home", nullptr},
-    {ImGuiKey_End, "End", nullptr},
-    {ImGuiKey_Insert, "Insert", nullptr},
-    {ImGuiKey_Delete, "Delete", nullptr},
-    {ImGuiKey_Backspace, "Backspace", nullptr},
-    {ImGuiKey_Space, "Space", nullptr},
-    {ImGuiKey_Enter, "Return", nullptr},
-    {ImGuiKey_Escape, "Escape", nullptr},
-    {ImGuiKey_LeftCtrl, "LeftControl", "Control"},
-    {ImGuiKey_LeftShift, "LeftShift", "Shift"},
-    {ImGuiKey_LeftAlt, "LeftAlt", "Alt"},
-    {ImGuiKey_LeftSuper, "LeftSuper", "Super"},
-    {ImGuiKey_RightCtrl, "RightControl", nullptr},
-    {ImGuiKey_RightShift, "RightShift", nullptr},
-    {ImGuiKey_RightAlt, "RightAlt", nullptr},
-    {ImGuiKey_RightSuper, "RightSuper", nullptr},
-    {ImGuiKey_Menu, "Menu", nullptr},
-    {ImGuiKey_Tab, "Tab", nullptr},
-    // Hack: Report Qt's "Backtab" as Tab, we forward the shift so it gets mapped correctly
-    {ImGuiKey_Tab, "Backtab", nullptr},
-    {ImGuiKey_0, "0", nullptr},
-    {ImGuiKey_1, "1", nullptr},
-    {ImGuiKey_2, "2", nullptr},
-    {ImGuiKey_3, "3", nullptr},
-    {ImGuiKey_4, "4", nullptr},
-    {ImGuiKey_5, "5", nullptr},
-    {ImGuiKey_6, "6", nullptr},
-    {ImGuiKey_7, "7", nullptr},
-    {ImGuiKey_8, "8", nullptr},
-    {ImGuiKey_9, "9", nullptr},
-    {ImGuiKey_A, "A", nullptr},
-    {ImGuiKey_B, "B", nullptr},
-    {ImGuiKey_C, "C", nullptr},
-    {ImGuiKey_D, "D", nullptr},
-    {ImGuiKey_E, "E", nullptr},
-    {ImGuiKey_F, "F", nullptr},
-    {ImGuiKey_G, "G", nullptr},
-    {ImGuiKey_H, "H", nullptr},
-    {ImGuiKey_I, "I", nullptr},
-    {ImGuiKey_J, "J", nullptr},
-    {ImGuiKey_K, "K", nullptr},
-    {ImGuiKey_L, "L", nullptr},
-    {ImGuiKey_M, "M", nullptr},
-    {ImGuiKey_N, "N", nullptr},
-    {ImGuiKey_O, "O", nullptr},
-    {ImGuiKey_P, "P", nullptr},
-    {ImGuiKey_Q, "Q", nullptr},
-    {ImGuiKey_R, "R", nullptr},
-    {ImGuiKey_S, "S", nullptr},
-    {ImGuiKey_T, "T", nullptr},
-    {ImGuiKey_U, "U", nullptr},
-    {ImGuiKey_V, "V", nullptr},
-    {ImGuiKey_W, "W", nullptr},
-    {ImGuiKey_X, "X", nullptr},
-    {ImGuiKey_Y, "Y", nullptr},
-    {ImGuiKey_Z, "Z", nullptr},
-    {ImGuiKey_F1, "F1", nullptr},
-    {ImGuiKey_F2, "F2", nullptr},
-    {ImGuiKey_F3, "F3", nullptr},
-    {ImGuiKey_F4, "F4", nullptr},
-    {ImGuiKey_F5, "F5", nullptr},
-    {ImGuiKey_F6, "F6", nullptr},
-    {ImGuiKey_F7, "F7", nullptr},
-    {ImGuiKey_F8, "F8", nullptr},
-    {ImGuiKey_F9, "F9", nullptr},
-    {ImGuiKey_F10, "F10", nullptr},
-    {ImGuiKey_F11, "F11", nullptr},
-    {ImGuiKey_F12, "F12", nullptr},
-    {ImGuiKey_Apostrophe, "Apostrophe", nullptr},
-    {ImGuiKey_Comma, "Comma", nullptr},
-    {ImGuiKey_Minus, "Minus", nullptr},
-    {ImGuiKey_Period, "Period", nullptr},
-    {ImGuiKey_Slash, "Slash", nullptr},
-    {ImGuiKey_Semicolon, "Semicolon", nullptr},
-    {ImGuiKey_Equal, "Equal", nullptr},
-    {ImGuiKey_LeftBracket, "BracketLeft", nullptr},
-    {ImGuiKey_Backslash, "Backslash", nullptr},
-    {ImGuiKey_RightBracket, "BracketRight", nullptr},
-    {ImGuiKey_GraveAccent, "QuoteLeft", nullptr},
-    {ImGuiKey_CapsLock, "CapsLock", nullptr},
-    {ImGuiKey_ScrollLock, "ScrollLock", nullptr},
-    {ImGuiKey_NumLock, "NumLock", nullptr},
-    {ImGuiKey_PrintScreen, "PrintScreen", nullptr},
-    {ImGuiKey_Pause, "Pause", nullptr},
-    {ImGuiKey_Keypad0, "Keypad0", nullptr},
-    {ImGuiKey_Keypad1, "Keypad1", nullptr},
-    {ImGuiKey_Keypad2, "Keypad2", nullptr},
-    {ImGuiKey_Keypad3, "Keypad3", nullptr},
-    {ImGuiKey_Keypad4, "Keypad4", nullptr},
-    {ImGuiKey_Keypad5, "Keypad5", nullptr},
-    {ImGuiKey_Keypad6, "Keypad6", nullptr},
-    {ImGuiKey_Keypad7, "Keypad7", nullptr},
-    {ImGuiKey_Keypad8, "Keypad8", nullptr},
-    {ImGuiKey_Keypad9, "Keypad9", nullptr},
-    {ImGuiKey_KeypadDecimal, "KeypadPeriod", nullptr},
-    {ImGuiKey_KeypadDivide, "KeypadDivide", nullptr},
-    {ImGuiKey_KeypadMultiply, "KeypadMultiply", nullptr},
-    {ImGuiKey_KeypadSubtract, "KeypadMinus", nullptr},
-    {ImGuiKey_KeypadAdd, "KeypadPlus", nullptr},
-    {ImGuiKey_KeypadEnter, "KeypadReturn", nullptr},
-    {ImGuiKey_KeypadEqual, "KeypadEqual", nullptr}};
-
-  s_state.imgui_key_map.clear();
-  for (const KeyMapping& km : mapping)
-  {
-    std::optional<u32> map(InputManager::ConvertHostKeyboardStringToCode(km.name));
-    if (!map.has_value() && km.alt_name)
-      map = InputManager::ConvertHostKeyboardStringToCode(km.alt_name);
-    if (map.has_value())
-      s_state.imgui_key_map[map.value()] = km.index;
-  }
 }
 
 bool ImGuiManager::LoadFontData(Error* error)
@@ -934,7 +806,7 @@ bool ImGuiManager::CreateFontAtlas(Error* error)
     return false;
   }
 
-  ImGuiFullscreen::SetFont(s_state.text_font);
+  FullscreenUI::SetFont(s_state.text_font);
 
   DEV_LOG("Creating font atlas took {} ms", load_timer.GetTimeMilliseconds());
   return true;
@@ -957,17 +829,20 @@ void ImGuiManager::ReloadFontDataIfActive()
   NewFrame();
 }
 
-void ImGuiManager::AddOSDMessage(std::string key, std::string message, float duration, bool is_warning)
+void ImGuiManager::AddOSDMessage(std::string key, std::string icon, std::string title, std::string message,
+                                 float duration, bool is_warning)
 {
   if (!key.empty())
-    INFO_LOG("OSD [{}]: {}", key, message);
+    INFO_LOG("OSD [{}]: {}{}{}", key, title.empty() ? "" : "\n", title, message);
   else
-    INFO_LOG("OSD: {}", message);
+    INFO_LOG("OSD: {}{}{}", title.empty() ? "" : "\n", title, message);
 
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   OSDMessage msg;
   msg.key = std::move(key);
+  msg.icon = std::move(icon);
+  msg.title = std::move(title);
   msg.text = std::move(message);
   msg.duration = duration;
   msg.start_time = current_time;
@@ -1046,6 +921,8 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
                              [&new_msg](const OSDMessage& other) { return new_msg.key == other.key; })) !=
           s_state.osd_active_messages.end())
     {
+      iter->icon = std::move(new_msg.icon);
+      iter->title = std::move(new_msg.title);
       iter->text = std::move(new_msg.text);
       iter->duration = new_msg.duration;
 
@@ -1068,21 +945,31 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
-  using ImGuiFullscreen::ModAlpha;
-  using ImGuiFullscreen::RenderShadowedTextClipped;
-  using ImGuiFullscreen::UIStyle;
+  using FullscreenUI::DarkerColor;
+  using FullscreenUI::ModAlpha;
+  using FullscreenUI::RenderShadowedTextClipped;
+  using FullscreenUI::UIStyle;
 
   static constexpr float MOVE_DURATION = 0.5f;
 
+  if (s_state.osd_active_messages.empty())
+    return;
+
   ImFont* const font = s_state.text_font;
   const float font_size = GetOSDFontSize();
-  const float font_weight = UIStyle.NormalFontWeight;
+  const float large_icon_size = font_size * 2.0f;
+  static constexpr float title_font_weight = UIStyle.BoldFontWeight;
+  static constexpr float body_font_weight = UIStyle.NormalFontWeight;
+  static constexpr ImVec4& text_color = UIStyle.ToastTextColor;
+  const ImVec4 subtext_color = DarkerColor(text_color, 0.85f);
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
   const float margin = std::ceil(s_state.screen_margin * scale);
   const float padding = std::ceil(10.0f * scale);
   const float rounding = std::ceil(10.0f * scale);
-  const float max_width = s_state.window_width - (margin + padding) * 2.0f;
+  const float normal_icon_margin = std::ceil(4.0f * scale);
+  const float large_icon_margin = std::ceil(8.0f * scale);
+  const float max_width = (s_state.window_width * 0.6f) - (margin + padding) * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
   float position_y = margin;
@@ -1100,10 +987,26 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ++iter;
 
-    const ImVec2 text_size =
-      font->CalcTextSizeA(font_size, font_weight, max_width, max_width, IMSTR_START_END(msg.text));
-    float box_width = text_size.x + padding + padding;
-    const float box_height = text_size.y + padding + padding;
+    // Use larger icon when we have multiple lines.
+    const bool use_large_icon = !msg.title.empty() && !msg.text.empty();
+    const float icon_font_size = use_large_icon ? large_icon_size : font_size;
+    const ImVec2 icon_size = msg.text.empty() ? ImVec2() :
+                                                font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f,
+                                                                    IMSTR_START_END(msg.icon));
+    const float icon_size_with_margin =
+      msg.text.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
+    const float max_text_width = max_width - icon_size_with_margin;
+
+    // bold the message if there's no title
+    const float text_font_weight = msg.title.empty() ? title_font_weight : body_font_weight;
+    const ImVec2 title_size = msg.title.empty() ? ImVec2() :
+                                                  font->CalcTextSizeA(font_size, title_font_weight, max_text_width,
+                                                                      max_text_width, IMSTR_START_END(msg.title));
+    const ImVec2 text_size = msg.text.empty() ? ImVec2() :
+                                                font->CalcTextSizeA(font_size, text_font_weight, max_text_width,
+                                                                    max_text_width, IMSTR_START_END(msg.text));
+    float box_width = icon_size_with_margin + std::max(text_size.x, title_size.x) + padding + padding;
+    const float box_height = std::max(icon_size.y, title_size.y + text_size.y) + padding + padding;
 
     float opacity;
     bool clip_box = false;
@@ -1170,8 +1073,6 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     const ImVec2 pos = ImVec2(position_x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
-    const ImRect text_rect =
-      ImRect(pos.x + padding, pos.y + padding, pos.x + box_width - padding, pos.y + box_height - padding);
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
@@ -1180,9 +1081,32 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
                       rounding);
-    RenderShadowedTextClipped(dl, font, font_size, font_weight, text_rect.Min, text_rect.Max,
-                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text, &text_size,
-                              ImVec2(0.0f, 0.0f), max_width, &text_rect, scale);
+
+    const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
+    const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
+    if (!msg.icon.empty())
+    {
+      const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
+      RenderShadowedTextClipped(dl, font, icon_font_size, body_font_weight, icon_rect.Min, icon_rect.Max, color,
+                                msg.icon, &icon_size, ImVec2(0.0f, 0.0f), 0.0f, &icon_rect, scale);
+    }
+
+    if (!msg.title.empty())
+    {
+      const ImVec2 title_pos = ImVec2(base_pos.x + icon_size_with_margin, base_pos.y);
+      const ImRect title_rect = ImRect(title_pos, title_pos + title_size);
+      RenderShadowedTextClipped(dl, font, font_size, title_font_weight, title_rect.Min, title_rect.Max, color,
+                                msg.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width, &title_rect, scale);
+    }
+
+    if (!msg.text.empty())
+    {
+      const ImVec2 text_pos = ImVec2(base_pos.x + icon_size_with_margin, base_pos.y + title_size.y);
+      const ImRect text_rect = ImRect(text_pos, text_pos + text_size);
+      const ImU32 actual_text_color = msg.title.empty() ? color : ImGui::GetColorU32(ModAlpha(subtext_color, opacity));
+      RenderShadowedTextClipped(dl, font, font_size, text_font_weight, text_rect.Min, text_rect.Max, actual_text_color,
+                                msg.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
+    }
 
     if (clip_box)
       dl->PopClipRect();
@@ -1200,27 +1124,39 @@ void ImGuiManager::RenderOSDMessages()
 
 void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
 {
-  ImGuiManager::AddOSDMessage(std::string(), std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(std::string(), {}, {}, std::move(message), duration, false);
 }
 
 void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, false);
 }
 
 void Host::AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), fmt::format("{}  {}", icon, message), duration, false);
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, false);
+}
+
+void Host::AddIconOSDMessage(std::string key, const char* icon, std::string title, std::string message,
+                             float duration /* = 2.0f */)
+{
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, false);
 }
 
 void Host::AddKeyedOSDWarning(std::string key, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::move(message), duration, true);
+  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, true);
 }
 
 void Host::AddIconOSDWarning(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), fmt::format("{}  {}", icon, message), duration, true);
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, true);
+}
+
+void Host::AddIconOSDWarning(std::string key, const char* icon, std::string title, std::string message,
+                             float duration /* = 2.0f */)
+{
+  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, true);
 }
 
 void Host::RemoveKeyedOSDMessage(std::string key)
@@ -1357,16 +1293,15 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
   if (!s_state.imgui_context)
     return false;
 
-  const auto iter = s_state.imgui_key_map.find(key.data);
-  if (iter == s_state.imgui_key_map.end())
-    return false;
+  if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(key.data))
+  {
+    GPUThread::RunOnThread([imkey = imkey.value(), pressed = (value != 0.0f)]() {
+      if (!s_state.imgui_context)
+        return;
 
-  GPUThread::RunOnThread([imkey = iter->second, pressed = (value != 0.0f)]() {
-    if (!s_state.imgui_context)
-      return;
-
-    SetImKeyState(s_state.imgui_context->IO, imkey, pressed);
-  });
+      SetImKeyState(s_state.imgui_context->IO, imkey, pressed);
+    });
+  }
 
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
@@ -1616,6 +1551,133 @@ std::string ImGuiManager::StripIconCharacters(std::string_view str)
   return result;
 }
 
+std::optional<ImGuiKey> ImGuiManager::MapHostKeyEventToImGuiKey(u32 key)
+{
+  // mapping of host key -> imgui key
+  static constexpr const std::pair<USBKeyCode, ImGuiKey> mapping[] = {
+    {USBKeyCode::Super, ImGuiKey_LeftSuper},
+    {USBKeyCode::A, ImGuiKey_A},
+    {USBKeyCode::B, ImGuiKey_B},
+    {USBKeyCode::C, ImGuiKey_C},
+    {USBKeyCode::D, ImGuiKey_D},
+    {USBKeyCode::E, ImGuiKey_E},
+    {USBKeyCode::F, ImGuiKey_F},
+    {USBKeyCode::G, ImGuiKey_G},
+    {USBKeyCode::H, ImGuiKey_H},
+    {USBKeyCode::I, ImGuiKey_I},
+    {USBKeyCode::J, ImGuiKey_J},
+    {USBKeyCode::K, ImGuiKey_K},
+    {USBKeyCode::L, ImGuiKey_L},
+    {USBKeyCode::M, ImGuiKey_M},
+    {USBKeyCode::N, ImGuiKey_N},
+    {USBKeyCode::O, ImGuiKey_O},
+    {USBKeyCode::P, ImGuiKey_P},
+    {USBKeyCode::Q, ImGuiKey_Q},
+    {USBKeyCode::R, ImGuiKey_R},
+    {USBKeyCode::S, ImGuiKey_S},
+    {USBKeyCode::T, ImGuiKey_T},
+    {USBKeyCode::U, ImGuiKey_U},
+    {USBKeyCode::V, ImGuiKey_V},
+    {USBKeyCode::W, ImGuiKey_W},
+    {USBKeyCode::X, ImGuiKey_X},
+    {USBKeyCode::Y, ImGuiKey_Y},
+    {USBKeyCode::Z, ImGuiKey_Z},
+    {USBKeyCode::Digit1, ImGuiKey_1},
+    {USBKeyCode::Digit2, ImGuiKey_2},
+    {USBKeyCode::Digit3, ImGuiKey_3},
+    {USBKeyCode::Digit4, ImGuiKey_4},
+    {USBKeyCode::Digit5, ImGuiKey_5},
+    {USBKeyCode::Digit6, ImGuiKey_6},
+    {USBKeyCode::Digit7, ImGuiKey_7},
+    {USBKeyCode::Digit8, ImGuiKey_8},
+    {USBKeyCode::Digit9, ImGuiKey_9},
+    {USBKeyCode::Digit0, ImGuiKey_0},
+    {USBKeyCode::Enter, ImGuiKey_Enter},
+    {USBKeyCode::Escape, ImGuiKey_Escape},
+    {USBKeyCode::Backspace, ImGuiKey_Backspace},
+    {USBKeyCode::Tab, ImGuiKey_Tab},
+    {USBKeyCode::Space, ImGuiKey_Space},
+    {USBKeyCode::Minus, ImGuiKey_Minus},
+    {USBKeyCode::Equal, ImGuiKey_Equal},
+    {USBKeyCode::BracketLeft, ImGuiKey_LeftBracket},
+    {USBKeyCode::BracketRight, ImGuiKey_RightBracket},
+    {USBKeyCode::Backslash, ImGuiKey_Backslash},
+    {USBKeyCode::Semicolon, ImGuiKey_Semicolon},
+    {USBKeyCode::Quote, ImGuiKey_Apostrophe},
+    {USBKeyCode::Backquote, ImGuiKey_GraveAccent},
+    {USBKeyCode::Comma, ImGuiKey_Comma},
+    {USBKeyCode::Period, ImGuiKey_Period},
+    {USBKeyCode::Slash, ImGuiKey_Slash},
+    {USBKeyCode::CapsLock, ImGuiKey_CapsLock},
+    {USBKeyCode::F1, ImGuiKey_F1},
+    {USBKeyCode::F2, ImGuiKey_F2},
+    {USBKeyCode::F3, ImGuiKey_F3},
+    {USBKeyCode::F4, ImGuiKey_F4},
+    {USBKeyCode::F5, ImGuiKey_F5},
+    {USBKeyCode::F6, ImGuiKey_F6},
+    {USBKeyCode::F7, ImGuiKey_F7},
+    {USBKeyCode::F8, ImGuiKey_F8},
+    {USBKeyCode::F9, ImGuiKey_F9},
+    {USBKeyCode::F10, ImGuiKey_F10},
+    {USBKeyCode::F11, ImGuiKey_F11},
+    {USBKeyCode::F12, ImGuiKey_F12},
+    {USBKeyCode::PrintScreen, ImGuiKey_PrintScreen},
+    {USBKeyCode::ScrollLock, ImGuiKey_ScrollLock},
+    {USBKeyCode::Pause, ImGuiKey_Pause},
+    {USBKeyCode::Insert, ImGuiKey_Insert},
+    {USBKeyCode::Home, ImGuiKey_Home},
+    {USBKeyCode::PageUp, ImGuiKey_PageUp},
+    {USBKeyCode::Delete, ImGuiKey_Delete},
+    {USBKeyCode::End, ImGuiKey_End},
+    {USBKeyCode::PageDown, ImGuiKey_PageDown},
+    {USBKeyCode::ArrowRight, ImGuiKey_RightArrow},
+    {USBKeyCode::ArrowLeft, ImGuiKey_LeftArrow},
+    {USBKeyCode::ArrowDown, ImGuiKey_DownArrow},
+    {USBKeyCode::ArrowUp, ImGuiKey_UpArrow},
+    {USBKeyCode::NumLock, ImGuiKey_NumLock},
+    {USBKeyCode::NumpadDivide, ImGuiKey_KeypadDivide},
+    {USBKeyCode::NumpadMultiply, ImGuiKey_KeypadMultiply},
+    {USBKeyCode::NumpadSubtract, ImGuiKey_KeypadSubtract},
+    {USBKeyCode::NumpadAdd, ImGuiKey_KeypadAdd},
+    {USBKeyCode::NumpadEnter, ImGuiKey_KeypadEnter},
+    {USBKeyCode::Numpad1, ImGuiKey_Keypad1},
+    {USBKeyCode::Numpad2, ImGuiKey_Keypad2},
+    {USBKeyCode::Numpad3, ImGuiKey_Keypad3},
+    {USBKeyCode::Numpad4, ImGuiKey_Keypad4},
+    {USBKeyCode::Numpad5, ImGuiKey_Keypad5},
+    {USBKeyCode::Numpad6, ImGuiKey_Keypad6},
+    {USBKeyCode::Numpad7, ImGuiKey_Keypad7},
+    {USBKeyCode::Numpad8, ImGuiKey_Keypad8},
+    {USBKeyCode::Numpad9, ImGuiKey_Keypad9},
+    {USBKeyCode::Numpad0, ImGuiKey_Keypad0},
+    {USBKeyCode::NumpadDecimal, ImGuiKey_KeypadDecimal},
+    {USBKeyCode::ContextMenu, ImGuiKey_Menu},
+    {USBKeyCode::NumpadEqual, ImGuiKey_KeypadEqual},
+    {USBKeyCode::ControlLeft, ImGuiKey_LeftCtrl},
+    {USBKeyCode::ShiftLeft, ImGuiKey_LeftShift},
+    {USBKeyCode::AltLeft, ImGuiKey_LeftAlt},
+    {USBKeyCode::ControlRight, ImGuiKey_RightCtrl},
+    {USBKeyCode::ShiftRight, ImGuiKey_RightShift},
+    {USBKeyCode::AltRight, ImGuiKey_RightAlt},
+  };
+
+  static_assert(
+    []() {
+      for (size_t i = 1; i < std::size(mapping); i++)
+      {
+        if (mapping[i].first <= mapping[i - 1].first)
+          return false;
+      }
+      return true;
+    }(),
+    "Key map must be sorted by USBKeyCode");
+
+  const auto it = std::lower_bound(std::begin(mapping), std::end(mapping), static_cast<USBKeyCode>(key),
+                                   [](const std::pair<USBKeyCode, ImGuiKey>& a, USBKeyCode b) { return a.first < b; });
+  return (it != std::end(mapping) && it->first == static_cast<USBKeyCode>(key)) ? std::optional<ImGuiKey>{it->second} :
+                                                                                  std::nullopt;
+}
+
 #ifndef __ANDROID__
 
 bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, std::string_view title,
@@ -1794,9 +1856,8 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     case Host::AuxiliaryRenderWindowEvent::KeyPressed:
     case Host::AuxiliaryRenderWindowEvent::KeyReleased:
     {
-      const auto iter = s_state.imgui_key_map.find(param1.uint_param);
-      if (iter != s_state.imgui_key_map.end())
-        SetImKeyState(io, iter->second, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
+      if (const std::optional<ImGuiKey> imkey = MapHostKeyEventToImGuiKey(param1.uint_param))
+        SetImKeyState(io, imkey.value(), (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
     }
     break;
 

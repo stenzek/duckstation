@@ -87,7 +87,7 @@ void SetGlobalScale(float global_scale);
 bool Initialize(float global_scale, float screen_margin, Error* error);
 
 /// Frees all ImGui resources.
-void Shutdown();
+void Shutdown(bool clear_fsui_state);
 
 /// Returns main ImGui context.
 ImGuiContext* GetMainContext();
@@ -233,8 +233,10 @@ inline constexpr float OSD_QUICK_DURATION = 2.5f;
 void AddOSDMessage(std::string message, float duration = 2.0f);
 void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
 void AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration = 2.0f);
+void AddIconOSDMessage(std::string key, const char* icon, std::string title, std::string message, float duration = 2.0f);
 void AddKeyedOSDWarning(std::string key, std::string message, float duration = 2.0f);
 void AddIconOSDWarning(std::string key, const char* icon, std::string message, float duration = 2.0f);
+void AddIconOSDWarning(std::string key, const char* icon, std::string title, std::string message, float duration = 2.0f);
 void RemoveKeyedOSDMessage(std::string key);
 void RemoveKeyedOSDWarning(std::string key);
 void ClearOSDMessages(bool clear_warnings);

@@ -32,10 +32,10 @@
 #include <QtWidgets/QTreeView>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <map>
-#include <cmath>
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
@@ -49,7 +49,8 @@ LOG_CHANNEL(Host);
 
 namespace QtUtils {
 
-bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
+static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
+static void SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality);
 
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
@@ -134,8 +135,8 @@ void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
   {
-    QMessageBox::critical(parent, QObject::tr("Failed to open URL"),
-                          QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+    MessageBoxCritical(parent, QObject::tr("Failed to open URL"),
+                       QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
   }
 }
 
@@ -163,7 +164,7 @@ std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString
 
   if (!ok)
   {
-    QMessageBox::critical(
+    MessageBoxCritical(
       parent, title,
       qApp->translate("DebuggerWindow", "Invalid address. It should be in hex (0x12345678 or 12345678)"));
     return std::nullopt;
@@ -175,6 +176,13 @@ std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString
 QString QtUtils::StringViewToQString(std::string_view str)
 {
   return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
+}
+
+QString QtUtils::NormalizeLineEndings(QString str)
+{
+  str.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+  str.replace(QChar('\r'), QChar('\n'));
+  return str;
 }
 
 void QtUtils::SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
@@ -230,6 +238,80 @@ void QtUtils::ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int h
     widget->setFixedSize(width, height);
 
   widget->resize(width, height);
+}
+
+void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality)
+{
+  dlg->setWindowModality(modality);
+#ifdef __APPLE__
+  // Can't have a stylesheet set even if it doesn't affect the widget.
+  if (QtHost::NativeThemeStylesheetNeedsUpdate())
+  {
+    dlg->setStyleSheet("");
+    dlg->setAttribute(Qt::WA_StyleSheet, false);
+  }
+#endif
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxIcon(QWidget* parent, QMessageBox::Icon icon, const QString& title,
+                                                    const QString& text, QMessageBox::StandardButtons buttons,
+                                                    QMessageBox::StandardButton defaultButton)
+{
+#ifndef __APPLE__
+  QMessageBox msgbox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+#else
+  QMessageBox msgbox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  msgbox.setInformativeText(text);
+#endif
+
+  // NOTE: Must be application modal, otherwise will lock up on MacOS.
+  SetMessageBoxStyle(&msgbox, Qt::ApplicationModal);
+  msgbox.setDefaultButton(defaultButton);
+  return static_cast<QMessageBox::StandardButton>(msgbox.exec());
+}
+
+QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+                                    QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
+                                    Qt::WindowModality modality, QWidget* parent)
+{
+#ifndef __APPLE__
+  QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+#else
+  QMessageBox* msgbox =
+    new QMessageBox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
+  msgbox->setInformativeText(text);
+#endif
+  msgbox->setIcon(icon);
+  SetMessageBoxStyle(msgbox, modality);
+  return msgbox;
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,
+                                                           QMessageBox::StandardButtons buttons,
+                                                           QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Information, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxWarning(QWidget* parent, const QString& title, const QString& text,
+                                                       QMessageBox::StandardButtons buttons,
+                                                       QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Warning, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxCritical(QWidget* parent, const QString& title, const QString& text,
+                                                        QMessageBox::StandardButtons buttons,
+                                                        QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Critical, title, text, buttons, defaultButton);
+}
+
+QMessageBox::StandardButton QtUtils::MessageBoxQuestion(QWidget* parent, const QString& title, const QString& text,
+                                                        QMessageBox::StandardButtons buttons,
+                                                        QMessageBox::StandardButton defaultButton)
+{
+  return MessageBoxIcon(parent, QMessageBox::Question, title, text, buttons, defaultButton);
 }
 
 QIcon QtUtils::GetIconForTranslationLanguage(std::string_view language_name)
@@ -545,6 +627,22 @@ bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widge
     widget->setWindowState(widget->windowState() | Qt::WindowMaximized);
 
   return true;
+}
+
+void QtUtils::CenterWindowRelativeToParent(QWidget* window, QWidget* parent_window)
+{
+  // la la la, this won't work on fucking wankland, I don't care, it'll appear in the top-left
+  // corner of the screen or whatever, shit experience is shit
+
+  const QRect parent_geometry = (parent_window && parent_window->isVisible()) ?
+                                  parent_window->geometry() :
+                                  QGuiApplication::primaryScreen()->availableGeometry();
+  const QPoint parent_center_pos = parent_geometry.center();
+
+  QRect window_geometry = window->geometry();
+  window_geometry.moveCenter(parent_center_pos);
+
+  window->setGeometry(window_geometry);
 }
 
 bool QtUtils::TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget)

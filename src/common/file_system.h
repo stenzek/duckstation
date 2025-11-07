@@ -183,6 +183,39 @@ private:
 
 #endif
 
+/// Provides a simple RAII wrapper around a locked file, where only a single process can have it open at a time.
+class LockedFile : public ManagedCFilePtr
+{
+public:
+  LockedFile() = default;
+  LockedFile(LockedFile&& move) = default;
+  LockedFile(const LockedFile&) = delete;
+  LockedFile(std::FILE* fp, Error* lock_error);
+
+  ~LockedFile() = default;
+  LockedFile& operator=(LockedFile&& move) = default;
+  LockedFile& operator=(const LockedFile&) = delete;
+
+#ifdef HAS_POSIX_FILE_LOCK
+  ALWAYS_INLINE bool IsLocked() const { return m_lock.IsLocked(); }
+
+  void reset();
+
+#else
+  ALWAYS_INLINE bool IsLocked() const { return true; }
+#endif
+
+private:
+  // Hide release(), it doesn't make sense here.
+  std::FILE* release();
+
+#ifdef HAS_POSIX_FILE_LOCK
+  POSIXLock m_lock;
+#endif
+};
+LockedFile OpenLockedFile(const char* path, bool for_write, Error* error = nullptr);
+LockedFile OpenLockedFile(const char* path, bool for_write, u32 timeout_ms, Error* error);
+
 std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* path, Error* error = nullptr);
 std::optional<DynamicHeapArray<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(const char* path, Error* error = nullptr);

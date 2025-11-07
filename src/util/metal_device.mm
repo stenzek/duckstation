@@ -72,6 +72,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA16Float,           // RGBA16F
   MTLPixelFormatRGBA32Float,           // RGBA32F
   MTLPixelFormatBGR10A2Unorm,          // RGB10A2
+  MTLPixelFormatRGBA8Unorm_sRGB,       // SRGBA8
   MTLPixelFormatBC1_RGBA,              // BC1
   MTLPixelFormatBC2_RGBA,              // BC2
   MTLPixelFormatBC3_RGBA,              // BC3
@@ -284,9 +285,8 @@ void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
   }
 }
 
-bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
-                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
-                                               bool allow_present_throttle,
+bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
+                                               GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
@@ -668,9 +668,10 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
-MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
+MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, Layout layout, MTLCullMode cull_mode,
                              MTLPrimitiveType primitive)
-  : m_pipeline(pipeline), m_depth(depth), m_cull_mode(cull_mode), m_primitive(primitive)
+  : m_pipeline(pipeline), m_depth(depth), m_layout(layout), m_cull_mode(static_cast<u8>(cull_mode)),
+    m_primitive(static_cast<u8>(primitive))
 {
 }
 
@@ -869,7 +870,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       return {};
     }
 
-    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, cull_mode, primitive));
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, config.layout, cull_mode, primitive));
   }
 }
 
@@ -892,7 +893,8 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Comp
       return {};
     }
 
-    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, nil, MTLCullModeNone, MTLPrimitiveTypePoint));
+    return std::unique_ptr<GPUPipeline>(
+      new MetalPipeline(pipeline, nil, config.layout, MTLCullModeNone, MTLPrimitiveTypePoint));
   }
 }
 
@@ -1051,11 +1053,13 @@ void MetalTexture::Unmap()
 void MetalTexture::MakeReadyForSampling()
 {
   MetalDevice& dev = MetalDevice::GetInstance();
-  if (!dev.InRenderPass())
-    return;
+  if (dev.InRenderPass())
+  {
+    if (IsRenderTarget() ? dev.IsRenderTargetBound(this) : (dev.m_current_depth_target == this))
+      dev.EndRenderPass();
+  }
 
-  if (IsRenderTarget() ? dev.IsRenderTargetBound(this) : (dev.m_current_depth_target == this))
-    dev.EndRenderPass();
+  dev.CommitClear(this);
 }
 
 void MetalTexture::GenerateMipmaps()
@@ -1084,7 +1088,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
                                                        GPUTexture::Flags flags, const void* data, u32 data_stride,
                                                        Error* error)
 {
-  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format, flags, error))
+  if (!GPUTexture::ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return {};
 
   const MTLPixelFormat pixel_format = s_pixel_format_mapping[static_cast<u8>(format)];
@@ -1594,11 +1598,13 @@ void MetalDevice::ClearDepth(GPUTexture* t, float d)
       [m_render_encoder setCullMode:MTLCullModeNone];
     if (depth != m_current_depth_state)
       [m_render_encoder setDepthStencilState:depth];
-    [m_render_encoder setVertexBytes:&d length:sizeof(d) atIndex:0];
+    [m_render_encoder setVertexBytes:&d length:sizeof(d) atIndex:VERTEX_BINDING_UBO];
     [m_render_encoder drawPrimitives:m_current_pipeline->GetPrimitive() vertexStart:0 vertexCount:3];
     s_stats.num_draws++;
 
-    [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
+    [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer()
+                               offset:m_current_uniform_buffer_position
+                              atIndex:VERTEX_BINDING_UBO];
     if (m_current_pipeline)
       [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
     if (m_current_cull_mode != MTLCullModeNone)
@@ -1627,10 +1633,7 @@ void MetalDevice::CommitClear(MetalTexture* tex)
     tex->SetState(GPUTexture::State::Dirty);
 
     // TODO: We could combine it with the current render pass.
-    if (InRenderPass())
-      EndRenderPass();
-    else if (InComputePass())
-      EndComputePass();
+    EndAnyEncoding();
 
     @autoreleasepool
     {
@@ -1827,14 +1830,6 @@ void MetalDevice::UnmapIndexBuffer(u32 used_index_count)
   m_index_buffer.CommitMemory(size);
 }
 
-void MetalDevice::PushUniformBuffer(const void* data, u32 data_size)
-{
-  s_stats.buffer_streamed += data_size;
-  void* map = MapUniformBuffer(data_size);
-  std::memcpy(map, data, data_size);
-  UnmapUniformBuffer(data_size);
-}
-
 void* MetalDevice::MapUniformBuffer(u32 size)
 {
   const u32 used_space = Common::AlignUpPow2(size, UNIFORM_BUFFER_ALIGNMENT);
@@ -1855,8 +1850,8 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
   m_uniform_buffer.CommitMemory(size);
   if (InRenderPass())
   {
-    [m_render_encoder setVertexBufferOffset:m_current_uniform_buffer_position atIndex:0];
-    [m_render_encoder setFragmentBufferOffset:m_current_uniform_buffer_position atIndex:0];
+    [m_render_encoder setVertexBufferOffset:m_current_uniform_buffer_position atIndex:VERTEX_BINDING_UBO];
+    [m_render_encoder setFragmentBufferOffset:m_current_uniform_buffer_position atIndex:FRAGMENT_BINDING_UBO];
   }
 }
 
@@ -1984,7 +1979,7 @@ void MetalDevice::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
 
   m_current_ssbo = B;
   if (InRenderPass())
-    [m_render_encoder setFragmentBuffer:B offset:0 atIndex:1];
+    [m_render_encoder setFragmentBuffer:B offset:0 atIndex:FRAGMENT_BINDING_SSBO];
 }
 
 void MetalDevice::UnbindTexture(MetalTexture* tex)
@@ -2031,7 +2026,7 @@ void MetalDevice::UnbindTextureBuffer(MetalTextureBuffer* buf)
 
   m_current_ssbo = nil;
   if (InRenderPass())
-    [m_render_encoder setFragmentBuffer:nil offset:0 atIndex:1];
+    [m_render_encoder setFragmentBuffer:nil offset:0 atIndex:FRAGMENT_BINDING_SSBO];
 }
 
 void MetalDevice::SetViewport(const GSVector4i rc)
@@ -2242,9 +2237,15 @@ void MetalDevice::SetInitialEncoderState()
   // Set initial state.
   // TODO: avoid uniform set here? it's probably going to get changed...
   // Might be better off just deferring all the init until the first draw...
-  [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
-  [m_render_encoder setFragmentBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
-  [m_render_encoder setVertexBuffer:m_vertex_buffer.GetBuffer() offset:0 atIndex:1];
+  [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer()
+                             offset:m_current_uniform_buffer_position
+                            atIndex:VERTEX_BINDING_UBO];
+  [m_render_encoder setVertexBuffer:m_vertex_buffer.GetBuffer() offset:0 atIndex:VERTEX_BINDING_VBO];
+  [m_render_encoder setFragmentBuffer:m_uniform_buffer.GetBuffer()
+                               offset:m_current_uniform_buffer_position
+                              atIndex:FRAGMENT_BINDING_UBO];
+  if (m_current_ssbo)
+    [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:FRAGMENT_BINDING_SSBO];
   [m_render_encoder setCullMode:m_current_cull_mode];
   if (m_current_depth_state != nil)
     [m_render_encoder setDepthStencilState:m_current_depth_state];
@@ -2252,8 +2253,6 @@ void MetalDevice::SetInitialEncoderState()
     [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
   [m_render_encoder setFragmentTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   [m_render_encoder setFragmentSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
-  if (m_current_ssbo)
-    [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:1];
 
   if (!m_features.framebuffer_fetch && (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))
   {
@@ -2292,9 +2291,28 @@ void MetalDevice::PreDrawCheck()
   }
 }
 
+void MetalDevice::PushRenderUniformBuffer(const void* data, u32 data_size)
+{
+  DebugAssert(InRenderPass() && m_current_pipeline);
+  s_stats.buffer_streamed += data_size;
+
+  // Maybe we'd be better off with another buffer...
+  [m_render_encoder setVertexBytes:data length:data_size atIndex:VERTEX_BINDING_PUSH_CONSTANTS];
+  [m_render_encoder setFragmentBytes:data length:data_size atIndex:FRAGMENT_BINDING_PUSH_CONSTANTS];
+}
+
 void MetalDevice::Draw(u32 vertex_count, u32 base_vertex)
 {
   PreDrawCheck();
+  s_stats.num_draws++;
+  [m_render_encoder drawPrimitives:m_current_pipeline->GetPrimitive() vertexStart:base_vertex vertexCount:vertex_count];
+}
+
+void MetalDevice::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                        u32 push_constants_size)
+{
+  PreDrawCheck();
+  PushRenderUniformBuffer(push_constants, push_constants_size);
   s_stats.num_draws++;
   [m_render_encoder drawPrimitives:m_current_pipeline->GetPrimitive() vertexStart:base_vertex vertexCount:vertex_count];
 }
@@ -2316,16 +2334,51 @@ void MetalDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
                              baseInstance:0];
 }
 
+void MetalDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                               const void* push_constants, u32 push_constants_size)
+{
+  PreDrawCheck();
+
+  PushRenderUniformBuffer(push_constants, push_constants_size);
+
+  s_stats.num_draws++;
+
+  const u32 index_offset = base_index * sizeof(u16);
+  [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+                               indexCount:index_count
+                                indexType:MTLIndexTypeUInt16
+                              indexBuffer:m_index_buffer.GetBuffer()
+                        indexBufferOffset:index_offset
+                            instanceCount:1
+                               baseVertex:base_vertex
+                             baseInstance:0];
+}
+
 void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  PreDrawCheck();
+
+  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
+}
+
+void MetalDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                          const void* push_constants, u32 push_constants_size,
+                                                          DrawBarrier type)
+{
+  PreDrawCheck();
+
+  PushRenderUniformBuffer(push_constants, push_constants_size);
+
+  SubmitDrawIndexedWithBarrier(index_count, base_index, base_vertex, type);
+}
+
+void MetalDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   // Shouldn't be using this with framebuffer fetch.
   DebugAssert(!m_features.framebuffer_fetch);
 
-  const bool skip_first_barrier = !InRenderPass();
-  PreDrawCheck();
-
-  // TODO: The first barrier is unnecessary if we're starting the render pass.
-
+  const MTLPrimitiveType primitive = m_current_pipeline->GetPrimitive();
+  const id<MTLBuffer> index_buffer = m_index_buffer.GetBuffer();
   u32 index_offset = base_index * sizeof(u16);
 
   switch (type)
@@ -2334,10 +2387,10 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
     {
       s_stats.num_draws++;
 
-      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+      [m_render_encoder drawIndexedPrimitives:primitive
                                    indexCount:index_count
                                     indexType:MTLIndexTypeUInt16
-                                  indexBuffer:m_index_buffer.GetBuffer()
+                                  indexBuffer:index_buffer
                             indexBufferOffset:index_offset
                                 instanceCount:1
                                    baseVertex:base_vertex
@@ -2350,18 +2403,15 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
       DebugAssert(m_num_current_render_targets == 1);
       s_stats.num_draws++;
 
-      if (!skip_first_barrier)
-      {
-        s_stats.num_barriers++;
-        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
-                                     afterStages:MTLRenderStageFragment
-                                    beforeStages:MTLRenderStageFragment];
-      }
+      s_stats.num_barriers++;
+      [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
+                                   afterStages:MTLRenderStageFragment
+                                  beforeStages:MTLRenderStageFragment];
 
-      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+      [m_render_encoder drawIndexedPrimitives:primitive
                                    indexCount:index_count
                                     indexType:MTLIndexTypeUInt16
-                                  indexBuffer:m_index_buffer.GetBuffer()
+                                  indexBuffer:index_buffer
                             indexBufferOffset:index_offset
                                 instanceCount:1
                                    baseVertex:base_vertex
@@ -2381,33 +2431,9 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
         {3, 1}, // MTLPrimitiveTypeTriangleStrip
       };
 
-      const u32 first_step =
-        vertices_per_primitive[static_cast<size_t>(m_current_pipeline->GetPrimitive())][0] * sizeof(u16);
-      const u32 index_step =
-        vertices_per_primitive[static_cast<size_t>(m_current_pipeline->GetPrimitive())][1] * sizeof(u16);
+      const u32 first_step = vertices_per_primitive[static_cast<size_t>(primitive)][0] * sizeof(u16);
+      const u32 index_step = vertices_per_primitive[static_cast<size_t>(primitive)][1] * sizeof(u16);
       const u32 end_offset = (base_index + index_count) * sizeof(u16);
-
-      // first primitive
-      if (!skip_first_barrier)
-      {
-        s_stats.num_barriers++;
-        [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
-                                     afterStages:MTLRenderStageFragment
-                                    beforeStages:MTLRenderStageFragment];
-      }
-      s_stats.num_draws++;
-      [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
-                                   indexCount:index_count
-                                    indexType:MTLIndexTypeUInt16
-                                  indexBuffer:m_index_buffer.GetBuffer()
-                            indexBufferOffset:index_offset
-                                instanceCount:1
-                                   baseVertex:base_vertex
-                                 baseInstance:0];
-
-      index_offset += first_step;
-
-      // remaining primitices
       for (; index_offset < end_offset; index_offset += index_step)
       {
         s_stats.num_barriers++;
@@ -2416,10 +2442,10 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
         [m_render_encoder memoryBarrierWithScope:MTLBarrierScopeRenderTargets
                                      afterStages:MTLRenderStageFragment
                                     beforeStages:MTLRenderStageFragment];
-        [m_render_encoder drawIndexedPrimitives:m_current_pipeline->GetPrimitive()
+        [m_render_encoder drawIndexedPrimitives:primitive
                                      indexCount:index_count
                                       indexType:MTLIndexTypeUInt16
-                                    indexBuffer:m_index_buffer.GetBuffer()
+                                    indexBuffer:index_buffer
                               indexBufferOffset:index_offset
                                   instanceCount:1
                                      baseVertex:base_vertex
@@ -2444,6 +2470,26 @@ void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   }
 
   DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
+
+  // TODO: We could remap to the optimal group size..
+  [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
+               threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
+}
+
+void MetalDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                            u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                            u32 push_constants_size)
+{
+  if (!InComputePass())
+  {
+    if (InRenderPass())
+      EndRenderPass();
+
+    BeginComputePass();
+  }
+
+  DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
+  [m_compute_encoder setBytes:push_constants length:push_constants_size atIndex:2];
 
   // TODO: We could remap to the optimal group size..
   [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)

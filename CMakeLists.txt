@@ -94,7 +94,8 @@ endif()
 
 # Rewrite paths in macros to be relative to the source directory.
 # Helpful for reproducible builds.
-if(COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT CMAKE_GENERATOR MATCHES "Xcode" AND
+   (COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC))
   file(RELATIVE_PATH source_dir_remap "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}")
   string(REGEX REPLACE "\/+$" "" source_dir_remap "${source_dir_remap}")
   set(source_dir_remap_str "\"${CMAKE_SOURCE_DIR}\"=\"${source_dir_remap}\"")

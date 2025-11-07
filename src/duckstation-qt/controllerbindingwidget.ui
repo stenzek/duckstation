@@ -39,15 +39,14 @@
           <property name="text">
            <string>Bindings</string>
           </property>
+          <property name="icon">
+           <iconset theme="controller-digital-line"/>
+          </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
-          <property name="icon">
-           <iconset theme="controller-digital-line">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -60,14 +59,13 @@
            <string>Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="checkbox-multiple-blank-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="checkbox-multiple-blank-line"/>
           </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -80,14 +78,13 @@
            <string>Macros</string>
           </property>
           <property name="icon">
-           <iconset theme="flashlight-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="flashlight-line"/>
           </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
           <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -99,7 +96,7 @@
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -112,30 +109,22 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QToolButton" name="automaticBinding">
+         <widget class="QPushButton" name="automaticBinding">
           <property name="text">
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-digital-line">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <iconset theme="controller-digital-line"/>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="clearBindings">
+         <widget class="QPushButton" name="clearBindings">
           <property name="text">
            <string>Clear Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="trash-fill">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextBesideIcon</enum>
+           <iconset theme="trash-fill"/>
           </property>
          </widget>
         </item>
@@ -145,7 +134,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QStackedWidget" name="stackedWidget" />
+    <widget class="QStackedWidget" name="stackedWidget"/>
    </item>
   </layout>
  </widget>

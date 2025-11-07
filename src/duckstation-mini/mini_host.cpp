@@ -6,7 +6,8 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/controller.h"
-#include "core/fullscreen_ui.h"
+#include "core/fullscreenui.h"
+#include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
@@ -17,8 +18,8 @@
 #include "core/system.h"
 #include "core/system_private.h"
 
+#include "util/cd_image.h"
 #include "util/gpu_device.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -1088,7 +1089,7 @@ void Host::OnSystemDestroyed()
 void Host::OnSystemAbnormalShutdown(const std::string_view reason)
 {
   GPUThread::RunOnThread([reason = std::string(reason)]() {
-    ImGuiFullscreen::OpenInfoMessageDialog(
+    FullscreenUI::OpenInfoMessageDialog(
       "Abnormal System Shutdown", fmt::format("Unfortunately, the virtual machine has abnormally shut down and cannot "
                                               "be recovered. More information about the error is below:\n\n{}",
                                               reason));
@@ -1478,20 +1479,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
 
     GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
                             yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
-      if (!FullscreenUI::Initialize())
-      {
-        callback(false);
-
-        if (needs_pause)
-        {
-          Host::RunOnCPUThread([]() {
-            if (System::IsValid())
-              System::PauseSystem(false);
-          });
-        }
-
-        return;
-      }
+      FullscreenUI::Initialize();
 
       // Need to reset run idle state _again_ after displaying.
       auto final_callback = [callback = std::move(callback)](bool result) {
@@ -1499,9 +1487,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         callback(result);
       };
 
-      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
-                                                fmt::format(ICON_FA_CHECK " {}", yes_text),
-                                                fmt::format(ICON_FA_XMARK " {}", no_text));
+      FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
+                                             fmt::format(ICON_FA_CHECK " {}", yes_text),
+                                             fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
     });
   });
@@ -1779,7 +1767,8 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
 
   // Check the file we're starting actually exists.
 
-  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()))
+  if (autoboot && !autoboot->path.empty() && !FileSystem::FileExists(autoboot->path.c_str()) &&
+      !CDImage::IsDeviceName(autoboot->path.c_str()))
   {
     Host::ReportFatalError("Error", fmt::format("File '{}' does not exist.", autoboot->path));
     return false;

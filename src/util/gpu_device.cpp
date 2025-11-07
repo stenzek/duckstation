@@ -3,8 +3,11 @@
 
 #include "gpu_device.h"
 #include "compress_helpers.h"
+#include "dyn_shaderc.h"
+#include "dyn_spirv_cross.h"
 #include "gpu_framebuffer_manager.h"
 #include "image.h"
+#include "imgui_manager.h"
 #include "shadergen.h"
 
 #include "common/assert.h"
@@ -19,9 +22,9 @@
 #include "common/timer.h"
 
 #include "fmt/format.h"
-#include "shaderc/shaderc.h"
-#include "spirv_cross_c.h"
 #include "xxhash.h"
+
+#include "IconsEmoji.h"
 
 LOG_CHANNEL(GPUDevice);
 
@@ -459,33 +462,36 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
 
   if (create_flags != CreateFlags::None) [[unlikely]]
   {
-    WARNING_LOG("One or more non-standard creation flags are set:");
-    if (HasCreateFlag(create_flags, CreateFlags::EnableDebugDevice))
-      WARNING_LOG("  - Use debug device");
-    if (HasCreateFlag(create_flags, CreateFlags::EnableGPUValidation))
-      WARNING_LOG("  - Enable GPU validation");
-    if (HasCreateFlag(create_flags, CreateFlags::PreferGLESContext))
-      WARNING_LOG("  - Prefer OpenGL ES context");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend))
-      WARNING_LOG("  - Disable dual source blend");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableFeedbackLoops))
-      WARNING_LOG("  - Disable feedback loops");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch))
-      WARNING_LOG("  - Disable framebuffer fetch");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureBuffers))
-      WARNING_LOG("  - Disable texture buffers");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableGeometryShaders))
-      WARNING_LOG("  - Disable geometry shaders");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableComputeShaders))
-      WARNING_LOG("  - Disable compute shaders");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableTextureCopyToSelf))
-      WARNING_LOG("  - Disable texture copy to self");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableMemoryImport))
-      WARNING_LOG("  - Disable memory import");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableRasterOrderViews))
-      WARNING_LOG("  - Disable raster order views");
-    if (HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures))
-      WARNING_LOG("  - Disable compressed textures");
+#define FLAG_MSG(flag, text)                                                                                           \
+  if (HasCreateFlag(create_flags, flag))                                                                               \
+    message += " \u2022 " text "\n";
+
+    std::string message;
+    FLAG_MSG(CreateFlags::EnableDebugDevice, "Use Debug Device");
+    FLAG_MSG(CreateFlags::EnableGPUValidation, "Enable GPU Validation");
+    FLAG_MSG(CreateFlags::PreferGLESContext, "Prefer OpenGL ES context");
+    FLAG_MSG(CreateFlags::DisableShaderCache, "Disable Shader Cache");
+    FLAG_MSG(CreateFlags::DisableDualSourceBlend, "Disable Dual Source Blend");
+    FLAG_MSG(CreateFlags::DisableFeedbackLoops, "Disable Feedback Loops");
+    FLAG_MSG(CreateFlags::DisableFramebufferFetch, "Disable Framebuffer Fetch");
+    FLAG_MSG(CreateFlags::DisableTextureBuffers, "Disable Texture Buffers");
+    FLAG_MSG(CreateFlags::DisableGeometryShaders, "Disable Geometry Shaders");
+    FLAG_MSG(CreateFlags::DisableComputeShaders, "Disable Compute Shaders");
+    FLAG_MSG(CreateFlags::DisableTextureCopyToSelf, "Disable Texture Copy To Self");
+    FLAG_MSG(CreateFlags::DisableMemoryImport, "Disable Memory Import");
+    FLAG_MSG(CreateFlags::DisableRasterOrderViews, "Disable Raster Order Views");
+    FLAG_MSG(CreateFlags::DisableCompressedTextures, "Disable Compressed Textures");
+
+    if (!message.empty())
+    {
+      message.pop_back(); // Remove last newline.
+
+      Host::AddIconOSDMessage("GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING,
+                              "One or more non-standard GPU device flags are enabled.", std::move(message),
+                              Host::OSD_WARNING_DURATION);
+    }
+
+#undef FLAG_MSG
   }
 
   if (!CreateDeviceAndMainSwapChain(adapter, create_flags, wi, vsync, allow_present_throttle, exclusive_fullscreen_mode,
@@ -499,7 +505,8 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
   INFO_LOG("Render API: {} Version {}", RenderAPIToString(m_render_api), m_render_api_version);
   INFO_LOG("Graphics Driver Info:\n{}", GetDriverInfo());
 
-  OpenShaderCache(shader_cache_path, shader_cache_version);
+  OpenShaderCache(HasCreateFlag(create_flags, CreateFlags::DisableShaderCache) ? std::string_view() : shader_cache_path,
+                  shader_cache_version);
 
   if (!CreateResources(error))
   {
@@ -762,6 +769,18 @@ void GPUDevice::SetViewportAndScissor(const GSVector4i rc)
 {
   SetViewport(rc);
   SetScissor(rc);
+}
+
+void GPUDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+{
+  Panic("Barrier draws are not supported on this API.");
+}
+
+void GPUDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                        const void* push_constants, u32 push_constants_size,
+                                                        DrawBarrier type)
+{
+  Panic("Barrier draws are not supported on this API.");
 }
 
 void GPUDevice::ClearRenderTarget(GPUTexture* t, u32 c)
@@ -1364,69 +1383,22 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 #define SHADERC_LIB_NAME "shaderc_shared"
 #endif
 
-#define SHADERC_FUNCTIONS(X)                                                                                           \
-  X(shaderc_compiler_initialize)                                                                                       \
-  X(shaderc_compiler_release)                                                                                          \
-  X(shaderc_compile_options_initialize)                                                                                \
-  X(shaderc_compile_options_release)                                                                                   \
-  X(shaderc_compile_options_set_source_language)                                                                       \
-  X(shaderc_compile_options_set_generate_debug_info)                                                                   \
-  X(shaderc_compile_options_set_optimization_level)                                                                    \
-  X(shaderc_compile_options_set_target_env)                                                                            \
-  X(shaderc_compilation_status_to_string)                                                                              \
-  X(shaderc_compile_into_spv)                                                                                          \
-  X(shaderc_result_release)                                                                                            \
-  X(shaderc_result_get_length)                                                                                         \
-  X(shaderc_result_get_num_warnings)                                                                                   \
-  X(shaderc_result_get_bytes)                                                                                          \
-  X(shaderc_result_get_compilation_status)                                                                             \
-  X(shaderc_result_get_error_message)                                                                                  \
-  X(shaderc_optimize_spv)
-
-#define SPIRV_CROSS_FUNCTIONS(X)                                                                                       \
-  X(spvc_context_create)                                                                                               \
-  X(spvc_context_destroy)                                                                                              \
-  X(spvc_context_set_error_callback)                                                                                   \
-  X(spvc_context_parse_spirv)                                                                                          \
-  X(spvc_context_create_compiler)                                                                                      \
-  X(spvc_compiler_create_compiler_options)                                                                             \
-  X(spvc_compiler_create_shader_resources)                                                                             \
-  X(spvc_compiler_get_execution_model)                                                                                 \
-  X(spvc_compiler_options_set_bool)                                                                                    \
-  X(spvc_compiler_options_set_uint)                                                                                    \
-  X(spvc_compiler_install_compiler_options)                                                                            \
-  X(spvc_compiler_require_extension)                                                                                   \
-  X(spvc_compiler_compile)                                                                                             \
-  X(spvc_resources_get_resource_list_for_type)
-
-#ifdef _WIN32
-#define SPIRV_CROSS_HLSL_FUNCTIONS(X) X(spvc_compiler_hlsl_add_resource_binding)
-#else
-#define SPIRV_CROSS_HLSL_FUNCTIONS(X)
-#endif
-#ifdef __APPLE__
-#define SPIRV_CROSS_MSL_FUNCTIONS(X) X(spvc_compiler_msl_add_resource_binding)
-#else
-#define SPIRV_CROSS_MSL_FUNCTIONS(X)
-#endif
-
-// TODO: NOT thread safe, yet.
 namespace dyn_libs {
-static bool OpenShaderc(Error* error);
 static void CloseShaderc();
-static bool OpenSpirvCross(Error* error);
 static void CloseSpirvCross();
 static void CloseAll();
 
+static std::mutex s_dyn_mutex;
 static DynamicLibrary s_shaderc_library;
 static DynamicLibrary s_spirv_cross_library;
 
-static shaderc_compiler_t s_shaderc_compiler = nullptr;
-
 static bool s_close_registered = false;
 
-#define ADD_FUNC(F) static decltype(&::F) F;
-SHADERC_FUNCTIONS(ADD_FUNC)
+shaderc_compiler_t g_shaderc_compiler = nullptr;
+
+// TODO: Merge all of these into a struct?
+#define ADD_FUNC(F) decltype(&::F) F;
+DYN_SHADERC_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_HLSL_FUNCTIONS(ADD_FUNC)
 SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
@@ -1436,6 +1408,7 @@ SPIRV_CROSS_MSL_FUNCTIONS(ADD_FUNC)
 
 bool dyn_libs::OpenShaderc(Error* error)
 {
+  const std::unique_lock lock(s_dyn_mutex);
   if (s_shaderc_library.IsOpen())
     return true;
 
@@ -1454,11 +1427,11 @@ bool dyn_libs::OpenShaderc(Error* error)
     return false;                                                                                                      \
   }
 
-  SHADERC_FUNCTIONS(LOAD_FUNC)
+  DYN_SHADERC_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  s_shaderc_compiler = shaderc_compiler_initialize();
-  if (!s_shaderc_compiler)
+  g_shaderc_compiler = shaderc_compiler_initialize();
+  if (!g_shaderc_compiler)
   {
     Error::SetStringView(error, "shaderc_compiler_initialize() failed");
     CloseShaderc();
@@ -1476,14 +1449,14 @@ bool dyn_libs::OpenShaderc(Error* error)
 
 void dyn_libs::CloseShaderc()
 {
-  if (s_shaderc_compiler)
+  if (g_shaderc_compiler)
   {
-    shaderc_compiler_release(s_shaderc_compiler);
-    s_shaderc_compiler = nullptr;
+    shaderc_compiler_release(g_shaderc_compiler);
+    g_shaderc_compiler = nullptr;
   }
 
 #define UNLOAD_FUNC(F) F = nullptr;
-  SHADERC_FUNCTIONS(UNLOAD_FUNC)
+  DYN_SHADERC_FUNCTIONS(UNLOAD_FUNC)
 #undef UNLOAD_FUNC
 
   s_shaderc_library.Close();
@@ -1491,6 +1464,7 @@ void dyn_libs::CloseShaderc()
 
 bool dyn_libs::OpenSpirvCross(Error* error)
 {
+  const std::unique_lock lock(s_dyn_mutex);
   if (s_spirv_cross_library.IsOpen())
     return true;
 
@@ -1548,7 +1522,7 @@ void dyn_libs::CloseAll()
 #undef SPIRV_CROSS_HLSL_FUNCTIONS
 #undef SPIRV_CROSS_MSL_FUNCTIONS
 #undef SPIRV_CROSS_FUNCTIONS
-#undef SHADERC_FUNCTIONS
+#undef DYN_SHADERC_FUNCTIONS
 
 std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error)
 {
@@ -1585,7 +1559,7 @@ std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span
   dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_optimize_spv(dyn_libs::s_shaderc_compiler, spirv.data(), spirv.size(), options);
+    dyn_libs::shaderc_optimize_spv(dyn_libs::g_shaderc_compiler, spirv.data(), spirv.size(), options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
   if (status != shaderc_compilation_status_success)
@@ -1640,7 +1614,7 @@ bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLang
     options, optimization ? shaderc_optimization_level_performance : shaderc_optimization_level_zero);
 
   const shaderc_compilation_result_t result =
-    dyn_libs::shaderc_compile_into_spv(dyn_libs::s_shaderc_compiler, source.data(), source.length(),
+    dyn_libs::shaderc_compile_into_spv(dyn_libs::g_shaderc_compiler, source.data(), source.length(),
                                        stage_kinds[static_cast<size_t>(stage)], "source", entry_point, options);
   const shaderc_compilation_status status =
     result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
@@ -1730,14 +1704,16 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
   }
 
   // Need to know if there's UBOs for mapping.
-  const spvc_reflected_resource *ubos, *textures;
-  size_t ubos_count, textures_count, images_count;
+  const spvc_reflected_resource *ubos, *push_constants, *textures, *images;
+  size_t ubos_count, push_constants_count, textures_count, images_count;
   if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &ubos,
                                                                   &ubos_count)) != SPVC_SUCCESS ||
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(
+         resources, SPVC_RESOURCE_TYPE_PUSH_CONSTANT, &push_constants, &push_constants_count)) != SPVC_SUCCESS ||
       (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
                                                                   &textures, &textures_count)) != SPVC_SUCCESS ||
-      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE,
-                                                                  &textures, &images_count)) != SPVC_SUCCESS)
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE, &images,
+                                                                  &images_count)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() failed: {}", static_cast<int>(sres));
     return {};
@@ -1753,6 +1729,32 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 #ifdef _WIN32
     case GPUShaderLanguage::HLSL:
     {
+      if (execmodel == SpvExecutionModelVertex)
+      {
+        const spvc_reflected_resource* inputs;
+        size_t inputs_count;
+        if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT,
+                                                                        &inputs, &inputs_count)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() for vertex attributes failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+
+        for (const spvc_reflected_resource& res : std::span<const spvc_reflected_resource>(inputs, inputs_count))
+        {
+          const unsigned location = dyn_libs::spvc_compiler_get_decoration(scompiler, res.id, SpvDecorationLocation);
+          const TinyString name = TinyString::from_format("ATTR{}", location);
+          const spvc_hlsl_vertex_attribute_remap va = {.location = location, .semantic = name.c_str()};
+          if ((sres = dyn_libs::spvc_compiler_hlsl_add_vertex_attribute_remap(scompiler, &va, 1)) != SPVC_SUCCESS)
+          {
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_vertex_attribute_remap() failed: {}",
+                                static_cast<int>(sres));
+            return {};
+          }
+        }
+      }
+
       if ((sres = dyn_libs::spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL,
                                                            target_version)) != SPVC_SUCCESS)
       {
@@ -1791,7 +1793,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                .sampler = {}};
         if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
         {
-          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for UBO failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+      }
+
+      if (push_constants_count > 0)
+      {
+        const spvc_hlsl_resource_binding rb = {.stage = execmodel,
+                                               .desc_set = SPVC_HLSL_PUSH_CONSTANT_DESC_SET,
+                                               .binding = SPVC_HLSL_PUSH_CONSTANT_BINDING,
+                                               .cbv = {.register_space = 0, .register_binding = 1},
+                                               .uav = {},
+                                               .srv = {},
+                                               .sampler = {}};
+        if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for push constant failed: {}",
+                              static_cast<int>(sres));
           return {};
         }
       }
@@ -1800,16 +1820,19 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
       {
         for (u32 i = 0; i < textures_count; i++)
         {
+          const u32 binding = dyn_libs::spvc_compiler_get_decoration(scompiler, textures[i].id, SpvDecorationBinding);
+
           const spvc_hlsl_resource_binding rb = {.stage = execmodel,
                                                  .desc_set = TEXTURE_DESCRIPTOR_SET,
-                                                 .binding = i,
+                                                 .binding = binding,
                                                  .cbv = {},
                                                  .uav = {},
-                                                 .srv = {.register_space = 0, .register_binding = i},
-                                                 .sampler = {.register_space = 0, .register_binding = i}};
+                                                 .srv = {.register_space = 0, .register_binding = binding},
+                                                 .sampler = {.register_space = 0, .register_binding = binding}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for texture failed: {}",
+                                static_cast<int>(sres));
             return {};
           }
         }
@@ -1828,7 +1851,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                  .sampler = {}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() for image failed: {}",
+                                static_cast<int>(sres));
             return {};
           }
         }
@@ -1867,6 +1891,29 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           static_cast<int>(sres));
         return {};
       }
+
+      if (ubos_count > 0)
+      {
+        // Set name of UBO block to match our shaders, so that drivers without binding info can still find it.
+        dyn_libs::spvc_compiler_set_name(scompiler, ubos[0].id, "UBOBlock");
+      }
+
+      if (push_constants_count > 0)
+      {
+        // Set name of push constant block to match our shaders, so that drivers without binding info can still find it.
+        dyn_libs::spvc_compiler_set_name(scompiler, push_constants[0].id, "PushConstants");
+        dyn_libs::spvc_compiler_set_decoration(scompiler, push_constants[0].id, SpvDecorationBinding, 1);
+
+        if ((sres = dyn_libs::spvc_compiler_options_set_bool(
+               soptions, SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER, SPVC_TRUE)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(
+            error,
+            "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER) failed: {}",
+            static_cast<int>(sres));
+          return {};
+        }
+      }
     }
     break;
 #endif
@@ -1901,63 +1948,52 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         return {};
       }
 
-      const spvc_msl_resource_binding pc_rb = {.stage = execmodel,
-                                               .desc_set = SPVC_MSL_PUSH_CONSTANT_DESC_SET,
-                                               .binding = SPVC_MSL_PUSH_CONSTANT_BINDING,
-                                               .msl_buffer = 0,
-                                               .msl_texture = 0,
-                                               .msl_sampler = 0};
-      if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &pc_rb)) != SPVC_SUCCESS)
-      {
-        Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for push constant failed: {}",
-                            static_cast<int>(sres));
-        return {};
-      }
+      const auto add_msl_resource_binding = [&scompiler, &execmodel, &error](unsigned desc_set, unsigned binding,
+                                                                             unsigned msl_buffer, unsigned msl_texture,
+                                                                             unsigned msl_sampler) {
+        const spvc_msl_resource_binding rb = {.stage = execmodel,
+                                              .desc_set = desc_set,
+                                              .binding = binding,
+                                              .msl_buffer = msl_buffer,
+                                              .msl_texture = msl_texture,
+                                              .msl_sampler = msl_sampler};
+
+        const spvc_result sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb);
+        if (sres != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
+          return false;
+        }
+
+        return true;
+      };
+
+      // push constant
+      if (!add_msl_resource_binding(SPVC_MSL_PUSH_CONSTANT_DESC_SET, SPVC_MSL_PUSH_CONSTANT_BINDING, 2, 0, 0))
+        return false;
 
       if (stage == GPUShaderStage::Fragment || stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
         {
-          const spvc_msl_resource_binding rb = {.stage = execmodel,
-                                                .desc_set = TEXTURE_DESCRIPTOR_SET,
-                                                .binding = i,
-                                                .msl_buffer = i,
-                                                .msl_texture = i,
-                                                .msl_sampler = i};
-
-          if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-          {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
-            return {};
-          }
+          // Add +1 for the buffer binding since we use this for texture buffers.
+          if (!add_msl_resource_binding(TEXTURE_DESCRIPTOR_SET, i, i + 1, i, i))
+            return false;
         }
       }
 
       if (stage == GPUShaderStage::Fragment && !m_features.framebuffer_fetch)
       {
-        const spvc_msl_resource_binding rb = {
-          .stage = execmodel, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
-
-        if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-        {
-          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
-                              static_cast<int>(sres));
-          return {};
-        }
+        if (!add_msl_resource_binding(2, 0, 0, MAX_TEXTURE_SAMPLERS, 0))
+          return false;
       }
 
       if (stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
-          const spvc_msl_resource_binding rb = {
-            .stage = execmodel, .desc_set = 2, .binding = i, .msl_buffer = i, .msl_texture = i, .msl_sampler = i};
-
-          if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
-          {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
-            return {};
-          }
+          if (!add_msl_resource_binding(2, i, i, i, i))
+            return false;
         }
       }
     }

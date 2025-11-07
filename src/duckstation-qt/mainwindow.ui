@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -75,9 +75,9 @@
     <addaction name="actionStartFullscreenUI"/>
     <addaction name="actionResumeLastState"/>
     <addaction name="separator"/>
-    <addaction name="actionPowerOff"/>
-    <addaction name="actionPowerOffWithoutSaving"/>
-    <addaction name="actionReset"/>
+    <addaction name="actionCloseGame"/>
+    <addaction name="actionCloseGameWithoutSaving"/>
+    <addaction name="actionResetGame"/>
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
@@ -217,19 +217,21 @@
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
     <addaction name="menuSortBy"/>
+    <addaction name="actionViewZoomIn"/>
+    <addaction name="actionViewZoomOut"/>
     <addaction name="separator"/>
     <addaction name="actionMergeDiscSets"/>
     <addaction name="actionShowLocalizedTitles"/>
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionAnimateGameIcons"/>
+    <addaction name="actionPreferAchievementGameIcons"/>
+    <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
-    <addaction name="actionViewZoomIn"/>
-    <addaction name="actionViewZoomOut"/>
     <addaction name="actionGridViewRefreshCovers"/>
-    <addaction name="actionViewRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionChangeGameListBackground"/>
     <addaction name="actionClearGameListBackground"/>
+    <addaction name="actionViewRefreshAchievementProgress"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
@@ -338,23 +340,45 @@
     <string>Rescans all games, discarding any cached information.</string>
    </property>
   </action>
-  <action name="actionPowerOff">
+  <action name="actionCloseGame">
    <property name="icon">
     <iconset theme="shut-down-line"/>
    </property>
    <property name="text">
-    <string>Power &amp;Off</string>
+    <string>Cl&amp;ose Game</string>
    </property>
    <property name="toolTip">
     <string>Ends the current session.</string>
    </property>
   </action>
-  <action name="actionReset">
+  <action name="actionCloseGameToolbar">
+   <property name="icon">
+    <iconset theme="shut-down-line"/>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="toolTip">
+    <string>Ends the current session.</string>
+   </property>
+  </action>
+  <action name="actionResetGame">
    <property name="icon">
     <iconset theme="restart-line"/>
    </property>
    <property name="text">
-    <string>&amp;Reset</string>
+    <string>&amp;Reset Game</string>
+   </property>
+   <property name="toolTip">
+    <string>Restarts the emulated system.</string>
+   </property>
+  </action>
+  <action name="actionResetGameToolbar">
+   <property name="icon">
+    <iconset theme="restart-line"/>
+   </property>
+   <property name="text">
+    <string>Reset</string>
    </property>
    <property name="toolTip">
     <string>Restarts the emulated system.</string>
@@ -552,6 +576,9 @@
    <property name="toolTip">
     <string>Displays copyright and license notices for Qt.</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutQtRole</enum>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
@@ -563,6 +590,9 @@
    </property>
    <property name="toolTip">
     <string>Displays copyright and license notices for the application.</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::AboutRole</enum>
    </property>
   </action>
   <action name="actionChangeDisc">
@@ -689,7 +719,7 @@
     <string>Opens the settings window.</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::MenuRole::PreferencesRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
   <action name="actionChangeDiscFromFile">
@@ -1027,7 +1057,7 @@
     <iconset theme="price-tag-3-line"/>
    </property>
    <property name="text">
-    <string>Show Titl&amp;es (Grid View)</string>
+    <string>Show G&amp;rid Captions</string>
    </property>
    <property name="iconText">
     <string>Show Titles (Grid View)</string>
@@ -1060,7 +1090,7 @@
   </action>
   <action name="actionGridViewRefreshCovers">
    <property name="text">
-    <string>Refresh &amp;Covers (Grid View)</string>
+    <string>Refresh Grid &amp;Covers</string>
    </property>
    <property name="toolTip">
     <string>Invalidates the cache of game covers, allowing new images to be discovered.</string>
@@ -1074,12 +1104,23 @@
     <string>Opens the directory containing application data in your file browser.</string>
    </property>
   </action>
-  <action name="actionPowerOffWithoutSaving">
+  <action name="actionCloseGameWithoutSaving">
    <property name="icon">
     <iconset theme="close-line"/>
    </property>
    <property name="text">
-    <string>Power Off &amp;Without Saving</string>
+    <string>Close Game &amp;Without Saving</string>
+   </property>
+   <property name="toolTip">
+    <string>Ends the current session without the option to save state.</string>
+   </property>
+  </action>
+  <action name="actionCloseGameWithoutSavingToolbar">
+   <property name="icon">
+    <iconset theme="close-line"/>
+   </property>
+   <property name="text">
+    <string>Close (No Save)</string>
    </property>
    <property name="toolTip">
     <string>Ends the current session without the option to save state.</string>
@@ -1134,7 +1175,7 @@
     <iconset theme="image-fill"/>
    </property>
    <property name="text">
-    <string>Show Game Ico&amp;ns (List View)</string>
+    <string>Show Game Ico&amp;ns</string>
    </property>
    <property name="toolTip">
     <string>Shows icons from the memory card of each game in list view.</string>
@@ -1310,10 +1351,24 @@
     <iconset theme="add-animation"/>
    </property>
    <property name="text">
-    <string>Animate Game Icons (List View)</string>
+    <string>Animate Game Icons</string>
    </property>
    <property name="toolTip">
     <string>Animates icons in the list view when selected.</string>
+   </property>
+  </action>
+  <action name="actionPreferAchievementGameIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="trophy-line"/>
+   </property>
+   <property name="text">
+    <string>Prefer Achievement Icons</string>
+   </property>
+   <property name="toolTip">
+    <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
    </property>
   </action>
  </widget>

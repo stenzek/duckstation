@@ -11,12 +11,11 @@
 
 #include "util/cd_image.h"
 
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 
 #include "moc_consolesettingswidget.cpp"
 
-static constexpr const int CDROM_SPEEDUP_VALUES[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0};
+static constexpr const int CDROM_SPEEDUP_VALUES[] = {1, 2, 3, 4, 5, 6, 0};
 
 ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* parent)
   : QWidget(parent), m_dialog(dialog)
@@ -89,15 +88,15 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),
                                tr("Fast forwards through the early loading process when fast booting, saving time. "
                                   "Results may vary between games."));
+  m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
+                               tr("Fast forwards through memory card access, both loading and saving. Can reduce "
+                                  "waiting times in games that frequently access memory cards."));
   dialog->registerWidgetHelp(
     m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
     tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
        "to use a larger heap size for "
        "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
        "with compatible mods."));
-  m_dialog->registerWidgetHelp(m_ui.fastForwardMemoryCardAccess, tr("Fast Forward Memory Card Access"), tr("Unchecked"),
-                               tr("Fast forwards through memory card access, both loading and saving. Can reduce "
-                                  "waiting times in games that frequently access memory cards."));
 
   dialog->registerWidgetHelp(m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
                              tr("Determines how the emulated CPU executes instructions."));
@@ -145,6 +144,8 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   SettingWidgetBinder::SetAvailability(m_ui.fastForwardBoot,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::ForceFullBoot));
   SettingWidgetBinder::SetAvailability(
+    m_ui.fastForwardMemoryCardAccess, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableFastForwardMemoryCardAccess));
+  SettingWidgetBinder::SetAvailability(
     m_ui.cpuExecutionMode, !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterpreter), m_ui.cpuExecutionModeLabel);
   SettingWidgetBinder::SetAvailability(m_ui.cdromReadSpeedup,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableCDROMReadSpeedup),
@@ -191,10 +192,9 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
          "system requirements.\n\nBy enabling this option you are agreeing to not create any bug reports unless you "
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
 
-    QMessageBox* mb =
-      new QMessageBox(QMessageBox::Warning, tr("CPU Overclocking Warning"), message, QMessageBox::NoButton, this);
+    QMessageBox* const mb = QtUtils::NewMessageBox(QMessageBox::Warning, tr("CPU Overclocking Warning"), message,
+                                                   QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, this);
     mb->setAttribute(Qt::WA_DeleteOnClose, true);
-    mb->setWindowModality(Qt::WindowModal);
     const QPushButton* const yes_button =
       mb->addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
     const QPushButton* const no_button = mb->addButton(tr("No, take me back to safety."), QMessageBox::NoRole);

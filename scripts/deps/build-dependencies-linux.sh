@@ -78,6 +78,7 @@ $ZLIBNG_GZ_HASH  zlib-ng-$ZLIBNG.tar.gz
 $ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
 $QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
 $QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
+$QTSHADERTOOLS_XZ_HASH  qtshadertools-everywhere-src-$QT.tar.xz
 $QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
 $QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
 $QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
@@ -116,6 +117,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "zlib-ng-$ZLIBNG"
 
 echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE_COMMIT"
@@ -125,6 +127,7 @@ CFLAGS="-fmacro-prefix-map=\"${PWD}\"=. -ffile-prefix-map=\"${PWD}\"=." ./config
 make
 make install
 cd ..
+rm -fr "libbacktrace-$LIBBACKTRACE_COMMIT"
 
 echo "Building libpng..."
 rm -fr "libpng-$LIBPNG"
@@ -135,6 +138,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "libpng-$LIBPNG"
 
 echo "Building libjpeg..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
@@ -144,6 +148,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 
 echo "Building Zstandard..."
 rm -fr "zstd-$ZSTD"
@@ -153,6 +158,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "zstd-$ZSTD"
 
 echo "Building WebP..."
 rm -fr "libwebp-$LIBWEBP"
@@ -164,6 +170,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "libwebp-$LIBWEBP"
 
 echo "Building libzip..."
 rm -fr "libzip-$LIBZIP"
@@ -176,6 +183,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "libzip-$LIBZIP"
 
 echo "Building FreeType..."
 rm -fr "freetype-$FREETYPE"
@@ -186,6 +194,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "freetype-$FREETYPE"
 
 echo "Building HarfBuzz..."
 rm -fr "harfbuzz-$HARFBUZZ"
@@ -195,6 +204,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "harfbuzz-$HARFBUZZ"
 
 echo "Building SDL..."
 rm -fr "SDL3-$SDL3"
@@ -204,6 +214,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCM
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "SDL3-$SDL3"
 
 # Couple notes:
 # -fontconfig is needed otherwise Qt Widgets render only boxes.
@@ -222,6 +233,7 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qtbase-everywhere-src-$QT"
 
 echo "Building Qt SVG..."
 rm -fr "qtsvg-everywhere-src-$QT"
@@ -233,6 +245,7 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qtsvg-everywhere-src-$QT"
 
 echo "Building Qt Image Formats..."
 rm -fr "qtimageformats-everywhere-src-$QT"
@@ -244,6 +257,7 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qtimageformats-everywhere-src-$QT"
 
 echo "Building Qt Wayland..."
 rm -fr "qtwayland-everywhere-src-$QT"
@@ -251,45 +265,25 @@ tar xf "qtwayland-everywhere-src-$QT.tar.xz"
 cd "qtwayland-everywhere-src-$QT"
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_wayland_server=OFF
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qtwayland-everywhere-src-$QT"
 
 echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
 tar xf "qttools-everywhere-src-$QT.tar.xz"
 cd "qttools-everywhere-src-$QT"
-
-# Force disable clang scanning, it gets very confused.
-patch -u configure.cmake <<EOF
---- configure.cmake
-+++ configure.cmake
-@@ -3,11 +3,11 @@
- 
- #### Tests
- 
--qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
-+#qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
- 
--if(TARGET WrapLibClang::WrapLibClang)
--    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
--endif()
-+#if(TARGET WrapLibClang::WrapLibClang)
-+#    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
-+#endif()
- 
- 
- 
-
-EOF
-
+patch -p1 < "$SCRIPTDIR/qttools-linguist-without-quick.patch"
+patch -p1 < "$SCRIPTDIR/qttools-disable-clang.patch"
 mkdir build
 cd build
 "$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qttools-everywhere-src-$QT"
 
 echo "Installing Qt Translations..."
 rm -fr "qttranslations-everywhere-src-$QT"
@@ -301,15 +295,17 @@ cd build
 cmake --build . --parallel
 ninja install
 cd ../../
+rm -fr "qttranslations-everywhere-src-$QT"
 
 echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC_COMMIT"
 tar xf "shaderc-$SHADERC_COMMIT.tar.gz"
 cd "shaderc-$SHADERC_COMMIT"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_EXECUTABLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "shaderc-$SHADERC_COMMIT"
 
 echo "Building SPIRV-Cross..."
 cd SPIRV-Cross
@@ -317,6 +313,7 @@ rm -fr build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DSPIRV_CROSS_SHARED=ON -DSPIRV_CROSS_STATIC=OFF -DSPIRV_CROSS_CLI=OFF -DSPIRV_CROSS_ENABLE_TESTS=OFF -DSPIRV_CROSS_ENABLE_GLSL=ON -DSPIRV_CROSS_ENABLE_HLSL=OFF -DSPIRV_CROSS_ENABLE_MSL=OFF -DSPIRV_CROSS_ENABLE_CPP=OFF -DSPIRV_CROSS_ENABLE_REFLECT=OFF -DSPIRV_CROSS_ENABLE_C_API=ON -DSPIRV_CROSS_ENABLE_UTIL=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
+rm -fr build
 cd ..
 
 echo "Building cpuinfo..."
@@ -327,6 +324,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "cpuinfo-$CPUINFO_COMMIT"
 
 echo "Building discord-rpc..."
 rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
@@ -336,6 +334,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "discord-rpc-$DISCORD_RPC_COMMIT"
 
 echo "Building plutosvg..."
 rm -fr "plutosvg-$PLUTOSVG_COMMIT"
@@ -345,6 +344,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "plutosvg-$PLUTOSVG_COMMIT"
 
 echo "Building soundtouch..."
 rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
@@ -354,6 +354,7 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTA
 cmake --build build --parallel
 ninja -C build install
 cd ..
+rm -fr "soundtouch-$SOUNDTOUCH_COMMIT"
 
 if [ "$SKIP_CLEANUP" != true ]; then
 	echo "Cleaning up..."

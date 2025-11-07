@@ -178,7 +178,7 @@ static constexpr const SettingInfo s_sdl_advanced_settings_info[] = {
    TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with XInput controllers."), "true", nullptr, nullptr,
    nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "SDLJoystickWGI", TRANSLATE_NOOP("SDLInputSource", "Enable WGI Driver"),
-   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with Windows.Gaming.Input controllers."), "true", nullptr,
+   TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with Windows.Gaming.Input controllers."), "false", nullptr,
    nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Boolean, "SDLJoystickGameInput", TRANSLATE_NOOP("SDLInputSource", "Enable GameInput Driver"),
    TRANSLATE_NOOP("SDLInputSource", "Enables compatibility with GameInput controllers."), "false", nullptr, nullptr,
@@ -294,7 +294,7 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
   m_joystick_rawinput = si.GetBoolValue("InputSources", "SDLJoystickRawInput", false);
   m_joystick_directinput = si.GetBoolValue("InputSources", "SDLJoystickDirectInput", true);
   m_joystick_xinput = si.GetBoolValue("InputSources", "SDLJoystickXInput", true);
-  m_joystick_wgi = si.GetBoolValue("InputSources", "SDLJoystickWGI", true);
+  m_joystick_wgi = si.GetBoolValue("InputSources", "SDLJoystickWGI", false);
   m_joystick_gameinput = si.GetBoolValue("InputSources", "SDLJoystickGameInput", false);
 #elif defined(__APPLE__)
   m_enable_iokit_driver = si.GetBoolValue("InputSources", "SDLIOKitDriver", true);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "isobrowserwindow.h"
+#include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
 
@@ -16,7 +17,6 @@
 #include <QtGui/QIcon>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
 
 #include "moc_isobrowserwindow.cpp"
 
@@ -40,6 +40,8 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
   connect(m_ui.fileView, &QTreeWidget::itemSelectionChanged, this, &ISOBrowserWindow::onFileItemSelectionChanged);
   connect(m_ui.fileView, &QTreeWidget::customContextMenuRequested, this, &ISOBrowserWindow::onFileContextMenuRequested);
   connect(m_ui.close, &QAbstractButton::clicked, this, &ISOBrowserWindow::close);
+
+  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 ISOBrowserWindow::~ISOBrowserWindow() = default;
@@ -51,8 +53,8 @@ ISOBrowserWindow* ISOBrowserWindow::createAndOpenFile(QWidget* parent, const QSt
   Error error;
   if (!ib->tryOpenFile(path, &error))
   {
-    QMessageBox::critical(parent, tr("Error"),
-                          tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      parent, tr("Error"), tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     delete ib;
     return nullptr;
   }
@@ -92,8 +94,8 @@ void ISOBrowserWindow::onOpenFileClicked()
   Error error;
   if (!tryOpenFile(path, &error))
   {
-    QMessageBox::critical(this, tr("Error"),
-                          tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::MessageBoxCritical(
+      this, tr("Error"), tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 }
@@ -209,8 +211,8 @@ void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode
     }
   }
 
-  QMessageBox::critical(this, tr("Error"),
-                        tr("Failed to save %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+  QtUtils::MessageBoxCritical(
+    this, tr("Error"), tr("Failed to save %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
 }
 
 QTreeWidgetItem* ISOBrowserWindow::findDirectoryItemForPath(const QString& path, QTreeWidgetItem* parent) const

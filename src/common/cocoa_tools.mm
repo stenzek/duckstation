@@ -8,6 +8,8 @@
 
 #include "fmt/format.h"
 
+#include <AppKit/AppKit.h>
+#include <Cocoa/Cocoa.h>
 #include <cinttypes>
 #include <dlfcn.h>
 #include <mach/mach_time.h>
@@ -141,4 +143,74 @@ bool CocoaTools::DelayedLaunch(std::string_view file, std::span<const std::strin
     [task setArguments:@[ @"-c", [NSString stringWithUTF8String:task_args.c_str()] ]];
     return [task launchAndReturnError:nil];
   }
+}
+
+void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
+{
+  if (![NSThread isMainThread])
+  {
+    dispatch_sync(dispatch_get_main_queue(),
+                  [szMessage, szFunction, szFile, uLine]() { Y_OnAssertFailed(szMessage, szFunction, szFile, uLine); });
+    return;
+  }
+
+  char szMsg[512];
+  std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
+  std::fputs(szMsg, stderr);
+  std::fflush(stderr);
+
+  @autoreleasepool
+  {
+    NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+    [alert setMessageText:@"Assertion Failed"];
+
+    NSString* text = [NSString stringWithFormat:@"%s in function %s (%s:%u)\nPress Abort to exit, Break to break to "
+                                                @"debugger, or Ignore to attempt to continue.",
+                                                szMessage, szFunction, szFile, uLine];
+    [alert setInformativeText:text];
+    [alert setAlertStyle:NSAlertStyleCritical];
+    [alert addButtonWithTitle:@"Abort"];
+    [alert addButtonWithTitle:@"Break"];
+    [alert addButtonWithTitle:@"Ignore"];
+
+    const NSModalResponse response = [alert runModal];
+    if (response == NSAlertFirstButtonReturn)
+      std::abort();
+    else if (response == NSAlertSecondButtonReturn)
+      __builtin_debugtrap();
+  }
+}
+
+[[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
+{
+  if (![NSThread isMainThread])
+  {
+    dispatch_sync(dispatch_get_main_queue(),
+                  [szMessage, szFunction, szFile, uLine]() { Y_OnAssertFailed(szMessage, szFunction, szFile, uLine); });
+  }
+  else
+  {
+    char szMsg[512];
+    std::snprintf(szMsg, sizeof(szMsg), "%s in function %s (%s:%u)\n", szMessage, szFunction, szFile, uLine);
+
+    @autoreleasepool
+    {
+      NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+      [alert setMessageText:@"Critical Error"];
+
+      NSString* text =
+        [NSString stringWithFormat:@"%s in function %s (%s:%u)\nDo you want to attempt to break into a debugger?",
+                                   szMessage, szFunction, szFile, uLine];
+      [alert setInformativeText:text];
+      [alert setAlertStyle:NSAlertStyleCritical];
+      [alert addButtonWithTitle:@"Abort"];
+      [alert addButtonWithTitle:@"Break"];
+
+      const NSModalResponse response = [alert runModal];
+      if (response == NSAlertSecondButtonReturn)
+        __builtin_debugtrap();
+    }
+  }
+
+  std::abort();
 }

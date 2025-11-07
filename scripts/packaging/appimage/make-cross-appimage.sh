@@ -200,7 +200,6 @@ if [ "${ADD_QT_LIBS}" == true ]; then
 		"libQt6OpenGL.so.6"
 		"libQt6Svg.so.6"
 		"libQt6WaylandClient.so.6"
-		"libQt6WaylandEglClientHwIntegration.so.6"
 		"libQt6Widgets.so.6"
 		"libQt6XcbQpa.so.6"
 	)

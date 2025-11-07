@@ -215,13 +215,12 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
             static_cast<unsigned>(controller_type_in_state), Controller::GetControllerInfo(controller_type).name,
             static_cast<unsigned>(controller_type));
 
-    Host::AddIconOSDWarning(
-      fmt::format("PadTypeMismatch{}", i), ICON_EMOJI_WARNING,
-      fmt::format(TRANSLATE_FS("OSDMessage",
-                               "Save state contains controller type {0} in port {1}.\n       Leaving {2} connected."),
-                  state_cinfo.GetDisplayName(), i + 1u,
-                  Controller::GetControllerInfo(controller_type).GetDisplayName()),
-      Host::OSD_WARNING_DURATION);
+    Host::AddIconOSDWarning(fmt::format("PadTypeMismatch{}", i), ICON_EMOJI_WARNING,
+                            fmt::format(TRANSLATE_FS("Pad", "Save state contains controller type {0} in Port {1}."),
+                                        state_cinfo.GetDisplayName(), i + 1u),
+                            fmt::format(TRANSLATE_FS("Pad", "Leaving {0} connected."),
+                                        Controller::GetControllerInfo(controller_type).GetDisplayName()),
+                            Host::OSD_WARNING_DURATION);
 
     if (s_state.controllers[i])
       s_state.controllers[i]->Reset();
@@ -251,11 +250,9 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   {
     Host::AddIconOSDMessage(
       fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
-      fmt::format(
-        TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Creating temporary card."),
-        i + 1u),
-      Host::OSD_ERROR_DURATION);
-    s_state.memory_cards[i] = MemoryCard::Create();
+      fmt::format(TRANSLATE_FS("Pad", "Memory card {} present in save state but not in system."), i + 1u),
+      TRANSLATE_STR("Pad", "Creating temporary card."), Host::OSD_ERROR_DURATION);
+    s_state.memory_cards[i] = MemoryCard::Create(i);
   }
 
   MemoryCard* card_ptr = s_state.memory_cards[i].get();
@@ -288,12 +285,10 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       else
       {
         Host::AddIconOSDMessage(
-          fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
-          fmt::format(
-            TRANSLATE_FS("OSDMessage",
-                         "Memory card {} from save state does not match current card data. Simulating replugging."),
-            i + 1u),
-          Host::OSD_WARNING_DURATION);
+          fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("Pad", "Memory card {} from save state does not match current card data."), i + 1u),
+          TRANSLATE_STR("Pad", "Simulating replugging. The game may not be able to handle this."),
+          Host::OSD_ERROR_DURATION);
 
         WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
         s_state.memory_cards[i]->Reset();
@@ -302,10 +297,9 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
-        fmt::format(
-          TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Ignoring card."), i + 1u),
-        Host::OSD_ERROR_DURATION);
+        fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
+        fmt::format(TRANSLATE_FS("Pad", "Memory card {} present in save state but not in system."), i + 1u),
+        TRANSLATE_STR("Pad", "Ignoring card."), Host::OSD_ERROR_DURATION);
     }
 
     return true;
@@ -316,20 +310,17 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     if (g_settings.load_devices_from_save_states)
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
-        fmt::format(
-          TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Removing card."), i + 1u),
-        Host::OSD_ERROR_DURATION);
+        fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
+        fmt::format(TRANSLATE_FS("Pad", "Memory card {} present in system but not in save state."), i + 1u),
+        TRANSLATE_STR("Pad", "Removing card."), Host::OSD_ERROR_DURATION);
       s_state.memory_cards[i].reset();
     }
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("CardLoadWarning{}", i), ICON_PF_MEMORY_CARD,
-        fmt::format(
-          TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Replugging card."),
-          i + 1u),
-        Host::OSD_WARNING_DURATION);
+        fmt::format("CardLoadWarning{}", i), ICON_EMOJI_WARNING,
+        fmt::format(TRANSLATE_FS("Pad", "Memory card {} present in system but not in save state."), i + 1u),
+        TRANSLATE_STR("Pad", "Replugging card."), Host::OSD_WARNING_DURATION);
       s_state.memory_cards[i]->Reset();
     }
   }
@@ -340,7 +331,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 MemoryCard* Pad::GetDummyMemcard()
 {
   if (!s_state.dummy_card)
-    s_state.dummy_card = MemoryCard::Create();
+    s_state.dummy_card = MemoryCard::Create(0);
   return s_state.dummy_card.get();
 }
 

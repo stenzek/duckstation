@@ -707,7 +707,8 @@ bool OpenGLDevice::CreateBuffers()
 {
   if (!(m_vertex_buffer = OpenGLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE)) ||
       !(m_index_buffer = OpenGLStreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE)) ||
-      !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE))) [[unlikely]]
+      !(m_uniform_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE)) ||
+      !(m_push_constant_buffer = OpenGLStreamBuffer::Create(GL_UNIFORM_BUFFER, PUSH_CONSTANT_BUFFER_SIZE))) [[unlikely]]
   {
     ERROR_LOG("Failed to create one or more device buffers.");
     return false;
@@ -716,6 +717,7 @@ bool OpenGLDevice::CreateBuffers()
   GL_OBJECT_NAME(m_vertex_buffer, "Device Vertex Buffer");
   GL_OBJECT_NAME(m_index_buffer, "Device Index Buffer");
   GL_OBJECT_NAME(m_uniform_buffer, "Device Uniform Buffer");
+  GL_OBJECT_NAME(m_push_constant_buffer, "Device Push Constant Buffer");
 
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
   m_uniform_buffer_alignment = std::max<GLuint>(m_uniform_buffer_alignment, 16);
@@ -756,6 +758,7 @@ void OpenGLDevice::DestroyBuffers()
   if (m_read_fbo != 0)
     glDeleteFramebuffers(1, &m_read_fbo);
   m_texture_stream_buffer.reset();
+  m_push_constant_buffer.reset();
   m_uniform_buffer.reset();
   m_index_buffer.reset();
   m_vertex_buffer.reset();
@@ -1032,6 +1035,13 @@ void OpenGLDevice::Draw(u32 vertex_count, u32 base_vertex)
   glDrawArrays(m_current_pipeline->GetTopology(), 0, vertex_count);
 }
 
+void OpenGLDevice::DrawWithPushConstants(u32 vertex_count, u32 base_vertex, const void* push_constants,
+                                         u32 push_constants_size)
+{
+  PushUniformBuffer(push_constants, push_constants_size);
+  Draw(vertex_count, base_vertex);
+}
+
 void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
   s_stats.num_draws++;
@@ -1049,13 +1059,22 @@ void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
   glDrawElements(m_current_pipeline->GetTopology(), index_count, GL_UNSIGNED_SHORT, indices);
 }
 
-void OpenGLDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
+void OpenGLDevice::DrawIndexedWithPushConstants(u32 index_count, u32 base_index, u32 base_vertex,
+                                                const void* push_constants, u32 push_constants_size)
 {
-  Panic("Barriers are not supported");
+  PushUniformBuffer(push_constants, push_constants_size);
+  DrawIndexed(index_count, base_index, base_vertex);
 }
 
 void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
                             u32 group_size_z)
+{
+  Panic("Compute shaders are not supported");
+}
+
+void OpenGLDevice::DispatchWithPushConstants(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x,
+                                             u32 group_size_y, u32 group_size_z, const void* push_constants,
+                                             u32 push_constants_size)
 {
   Panic("Compute shaders are not supported");
 }
@@ -1093,11 +1112,11 @@ void OpenGLDevice::UnmapIndexBuffer(u32 used_index_count)
 
 void OpenGLDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
-  const auto res = m_uniform_buffer->Map(m_uniform_buffer_alignment, data_size);
+  const auto res = m_push_constant_buffer->Map(m_uniform_buffer_alignment, data_size);
   std::memcpy(res.pointer, data, data_size);
-  m_uniform_buffer->Unmap(data_size);
+  m_push_constant_buffer->Unmap(data_size);
   s_stats.buffer_streamed += data_size;
-  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_uniform_buffer->GetGLBufferId(), res.buffer_offset, data_size);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 1, m_push_constant_buffer->GetGLBufferId(), res.buffer_offset, data_size);
 }
 
 void* OpenGLDevice::MapUniformBuffer(u32 size)

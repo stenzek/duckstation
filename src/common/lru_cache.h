@@ -126,6 +126,13 @@ public:
       Evict(m_items.size() - m_max_capacity);
   }
 
+  template<typename F>
+  void Apply(const F& func)
+  {
+    for (auto& [key, value] : m_items)
+      func(const_cast<const K&>(key), value.value);
+  }
+
 private:
   void ShrinkForNewItem()
   {

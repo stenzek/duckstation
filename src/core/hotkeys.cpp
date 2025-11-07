@@ -5,7 +5,7 @@
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_presenter.h"
@@ -63,62 +63,6 @@ static void HotkeyModifyResolutionScale(s32 increment)
   {
     GPUThread::UpdateSettings(true, false, false);
     System::ClearMemorySaveStates(true, false);
-  }
-}
-
-static void HotkeyLoadStateSlot(bool global, s32 slot)
-{
-  if (!System::IsValid())
-    return;
-
-  if (!global && System::GetGameSerial().empty())
-  {
-    Host::AddKeyedOSDMessage("LoadState", TRANSLATE_STR("OSDMessage", "Cannot load state for game without serial."),
-                             Host::OSD_ERROR_DURATION);
-    return;
-  }
-
-  std::string path(global ? System::GetGlobalSaveStatePath(slot) :
-                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
-  if (!FileSystem::FileExists(path.c_str()))
-  {
-    Host::AddKeyedOSDMessage("LoadState",
-                             fmt::format(TRANSLATE_FS("OSDMessage", "No save state found in slot {}."), slot),
-                             Host::OSD_INFO_DURATION);
-    return;
-  }
-
-  Error error;
-  if (!System::LoadState(path.c_str(), &error, true, false))
-  {
-    Host::AddKeyedOSDMessage(
-      "LoadState",
-      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"), slot, error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
-  }
-}
-
-static void HotkeySaveStateSlot(bool global, s32 slot)
-{
-  if (!System::IsValid())
-    return;
-
-  if (!global && System::GetGameSerial().empty())
-  {
-    Host::AddKeyedOSDMessage("SaveState", TRANSLATE_STR("OSDMessage", "Cannot save state for game without serial."),
-                             Host::OSD_ERROR_DURATION);
-    return;
-  }
-
-  std::string path(global ? System::GetGlobalSaveStatePath(slot) :
-                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
-  Error error;
-  if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
-  {
-    Host::AddIconOSDMessage(
-      "SaveState", ICON_FA_TRIANGLE_EXCLAMATION,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"), slot, error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
   }
 }
 
@@ -697,13 +641,13 @@ DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLA
   DEFINE_HOTKEY(global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { HotkeyLoadStateSlot(global, slot); });                                 \
+                    Host::RunOnCPUThread([]() { System::LoadStateFromSlot(global, slot); });                           \
                 })
 #define MAKE_SAVE_STATE_HOTKEY(global, slot, name)                                                                     \
   DEFINE_HOTKEY(global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { HotkeySaveStateSlot(global, slot); });                                 \
+                    Host::RunOnCPUThread([]() { System::SaveStateToSlot(global, slot); });                             \
                 })
 
 // clang-format off

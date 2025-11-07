@@ -4,6 +4,7 @@
 #include "gpu_hw.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
+#include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
@@ -15,7 +16,6 @@
 #include "settings.h"
 #include "system_private.h"
 
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/postprocessing.h"
 #include "util/state_wrapper.h"
@@ -184,8 +184,8 @@ namespace {
 class ShaderCompileProgressTracker
 {
 public:
-  ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
+  ShaderCompileProgressTracker(u32 total)
+    : m_image(System::GetImageForLoadingScreen(GPUThread::GetGamePath())),
       m_min_time(Timer::ConvertSecondsToValue(1.0)), m_update_interval(Timer::ConvertSecondsToValue(0.1)),
       m_start_time(Timer::GetCurrentValue()), m_last_update_time(0), m_progress(0), m_total(total)
   {
@@ -211,8 +211,10 @@ public:
     const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
-      ImGuiFullscreen::RenderLoadingScreen(m_image, m_title, 0, static_cast<int>(m_total),
-                                           static_cast<int>(m_progress));
+      FullscreenUI::RenderLoadingScreen(
+        m_image, TRANSLATE_SV("GPU_HW", "Compiling Shaders..."),
+        SmallString::from_format(TRANSLATE_FS("GPU_HW", "{} of {} pipelines"), m_progress, m_total), 0,
+        static_cast<int>(m_total), static_cast<int>(m_progress));
       m_last_update_time = tv;
     }
 
@@ -220,7 +222,6 @@ public:
   }
 
 private:
-  std::string m_title;
   std::string m_image;
   Timer::Value m_min_time;
   Timer::Value m_update_interval;
@@ -693,8 +694,8 @@ void GPU_HW::CheckSettings()
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU.\nIt requires framebuffer fetch, "
-                              "feedback loops, or rasterizer order views."),
+      TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU."),
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
       Host::OSD_WARNING_DURATION);
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
@@ -712,8 +713,8 @@ void GPU_HW::CheckSettings()
   {
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "PGXP depth buffer is not supported by your current GPU or renderer.\nIt requires "
-                              "framebuffer fetch, feedback loops, or rasterizer order views."),
+      TRANSLATE_STR("GPU_HW", "PGXP depth buffer is not supported by your current GPU or renderer."),
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
       Host::OSD_WARNING_DURATION);
     m_pgxp_depth_buffer = false;
   }
@@ -1164,7 +1165,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   m_clear_depth_pipeline.reset();
   m_copy_depth_pipeline.reset();
 
-  ShaderCompileProgressTracker progress(TRANSLATE_STR("GPU_HW", "Compiling Pipelines..."), total_items);
+  ShaderCompileProgressTracker progress(total_items);
 
   // vertex shaders - [textured/palette/sprite]
   // fragment shaders - [depth_test][render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
@@ -2039,8 +2040,7 @@ void GPU_HW::CopyAndClearDepthBuffer(bool only_drawing_area)
       g_gpu_device->SetPipeline(m_copy_depth_pipeline.get());
 
       const float uniforms[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-      g_gpu_device->Draw(3, 0);
+      g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
       RestoreDeviceContext();
     }
 
@@ -2063,12 +2063,12 @@ void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
     // need to re-bind for rov, because we can't turn colour writes off for only the first target
     if (!m_use_rov_for_shader_blend)
     {
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero(), nullptr, 0);
     }
     else
     {
       g_gpu_device->SetRenderTarget(m_vram_depth_texture.get());
-      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec(), GSVector4::zero(), nullptr, 0);
       SetVRAMRenderTarget();
     }
   }
@@ -3113,7 +3113,7 @@ bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u
 
   const GSVector4i rect(dst_x, dst_y, dst_x + width, dst_y + height);
   g_gpu_device->SetScissor(rect);
-  DrawScreenQuad(rect, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(rect, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), nullptr, 0);
   RestoreDeviceContext();
   return true;
 }
@@ -3346,6 +3346,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
     u32 u_end_y;
     std::array<float, 4> u_fill_color;
     u32 u_interlaced_displayed_field;
+    u32 pad[3];
   };
   VRAMFillUBOData uniforms;
   uniforms.u_dst_x = (x % VRAM_WIDTH) * m_resolution_scale;
@@ -3356,11 +3357,11 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
   uniforms.u_fill_color =
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
   uniforms.u_interlaced_displayed_field = active_line_lsb;
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+  std::memset(uniforms.pad, 0, sizeof(uniforms.pad));
 
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
   g_gpu_device->SetScissor(scaled_bounds);
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 }
@@ -3405,8 +3406,7 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
   g_gpu_device->SetPipeline(m_vram_readback_pipeline.get());
   g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, encoded_width, encoded_height);
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   // Stage the readback and copy it into our shadow buffer.
   if (m_vram_readback_download_texture->IsImported())
@@ -3519,17 +3519,17 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
                                      GetCurrentNormalizedVertexDepth()};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetScissor(scaled_bounds);
+
   g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
-  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
   if (upload_texture)
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
   else
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
 
-  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
-  g_gpu_device->SetScissor(scaled_bounds);
-  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec(), GSVector4::zero(), &uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 }
@@ -3588,6 +3588,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
       float u_resolution_scale;
       u32 u_set_mask_bit;
       float u_depth_value;
+      u32 pad;
     };
     const VRAMCopyUBOData uniforms = {static_cast<float>((src_x % VRAM_WIDTH) * m_resolution_scale),
                                       static_cast<float>((src_y % VRAM_HEIGHT) * m_resolution_scale),
@@ -3599,16 +3600,17 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                                       static_cast<float>(m_vram_texture->GetHeight()),
                                       static_cast<float>(m_resolution_scale),
                                       BoolToUInt32(set_mask),
-                                      GetCurrentNormalizedVertexDepth()};
+                                      GetCurrentNormalizedVertexDepth(),
+                                      0u};
 
     // VRAM read texture should already be bound.
     g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
     g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
     const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
     g_gpu_device->SetScissor(dst_bounds_scaled);
-    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec());
+    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec(), GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), &uniforms,
+                   sizeof(uniforms));
     RestoreDeviceContext();
 
     if (check_mask && !m_pgxp_depth_buffer)
@@ -3974,6 +3976,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   if (cmd->display_disabled)
   {
     m_presenter.ClearDisplayTexture();
+    if (interlaced)
+      m_presenter.Deinterlace(interlaced_field);
+
     return;
   }
   else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() &&
@@ -4035,6 +4040,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       g_gpu_device->SetTextureSampler(0, m_vram_texture.get(), g_gpu_device->GetNearestSampler());
     }
 
+    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
+
     const u32 reinterpret_start_x = cmd->X * resolution_scale;
     const u32 skip_x = (cmd->display_vram_left - cmd->X) * resolution_scale;
     GL_INS_FMT("VRAM extract, depth = {}, 24bpp = {}, skip_x = {}, line_skip = {}", depth_source ? "yes" : "no",
@@ -4052,10 +4059,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     };
     const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
                                       static_cast<float>(line_skip ? 2 : 1)};
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-
-    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
 
     m_vram_extract_texture->MakeReadyForSampling();
     if (depth_source)
@@ -4071,7 +4075,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     // Apply internal postfx if enabled.
     if (m_internal_postfx && m_internal_postfx->IsActive() &&
-        m_internal_postfx->CheckTargets(m_vram_texture->GetFormat(), scaled_display_width, scaled_display_height))
+        m_internal_postfx->CheckTargets(scaled_display_width, scaled_display_height, m_vram_texture->GetFormat(),
+                                        scaled_display_width, scaled_display_height, scaled_display_width,
+                                        scaled_display_height))
     {
       GPUTexture* const postfx_output = m_internal_postfx->GetOutputTexture();
       m_internal_postfx->Apply(
@@ -4209,8 +4215,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, level_width, level_height));
     g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     g_gpu_device->CopyTextureRegion(level_texture.get(), 0, 0, 0, level, m_downsample_texture.get(), 0, 0, 0, 0,
                                     level_width, level_height);
   }
@@ -4238,8 +4243,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, last_width, last_height));
     g_gpu_device->SetPipeline(m_downsample_blur_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     weight_texture->MakeReadyForSampling();
   }
 
@@ -4259,8 +4263,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetTextureSampler(1, weight_texture.get(), m_downsample_lod_sampler.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, width, height));
     g_gpu_device->SetPipeline(m_downsample_composite_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->DrawWithPushConstants(3, 0, &uniforms, sizeof(uniforms));
     m_downsample_texture->MakeReadyForSampling();
   }
 
@@ -4293,8 +4296,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+  g_gpu_device->DrawWithPushConstants(3, 0, uniforms, sizeof(uniforms));
 
   RestoreDeviceContext();
 

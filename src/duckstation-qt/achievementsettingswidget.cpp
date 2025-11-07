@@ -14,7 +14,6 @@
 #include "common/string_util.h"
 
 #include <QtCore/QDateTime>
-#include <QtWidgets/QMessageBox>
 
 #include "moc_achievementsettingswidget.cpp"
 
@@ -74,7 +73,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-  dialog->registerWidgetHelp(m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Persistent Icons"),
+  dialog->registerWidgetHelp(m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
                              tr("Shows a notification or icons in the lower-right corner of the screen when a "
                                 "challenge/primed achievement is active."));
   dialog->registerWidgetHelp(
@@ -180,8 +179,8 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
       return;
   }
 
-  if (QMessageBox::question(
-        QtUtils::GetRootWidget(this), tr("Reset System"),
+  if (QtUtils::MessageBoxQuestion(
+        this, tr("Reset System"),
         tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) !=
       QMessageBox::Yes)
   {

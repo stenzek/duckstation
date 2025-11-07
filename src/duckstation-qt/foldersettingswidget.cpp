@@ -1,12 +1,11 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include <QtWidgets/QMessageBox>
-#include <algorithm>
-
 #include "foldersettingswidget.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include <algorithm>
 
 #include "moc_foldersettingswidget.cpp"
 

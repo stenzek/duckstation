@@ -7,7 +7,8 @@
 #include "controller.h"
 #include "cpu_core_private.h"
 #include "dma.h"
-#include "fullscreen_ui.h"
+#include "fullscreenui.h"
+#include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_thread.h"
@@ -21,7 +22,6 @@
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
-#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"
@@ -234,7 +234,7 @@ void ImGuiManager::DestroyAllDebugWindows()
 void ImGuiManager::RenderTextOverlays(const GPUBackend* gpu)
 {
   // Don't draw anything with loading screen open, it'll be nonsensical.
-  if (ImGuiFullscreen::IsLoadingScreenOpen())
+  if (FullscreenUI::IsLoadingScreenOpen())
     return;
 
   const bool paused = GPUThread::IsSystemPaused();
@@ -938,14 +938,13 @@ static void DestroyTextures();
 static void RefreshHotkeyLegend();
 static void Draw();
 static void ShowSlotOSDMessage();
-static std::string GetCurrentSlotPath();
 
 static constexpr const char* DATE_TIME_FORMAT =
   TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   std::shared_ptr<GPUTexture> placeholder_texture;
 
@@ -969,7 +968,7 @@ struct ALIGN_TO_CACHE_LINE State
 
 } // namespace
 
-static State s_state;
+ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace SaveStateSelectorUI
 
@@ -987,7 +986,7 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
     return;
 
   if (!s_state.placeholder_texture)
-    s_state.placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
+    s_state.placeholder_texture = FullscreenUI::LoadTexture("no-save.png");
 
   s_state.is_open = true;
   RefreshList();
@@ -1093,7 +1092,7 @@ void SaveStateSelectorUI::DestroyTextures()
 void SaveStateSelectorUI::RefreshHotkeyLegend()
 {
   auto format_legend_entry = [](SmallString binding, std::string_view caption) {
-    InputManager::PrettifyInputBinding(binding, &ImGuiFullscreen::GetControllerIconMapping);
+    InputManager::PrettifyInputBinding(binding, &FullscreenUI::GetControllerIconMapping);
     return fmt::format("{} {}", binding, caption);
   };
 
@@ -1193,9 +1192,9 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const st
 
 void SaveStateSelectorUI::Draw()
 {
-  using ImGuiFullscreen::DarkerColor;
-  using ImGuiFullscreen::LayoutScale;
-  using ImGuiFullscreen::UIStyle;
+  using FullscreenUI::DarkerColor;
+  using FullscreenUI::LayoutScale;
+  using FullscreenUI::UIStyle;
 
   static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
   static constexpr float BG_ANIMATION_TIME = 0.15f;
@@ -1311,14 +1310,14 @@ void SaveStateSelectorUI::Draw()
         ImGui::PopFont();
 
         ImGui::PushFont(ImGuiManager::GetTextFont(), UIStyle.MediumFontSize, UIStyle.NormalFontWeight);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
 
         if (entry.global)
           ImGui::TextUnformatted(IMSTR_START_END(entry.game_details));
 
         ImGui::TextUnformatted(IMSTR_START_END(entry.summary));
 
-        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::DarkerColor(style.Colors[ImGuiCol_Text]));
+        ImGui::PushStyleColor(ImGuiCol_Text, FullscreenUI::DarkerColor(style.Colors[ImGuiCol_Text]));
         ImGui::TextUnformatted(IMSTR_START_END(entry.filename));
         ImGui::PopFont();
         ImGui::PopStyleColor(2);
@@ -1389,77 +1388,29 @@ bool SaveStateSelectorUI::IsCurrentSlotGlobal()
   return s_state.current_slot_global;
 }
 
-std::string SaveStateSelectorUI::GetCurrentSlotPath()
-{
-  std::string filename;
-  if (!s_state.current_slot_global)
-  {
-    if (const std::string& serial = GPUThread::GetGameSerial(); !serial.empty())
-      filename = System::GetGameSaveStatePath(serial, s_state.current_slot + 1);
-  }
-  else
-  {
-    filename = System::GetGlobalSaveStatePath(s_state.current_slot + 1);
-  }
-
-  return filename;
-}
-
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
   DebugAssert(GPUThread::IsOnThread());
 
-  if (std::string path = GetCurrentSlotPath(); !path.empty())
-  {
-    if (FileSystem::FileExists(path.c_str()))
-    {
-      Host::RunOnCPUThread([path = std::move(path)]() {
-        Error error;
-        if (!System::LoadState(path.c_str(), &error, true, false))
-        {
-          Host::AddKeyedOSDMessage("LoadState",
-                                   fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"),
-                                               GetCurrentSlot(), error.GetDescription()),
-                                   Host::OSD_ERROR_DURATION);
-        }
-      });
-    }
-    else
-    {
-      Host::AddIconOSDMessage(
-        "LoadState", ICON_EMOJI_FLOPPY_DISK,
-        IsCurrentSlotGlobal() ?
-          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Global Slot {}."), GetCurrentSlot()) :
-          fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Slot {}."), GetCurrentSlot()),
-        Host::OSD_INFO_DURATION);
-    }
-  }
+  Host::RunOnCPUThread(
+    [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::LoadStateFromSlot(global, slot); });
 
   Close();
 }
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  if (std::string path = GetCurrentSlotPath(); !path.empty())
-  {
-    Host::RunOnCPUThread([path = std::move(path)]() {
-      Error error;
-      if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
-      {
-        Host::AddIconOSDMessage("SaveState", ICON_EMOJI_WARNING,
-                                fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
-                                            GetCurrentSlot(), error.GetDescription()),
-                                Host::OSD_ERROR_DURATION);
-      }
-    });
-  }
+  Host::RunOnCPUThread(
+    [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::SaveStateToSlot(global, slot); });
 
   Close();
 }
 
 void SaveStateSelectorUI::ShowSlotOSDMessage()
 {
-  const std::string path = GetCurrentSlotPath();
+  const std::string path = IsCurrentSlotGlobal() ?
+                             System::GetGlobalSaveStatePath(GetCurrentSlot()) :
+                             System::GetGameSaveStatePath(GPUThread::GetGameSerial(), GetCurrentSlot());
   FILESYSTEM_STAT_DATA sd;
   std::string date;
   if (!path.empty() && FileSystem::StatFile(path.c_str(), &sd))
@@ -1469,15 +1420,15 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   }
   else
   {
-    date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
+    date = TRANSLATE_STR("SaveStateSelectorUI", "No save in this slot.");
   }
 
   Host::AddIconOSDMessage(
     "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,
     IsCurrentSlotGlobal() ?
-      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {0} selected ({1})."), GetCurrentSlot(), date) :
-      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected ({1})."), GetCurrentSlot(), date),
-    Host::OSD_QUICK_DURATION);
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {} selected."), GetCurrentSlot()) :
+      fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected."), GetCurrentSlot()),
+    std::move(date), Host::OSD_QUICK_DURATION);
 }
 
 void ImGuiManager::RenderOverlayWindows()

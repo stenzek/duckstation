@@ -74,9 +74,9 @@ public:
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-  ALWAYS_INLINE const QPixmap& getNoAchievementsPixmap() const { return m_no_achievements_pixmap; }
-  ALWAYS_INLINE const QPixmap& getHasAchievementsPixmap() const { return m_has_achievements_pixmap; }
-  ALWAYS_INLINE const QPixmap& getMasteredAchievementsPixmap() const { return m_mastered_achievements_pixmap; }
+  const QPixmap& getNoAchievementsPixmap() const;
+  const QPixmap& getHasAchievementsPixmap() const;
+  const QPixmap& getMasteredAchievementsPixmap() const;
 
   const GameList::Entry* getTakenGameListEntry(u32 index) const;
   bool hasTakenGameList() const;
@@ -87,33 +87,33 @@ public:
 
   bool titlesLessThan(const GameList::Entry* left, const GameList::Entry* right) const;
   bool lessThan(const GameList::Entry* left, const GameList::Entry* right, int column) const;
-
   bool lessThan(const QModelIndex& left_index, const QModelIndex& right_index, int column) const;
 
-  bool getShowLocalizedTitles() const { return m_show_localized_titles; }
+  bool getShowLocalizedTitles() const;
   void setShowLocalizedTitles(bool enabled);
 
-  bool getShowCoverTitles() const { return m_show_titles_for_covers; }
+  bool getShowCoverTitles() const;
   void setShowCoverTitles(bool enabled);
 
-  void updateRowHeight(const QWidget* const widget);
-  int getRowHeight() const { return m_row_height; }
-  int getIconSize() const { return m_icon_size; }
+  int getRowHeight() const;
+
+  int getIconSize() const;
+  int getIconSizeWithPadding() const;
+  void refreshIcons();
   void setIconSize(int size);
-  int getIconColumnWidth() const;
-  bool getShowGameIcons() const { return m_show_game_icons; }
+
+  bool getShowGameIcons() const;
   void setShowGameIcons(bool enabled);
   QIcon getIconForGame(const QString& path);
-  void refreshIcons();
 
-  float getCoverScale() const { return m_cover_scale; }
+  float getCoverScale() const;
   void setCoverScale(float scale);
   QSize getCoverArtSize() const;
   int getCoverArtSpacing() const;
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 
-  qreal getDevicePixelRatio() const { return m_device_pixel_ratio; }
+  qreal getDevicePixelRatio() const;
   void setDevicePixelRatio(qreal dpr);
 
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
@@ -155,7 +155,6 @@ private:
 
   float m_cover_scale = 0.0f;
   int m_icon_size = 0;
-  int m_row_height = 0;
   bool m_show_localized_titles = false;
   bool m_show_titles_for_covers = false;
   bool m_show_game_icons = false;
@@ -201,8 +200,6 @@ protected:
   void wheelEvent(QWheelEvent* e) override;
 
 private:
-  void setFixedColumnWidth(int column, int width);
-
   void loadColumnVisibilitySettings();
   void loadColumnSortSettings();
 
@@ -249,8 +246,8 @@ class GameListWidget final : public QWidget
 public:
   explicit GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
                           QAction* action_merge_disc_sets, QAction* action_show_list_icons,
-                          QAction* action_animate_list_icons, QAction* action_show_grid_titles,
-                          QAction* action_show_localized_titles);
+                          QAction* action_animate_list_icons, QAction* action_prefer_achievement_game_icons,
+                          QAction* action_show_grid_titles, QAction* action_show_localized_titles);
   ~GameListWidget();
 
   ALWAYS_INLINE GameListModel* getModel() const { return m_model; }
@@ -276,6 +273,7 @@ public:
   void setShowLocalizedTitles(bool enabled);
   void setShowGameIcons(bool enabled);
   void setAnimateGameIcons(bool enabled);
+  void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
   void focusSearchWidget();

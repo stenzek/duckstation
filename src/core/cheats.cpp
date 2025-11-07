@@ -231,7 +231,8 @@ static void EnumerateChtFiles(const std::string_view serial, std::optional<GameH
 
 static std::optional<CodeOption> ParseOption(const std::string_view value);
 static bool ParseOptionRange(const std::string_view value, u16* out_range_start, u16* out_range_end);
-extern void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
+static void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
+static std::unique_ptr<CheatCode> ParseCode(CheatCode::Metadata metadata, const std::string_view data, Error* error);
 
 static Cheats::FileFormat DetectFileFormat(const std::string_view file_contents);
 static bool ImportPCSXFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
@@ -239,9 +240,6 @@ static bool ImportLibretroFile(CodeInfoList* dst, const std::string_view file_co
                                Error* error);
 static bool ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
 static bool ImportOldChtFile(const std::string_view serial);
-
-static std::unique_ptr<CheatCode> ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
-                                                     Error* error);
 
 const char* PATCHES_CONFIG_SECTION = "Patches";
 const char* CHEATS_CONFIG_SECTION = "Cheats";
@@ -418,7 +416,7 @@ bool Cheats::SearchCheatArchive(CheatArchive& archive, std::string_view serial, 
   }
   if (data.has_value())
   {
-    f(std::move(zip_filename), std::move(data.value()), true);
+    f(zip_filename, std::move(data.value()), true);
     return true;
   }
 
@@ -478,7 +476,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
       {
         const std::optional<std::string> contents = FileSystem::ReadFileToString(file.c_str(), &error);
         if (contents.has_value())
-          f(std::move(file), std::move(contents.value()), false);
+          f(file, std::move(contents.value()), false);
         else
           WARNING_LOG("Failed to read cht file '{}': {}", Path::GetFileName(file), error.GetDescription());
       }
@@ -792,6 +790,24 @@ void Cheats::RemoveAllCodes(const std::string_view serial, const std::string_vie
   }
 }
 
+bool Cheats::ValidateCodeBody(std::string_view name, CodeType type, CodeActivation activation, std::string_view body,
+                              Error* error)
+{
+  // don't need the full metadata, only enough to get through
+  CheatCode::Metadata metadata = {};
+  metadata.name = name;
+  metadata.type = type;
+  metadata.activation = activation;
+
+  std::unique_ptr<CheatCode> code = ParseCode(std::move(metadata), body, error);
+  return static_cast<bool>(code);
+}
+
+bool Cheats::ValidateCodeBody(const CodeInfo& code, Error* error)
+{
+  return ValidateCodeBody(code.name, code.type, code.activation, code.body, error);
+}
+
 std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)
 {
   return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetChtTemplate(serial, hash, false));
@@ -1085,10 +1101,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     if (s_locals.active_cheat_count > 0)
     {
       System::SetTaint(System::Taint::Cheats);
-      Host::AddIconOSDMessage("LoadCheats", ICON_EMOJI_WARNING,
-                              TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled. This may crash games.",
-                                                   "OSD Message", s_locals.active_cheat_count),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(
+        "LoadCheats", ICON_EMOJI_WARNING,
+        TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled.", "OSD Message", s_locals.active_cheat_count),
+        TRANSLATE_STR("Cheats", "This may crash games."), Host::OSD_WARNING_DURATION);
     }
     else if (s_locals.active_patch_count == 0)
     {
@@ -1198,8 +1214,8 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
   const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &ignore_this_code, &reader]() {
     if (current_code.file_offset_end > current_code.file_offset_body_start)
     {
-      current_code.body = file_data.substr(current_code.file_offset_body_start,
-                                           current_code.file_offset_end - current_code.file_offset_body_start);
+      current_code.body = StringUtil::StripWhitespace(file_data.substr(
+        current_code.file_offset_body_start, current_code.file_offset_end - current_code.file_offset_body_start));
     }
     else
     {
@@ -1454,31 +1470,26 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       return;
     }
 
+    const SmallString code_name(next_code_metadata.name);
     const std::string_view code_body =
       file_contents.substr(code_body_start.value(), reader.GetCurrentLineOffset() - code_body_start.value());
 
-    std::unique_ptr<CheatCode> code;
-    if (next_code_metadata.type == CodeType::Gameshark)
+    Error error;
+    std::unique_ptr<CheatCode> code = ParseCode(std::move(next_code_metadata), code_body, &error);
+    if (!code)
     {
-      Error error;
-      code = ParseGamesharkCode(std::move(next_code_metadata), code_body, &error);
-      if (!code)
-      {
-        WARNING_LOG("Failed to parse gameshark code ending on line {}: {}", reader.GetCurrentLineNumber(),
-                    error.GetDescription());
-        return;
-      }
-    }
-    else
-    {
-      WARNING_LOG("Unknown code type ending at line {}", reader.GetCurrentLineNumber());
-      return;
+      WARNING_LOG("Failed to parse code ending on line {}: {}", reader.GetCurrentLineNumber(), error.GetDescription());
+
+      Host::AddIconOSDWarning(fmt::format("cheat_parse_error_{}", code_name), ICON_EMOJI_WARNING,
+                              fmt::format("{} '{}':\n{}", TRANSLATE_SV("Cheats", "Failed to parse cheat code"),
+                                          code_name, error.GetDescription()),
+                              Host::OSD_WARNING_DURATION);
     }
 
     next_code_group = {};
     next_code_metadata = {};
     code_body_start.reset();
-    if (std::exchange(next_code_ignored, false))
+    if (std::exchange(next_code_ignored, false) || !code)
       return;
 
     // overwrite existing codes with the same name.
@@ -1795,9 +1806,10 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
         return false;
     }
 
-    current_code.body = std::string_view(file_contents)
-                          .substr(current_code.file_offset_body_start,
-                                  current_code.file_offset_end - current_code.file_offset_body_start);
+    current_code.body =
+      StringUtil::StripWhitespace(std::string_view(file_contents)
+                                    .substr(current_code.file_offset_body_start,
+                                            current_code.file_offset_end - current_code.file_offset_body_start));
 
     AppendCheatToList(dst, std::move(current_code));
     return true;
@@ -1977,10 +1989,10 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
         return false;
     }
 
-    current_code.body = std::string_view(file_contents)
-                          .substr(current_code.file_offset_body_start,
-                                  current_code.file_offset_end - current_code.file_offset_body_start);
-    StringUtil::StripWhitespace(&current_code.body);
+    current_code.body =
+      StringUtil::StripWhitespace(std::string_view(file_contents)
+                                    .substr(current_code.file_offset_body_start,
+                                            current_code.file_offset_end - current_code.file_offset_body_start));
 
     AppendCheatToList(dst, std::move(current_code));
     return true;
@@ -4445,14 +4457,26 @@ void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
   {
     Instruction& inst = instructions[index];
     const u32 value_mask = ((1u << bit_count) - 1);
-    ;
     const u32 fixed_mask = ~(value_mask << bitpos_start);
     inst.second = (inst.second & fixed_mask) | ((value & value_mask) << bitpos_start);
   }
 }
 
-std::unique_ptr<Cheats::CheatCode> Cheats::ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
-                                                              Error* error)
+std::unique_ptr<Cheats::CheatCode> Cheats::ParseCode(CheatCode::Metadata metadata, const std::string_view data,
+                                                     Error* error)
 {
-  return GamesharkCheatCode::Parse(std::move(metadata), data, error);
+  std::unique_ptr<Cheats::CheatCode> ret;
+
+  switch (metadata.type)
+  {
+    case CodeType::Gameshark:
+      ret = GamesharkCheatCode::Parse(std::move(metadata), data, error);
+      break;
+
+    default:
+      Error::SetStringView(error, "Unknown code type");
+      break;
+  }
+
+  return ret;
 }

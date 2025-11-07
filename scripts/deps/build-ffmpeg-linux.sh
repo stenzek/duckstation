@@ -39,19 +39,19 @@ echo "FFmpeg dependencies directory is $DEPSINSTALLDIR"
 source "$SCRIPTDIR/versions"
 
 LAME=3.100
-LIBVPX=1.15.0
+LIBVPX=1.15.2
 FDK_AAC=0fc0e0e0b89de3becd5f099eae725f13eeecc0d1
-LIBAOM=fc5cf6a132697487fbaa9965b249012e0238768f
+LIBAOM=d772e334cc724105040382a977ebb10dfd393293
 LIBOGG=1.3.5
 LIBVORBIS=1.3.7
 LIBTHEORA=1.1.1
 FLAC=1.5.0
 SPEEX=1.2.0
-AMF=1.4.34
+AMF=1.4.36
 OPUS=1.5.2
-SVT_AV1=2.3.0
-GLSLANG=15.3.0
-VULKAN_HEADERS=1.4.315
+SVT_AV1=3.1.2
+GLSLANG=15.4.0
+VULKAN_HEADERS=1.4.329
 
 # Encoder list from freedesktop SDK, which apparently came from Fedora.
 # Disabled list: av1_qsv h264_qsv hevc_qsv mjpeg_qsv mpeg2_qsv vc1_qsv vp8_qsv vp9_qsv
@@ -63,9 +63,9 @@ FFMPEG_ENCODER_LIST=""\
 "adpcm_ima_apm adpcm_ima_qt adpcm_ima_ssi adpcm_ima_wav adpcm_ima_ws adpcm_ms "\
 "adpcm_swf adpcm_yamaha alac alias_pix amv anull "\
 "apng ass asv1 asv2 av1_amf "\
-"av1_vaapi ayuv bitpacked bmp cinepak "\
+"av1_vaapi av1_vulkan ayuv bitpacked bmp cinepak "\
 "cljr dca dfpwm dnxhd dpx dvbsub "\
-"dvdsub dvvideo exr ffv1 ffvhuff flac "\
+"dvdsub dvvideo exr ffv1 ffv1_vulkan ffvhuff flac "\
 "flashsv flashsv2 flv g723_1 gif h261 "\
 "h263 h263_v4l2m2m h263p h264_amf "\
 "h264_v4l2m2m h264_vaapi h264_vulkan hdr hevc_amf "\
@@ -135,8 +135,8 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 	if [ ! -f "speex-$SPEEX.tar.gz" ]; then
 		curl -C - -L -O "https://downloads.xiph.org/releases/speex/speex-$SPEEX.tar.gz"
 	fi
-	if [ ! -f "AMF-headers.tar.gz" ]; then
-		curl -C - -L -O "https://github.com/GPUOpen-LibrariesAndSDKs/AMF/releases/download/v$AMF/AMF-headers.tar.gz"
+	if [ ! -f "AMF-headers-v$AMF.tar.gz" ]; then
+		curl -C - -L -O "https://github.com/GPUOpen-LibrariesAndSDKs/AMF/releases/download/v$AMF/AMF-headers-v$AMF.tar.gz"
 	fi
 	if [ ! -f "opus-$OPUS.tar.gz" ]; then
 		curl -C - -L -O "https://downloads.xiph.org/releases/opus/opus-$OPUS.tar.gz"
@@ -154,7 +154,7 @@ fi
 
 cat > SHASUMS <<EOF
 $FFMPEG_XZ_HASH  ffmpeg-$FFMPEG_VERSION.tar.xz
-5393759308f6d7bc9eb1ed8013c954e03aadb85f0ed6e96f969a5df447b0f79c  AMF-headers.tar.gz
+ec07ee21b820a73f5bae224e92fd3c492f52732d4885f0637f48189afdd87564  AMF-headers-v$AMF.tar.gz
 7322744f239a0d8460fde84e92cca77f2fe9d7e25a213789659df9e86b696b42  fdk-aac-stripped-$FDK_AAC.tar.gz
 f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920  flac-$FLAC.tar.xz
 ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e  lame-$LAME.tar.gz
@@ -162,12 +162,12 @@ ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e  lame-$LAME.tar
 b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc  libtheora-$LIBTHEORA.tar.bz2
 0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab  libvorbis-$LIBVORBIS.tar.gz
 b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc  libtheora-$LIBTHEORA.tar.bz2
-e935eded7d81631a538bfae703fd1e293aad1c7fd3407ba00440c95105d2011e  libvpx-$LIBVPX.tar.gz
+26fcd3db88045dee380e581862a6ef106f49b74b6396ee95c2993a260b4636aa  libvpx-$LIBVPX.tar.gz
 65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1  opus-$OPUS.tar.gz
 eaae8af0ac742dc7d542c9439ac72f1f385ce838392dc849cae4536af9210094  speex-$SPEEX.tar.gz
-d4a77bb13a0a2d75c9a17c60260fc7dd3cb48ee8e9ad3a60071f87a923275e93  SVT-AV1-$SVT_AV1.tar.gz
-c6c21fe1873c37e639a6a9ac72d857ab63a5be6893a589f34e09a6c757174201  glslang-$GLSLANG.tar.gz
-77e3a78db853f8b9c5bc3ddef04e637bef9744e01d6a8c90ebe0ddcd916c0c50  Vulkan-Headers-$VULKAN_HEADERS.tar.gz
+084720e7818cec7cb38d31ab478478b910d643fe5b13fc2cfcbd9da9c9d5c84b  SVT-AV1-$SVT_AV1.tar.gz
+b16c78e7604b9be9f546ee35ad8b6db6f39bbbbfb19e8d038b6fe2ea5bba4ff4  glslang-$GLSLANG.tar.gz
+7ea67aabccdecc6ef616b4c243f563ac9bca945a63d4f4cca21f1bbcd828b18e  Vulkan-Headers-$VULKAN_HEADERS.tar.gz
 EOF
 
 shasum -a 256 --check SHASUMS
@@ -273,11 +273,11 @@ cd ../..
 
 echo "Installing AMF..."
 rm -fr "AMF"
-tar xf "AMF-headers.tar.gz"
-cd "AMF"
+tar xf "AMF-headers-v$AMF.tar.gz"
+cd "amf-headers-v$AMF/AMF"
 mkdir -p "$DEPSINSTALLDIR/include/AMF"
 cp -a core components "$DEPSINSTALLDIR/include/AMF"
-cd ..
+cd ../..
 
 echo "Building libopus..."
 rm -fr "opus-$OPUS"

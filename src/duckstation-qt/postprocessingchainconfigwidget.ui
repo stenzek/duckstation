@@ -46,6 +46,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="openDirectory">
+       <property name="text">
+        <string>Open Directory</string>
+       </property>
+       <property name="icon">
+        <iconset theme="folder-open-line"/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="reload">
        <property name="text">
         <string>&amp;Reload Shaders</string>
@@ -80,7 +90,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QToolButton" name="add">
+       <widget class="QPushButton" name="add">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -93,13 +103,10 @@
         <property name="icon">
          <iconset theme="add-line"/>
         </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-        </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QToolButton" name="remove">
+       <widget class="QPushButton" name="remove">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -112,13 +119,10 @@
         <property name="icon">
          <iconset theme="minus-line"/>
         </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-        </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QToolButton" name="clear">
+       <widget class="QPushButton" name="clear">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -131,13 +135,10 @@
         <property name="icon">
          <iconset theme="trash-fill"/>
         </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-        </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QToolButton" name="moveUp">
+       <widget class="QPushButton" name="moveUp">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -150,13 +151,10 @@
         <property name="icon">
          <iconset theme="arrow-up-line"/>
         </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-        </property>
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QToolButton" name="moveDown">
+       <widget class="QPushButton" name="moveDown">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -168,9 +166,6 @@
         </property>
         <property name="icon">
          <iconset theme="arrow-down-line"/>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
         </property>
        </widget>
       </item>
@@ -200,7 +195,7 @@
         <x>0</x>
         <y>0</y>
         <width>630</width>
-        <height>237</height>
+        <height>246</height>
        </rect>
       </property>
      </widget>
@@ -222,7 +217,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

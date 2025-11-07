@@ -45,7 +45,7 @@
     <ClCompile Include="pcdrv.cpp" />
     <ClCompile Include="game_list.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
-    <ClCompile Include="fullscreen_ui.cpp" />
+    <ClCompile Include="fullscreenui.cpp" />
     <ClCompile Include="achievements.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="gpu_shadergen.cpp" />
@@ -68,6 +68,10 @@
     <ClCompile Include="gpu_thread.cpp" />
     <ClCompile Include="gpu_presenter.cpp" />
     <ClCompile Include="ddgo_controller.cpp" />
+    <ClCompile Include="fullscreenui_widgets.cpp" />
+    <ClCompile Include="fullscreenui_settings.cpp" />
+    <ClCompile Include="fullscreenui_game_list.cpp" />
+    <ClCompile Include="fullscreenui_achievements.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -120,7 +124,7 @@
     <ClInclude Include="pcdrv.h" />
     <ClInclude Include="game_list.h" />
     <ClInclude Include="imgui_overlays.h" />
-    <ClInclude Include="fullscreen_ui.h" />
+    <ClInclude Include="fullscreenui.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="gpu_shadergen.h" />
     <ClInclude Include="pch.h" />
@@ -146,6 +150,9 @@
     <ClInclude Include="gpu_thread_commands.h" />
     <ClInclude Include="gpu_presenter.h" />
     <ClInclude Include="ddgo_controller.h" />
+    <ClInclude Include="fullscreenui_widgets.h" />
+    <ClInclude Include="fullscreenui_private.h" />
+    <ClInclude Include="fullscreenui_strings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

@@ -23,6 +23,7 @@
     <ClInclude Include="heap_array.h" />
     <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
+    <ClInclude Include="string_pool.h" />
     <ClInclude Include="time_helpers.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="log_channels.h" />
@@ -73,6 +74,7 @@
     <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="small_string.cpp" />
     <ClCompile Include="binary_reader_writer.cpp" />
+    <ClCompile Include="string_pool.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="thirdparty\aes.cpp" />
     <ClCompile Include="thirdparty\SmallVector.cpp" />

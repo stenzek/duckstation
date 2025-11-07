@@ -16,7 +16,7 @@ jobs:
     container:
       image: ghcr.io/duckstation/cross-build-${{ matrix.arch }}:latest
 
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
     - uses: actions/checkout@v5
       with:

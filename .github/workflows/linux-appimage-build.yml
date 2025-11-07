@@ -8,7 +8,7 @@ jobs:
   linux-appimage-build:
     name: "${{ matrix.name }}"
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 240
     strategy:
       matrix:
         include:

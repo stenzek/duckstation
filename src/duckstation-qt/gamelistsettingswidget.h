@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -28,10 +28,11 @@ private:
   void addSearchDirectory(const QString& path, bool recursive);
   void removeSearchDirectory(const QString& path);
 
+  void onDirectoryListSelectionChanged();
+  void onDirectoryListItemChanged(QTreeWidgetItem* item, int column);
   void onDirectoryListContextMenuRequested(const QPoint& point);
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
-  void onSearchDirectoriesSelectionChanged();
   void onAddExcludedFileButtonClicked();
   void onAddExcludedFolderButtonClicked();
   void onRemoveExcludedPathButtonClicked();

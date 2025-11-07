@@ -22,7 +22,6 @@
 #include <QtCore/QStringBuilder>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextBrowser>
 
 #include "moc_gamesummarywidget.cpp"
@@ -65,7 +64,8 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 
   populateUi(entry);
 
-  connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
+  connect(m_ui.compatibilityComments, &QAbstractButton::clicked, this,
+          &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
   connect(m_ui.editInputProfile, &QAbstractButton::clicked, this, &GameSummaryWidget::onEditInputProfileClicked);
   connect(m_ui.computeHashes, &QAbstractButton::clicked, this, &GameSummaryWidget::onComputeHashClicked);
@@ -119,7 +119,8 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
   m_path = entry->path;
 
   m_ui.path->setText(QString::fromStdString(entry->path));
-  m_ui.serial->setText(QString::fromStdString(entry->serial));
+  m_ui.serial->setText(
+    QtUtils::StringViewToQString(TinyString::from_format("{} ({:016X})", entry->serial, entry->hash)));
   m_ui.title->setText(QtUtils::StringViewToQString(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles())));
   m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
   m_ui.entryType->setCurrentIndex(static_cast<int>(entry->type));
@@ -414,8 +415,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
         InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
         QWidget* dlg_parent = QtUtils::GetRootWidget(this);
-        QMessageBox::information(dlg_parent, dlg_parent->windowTitle(),
-                                 tr("Per-game controller configuration initialized with global settings."));
+        QtUtils::MessageBoxInformation(dlg_parent, dlg_parent->windowTitle(),
+                                       tr("Per-game controller configuration initialized with global settings."));
       }
     }
   }
@@ -459,7 +460,7 @@ void GameSummaryWidget::onComputeHashClicked()
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
   {
-    QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));
+    QtUtils::MessageBoxCritical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));
     return;
   }
 
@@ -566,7 +567,7 @@ void GameSummaryWidget::onComputeHashClicked()
     if (!found_revision.empty())
       text = tr("Revision: %1").arg(found_revision.empty() ? tr("N/A") : QString::fromStdString(found_revision));
 
-    if (found_serial != m_ui.serial->text().toStdString())
+    if (found_serial != m_dialog->getGameSerial())
     {
       if (found_serial.empty())
       {
@@ -574,8 +575,9 @@ void GameSummaryWidget::onComputeHashClicked()
       }
       else
       {
-        const QString mismatch_str =
-          tr("Serial Mismatch: %1 vs %2").arg(QString::fromStdString(found_serial)).arg(m_ui.serial->text());
+        const QString mismatch_str = tr("Serial Mismatch: %1 vs %2")
+                                       .arg(QString::fromStdString(found_serial))
+                                       .arg(QString::fromStdString(m_dialog->getGameSerial()));
         if (!text.isEmpty())
           text = QStringLiteral("%1 | %2").arg(mismatch_str).arg(text);
         else
