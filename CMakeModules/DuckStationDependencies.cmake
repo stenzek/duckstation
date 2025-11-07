@@ -30,7 +30,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
 
 # Bundled dependencies.
-find_package(SDL3 3.2.24 REQUIRED)
+find_package(SDL3 3.2.26 REQUIRED)
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(PNG 1.6.50 REQUIRED)
