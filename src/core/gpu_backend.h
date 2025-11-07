@@ -145,6 +145,8 @@ protected:
     u32 host_num_copies;
     u32 host_num_downloads;
     u32 host_num_uploads;
+
+    u8 gpu_busy_pct;
   };
 
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;

@@ -264,6 +264,7 @@ private:
   // Update ticks for this execution slice
   void UpdateCRTCTickEvent();
   void UpdateCommandTickEvent();
+  u8 UpdateOrGetGPUBusyPct();
 
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateDMARequest();
@@ -522,6 +523,7 @@ private:
 
   u32 m_command_total_words = 0;
   TickCount m_pending_command_ticks = 0;
+  u32 m_active_ticks_since_last_update = 0;
 
   /// True if currently executing/syncing.
   bool m_executing_commands = false;
@@ -536,6 +538,9 @@ private:
     u16 col;
     u16 row;
   } m_vram_transfer = {};
+
+  // One byte free, store the GPU usage here.
+  u8 m_last_gpu_busy_pct = 0;
 
   // These are the bits from the palette register, but zero extended to 32-bit, so we can have an "invalid" value.
   // If an extra byte is ever not needed here for padding, the 8-bit flag could be packed into the MSB of this value.

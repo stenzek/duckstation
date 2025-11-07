@@ -68,12 +68,6 @@ static TimingEvent s_command_tick_event(
 static TimingEvent s_frame_done_event(
   "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.FrameDoneEvent(ticks); }, nullptr);
 
-// #define PSX_GPU_STATS
-#ifdef PSX_GPU_STATS
-static u64 s_active_gpu_cycles = 0;
-static u32 s_active_gpu_cycles_frames = 0;
-#endif
-
 GPU::GPU() = default;
 
 GPU::~GPU() = default;
@@ -88,11 +82,6 @@ void GPU::Initialize()
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
-
-#ifdef PSX_GPU_STATS
-  s_active_gpu_cycles = 0;
-  s_active_gpu_cycles_frames = 0;
-#endif
 }
 
 void GPU::Shutdown()
@@ -182,6 +171,7 @@ void GPU::Reset(bool clear_vram)
 
   // Cancel VRAM writes.
   m_blitter_state = BlitterState::Idle;
+  m_active_ticks_since_last_update = 0;
 
   // Force event to reschedule itself.
   s_crtc_tick_event.Deactivate();
@@ -623,9 +613,7 @@ TickCount GPU::SystemTicksToCRTCTicks(TickCount sysclk_ticks, TickCount* fractio
 void GPU::AddCommandTicks(TickCount ticks)
 {
   m_pending_command_ticks += ticks;
-#ifdef PSX_GPU_STATS
-  s_active_gpu_cycles += ticks;
-#endif
+  m_active_ticks_since_last_update += ticks;
 }
 
 void GPU::SynchronizeCRTC()
@@ -1227,20 +1215,6 @@ void GPU::CRTCTickEvent(TickCount ticks)
           m_crtc_state.interlaced_display_field = m_crtc_state.interlaced_field ^ 1u;
         else
           m_crtc_state.interlaced_display_field = 0;
-
-#ifdef PSX_GPU_STATS
-        if ((++s_active_gpu_cycles_frames) == 60)
-        {
-          const double busy_frac =
-            static_cast<double>(s_active_gpu_cycles) /
-            static_cast<double>(SystemTicksToGPUTicks(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
-                                (ComputeVerticalFrequency() / 60.0f));
-          DEV_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", busy_frac * 100,
-                  static_cast<double>(s_active_gpu_cycles) / static_cast<double>(s_active_gpu_cycles_frames));
-          s_active_gpu_cycles = 0;
-          s_active_gpu_cycles_frames = 0;
-        }
-#endif
       }
 
       Timers::SetGate(HBLANK_TIMER_INDEX, new_vblank);
@@ -1326,6 +1300,26 @@ void GPU::UpdateCommandTickEvent()
   {
     s_command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
   }
+}
+
+u8 GPU::UpdateOrGetGPUBusyPct()
+{
+  const u32 frame_number = System::GetFrameNumber();
+  if ((m_GPUSTAT.pal_mode ? (frame_number % 50) : (frame_number % 60)) != 0) [[likely]]
+    return m_last_gpu_busy_pct;
+
+  const double busy_frac =
+    static_cast<double>(m_active_ticks_since_last_update) /
+    static_cast<double>(SystemTicksToGPUTicks(System::ScaleTicksToOverclock(System::MASTER_CLOCK)) *
+                        (ComputeVerticalFrequency() / (m_GPUSTAT.pal_mode ? 50.0f : 60.0f)));
+  const double usage_pct = busy_frac * 100.0;
+
+  DEV_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", usage_pct,
+          static_cast<double>(m_active_ticks_since_last_update) / (m_GPUSTAT.pal_mode ? 50.0f : 60.0f));
+  m_active_ticks_since_last_update = 0;
+
+  m_last_gpu_busy_pct = static_cast<u8>(std::min<double>(std::round(usage_pct), 100));
+  return m_last_gpu_busy_pct;
 }
 
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
@@ -1961,6 +1955,7 @@ void GPU::UpdateDisplay(bool submit_frame)
   cmd->display_vram_width = m_crtc_state.display_vram_width;
   cmd->display_vram_height = m_crtc_state.display_vram_height >> BoolToUInt8(interlaced);
   cmd->X = m_crtc_state.regs.X;
+  cmd->gpu_busy_pct = g_settings.display_show_gpu_stats ? UpdateOrGetGPUBusyPct() : 0;
   cmd->interlaced_display_enabled = interlaced;
   cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
   cmd->interlaced_display_interleaved = line_skip;
