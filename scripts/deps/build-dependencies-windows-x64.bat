@@ -175,7 +175,6 @@ echo Building SDL...
 rmdir /S /Q "SDL3-%SDL3%"
 %SEVENZIP% x "SDL3-%SDL3%.zip" || goto error
 cd "SDL3-%SDL3%" || goto error
-%PATCH% -p1 < "%SCRIPTDIR%\sdl3-wgi-roinitialize.patch" || goto error
 cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
@@ -259,7 +258,7 @@ echo Building shaderc...
 rmdir /S /Q "shaderc-%SHADERC_COMMIT%"
 tar -xf "shaderc-%SHADERC_COMMIT%.tar.gz" || goto error
 cd "shaderc-%SHADERC_COMMIT%" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_EXECUTABLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_ENABLE_SHARED_CRT=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

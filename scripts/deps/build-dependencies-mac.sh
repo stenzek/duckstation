@@ -37,7 +37,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 source "$SCRIPTDIR/versions"
-MOLTENVK=1.2.9
+MOLTENVK=1.4.0
 
 mkdir -p deps-build
 cd deps-build
@@ -73,7 +73,7 @@ $LIBZIP_GZ_HASH  libzip-$LIBZIP.tar.gz
 $SDL3_GZ_HASH  SDL3-$SDL3.tar.gz
 $ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
 $FFMPEG_XZ_HASH  ffmpeg-$FFMPEG_VERSION.tar.xz
-f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
+fc74aef926ee3cd473fe260a93819c09fdc939bff669271a587e9ebaa43d4306  v$MOLTENVK.tar.gz
 $QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
 $QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
 $QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
@@ -360,7 +360,7 @@ echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC_COMMIT"
 tar xf "shaderc-$SHADERC_COMMIT.tar.gz"
 cd "shaderc-$SHADERC_COMMIT"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -DSHADERC_SKIP_EXECUTABLES=ON -B build
 make -C build "-j$NPROCS"
 make -C build install
 cd ..

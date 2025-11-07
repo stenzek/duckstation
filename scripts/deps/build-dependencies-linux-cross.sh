@@ -364,7 +364,7 @@ echo "Building shaderc..."
 rm -fr "shaderc-$SHADERC_COMMIT"
 tar xf "shaderc-$SHADERC_COMMIT.tar.gz"
 cd "shaderc-$SHADERC_COMMIT"
-cmake "${CMAKE_COMMON[@]}" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
+cmake "${CMAKE_COMMON[@]}" -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_EXECUTABLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
