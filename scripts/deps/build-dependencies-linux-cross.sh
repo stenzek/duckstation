@@ -366,30 +366,8 @@ echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
 tar xf "qttools-everywhere-src-$QT.tar.xz"
 cd "qttools-everywhere-src-$QT"
-
-# Force disable clang scanning, it gets very confused.
-patch -u configure.cmake <<EOF
---- configure.cmake
-+++ configure.cmake
-@@ -3,11 +3,11 @@
- 
- #### Tests
- 
--qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
-+#qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
- 
--if(TARGET WrapLibClang::WrapLibClang)
--    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
--endif()
-+#if(TARGET WrapLibClang::WrapLibClang)
-+#    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
-+#endif()
- 
- 
- 
-
-EOF
-
+patch -p1 < "$SCRIPTDIR/qttools-linguist-without-quick.patch"
+patch -p1 < "$SCRIPTDIR/qttools-disable-clang.patch"
 mkdir build
 cd build
 "$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF

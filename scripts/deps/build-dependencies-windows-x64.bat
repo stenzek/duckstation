@@ -264,16 +264,17 @@ cd .. || goto error
 rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
 
 echo Building Qt Tools...
-rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
+rmdir /S /Q "qttools-everywhere-src-%QT%"
 %SEVENZIP% x "qttools-everywhere-src-%QT%.zip" || goto error
 cd "qttools-everywhere-src-%QT%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\qttools-linguist-without-quick.patch" || goto error
 mkdir build || goto error
 cd build || goto error
 call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF || goto error
 cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
-rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
+rmdir /S /Q "qttools-everywhere-src-%QT%"
 
 echo Building Qt Translations...
 rmdir /S /Q "qttranslations-everywhere-src-%QT%"

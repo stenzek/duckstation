@@ -1,0 +1,20 @@
+--- a/configure.cmake
++++ b/configure.cmake
+@@ -3,11 +3,11 @@
+ 
+ #### Tests
+ 
+-qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
++#qt_find_package(WrapLibClang 8 PROVIDED_TARGETS WrapLibClang::WrapLibClang)
+ 
+-if(TARGET WrapLibClang::WrapLibClang)
+-    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
+-endif()
++#if(TARGET WrapLibClang::WrapLibClang)
++#    set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
++#endif()
+ 
+ 
+ 
+
+

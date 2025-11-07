@@ -363,6 +363,7 @@ echo "Installing Qt Tools..."
 rm -fr "qttools-everywhere-src-$QT"
 tar xf "qttools-everywhere-src-$QT.tar.xz"
 cd "qttools-everywhere-src-$QT"
+patch -p1 < "$SCRIPTDIR/qttools-linguist-without-quick.patch"
 mkdir build
 cd build
 "$INSTALLDIR/bin/qt-configure-module" .. -- "${CMAKE_COMMON[@]}" "${CMAKE_COMMON_QT[@]}" -DFEATURE_assistant=OFF -DFEATURE_clang=OFF -DFEATURE_designer=ON -DFEATURE_kmap2qmap=OFF -DFEATURE_linguist=ON -DFEATURE_pixeltool=OFF -DFEATURE_pkg_config=OFF -DFEATURE_qev=OFF -DFEATURE_qtattributionsscanner=OFF -DFEATURE_qtdiag=OFF -DFEATURE_qtplugininfo=OFF
