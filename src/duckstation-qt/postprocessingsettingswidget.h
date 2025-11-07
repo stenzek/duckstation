@@ -132,6 +132,8 @@ private:
   static void updateTreeItemVisibility(const std::optional<PostProcessing::ShaderType>& type_filter,
                                        const QString& name_filter, QTreeWidgetItem* item);
   static bool hasAnyVisibleChildren(QTreeWidgetItem* item);
+  static void collapseShaderList(QTreeWidgetItem* item);
+  static QTreeWidgetItem* findTreeItemByName(QTreeWidgetItem* parent, const QString& name);
 
   QTreeWidgetItem* createTreeItem(const QString& name, const QString& display_name, bool is_directory) const;
 

@@ -643,6 +643,8 @@ PostProcessingSelectShaderDialog::PostProcessingSelectShaderDialog(QWidget* pare
   setAttribute(Qt::WA_DeleteOnClose, true);
   setWindowModality(Qt::WindowModal);
 
+  m_ui.searchIcon->setPixmap(QIcon::fromTheme("mag-line").pixmap(16));
+
   m_ui.filterGroup->setId(m_ui.filterGLSL, static_cast<int>(PostProcessing::ShaderType::GLSL));
   m_ui.filterGroup->setId(m_ui.filterReshade, static_cast<int>(PostProcessing::ShaderType::Reshade));
   m_ui.filterGroup->setId(m_ui.filterSlang, static_cast<int>(PostProcessing::ShaderType::Slang));
@@ -654,6 +656,7 @@ PostProcessingSelectShaderDialog::PostProcessingSelectShaderDialog(QWidget* pare
 
   connect(m_ui.shaderList, &QTreeWidget::itemSelectionChanged, this,
           &PostProcessingSelectShaderDialog::updateAddButtonEnabled);
+  connect(m_ui.shaderList, &QTreeWidget::itemDoubleClicked, this, &PostProcessingSelectShaderDialog::accept);
 
   populateShaderList();
 }
@@ -685,11 +688,9 @@ QTreeWidgetItem* PostProcessingSelectShaderDialog::createTreeItem(const QString&
   {
     const QString parent_name = name.left(pos);
 
-    QTreeWidgetItem* parent_item;
-    const QList<QTreeWidgetItem*> items = m_ui.shaderList->findItems(parent_name, Qt::MatchExactly);
-    if (!items.isEmpty())
-      parent_item = items.first();
-    else
+    QTreeWidgetItem* parent_item = findTreeItemByName(m_ui.shaderList->invisibleRootItem(), parent_name);
+    ;
+    if (!parent_item)
       parent_item = createTreeItem(parent_name, display_name.left(pos), true);
 
     DebugAssert(parent_item);
@@ -719,6 +720,9 @@ void PostProcessingSelectShaderDialog::populateShaderList()
     item->setData(0, NameRole, QString::fromStdString(name));
     item->setData(0, TypeRole, static_cast<int>(type));
   }
+
+  // Collapse single shader subdirectories into one.
+  collapseShaderList(m_ui.shaderList->invisibleRootItem());
 }
 
 void PostProcessingSelectShaderDialog::updateShaderVisibility()
@@ -773,7 +777,7 @@ void PostProcessingSelectShaderDialog::updateTreeItemVisibility(
       if (type_filter.has_value())
         visible = (type_filter.value() == static_cast<PostProcessing::ShaderType>(child->data(0, TypeRole).toInt()));
       if (visible && !name_filter.isEmpty())
-        visible = child->text(0).contains(name_filter, Qt::CaseInsensitive);
+        visible = child->data(0, NameRole).toString().contains(name_filter, Qt::CaseInsensitive);
 
       child->setHidden(!visible);
     }
@@ -791,4 +795,63 @@ bool PostProcessingSelectShaderDialog::hasAnyVisibleChildren(QTreeWidgetItem* it
   }
 
   return false;
+}
+
+void PostProcessingSelectShaderDialog::collapseShaderList(QTreeWidgetItem* item)
+{
+  int child_count = item->childCount();
+  if (child_count == 0)
+    return;
+
+  for (int i = 0; i < child_count; i++)
+  {
+    QTreeWidgetItem* const child = item->child(i);
+    collapseShaderList(child);
+
+    // If this child is a directory with only one child, merge it.
+    if (child->childCount() == 1)
+    {
+      QTreeWidgetItem* const grandchild = child->child(0);
+      const QString merged_name = QStringLiteral("%1/%2").arg(child->text(0)).arg(grandchild->text(0));
+      child->setText(0, merged_name);
+      child->setIcon(0, grandchild->icon(0));
+      child->setData(0, NameRole, grandchild->data(0, NameRole));
+      child->setData(0, TypeRole, grandchild->data(0, TypeRole));
+      child->removeChild(grandchild);
+      delete grandchild;
+    }
+  }
+}
+
+QTreeWidgetItem* PostProcessingSelectShaderDialog::findTreeItemByName(QTreeWidgetItem* parent, const QString& name)
+{
+  const int pos = name.indexOf('/');
+  const int child_count = parent->childCount();
+  if (pos < 0)
+  {
+    // This is a root item, search among children.
+    for (int i = 0; i < child_count; i++)
+    {
+      QTreeWidgetItem* const child = parent->child(i);
+      if (child->text(0) == name)
+        return child;
+    }
+
+    return nullptr;
+  }
+  else
+  {
+    const QString current_level_name = name.left(pos);
+    const QString remaining_name = name.mid(pos + 1);
+
+    // Search for the current level among children.
+    for (int i = 0; i < child_count; i++)
+    {
+      QTreeWidgetItem* const child = parent->child(i);
+      if (child->text(0) == current_level_name)
+        return findTreeItemByName(child, remaining_name);
+    }
+
+    return nullptr;
+  }
 }

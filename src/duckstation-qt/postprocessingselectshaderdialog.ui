@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
-    <height>328</height>
+    <width>658</width>
+    <height>399</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,14 +23,18 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="searchIcon">
        <property name="text">
-        <string>Search:</string>
+        <string/>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="search"/>
+      <widget class="QLineEdit" name="search">
+       <property name="placeholderText">
+        <string>Search...</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
