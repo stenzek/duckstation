@@ -328,7 +328,7 @@ tar xf "qtwayland-everywhere-src-$QT.tar.xz"
 cd "qtwayland-everywhere-src-$QT"
 mkdir build
 cd build
-"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_wayland_server=OFF
+"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF
 cmake --build . --parallel
 ninja install
 cd ../../
