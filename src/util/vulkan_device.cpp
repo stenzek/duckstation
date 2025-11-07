@@ -2863,7 +2863,7 @@ void VulkanDevice::UnmapIndexBuffer(u32 used_index_count)
 
 void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data_size)
 {
-  DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
+  DebugAssert(data_size <= UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
   vkCmdPushConstants(m_current_command_buffer, GetCurrentVkPipelineLayout(is_compute),
                      is_compute ? VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT :
