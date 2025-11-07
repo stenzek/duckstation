@@ -852,7 +852,7 @@ Mensagens não lidas: {}</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1557"/>
         <source>Challenge Failed: {}</source>
-        <translation>Desafio falhou: {}</translation>
+        <translation>Falha no desafio: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2025"/>
