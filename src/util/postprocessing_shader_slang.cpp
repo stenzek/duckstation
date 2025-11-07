@@ -1169,6 +1169,38 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
     return false;
   }
 
+  // Try to only allocate active textures.
+  std::optional<std::span<const spvc_reflected_resource>> active_textures;
+  if (spvc_set active_interface_variables; (sres = dyn_libs::spvc_compiler_get_active_interface_variables(
+                                              scompiler, &active_interface_variables)) == SPVC_SUCCESS)
+  {
+    if (spvc_resources active_resources; (sres = dyn_libs::spvc_compiler_create_shader_resources_for_active_variables(
+                                            scompiler, &active_resources, active_interface_variables)) == SPVC_SUCCESS)
+    {
+      const spvc_reflected_resource* active_textures_begin;
+      size_t active_textures_count;
+      if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(
+             active_resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE, &active_textures_begin, &active_textures_count)) ==
+          SPVC_SUCCESS)
+      {
+        active_textures = std::span<const spvc_reflected_resource>(active_textures_begin, active_textures_count);
+      }
+      else
+      {
+        WARNING_LOG("spvc_resources_get_resource_list_for_type() (active) failed: {}", static_cast<unsigned>(sres));
+      }
+    }
+    else
+    {
+      WARNING_LOG("spvc_compiler_create_shader_resources_for_active_variables() failed: {}",
+                  static_cast<unsigned>(sres));
+    }
+  }
+  else
+  {
+    WARNING_LOG("spvc_compiler_get_active_interface_variables() failed: {}", static_cast<unsigned>(sres));
+  }
+
   // Should only have one uniform buffer/push constant.
   if (ubos_count > 1)
   {
@@ -1195,6 +1227,8 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
   // TEXTURES
 
   std::optional<SPIRVModule> mutable_spv;
+  u32 num_bound_textures = 0;
+  u32 num_unused_textures = 0;
   for (const spvc_reflected_resource& tex : std::span<const spvc_reflected_resource>(textures, textures_count))
   {
     if (stage != GPUShaderStage::Fragment)
@@ -1203,10 +1237,6 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
                           GPUShader::GetStageName(stage));
       return false;
     }
-
-    const std::optional<TextureID> tex_id = FindTextureByName(tex.name, error);
-    if (!tex_id.has_value())
-      return false;
 
     const unsigned orig_descriptor_set =
       dyn_libs::spvc_compiler_get_decoration(scompiler, tex.id, SpvDecorationDescriptorSet);
@@ -1224,11 +1254,33 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
       return false;
     }
 
-    // Remap to descriptor set #1, subtract UBO binding.
+    // Need to modify SPIR-V to remap bindings.
     if (!mutable_spv.has_value() && !(mutable_spv = SPIRVModule::Get(spv, error)).has_value())
       return false;
 
-    const unsigned binding = orig_binding - 1;
+    // Is the texture used? If not, we remap it out of range so it won't alias/conflict.
+    const bool is_active = (!active_textures.has_value() ||
+                            std::ranges::any_of(active_textures.value(), [&tex](const spvc_reflected_resource& at) {
+                              return (at.id == tex.id);
+                            }));
+    u32 binding;
+    if (!is_active)
+    {
+      binding = GPUDevice::MAX_TEXTURE_SAMPLERS + num_unused_textures++;
+    }
+    else
+    {
+      binding = num_bound_textures++;
+
+      if (binding >= GPUDevice::MAX_TEXTURE_SAMPLERS)
+      {
+        Error::SetStringFmt(error, "Texture '{}' has binding {} (original {}), a maximum of {} textures are supported.",
+                            tex.name, binding, orig_binding, GPUDevice::MAX_TEXTURE_SAMPLERS);
+        return false;
+      }
+    }
+
+    // Remap to descriptor set #1.
     if (!mutable_spv->SetDecoration(tex.id, SpvDecorationDescriptorSet, 1, error) ||
         !mutable_spv->SetDecoration(tex.id, SpvDecorationBinding, binding, error))
     {
@@ -1236,12 +1288,17 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
       return false;
     }
 
-    if (binding >= GPUDevice::MAX_TEXTURE_SAMPLERS)
+    // Skip mapping if not used.
+    if (!is_active)
     {
-      Error::SetStringFmt(error, "Texture '{}' has binding {} which exceeds the maximum of {}", tex.name, binding,
-                          GPUDevice::MAX_TEXTURE_SAMPLERS - 1);
-      return false;
+      DEV_COLOR_LOG(StrongYellow, "Texture {} (orig {}, unused)", tex.name, orig_binding);
+      continue;
     }
+
+    // Map the texture.
+    const std::optional<TextureID> tex_id = FindTextureByName(tex.name, error);
+    if (!tex_id.has_value())
+      return false;
 
     if (const auto iter =
           std::ranges::find_if(pass.samplers, [&binding](const auto& it) { return (it.second == binding); });
@@ -1255,11 +1312,11 @@ bool PostProcessing::SlangShader::ReflectShader(Pass& pass, std::span<u32> spv, 
       }
 
       // don't duplicate it
-      DEV_LOG("Texture {} @ {} (already present)", GetTextureNameForID(tex_id.value()), binding);
+      DEV_LOG("Texture {} @ {} (orig {}, already present)", GetTextureNameForID(tex_id.value()), binding, orig_binding);
       continue;
     }
 
-    DEV_LOG("Texture {} @ {}", GetTextureNameForID(tex_id.value()), binding);
+    DEV_LOG("Texture {} @ {} (orig {})", GetTextureNameForID(tex_id.value()), binding, orig_binding);
     pass.samplers.emplace_back(tex_id.value(), binding);
   }
 
