@@ -59,9 +59,7 @@ call :downloadfile "libpng-%LIBPNG%.tar.gz" "https://download.sourceforge.net/li
 call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "%LIBJPEGTURBO_GZ_HASH%" || goto error
 call :downloadfile "SDL3-%SDL3%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL3%/SDL3-%SDL3%.zip" "%SDL3_ZIP_HASH%" || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" "%QTBASE_ZIP_HASH%" || goto error
-call :downloadfile "qtdeclarative-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtdeclarative-everywhere-src-%QT%.zip" "%QTDECLARATIVE_ZIP_HASH%" || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" "%QTIMAGEFORMATS_ZIP_HASH%" || goto error
-call :downloadfile "qtshadertools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtshadertools-everywhere-src-%QT%.zip" "%QTSHADERTOOLS_ZIP_HASH%" || goto error
 call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" "%QTSVG_ZIP_HASH%" || goto error
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" "%QTTOOLS_ZIP_HASH%" || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" "%QTTRANSLATIONS_ZIP_HASH%" || goto error
@@ -231,37 +229,6 @@ cmake --build . --parallel || goto error
 ninja install || goto error
 cd ..\.. || goto error
 rmdir /S /Q "qtimageformats-everywhere-src-%QT%"
-
-echo Building Qt Shader Tools...
-rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
-%SEVENZIP% x "qtshadertools-everywhere-src-%QT%.zip" || goto error
-cd "qtshadertools-everywhere-src-%QT%" || goto error
-mkdir build || goto error
-cd build || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" .. -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
-cmake --build . --parallel || goto error
-ninja install || goto error
-cd ..\.. || goto error
-rmdir /S /Q "qtshadertools-everywhere-src-%QT%"
-
-rem This mess with the junction is to work around path length limits in cmake/MSVC.
-echo Building Qt Declarative...
-rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
-%SEVENZIP% x "qtdeclarative-everywhere-src-%QT%.zip" || goto error
-cd "qtdeclarative-everywhere-src-%QT%" || goto error
-set QTDECLARATIVEDIR=%CD%
-mkdir build || goto error
-pushd ..\..\..\.. || goto error
-mklink /J b "%QTDECLARATIVEDIR%\build" || goto error
-cd b || goto error
-call "%INSTALLDIR%\bin\qt-configure-module.bat" %QTDECLARATIVEDIR% -- %FORCEPDB% -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DQT_GENERATE_SBOM=OFF || goto error
-cmake --build . --parallel || goto error
-ninja install || goto error
-cd .. || goto error
-rmdir b || goto error
-popd || goto error
-cd .. || goto error
-rmdir /S /Q "qtdeclarative-everywhere-src-%QT%"
 
 echo Building Qt Tools...
 rmdir /S /Q "qttools-everywhere-src-%QT%"
