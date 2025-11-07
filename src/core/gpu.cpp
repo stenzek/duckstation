@@ -84,7 +84,6 @@ void GPU::Initialize()
     s_crtc_tick_event.Activate();
 
   m_force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
-  m_force_frame_timings = g_settings.gpu_force_video_timing;
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
   m_console_is_pal = System::IsPALRegion();
@@ -111,9 +110,8 @@ void GPU::UpdateSettings(const Settings& old_settings)
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
-  if (m_force_frame_timings != g_settings.gpu_force_video_timing)
+  if (g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing)
   {
-    m_force_frame_timings = g_settings.gpu_force_video_timing;
     m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
@@ -306,7 +304,7 @@ bool GPU::DoState(StateWrapper& sw)
   sw.Do(&m_crtc_state.vertical_display_end);
   sw.Do(&m_crtc_state.fractional_ticks);
   sw.Do(&m_crtc_state.current_tick_in_scanline);
-  sw.Do(&m_crtc_state.current_scanline);
+  m_crtc_state.current_scanline = Truncate16(sw.DoValue(static_cast<u32>(m_crtc_state.current_scanline)));
   sw.DoEx(&m_crtc_state.fractional_dot_ticks, 46, 0);
   sw.Do(&m_crtc_state.in_hblank);
   sw.Do(&m_crtc_state.in_vblank);
@@ -789,7 +787,7 @@ void GPU::UpdateCRTCConfig()
   cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
   cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
 
-  if (m_GPUSTAT.pal_mode && m_force_frame_timings == ForceVideoTimingMode::NTSC)
+  if (m_GPUSTAT.pal_mode && g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC)
   {
     // scale to NTSC parameters
     cs.horizontal_display_start =
@@ -807,7 +805,7 @@ void GPU::UpdateCRTCConfig()
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
-  else if (!m_GPUSTAT.pal_mode && m_force_frame_timings == ForceVideoTimingMode::PAL)
+  else if (!m_GPUSTAT.pal_mode && g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL)
   {
     // scale to PAL parameters
     cs.horizontal_display_start =
@@ -1188,9 +1186,9 @@ void GPU::CRTCTickEvent(TickCount ticks)
   while (lines_to_draw > 0)
   {
     const u32 lines_to_draw_this_loop =
-      std::min(lines_to_draw, m_crtc_state.vertical_total - m_crtc_state.current_scanline);
+      std::min(lines_to_draw, static_cast<u32>(m_crtc_state.vertical_total - m_crtc_state.current_scanline));
     const u32 prev_scanline = m_crtc_state.current_scanline;
-    m_crtc_state.current_scanline += lines_to_draw_this_loop;
+    m_crtc_state.current_scanline = Truncate16(m_crtc_state.current_scanline + lines_to_draw_this_loop);
     DebugAssert(m_crtc_state.current_scanline <= m_crtc_state.vertical_total);
     lines_to_draw -= lines_to_draw_this_loop;
 

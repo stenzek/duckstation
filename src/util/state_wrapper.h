@@ -194,6 +194,13 @@ public:
     Do(data);
   }
 
+  template<typename T>
+  T DoValue(T&& value)
+  {
+    Do(&value);
+    return value;
+  }
+
   void SkipBytes(size_t count)
   {
     if (m_mode != Mode::Read)
