@@ -897,8 +897,8 @@ GPUTexture* GPUPresenter::GetDisplayPostProcessInputTexture(const GSVector4i dra
     // OpenGL needs to flip the correct way around. If the source is exactly the same size without any correction we can
     // pass it through to the chain directly. Except if the swap chain isn't using BGRA8, then we need to blit too.
     if (g_gpu_device->UsesLowerLeftOrigin() || rotation != DisplayRotation::Normal || m_display_origin_left != 0 ||
-        m_display_origin_top != 0 || m_display_vram_width != m_display_texture_view_width ||
-        m_display_vram_height != m_display_texture_view_height || m_display_texture->GetFormat() != m_present_format)
+        m_display_origin_top != 0 || m_display_vram_width != m_display_width ||
+        m_display_vram_height != m_display_height || m_display_texture->GetFormat() != m_present_format)
     {
       GL_SCOPE_FMT("Pre-process postfx source");
 
@@ -958,12 +958,8 @@ GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* targe
   }
 
   // "original size" in postfx includes padding.
-  const float upscale_x =
-    m_display_texture ? static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width) :
-                        1.0f;
-  const float upscale_y =
-    m_display_texture ? static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height) :
-                        1.0f;
+  const float upscale_x = static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width);
+  const float upscale_y = static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height);
   const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_display_width) * upscale_x));
   const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_display_height) * upscale_y));
 
