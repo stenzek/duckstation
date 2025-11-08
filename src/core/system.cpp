@@ -3384,14 +3384,14 @@ void System::SaveStateToSlot(bool global, s32 slot)
     }
   };
 
-  auto completion_callback = [global, slot, filename = std::string(Path::GetFileName(path))](bool success,
-                                                                                             const Error& error) {
+  std::string filename(Path::GetFileName(path));
+  auto completion_callback = [global, slot, filename](bool success, const Error& error) {
     display_result(global, slot, filename, success, error);
   };
 
   Error error;
   if (!SaveState(std::move(path), &error, g_settings.create_save_state_backups, false, std::move(completion_callback)))
-    display_result(global, slot, Path::GetFileName(path), false, error);
+    display_result(global, slot, filename, false, error);
 }
 
 void System::FlushSaveStates()
@@ -5306,7 +5306,7 @@ void System::UndoLoadState()
 
   INFO_LOG("Loaded undo save state.");
 
-  Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_ROTATE_LEFT, std::move(osd_title),
+  Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_ARROW_ROTATE_LEFT, std::move(osd_title),
                           fmt::format(TRANSLATE_FS("System", "Loaded undo save state created at {}."),
                                       Host::FormatNumber(Host::NumberFormatType::ShortTime,
                                                          static_cast<s64>(s_state.undo_load_state->timestamp))),
