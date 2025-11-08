@@ -179,7 +179,7 @@ void PostProcessingChainConfigWidget::updateButtonsAndConfigPane(std::optional<u
 void PostProcessingChainConfigWidget::onAddButtonClicked()
 {
   PostProcessingSelectShaderDialog* dialog = new PostProcessingSelectShaderDialog(this);
-  connect(dialog, &QDialog::finished, this, [this, dialog]() {
+  connect(dialog, &QDialog::accepted, this, [this, dialog]() {
     const std::string selected_shader = dialog->getSelectedShader();
     if (selected_shader.empty())
       return;
