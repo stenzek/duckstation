@@ -213,10 +213,10 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
                         float4(0.0, 0.0, 0.0, 0.0));
 
   // Load four texels.
-  float4 s00 = SampleFromVRAM(texpage, clamp(fcoords.xy, uv_limits.xy, uv_limits.zw));
-  float4 s10 = SampleFromVRAM(texpage, clamp(fcoords.zy, uv_limits.xy, uv_limits.zw));
-  float4 s01 = SampleFromVRAM(texpage, clamp(fcoords.xw, uv_limits.xy, uv_limits.zw));
-  float4 s11 = SampleFromVRAM(texpage, clamp(fcoords.zw, uv_limits.xy, uv_limits.zw));
+  float4 s00 = SampleFromVRAM(texpage, fcoords.xy, uv_limits);
+  float4 s10 = SampleFromVRAM(texpage, fcoords.zy, uv_limits);
+  float4 s01 = SampleFromVRAM(texpage, fcoords.xw, uv_limits);
+  float4 s11 = SampleFromVRAM(texpage, fcoords.zw, uv_limits);
 
   // Compute alpha from how many texels aren't pixel color 0000h.
   float a00 = float(VECTOR_NEQ(s00, TRANSPARENT_PIXEL_COLOR));
@@ -334,7 +334,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
     dy = dy;
     tc = tc;
 
-#define sample_texel(coords) SampleFromVRAM(texpage, clamp((coords), uv_limits.xy, uv_limits.zw))
+#define sample_texel(coords) SampleFromVRAM(texpage, (coords), uv_limits)
 
     float4 c00 = sample_texel(tc    -dx    -dy);
     float a00 = float(VECTOR_NEQ(c00, TRANSPARENT_PIXEL_COLOR));
@@ -480,7 +480,7 @@ float get_left_ratio(float2 center, float2 origin, float2 direction, float2 scal
   return smoothstep(-sqrt(2.0)/2.0, sqrt(2.0)/2.0, v);
 }
 
-#define P(coord, xoffs, yoffs) SampleFromVRAM(texpage, clamp(coords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw))
+#define P(coord, xoffs, yoffs) SampleFromVRAM(texpage, coords + float2((xoffs), (yoffs)), uv_limits)
 
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits,
                             out float4 texcol, out float ialpha)
@@ -726,8 +726,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPX)
   {
-    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
-          "uv_limits.xy, uv_limits.zw)))\n";
+    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))\n";
 
     /*
      * This part of the shader is from MMPX.glc from https://casual-effects.com/research/McGuire2021PixelArt/index.html
@@ -834,8 +833,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
-    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), "
-          "uv_limits.xy, uv_limits.zw)))\n";
+    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))\n";
 
     /*
      * This part of the shader is from MMPX.glc from https://casual-effects.com/research/McGuire2021PixelArt/index.html
@@ -1088,7 +1086,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   {
     // Based on https://www.scale2x.it/algorithm
     ss << R"(
-#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
+#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))
 
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
@@ -1120,7 +1118,7 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   {
     // Based on https://www.scale2x.it/algorithm
     ss << R"(
-#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, clamp(bcoords + float2((xoffs), (yoffs)), uv_limits.xy, uv_limits.zw)))
+#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))
 
 void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limits, out float4 texcol, out float ialpha)
 {
@@ -1281,6 +1279,14 @@ CONSTANT float4 TRANSPARENT_PIXEL_COLOR = float4(0.0, 0.0, 0.0, 0.0);
   #define TEXPAGE_VALUE uint2
 #endif
 
+#if UV_LIMITS
+  #define DECLARE_UV_LIMITS(coords, uv_limits) coords, uv_limits
+  #define APPLY_UV_LIMITS(coords, uv_limits) clamp((coords), uv_limits.xy, uv_limits.zw)
+#else
+  #define DECLARE_UV_LIMITS(coords, uv_limits) coords
+  #define APPLY_UV_LIMITS(coords, uv_limits) (coords)
+#endif
+
 uint2 ApplyTextureWindow(uint2 coords)
 {
   uint x = (uint(coords.x) & u_texture_window_and.x) | u_texture_window_or.x;
@@ -1288,19 +1294,28 @@ uint2 ApplyTextureWindow(uint2 coords)
   return uint2(x, y);
 }
 
-uint2 FloatToIntegerCoords(float2 coords)
+uint2 FloatToIntegerCoords(DECLARE_UV_LIMITS(float2 coords, float4 uv_limits))
 {
   // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
   // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
-  return uint2((UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
+  // Apply UV limits in the opposite order, because flooring will never round up, whereas rounding can.
+#if UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0
+  float2 rounded_coords = roundEven(coords);
+  float2 clamped_coords = APPLY_UV_LIMITS(rounded_coords, uv_limits);
+  return uint2(clamped_coords);
+#else
+  float2 clamped_coords = APPLY_UV_LIMITS(coords, uv_limits);
+  float2 floored_coords = floor(clamped_coords);
+  return uint2(floored_coords);
+#endif
 }
 
 #if PAGE_TEXTURE
 
-float4 SampleFromPageTexture(float2 coords)
+float4 SampleFromPageTexture(DECLARE_UV_LIMITS(float2 coords, float4 uv_limits))
 {
   // Cached textures.
-  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
 #if UPSCALED
   float2 fpart = frac(coords);
   coords = (float2(icoord) + fpart);
@@ -1318,12 +1333,12 @@ float4 SampleFromPageTexture(float2 coords)
 
 #if !PAGE_TEXTURE || TEXTURE_FILTERING
 
-float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
+float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, float4 uv_limits))
 {
   #if PAGE_TEXTURE
-    return SampleFromPageTexture(coords);
+    return SampleFromPageTexture(DECLARE_UV_LIMITS(coords, uv_limits));
   #elif PALETTE
-    uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+    uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
 
     uint2 vicoord;
     #if PALETTE_4_BIT
@@ -1364,14 +1379,14 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   #else
     // Direct texturing - usually render-to-texture effects.
     #if !UPSCALED
-      uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+      uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(DECLARE_UV_LIMITS(coords, uv_limits)));
       uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
       return LOAD_TEXTURE(samp0, int2(vicoord), 0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
       // going outside of the texture window.
-      float2 ncoords = coords * u_rcp_resolution_scale;
+      float2 ncoords = APPLY_UV_LIMITS(coords, uv_limits) * u_rcp_resolution_scale;
       float2 nfpart = frac(ncoords);
       uint2 nicoord = ApplyTextureWindow(uint2(floor(ncoords)));
       uint2 nvicoord = (texpage.xy + nicoord) & uint2(1023, 511);
@@ -1456,11 +1471,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   #if TEXTURED
     float4 texcol;
     #if PAGE_TEXTURE && !TEXTURE_FILTERING
-      #if UV_LIMITS
-        texcol = SampleFromPageTexture(clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
-      #else
-        texcol = SampleFromPageTexture(v_tex0);
-      #endif
+      texcol = SampleFromPageTexture(DECLARE_UV_LIMITS(v_tex0, v_uv_limits));
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 
@@ -1474,11 +1485,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       if (ialpha < 0.5)
         discard;
     #else
-      #if UV_LIMITS
-        texcol = SampleFromVRAM(v_texpage, clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
-      #else
-        texcol = SampleFromVRAM(v_texpage, v_tex0);
-      #endif
+      texcol = SampleFromVRAM(v_texpage, DECLARE_UV_LIMITS(v_tex0, v_uv_limits));
       if (VECTOR_EQ(texcol, TRANSPARENT_PIXEL_COLOR))
         discard;
 
