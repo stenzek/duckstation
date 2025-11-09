@@ -110,6 +110,7 @@ public:
   void setCoverScale(float scale);
   QSize getCoverArtSize() const;
   QSize getCoverArtItemSize() const;
+  QSize getDeviceScaledCoverArtSize() const;
   int getCoverArtSpacing() const;
   QFont getCoverCaptionFont() const;
   void refreshCovers();
