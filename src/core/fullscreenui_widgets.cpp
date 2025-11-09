@@ -4369,7 +4369,8 @@ void FullscreenUI::CloseLoadingScreen()
 
 void FullscreenUI::UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value)
 {
-  if (progress_min != s_state.loading_screen_min || progress_max != s_state.loading_screen_max)
+  if (progress_min != s_state.loading_screen_min || progress_max != s_state.loading_screen_max ||
+      progress_value < s_state.loading_screen_value)
   {
     // new range, toss time calculations
     s_state.loading_screen_min = progress_min;
@@ -4418,7 +4419,7 @@ bool FullscreenUI::GetLoadingScreenTimeEstimate(SmallString& out_str)
   const double progress_per_second =
     static_cast<double>(total_progress_diff) / Timer::ConvertValueToSeconds(total_time_diff);
   const s32 remaining_progress = s_state.loading_screen_max - s_state.loading_screen_value;
-  const double remaining_seconds = remaining_progress / progress_per_second;
+  const double remaining_seconds = std::max(remaining_progress / progress_per_second, 0.0);
 
   // Format the time string
   if (remaining_seconds < 60.0)
