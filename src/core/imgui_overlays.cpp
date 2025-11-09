@@ -390,8 +390,10 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
   {
     const float speed = PerformanceCounters::GetEmulationSpeed();
     if (g_gpu_settings.display_show_fps)
-      text.append_format("\x02G: \x04{:.2f}\x03\x02 | V: \x01\x04{:.2f}\x03", PerformanceCounters::GetFPS(),
+    {
+      text.append_format("\x02G: \x01\x04{:.2f}\x03\x02 | V: \x01\x04{:.2f}\x03", PerformanceCounters::GetFPS(),
                          PerformanceCounters::GetVPS());
+    }
     if (g_gpu_settings.display_show_speed)
     {
       text.append_format("\x02{}\x04{}% \x01\x03", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));

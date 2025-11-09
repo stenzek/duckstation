@@ -620,7 +620,7 @@ void GPUBackend::GetMemoryStatsString(SmallStringBase& str) const
   const u32 vram_usage_mb = static_cast<u32>((g_gpu_device->GetVRAMUsage() + (1048576 - 1)) / 1048576);
   const u32 stream_kb = static_cast<u32>((s_stats.host_buffer_streamed + (1024 - 1)) / 1024);
 
-  str.format("\x01{}\x02 MB VRAM | \x01{}\x02 KB STR | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 TC | \x01{}\x02 TU",
+  str.format("\x01{}MB\x02 VRAM | \x01{}KB\x02 STR | \x01{}\x02 B | \x01{}\x02 RP | \x01{}\x02 TC | \x01{}\x02 TU",
              vram_usage_mb, stream_kb, s_stats.host_num_barriers, s_stats.host_num_render_passes,
              s_stats.host_num_copies, s_stats.host_num_uploads);
 }
