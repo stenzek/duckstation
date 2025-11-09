@@ -87,6 +87,29 @@ static constexpr std::array<const char*, GameListModel::Column_Count> s_column_n
   "Cover", // Do not translate.
 }};
 
+static void resizeImage(QImage* image, const QSize& expected_size)
+{
+  // Get source image in RGB32 format for QPainter.
+  const QImage::Format original_format = image->format();
+  const QImage::Format expected_format =
+    image->hasAlphaChannel() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+  if (original_format != expected_format)
+    *image = image->convertToFormat(expected_format);
+
+  if (image->size() == expected_size)
+    return;
+
+  if ((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
+      (static_cast<float>(expected_size.width()) / static_cast<float>(expected_size.height())))
+  {
+    *image = image->scaledToWidth(expected_size.width(), Qt::SmoothTransformation);
+  }
+  else
+  {
+    *image = image->scaledToHeight(expected_size.height(), Qt::SmoothTransformation);
+  }
+}
+
 static void resizeAndPadImage(QImage* image, const QSize& expected_size, bool fill_with_top_left, bool expand_to_fill)
 {
   // Get source image in RGB32 format for QPainter.
@@ -148,7 +171,18 @@ static void resizeAndPadImage(QImage* image, const QSize& expected_size, bool fi
 
 static void fastResizePixmap(QPixmap& pm, const QSize& expected_size)
 {
-  pm = pm.scaled(expected_size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+  if (pm.size() == expected_size)
+    return;
+
+  if ((static_cast<float>(pm.width()) / static_cast<float>(pm.height())) >=
+      (static_cast<float>(expected_size.width()) / static_cast<float>(expected_size.height())))
+  {
+    pm = pm.scaledToWidth(expected_size.width(), Qt::FastTransformation);
+  }
+  else
+  {
+    pm = pm.scaledToHeight(expected_size.height(), Qt::FastTransformation);
+  }
 }
 
 static void resizeGameIcon(QPixmap& pm, int icon_size)
@@ -305,7 +339,7 @@ void GameListModel::updateCoverScale()
   if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     loading_image.setDevicePixelRatio(m_device_pixel_ratio);
-    resizeAndPadImage(&loading_image, getDeviceScaledCoverArtSize(), false, false);
+    resizeImage(&loading_image, getDeviceScaledCoverArtSize());
   }
   else
   {
@@ -319,7 +353,7 @@ void GameListModel::updateCoverScale()
   if (m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
-    resizeAndPadImage(&m_placeholder_image, getDeviceScaledCoverArtSize(), false, false);
+    resizeImage(&m_placeholder_image, getDeviceScaledCoverArtSize());
   }
   else
   {
@@ -413,7 +447,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
   if (image.isNull())
     return;
 
-  resizeAndPadImage(&image, size, false, false);
+  resizeImage(&image, size);
 
   QPainter painter;
   if (painter.begin(&image))
@@ -451,7 +485,7 @@ void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder
     if (!image.isNull())
     {
       image.setDevicePixelRatio(dpr);
-      resizeAndPadImage(&image, size, false, false);
+      resizeImage(&image, size);
     }
   }
 
@@ -534,6 +568,33 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
 
   const QModelIndex mi(index(static_cast<int>(row.value()), Column_Cover));
   emit dataChanged(mi, mi, {Qt::DecorationRole});
+}
+
+const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
+{
+  CoverPixmapCacheEntry* pm = m_cover_pixmap_cache.Lookup(ge->path);
+  if (pm && pm->scale == m_cover_scale)
+    return pm->pixmap;
+
+  // We insert the placeholder into the cache, so that we don't repeatedly queue loading jobs for this game.
+  const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
+  if (pm && !pm->is_loading)
+  {
+    // Use a fast resize so we don't block the main thread, it'll get fixed up soon.
+    // But don't try to resize loading pixmaps.
+    if (pm->is_loading)
+      pm->pixmap = m_loading_pixmap;
+    else
+      fastResizePixmap(pm->pixmap, getDeviceScaledCoverArtSize());
+
+    pm->scale = m_cover_scale;
+  }
+  else
+  {
+    pm = m_cover_pixmap_cache.Insert(ge->path, CoverPixmapCacheEntry{m_loading_pixmap, m_cover_scale, true});
+  }
+
+  return pm->pixmap;
 }
 
 const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
@@ -694,34 +755,40 @@ int GameListModel::columnCount(const QModelIndex& parent) const
   return Column_Count;
 }
 
-QVariant GameListModel::data(const QModelIndex& index, int role) const
+std::pair<std::unique_lock<std::recursive_mutex>, const GameList::Entry*>
+GameListModel::getEntryForIndex(const QModelIndex& index) const
 {
-  if (!index.isValid()) [[unlikely]]
-    return {};
+  std::pair<std::unique_lock<std::recursive_mutex>, const GameList::Entry*> ret;
 
-  const int row = index.row();
-  DebugAssert(row >= 0);
-
-  if (m_taken_entries.has_value()) [[unlikely]]
+  if (index.isValid()) [[likely]]
   {
-    if (static_cast<u32>(row) >= m_taken_entries->size())
-      return {};
+    const int row = index.row();
+    DebugAssert(row >= 0);
 
-    return data(index, role, &m_taken_entries.value()[row]);
+    if (m_taken_entries.has_value()) [[unlikely]]
+    {
+      ret.second = (static_cast<u32>(row) < m_taken_entries->size()) ? &m_taken_entries.value()[row] : nullptr;
+    }
+    else
+    {
+      ret.first = GameList::GetLock();
+      ret.second = GameList::GetEntryByIndex(static_cast<u32>(row));
+    }
   }
   else
   {
-    const auto lock = GameList::GetLock();
-    const GameList::Entry* ge = GameList::GetEntryByIndex(static_cast<u32>(row));
-    if (!ge)
-      return {};
-
-    return data(index, role, ge);
+    ret.second = nullptr;
   }
+
+  return ret;
 }
 
-QVariant GameListModel::data(const QModelIndex& index, int role, const GameList::Entry* ge) const
+QVariant GameListModel::data(const QModelIndex& index, int role) const
 {
+  const auto& [lock, ge] = getEntryForIndex(index);
+  if (!ge) [[unlikely]]
+    return {};
+
   switch (role)
   {
     case Qt::DisplayRole:
@@ -787,25 +854,9 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         case Column_LastPlayed:
           return QtUtils::StringViewToQString(GameList::FormatTimestamp(ge->last_played_time));
 
-        case Column_Cover:
-        {
-          if (m_show_titles_for_covers)
-            return QtUtils::StringViewToQString(ge->GetDisplayTitle(m_show_localized_titles));
-          else
-            return {};
-        }
-
         default:
           return {};
       }
-    }
-
-    case Qt::FontRole:
-    {
-      if (index.column() != Column_Cover || !m_show_titles_for_covers)
-        return {};
-
-      return getCoverCaptionFont();
     }
 
     case Qt::TextAlignmentRole:
@@ -866,33 +917,6 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
         case Column_Compatibility:
           return m_compatibility_pixmaps[static_cast<u32>(ge->dbentry ? ge->dbentry->compatibility :
                                                                         GameDatabase::CompatibilityRating::Unknown)];
-
-        case Column_Cover:
-        {
-          CoverPixmapCacheEntry* pm = m_cover_pixmap_cache.Lookup(ge->path);
-          if (pm && pm->scale == m_cover_scale)
-            return pm->pixmap;
-
-          // We insert the placeholder into the cache, so that we don't repeatedly queue loading jobs for this game.
-          const_cast<GameListModel*>(this)->loadOrGenerateCover(ge);
-          if (pm && !pm->is_loading)
-          {
-            // Use a fast resize so we don't block the main thread, it'll get fixed up soon.
-            // But don't try to resize loading pixmaps.
-            if (pm->is_loading)
-              pm->pixmap = m_loading_pixmap;
-            else
-              fastResizePixmap(pm->pixmap, getDeviceScaledCoverArtSize());
-
-            pm->scale = m_cover_scale;
-          }
-          else
-          {
-            pm = m_cover_pixmap_cache.Insert(ge->path, CoverPixmapCacheEntry{m_loading_pixmap, m_cover_scale, true});
-          }
-
-          return pm->pixmap;
-        }
 
         default:
           return {};
@@ -1591,6 +1615,103 @@ private:
   QTimer m_animation_timer;
 };
 
+class GameListCoverDelegate : public QStyledItemDelegate
+{
+public:
+  explicit GameListCoverDelegate(GameListGridView* const widget, GameListModel* const model,
+                                 GameListSortModel* const sort_model)
+    : QStyledItemDelegate(widget), m_model(model), m_sort_model(sort_model)
+  {
+  }
+
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+  {
+    Q_ASSERT(index.isValid());
+
+    const auto& [lock, ge] = m_model->getEntryForIndex(m_sort_model->mapToSource(index));
+    if (!ge) [[unlikely]]
+      return;
+
+    const QPixmap& pix = m_model->getCoverForEntry(ge);
+    const QSize pix_size = pix.deviceIndependentSize().toSize();
+    const QSize cover_size = m_model->getCoverArtSize();
+
+    // draw pixmap at center of item
+    const QPoint p((cover_size.width() - pix_size.width()) / 2, (cover_size.height() - pix_size.height()) / 2);
+    painter->drawPixmap(option.rect.topLeft() + p, pix);
+
+    const bool show_caption = m_model->getShowCoverTitles();
+    const bool show_selected = (option.state & QStyle::State_HasFocus && option.state & QStyle::State_Selected);
+    if (!show_caption && !show_selected)
+      return;
+
+    painter->save();
+
+    const QPalette::ColorGroup cg = (option.state & QStyle::State_Enabled) ?
+                                      ((option.state & QStyle::State_Active) ? QPalette::Normal : QPalette::Inactive) :
+                                      QPalette::Disabled;
+    // draw title below cover if enabled
+    if (show_caption)
+    {
+      // WE don't use HighlightedText here because on the Classic Windows theme, it makes the text unreadable.
+      painter->setPen(option.palette.color(cg, QPalette::Text));
+
+      const QString title = QtUtils::StringViewToQString(ge->GetDisplayTitle(m_model->getShowLocalizedTitles()));
+      const QFont font = m_model->getCoverCaptionFont();
+      const QFontMetrics fm(font);
+      const int text_height = fm.size(Qt::TextSingleLine, title).height();
+      const int text_width = option.rect.width();
+      const QString elided_text = fm.elidedText(title, Qt::ElideRight, text_width);
+      const QRect text_rect(option.rect.left(), option.rect.bottom() - text_height - 2, text_width, text_height);
+      painter->setFont(font);
+      painter->drawText(text_rect, Qt::AlignHCenter | Qt::AlignVCenter, elided_text);
+    }
+
+    // draw highlight and border if selected
+    if (option.state & QStyle::State_Selected)
+    {
+      QStyleOptionFocusRect fo;
+      fo.QStyleOption::operator=(option);
+      fo.rect = option.rect;
+      fo.state |= QStyle::State_KeyboardFocusChange;
+      fo.state |= QStyle::State_Item;
+      fo.backgroundColor = option.palette.color(cg, QPalette::Highlight);
+
+      const GameListGridView* const widget = static_cast<GameListGridView*>(parent());
+      widget->style()->drawPrimitive(QStyle::PE_FrameFocusRect, &fo, painter, widget);
+
+      painter->setRenderHint(QPainter::Antialiasing, false);
+      painter->setPen(QPen(QtHost::IsDarkApplicationTheme() ? QColor(180, 180, 180) : QColor(0, 0, 0), 2));
+      painter->setBrush(Qt::NoBrush);
+
+      // Draw border manually instead of with drawRect to avoid joins at corners.
+      const QRect border_rect = option.rect.adjusted(1, 1, -1, -1);
+      const std::array<QPoint, 4 * 2> line_points = {{
+        border_rect.topLeft(),
+        border_rect.topRight(),
+        border_rect.topRight(),
+        border_rect.bottomRight(),
+        border_rect.bottomRight(),
+        border_rect.bottomLeft(),
+        border_rect.bottomLeft(),
+        border_rect.topLeft(),
+      }};
+      painter->drawLines(line_points.data(), static_cast<int>(line_points.size()) / 2);
+    }
+
+    painter->restore();
+  }
+
+  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+  {
+    return m_model->getCoverArtItemSize();
+  }
+
+private:
+  GameListModel* const m_model;
+  GameListSortModel* const m_sort_model;
+};
+
 } // namespace
 
 GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QAction* action_view_grid,
@@ -1624,6 +1745,7 @@ GameListWidget::GameListWidget(QWidget* parent, QAction* action_view_list, QActi
   m_ui.stack->insertWidget(0, m_list_view);
 
   m_grid_view = new GameListGridView(m_model, m_sort_model, m_ui.stack);
+  m_grid_view->setItemDelegate(new GameListCoverDelegate(m_grid_view, m_model, m_sort_model));
   m_ui.stack->insertWidget(1, m_grid_view);
 
   m_empty_widget = new QWidget(m_ui.stack);

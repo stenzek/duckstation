@@ -74,6 +74,9 @@ public:
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+  std::pair<std::unique_lock<std::recursive_mutex>, const GameList::Entry*>
+  getEntryForIndex(const QModelIndex& index) const;
+
   const QPixmap& getNoAchievementsPixmap() const;
   const QPixmap& getHasAchievementsPixmap() const;
   const QPixmap& getMasteredAchievementsPixmap() const;
@@ -121,6 +124,8 @@ public:
 
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
 
+  const QPixmap& getCoverForEntry(const GameList::Entry* ge) const;
+
 Q_SIGNALS:
   void coverScaleChanged(float scale);
   void iconSizeChanged(int size);
@@ -134,7 +139,6 @@ private:
   };
 
   void rowsChanged(const QList<int>& rows);
-  QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
 
   void loadCommonImages();
   void loadSizeDependentPixmaps();
