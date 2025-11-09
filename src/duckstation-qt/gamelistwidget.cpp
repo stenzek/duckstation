@@ -1413,6 +1413,8 @@ public:
     const QColor& text_color =
       palette.color((option.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::Text);
 
+    painter->save();
+
     if (num_achievements > 0)
     {
       const QFontMetrics fm(painter->fontMetrics());
@@ -1446,6 +1448,8 @@ public:
       painter->setPen(text_color);
       painter->drawText(r, Qt::AlignVCenter, QStringLiteral("N/A"));
     }
+
+    painter->restore();
   }
 
 private:
