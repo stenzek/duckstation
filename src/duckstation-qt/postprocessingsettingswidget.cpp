@@ -124,11 +124,40 @@ void PostProcessingChainConfigWidget::updateList(const SettingsInterface& si)
 
   const u32 stage_count = PostProcessing::Config::GetStageCount(si, m_section);
 
+  // Shader list row margins
+  const int left = this->style()->pixelMetric(QStyle::PM_LayoutLeftMargin, nullptr, this);
+  const int right = this->style()->pixelMetric(QStyle::PM_LayoutRightMargin, nullptr, this);
+  const int vertical = 2;
+
   for (u32 i = 0; i < stage_count; i++)
   {
+    QWidget* item_widget = new QWidget(m_ui.stages);
+
+    QCheckBox* checkbox = new QCheckBox(item_widget);
+    const bool stage_enabled = PostProcessing::Config::IsStageEnabled(si, m_section, i);
+    checkbox->setChecked(stage_enabled);
+
     const std::string stage_name = PostProcessing::Config::GetStageShaderName(si, m_section, i);
-    QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(stage_name), m_ui.stages);
+    QLabel* label = new QLabel(QString::fromStdString(stage_name), item_widget);
+
+    QHBoxLayout* hbox = new QHBoxLayout(item_widget);
+    hbox->setContentsMargins(left, vertical, right, vertical);
+    hbox->addWidget(checkbox);
+    hbox->addWidget(label);
+    hbox->addStretch();
+
+    QListWidgetItem* item = new QListWidgetItem(m_ui.stages);
     item->setData(Qt::UserRole, QVariant(i));
+    item->setSizeHint(item_widget->sizeHint());
+    m_ui.stages->setItemWidget(item, item_widget);
+
+    connect(checkbox, &QCheckBox::checkStateChanged, this, [this, i, checkbox]() {
+      auto lock = Host::GetSettingsLock();
+      SettingsInterface& si = getSettingsInterfaceToUpdate();
+      PostProcessing::Config::SetStageEnabled(si, m_section, i, checkbox->isChecked());
+      lock.unlock();
+      commitSettingsUpdate();
+    });
   }
 
   m_ui.clear->setEnabled(stage_count > 0);
