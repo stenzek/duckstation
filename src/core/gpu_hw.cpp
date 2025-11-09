@@ -474,7 +474,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
   const u8 resolution_scale = Truncate8(CalculateResolutionScale());
   const u8 multisamples = Truncate8(std::min<u32>(g_gpu_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
-  const bool clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
+  const bool clamp_uvs =
+    ShouldClampUVs(g_gpu_settings.gpu_texture_filter) || ShouldClampUVs(g_gpu_settings.gpu_sprite_texture_filter);
   const bool framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
                                     g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
                                     m_pgxp_depth_buffer != g_gpu_settings.UsingPGXPDepthBuffer() ||
