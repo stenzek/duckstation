@@ -109,7 +109,9 @@ public:
   float getCoverScale() const;
   void setCoverScale(float scale);
   QSize getCoverArtSize() const;
+  QSize getCoverArtItemSize() const;
   int getCoverArtSpacing() const;
+  QFont getCoverCaptionFont() const;
   void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 

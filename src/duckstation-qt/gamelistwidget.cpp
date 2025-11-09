@@ -332,7 +332,8 @@ void GameListModel::updateCoverScale()
   }
 
   emit coverScaleChanged(m_cover_scale);
-  emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover), {Qt::DecorationRole, Qt::FontRole});
+  emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover),
+                   {Qt::DecorationRole, Qt::FontRole, Qt::SizeHintRole});
 }
 
 void GameListModel::refreshCovers()
@@ -639,9 +640,32 @@ QSize GameListModel::getCoverArtSize() const
   return QSize(size, size);
 }
 
+QSize GameListModel::getCoverArtItemSize() const
+{
+  const int width = std::max(static_cast<int>(static_cast<float>(COVER_ART_SIZE) * m_cover_scale), 1);
+  int height = width;
+
+  if (m_show_titles_for_covers)
+  {
+    // Add some spacing underneath the cover for the caption.
+    const QFontMetrics fm(getCoverCaptionFont());
+    height += 4 + fm.height();
+  }
+
+  return QSize(width, height);
+}
+
 int GameListModel::getCoverArtSpacing() const
 {
   return std::max(static_cast<int>(static_cast<float>(COVER_ART_SPACING) * m_cover_scale), 1);
+}
+
+QFont GameListModel::getCoverCaptionFont() const
+{
+  QFont font;
+  font.setPixelSize(std::max(static_cast<int>(30.0f * m_cover_scale), 1));
+  font.setFamilies(QtHost::GetRobotoFontFamilies());
+  return font;
 }
 
 int GameListModel::rowCount(const QModelIndex& parent) const
@@ -775,10 +799,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       if (index.column() != Column_Cover || !m_show_titles_for_covers)
         return {};
 
-      QFont font;
-      font.setPixelSize(std::max(static_cast<int>(30.0f * m_cover_scale), 1));
-      font.setFamilies(QtHost::GetRobotoFontFamilies());
-      return font;
+      return getCoverCaptionFont();
     }
 
     case Qt::TextAlignmentRole:
@@ -817,6 +838,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           const int sz = getIconSizeWithPadding();
           return QSize(sz, sz);
         }
+
+        case Column_Cover:
+          return getCoverArtItemSize();
+
         default:
           return {};
       }
@@ -2471,15 +2496,11 @@ void GameListGridView::adjustZoom(float delta)
 
 void GameListGridView::updateLayout()
 {
-  const QSize image_size = m_model->getCoverArtSize();
-  const int icon_width = image_size.width();
+  const QSize item_size = m_model->getCoverArtItemSize();
   const int item_spacing = m_model->getCoverArtSpacing();
   const int item_margin = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, this) * 2;
-  const int item_width = icon_width + item_margin + item_spacing;
-
-  // one line of text
-  const int item_height =
-    image_size.height() + item_margin + item_spacing + (m_model->getShowCoverTitles() ? fontMetrics().height() : 0);
+  const int item_width = item_size.width() + item_margin + item_spacing;
+  const int item_height = item_size.height() + item_margin + item_spacing;
 
   // the -1 here seems to be necessary otherwise we calculate too many columns..
   // can't see where in qlistview.cpp it's coming from though.
