@@ -178,11 +178,10 @@ void DebuggerWindow::onTraceTriggered()
 
 void DebuggerWindow::onAddBreakpointTriggered()
 {
-  DebuggerAddBreakpointDialog dlg(this);
-  if (dlg.exec() == QDialog::Rejected)
-    return;
-
-  addBreakpoint(dlg.getType(), dlg.getAddress());
+  DebuggerAddBreakpointDialog* const dlg = new DebuggerAddBreakpointDialog(this);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  connect(dlg, &QDialog::accepted, this, [this, dlg] { addBreakpoint(dlg->getType(), dlg->getAddress()); });
+  dlg->open();
 }
 
 void DebuggerWindow::onToggleBreakpointTriggered()

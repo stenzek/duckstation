@@ -194,7 +194,6 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 
     QMessageBox* const mb = QtUtils::NewMessageBox(QMessageBox::Warning, tr("CPU Overclocking Warning"), message,
                                                    QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, this);
-    mb->setAttribute(Qt::WA_DeleteOnClose, true);
     const QPushButton* const yes_button =
       mb->addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
     const QPushButton* const no_button = mb->addButton(tr("No, take me back to safety."), QMessageBox::NoRole);

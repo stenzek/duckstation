@@ -104,10 +104,11 @@ void ControllerGlobalSettingsWidget::sdlHelpTextLinkClicked(const QString& link)
 {
   if (link == QStringLiteral("ADVANCED_SDL_OPTIONS"))
   {
-    ControllerCustomSettingsDialog dialog(m_dialog, m_dialog->getEditingSettingsInterface(), "InputSources",
-                                          SDLInputSource::GetAdvancedSettingsInfo(), "SDLInputSource",
-                                          tr("Advanced SDL Options"));
-    dialog.exec();
+    QDialog* const dlg = new ControllerCustomSettingsDialog(m_dialog, m_dialog->getEditingSettingsInterface(),
+                                                            "InputSources", SDLInputSource::GetAdvancedSettingsInfo(),
+                                                            "SDLInputSource", tr("Advanced SDL Options"));
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->open();
   }
 }
 
@@ -138,25 +139,25 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
     return;
   }
 
-  QDialog dlg(this);
-  dlg.setWindowTitle(tr("Controller LED Settings"));
-  dlg.setFixedWidth(450);
-  dlg.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  QDialog* const dlg = new QDialog(this);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  dlg->setWindowTitle(tr("Controller LED Settings"));
+  dlg->setFixedWidth(450);
+  dlg->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-  QVBoxLayout* const main_layout = new QVBoxLayout(&dlg);
+  QVBoxLayout* const main_layout = new QVBoxLayout(dlg);
 
-  QHBoxLayout* const heading_layout = new QHBoxLayout();
-  QLabel* const icon = new QLabel(&dlg);
-  icon->setPixmap(QIcon::fromTheme(QStringLiteral("lightbulb-line")).pixmap(32, 32));
+  QHBoxLayout* const heading_layout = new QHBoxLayout;
+  QLabel* const icon = new QLabel;
+  icon->setPixmap(QIcon::fromTheme(QStringLiteral("lightbulb-line")).pixmap(32));
   QLabel* const heading = new QLabel(
-    tr("<strong>Controller LED Settings</strong><br>\nThe \"alternate\" color is used when analog mode is active."),
-    &dlg);
+    tr("<strong>Controller LED Settings</strong><br>\nThe \"alternate\" color is used when analog mode is active."));
   heading->setWordWrap(true);
   heading_layout->addWidget(icon, 0, Qt::AlignTop | Qt::AlignLeft);
   heading_layout->addWidget(heading, 1);
   main_layout->addLayout(heading_layout);
 
-  QScrollArea* const scroll_area = new QScrollArea(&dlg);
+  QScrollArea* const scroll_area = new QScrollArea;
   scroll_area->setWidgetResizable(true);
   scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -173,12 +174,13 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
     if (dev.key.source_type != InputSourceType::SDL)
       continue;
 
-    QGroupBox* const gbox = new QGroupBox(QStringLiteral("%1: %2").arg(dev.identifier).arg(dev.display_name), &dlg);
+    QGroupBox* const gbox = new QGroupBox(QStringLiteral("%1: %2").arg(dev.identifier).arg(dev.display_name));
     QGridLayout* const gbox_layout = new QGridLayout(gbox);
+
     for (u32 active = 0; active < 2; active++)
     {
-      gbox_layout->addWidget(new QLabel(active ? tr("Alternate Mode:") : tr("Normal Mode:"), &dlg),
-                             static_cast<int>(active), 0);
+      gbox_layout->addWidget(new QLabel(active ? tr("Alternate Mode:") : tr("Normal Mode:")), static_cast<int>(active),
+                             0);
 
       ColorPickerButton* const button = new ColorPickerButton(gbox);
       button->setColor(SDLInputSource::ParseRGBForPlayerId(
@@ -197,9 +199,10 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
   scroll_area_layout->addStretch(1);
 
-  QDialogButtonBox* const bbox = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
-  connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+  QDialogButtonBox* const bbox = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
+  bbox->button(QDialogButtonBox::Close)->setDefault(true);
+  connect(bbox, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
   main_layout->addWidget(bbox);
 
-  dlg.exec();
+  dlg->open();
 }

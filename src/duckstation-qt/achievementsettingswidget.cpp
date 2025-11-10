@@ -240,7 +240,7 @@ void AchievementSettingsWidget::onLoginLogoutPressed()
 
   AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
   connect(login, &AchievementLoginDialog::accepted, this, &AchievementSettingsWidget::onLoginCompleted);
-  login->show();
+  login->open();
 }
 
 void AchievementSettingsWidget::onLoginCompleted()

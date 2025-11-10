@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>AchievementLoginDialog</class>
  <widget class="QDialog" name="AchievementLoginDialog">
-  <property name="windowModality">
-   <enum>Qt::WindowModality::WindowModal</enum>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -27,9 +24,6 @@
   </property>
   <property name="windowTitle">
    <string comment="Window title">RetroAchievements Login</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">

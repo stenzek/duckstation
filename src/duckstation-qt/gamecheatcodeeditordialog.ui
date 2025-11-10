@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Cheat Code Editor</string>
   </property>
-  <property name="modal">
+  <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">

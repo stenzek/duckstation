@@ -57,17 +57,18 @@ AboutDialog::~AboutDialog() = default;
 
 void AboutDialog::showThirdPartyNotices(QWidget* parent)
 {
-  QDialog dialog(parent);
-  dialog.setMinimumSize(700, 400);
-  dialog.setWindowTitle(tr("DuckStation Third-Party Notices"));
+  QDialog* const dialog = new QDialog(parent);
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+  dialog->setMinimumSize(700, 400);
+  dialog->setWindowTitle(tr("DuckStation Third-Party Notices"));
 
   QIcon icon;
   icon.addFile(QString::fromUtf8(":/icons/duck.png"), QSize(), QIcon::Normal, QIcon::Off);
-  dialog.setWindowIcon(icon);
+  dialog->setWindowIcon(icon);
 
-  QVBoxLayout* layout = new QVBoxLayout(&dialog);
+  QVBoxLayout* layout = new QVBoxLayout(dialog);
 
-  QTextBrowser* tb = new QTextBrowser(&dialog);
+  QTextBrowser* tb = new QTextBrowser(dialog);
   tb->setAcceptRichText(true);
   tb->setReadOnly(true);
   tb->setOpenExternalLinks(true);
@@ -83,9 +84,9 @@ void AboutDialog::showThirdPartyNotices(QWidget* parent)
   }
   layout->addWidget(tb, 1);
 
-  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
-  connect(bb, &QDialogButtonBox::rejected, &dialog, &QDialog::accept);
+  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close, dialog);
+  connect(bb, &QDialogButtonBox::rejected, dialog, &QDialog::accept);
   layout->addWidget(bb, 0);
 
-  dialog.exec();
+  dialog->open();
 }

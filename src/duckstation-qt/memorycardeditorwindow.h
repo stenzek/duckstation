@@ -107,11 +107,12 @@ private:
 class MemoryCardRenameFileDialog final : public QDialog
 {
   Q_OBJECT
+
 public:
   MemoryCardRenameFileDialog(QWidget* parent, std::string_view old_name);
   ~MemoryCardRenameFileDialog() override;
 
-  static std::string promptForNewName(QWidget* parent, std::string_view old_name);
+  std::string getNewName() const;
 
 private:
   void setupAdditionalUi();

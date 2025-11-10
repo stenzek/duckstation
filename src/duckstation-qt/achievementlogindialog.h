@@ -10,7 +10,7 @@ namespace Achievements {
 enum class LoginRequestReason;
 }
 
-class AchievementLoginDialog : public QDialog
+class AchievementLoginDialog final : public QDialog
 {
   Q_OBJECT
 

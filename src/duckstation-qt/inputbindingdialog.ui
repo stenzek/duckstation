@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>InputBindingDialog</class>
  <widget class="QDialog" name="InputBindingDialog">
-  <property name="windowModality">
-   <enum>Qt::WindowModality::WindowModal</enum>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,9 +12,6 @@
   </property>
   <property name="windowTitle">
    <string>Edit Bindings</string>
-  </property>
-  <property name="modal">
-   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

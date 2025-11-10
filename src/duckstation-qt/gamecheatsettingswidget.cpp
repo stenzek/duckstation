@@ -402,7 +402,6 @@ void GameCheatSettingsWidget::checkForMasterDisable()
          "cheat will not have any effect until game settings are enabled. Do you want to do this now?"),
       QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, Qt::WindowModal, this);
     QCheckBox* cb = new QCheckBox(mbox);
-    cb->setAttribute(Qt::WA_DeleteOnClose, true);
     cb->setText(tr("Do not show again"));
     mbox->setCheckBox(cb);
 
@@ -423,7 +422,6 @@ void GameCheatSettingsWidget::checkForMasterDisable()
          "effect until cheats are enabled for this game. Do you want to do this now?"),
       QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, Qt::WindowModal, this);
     QCheckBox* cb = new QCheckBox(mbox);
-    cb->setAttribute(Qt::WA_DeleteOnClose, true);
     cb->setText(tr("Do not show again"));
     cb->setChecked(m_master_enable_ignored);
     mbox->setCheckBox(cb);
@@ -616,17 +614,17 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
 
 void GameCheatSettingsWidget::newCode()
 {
-  Cheats::CodeInfo new_code;
-  CheatCodeEditorDialog dlg(this, &new_code, getGroupNames());
-  if (dlg.exec() == QDialog::Rejected)
-  {
-    // cancelled
-    return;
-  }
+  std::unique_ptr<Cheats::CodeInfo> new_code = std::make_unique<Cheats::CodeInfo>();
+  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, new_code.get(), getGroupNames());
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  // no need to reload cheats yet, it's not active. just refresh the list
-  reloadList();
-  g_emu_thread->reloadCheats(true, false, false, true);
+  connect(dlg, &QDialog::accepted, this, [this, code = std::move(new_code)] {
+    // no need to reload cheats yet, it's not active. just refresh the list
+    reloadList();
+    g_emu_thread->reloadCheats(true, false, false, true);
+  });
+
+  dlg->open();
 }
 
 void GameCheatSettingsWidget::editCode(const std::string_view code_name)
@@ -635,15 +633,15 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
   if (!code)
     return;
 
-  CheatCodeEditorDialog dlg(this, code, getGroupNames());
-  if (dlg.exec() == QDialog::Rejected)
-  {
-    // no changes
-    return;
-  }
+  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, code, getGroupNames());
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  reloadList();
-  g_emu_thread->reloadCheats(true, true, false, true);
+  connect(dlg, &QDialog::accepted, this, [this] {
+    reloadList();
+    g_emu_thread->reloadCheats(true, true, false, true);
+  });
+
+  dlg->open();
 }
 
 void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool confirm)
@@ -952,9 +950,10 @@ void CheatCodeEditorDialog::onRangeMaxChanged(int value)
 
 void CheatCodeEditorDialog::onEditChoiceClicked()
 {
-  GameCheatCodeChoiceEditorDialog dlg(this, m_new_options);
-  if (dlg.exec() == QDialog::Accepted)
-    m_new_options = dlg.getNewOptions();
+  GameCheatCodeChoiceEditorDialog* const dlg = new GameCheatCodeChoiceEditorDialog(this, m_new_options);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  connect(dlg, &QDialog::accepted, this, [this, dlg] { m_new_options = dlg->getNewOptions(); });
+  dlg->open();
 }
 
 void CheatCodeEditorDialog::setupAdditionalUi(const QStringList& group_names)

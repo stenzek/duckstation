@@ -38,8 +38,6 @@ public:
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
   ALWAYS_INLINE const QIcon& getIcon() { return m_icon; }
 
-  static bool doMultipleDeviceAutomaticBinding(QWidget* parent, ControllerSettingsWindow* parent_dialog, u32 port);
-
 private:
   void populateControllerTypes();
   void populateWidgets();
@@ -142,11 +140,29 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-class ControllerCustomSettingsDialog : public QDialog
+class ControllerCustomSettingsDialog final : public QDialog
 {
 public:
-  explicit ControllerCustomSettingsDialog(QWidget* parent, SettingsInterface* sif, const std::string& section,
-                                          std::span<const SettingInfo> settings, const char* tr_context,
-                                          const QString& window_title);
+  ControllerCustomSettingsDialog(QWidget* parent, SettingsInterface* sif, const std::string& section,
+                                 std::span<const SettingInfo> settings, const char* tr_context,
+                                 const QString& window_title);
   ~ControllerCustomSettingsDialog();
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class MultipleDeviceAutobindDialog final : public QDialog
+{
+  Q_OBJECT
+
+public:
+  MultipleDeviceAutobindDialog(QWidget* parent, ControllerSettingsWindow* settings_window, u32 port);
+  ~MultipleDeviceAutobindDialog();
+
+private:
+  void doAutomaticBinding();
+
+  QListWidget* m_list;
+  ControllerSettingsWindow* m_settings_window;
+  u32 m_port;
 };

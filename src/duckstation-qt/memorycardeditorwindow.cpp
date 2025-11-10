@@ -701,25 +701,32 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   if (!fi)
     return;
 
-  const std::string new_name = MemoryCardRenameFileDialog::promptForNewName(this, fi->filename);
-  if (new_name.empty())
-    return;
+  MemoryCardRenameFileDialog* const dlg = new MemoryCardRenameFileDialog(this, fi->filename);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  Error error;
-  if (!MemoryCardImage::RenameFile(&card->data, *fi, new_name, &error))
-  {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to rename save file %1:\n%2")
-                                  .arg(QString::fromStdString(fi->filename))
-                                  .arg(QString::fromStdString(error.GetDescription())));
-    return;
-  }
+  connect(dlg, &QDialog::accepted, this, [=, this] {
+    const std::string new_name = dlg->getNewName();
+    if (new_name.empty())
+      return;
 
-  clearSelection();
-  setCardDirty(card);
-  updateCardTable(card);
-  updateCardBlocksFree(card);
-  updateButtonState();
+    Error error;
+    if (!MemoryCardImage::RenameFile(&card->data, *fi, new_name, &error))
+    {
+      QtUtils::MessageBoxCritical(this, tr("Error"),
+                                  tr("Failed to rename save file %1:\n%2")
+                                    .arg(QString::fromStdString(fi->filename))
+                                    .arg(QString::fromStdString(error.GetDescription())));
+      return;
+    }
+
+    clearSelection();
+    setCardDirty(card);
+    updateCardTable(card);
+    updateCardBlocksFree(card);
+    updateButtonState();
+  });
+
+  dlg->open();
 }
 
 void MemoryCardEditorWindow::importCard(Card* card)
@@ -837,12 +844,12 @@ std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> Memo
   }
 
   if (sel.isEmpty())
-    return std::tuple<Card*, const MemoryCardImage::FileInfo*>(nullptr, nullptr);
+    return {nullptr, nullptr};
 
   const int index = sel.front().topRow();
   Assert(index >= 0 && static_cast<u32>(index) < card->files.size());
 
-  return std::tuple<Card*, const MemoryCardImage::FileInfo*>(card, &card->files[index]);
+  return {card, &card->files[index]};
 }
 
 void MemoryCardEditorWindow::updateButtonState()
@@ -877,13 +884,9 @@ MemoryCardRenameFileDialog::MemoryCardRenameFileDialog(QWidget* parent, std::str
 
 MemoryCardRenameFileDialog::~MemoryCardRenameFileDialog() = default;
 
-std::string MemoryCardRenameFileDialog::promptForNewName(QWidget* parent, std::string_view old_name)
+std::string MemoryCardRenameFileDialog::getNewName() const
 {
-  MemoryCardRenameFileDialog dlg(parent, old_name);
-  if (dlg.exec() == QDialog::Rejected)
-    return {};
-
-  return dlg.m_ui.fullFilename->text().toStdString();
+  return m_ui.fullFilename->text().toStdString();
 }
 
 void MemoryCardRenameFileDialog::setupAdditionalUi()

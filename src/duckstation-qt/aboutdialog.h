@@ -18,5 +18,4 @@ public:
 
 private:
   Ui::AboutDialog m_ui;
-
 };
