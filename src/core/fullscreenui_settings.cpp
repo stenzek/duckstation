@@ -4110,6 +4110,13 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     str.format(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
     MenuHeading(str);
 
+    if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable Shader"),
+                          FSUI_VSTR("If not enabled, this shader will be ignored."),
+                          fmt::format("PostProcessing/Stage{}", stage_index + 1).c_str(), "Enabled", true))
+    {
+      reload_pending = true;
+    }
+
     if (MenuButton(FSUI_ICONVSTR(ICON_PF_REMOVE, "Remove From Chain"),
                    FSUI_VSTR("Removes this shader from the chain.")))
     {

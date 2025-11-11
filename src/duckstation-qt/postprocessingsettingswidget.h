@@ -53,6 +53,7 @@ private:
   void onReloadButtonClicked();
   void onOpenDirectoryButtonClicked();
   void onSelectedShaderChanged();
+  void onShaderToggled(QListWidgetItem* item);
   void triggerSettingsReload();
 
   SettingsWindow* m_dialog;

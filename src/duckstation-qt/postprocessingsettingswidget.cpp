@@ -91,6 +91,7 @@ void PostProcessingChainConfigWidget::connectUi()
   connect(m_ui.moveDown, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
   connect(m_ui.stages, &QListWidget::itemSelectionChanged, this,
           &PostProcessingChainConfigWidget::onSelectedShaderChanged);
+  connect(m_ui.stages, &QListWidget::itemChanged, this, &PostProcessingChainConfigWidget::onShaderToggled);
 }
 
 std::optional<u32> PostProcessingChainConfigWidget::getSelectedIndex() const
@@ -124,11 +125,17 @@ void PostProcessingChainConfigWidget::updateList(const SettingsInterface& si)
 
   const u32 stage_count = PostProcessing::Config::GetStageCount(si, m_section);
 
+  QSignalBlocker sb(m_ui.stages);
+
   for (u32 i = 0; i < stage_count; i++)
   {
+    const bool stage_enabled = PostProcessing::Config::IsStageEnabled(si, m_section, i);
     const std::string stage_name = PostProcessing::Config::GetStageShaderName(si, m_section, i);
+
     QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(stage_name), m_ui.stages);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setData(Qt::UserRole, QVariant(i));
+    item->setCheckState(stage_enabled ? Qt::Checked : Qt::Unchecked);
   }
 
   m_ui.clear->setEnabled(stage_count > 0);
@@ -282,6 +289,24 @@ void PostProcessingChainConfigWidget::onSelectedShaderChanged()
 {
   std::optional<u32> index = getSelectedIndex();
   updateButtonsAndConfigPane(index);
+}
+
+void PostProcessingChainConfigWidget::onShaderToggled(QListWidgetItem* item)
+{
+  if (!item)
+    return;
+
+  const QVariant item_data = item->data(Qt::UserRole);
+  if (!item_data.isValid())
+    return;
+
+  const u32 index = item_data.toUInt();
+
+  auto lock = Host::GetSettingsLock();
+  SettingsInterface& si = getSettingsInterfaceToUpdate();
+  PostProcessing::Config::SetStageEnabled(si, m_section, index, item->checkState() == Qt::Checked);
+  lock.unlock();
+  commitSettingsUpdate();
 }
 
 PostProcessingShaderConfigWidget::PostProcessingShaderConfigWidget(QWidget* parent,
