@@ -278,7 +278,7 @@ bool PostProcessing::Config::IsEnabled(const SettingsInterface& si, const char* 
 
 bool PostProcessing::Config::IsStageEnabled(const SettingsInterface& si, const char* section, u32 index)
 {
-  return si.GetBoolValue(GetStageConfigSection(section, index), "Enabled", true);
+  return si.GetBoolValue(GetStageConfigSection(section, index), "StageEnabled", true);
 }
 
 u32 PostProcessing::Config::GetStageCount(const SettingsInterface& si, const char* section)
@@ -337,7 +337,7 @@ std::vector<PostProcessing::ShaderOption> PostProcessing::Config::GetShaderOptio
 
 void PostProcessing::Config::SetStageEnabled(SettingsInterface& si, const char* section, u32 index, bool enabled)
 {
-  si.SetBoolValue(GetStageConfigSection(section, index), "Enabled", enabled);
+  si.SetBoolValue(GetStageConfigSection(section, index), "StageEnabled", enabled);
 }
 
 bool PostProcessing::Config::AddStage(SettingsInterface& si, const char* section, const std::string& shader_name,
@@ -467,7 +467,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   m_stages.clear();
   DestroyTextures();
 
-  m_enabled = si.GetBoolValue(m_section, "Enabled", false);
+  m_enabled = Config::IsEnabled(si, m_section);
   m_wants_depth_buffer = false;
   m_wants_unscaled_input = false;
 
@@ -543,7 +543,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
 
 void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si)
 {
-  m_enabled = si.GetBoolValue(m_section, "Enabled", false);
+  m_enabled = Config::IsEnabled(si, m_section);
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
   const u32 enabled_stage_count = Config::GetEnabledStageCount(si, m_section);

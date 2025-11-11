@@ -72,6 +72,7 @@ struct PostProcessingStageInfo
 {
   std::string name;
   std::vector<PostProcessing::ShaderOption> options;
+  bool enabled;
 };
 
 } // namespace
@@ -3990,6 +3991,7 @@ void FullscreenUI::PopulatePostProcessingChain(const SettingsInterface& si, cons
     PostProcessingStageInfo psi;
     psi.name = PostProcessing::Config::GetStageShaderName(si, section, i);
     psi.options = PostProcessing::Config::GetStageOptions(si, section, i);
+    psi.enabled = PostProcessing::Config::IsStageEnabled(si, section, i);
     s_settings_locals.postprocessing_stages.push_back(std::move(psi));
   }
 }
@@ -4110,10 +4112,13 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     str.format(FSUI_FSTR("Stage {}: {}"), stage_index + 1, si.name);
     MenuHeading(str);
 
-    if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable Shader"),
-                          FSUI_VSTR("If not enabled, this shader will be ignored."),
-                          fmt::format("PostProcessing/Stage{}", stage_index + 1).c_str(), "Enabled", true))
+    tstr.format("PostProcessing/Stage{}", stage_index + 1);
+
+    if (ToggleButton(FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Enable Stage"),
+                     FSUI_VSTR("If disabled, the shader in this stage will not be applied."), &si.enabled))
     {
+      PostProcessing::Config::SetStageEnabled(*bsi, section, stage_index, si.enabled);
+      SetSettingsChanged(bsi);
       reload_pending = true;
     }
 
@@ -4166,7 +4171,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             opt.value[0].int_value = (value != 0);
             PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
             SetSettingsChanged(bsi);
-            queue_reload();
+            reload_pending = true;
           }
         }
         break;
