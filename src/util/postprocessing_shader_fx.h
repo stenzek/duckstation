@@ -27,8 +27,6 @@ public:
   ReShadeFXShader();
   ~ReShadeFXShader();
 
-  bool WantsDepthBuffer() const override;
-
   bool LoadFromFile(std::string name, std::string filename, bool only_config, Error* error);
   bool LoadFromString(std::string name, std::string filename, std::string code, bool only_config, Error* error);
 
@@ -151,10 +149,9 @@ private:
   std::vector<Texture> m_textures;
   std::vector<SourceOption> m_source_options;
   u32 m_uniforms_size = 0;
-  bool m_wants_depth_buffer = false;
 
-  Timer m_frame_timer;
   u32 m_frame_count = 0;
+  Timer m_frame_timer;
 
   // Specifically using a fixed seed, so that it's consistent from run-to-run.
   std::mt19937 m_random{0x1337};

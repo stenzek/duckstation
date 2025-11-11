@@ -719,7 +719,10 @@ inline std::string_view PostProcessing::SlangShaderPreprocessor::GetCurrentFilen
   return Path::GetFileName(m_path);
 }
 
-PostProcessing::SlangShader::SlangShader() = default;
+PostProcessing::SlangShader::SlangShader()
+{
+  m_wants_unscaled_input = true;
+}
 
 PostProcessing::SlangShader::~SlangShader()
 {
@@ -746,11 +749,6 @@ bool PostProcessing::SlangShader::LoadFromString(std::string name, std::string_v
   m_options.clear();
 
   return ParsePresetFile(path, code, error);
-}
-
-bool PostProcessing::SlangShader::WantsUnscaledInput() const
-{
-  return true;
 }
 
 bool PostProcessing::SlangShader::ParsePresetFile(std::string_view path, std::string_view code, Error* error)

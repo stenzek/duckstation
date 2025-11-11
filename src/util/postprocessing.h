@@ -107,7 +107,6 @@ inline constexpr const char* INTERNAL_CHAIN_SECTION = "InternalPostProcessing";
 bool IsEnabled(const SettingsInterface& si, const char* section);
 bool IsStageEnabled(const SettingsInterface& si, const char* section, u32 index);
 u32 GetStageCount(const SettingsInterface& si, const char* section);
-u32 GetEnabledStageCount(const SettingsInterface& si, const char* section);
 std::string GetStageShaderName(const SettingsInterface& si, const char* section, u32 index);
 std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, const char* section, u32 index);
 std::vector<ShaderOption> GetShaderOptions(const std::string& shader_name, Error* error);

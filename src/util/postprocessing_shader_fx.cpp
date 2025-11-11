@@ -400,11 +400,6 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::WantsDepthBuffer() const
-{
-  return m_wants_depth_buffer;
-}
-
 bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg,
                                                    GPUShaderLanguage cg_language, std::string code, Error* error)
 {

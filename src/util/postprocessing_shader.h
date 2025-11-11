@@ -35,8 +35,12 @@ public:
   ALWAYS_INLINE std::vector<ShaderOption>& GetOptions() { return m_options; }
   ALWAYS_INLINE bool HasOptions() const { return !m_options.empty(); }
 
-  virtual bool WantsDepthBuffer() const;
-  virtual bool WantsUnscaledInput() const;
+  ALWAYS_INLINE bool IsEnabled() const { return m_enabled; }
+  ALWAYS_INLINE void SetEnabled(bool enabled) { m_enabled = enabled; }
+  ALWAYS_INLINE bool IsFinalStage() const { return m_final_stage; }
+  ALWAYS_INLINE void SetFinalStage(bool final_stage) { m_final_stage = final_stage; }
+  ALWAYS_INLINE bool WantsDepthBuffer() const { return m_wants_depth_buffer; }
+  ALWAYS_INLINE bool WantsUnscaledInput() const { return m_wants_unscaled_input; }
 
   std::vector<ShaderOption> TakeOptions();
   void LoadOptions(const SettingsInterface& si, const char* section);
@@ -63,6 +67,10 @@ protected:
 
   std::string m_name;
   OptionList m_options;
+  bool m_enabled = false;
+  bool m_final_stage = false;
+  bool m_wants_depth_buffer = false;
+  bool m_wants_unscaled_input = false;
 };
 
 } // namespace PostProcessing

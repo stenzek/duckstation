@@ -25,9 +25,7 @@ class SlangShader final : public Shader
 {
 public:
   SlangShader();
-  ~SlangShader();
-
-  bool WantsUnscaledInput() const override;
+  ~SlangShader() override;
 
   bool LoadFromFile(std::string name, const char* path, Error* error);
   bool LoadFromString(std::string name, std::string_view path, std::string_view code, Error* error);

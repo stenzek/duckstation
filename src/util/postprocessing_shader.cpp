@@ -56,16 +56,6 @@ PostProcessing::Shader::Shader(std::string name) : m_name(std::move(name))
 
 PostProcessing::Shader::~Shader() = default;
 
-bool PostProcessing::Shader::WantsDepthBuffer() const
-{
-  return false;
-}
-
-bool PostProcessing::Shader::WantsUnscaledInput() const
-{
-  return false;
-}
-
 std::vector<PostProcessing::ShaderOption> PostProcessing::Shader::TakeOptions()
 {
   return std::move(m_options);

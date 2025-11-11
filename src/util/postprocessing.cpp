@@ -19,6 +19,7 @@
 #include "IconsEmoji.h"
 #include "IconsFontAwesome6.h"
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -286,19 +287,6 @@ u32 PostProcessing::Config::GetStageCount(const SettingsInterface& si, const cha
   return si.GetUIntValue(section, "StageCount", 0u);
 }
 
-u32 PostProcessing::Config::GetEnabledStageCount(const SettingsInterface& si, const char* section)
-{
-  const int stage_count = GetStageCount(si, section);
-  int enabled_count = 0;
-  for (int i = 0; i < stage_count; i++)
-  {
-    if (IsStageEnabled(si, section, i))
-      enabled_count++;
-  }
-
-  return enabled_count;
-}
-
 std::string PostProcessing::Config::GetStageShaderName(const SettingsInterface& si, const char* section, u32 index)
 {
   return si.GetStringValue(GetStageConfigSection(section, index), "ShaderName");
@@ -472,23 +460,18 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   m_wants_unscaled_input = false;
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
-  const u32 enabled_stage_count = Config::GetEnabledStageCount(si, m_section);
-  if (stage_count == 0 || enabled_stage_count == 0)
+  if (stage_count == 0)
     return;
 
   Error error;
   FullscreenUI::LoadingScreenProgressCallback progress;
   progress.SetTitle("Loading Post-Processing Shaders...");
-  progress.SetProgressRange(enabled_stage_count);
+  progress.SetProgressRange(stage_count);
 
+  u32 enabled_stage_count = 0;
+  u32 last_enabled_stage = std::numeric_limits<u32>::max();
   for (u32 i = 0; i < stage_count; i++)
   {
-    bool stage_enabled = Config::IsStageEnabled(si, m_section, i);
-    if (!stage_enabled)
-    {
-      continue;
-    }
-
     std::string stage_name = Config::GetStageShaderName(si, m_section, i);
     if (stage_name.empty())
     {
@@ -511,11 +494,30 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
 
     settings_lock.lock();
     shader->LoadOptions(si, GetStageConfigSection(m_section, i));
+
+    const bool stage_enabled = Config::IsStageEnabled(si, m_section, i);
+    shader->SetEnabled(stage_enabled);
+    shader->SetFinalStage(false);
+    enabled_stage_count += BoolToUInt32(stage_enabled);
+    if (stage_enabled)
+      last_enabled_stage = i;
+
     m_stages.push_back(std::move(shader));
   }
 
   if (enabled_stage_count > 0)
-    DEV_LOG("Loaded {} post-processing stages.", enabled_stage_count);
+  {
+    DEV_LOG("Loaded {} post-processing stages ({} enabled).", stage_count, enabled_stage_count);
+    if (enabled_stage_count == 0)
+    {
+      WARNING_LOG("All post-processing stages are currently disabled.");
+      m_enabled = false;
+    }
+    else
+    {
+      m_stages[last_enabled_stage]->SetFinalStage(true);
+    }
+  }
 
   // precompile shaders
   if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
@@ -546,8 +548,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   m_enabled = Config::IsEnabled(si, m_section);
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
-  const u32 enabled_stage_count = Config::GetEnabledStageCount(si, m_section);
-  if (stage_count == 0 || enabled_stage_count == 0)
+  if (stage_count == 0)
   {
     m_stages.clear();
     return;
@@ -559,12 +560,14 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   FullscreenUI::LoadingScreenProgressCallback progress;
   progress.SetTitle("Loading Post-Processing Shaders...");
-  progress.SetProgressRange(enabled_stage_count);
+  progress.SetProgressRange(stage_count);
 
   const GPUTexture::Format prev_format = m_target_format;
   m_wants_depth_buffer = false;
 
-  for (u32 i = 0, j = 0; i < stage_count; i++)
+  u32 enabled_stage_count = 0;
+  u32 last_enabled_stage = 0;
+  for (u32 i = 0; i < stage_count; i++)
   {
     std::string stage_name = Config::GetStageShaderName(si, m_section, i);
     if (stage_name.empty())
@@ -574,18 +577,10 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
       return;
     }
 
-    bool stage_enabled = Config::IsStageEnabled(si, m_section, i);
-    if (!stage_enabled)
+    if (!m_stages[i] || stage_name != m_stages[i]->GetName())
     {
-      if (m_stages[j] && stage_name == m_stages[j]->GetName())
-        m_stages[j].reset();
-      continue;
-    }
-
-    if (!m_stages[j] || stage_name != m_stages[j]->GetName())
-    {
-      if (j < m_stages.size())
-        m_stages[j].reset();
+      if (i < m_stages.size())
+        m_stages[i].reset();
 
       // Force recompile.
       m_target_format = GPUTexture::Format::Unknown;
@@ -599,19 +594,23 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
         return;
       }
 
-      if (j < m_stages.size())
-        m_stages[j] = std::move(shader);
+      if (i < m_stages.size())
+        m_stages[i] = std::move(shader);
       else
         m_stages.push_back(std::move(shader));
 
       settings_lock.lock();
     }
 
-    m_stages[j]->LoadOptions(si, GetStageConfigSection(m_section, i));
-    j++;
-  }
+    m_stages[i]->LoadOptions(si, GetStageConfigSection(m_section, i));
 
-  m_stages.resize(enabled_stage_count);
+    const bool stage_enabled = Config::IsStageEnabled(si, m_section, i);
+    m_stages[i]->SetEnabled(stage_enabled);
+    m_stages[i]->SetFinalStage(false);
+    enabled_stage_count += BoolToUInt32(stage_enabled);
+    if (stage_enabled)
+      last_enabled_stage = i;
+  }
 
   if (prev_format != GPUTexture::Format::Unknown)
   {
@@ -619,10 +618,19 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
                  m_viewport_height, &progress);
   }
 
-  if (enabled_stage_count > 0)
+  if (stage_count > 0)
   {
     s_start_time = Timer::GetCurrentValue();
-    DEV_LOG("Loaded {} post-processing stages.", enabled_stage_count);
+    DEV_LOG("Loaded {} post-processing stages ({} enabled).", stage_count, enabled_stage_count);
+    if (enabled_stage_count == 0)
+    {
+      WARNING_LOG("All post-processing stages are currently disabled.");
+      m_enabled = false;
+    }
+    else
+    {
+      m_stages[last_enabled_stage]->SetFinalStage(true);
+    }
   }
 
   // must be down here, because we need to compile first, triggered by CheckTargets()
@@ -797,17 +805,18 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
   const float time = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time));
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
-    const bool is_final = (stage.get() == m_stages.back().get());
+    if (!stage->IsEnabled())
+      continue;
 
     if (const GPUDevice::PresentResult pres =
-          stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
-                       native_width, native_height, m_target_width, m_target_height, time);
+          stage->Apply(input_color, input_depth, stage->IsFinalStage() ? final_target : output, final_rect, orig_width,
+                       orig_height, native_width, native_height, m_target_width, m_target_height, time);
         pres != GPUDevice::PresentResult::OK)
     {
       return pres;
     }
 
-    if (!is_final)
+    if (!stage->IsFinalStage())
     {
       output->MakeReadyForSampling();
       input_color = output;
