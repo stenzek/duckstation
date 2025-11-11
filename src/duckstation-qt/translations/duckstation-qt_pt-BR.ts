@@ -11244,7 +11244,7 @@ Deseja fazer {0} mesmo assim?</translation>
         <translation></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4428"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4429"/>
         <source>%n seconds remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -11253,7 +11253,7 @@ Deseja fazer {0} mesmo assim?</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4433"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4434"/>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -11265,61 +11265,61 @@ Deseja fazer {0} mesmo assim?</translation>
 <context>
     <name>GPU</name>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="732"/>
-        <location filename="../../core/gpu_backend.cpp" line="750"/>
+        <location filename="../../core/gpu_backend.cpp" line="734"/>
+        <location filename="../../core/gpu_backend.cpp" line="752"/>
         <source>Failed to save screenshot:
 {}</source>
         <translation>Falha ao salvar a captura de tela:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="760"/>
+        <location filename="../../core/gpu_backend.cpp" line="762"/>
         <source>Saving screenshot to &apos;{}&apos;.</source>
         <translation>Salvando a captura de tela em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="800"/>
+        <location filename="../../core/gpu_backend.cpp" line="802"/>
         <source>Saved screenshot to &apos;{}&apos;.</source>
         <translation>Captura de tela salva em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_backend.cpp" line="801"/>
+        <location filename="../../core/gpu_backend.cpp" line="803"/>
         <source>Failed to save screenshot to &apos;{}&apos;.</source>
         <translation>Falha ao salvar a captura de tela &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2167"/>
+        <location filename="../../core/gpu.cpp" line="2160"/>
         <source>Failed to start GPU trace:</source>
         <translation>Falha ao salvar o rastreio da GPU:</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2175"/>
+        <location filename="../../core/gpu.cpp" line="2168"/>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
         <translation>Salvando o rastreamento da GPU do quadro {0} em &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2176"/>
+        <location filename="../../core/gpu.cpp" line="2169"/>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
         <translation>Salvando o rastreamento da GPU de quadros múltiplos em &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2196"/>
+        <location filename="../../core/gpu.cpp" line="2189"/>
         <source>Failed to close GPU trace:</source>
         <translation>Falha ao fechar o rastreio da GPU:</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2210"/>
-        <location filename="../../core/gpu.cpp" line="2229"/>
+        <location filename="../../core/gpu.cpp" line="2203"/>
+        <location filename="../../core/gpu.cpp" line="2222"/>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
         <translation>Rastreamento da GPU salvo em &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2222"/>
+        <location filename="../../core/gpu.cpp" line="2215"/>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
         <translation>Comprimindo o rastreamento da GPU &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/gpu.cpp" line="2237"/>
+        <location filename="../../core/gpu.cpp" line="2230"/>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
         <translation>Falha ao salvar o rastreio da GPU em &apos;{}&apos;:</translation>
     </message>
@@ -11444,48 +11444,48 @@ Deseja fazer {0} mesmo assim?</translation>
         <translation>{} de {} pipelines</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="514"/>
+        <location filename="../../core/gpu_hw.cpp" line="515"/>
         <source>Internal resolution set to {0}x ({1}x{2}).</source>
         <translation>Resolução interna definida para {0}x ({1}x{2}).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="526"/>
+        <location filename="../../core/gpu_hw.cpp" line="527"/>
         <source>Multisample anti-aliasing set to {}x (SSAA).</source>
         <translation>Anti serrilhado múltiplo definido para {}x (SSAA).</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="533"/>
+        <location filename="../../core/gpu_hw.cpp" line="534"/>
         <source>Multisample anti-aliasing set to {}x.</source>
         <translation>Suavização de serrilhado definido para {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="663"/>
+        <location filename="../../core/gpu_hw.cpp" line="664"/>
         <source>{}x MSAA is not supported, using {}x instead.</source>
         <translation>{}x MSAA não é compatível. Use {}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="675"/>
+        <location filename="../../core/gpu_hw.cpp" line="676"/>
         <source>SSAA is not supported, using MSAA instead.</source>
         <translation>Filtro SSAA não suportado, usando filtro MSAA.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="683"/>
+        <location filename="../../core/gpu_hw.cpp" line="684"/>
         <source>Texture filter &apos;{}/{}&apos; is not supported with the current renderer.</source>
         <translation>O filtro de textura &apos;{}/{}&apos; não é compatível com o renderizador atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="697"/>
+        <location filename="../../core/gpu_hw.cpp" line="698"/>
         <source>Shader blending is not supported by your current GPU.</source>
         <translation>Sua placa de vídeo atual não suporta mesclagem de sombreadores.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="698"/>
-        <location filename="../../core/gpu_hw.cpp" line="717"/>
+        <location filename="../../core/gpu_hw.cpp" line="699"/>
+        <location filename="../../core/gpu_hw.cpp" line="718"/>
         <source>It requires framebuffer fetch, feedback loops, or rasterizer order views.</source>
         <translation>Armazenamento profundo, busca e retorno de loops e rasterizadores são exigidos pela configuração atual.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="716"/>
+        <location filename="../../core/gpu_hw.cpp" line="717"/>
         <source>PGXP depth buffer is not supported by your current GPU or renderer.</source>
         <translation>Armazenamento profundo do PGXP não suportado pela sua placa de vídeo ou renderizador atual.</translation>
     </message>
@@ -11496,7 +11496,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
 Requer a busca de armazenamento, retornos e ou visualizações de ordem do rasterizador.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="707"/>
+        <location filename="../../core/gpu_hw.cpp" line="708"/>
         <source>Multisample anti-aliasing is not supported when using shader blending.</source>
         <translation>A suavização de serrilhado de múltipla amostragem não é compatível com o uso de combinação de sombreamento.</translation>
     </message>
@@ -11521,22 +11521,22 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
 As funções de fetch, loops e exibição de rasterização são obrigatórias.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="729"/>
+        <location filename="../../core/gpu_hw.cpp" line="730"/>
         <source>Geometry shaders are not supported by your GPU, and are required for wireframe rendering.</source>
         <translation>Os sombreadores não são compatíveis com sua GPU e são obrigatórios para a renderização no modo de wireframe.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="745"/>
+        <location filename="../../core/gpu_hw.cpp" line="746"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled.</source>
         <translation>A escala de resolução {0}x não é divisível pela escala de redução de resolução {1}x, downsampling desativado.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="754"/>
+        <location filename="../../core/gpu_hw.cpp" line="755"/>
         <source>Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead.</source>
         <translation>A escala de resolução {0}x não é divisível pela escala de redução da resolução {1}x, usando {2}x.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw.cpp" line="780"/>
+        <location filename="../../core/gpu_hw.cpp" line="781"/>
         <source>Resolution scale {0}x not supported for adaptive downsampling, using {1}x.</source>
         <translation>A escala de resolução {0}x não é compatível com a redução de amostra adaptável, usando {1}x.</translation>
     </message>
@@ -12714,19 +12714,19 @@ Configure um controle compatível da lista acima.</translation>
 {}</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2233"/>
+        <location filename="../gamelistwidget.cpp" line="2262"/>
         <location filename="../../core/game_list.cpp" line="1588"/>
         <source>Never</source>
         <translation>Nunca</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2232"/>
+        <location filename="../gamelistwidget.cpp" line="2261"/>
         <location filename="../../core/game_list.cpp" line="1596"/>
         <source>Today</source>
         <translation>Hoje</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2232"/>
+        <location filename="../gamelistwidget.cpp" line="2261"/>
         <location filename="../../core/game_list.cpp" line="1602"/>
         <source>Yesterday</source>
         <translation>Ontem</translation>
@@ -12757,7 +12757,7 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Nenhum</translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2227"/>
+        <location filename="../gamelistwidget.cpp" line="2256"/>
         <location filename="../../core/game_list.cpp" line="1636"/>
         <source>%n hours</source>
         <translation>
@@ -12766,7 +12766,7 @@ Configure um controle compatível da lista acima.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2226"/>
+        <location filename="../gamelistwidget.cpp" line="2255"/>
         <location filename="../../core/game_list.cpp" line="1638"/>
         <source>%n minutes</source>
         <translation>
@@ -12775,7 +12775,7 @@ Configure um controle compatível da lista acima.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistwidget.cpp" line="2225"/>
+        <location filename="../gamelistwidget.cpp" line="2254"/>
         <location filename="../../core/game_list.cpp" line="1640"/>
         <source>%n seconds</source>
         <translation>
@@ -12787,7 +12787,7 @@ Configure um controle compatível da lista acima.</translation>
 <context>
     <name>GameListListView</name>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2238"/>
+        <location filename="../gamelistwidget.cpp" line="2267"/>
         <source>Unknown</source>
         <translation>Desconhecido</translation>
     </message>
@@ -12800,17 +12800,17 @@ Configure um controle compatível da lista acima.</translation>
         <translation>Desconhecido</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="917"/>
+        <location filename="../gamelistwidget.cpp" line="942"/>
         <source>No Achievements</source>
         <translation>Sem conquistas</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="919"/>
+        <location filename="../gamelistwidget.cpp" line="944"/>
         <source>%1/%2 achievements unlocked</source>
         <translation>%1/%2 conquistas desbloqueadas</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="923"/>
+        <location filename="../gamelistwidget.cpp" line="948"/>
         <source>%1 unlocked in hardcore mode</source>
         <translation>%1 desbloqueado no modo hardcore</translation>
     </message>
@@ -13040,12 +13040,12 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <translation>Buscar...</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2053"/>
+        <location filename="../gamelistwidget.cpp" line="2082"/>
         <source>Cover scale: %1%</source>
         <translation>Tamanho da capa: %1%</translation>
     </message>
     <message>
-        <location filename="../gamelistwidget.cpp" line="2055"/>
+        <location filename="../gamelistwidget.cpp" line="2084"/>
         <source>Icon size: %1%</source>
         <translation>Tamanho do ícone: %1%</translation>
     </message>
@@ -13476,7 +13476,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
         <location filename="../graphicssettingswidget.ui" line="259"/>
         <location filename="../graphicssettingswidget.cpp" line="450"/>
         <source>Force 4:3 For FMVs</source>
-        <translation>Forçar 4:4 para FMVs</translation>
+        <translation>Forçar 4:3 para FMVs</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="266"/>
@@ -20445,27 +20445,27 @@ Usando a seguinte imagem &apos;{}&apos;, isso pode resultar em instabilidade.</t
         <translation type="vanished">Falha ao carregar pós-processamento: {}</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="429"/>
+        <location filename="../../util/postprocessing.cpp" line="434"/>
         <source>Failed to load post-processing chain.</source>
         <translation>Falha ao carregar pós-processamento.</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="598"/>
+        <location filename="../../util/postprocessing.cpp" line="603"/>
         <source>No post-processing shaders are selected.</source>
         <translation>Nenhum shader de pós-processamento selecionado.</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="605"/>
+        <location filename="../../util/postprocessing.cpp" line="610"/>
         <source>Post-processing is now enabled.</source>
         <translation>Pós-processamento ligado.</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="606"/>
+        <location filename="../../util/postprocessing.cpp" line="611"/>
         <source>Post-processing is now disabled.</source>
         <translation>Pós-processamento desligado.</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_presenter.cpp" line="1550"/>
+        <location filename="../../core/gpu_presenter.cpp" line="1546"/>
         <source>Post-processing shaders reloaded.</source>
         <translation>Texturas de pós-processamento recarregadas.</translation>
     </message>
@@ -20770,32 +20770,44 @@ Controles iniciados em modo digital.</translation>
 <context>
     <name>PostProcessing</name>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="166"/>
         <source>{} [GLSL]</source>
-        <translation>{} [GLSL]</translation>
+        <translation type="vanished">{} [GLSL]</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="195"/>
         <source>{} [ReShade]</source>
-        <translation>{} [ReShade]</translation>
+        <translation type="vanished">{} [ReShade]</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="222"/>
         <source>{} [Slang]</source>
-        <translation>{}</translation>
+        <translation type="vanished">{}</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="426"/>
+        <location filename="../../util/postprocessing.cpp" line="227"/>
+        <source>GLSL</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="230"/>
+        <source>ReShade</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="233"/>
+        <source>Slang</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../../util/postprocessing.cpp" line="431"/>
         <source>Unknown Error</source>
         <translation>Erro desconhecido</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="676"/>
+        <location filename="../../util/postprocessing.cpp" line="681"/>
         <source>Failed to compile post-processing shader &apos;{}&apos;.</source>
         <translation>Falha ao compilar o sombreador de pós-processamento ‘{}’.</translation>
     </message>
     <message>
-        <location filename="../../util/postprocessing.cpp" line="704"/>
+        <location filename="../../util/postprocessing.cpp" line="709"/>
         <source>Failed to resize post-processing shader &apos;{}&apos;.</source>
         <translation>Falha ao redimensionar o sombreador de pós-processamento ‘{}’.</translation>
     </message>
@@ -20815,61 +20827,65 @@ Controles iniciados em modo digital.</translation>
     </message>
     <message>
         <location filename="../postprocessingchainconfigwidget.ui" line="51"/>
+        <source>Open Directory</source>
+        <translation>Abrir diretório</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingchainconfigwidget.ui" line="61"/>
         <source>&amp;Reload Shaders</source>
         <translation>&amp;Recarregar shaders</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="63"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="73"/>
         <source>Post Processing Chain</source>
         <translation>Lista de pós-processamentos</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="91"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="101"/>
         <source>Add</source>
         <translation>Adicionar</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="107"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="117"/>
         <source>Remove</source>
         <translation>Remover</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="123"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="133"/>
         <source>Clear</source>
         <translation>Limpar</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="139"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="149"/>
         <source>Move Up</source>
         <translation>Para cima</translation>
     </message>
     <message>
-        <location filename="../postprocessingchainconfigwidget.ui" line="155"/>
+        <location filename="../postprocessingchainconfigwidget.ui" line="165"/>
         <source>Move Down</source>
         <translation>Para baixo</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="180"/>
         <source>No Shaders Available</source>
-        <translation>Sem sombreadores disponíveis</translation>
+        <translation type="vanished">Sem sombreadores disponíveis</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="196"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="194"/>
         <source>Error</source>
         <translation>Erro</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="196"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="195"/>
         <source>Failed to add shader: %1</source>
         <translation>Falha ao adicionar shader: %1</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="232"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="229"/>
         <source>Question</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="232"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="229"/>
         <source>Are you sure you want to clear all shader stages?</source>
         <translation>Tem certeza de que deseja desfazer todas as mudanças ?</translation>
     </message>
@@ -20938,13 +20954,13 @@ Controles iniciados em modo digital.</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="177"/>
-        <location filename="../postprocessingsettingswidget.cpp" line="575"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="577"/>
         <source>Destination Alpha Blending</source>
         <translation>combinação de destino alpha</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="184"/>
-        <location filename="../postprocessingsettingswidget.cpp" line="572"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="574"/>
         <source>Alpha Blending</source>
         <translation>Combinação de alfa</translation>
     </message>
@@ -20954,102 +20970,140 @@ Controles iniciados em modo digital.</translation>
         <translation>Exportar</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="514"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="516"/>
         <source>None</source>
         <translation>Nenhum</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="515"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="517"/>
         <source>Custom...</source>
         <translation>Personalizado...</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="562"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="564"/>
         <source>Image Path</source>
         <translation>Caminho da imagem</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="562"/>
-        <location filename="../postprocessingsettingswidget.cpp" line="565"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="564"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="567"/>
         <source>Unspecified</source>
         <translation>Não especificado</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="563"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="565"/>
         <source>Defines the path of the custom overlay image that will be loaded.</source>
         <translation>Define o caminho da imagem de moldura personalizada que será carregada.</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="564"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="566"/>
         <source>Display Rectangle</source>
         <translation>Retângulo de exibição</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="566"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="568"/>
         <source>Defines the area in the overlay image that the game image will be drawn into.</source>
         <translation>Define a área na imagem de moldura na qual a imagem do jogo será desenhada.</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="572"/>
-        <location filename="../postprocessingsettingswidget.cpp" line="575"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="574"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="577"/>
         <source>Unchecked</source>
         <translation>Desmarcado</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="573"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="575"/>
         <source>If checked, the overlay image will be alpha blended with the framebuffer, i.e. transparency will be applied.</source>
         <translation>Se marcada, a imagem de moldura será mesclada em um canal alfa, ou seja, será aplicada transparência.</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="576"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="578"/>
         <source>If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, an image with alpha of 0.75 will draw the game image at 25% brightness.</source>
         <translation>Se marcada, a imagem do jogo será mesclada com a quantidade inversa de alfa na imagem de moldura. Por exemplo, uma imagem com alfa de 0,75 desenhará a imagem do jogo com 25% de brilho.</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="596"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="598"/>
         <source>Select Image</source>
         <translation>Selecionar imagem</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="598"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="600"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
         <translation>Todos os tipos de imagem de capa (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="608"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="610"/>
         <source>Export to YAML</source>
         <translation>Erro para YAML</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="609"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="611"/>
         <source>YAML Files (*.yml)</source>
         <translation>Arquivos YAML (*.yml)</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="632"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="634"/>
         <source>Export Error</source>
         <translation>Erro na exportação</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="633"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="635"/>
         <source>Failed to save file: %1</source>
         <translation>Falha ao salvar o arquivo: %1</translation>
     </message>
 </context>
 <context>
+    <name>PostProcessingSelectShaderDialog</name>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="14"/>
+        <source>Select Shader</source>
+        <translation>Escolher sombreador</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="35"/>
+        <source>Search...</source>
+        <translation>Buscar...</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="58"/>
+        <source>All</source>
+        <translation>Todos</translation>
+    </message>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="71"/>
+        <source>GLSL</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="81"/>
+        <source>Reshade</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../postprocessingselectshaderdialog.ui" line="91"/>
+        <source>Slang</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../postprocessingsettingswidget.cpp" line="654"/>
+        <source>Add</source>
+        <translation>Adicionar</translation>
+    </message>
+</context>
+<context>
     <name>PostProcessingSettingsWidget</name>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="29"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="33"/>
         <source>Display</source>
         <translation>Exibição</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="31"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="35"/>
         <source>Internal</source>
         <translation>Interno</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="32"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="36"/>
         <source>Border Overlay</source>
         <translation>Moldura de borda</translation>
     </message>
@@ -21057,27 +21111,27 @@ Controles iniciados em modo digital.</translation>
 <context>
     <name>PostProcessingShaderConfigWidget</name>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="430"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="432"/>
         <source>Red</source>
         <translation>Vermelho</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="430"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="432"/>
         <source>Green</source>
         <translation>Verde</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="430"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="432"/>
         <source>Blue</source>
         <translation>Azul</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="430"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="432"/>
         <source>Alpha</source>
         <translation>Alfa</translation>
     </message>
     <message>
-        <location filename="../postprocessingsettingswidget.cpp" line="431"/>
+        <location filename="../postprocessingsettingswidget.cpp" line="433"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
