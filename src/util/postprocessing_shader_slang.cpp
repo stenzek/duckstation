@@ -1472,10 +1472,34 @@ bool PostProcessing::SlangShader::UploadLUTTextures(Error* error)
     Assert(!tex.needs_feedback);
 
     Image image;
-    if (!image.LoadFromFile(tex.path.c_str(), error) ||
-        !(tex.texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, error)))
+    if (!image.LoadFromFile(tex.path.c_str(), error))
     {
       Error::AddPrefixFmt(error, "Failed to load LUT texture from file '{}': ", Path::GetFileName(tex.path));
+      return false;
+    }
+
+    // Flip textures in GL so the texture coordinates match what we're rendering in screen space.
+    if (g_gpu_device->UsesLowerLeftOrigin())
+    {
+      // Have to decompress if compressed.
+      if (Image::IsCompressedFormat(image.GetFormat()))
+      {
+        std::optional<Image> decompressed = image.ConvertToRGBA8(error);
+        if (!decompressed.has_value())
+        {
+          Error::AddPrefixFmt(error, "Failed to decompress LUT texture from file '{}': ", Path::GetFileName(tex.path));
+          return false;
+        }
+
+        image = std::move(decompressed.value());
+      }
+
+      image.FlipY();
+    }
+
+    if (!(tex.texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, error)))
+    {
+      Error::AddPrefixFmt(error, "Failed to upload LUT texture from file '{}': ", Path::GetFileName(tex.path));
       return false;
     }
 
