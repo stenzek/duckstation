@@ -565,6 +565,8 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   const GPUTexture::Format prev_format = m_target_format;
   m_wants_depth_buffer = false;
 
+  const u32 prev_enabled_stage_count = static_cast<u32>(std::ranges::count_if(
+    m_stages, [](const std::unique_ptr<Shader>& shader) { return (shader && shader->IsEnabled()); }));
   u32 enabled_stage_count = 0;
   u32 last_enabled_stage = 0;
   for (u32 i = 0; i < stage_count; i++)
@@ -614,7 +616,13 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   if (prev_format != GPUTexture::Format::Unknown)
   {
-    CheckTargets(m_target_width, m_target_height, prev_format, m_source_width, m_source_height, m_viewport_width,
+    // if the number of enabled stages changed, this will affect the target size for unscaled shaders
+    const u32 prev_source_width = m_source_width;
+    const u32 prev_source_height = m_source_height;
+    if (enabled_stage_count != prev_enabled_stage_count)
+      m_source_width = m_source_height = 0;
+
+    CheckTargets(prev_source_width, prev_source_height, prev_format, m_target_width, m_target_height, m_viewport_width,
                  m_viewport_height, &progress);
   }
 
@@ -723,8 +731,8 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
       progress->FormatStatusText("Compiling {}...", shader->GetName());
 
       if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
-          !shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
-                                 viewport_width, viewport_height, &error))
+          (shader->IsEnabled() && !shader->ResizeTargets(source_width, source_height, target_format, target_width,
+                                                         target_height, viewport_width, viewport_height, &error)))
       {
         ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
         Host::AddIconOSDMessage(
@@ -738,7 +746,11 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
       }
 
       progress->SetProgressValue(static_cast<u32>(i + 1));
-      m_wants_depth_buffer |= shader->WantsDepthBuffer();
+      m_wants_depth_buffer |= shader->IsEnabled() && shader->WantsDepthBuffer();
+
+      // Don't adjust target size until first enabled shader.
+      if (!shader->IsEnabled())
+        continue;
 
       // First shader outputs at target size, so the input is now target size.
       source_width = target_width;
@@ -749,8 +761,14 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
   }
   else
   {
+    m_wants_depth_buffer = true;
+
     for (std::unique_ptr<Shader>& shader : m_stages)
     {
+      // Don't allocate targets until first enabled shader.
+      if (!shader->IsEnabled())
+        continue;
+
       if (!shader->ResizeTargets(source_width, source_height, target_format, target_width, target_height,
                                  viewport_width, viewport_height, &error))
       {
@@ -764,6 +782,8 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
         DestroyTextures();
         return false;
       }
+
+      m_wants_depth_buffer |= shader->IsEnabled() && shader->WantsDepthBuffer();
 
       // First shader outputs at target size, so the input is now target size.
       source_width = target_width;
