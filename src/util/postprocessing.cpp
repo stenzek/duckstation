@@ -505,7 +505,7 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
     m_stages.push_back(std::move(shader));
   }
 
-  if (enabled_stage_count > 0)
+  if (stage_count > 0)
   {
     DEV_LOG("Loaded {} post-processing stages ({} enabled).", stage_count, enabled_stage_count);
     if (enabled_stage_count == 0)
