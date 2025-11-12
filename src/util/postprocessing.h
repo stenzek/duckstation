@@ -173,6 +173,7 @@ private:
 
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;
+  std::unique_ptr<GPUTexture> m_intermediate_texture;
   std::unique_ptr<GPUTexture> m_output_texture;
 
   static Timer::Value s_start_time;

@@ -428,7 +428,8 @@ PostProcessing::Chain::~Chain() = default;
 
 GPUTexture* PostProcessing::Chain::GetTextureUnusedAtEndOfChain() const
 {
-  return (m_stages.size() % 2) ? m_output_texture.get() : m_input_texture.get();
+  return (m_stages.size() % 2) ? m_output_texture.get() :
+                                 (m_intermediate_texture ? m_intermediate_texture.get() : m_input_texture.get());
 }
 
 bool PostProcessing::Chain::IsActive() const
@@ -699,6 +700,9 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
 
   if (!g_gpu_device->ResizeTexture(&m_input_texture, source_width, source_height, GPUTexture::Type::RenderTarget,
                                    target_format, GPUTexture::Flags::None, false, &error) ||
+      (m_wants_unscaled_input && !g_gpu_device->ResizeTexture(&m_intermediate_texture, target_width, target_height,
+                                                              GPUTexture::Type::RenderTarget, target_format,
+                                                              GPUTexture::Flags::None, false, &error)) ||
       !g_gpu_device->ResizeTexture(&m_output_texture, target_width, target_height, GPUTexture::Type::RenderTarget,
                                    target_format, GPUTexture::Flags::None, false, &error))
   {
@@ -706,6 +710,10 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
     DestroyTextures();
     return false;
   }
+
+  // free intermediate texture if it's unnecssary
+  if (!m_wants_unscaled_input && m_intermediate_texture)
+    g_gpu_device->RecycleTexture(std::move(m_intermediate_texture));
 
   // we change source after the first pass, so save the original values here
   m_source_width = source_width;
@@ -807,6 +815,7 @@ void PostProcessing::Chain::DestroyTextures()
   m_target_height = 0;
 
   g_gpu_device->RecycleTexture(std::move(m_output_texture));
+  g_gpu_device->RecycleTexture(std::move(m_intermediate_texture));
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
@@ -840,7 +849,9 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     {
       output->MakeReadyForSampling();
       input_color = output;
-      output = (output == m_output_texture.get()) ? m_input_texture.get() : m_output_texture.get();
+      output = (output == m_output_texture.get()) ?
+                 (m_intermediate_texture ? m_intermediate_texture.get() : m_input_texture.get()) :
+                 m_output_texture.get();
     }
   }
 
