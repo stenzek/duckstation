@@ -160,7 +160,7 @@ Each release includes the latest version of the database, however you are free t
 
 ### Windows
 Requirements:
- - Visual Studio 2022
+ - Visual Studio 2026 or newer with the "Desktop development with C++" workload installed.
 
 1. Clone the respository: `git clone https://github.com/stenzek/duckstation.git`.
 2. Download the dependencies pack from https://github.com/stenzek/duckstation-ext-qt-minimal/releases/download/latest/deps-x64.7z, and extract it to `dep\msvc`.
