@@ -184,8 +184,8 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
             expandCurrentDataToInclude(m_selected_address);
 
             unsigned char* pdata = static_cast<unsigned char*>(m_data) + m_selected_address;
-            const unsigned char new_value =
-              (*pdata & ~(0xf0 >> (m_editing_nibble * 4))) | (nibble << ((1 - m_editing_nibble) * 4));
+            const unsigned char new_value = (*pdata & ~(0xf0 >> (m_editing_nibble * 4))) |
+                                            (static_cast<unsigned char>(nibble) << ((1 - m_editing_nibble) * 4));
             if (*pdata != new_value)
             {
               *pdata = new_value;

@@ -443,9 +443,9 @@ void MainWindow::displayResizeRequested(qint32 width, qint32 height)
     return;
 
   // unapply the pixel scaling factor for hidpi
-  const float dpr = devicePixelRatioF();
-  width = static_cast<qint32>(std::max(static_cast<int>(std::lroundf(static_cast<float>(width) / dpr)), 1));
-  height = static_cast<qint32>(std::max(static_cast<int>(std::lroundf(static_cast<float>(height) / dpr)), 1));
+  const qreal dpr = devicePixelRatioF();
+  width = static_cast<qint32>(std::max(static_cast<int>(std::lround(static_cast<qreal>(width) / dpr)), 1));
+  height = static_cast<qint32>(std::max(static_cast<int>(std::lround(static_cast<qreal>(height) / dpr)), 1));
 
   if (m_display_container || !m_display_widget->parent())
   {
@@ -770,7 +770,7 @@ std::string MainWindow::getDeviceDiscPath(const QString& title)
   if (input_dialog.exec() == QDialog::Rejected)
     return ret;
 
-  const int selected_index = input_dialog.comboBoxItems().indexOf(input_dialog.textValue());
+  const qsizetype selected_index = input_dialog.comboBoxItems().indexOf(input_dialog.textValue());
   if (selected_index < 0 || static_cast<u32>(selected_index) >= devices.size())
     return ret;
 
@@ -1941,7 +1941,8 @@ void MainWindow::setupAdditionalUi()
   for (u32 scale = 1; scale <= 10; scale++)
   {
     QAction* const action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
-    connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(scale); });
+    connect(action, &QAction::triggered,
+            [scale = static_cast<float>(scale)]() { g_emu_thread->requestDisplaySize(scale); });
   }
 
   updateDebugMenuVisibility();

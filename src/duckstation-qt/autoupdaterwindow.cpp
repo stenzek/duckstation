@@ -501,7 +501,7 @@ void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, 
 
         QString message = commit_obj["message"].toString();
         QString author = commit_obj["author"].toObject()["name"].toString();
-        const int first_line_terminator = message.indexOf('\n');
+        const qsizetype first_line_terminator = message.indexOf('\n');
         if (first_line_terminator >= 0)
           message.remove(first_line_terminator, message.size() - first_line_terminator);
         if (!message.isEmpty())

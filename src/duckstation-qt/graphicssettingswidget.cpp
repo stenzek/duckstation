@@ -1355,14 +1355,14 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
     config.reduce_palette_range = dlgui.reducePaletteRange->isChecked();
     config.convert_copies_to_writes = dlgui.convertCopiesToWrites->isChecked();
     config.replacement_scale_linear_filter = dlgui.replacementScaleLinearFilter->isChecked();
-    config.max_vram_write_splits = dlgui.maxVRAMWriteSplits->value();
-    config.max_vram_write_coalesce_width = dlgui.maxVRAMWriteCoalesceWidth->value();
-    config.max_vram_write_coalesce_height = dlgui.maxVRAMWriteCoalesceHeight->value();
-    config.texture_dump_width_threshold = dlgui.minDumpedTextureWidth->value();
-    config.texture_dump_height_threshold = dlgui.minDumpedTextureHeight->value();
+    config.max_vram_write_splits = static_cast<u16>(dlgui.maxVRAMWriteSplits->value());
+    config.max_vram_write_coalesce_width = static_cast<u16>(dlgui.maxVRAMWriteCoalesceWidth->value());
+    config.max_vram_write_coalesce_height = static_cast<u16>(dlgui.maxVRAMWriteCoalesceHeight->value());
+    config.texture_dump_width_threshold = static_cast<u16>(dlgui.minDumpedTextureWidth->value());
+    config.texture_dump_height_threshold = static_cast<u16>(dlgui.minDumpedTextureHeight->value());
     config.dump_texture_force_alpha_channel = dlgui.setTextureDumpAlphaChannel->isChecked();
-    config.vram_write_dump_width_threshold = dlgui.minDumpedVRAMWriteWidth->value();
-    config.vram_write_dump_height_threshold = dlgui.minDumpedVRAMWriteHeight->value();
+    config.vram_write_dump_width_threshold = static_cast<u16>(dlgui.minDumpedVRAMWriteWidth->value());
+    config.vram_write_dump_height_threshold = static_cast<u16>(dlgui.minDumpedVRAMWriteHeight->value());
     config.dump_vram_write_force_alpha_channel = dlgui.setTextureDumpAlphaChannel->isChecked();
 
     QInputDialog idlg(&dlg);

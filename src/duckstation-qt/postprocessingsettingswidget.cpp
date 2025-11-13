@@ -501,11 +501,11 @@ void PostProcessingShaderConfigWidget::createUi()
           const float range = option.max_value[i].float_value - option.min_value[i].float_value;
           const float step_value =
             (option.step_value[i].float_value != 0) ? option.step_value[i].float_value : ((range + 99.0f) / 100.0f);
-          const float num_steps = std::ceil(range / step_value);
+          const int num_steps = static_cast<int>(std::ceil(range / step_value));
           slider->setMinimum(0);
           slider->setMaximum(num_steps);
           slider->setSingleStep(1);
-          slider->setTickInterval(step_value);
+          slider->setTickInterval(static_cast<int>(step_value));
           slider->setValue(
             static_cast<int>((option.value[i].float_value - option.min_value[i].float_value) / step_value));
           connect(slider, &QSlider::valueChanged, [this, &option, i, slider_label](int value) {
@@ -702,7 +702,7 @@ std::string PostProcessingSelectShaderDialog::getSelectedShader() const
 QTreeWidgetItem* PostProcessingSelectShaderDialog::createTreeItem(const QString& name, const QString& display_name,
                                                                   bool is_directory) const
 {
-  const int pos = name.lastIndexOf('/');
+  const qsizetype pos = name.lastIndexOf('/');
   QTreeWidgetItem* item;
   if (pos < 0)
   {
@@ -850,7 +850,7 @@ void PostProcessingSelectShaderDialog::collapseShaderList(QTreeWidgetItem* item)
 
 QTreeWidgetItem* PostProcessingSelectShaderDialog::findTreeItemByName(QTreeWidgetItem* parent, const QString& name)
 {
-  const int pos = name.indexOf('/');
+  const qsizetype pos = name.indexOf('/');
   const int child_count = parent->childCount();
   if (pos < 0)
   {

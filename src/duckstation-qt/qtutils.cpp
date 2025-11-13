@@ -325,7 +325,7 @@ QIcon QtUtils::GetIconForTranslationLanguage(std::string_view language_name)
     if (!QFile::exists(icon_path))
     {
       // try without the suffix (e.g. es-es -> es)
-      const int index = qlanguage_name.indexOf('-');
+      const qsizetype index = qlanguage_name.indexOf('-');
       if (index >= 0)
         icon_path = QStringLiteral(":/icons/flags/%1.png").arg(qlanguage_name.left(index));
     }

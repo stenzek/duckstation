@@ -16,8 +16,6 @@ public:
   explicit GameListRefreshThread(bool invalidate_cache);
   ~GameListRefreshThread();
 
-  float timeSinceStart() const;
-
   void cancel();
 
 Q_SIGNALS:

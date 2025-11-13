@@ -96,5 +96,5 @@ void GameListRefreshThread::ModalInformation(const std::string_view message)
 void GameListRefreshThread::fireUpdate()
 {
   emit refreshProgress(m_status_text, m_last_value, m_last_range, static_cast<int>(GameList::GetEntryCount()),
-                       m_start_time.GetTimeSeconds());
+                       static_cast<float>(m_start_time.GetTimeSeconds()));
 }
