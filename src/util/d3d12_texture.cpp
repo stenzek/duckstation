@@ -861,10 +861,8 @@ std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuf
 }
 
 D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                           ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer,
-                                           size_t buffer_size)
-  : GPUDownloadTexture(width, height, format, false), m_allocation(std::move(allocation)), m_buffer(std::move(buffer)),
-    m_buffer_size(buffer_size)
+                                           ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer)
+  : GPUDownloadTexture(width, height, format, false), m_allocation(std::move(allocation)), m_buffer(std::move(buffer))
 {
 }
 
@@ -909,7 +907,7 @@ std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u3
   }
 
   return std::unique_ptr<D3D12DownloadTexture>(
-    new D3D12DownloadTexture(width, height, format, std::move(allocation), std::move(buffer), buffer_size));
+    new D3D12DownloadTexture(width, height, format, std::move(allocation), std::move(buffer)));
 }
 
 void D3D12DownloadTexture::CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width,

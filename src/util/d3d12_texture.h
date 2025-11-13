@@ -179,11 +179,10 @@ public:
 
 private:
   D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format, ComPtr<D3D12MA::Allocation> allocation,
-                       ComPtr<ID3D12Resource> buffer, size_t buffer_size);
+                       ComPtr<ID3D12Resource> buffer);
 
   ComPtr<D3D12MA::Allocation> m_allocation;
   ComPtr<ID3D12Resource> m_buffer;
 
   u64 m_copy_fence_value = 0;
-  size_t m_buffer_size = 0;
 };
