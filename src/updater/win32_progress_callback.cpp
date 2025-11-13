@@ -57,7 +57,7 @@ void Win32ProgressCallback::SetProgressValue(u32 value)
 
 bool Win32ProgressCallback::Create()
 {
-  static const char* CLASS_NAME = "DSWin32ProgressCallbackWindow";
+  static constexpr LPCWSTR CLASS_NAME = L"DSWin32ProgressCallbackWindow";
   static bool class_registered = false;
 
   if (!class_registered)
@@ -73,7 +73,7 @@ bool Win32ProgressCallback::Create()
     wc.hCursor = LoadCursor(NULL, IDC_WAIT);
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
     wc.lpszClassName = CLASS_NAME;
-    if (!RegisterClassExA(&wc))
+    if (!RegisterClassExW(&wc))
     {
       ERROR_LOG("Failed to register window class");
       return false;
@@ -82,9 +82,8 @@ bool Win32ProgressCallback::Create()
     class_registered = true;
   }
 
-  m_window_hwnd =
-    CreateWindowExA(WS_EX_CLIENTEDGE, CLASS_NAME, "Win32ProgressCallback", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-                    CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, GetModuleHandle(nullptr), this);
+  m_window_hwnd = CreateWindowExW(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                                  WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
     ERROR_LOG("Failed to create window");
