@@ -302,6 +302,43 @@ QLineEdit:disabled {
   color: #777777;
 }
 
+QCheckBox {
+  spacing: 4px;
+  padding: 2px 0;
+}
+
+QCheckBox::indicator {
+  width: 14px;
+  height: 14px;
+}
+QCheckBox::indicator::unchecked {
+  image: url(":/icons/white/svg/checkbox-unchecked.svg");
+}
+QCheckBox::indicator::unchecked:pressed {
+  image: url(":/icons/white/svg/checkbox-unchecked-pressed.svg");
+}
+QCheckBox::indicator::unchecked:disabled {
+  image: url(":/icons/white/svg/checkbox-unchecked-disabled.svg");
+}
+QCheckBox::indicator::checked {
+  image: url(":/icons/white/svg/checkbox-checked.svg");
+}
+QCheckBox::indicator::checked:pressed {
+  image: url(":/icons/white/svg/checkbox-checked-pressed.svg");
+}
+QCheckBox::indicator::checked:disabled {
+  image: url(":/icons/white/svg/checkbox-checked-disabled.svg");
+}
+QCheckBox::indicator::indeterminate {
+  image: url(":/icons/white/svg/checkbox-indeterminate.svg");
+}
+QCheckBox::indicator::indeterminate:pressed {
+  image: url(":/icons/white/svg/checkbox-indeterminate-pressed.svg");
+}
+QCheckBox::indicator::indeterminate:disabled {
+  image: url(":/icons/white/svg/checkbox-indeterminate-disabled.svg");
+}
+
 QAbstractSpinBox {
   border: none;
   border-radius: 8px;
@@ -452,21 +489,21 @@ QSlider {
 QSlider::groove {
   border: none;
   height: 8px;
-  background-color: #414141;
+  background-color: #2d2d2d;
   border-radius: 4px;
 }
 QSlider::handle {
-  background-color: #606060;
+  background-color: #808080;
   border: none;
   width: 16px;
   margin: -4px 0; /* handle is placed by default on the groove, so we need to offset it */
   border-radius: 8px;
 }
 QSlider::handle:hover {
-  background-color: #707070;
+  background-color: #909090;
 }
 QSlider::handle:pressed {
-  background-color: #808080;
+  background-color: #a0a0a0;
 }
 
 QTextBrowser {

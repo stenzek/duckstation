@@ -262,7 +262,16 @@
 		<file>icons/white/svg/artboard-2-line.svg</file>
 		<file>icons/white/svg/chat-off-line.svg</file>
 		<file>icons/white/svg/cheats-line.svg</file>
+		<file>icons/white/svg/checkbox-checked-disabled.svg</file>
+		<file>icons/white/svg/checkbox-checked-pressed.svg</file>
+		<file>icons/white/svg/checkbox-checked.svg</file>
+		<file>icons/white/svg/checkbox-indeterminate-disabled.svg</file>
+		<file>icons/white/svg/checkbox-indeterminate-pressed.svg</file>
+		<file>icons/white/svg/checkbox-indeterminate.svg</file>
 		<file>icons/white/svg/checkbox-multiple-blank-line.svg</file>
+		<file>icons/white/svg/checkbox-unchecked-disabled.svg</file>
+		<file>icons/white/svg/checkbox-unchecked-pressed.svg</file>
+		<file>icons/white/svg/checkbox-unchecked.svg</file>
 		<file>icons/white/svg/chip-2-line.svg</file>
 		<file>icons/white/svg/chip-line.svg</file>
 		<file>icons/white/svg/close-line.svg</file>
