@@ -3,8 +3,11 @@
 
 #include "threading.h"
 #include "assert.h"
-#include "cocoa_tools.h"
 #include "log.h"
+
+#ifdef __APPLE__
+#include "cocoa_tools.h"
+#endif
 
 #include <memory>
 #include <utility>

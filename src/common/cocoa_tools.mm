@@ -145,6 +145,19 @@ bool CocoaTools::DelayedLaunch(std::string_view file, std::span<const std::strin
   }
 }
 
+std::optional<std::pair<int, int>> GetViewSizeInPixels(const void* view)
+{
+  std::optional<std::pair<int, int>> ret;
+  if (view)
+  {
+    NSView* nview = (__bridge NSView*)view;
+    const NSSize size = [nview convertSizeToBacking:view.frame.size];
+    ret = std::make_pair(static_cast<int>(size.width), static_cast<int>(size.height));
+  }
+
+  return ret;
+}
+
 void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine)
 {
   if (![NSThread isMainThread])
