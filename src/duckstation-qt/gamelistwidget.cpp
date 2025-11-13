@@ -1685,7 +1685,8 @@ public:
       painter->setBrush(Qt::NoBrush);
 
       // Draw border manually instead of with drawRect to avoid joins at corners.
-      const QRect border_rect = option.rect.adjusted(1, 1, -1, -1);
+      // Using the top-left pixel causes rendering issues at high-dpi.
+      const QRect border_rect = option.rect.adjusted(1, 1, 0, 0);
       const std::array<QPoint, 4 * 2> line_points = {{
         border_rect.topLeft(),
         border_rect.topRight(),
