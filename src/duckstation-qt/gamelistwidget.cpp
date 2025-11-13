@@ -458,7 +458,7 @@ void GameListModel::createPlaceholderImage(QImage& image, const QImage& placehol
     painter.setFont(font);
 
     const int margin = static_cast<int>(30.0f * scale);
-    const QSize unscaled_size = image.deviceIndependentSize().toSize();
+    const QSize unscaled_size = QtUtils::GetDeviceIndependentSize(image.size(), image.devicePixelRatio());
     const QRect text_rc(margin, margin, static_cast<int>(static_cast<float>(unscaled_size.width() - margin - margin)),
                         static_cast<int>(static_cast<float>(unscaled_size.height() - margin - margin)));
 
@@ -1383,7 +1383,7 @@ public:
 
     const QRect& r = option.rect;
     const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
-    const QSize pix_size = pix.deviceIndependentSize().toSize();
+    const QSize pix_size = QtUtils::GetDeviceIndependentSize(pix.size(), pix.devicePixelRatio());
 
     // draw pixmap at center of item
     const QPoint p((r.width() - pix_size.width()) / 2, (r.height() - pix_size.height()) / 2);
@@ -1435,7 +1435,7 @@ public:
     const QPixmap& icon = (num_achievements > 0) ? (mastered ? m_model->getMasteredAchievementsPixmap() :
                                                                m_model->getHasAchievementsPixmap()) :
                                                    m_model->getNoAchievementsPixmap();
-    const QSize icon_size = icon.deviceIndependentSize().toSize();
+    const QSize icon_size = QtUtils::GetDeviceIndependentSize(icon.size(), icon.devicePixelRatio());
     painter->drawPixmap(r.topLeft() + QPoint(5, (r.height() - icon_size.height() + 2) / 2), icon);
     r.setLeft(r.left() + 12 + icon_size.width());
 
@@ -1515,7 +1515,7 @@ public:
 
     const QRect& r = option.rect;
     const QPixmap pix = m_frame_pixmaps[m_current_frame];
-    const QSize pix_size = pix.deviceIndependentSize().toSize();
+    const QSize pix_size = QtUtils::GetDeviceIndependentSize(pix.size(), pix.devicePixelRatio());
 
     // draw pixmap at center of item
     const QPoint p((r.width() - pix_size.width()) / 2, (r.height() - pix_size.height()) / 2);
@@ -1633,7 +1633,7 @@ public:
       return;
 
     const QPixmap& pix = m_model->getCoverForEntry(ge);
-    const QSize pix_size = pix.deviceIndependentSize().toSize();
+    const QSize pix_size = QtUtils::GetDeviceIndependentSize(pix.size(), pix.devicePixelRatio());
     const QSize cover_size = m_model->getCoverArtSize();
 
     // draw pixmap at center of item
@@ -1920,7 +1920,7 @@ void GameListWidget::updateBackground(bool reload_image)
   }
 
   QImage scaled_image = m_background_image;
-  resizeAndPadImage(&scaled_image, QSizeF(m_ui.stack->size() * devicePixelRatio()).toSize(), true, true);
+  resizeAndPadImage(&scaled_image, QtUtils::ApplyDevicePixelRatioToSize(m_ui.stack->size(), m_model->getDevicePixelRatio()), true, true);
 
   QPalette new_palette = qApp->palette(m_ui.stack);
   new_palette.setBrush(QPalette::Window, QPixmap::fromImage(scaled_image));

@@ -144,8 +144,17 @@ QIcon GetIconForLanguage(std::string_view language_name);
 void ResizeSharpBilinear(QPixmap& pm, int size, int base_size);
 void ResizeSharpBilinear(QImage& pm, int size, int base_size);
 
+/// Applies the device pixel ratio to the given size, giving the size in pixels.
+QSize ApplyDevicePixelRatioToSize(const QSize& size, qreal device_pixel_ratio);
+
+/// Removes the device pixel ratio from the given size, giving the size in device-independent units.
+QSize GetDeviceIndependentSize(const QSize& size, qreal device_pixel_ratio);
+
 /// Returns the pixel ratio/scaling factor for a widget.
 qreal GetDevicePixelRatioForWidget(const QWidget* widget);
+
+/// Returns the pixel size (real geometry) for a widget. DPR can be passed to avoid re-querying when needed.
+QSize GetPixelSizeForWidget(const QWidget* widget, qreal device_pixel_ratio = -1);
 
 /// Returns the common window info structure for a Qt widget.
 std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);

@@ -30,9 +30,6 @@ public:
 
   QPaintEngine* paintEngine() const override;
 
-  int scaledWindowWidth() const;
-  int scaledWindowHeight() const;
-
   std::optional<WindowInfo> getWindowInfo(RenderAPI render_api, Error* error);
 
   void updateRelativeMode(bool enabled);
@@ -67,7 +64,7 @@ private:
 
   std::vector<int> m_keys_pressed_with_modifiers;
 
-  u32 m_last_window_width = 0;
+  QSize m_last_window_size;
   u32 m_last_window_height = 0;
   qreal m_last_window_scale = 1;
 
@@ -109,8 +106,7 @@ protected:
 
 private:
   void* m_userdata = nullptr;
-  u32 m_last_window_width = 0;
-  u32 m_last_window_height = 0;
+  QSize m_last_window_size;
   qreal m_last_window_scale = 1;
   bool m_destroying = false;
 };
