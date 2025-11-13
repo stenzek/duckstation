@@ -247,11 +247,11 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
   bool try_sptd = true;
 
   m_filename = filename;
-  m_hDevice = CreateFile(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                         OPEN_EXISTING, 0, NULL);
+  m_hDevice = CreateFileA(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                          OPEN_EXISTING, 0, NULL);
   if (m_hDevice == INVALID_HANDLE_VALUE)
   {
-    m_hDevice = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, NULL);
+    m_hDevice = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, NULL);
     if (m_hDevice != INVALID_HANDLE_VALUE)
     {
       WARNING_LOG("Could not open '{}' as read/write, can't use SPTD", filename);
