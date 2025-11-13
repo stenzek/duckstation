@@ -227,7 +227,7 @@ GameListModel::GameListModel(GameListWidget* parent)
     m_icon_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", DEFAULT_COVER_SCALE);
-  m_icon_size = Host::GetBaseFloatSettingValue("UI", "GameListIconSize", GAME_ICON_DEFAULT_SIZE);
+  m_icon_size = Host::GetBaseIntSettingValue("UI", "GameListIconSize", GAME_ICON_DEFAULT_SIZE);
   m_show_localized_titles = GameList::ShouldShowLocalizedTitles();
   m_show_titles_for_covers = Host::GetBaseBoolSettingValue("UI", "GameListShowCoverTitles", true);
   m_show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);

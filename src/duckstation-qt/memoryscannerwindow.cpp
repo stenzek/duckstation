@@ -338,8 +338,8 @@ void MemoryScannerWindow::addManualWatchAddressClicked()
     items.append(tr(title));
 
   bool ok = false;
-  QString selected_item(QInputDialog::getItem(this, windowTitle(), tr("Select data size:"), items, 0, false, &ok));
-  int index = items.indexOf(selected_item);
+  const QString selected_item = QInputDialog::getItem(this, windowTitle(), tr("Select data size:"), items, 0, false, &ok);
+  const qsizetype index = items.indexOf(selected_item);
   if (index < 0 || !ok)
     return;
 

@@ -1579,8 +1579,8 @@ void EmuThread::setAudioOutputVolume(int volume, int fast_forward_volume)
     return;
   }
 
-  g_settings.audio_output_volume = volume;
-  g_settings.audio_fast_forward_volume = fast_forward_volume;
+  g_settings.audio_output_volume = static_cast<u8>(volume);
+  g_settings.audio_fast_forward_volume = static_cast<u8>(fast_forward_volume);
   System::UpdateVolume();
 }
 
@@ -2319,7 +2319,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   if (!has_base_ts)
   {
     // Try without the country suffix.
-    const int index = qlanguage.lastIndexOf('-');
+    const qsizetype index = qlanguage.lastIndexOf('-');
     if (index > 0)
     {
       base_path = QStringLiteral("%1/qt_%2.qm").arg(base_dir).arg(qlanguage.left(index));
@@ -2592,7 +2592,7 @@ bool InputDeviceListModel::hasEffectsOfType(InputBindingInfo::Type type)
 
 int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-  return m_devices.size();
+  return static_cast<int>(m_devices.size());
 }
 
 QVariant InputDeviceListModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const

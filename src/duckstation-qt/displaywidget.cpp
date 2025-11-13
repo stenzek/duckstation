@@ -362,7 +362,7 @@ bool DisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      const float dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
       const u32 scaled_width =
         static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
       const u32 scaled_height =
@@ -374,7 +374,7 @@ bool DisplayWidget::event(QEvent* event)
         m_last_window_width = scaled_width;
         m_last_window_height = scaled_height;
         m_last_window_scale = dpr;
-        emit windowResizedEvent(scaled_width, scaled_height, dpr);
+        emit windowResizedEvent(scaled_width, scaled_height, static_cast<float>(dpr));
       }
 
       updateCenterPos();
@@ -606,7 +606,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      const float dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
       const u32 scaled_width =
         static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
       const u32 scaled_height =
@@ -622,7 +622,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
           m_userdata, Host::AuxiliaryRenderWindowEvent::Resized,
           Host::AuxiliaryRenderWindowEventParam{.uint_param = scaled_width},
           Host::AuxiliaryRenderWindowEventParam{.uint_param = scaled_height},
-          Host::AuxiliaryRenderWindowEventParam{.float_param = dpr});
+          Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(dpr)});
       }
 
       return true;

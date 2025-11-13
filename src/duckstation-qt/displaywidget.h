@@ -69,7 +69,7 @@ private:
 
   u32 m_last_window_width = 0;
   u32 m_last_window_height = 0;
-  float m_last_window_scale = 1.0f;
+  qreal m_last_window_scale = 1;
 
   const char* m_window_position_key = nullptr;
 };
@@ -111,6 +111,6 @@ private:
   void* m_userdata = nullptr;
   u32 m_last_window_width = 0;
   u32 m_last_window_height = 0;
-  float m_last_window_scale = 1.0f;
+  qreal m_last_window_scale = 1;
   bool m_destroying = false;
 };
