@@ -3179,17 +3179,27 @@ void MainWindow::onCheckForUpdatesActionTriggered()
 
 void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString& card_b_path)
 {
+  bool any_cards_exist = false;
+
   for (const QString& card_path : {card_a_path, card_b_path})
   {
-    if (!card_path.isEmpty() && !QFile::exists(card_path))
+    if (!card_path.isEmpty())
     {
-      if (QtUtils::MessageBoxQuestion(
-            this, tr("Memory Card Not Found"),
-            tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
-            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+      if (QFile::exists(card_path))
+      {
+        any_cards_exist = true;
+      }
+      else if (QtUtils::MessageBoxQuestion(
+                 this, tr("Memory Card Not Found"),
+                 tr("Memory card '%1' does not exist. Do you want to create an empty memory card?").arg(card_path),
+                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
       {
         Error error;
-        if (!MemoryCardEditorWindow::createMemoryCard(card_path, &error))
+        if (MemoryCardEditorWindow::createMemoryCard(card_path, &error))
+        {
+          any_cards_exist = true;
+        }
+        else
         {
           QtUtils::MessageBoxCritical(this, tr("Memory Card Not Found"),
                                       tr("Failed to create memory card '%1': %2")
@@ -3199,6 +3209,10 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
       }
     }
   }
+
+  // don't open the editor if no cards exist and we requested one
+  if (!any_cards_exist && (!card_a_path.isEmpty() || !card_b_path.isEmpty()))
+    return;
 
   if (!m_memory_card_editor_window)
     m_memory_card_editor_window = new MemoryCardEditorWindow();
