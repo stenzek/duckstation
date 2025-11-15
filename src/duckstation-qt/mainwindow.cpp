@@ -2109,7 +2109,6 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     const std::string active_buttons_str =
       Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
     std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
-    bool active_buttons_changed = false;
 
     QMenu* const menu = QtUtils::NewPopupMenu(this);
 
@@ -2160,25 +2159,22 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
       QAction* menu_action = menu->addAction((m_ui.*action_ptr)->text());
       menu_action->setCheckable(true);
       menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
-      connect(menu_action, &QAction::toggled, this, [&active_buttons, &active_buttons_changed, name](bool checked) {
-        if (checked)
-          StringUtil::AddToStringList(active_buttons, name);
-        else
-          StringUtil::RemoveFromStringList(active_buttons, name);
-        active_buttons_changed = true;
+      connect(menu_action, &QAction::toggled, this, [this, name](bool checked) {
+        const std::string active_buttons_str =
+          Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+        std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
+        if (checked ? StringUtil::AddToStringList(active_buttons, name) :
+                      StringUtil::RemoveFromStringList(active_buttons, name))
+        {
+          Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
+          Host::CommitBaseSettingChanges();
+          updateToolbarActions();
+        }
       });
     }
 
     menu->popup(m_ui.toolBar->mapToGlobal(pos));
-
-    if (active_buttons_changed)
-    {
-      Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
-      Host::CommitBaseSettingChanges();
-    }
   }
-
-  updateToolbarActions();
 }
 
 void MainWindow::onToolbarTopLevelChanged(bool top_level)
