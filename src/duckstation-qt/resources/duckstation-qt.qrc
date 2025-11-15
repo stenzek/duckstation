@@ -9,23 +9,8 @@
 		<file>controllers/negcon.svg</file>
 		<file>icons/QT.png</file>
 		<file>icons/UpdateDuck.png</file>
-		<file>icons/address-book-new-22.png</file>
-		<file>icons/address-book-new-22@2x.png</file>
-		<file>icons/antialias-icon.png</file>
-		<file>icons/antialias-icon@2x.png</file>
-		<file>icons/applications-development.png</file>
-		<file>icons/applications-development@2x.png</file>
-		<file>icons/applications-graphics.png</file>
-		<file>icons/applications-graphics@2x.png</file>
-		<file>icons/applications-internet.png</file>
-		<file>icons/applications-other.png</file>
-		<file>icons/applications-other@2x.png</file>
-		<file>icons/applications-system-24.png</file>
-		<file>icons/applications-system-24@2x.png</file>
 		<file>icons/applications-system.png</file>
 		<file>icons/applications-system@2x.png</file>
-		<file>icons/audio-card.png</file>
-		<file>icons/audio-card@2x.png</file>
 		<file>icons/black/index.theme</file>
 		<file>icons/black/svg/add-animation.svg</file>
 		<file>icons/black/svg/add-line.svg</file>
@@ -122,13 +107,6 @@
 		<file>icons/black/svg/video-on-line.svg</file>
 		<file>icons/black/svg/volume-up-line.svg</file>
 		<file>icons/black/svg/window-2-line.svg</file>
-		<file>icons/camera-photo.png</file>
-		<file>icons/camera-photo@2x.png</file>
-		<file>icons/camera-video.png</file>
-		<file>icons/camera-video@2x.png</file>
-		<file>icons/conical-flask-red.png</file>
-		<file>icons/conical-flask-red@2x.png</file>
-		<file>icons/cover-placeholder.png</file>
 		<file>icons/debug-execute-from-cursor.png</file>
 		<file>icons/debug-execute-to-cursor.png</file>
 		<file>icons/debug-pc.png</file>
@@ -142,21 +120,6 @@
 		<file>icons/debug-step-over.png</file>
 		<file>icons/debug-trace.png</file>
 		<file>icons/discord.png</file>
-		<file>icons/document-new.png</file>
-		<file>icons/document-new@2x.png</file>
-		<file>icons/document-open.png</file>
-		<file>icons/document-open@2x.png</file>
-		<file>icons/document-save.png</file>
-		<file>icons/document-save@2x.png</file>
-		<file>icons/drive-optical.png</file>
-		<file>icons/drive-optical@2x.png</file>
-		<file>icons/drive-removable-media.png</file>
-		<file>icons/drive-removable-media@2x.png</file>
-		<file>icons/edit-clear-16.png</file>
-		<file>icons/edit-clear-16@2x.png</file>
-		<file>icons/edit-find.png</file>
-		<file>icons/emblem-person-blue.png</file>
-		<file>icons/emblem-person-blue@2x.png</file>
 		<file>icons/flags/de.png</file>
 		<file>icons/flags/de@2x.png</file>
 		<file>icons/flags/en.png</file>
@@ -193,64 +156,11 @@
 		<file>icons/flags/tr@2x.png</file>
 		<file>icons/flags/zh-CN.png</file>
 		<file>icons/flags/zh-CN@2x.png</file>
-		<file>icons/folder-open.png</file>
-		<file>icons/folder-open@2x.png</file>
 		<file>icons/github.png</file>
-		<file>icons/go-down-16.png</file>
-		<file>icons/go-down-16@2x.png</file>
-		<file>icons/go-up-16.png</file>
-		<file>icons/go-up-16@2x.png</file>
-		<file>icons/input-gaming.png</file>
-		<file>icons/input-gaming@2x.png</file>
-		<file>icons/list-add.png</file>
-		<file>icons/list-add@2x.png</file>
-		<file>icons/list-remove.png</file>
-		<file>icons/list-remove@2x.png</file>
-		<file>icons/media-flash-2.png</file>
-		<file>icons/media-flash-24.png</file>
-		<file>icons/media-flash-24@2x.png</file>
-		<file>icons/media-flash-2@2x.png</file>
-		<file>icons/media-flash.png</file>
-		<file>icons/media-flash@2x.png</file>
-		<file>icons/media-optical-24.png</file>
-		<file>icons/media-optical-24@2x.png</file>
-		<file>icons/media-optical-gear-24.png</file>
-		<file>icons/media-optical-gear-24@2x.png</file>
-		<file>icons/media-optical.png</file>
-		<file>icons/media-optical@2x.png</file>
-		<file>icons/media-playback-pause.png</file>
-		<file>icons/media-playback-pause@2x.png</file>
-		<file>icons/media-playback-start.png</file>
-		<file>icons/media-playback-start@2x.png</file>
 		<file>icons/media-record.png</file>
 		<file>icons/media-record@2x.png</file>
-		<file>icons/multimedia-player.png</file>
-		<file>icons/multimedia-player@2x.png</file>
-		<file>icons/preferences-desktop-keyboard-shortcuts.png</file>
-		<file>icons/preferences-desktop-keyboard-shortcuts@2x.png</file>
-		<file>icons/preferences-system.png</file>
-		<file>icons/preferences-system@2x.png</file>
-		<file>icons/process-stop.png</file>
-		<file>icons/process-stop@2x.png</file>
-		<file>icons/software-update-available.png</file>
-		<file>icons/software-update-available@2x.png</file>
-		<file>icons/system-file-manager.png</file>
-		<file>icons/system-file-manager@2x.png</file>
 		<file>icons/system-search.png</file>
 		<file>icons/system-search@2x.png</file>
-		<file>icons/system-shutdown.png</file>
-		<file>icons/system-shutdown@2x.png</file>
-		<file>icons/trophy.png</file>
-		<file>icons/trophy@2x.png</file>
-		<file>icons/update.png</file>
-		<file>icons/utilities-system-monitor.png</file>
-		<file>icons/utilities-system-monitor@2x.png</file>
-		<file>icons/video-display.png</file>
-		<file>icons/video-display@2x.png</file>
-		<file>icons/view-fullscreen.png</file>
-		<file>icons/view-fullscreen@2x.png</file>
-		<file>icons/view-refresh.png</file>
-		<file>icons/view-refresh@2x.png</file>
 		<file>icons/white/index.theme</file>
 		<file>icons/white/svg/add-animation.svg</file>
 		<file>icons/white/svg/add-line.svg</file>
