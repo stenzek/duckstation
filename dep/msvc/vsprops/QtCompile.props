@@ -119,7 +119,7 @@
 
   <!--Copy the needed dlls-->
   <ItemGroup>
-    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix);Qt6Concurrent$(QtLibSuffix)" />
+    <QtLibNames Include="Qt6Core$(QtLibSuffix);Qt6Gui$(QtLibSuffix);Qt6Widgets$(QtLibSuffix);Qt6Svg$(QtLibSuffix)" />
     <QtDlls Include="@(QtLibNames -> '$(QtBinDir)%(Identity).dll')" />
     <!--Filter plugins to copy based on the observation that all debug versions end in "d"-->
     <QtAllPlugins Include="$(QtPluginsDir)**\*$(QtLibSuffix).dll" />
