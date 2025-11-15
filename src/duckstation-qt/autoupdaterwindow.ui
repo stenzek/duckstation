@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>Automatic Updater</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>:/icons/UpdateDuck.png</normalon>
+   </iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="updateTextLayout" stretch="0,1">

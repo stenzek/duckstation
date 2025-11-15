@@ -380,8 +380,6 @@ QString MemoryEditorWindow::formatNumber(u64 value, bool is_signed, int byte_siz
 
 void MemoryEditorWindow::setupAdditionalUi()
 {
-  setWindowIcon(QtHost::GetAppIcon());
-
   const QFont& fixed_font = QtHost::GetFixedFont();
   m_ui.memoryView->setFont(fixed_font);
 

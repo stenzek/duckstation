@@ -190,11 +190,12 @@ void MainWindow::initialize()
   updateToolbarArea();
   updateEmulationActions(false, false, false);
   updateDisplayRelatedActions(false, false);
+  updateWindowTitle();
   connectSignals();
 
-  QtUtils::RestoreWindowGeometry("MainWindow", this);
   switchToGameListView();
-  updateWindowTitle();
+
+  QtUtils::RestoreWindowGeometry("MainWindow", this);
 
 #ifdef _WIN32
   registerForDeviceNotifications();

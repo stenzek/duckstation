@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Download Covers</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="artboard-2-line"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">

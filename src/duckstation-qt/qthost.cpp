@@ -433,7 +433,6 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
                                       .arg(QtUtils::StringViewToQString(std::string_view(url).substr(
                                         (url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0))));
   progress.GetDialog().setWindowTitle(title);
-  progress.GetDialog().setWindowIcon(GetAppIcon());
   progress.SetCancellable(true);
   progress.MakeVisible();
 

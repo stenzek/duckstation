@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Memory Editor</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="chip-line"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -416,7 +419,7 @@
  <connections/>
  <buttongroups>
   <buttongroup name="baseButtonGroup"/>
-  <buttongroup name="memoryRegionButtonGroup"/>
   <buttongroup name="endianButtonGroup"/>
+  <buttongroup name="memoryRegionButtonGroup"/>
  </buttongroups>
 </ui>

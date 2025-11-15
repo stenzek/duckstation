@@ -14,8 +14,7 @@
    <string>Memory Card Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/duckstation-qt.qrc">
-    <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
+   <iconset theme="memcard-line"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">

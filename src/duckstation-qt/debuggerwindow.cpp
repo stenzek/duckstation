@@ -443,8 +443,6 @@ void DebuggerWindow::closeEvent(QCloseEvent* event)
 
 void DebuggerWindow::setupAdditionalUi()
 {
-  setWindowIcon(QtHost::GetAppIcon());
-
   const QFont& fixed_font = QtHost::GetFixedFont();
   m_ui.codeView->setFont(fixed_font);
   m_ui.codeView->updateRowHeight();

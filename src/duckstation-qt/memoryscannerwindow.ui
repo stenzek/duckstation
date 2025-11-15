@@ -14,8 +14,7 @@
    <string>Memory Scanner</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
+   <iconset theme="mag-line"/>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">

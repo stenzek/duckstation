@@ -80,7 +80,6 @@ LOG_CHANNEL(Host);
 AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
 {
   m_ui.setupUi(this);
-  setWindowIcon(QtHost::GetAppIcon());
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterWindow::downloadUpdateClicked);

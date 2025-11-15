@@ -14,8 +14,7 @@
    <string>ISO Browser</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/duckstation-qt.qrc">
-    <normaloff>:/icons/media-optical.png</normaloff>:/icons/media-optical.png</iconset>
+   <iconset theme="disc-line"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
    <item>

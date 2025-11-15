@@ -13,7 +13,6 @@
 CoverDownloadWindow::CoverDownloadWindow() : QWidget()
 {
   m_ui.setupUi(this);
-  setWindowIcon(QtHost::GetAppIcon());
   m_ui.coverIcon->setPixmap(QIcon::fromTheme(QStringLiteral("artboard-2-line")).pixmap(32));
   updateEnabled();
   QtUtils::RestoreWindowGeometry("CoverDownloadWindow", this);
