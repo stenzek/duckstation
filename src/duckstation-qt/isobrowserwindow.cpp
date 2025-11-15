@@ -155,6 +155,7 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
     return;
 
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
 
   const bool is_directory = items.front()->data(0, Qt::UserRole + 1).toBool();
   const QString path = items.front()->data(0, Qt::UserRole).toString();

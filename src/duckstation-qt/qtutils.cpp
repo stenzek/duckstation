@@ -23,6 +23,7 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSlider>
@@ -285,6 +286,29 @@ QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title
   msgbox->setIcon(icon);
   SetMessageBoxStyle(msgbox, modality);
   return msgbox;
+}
+
+void QtUtils::StylePopupMenu(QMenu* menu)
+{
+  if (QtHost::IsStyleSheetApplicationTheme())
+  {
+    menu->setWindowFlags(menu->windowFlags() | Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint);
+    menu->setAttribute(Qt::WA_TranslucentBackground, true);
+  }
+  else
+  {
+    if (!(menu->windowFlags() & Qt::NoDropShadowWindowHint))
+      return;
+
+    menu->setWindowFlags(menu->windowFlags() & ~(Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint));
+    menu->setAttribute(Qt::WA_TranslucentBackground, false);
+  }
+}
+
+void QtUtils::StyleChildMenus(QWidget* widget)
+{
+  for (QMenu* menu : widget->findChildren<QMenu*>())
+    StylePopupMenu(menu);
 }
 
 QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,

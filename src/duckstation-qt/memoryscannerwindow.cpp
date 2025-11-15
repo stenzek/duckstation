@@ -25,7 +25,6 @@
 #include <QtGui/QColor>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
-#include <QtWidgets/QMenu>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
 #include <utility>

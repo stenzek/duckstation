@@ -210,6 +210,7 @@ void DebuggerWindow::onBreakpointListContextMenuRequested()
   const CPU::BreakpointType type = static_cast<CPU::BreakpointType>(item->data(2, Qt::UserRole).toUInt());
 
   QMenu menu(this);
+  QtUtils::StylePopupMenu(&menu);
   connect(menu.addAction(tr("&Remove")), &QAction::triggered, this,
           [this, address, type]() { removeBreakpoint(type, address); });
   menu.exec(QCursor::pos());
@@ -295,6 +296,7 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   m_ui.codeView->setSelectedAddress(address);
 
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   menu.addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
   menu.addSeparator();
 

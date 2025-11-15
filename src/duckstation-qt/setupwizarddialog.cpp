@@ -268,6 +268,7 @@ void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
   const int row = selection[0].row();
 
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   menu.addAction(tr("Remove"), [this]() { onRemoveSearchDirectoryButtonClicked(); });
   menu.addSeparator();
   menu.addAction(tr("Open Directory..."), [this, row]() {
@@ -436,7 +437,8 @@ QString SetupWizardDialog::findCurrentDeviceForPort(u32 port) const
 
 void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
 {
-  QMenu menu(this);
+  QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   bool added = false;
 
   for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())

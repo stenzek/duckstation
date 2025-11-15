@@ -345,6 +345,7 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
   const std::string selected_code = selected ? selected->name : std::string();
 
   QMenu context_menu(m_ui.cheatList);
+  QtUtils::StylePopupMenu(&context_menu);
 
   QAction* add = context_menu.addAction(QIcon::fromTheme(QStringLiteral("add-line")), tr("Add Cheat..."));
   connect(add, &QAction::triggered, this, &GameCheatSettingsWidget::newCode);
@@ -557,7 +558,8 @@ void GameCheatSettingsWidget::expandAllItems()
 
 void GameCheatSettingsWidget::onImportClicked()
 {
-  QMenu menu(this);
+  QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   connect(menu.addAction(tr("From File...")), &QAction::triggered, this,
           &GameCheatSettingsWidget::onImportFromFileTriggered);
   connect(menu.addAction(tr("From Text...")), &QAction::triggered, this,

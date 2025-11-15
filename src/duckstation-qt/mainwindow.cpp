@@ -1634,6 +1634,7 @@ void MainWindow::onGameListEntryActivated()
 void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 {
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   {
     const auto lock = GameList::GetLock();
     const GameList::Entry* entry = m_game_list_widget->getSelectedEntry();
@@ -1893,6 +1894,7 @@ void MainWindow::setupAdditionalUi()
   m_status_vps_widget->hide();
 
   m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
+  QtUtils::StylePopupMenu(m_settings_toolbar_menu);
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);
   m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
 
@@ -1963,6 +1965,8 @@ void MainWindow::setupAdditionalUi()
   s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_disable_window_rounded_corners)
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
+
+  QtUtils::StyleChildMenus(this);
 }
 
 void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order)
@@ -2109,6 +2113,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     bool active_buttons_changed = false;
 
     QMenu menu;
+    QtUtils::StylePopupMenu(&menu);
 
     QAction* action = menu.addAction(tr("Lock Toolbar"));
     action->setCheckable(true);
@@ -2132,6 +2137,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
 
     QMenu* position_menu = menu.addMenu(tr("Position"));
+    QtUtils::StylePopupMenu(position_menu);
     for (const auto& [area, name] : s_toolbar_areas)
     {
       QAction* position_action = position_menu->addAction(tr(name));
@@ -2929,6 +2935,7 @@ void MainWindow::changeEvent(QEvent* event)
   if (event->type() == QEvent::StyleChange)
   {
     QtHost::UpdateThemeOnStyleChange();
+    QtUtils::StyleChildMenus(this);
     emit themeChanged(QtHost::IsDarkApplicationTheme());
   }
 
@@ -3594,6 +3601,7 @@ void MainWindow::onRAIntegrationMenuChanged()
   if (!m_raintegration_menu)
   {
     m_raintegration_menu = new QMenu(QStringLiteral("&RAIntegration"));
+    QtUtils::StylePopupMenu(m_raintegration_menu);
     m_ui.menuBar->insertMenu(m_ui.menuDebug->menuAction(), m_raintegration_menu);
   }
 

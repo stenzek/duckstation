@@ -810,7 +810,8 @@ void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
   if (!card)
     return;
 
-  QMenu menu(table);
+  QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   QAction* action = menu.addAction(tr("Delete File"));
   action->setEnabled(fi && !fi->deleted);
   connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doDeleteFile);

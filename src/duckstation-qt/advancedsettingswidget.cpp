@@ -227,6 +227,7 @@ AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
 void AdvancedSettingsWidget::onLogChannelsButtonClicked()
 {
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   LogWindow::populateFilterMenu(&menu);
   menu.exec(QCursor::pos());
 }

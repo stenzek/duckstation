@@ -32,7 +32,6 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QHeaderView>
-#include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QToolTip>
@@ -2486,6 +2485,7 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
 void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
 {
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {

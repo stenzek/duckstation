@@ -26,6 +26,7 @@ class QComboBox;
 class QFrame;
 class QKeyEvent;
 class QLabel;
+class QMenu;
 class QSlider;
 class QTableView;
 class QTreeView;
@@ -127,6 +128,10 @@ QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon ic
 QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
                            QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
                            Qt::WindowModality modality, QWidget* parent);
+
+/// Styles a popup menu for the current theme.
+void StylePopupMenu(QMenu* menu);
+void StyleChildMenus(QWidget* widget);
 
 /// Returns icon for language.
 QIcon GetIconForTranslationLanguage(std::string_view language_name);

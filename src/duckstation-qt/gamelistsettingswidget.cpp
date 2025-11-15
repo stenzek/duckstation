@@ -162,6 +162,7 @@ void GameListSettingsWidget::onDirectoryListContextMenuRequested(const QPoint& p
   const int row = selection[0].row();
 
   QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   menu.addAction(QIcon::fromTheme("folder-reduce-line"), tr("Remove"), this,
                  &GameListSettingsWidget::onRemoveSearchDirectoryButtonClicked);
   menu.addSeparator();

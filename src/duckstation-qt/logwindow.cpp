@@ -123,6 +123,7 @@ void LogWindow::createUi()
   setMenuBar(menu);
 
   QMenu* log_menu = menu->addMenu("&Log");
+  QtUtils::StylePopupMenu(log_menu);
   action = log_menu->addAction(tr("&Clear"));
   connect(action, &QAction::triggered, this, &LogWindow::onClearTriggered);
   action = log_menu->addAction(tr("&Save..."));
@@ -131,9 +132,11 @@ void LogWindow::createUi()
   log_menu->addSeparator();
 
   action = log_menu->addAction(tr("Cl&ose"));
+  QtUtils::StylePopupMenu(log_menu);
   connect(action, &QAction::triggered, this, &LogWindow::close);
 
   QMenu* settings_menu = menu->addMenu(tr("&Settings"));
+  QtUtils::StylePopupMenu(settings_menu);
 
   action = settings_menu->addAction(tr("Log To &System Console"));
   action->setCheckable(true);
@@ -160,6 +163,7 @@ void LogWindow::createUi()
   settings_menu->addSeparator();
 
   m_level_menu = settings_menu->addMenu(tr("&Log Level"));
+  QtUtils::StylePopupMenu(m_level_menu);
   for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
   {
     action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
@@ -169,6 +173,7 @@ void LogWindow::createUi()
   updateLogLevelUi();
 
   QMenu* filters_menu = menu->addMenu(tr("&Channels"));
+  QtUtils::StylePopupMenu(filters_menu);
   connect(filters_menu, &QMenu::aboutToShow, this, [filters_menu]() {
     filters_menu->clear();
     populateFilterMenu(filters_menu);

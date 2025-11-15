@@ -262,7 +262,8 @@ void ControllerBindingWidget::onTypeChanged()
 
 void ControllerBindingWidget::onAutomaticBindingClicked()
 {
-  QMenu menu(this);
+  QMenu menu;
+  QtUtils::StylePopupMenu(&menu);
   bool added = false;
 
   for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())

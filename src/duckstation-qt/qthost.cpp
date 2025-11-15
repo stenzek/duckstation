@@ -67,7 +67,6 @@
 #include <QtGui/QClipboard>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <algorithm>
 #include <cmath>
