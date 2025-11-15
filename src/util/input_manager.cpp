@@ -1608,7 +1608,6 @@ void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
   si.SetBoolValue("InputSources", "SDL", true);
   si.SetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
   si.SetBoolValue("InputSources", "SDLPS5PlayerLED", false);
-  si.SetBoolValue("InputSources", "SDLPS5MicMuteLEDForAnalogMode", false);
   si.SetBoolValue("InputSources", "XInput", false);
   si.SetBoolValue("InputSources", "RawInput", false);
 }
