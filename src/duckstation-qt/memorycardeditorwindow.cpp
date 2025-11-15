@@ -3,6 +3,7 @@
 
 #include "memorycardeditorwindow.h"
 #include "mainwindow.h"
+#include "qthost.h"
 #include "qtutils.h"
 
 #include "core/host.h"
@@ -139,9 +140,13 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_card_a.path_cb = m_ui.cardAPath;
   m_card_a.table = m_ui.cardA;
   m_card_a.blocks_free_label = m_ui.cardAUsage;
+  m_card_a.modified_icon_label = m_ui.cardAModifiedIcon;
+  m_card_a.modified_label = m_ui.cardAModified;
   m_card_b.path_cb = m_ui.cardBPath;
   m_card_b.table = m_ui.cardB;
   m_card_b.blocks_free_label = m_ui.cardBUsage;
+  m_card_b.modified_icon_label = m_ui.cardBModifiedIcon;
+  m_card_b.modified_label = m_ui.cardBModified;
 
   m_file_icon_width = MEMORY_CARD_ICON_SIZE + (m_card_a.table->showGrid() ? 1 : 0);
   m_file_icon_height = MEMORY_CARD_ICON_SIZE + (m_card_a.table->showGrid() ? 1 : 0);
@@ -155,6 +160,8 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   connectCardUi(&m_card_b, m_ui.buttonBoxB);
   populateComboBox(m_ui.cardAPath);
   populateComboBox(m_ui.cardBPath);
+  updateCardBlocksFree(&m_card_a);
+  updateCardBlocksFree(&m_card_b);
   updateButtonState();
 
   const QString new_card_hover_text(tr("New Card..."));
@@ -236,6 +243,7 @@ bool MemoryCardEditorWindow::event(QEvent* event)
 
 void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* buttonBox)
 {
+  card->modified_icon_label->setPixmap(QIcon(QtHost::GetResourceQPath("images/warning.svg", true)).pixmap(16, 16));
   card->format_button = buttonBox->addButton(tr("Format Card"), QDialogButtonBox::ActionRole);
   card->import_file_button = buttonBox->addButton(tr("Import File..."), QDialogButtonBox::ActionRole);
   card->import_button = buttonBox->addButton(tr("Import Card..."), QDialogButtonBox::ActionRole);
@@ -351,13 +359,12 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
   card->table->setRowCount(0);
   card->dirty = false;
   card->save_button->setEnabled(false);
-  card->blocks_free_label->clear();
-
   card->filename.clear();
 
   if (filename.isEmpty())
   {
     updateButtonState();
+    updateCardBlocksFree(card);
     return false;
   }
 
@@ -468,9 +475,19 @@ void MemoryCardEditorWindow::incrementAnimationFrame()
 
 void MemoryCardEditorWindow::updateCardBlocksFree(Card* card)
 {
-  card->blocks_free = MemoryCardImage::GetFreeBlockCount(card->data);
-  card->blocks_free_label->setText(
-    tr("%n block(s) free%1", "", card->blocks_free).arg(card->dirty ? QStringLiteral(" (*)") : QString()));
+  if (!card->filename.empty())
+  {
+    card->blocks_free = MemoryCardImage::GetFreeBlockCount(card->data);
+    card->blocks_free_label->setText(tr("%n block(s) free", "", card->blocks_free));
+    card->modified_icon_label->setVisible(card->dirty);
+    card->modified_label->setVisible(card->dirty);
+  }
+  else
+  {
+    card->blocks_free_label->clear();
+    card->modified_icon_label->setVisible(false);
+    card->modified_label->setVisible(false);
+  }
 }
 
 void MemoryCardEditorWindow::setCardDirty(Card* card)

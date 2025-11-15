@@ -46,6 +46,8 @@ private:
     QComboBox* path_cb = nullptr;
     QTableWidget* table = nullptr;
     QLabel* blocks_free_label = nullptr;
+    QLabel* modified_icon_label = nullptr;
+    QLabel* modified_label = nullptr;
     QPushButton* save_button = nullptr;
     QPushButton* import_button = nullptr;
     QPushButton* import_file_button = nullptr;

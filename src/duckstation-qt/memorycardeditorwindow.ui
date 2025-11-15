@@ -102,11 +102,34 @@
    <item row="2" column="3">
     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
      <item>
-      <widget class="QLabel" name="cardBUsage">
-       <property name="text">
-        <string notr="true"/>
+      <widget class="QLabel" name="cardBUsage" />
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-      </widget>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="cardBModifiedLayout">
+       <item>
+        <widget class="QLabel" name="cardBModifiedIcon" />
+       </item>
+       <item>
+        <widget class="QLabel" name="cardBModified">
+         <property name="text">
+          <string>Card Modified</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBoxB">
@@ -118,13 +141,36 @@
     </layout>
    </item>
    <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLabel" name="cardAUsage">
-       <property name="text">
-        <string notr="true"/>
+      <widget class="QLabel" name="cardAUsage" />
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
-      </widget>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="cardAModifiedLayout">
+       <item>
+        <widget class="QLabel" name="cardAModifiedIcon" />
+       </item>
+       <item>
+        <widget class="QLabel" name="cardAModified">
+         <property name="text">
+          <string>Card Modified</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBoxA">
