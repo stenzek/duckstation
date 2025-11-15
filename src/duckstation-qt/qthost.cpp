@@ -296,22 +296,22 @@ void QtHost::MessageOutputHandler(QtMsgType type, const QMessageLogContext& cont
   switch (type)
   {
     case QtDebugMsg:
-      DEBUG_LOG("qDebug({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Debug, Log::Color::Default, "qDebug({}): {}", function, smsg);
       break;
     case QtInfoMsg:
-      INFO_LOG("qInfo({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Info, Log::Color::Default, "qInfo({}): {}", function, smsg);
       break;
     case QtWarningMsg:
-      WARNING_LOG("qWarning({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Warning, Log::Color::Default, "qWarning({}): {}", function, smsg);
       break;
     case QtCriticalMsg:
-      ERROR_LOG("qCritical({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Error, Log::Color::Default, "qCritical({}): {}", function, smsg);
       break;
     case QtFatalMsg:
-      ERROR_LOG("qFatal({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Error, Log::Color::Default, "qFatal({}): {}", function, smsg);
       Y_OnPanicReached(smsg.c_str(), function, context.file ? context.file : "<unknown>", context.line);
     default:
-      ERROR_LOG("<unknown>({}): {}", function, smsg);
+      GENERIC_LOG(Log::Channel::Host, Log::Level::Error, Log::Color::Default, "<unknown>({}): {}", function, smsg);
       break;
   }
 }
