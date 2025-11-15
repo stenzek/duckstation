@@ -463,6 +463,32 @@ bool StringUtil::ParseAssignmentString(const std::string_view str, std::string_v
   return true;
 }
 
+size_t StringUtil::GetUTF8CharacterCount(const std::string_view str)
+{
+  size_t count = 0;
+
+  const size_t len = str.length();
+  for (size_t pos = 0; pos < len;)
+  {
+    const u8 c = str[pos];
+
+    if (c < 0x80) // ASCII
+      pos += 1;
+    else if ((c & 0xE0) == 0xC0) // 2-byte sequence
+      pos += 2;
+    else if ((c & 0xF0) == 0xE0) // 3-byte sequence
+      pos += 3;
+    else if ((c & 0xF8) == 0xF0 && c <= 0xF4) // 4-byte sequence (limited to 0xF4)
+      pos += 4;
+    else // Unknown/invalid leading byte: treat as one invalid byte (replacement), advance one.
+      pos += 1;
+
+    ++count;
+  }
+
+  return count;
+}
+
 void StringUtil::EncodeAndAppendUTF8(std::string& s, char32_t ch)
 {
   if (ch <= 0x7F) [[likely]]

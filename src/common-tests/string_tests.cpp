@@ -1,11 +1,14 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "common/string_util.h"
 #include "common/string_pool.h"
+#include "common/string_util.h"
 
 #include <gtest/gtest.h>
+#include <string_view>
 #include <tuple>
+
+using namespace std::string_view_literals;
 
 TEST(StringUtil, Ellipsise)
 {
@@ -200,7 +203,7 @@ TEST(StringUtil, Strlcpy)
 
   // Truncation test
   result = StringUtil::Strlcpy(buffer, "hello world", sizeof(buffer));
-  ASSERT_EQ(result, 11u);             // Should return original string length
+  ASSERT_EQ(result, 11u);            // Should return original string length
   ASSERT_STREQ(buffer, "hello wor"); // Should be truncated and null-terminated
 
   // Empty string
@@ -718,6 +721,79 @@ TEST(StringUtil, GetNextToken)
   ASSERT_EQ(caret, "d");
 }
 
+TEST(StringUtil, GetUTF8CharacterCount)
+{
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount(""sv), 0u);
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("Hello, world!"sv), 13u);
+
+  // COPYRIGHT SIGN U+00A9 -> 0xC2 0xA9
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xC2\xA9"sv), 1u);
+
+  // Truncated 2-byte sequence (only leading byte present)
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xC2"sv), 1u);
+
+  // EURO SIGN U+20AC -> 0xE2 0x82 0xAC
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xE2\x82\xAC"sv), 1u);
+
+  // Truncated 3-byte sequence
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xE2\x82"sv), 1u);
+
+  // GRINNING FACE U+1F600 -> 0xF0 0x9F 0x98 0x80
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xF0\x9F\x98\x80"sv), 1u);
+
+  // Truncated 4-byte sequence
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xF0\x9F\x98"sv), 1u);
+
+  // "A" + EURO + GRINNING + "B"
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("A"
+                                              "\xE2\x82\xAC"
+                                              "\xF0\x9F\x98\x80"
+                                              "B"sv),
+            4u);
+
+  // Three grinning faces in a row (3 * 4 bytes)
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xF0\x9F\x98\x80"
+                                              "\xF0\x9F\x98\x80"
+                                              "\xF0\x9F\x98\x80"sv),
+            3u);
+
+  // Continuation bytes (0x80 - 0xBF) appearing alone are invalid and should each count as one.
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\x80\x81\x82"sv), 3u);
+
+  // Leading bytes that are outside allowed ranges (e.g., 0xF5..0xFF)
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xF5\xF6\xFF"sv), 3u);
+
+  // 0xF4 allowed as 4-byte lead (e.g., U+10FFFF -> F4 8F BF BF)
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("\xF4\x8F\xBF\xBF"sv), 1u);
+
+  // Mix: ASCII, valid 2-byte, invalid continuation, truncated 3-byte, valid 3-byte, valid 4-byte
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("X"
+                                              "\xC3\xA9"
+                                              "\x80"
+                                              "\xE2"
+                                              "\xE2\x82\xAC"
+                                              "\xF0\x9F\x8D\x95"sv),
+            6u);
+
+  // Inline characters (not hex escapes): 'a' (ASCII), 'é' (U+00E9), '€' (U+20AC), '😀' (U+1F600), 'z'
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("aé€😀z"sv), 5u);
+
+  // Emoji-only example (two emoji characters inline)
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("😀😀"sv), 2u);
+
+  // "Hello ⣿ World 😀" but using standard euro sign U+20AC
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("Hello € World 😀"sv), 15u);
+
+  // 'A' 'é' 'B' '€' '😀' 'C' -> total 6 codepoints
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("AéB€😀C"sv), 6u);
+
+  // Inline 'é' then hex euro then inline emoji
+  EXPECT_EQ(StringUtil::GetUTF8CharacterCount("é"
+                                              "\xE2\x82\xAC"
+                                              "😀"sv),
+            3u);
+}
+
 TEST(StringUtil, EncodeAndAppendUTF8)
 {
   std::string s;
@@ -744,7 +820,7 @@ TEST(StringUtil, EncodeAndAppendUTF8)
   // Test invalid character (should encode replacement character)
   s.clear();
   StringUtil::EncodeAndAppendUTF8(s, 0x110000); // Invalid
-  ASSERT_EQ(s.size(), 3u);                       // Replacement character is 3 bytes
+  ASSERT_EQ(s.size(), 3u);                      // Replacement character is 3 bytes
 
   // Test buffer version
   u8 buffer[10] = {0};

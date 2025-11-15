@@ -458,6 +458,9 @@ ALWAYS_INLINE std::optional<std::string_view> GetNextToken(std::string_view& car
 /// Unicode replacement character.
 inline constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
 
+/// Returns the length of a UTF-8 string in codepoints.
+size_t GetUTF8CharacterCount(const std::string_view str);
+
 /// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
 void EncodeAndAppendUTF8(std::string& s, char32_t ch);
 size_t EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char32_t ch);
