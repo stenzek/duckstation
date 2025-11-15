@@ -238,28 +238,8 @@ bool QtHost::EarlyProcessStartup()
   // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
   // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
   // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
-  // TODO: Re-evaluate this on Qt 6.9.
   if (QtHost::IsRunningOnWayland())
     QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-  // We also need to manually set the path to the .desktop file, because Wayland's stupidity doesn't allow
-  // applications to set window icons, because GNOME circlejerkers think their iconless windows are superior.
-  // Even the Qt side of this is weird, thankfully we can give it an absolute path, just without the extension.
-  // To make matters even worse, setting the full path here doesn't work for Flatpaks... or anything outside of
-  // KDE. Setting the application name alone does for flatpak. What a clusterfuck of a platform for basic tasks
-  // that operating systems have done for decades.
-  if (getenv("container"))
-  {
-    // Flatpak.
-    QGuiApplication::setDesktopFileName(QStringLiteral("org.duckstation.DuckStation"));
-  }
-  else if (const char* current_desktop = getenv("XDG_CURRENT_DESKTOP");
-           current_desktop && std::strstr(current_desktop, "KDE"))
-  {
-    // AppImage or local build.
-    QGuiApplication::setDesktopFileName(
-      QString::fromStdString(Path::Combine(EmuFolders::Resources, "org.duckstation.DuckStation")));
-  }
 #endif
 
   // redirect qt errors
