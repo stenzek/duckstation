@@ -149,6 +149,12 @@ public:
     return (!m_force_progressive_scan && m_GPUSTAT.vertical_interlace);
   }
 
+  /// Returns true if scanout is forced to progressive.
+  ALWAYS_INLINE bool IsProgressiveDisplayScanForced() const
+  {
+    return (m_force_progressive_scan && m_GPUSTAT.vertical_interlace);
+  }
+
   /// Returns true if interlaced rendering is enabled and force progressive scan is disabled.
   ALWAYS_INLINE bool IsInterlacedRenderingEnabled() const
   {

@@ -3664,8 +3664,13 @@ void System::FormatLatencyStats(SmallStringBase& str)
                                       (std::max(queued_frame_count, 1u))) -
     Timer::ConvertValueToMilliseconds(static_cast<Timer::Value>(s_state.runahead_frames) * s_state.frame_period));
 
-  str.format("AL: {}ms | AF: {:.0f}ms | PF: {:.0f}ms | IL: {:.0f}ms | QF: {}", audio_latency, active_frame_time,
-             pre_frame_time, input_latency, queued_frame_count);
+#define BOLD(text) "\x02" text "\x01"
+
+  str.format("{}ms " BOLD("AL") " | {:.0f}ms " BOLD("AF") " | {:.0f}ms " BOLD("PF") " | {:.0f}ms " BOLD(
+               "IL") " | {} " BOLD("QF"),
+             audio_latency, active_frame_time, pre_frame_time, input_latency, queued_frame_count);
+
+#undef BOLD
 }
 
 void System::UpdateSpeedLimiterState()

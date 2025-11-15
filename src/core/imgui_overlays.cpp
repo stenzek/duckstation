@@ -54,7 +54,7 @@ LOG_CHANNEL(ImGuiManager);
 
 namespace ImGuiManager {
 
-static constexpr float FIXED_BOLD_WEIGHT = 700.0f;
+static constexpr float FIXED_BOLD_WEIGHT = 800.0f;
 
 namespace {
 
@@ -367,6 +367,9 @@ static void DrawPerformanceStat(ImDrawList* dl, float& position_y, ImFont* font,
 void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin,
                                           float spacing)
 {
+#define BOLD(text) "\x02" text "\x01"
+#define COLOR(text) "\x04" text "\x03"
+
   if (!(g_gpu_settings.display_show_fps || g_gpu_settings.display_show_speed || g_gpu_settings.display_show_gpu_stats ||
         g_gpu_settings.display_show_resolution || g_gpu_settings.display_show_latency_stats ||
         g_gpu_settings.display_show_cpu_usage || g_gpu_settings.display_show_gpu_usage ||
@@ -391,18 +394,25 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     const float speed = PerformanceCounters::GetEmulationSpeed();
     if (g_gpu_settings.display_show_fps)
     {
-      text.append_format("\x02G: \x01\x04{:.2f}\x03\x02 | V: \x01\x04{:.2f}\x03", PerformanceCounters::GetFPS(),
-                         PerformanceCounters::GetVPS());
+      const float fps = PerformanceCounters::GetFPS();
+      const float vps = PerformanceCounters::GetVPS();
+
+      if (vps < 100.0f)
+        text.append_format(COLOR("{:.2f}") " " BOLD("FPS") " | " COLOR("{:.2f}") " " BOLD("VPS"), fps, vps);
+      else if (vps < 1000.0f)
+        text.append_format(COLOR("{:.1f}") " " BOLD("FPS") " | " COLOR("{:.1f}") " " BOLD("VPS"), fps, vps);
+      else
+        text.append_format(COLOR("{:.0f}") " " BOLD("FPS") " | " COLOR("{:.0f}") " " BOLD("VPS"), fps, vps);
     }
     if (g_gpu_settings.display_show_speed)
     {
-      text.append_format("\x02{}\x04{}% \x01\x03", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
+      text.append_format("{}" COLOR("{}%") " ", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
 
       const float target_speed = System::GetTargetSpeed();
       if (target_speed <= 0.0f)
-        text.append("(Max)");
+        text.append(BOLD("(Max)"));
       else
-        text.append_format("({:.0f}%)", target_speed * 100.0f);
+        text.append_format(BOLD("({:.0f}%)"), target_speed * 100.0f);
     }
     if (!text.empty())
     {
@@ -435,11 +445,15 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     if (g_gpu_settings.display_show_resolution)
     {
       const u32 resolution_scale = gpu->GetResolutionScale();
+      const bool pgxp = gpu->IsUsingHardwareBackend() && g_gpu_settings.gpu_pgxp_enable;
       const auto [display_width, display_height] = g_gpu.GetFullDisplayResolution(); // NOTE: Racey read.
       const bool interlaced = g_gpu.IsInterlacedDisplayEnabled();
+      const bool progressive_forced = g_gpu.IsProgressiveDisplayScanForced();
       const bool pal = g_gpu.IsInPALMode();
-      text.format("{}x{} {} {} [{}x]", display_width * resolution_scale, display_height * resolution_scale,
-                  pal ? "PAL" : "NTSC", interlaced ? "Interlaced" : "Progressive", resolution_scale);
+      text.format("{}x{} " BOLD("{} {}") " | {}x " BOLD("IR") "{}", display_width * resolution_scale,
+                  display_height * resolution_scale, pal ? "PAL" : "NTSC",
+                  interlaced ? "Interlaced" : (progressive_forced ? "Forced-Progressive" : "Progressive"),
+                  resolution_scale, pgxp ? " | " BOLD("PGXP") : "");
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
       position_y += spacing;
@@ -455,8 +469,9 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
     if (g_gpu_settings.display_show_cpu_usage)
     {
-      text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceCounters::GetMinimumFrameTime(),
-                  PerformanceCounters::GetAverageFrameTime(), PerformanceCounters::GetMaximumFrameTime());
+      text.format(" {:.2f}ms " BOLD("Min") " | {:.2f}ms " BOLD("Avg") " | {:.2f}ms " BOLD("Max"),
+                  PerformanceCounters::GetMinimumFrameTime(), PerformanceCounters::GetAverageFrameTime(),
+                  PerformanceCounters::GetMaximumFrameTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
       position_y += spacing;
@@ -492,12 +507,11 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
             text.append_format("{}{}", first ? "" : "/", "ME");
         }
 
-        text.append("]: \x01");
+        text.append("]:\x03 ");
       }
       else
       {
-        text.assign("\x02"
-                    "CPU: \x01");
+        text.assign(BOLD("CPU:") " ");
       }
       FormatProcessorStat(text, PerformanceCounters::GetCPUThreadUsage(),
                           PerformanceCounters::GetCPUThreadAverageTime());
@@ -507,7 +521,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
       if (g_gpu_settings.gpu_use_thread)
       {
-        text.assign("\x02RNDR: \x01");
+        text.assign(BOLD("RNDR:") " ");
         FormatProcessorStat(text, PerformanceCounters::GetGPUThreadUsage(),
                             PerformanceCounters::GetGPUThreadAverageTime());
         DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
@@ -518,8 +532,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 #ifndef __ANDROID__
       if (MediaCapture* cap = System::GetMediaCapture())
       {
-        text.assign("\x02"
-                    "CAP: \x01");
+        text.assign(BOLD("CAP:") " ");
         FormatProcessorStat(text, cap->GetCaptureThreadUsage(), cap->GetCaptureThreadTime());
         DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                             text);
@@ -530,7 +543,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
     if (g_gpu_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
     {
-      text.assign("\x02GPU: \x01");
+      text.assign(BOLD("GPU:"));
       FormatProcessorStat(text, PerformanceCounters::GetGPUUsage(), PerformanceCounters::GetGPUAverageTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
@@ -551,6 +564,11 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     SetStatusIndicatorIcons(text, true);
     DrawPerformanceStat(dl, position_y, ui_font, status_size, 0.0f, 0, shadow_offset, rbound, text);
   }
+
+#undef UNCOLOR
+#undef COLOR
+#undef UNBOLD
+#undef BOLD
 }
 
 void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
