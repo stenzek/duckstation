@@ -2788,7 +2788,7 @@ const QFont& QtHost::GetFixedFont()
 {
   std::call_once(s_state.fixed_font_once_flag, []() {
     const int font_id = QFontDatabase::addApplicationFont(
-      QString::fromStdString(Path::Combine(EmuFolders::Resources, "fonts/RobotoMono-VariableFont_wght.ttf")));
+      QString::fromStdString(Path::Combine(EmuFolders::Resources, "fonts/JetBrainsMono-VariableFont_wght.ttf")));
     if (font_id < 0)
     {
       ERROR_LOG("Failed to load fixed-width font.");
