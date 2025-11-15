@@ -81,8 +81,7 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/duckstation-qt.qrc">
-         <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
+        <iconset theme="file-add-line"/>
        </property>
       </widget>
      </item>
@@ -92,17 +91,16 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/duckstation-qt.qrc">
-         <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+        <iconset theme="folder-open-line"/>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item row="2" column="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,0,0">
      <item>
-      <widget class="QLabel" name="cardBUsage" />
+      <widget class="QLabel" name="cardBUsage"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -120,7 +118,7 @@
      <item>
       <layout class="QHBoxLayout" name="cardBModifiedLayout">
        <item>
-        <widget class="QLabel" name="cardBModifiedIcon" />
+        <widget class="QLabel" name="cardBModifiedIcon"/>
        </item>
        <item>
         <widget class="QLabel" name="cardBModified">
@@ -143,7 +141,7 @@
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLabel" name="cardAUsage" />
+      <widget class="QLabel" name="cardAUsage"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
@@ -161,7 +159,7 @@
      <item>
       <layout class="QHBoxLayout" name="cardAModifiedLayout">
        <item>
-        <widget class="QLabel" name="cardAModifiedIcon" />
+        <widget class="QLabel" name="cardAModifiedIcon"/>
        </item>
        <item>
         <widget class="QLabel" name="cardAModified">
@@ -199,8 +197,7 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/duckstation-qt.qrc">
-         <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
+        <iconset theme="file-add-line"/>
        </property>
       </widget>
      </item>
@@ -210,8 +207,7 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/duckstation-qt.qrc">
-         <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+        <iconset theme="folder-open-line"/>
        </property>
       </widget>
      </item>
