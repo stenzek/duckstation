@@ -1380,16 +1380,15 @@ void TextureReplacementSettingsDialog::onExportClicked()
   config.vram_write_dump_height_threshold = static_cast<u16>(m_ui.minDumpedVRAMWriteHeight->value());
   config.dump_vram_write_force_alpha_channel = m_ui.setTextureDumpAlphaChannel->isChecked();
 
-  QInputDialog idlg(this);
-  idlg.resize(600, 400);
-  idlg.setWindowTitle(tr("Texture Replacement Configuration"));
-  idlg.setInputMode(QInputDialog::TextInput);
-  idlg.setOption(QInputDialog::UsePlainTextEditForTextInput);
-  idlg.setLabelText(tr("Texture Replacement Configuration (config.yaml)"));
-  idlg.setTextValue(QString::fromStdString(config.ExportToYAML(false)));
-  idlg.setOkButtonText(tr("Save As..."));
-  if (idlg.exec() != QDialog::Rejected)
-  {
+  QInputDialog* const idlg = new QInputDialog(this);
+  idlg->resize(600, 400);
+  idlg->setWindowTitle(tr("Texture Replacement Configuration"));
+  idlg->setInputMode(QInputDialog::TextInput);
+  idlg->setOption(QInputDialog::UsePlainTextEditForTextInput);
+  idlg->setLabelText(tr("Texture Replacement Configuration (config.yaml)"));
+  idlg->setTextValue(QString::fromStdString(config.ExportToYAML(false)));
+  idlg->setOkButtonText(tr("Save As..."));
+  connect(idlg, &QDialog::accepted, [this, idlg]() {
     const QString path =
       QFileDialog::getSaveFileName(this, tr("Save Configuration"), QString(), tr("Configuration Files (config.yaml)"));
     if (path.isEmpty())
@@ -1397,11 +1396,12 @@ void TextureReplacementSettingsDialog::onExportClicked()
 
     Error error;
     if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toUtf8().constData(),
-                                       idlg.textValue().toStdString(), &error))
+                                       idlg->textValue().toStdString(), &error))
     {
       QtUtils::MessageBoxCritical(this, tr("Write Failed"), QString::fromStdString(error.GetDescription()));
     }
-  }
+  });
+  idlg->open();
 }
 } // namespace
 

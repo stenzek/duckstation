@@ -21,9 +21,7 @@
 
 #include "fmt/format.h"
 
-#include <QtCore/QFileInfo>
 #include <QtGui/QColor>
-#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>

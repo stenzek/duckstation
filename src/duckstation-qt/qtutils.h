@@ -127,7 +127,7 @@ QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon ic
                                            QMessageBox::StandardButton defaultButton);
 QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
                            QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
-                           Qt::WindowModality modality, QWidget* parent);
+                           QWidget* parent, bool delete_on_close = true);
 
 /// Styles a popup menu for the current theme.
 void StylePopupMenu(QMenu* menu);

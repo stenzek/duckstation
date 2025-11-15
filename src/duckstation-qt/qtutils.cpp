@@ -52,7 +52,7 @@ LOG_CHANNEL(Host);
 namespace QtUtils {
 
 static bool TryMigrateWindowGeometry(SettingsInterface* si, std::string_view window_name, QWidget* widget);
-static void SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality);
+static void SetMessageBoxStyle(QMessageBox* const dlg);
 
 static constexpr const char* WINDOW_GEOMETRY_CONFIG_SECTION = "UI";
 
@@ -242,9 +242,8 @@ void QtUtils::ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int h
   widget->resize(width, height);
 }
 
-void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality modality)
+void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg)
 {
-  dlg->setWindowModality(modality);
 #ifdef __APPLE__
   // Can't have a stylesheet set even if it doesn't affect the widget.
   if (QtHost::IsStyleSheetApplicationTheme() || QtHost::NativeThemeStylesheetNeedsUpdate())
@@ -267,14 +266,15 @@ QMessageBox::StandardButton QtUtils::MessageBoxIcon(QWidget* parent, QMessageBox
 #endif
 
   // NOTE: Must be application modal, otherwise will lock up on MacOS.
-  SetMessageBoxStyle(&msgbox, Qt::ApplicationModal);
+  SetMessageBoxStyle(&msgbox);
+  msgbox.setWindowModality(Qt::ApplicationModal);
   msgbox.setDefaultButton(defaultButton);
   return static_cast<QMessageBox::StandardButton>(msgbox.exec());
 }
 
 QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
                                     QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
-                                    Qt::WindowModality modality, QWidget* parent)
+                                    QWidget* parent, bool delete_on_close)
 {
 #ifndef __APPLE__
   QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
@@ -283,9 +283,10 @@ QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title
     new QMessageBox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
   msgbox->setInformativeText(text);
 #endif
-  msgbox->setAttribute(Qt::WA_DeleteOnClose);
+  if (delete_on_close)
+    msgbox->setAttribute(Qt::WA_DeleteOnClose);
   msgbox->setIcon(icon);
-  SetMessageBoxStyle(msgbox, modality);
+  SetMessageBoxStyle(msgbox);
   return msgbox;
 }
 

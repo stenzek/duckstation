@@ -93,7 +93,7 @@ class CheatCodeEditorDialog final : public QDialog
   Q_OBJECT
 
 public:
-  CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo* code, const QStringList& group_names);
+  CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo code, const QStringList& group_names);
   ~CheatCodeEditorDialog() override;
 
 private:
@@ -111,7 +111,7 @@ private:
   GameCheatSettingsWidget* m_parent;
   Ui::GameCheatCodeEditorDialog m_ui;
 
-  Cheats::CodeInfo* m_code;
+  Cheats::CodeInfo m_code;
   Cheats::CodeOptionList m_new_options;
 };
 

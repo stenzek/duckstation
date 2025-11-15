@@ -704,7 +704,11 @@ void MemoryCardEditorWindow::doRenameSaveFile()
   MemoryCardRenameFileDialog* const dlg = new MemoryCardRenameFileDialog(this, fi->filename);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  connect(dlg, &QDialog::accepted, this, [=, this] {
+  connect(dlg, &QDialog::accepted, this, [this, dlg] {
+    const auto [card, fi] = getSelectedFile();
+    if (!fi)
+      return;
+
     const std::string new_name = dlg->getNewName();
     if (new_name.empty())
       return;

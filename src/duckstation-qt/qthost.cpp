@@ -2160,9 +2160,8 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
-      QMessageBox* const msgbox =
-        QtUtils::NewMessageBox(QMessageBox::Question, title, message, QMessageBox::NoButton, QMessageBox::NoButton,
-                               Qt::WindowModal, lock.getDialogParent());
+      QMessageBox* const msgbox = QtUtils::NewMessageBox(QMessageBox::Question, title, message, QMessageBox::NoButton,
+                                                         QMessageBox::NoButton, lock.getDialogParent());
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);
@@ -2180,7 +2179,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                            });
                          }
                        });
-      msgbox->exec();
+      msgbox->open();
     });
   }
 }

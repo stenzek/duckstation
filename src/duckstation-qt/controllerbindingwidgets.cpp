@@ -995,9 +995,10 @@ MultipleDeviceAutobindDialog::MultipleDeviceAutobindDialog(QWidget* parent, Cont
   : QDialog(parent), m_settings_window(settings_window), m_port(port)
 {
   QVBoxLayout* layout = new QVBoxLayout(this);
-  layout->addWidget(new QLabel(tr("Select the devices from the list below that you want to bind to this controller.")));
+  layout->addWidget(
+    new QLabel(tr("Select the devices from the list below that you want to bind to this controller."), this));
 
-  m_list = new QListWidget;
+  m_list = new QListWidget(this);
   m_list->setSelectionMode(QListWidget::SingleSelection);
   layout->addWidget(m_list);
 
@@ -1012,7 +1013,7 @@ MultipleDeviceAutobindDialog::MultipleDeviceAutobindDialog(QWidget* parent, Cont
     m_list->addItem(item);
   }
 
-  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+  QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
   connect(bb, &QDialogButtonBox::accepted, this, &MultipleDeviceAutobindDialog::doAutomaticBinding);
   connect(bb, &QDialogButtonBox::rejected, this, &QDialog::reject);
   layout->addWidget(bb);

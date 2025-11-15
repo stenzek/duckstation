@@ -400,7 +400,7 @@ void GameCheatSettingsWidget::checkForMasterDisable()
       QMessageBox::Warning, tr("Confirm Game Settings Enable"),
       tr("<h3>Game settings are currently disabled.</h3><p>This is <strong>not</strong> the default. Enabling this "
          "cheat will not have any effect until game settings are enabled. Do you want to do this now?"),
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, Qt::WindowModal, this);
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, this);
     QCheckBox* cb = new QCheckBox(mbox);
     cb->setText(tr("Do not show again"));
     mbox->setCheckBox(cb);
@@ -420,7 +420,7 @@ void GameCheatSettingsWidget::checkForMasterDisable()
       QMessageBox::Warning, tr("Confirm Cheat Enable"),
       tr("<h3>Cheats are not currently enabled for this game.</h3><p>Enabling this cheat will not have any "
          "effect until cheats are enabled for this game. Do you want to do this now?"),
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, Qt::WindowModal, this);
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, this);
     QCheckBox* cb = new QCheckBox(mbox);
     cb->setText(tr("Do not show again"));
     cb->setChecked(m_master_enable_ignored);
@@ -614,11 +614,10 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
 
 void GameCheatSettingsWidget::newCode()
 {
-  std::unique_ptr<Cheats::CodeInfo> new_code = std::make_unique<Cheats::CodeInfo>();
-  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, new_code.get(), getGroupNames());
+  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, Cheats::CodeInfo(), getGroupNames());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
-  connect(dlg, &QDialog::accepted, this, [this, code = std::move(new_code)] {
+  connect(dlg, &QDialog::accepted, this, [this] {
     // no need to reload cheats yet, it's not active. just refresh the list
     reloadList();
     g_emu_thread->reloadCheats(true, false, false, true);
@@ -633,7 +632,7 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
   if (!code)
     return;
 
-  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, code, getGroupNames());
+  CheatCodeEditorDialog* const dlg = new CheatCodeEditorDialog(this, *code, getGroupNames());
   dlg->setAttribute(Qt::WA_DeleteOnClose);
 
   connect(dlg, &QDialog::accepted, this, [this] {
@@ -790,9 +789,9 @@ void GameCheatSettingsWidget::populateTreeWidgetItem(QStandardItem* parent, cons
   }
 }
 
-CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo* code,
+CheatCodeEditorDialog::CheatCodeEditorDialog(GameCheatSettingsWidget* parent, Cheats::CodeInfo code,
                                              const QStringList& group_names)
-  : QDialog(parent), m_parent(parent), m_code(code)
+  : QDialog(parent), m_parent(parent), m_code(std::move(code))
 {
   m_ui.setupUi(this);
   setupAdditionalUi(group_names);
@@ -881,48 +880,48 @@ void CheatCodeEditorDialog::saveClicked()
   }
 
   // if the name has changed, then we need to make sure it hasn't already been used
-  if (new_name != m_code->name && m_parent->hasCodeWithName(new_name))
+  if (new_name != m_code.name && m_parent->hasCodeWithName(new_name))
   {
     QtUtils::MessageBoxCritical(this, tr("Error"),
                                 tr("A code with the name '%1' already exists.").arg(QString::fromStdString(new_name)));
     return;
   }
 
-  std::string old_name = std::move(m_code->name);
+  std::string old_name = std::move(m_code.name);
 
   // cheats coming from the database need to be copied into the user's file
-  if (m_code->from_database)
+  if (m_code.from_database)
   {
-    m_code->from_database = false;
+    m_code.from_database = false;
     old_name.clear();
   }
 
-  m_code->name = std::move(new_name);
-  m_code->description = QtUtils::NormalizeLineEndings(m_ui.description->toPlainText())
-                          .replace(QChar('\n'), QChar(' '))
-                          .trimmed()
-                          .toStdString();
-  m_code->type = new_type;
-  m_code->activation = new_activation;
-  m_code->body = std::move(new_body);
+  m_code.name = std::move(new_name);
+  m_code.description = QtUtils::NormalizeLineEndings(m_ui.description->toPlainText())
+                         .replace(QChar('\n'), QChar(' '))
+                         .trimmed()
+                         .toStdString();
+  m_code.type = new_type;
+  m_code.activation = new_activation;
+  m_code.body = std::move(new_body);
 
-  m_code->option_range_start = 0;
-  m_code->option_range_end = 0;
-  m_code->options = {};
+  m_code.option_range_start = 0;
+  m_code.option_range_end = 0;
+  m_code.options = {};
   if (m_ui.optionsType->currentIndex() == 1)
   {
     // choices
-    m_code->options = std::move(m_new_options);
+    m_code.options = std::move(m_new_options);
   }
   else if (m_ui.optionsType->currentIndex() == 2)
   {
     // range
-    m_code->option_range_start = static_cast<u16>(m_ui.rangeMin->value());
-    m_code->option_range_end = static_cast<u16>(m_ui.rangeMax->value());
+    m_code.option_range_start = static_cast<u16>(m_ui.rangeMin->value());
+    m_code.option_range_end = static_cast<u16>(m_ui.rangeMax->value());
   }
 
   std::string path = m_parent->getPathForSavingCheats();
-  if (!Cheats::UpdateCodeInFile(path.c_str(), old_name, m_code, &error))
+  if (!Cheats::UpdateCodeInFile(path.c_str(), old_name, &m_code, &error))
   {
     QtUtils::MessageBoxCritical(
       this, tr("Error"), tr("Failed to save cheat code:\n%1").arg(QString::fromStdString(error.GetDescription())));
@@ -974,10 +973,10 @@ void CheatCodeEditorDialog::setupAdditionalUi(const QStringList& group_names)
 
 void CheatCodeEditorDialog::fillUi()
 {
-  m_ui.name->setText(QtUtils::StringViewToQString(m_code->GetNamePart()));
-  m_ui.description->setPlainText(QString::fromStdString(m_code->description));
+  m_ui.name->setText(QtUtils::StringViewToQString(m_code.GetNamePart()));
+  m_ui.description->setPlainText(QString::fromStdString(m_code.description));
 
-  const std::string_view group = m_code->GetNameParentPart();
+  const std::string_view group = m_code.GetNameParentPart();
   if (group.empty())
   {
     // ungrouped is always first
@@ -997,16 +996,16 @@ void CheatCodeEditorDialog::fillUi()
     m_ui.group->setCurrentIndex(index);
   }
 
-  m_ui.type->setCurrentIndex(static_cast<int>(m_code->type));
-  m_ui.activation->setCurrentIndex(static_cast<int>(m_code->activation));
+  m_ui.type->setCurrentIndex(static_cast<int>(m_code.type));
+  m_ui.activation->setCurrentIndex(static_cast<int>(m_code.activation));
 
-  m_ui.instructions->setPlainText(QString::fromStdString(m_code->body));
+  m_ui.instructions->setPlainText(QString::fromStdString(m_code.body));
 
-  m_ui.rangeMin->setValue(static_cast<int>(m_code->option_range_start));
-  m_ui.rangeMax->setValue(static_cast<int>(m_code->option_range_end));
-  m_new_options = m_code->options;
+  m_ui.rangeMin->setValue(static_cast<int>(m_code.option_range_start));
+  m_ui.rangeMax->setValue(static_cast<int>(m_code.option_range_end));
+  m_new_options = m_code.options;
 
-  m_ui.optionsType->setCurrentIndex(m_code->HasOptionRange() ? 2 : (m_code->HasOptionChoices() ? 1 : 0));
+  m_ui.optionsType->setCurrentIndex(m_code.HasOptionRange() ? 2 : (m_code.HasOptionChoices() ? 1 : 0));
   onOptionTypeChanged(m_ui.optionsType->currentIndex());
 }
 

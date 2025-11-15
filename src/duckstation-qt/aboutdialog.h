@@ -14,7 +14,7 @@ public:
   explicit AboutDialog(QWidget* parent = nullptr);
   ~AboutDialog();
 
-  static void showThirdPartyNotices(QWidget* parent);
+  static void openThirdPartyNotices(QWidget* parent);
 
 private:
   Ui::AboutDialog m_ui;

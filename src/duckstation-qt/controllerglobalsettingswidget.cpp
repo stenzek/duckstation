@@ -157,7 +157,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
   heading_layout->addWidget(heading, 1);
   main_layout->addLayout(heading_layout);
 
-  QScrollArea* const scroll_area = new QScrollArea;
+  QScrollArea* const scroll_area = new QScrollArea(dlg);
   scroll_area->setWidgetResizable(true);
   scroll_area->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scroll_area->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -179,8 +179,8 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 
     for (u32 active = 0; active < 2; active++)
     {
-      gbox_layout->addWidget(new QLabel(active ? tr("Alternate Mode:") : tr("Normal Mode:")), static_cast<int>(active),
-                             0);
+      gbox_layout->addWidget(new QLabel(active ? tr("Alternate Mode:") : tr("Normal Mode:"), dlg),
+                             static_cast<int>(active), 0);
 
       ColorPickerButton* const button = new ColorPickerButton(gbox);
       button->setColor(SDLInputSource::ParseRGBForPlayerId(

@@ -1285,7 +1285,7 @@ void MainWindow::promptForDiscChange(const QString& path)
   QMessageBox* const mb =
     QtUtils::NewMessageBox(QMessageBox::Question, tr("Confirm Disc Change"),
                            tr("Do you want to swap discs or boot the new image (via system reset)?"),
-                           QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, lock.getDialogParent());
+                           QMessageBox::NoButton, QMessageBox::NoButton, lock.getDialogParent());
 
   /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
   const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
@@ -1302,7 +1302,7 @@ void MainWindow::promptForDiscChange(const QString& path)
     g_emu_thread->changeDisc(path, reset_system, true);
   });
 
-  mb->show();
+  mb->open();
 }
 
 void MainWindow::onStartDiscActionTriggered()
@@ -2535,7 +2535,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionViewThirdPartyNotices, &QAction::triggered, this,
-          [this]() { AboutDialog::showThirdPartyNotices(this); });
+          [this]() { AboutDialog::openThirdPartyNotices(this); });
   connect(m_ui.actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
   connect(m_ui.actionAbout, &QAction::triggered, this, &MainWindow::onAboutActionTriggered);
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
@@ -3074,11 +3074,11 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
     SystemLock lock(pauseAndLockSystem());
 
-    QMessageBox* msgbox = QtUtils::NewMessageBox(
-      QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
-      quit_afterwards ? tr("Are you sure you want to exit the application?") :
-                        tr("Are you sure you want to close the current game?"),
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
+    QMessageBox* msgbox =
+      QtUtils::NewMessageBox(QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
+                             quit_afterwards ? tr("Are you sure you want to exit the application?") :
+                                               tr("Are you sure you want to close the current game?"),
+                             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, lock.getDialogParent());
 
     QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);
@@ -3098,7 +3098,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
               requestShutdown(false, allow_save_to_state, save_state, check_safety, check_pause, exit_fullscreen_ui,
                               quit_afterwards);
             });
-    msgbox->show();
+    msgbox->open();
     return;
   }
 
