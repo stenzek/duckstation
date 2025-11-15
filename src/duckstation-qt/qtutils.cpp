@@ -247,7 +247,7 @@ void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg, Qt::WindowModality moda
   dlg->setWindowModality(modality);
 #ifdef __APPLE__
   // Can't have a stylesheet set even if it doesn't affect the widget.
-  if (QtHost::NativeThemeStylesheetNeedsUpdate())
+  if (QtHost::IsStyleSheetApplicationTheme() || QtHost::NativeThemeStylesheetNeedsUpdate())
   {
     dlg->setStyleSheet("");
     dlg->setAttribute(Qt::WA_StyleSheet, false);
