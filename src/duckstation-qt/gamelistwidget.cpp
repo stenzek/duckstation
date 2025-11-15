@@ -335,7 +335,7 @@ void GameListModel::setCoverScale(float scale)
 void GameListModel::updateCoverScale()
 {
   QImage loading_image;
-  if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
+  if (loading_image.load(QtHost::GetResourceQPath("images/placeholder.png", true)))
   {
     loading_image.setDevicePixelRatio(m_device_pixel_ratio);
     resizeImage(&loading_image, getDeviceScaledCoverArtSize());
@@ -349,7 +349,7 @@ void GameListModel::updateCoverScale()
   m_loading_pixmap = QPixmap::fromImage(loading_image);
 
   m_placeholder_image = QImage();
-  if (m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath())))
+  if (m_placeholder_image.load(QtHost::GetResourceQPath("images/cover-placeholder.png", true)))
   {
     m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
     resizeImage(&m_placeholder_image, getDeviceScaledCoverArtSize());
