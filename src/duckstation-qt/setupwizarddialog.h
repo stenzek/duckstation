@@ -3,19 +3,14 @@
 
 #pragma once
 
-#include "biossettingswidget.h"
-
 #include "ui_setupwizarddialog.h"
 
-#include "core/bios.h"
-
-#include <QtCore/QList>
 #include <QtCore/QString>
-#include <QtCore/QVector>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
+#include <array>
 #include <string>
 #include <utility>
-#include <vector>
 
 class SetupWizardDialog final : public QDialog
 {

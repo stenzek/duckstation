@@ -370,11 +370,10 @@ void GameSummaryWidget::populateTracksInfo()
 
 void GameSummaryWidget::onCompatibilityCommentsClicked()
 {
-  QDialog* dlg = new QDialog(QtUtils::GetRootWidget(this));
+  QDialog* const dlg = new QDialog(QtUtils::GetRootWidget(this));
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->resize(QSize(700, 400));
-  dlg->setWindowModality(Qt::WindowModal);
   dlg->setWindowTitle(tr("Compatibility Report"));
-  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
 
   QVBoxLayout* layout = new QVBoxLayout(dlg);
 
@@ -386,7 +385,7 @@ void GameSummaryWidget::onCompatibilityCommentsClicked()
   connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
   layout->addWidget(bb);
 
-  dlg->show();
+  dlg->open();
 }
 
 void GameSummaryWidget::onInputProfileChanged(int index)

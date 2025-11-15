@@ -410,11 +410,11 @@ void InputBindingWidget::unhookInputManager()
 
 void InputBindingWidget::openDialog()
 {
-  InputBindingDialog* dlg =
+  QDialog* const dlg =
     new InputBindingDialog(m_sif, m_bind_type, m_section_name, m_key_name, m_bindings, QtUtils::GetRootWidget(this));
-  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
-  connect(dlg, &InputBindingDialog::finished, this, &InputBindingWidget::reloadBinding);
-  dlg->show();
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  connect(dlg, &QDialog::finished, this, &InputBindingWidget::reloadBinding);
+  dlg->open();
 }
 
 void InputBindingWidget::showEffectBindingDialog()

@@ -88,7 +88,7 @@ private:
   bool m_master_enable_ignored = false;
 };
 
-class CheatCodeEditorDialog : public QDialog
+class CheatCodeEditorDialog final : public QDialog
 {
   Q_OBJECT
 
@@ -115,7 +115,7 @@ private:
   Cheats::CodeOptionList m_new_options;
 };
 
-class GameCheatCodeChoiceEditorDialog : public QDialog
+class GameCheatCodeChoiceEditorDialog final : public QDialog
 {
   Q_OBJECT
 

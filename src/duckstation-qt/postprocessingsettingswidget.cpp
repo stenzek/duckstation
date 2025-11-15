@@ -185,7 +185,9 @@ void PostProcessingChainConfigWidget::updateButtonsAndConfigPane(std::optional<u
 
 void PostProcessingChainConfigWidget::onAddButtonClicked()
 {
-  PostProcessingSelectShaderDialog* dialog = new PostProcessingSelectShaderDialog(this);
+  PostProcessingSelectShaderDialog* const dialog = new PostProcessingSelectShaderDialog(this);
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+
   connect(dialog, &QDialog::accepted, this, [this, dialog]() {
     const std::string selected_shader = dialog->getSelectedShader();
     if (selected_shader.empty())
@@ -208,7 +210,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     commitSettingsUpdate();
   });
 
-  dialog->show();
+  dialog->open();
 }
 
 void PostProcessingChainConfigWidget::onRemoveButtonClicked()
@@ -664,9 +666,6 @@ void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
 PostProcessingSelectShaderDialog::PostProcessingSelectShaderDialog(QWidget* parent) : QDialog(parent)
 {
   m_ui.setupUi(this);
-
-  setAttribute(Qt::WA_DeleteOnClose, true);
-  setWindowModality(Qt::WindowModal);
 
   m_ui.searchIcon->setPixmap(QIcon::fromTheme("mag-line").pixmap(16));
 

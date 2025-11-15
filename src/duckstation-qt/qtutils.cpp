@@ -283,6 +283,7 @@ QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title
     new QMessageBox(icon, QString(), title, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
   msgbox->setInformativeText(text);
 #endif
+  msgbox->setAttribute(Qt::WA_DeleteOnClose);
   msgbox->setIcon(icon);
   SetMessageBoxStyle(msgbox, modality);
   return msgbox;

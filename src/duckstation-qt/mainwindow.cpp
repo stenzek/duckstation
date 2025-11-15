@@ -1161,8 +1161,7 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
 
   QDialog* const dlg = new QDialog(this);
   dlg->setWindowTitle(tr("Load Resume State"));
-  dlg->setWindowModality(Qt::WindowModal);
-  dlg->setAttribute(Qt::WA_DeleteOnClose, true);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
 
   QVBoxLayout* const main_layout = new QVBoxLayout(dlg);
   main_layout->setSpacing(10);
@@ -1238,7 +1237,7 @@ bool MainWindow::openResumeStateDialog(const std::string& path, const std::strin
 
   main_layout->addWidget(bbox);
 
-  dlg->show();
+  dlg->open();
   return true;
 }
 
@@ -1287,7 +1286,6 @@ void MainWindow::promptForDiscChange(const QString& path)
     QtUtils::NewMessageBox(QMessageBox::Question, tr("Confirm Disc Change"),
                            tr("Do you want to swap discs or boot the new image (via system reset)?"),
                            QMessageBox::NoButton, QMessageBox::NoButton, Qt::WindowModal, lock.getDialogParent());
-  mb->setAttribute(Qt::WA_DeleteOnClose, true);
 
   /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
   const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
@@ -1578,8 +1576,9 @@ void MainWindow::onDiscordServerActionTriggered()
 
 void MainWindow::onAboutActionTriggered()
 {
-  AboutDialog about(this);
-  about.exec();
+  QDialog* const about = new AboutDialog(this);
+  about->setAttribute(Qt::WA_DeleteOnClose);
+  about->open();
 }
 
 void MainWindow::onGameListRefreshProgress(const QString& status, int current, int total)
@@ -3080,7 +3079,6 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
       quit_afterwards ? tr("Are you sure you want to exit the application?") :
                         tr("Are you sure you want to close the current game?"),
       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, Qt::WindowModal, lock.getDialogParent());
-    msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 
     QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);
@@ -3245,7 +3243,7 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 
   AchievementLoginDialog* dlg = new AchievementLoginDialog(lock.getDialogParent(), reason);
   connect(dlg, &AchievementLoginDialog::finished, this, [lock = std::move(lock)]() {});
-  dlg->show();
+  dlg->open();
 }
 
 void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points,

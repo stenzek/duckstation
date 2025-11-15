@@ -2163,7 +2163,6 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
       QMessageBox* const msgbox =
         QtUtils::NewMessageBox(QMessageBox::Question, title, message, QMessageBox::NoButton, QMessageBox::NoButton,
                                Qt::WindowModal, lock.getDialogParent());
-      msgbox->setAttribute(Qt::WA_DeleteOnClose, true);
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);

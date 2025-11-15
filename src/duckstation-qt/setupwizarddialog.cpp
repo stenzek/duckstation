@@ -3,6 +3,7 @@
 
 #include "setupwizarddialog.h"
 #include "achievementlogindialog.h"
+#include "biossettingswidget.h"
 #include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
 #include "graphicssettingswidget.h"
@@ -13,6 +14,7 @@
 #include "settingwidgetbinder.h"
 
 #include "core/achievements.h"
+#include "core/bios.h"
 #include "core/controller.h"
 
 #include "util/input_manager.h"
@@ -490,10 +492,11 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
 
 void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label)
 {
-  if (!ControllerBindingWidget::doMultipleDeviceAutomaticBinding(this, nullptr, port))
-    return;
-
-  update_label->setText(findCurrentDeviceForPort(port));
+  QDialog* const dialog = new MultipleDeviceAutobindDialog(this, nullptr, port);
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+  connect(dialog, &QDialog::accepted, this,
+          [this, port, update_label] { update_label->setText(findCurrentDeviceForPort(port)); });
+  dialog->open();
 }
 
 void SetupWizardDialog::setupGraphicsPage(bool initial)
@@ -625,7 +628,7 @@ void SetupWizardDialog::onAchievementsLoginLogoutClicked()
 
   AchievementLoginDialog* login = new AchievementLoginDialog(this, Achievements::LoginRequestReason::UserInitiated);
   connect(login, &AchievementLoginDialog::accepted, this, &SetupWizardDialog::onAchievementsLoginCompleted);
-  login->show();
+  login->open();
 }
 
 void SetupWizardDialog::onAchievementsLoginCompleted()
