@@ -5,9 +5,14 @@
 #include "autoupdaterwindow.h"
 #include "mainwindow.h"
 #include "qtutils.h"
-#include "scmversion/scmversion.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include "scmversion/scmversion.h"
+
+#include "common/string_util.h"
+
+#include <ranges>
 
 #include "moc_interfacesettingswidget.cpp"
 
@@ -90,7 +95,46 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &InterfaceSettingsWidget::onLanguageChanged);
 
+    // Annoyingly, have to match theme and language properties otherwise the sizes do not match.
+    m_ui.theme->setMinimumContentsLength(m_ui.language->minimumContentsLength());
+    m_ui.theme->setSizeAdjustPolicy(m_ui.language->sizeAdjustPolicy());
+
+    if (AutoUpdaterWindow::isSupported())
+    {
+      SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+      m_ui.autoUpdateTag->addItems(AutoUpdaterWindow::getTagList());
+      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
+                                                     AutoUpdaterWindow::getDefaultTag());
+      connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
+    }
+    else
+    {
+      m_ui.autoUpdateTag->addItem(tr("Unavailable"));
+      m_ui.autoUpdateEnabled->setEnabled(false);
+      m_ui.autoUpdateTag->setEnabled(false);
+      m_ui.checkForUpdates->setEnabled(false);
+      m_ui.updatesGroup->setEnabled(false);
+    }
+
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
+  }
+  else
+  {
+    delete m_ui.appearanceGroup;
+    m_ui.appearanceGroup = nullptr;
+    m_ui.languageLabel = nullptr;
+    m_ui.language = nullptr;
+    m_ui.themeLabel = nullptr;
+    m_ui.theme = nullptr;
+
+    delete m_ui.updatesGroup;
+    m_ui.autoUpdateTagLabel = nullptr;
+    m_ui.autoUpdateTag = nullptr;
+    m_ui.autoUpdateCurrentVersionLabel = nullptr;
+    m_ui.autoUpdateCurrentVersion = nullptr;
+    m_ui.autoUpdateCheckLayout = nullptr;
+    m_ui.autoUpdateEnabled = nullptr;
+    m_ui.checkForUpdates = nullptr;
   }
 
   onRenderToSeparateWindowChanged();
@@ -135,23 +179,6 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   if (!m_dialog->isPerGameSettings())
   {
-    if (AutoUpdaterWindow::isSupported())
-    {
-      SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-      m_ui.autoUpdateTag->addItems(AutoUpdaterWindow::getTagList());
-      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
-                                                     AutoUpdaterWindow::getDefaultTag());
-      connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
-    }
-    else
-    {
-      m_ui.autoUpdateTag->addItem(tr("Unavailable"));
-      m_ui.autoUpdateEnabled->setEnabled(false);
-      m_ui.autoUpdateTag->setEnabled(false);
-      m_ui.checkForUpdates->setEnabled(false);
-      m_ui.updatesGroup->setEnabled(false);
-    }
-
     dialog->registerWidgetHelp(m_ui.language, tr("Language"), tr("System Language"),
                                tr("Selects the language for the application. Please note that not all parts of the "
                                   "application may be translated for a given language."));
@@ -178,31 +205,27 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                                tr("Automatically checks for updates to the program on startup. Updates can be deferred "
                                   "until later or skipped entirely."));
   }
-  else
-  {
-    delete m_ui.appearanceGroup;
-    m_ui.appearanceGroup = nullptr;
-    m_ui.languageLabel = nullptr;
-    m_ui.language = nullptr;
-    m_ui.themeLabel = nullptr;
-    m_ui.theme = nullptr;
-
-    delete m_ui.updatesGroup;
-    m_ui.autoUpdateTagLabel = nullptr;
-    m_ui.autoUpdateTag = nullptr;
-    m_ui.autoUpdateCurrentVersionLabel = nullptr;
-    m_ui.autoUpdateCurrentVersion = nullptr;
-    m_ui.autoUpdateCheckLayout = nullptr;
-    m_ui.autoUpdateEnabled = nullptr;
-    m_ui.checkForUpdates = nullptr;
-  }
 }
 
 InterfaceSettingsWidget::~InterfaceSettingsWidget() = default;
 
 void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
 {
-  for (const auto& [language, code] : Host::GetAvailableLanguageList())
+  const auto language_list = Host::GetAvailableLanguageList();
+
+  // Instantiating the fonts used for languages takes ~170ms on my machine, so we do this to avoid a delay in opening
+  // the window. It effectively just shifts the delay to opening the dropdown instead, but most users are going to be
+  // changing the language less frequently than opening the settings window.
+  cb->setMinimumContentsLength(static_cast<int>(std::ranges::max(
+    std::views::transform(language_list, [](const auto& it) { return StringUtil::GetUTF8CharacterCount(it.first); }))));
+  cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  if (QListView* const view = qobject_cast<QListView*>(cb->view()))
+  {
+    view->setUniformItemSizes(true);
+    view->setLayoutMode(QListView::Batched);
+  }
+
+  for (const auto& [language, code] : language_list)
   {
     cb->addItem(QtUtils::GetIconForTranslationLanguage(code), QString::fromUtf8(Host::GetLanguageName(code)),
                 QString::fromLatin1(code));
