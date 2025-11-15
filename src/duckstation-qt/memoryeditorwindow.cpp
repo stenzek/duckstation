@@ -382,42 +382,28 @@ void MemoryEditorWindow::setupAdditionalUi()
 {
   setWindowIcon(QtHost::GetAppIcon());
 
-#ifdef _WIN32
-  QFont fixedFont;
-  fixedFont.setFamily(QStringLiteral("Consolas"));
-  fixedFont.setFixedPitch(true);
-  fixedFont.setStyleHint(QFont::TypeWriter);
-  fixedFont.setPointSize(10);
-#else
-  QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
-#ifdef __linux__
-  // Fonts on Linux tend to be wider, so reduce the size.
-  // Otherwise the memory view gets cut off.
-  fixedFont.setPointSize(9);
-#endif
-#endif
-  m_ui.memoryView->setFont(fixedFont);
+  const QFont& fixed_font = QtHost::GetFixedFont();
+  m_ui.memoryView->setFont(fixed_font);
 
   if (!QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this))
     QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 
   // Set minimum width for data inspector.
-  m_ui.dataInspectorAddress->setFont(fixedFont);
-  m_ui.dataInspectorUnsignedByte->setFont(fixedFont);
-  m_ui.dataInspectorSignedByte->setFont(fixedFont);
-  m_ui.dataInspectorUnsignedHalfword->setFont(fixedFont);
-  m_ui.dataInspectorSignedHalfword->setFont(fixedFont);
-  m_ui.dataInspectorUnsignedWord->setFont(fixedFont);
-  m_ui.dataInspectorSignedWord->setFont(fixedFont);
-  m_ui.dataInspectorUnsignedDoubleWord->setFont(fixedFont);
-  m_ui.dataInspectorSignedDoubleWord->setFont(fixedFont);
-  m_ui.dataInspectorFloat32->setFont(fixedFont);
-  m_ui.dataInspectorFloat64->setFont(fixedFont);
-  m_ui.dataInspectorASCIICharacter->setFont(fixedFont);
-  m_ui.dataInspectorUTF8String->setFont(fixedFont);
+  m_ui.dataInspectorAddress->setFont(fixed_font);
+  m_ui.dataInspectorUnsignedByte->setFont(fixed_font);
+  m_ui.dataInspectorSignedByte->setFont(fixed_font);
+  m_ui.dataInspectorUnsignedHalfword->setFont(fixed_font);
+  m_ui.dataInspectorSignedHalfword->setFont(fixed_font);
+  m_ui.dataInspectorUnsignedWord->setFont(fixed_font);
+  m_ui.dataInspectorSignedWord->setFont(fixed_font);
+  m_ui.dataInspectorUnsignedDoubleWord->setFont(fixed_font);
+  m_ui.dataInspectorSignedDoubleWord->setFont(fixed_font);
+  m_ui.dataInspectorFloat32->setFont(fixed_font);
+  m_ui.dataInspectorFloat64->setFont(fixed_font);
+  m_ui.dataInspectorASCIICharacter->setFont(fixed_font);
+  m_ui.dataInspectorUTF8String->setFont(fixed_font);
   m_ui.dataInspectorSignedDoubleWord->setMinimumWidth(
-    QFontMetrics(fixedFont).size(0, QStringLiteral("-8888888888888888888888")).width());
+    QFontMetrics(fixed_font).size(0, QStringLiteral("-8888888888888888888888")).width());
 
   // Default selection.
   m_ui.memoryRegionRAM->setChecked(true);

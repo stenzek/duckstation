@@ -445,26 +445,12 @@ void DebuggerWindow::setupAdditionalUi()
 {
   setWindowIcon(QtHost::GetAppIcon());
 
-#ifdef _WIN32
-  QFont fixedFont;
-  fixedFont.setFamily(QStringLiteral("Consolas"));
-  fixedFont.setFixedPitch(true);
-  fixedFont.setStyleHint(QFont::TypeWriter);
-  fixedFont.setPointSize(10);
-#else
-  QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
-#ifdef __linux__
-  // Fonts on Linux tend to be wider, so reduce the size.
-  // Otherwise the memory view gets cut off.
-  fixedFont.setPointSize(9);
-#endif
-#endif
-  m_ui.codeView->setFont(fixedFont);
+  const QFont& fixed_font = QtHost::GetFixedFont();
+  m_ui.codeView->setFont(fixed_font);
   m_ui.codeView->updateRowHeight();
-  m_ui.registerView->setFont(fixedFont);
-  m_ui.memoryView->setFont(fixedFont);
-  m_ui.stackView->setFont(fixedFont);
+  m_ui.registerView->setFont(fixed_font);
+  m_ui.memoryView->setFont(fixed_font);
+  m_ui.stackView->setFont(fixed_font);
 
   m_ui.codeView->setContextMenuPolicy(Qt::CustomContextMenu);
   m_ui.breakpointsWidget->setContextMenuPolicy(Qt::CustomContextMenu);

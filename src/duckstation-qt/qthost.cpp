@@ -150,6 +150,9 @@ struct State
   QLocale app_locale;
   std::once_flag roboto_font_once_flag;
   QStringList roboto_font_families;
+  std::once_flag fixed_font_once_flag;
+  QStringList fixed_font_families;
+  QFont fixed_font;
   bool batch_mode = false;
   bool nogui_mode = false;
   bool start_fullscreen_ui = false;
@@ -2779,6 +2782,33 @@ const QStringList& QtHost::GetRobotoFontFamilies()
   });
 
   return s_state.roboto_font_families;
+}
+
+const QFont& QtHost::GetFixedFont()
+{
+  std::call_once(s_state.fixed_font_once_flag, []() {
+    const int font_id = QFontDatabase::addApplicationFont(
+      QString::fromStdString(Path::Combine(EmuFolders::Resources, "fonts/RobotoMono-VariableFont_wght.ttf")));
+    if (font_id < 0)
+    {
+      ERROR_LOG("Failed to load fixed-width font.");
+      return;
+    }
+
+    const QStringList families = QFontDatabase::applicationFontFamilies(font_id);
+    if (families.isEmpty())
+    {
+      ERROR_LOG("Failed to get fixed-width font family.");
+      return;
+    }
+
+    s_state.fixed_font.setFamilies(families);
+    s_state.fixed_font.setWeight(QFont::Medium);
+    s_state.fixed_font.setPixelSize(12);
+    s_state.fixed_font.setHintingPreference(QFont::PreferNoHinting);
+  });
+
+  return s_state.fixed_font;
 }
 
 bool Host::ResourceFileExists(std::string_view filename, bool allow_override)

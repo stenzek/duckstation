@@ -185,18 +185,7 @@ void LogWindow::createUi()
   m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
   m_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_text->setMaximumBlockCount(MAX_LINES);
-
-#if defined(_WIN32)
-  QFont font("Consolas");
-  font.setPointSize(10);
-#elif defined(__APPLE__)
-  QFont font("Monaco");
-  font.setPointSize(11);
-#else
-  QFont font("Monospace");
-  font.setStyleHint(QFont::TypeWriter);
-#endif
-  m_text->setFont(font);
+  m_text->setFont(QtHost::GetFixedFont());
 
   setCentralWidget(m_text);
 }
