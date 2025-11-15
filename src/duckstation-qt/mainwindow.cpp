@@ -1576,11 +1576,6 @@ void MainWindow::onGitHubRepositoryActionTriggered()
   QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/");
 }
 
-void MainWindow::onIssueTrackerActionTriggered()
-{
-  QtUtils::OpenURL(this, "https://www.duckstation.org/issues.html");
-}
-
 void MainWindow::onDiscordServerActionTriggered()
 {
   QtUtils::OpenURL(this, "https://www.duckstation.org/discord.html");

@@ -293,7 +293,6 @@ private:
   void onViewSortByActionTriggered();
   void onViewSortOrderActionTriggered();
   void onGitHubRepositoryActionTriggered();
-  void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
   void onCheckForUpdatesActionTriggered();
