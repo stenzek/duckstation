@@ -149,7 +149,7 @@ std::tuple<u32, u32> GPU::GetFullDisplayResolution() const
     height =
       static_cast<u32>(std::max<s32>(
         std::clamp<s32>(m_crtc_state.regs.Y2, ymin, ymax) - std::clamp<s32>(m_crtc_state.regs.Y1, ymin, ymax), 0))
-      << BoolToUInt8(IsInterlacedDisplayEnabled());
+      << BoolToUInt8(m_GPUSTAT.vertical_interlace);
   }
 
   return std::tie(width, height);
