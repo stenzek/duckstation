@@ -154,27 +154,26 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
   if (items.isEmpty())
     return;
 
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
 
   const bool is_directory = items.front()->data(0, Qt::UserRole + 1).toBool();
   const QString path = items.front()->data(0, Qt::UserRole).toString();
   if (is_directory)
   {
-    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::FolderOpen), tr("&Open")), &QAction::triggered, this,
-            [this, &path]() { populateFiles(path); });
+    menu->addAction(QIcon::fromTheme(QIcon::ThemeIcon::FolderOpen), tr("&Open"),
+                    [this, path]() { populateFiles(path); });
   }
   else
   {
-    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("&Extract")), &QAction::triggered,
-            this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Data); });
-    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&XA)")),
-            &QAction::triggered, this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Mode2); });
-    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&Raw)")),
-            &QAction::triggered, this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Raw); });
+    menu->addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("&Extract"),
+                    [this, path]() { extractFile(path, IsoReader::ReadMode::Data); });
+    menu->addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&XA)"),
+                    [this, path]() { extractFile(path, IsoReader::ReadMode::Mode2); });
+    menu->addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&Raw)"),
+                    [this, path]() { extractFile(path, IsoReader::ReadMode::Raw); });
   }
 
-  menu.exec(m_ui.fileView->mapToGlobal(pos));
+  menu->popup(m_ui.fileView->mapToGlobal(pos));
 }
 
 void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode)

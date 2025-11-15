@@ -311,6 +311,21 @@ void QtUtils::StyleChildMenus(QWidget* widget)
     StylePopupMenu(menu);
 }
 
+QMenu* QtUtils::NewPopupMenu(QWidget* parent, bool delete_on_close /*= true*/)
+{
+  QMenu* menu = new QMenu(parent);
+  if (QtHost::IsStyleSheetApplicationTheme())
+  {
+    menu->setWindowFlags(menu->windowFlags() | Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint);
+    menu->setAttribute(Qt::WA_TranslucentBackground, true);
+  }
+
+  if (delete_on_close)
+    menu->setAttribute(Qt::WA_DeleteOnClose, true);
+
+  return menu;
+}
+
 QMessageBox::StandardButton QtUtils::MessageBoxInformation(QWidget* parent, const QString& title, const QString& text,
                                                            QMessageBox::StandardButtons buttons,
                                                            QMessageBox::StandardButton defaultButton)

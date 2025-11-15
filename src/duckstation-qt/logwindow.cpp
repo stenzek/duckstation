@@ -227,14 +227,13 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
   for (const char* channel_name : Log::GetChannelNames())
   {
     const bool enabled = si->GetBoolValue("Logging", channel_name, true);
-    QAction* action = filter_menu->addAction(QString::fromUtf8(channel_name));
-    action->setCheckable(true);
-    action->setChecked(enabled);
-    connect(action, &QAction::triggered, action, [channel_name](bool checked) {
+    QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
       Host::SetBaseBoolSettingValue("Logging", channel_name, checked);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings(false);
     });
+    action->setCheckable(true);
+    action->setChecked(enabled);
   }
 }
 

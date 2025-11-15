@@ -810,24 +810,19 @@ void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
   if (!card)
     return;
 
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
-  QAction* action = menu.addAction(tr("Delete File"));
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  QAction* action = menu->addAction(tr("Delete File"), this, &MemoryCardEditorWindow::doDeleteFile);
   action->setEnabled(fi && !fi->deleted);
-  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doDeleteFile);
-  action = menu.addAction(tr("Undelete File"));
+  action = menu->addAction(tr("Undelete File"), this, &MemoryCardEditorWindow::doUndeleteFile);
   action->setEnabled(fi && fi->deleted);
-  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doUndeleteFile);
-  action = menu.addAction(tr("Rename File"));
+  action = menu->addAction(tr("Rename File"), this, &MemoryCardEditorWindow::doRenameSaveFile);
   action->setEnabled(fi != nullptr);
-  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doRenameSaveFile);
-  action = menu.addAction(tr("Export File"));
-  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doExportSaveFile);
-  action = menu.addAction(tr("Copy File"));
+  action = menu->addAction(tr("Export File"), this, &MemoryCardEditorWindow::doExportSaveFile);
+  action->setEnabled(fi != nullptr);
+  action = menu->addAction(tr("Copy File"), this, &MemoryCardEditorWindow::doCopyFile);
   action->setEnabled(fi && !m_card_a.filename.empty() && !m_card_b.filename.empty());
-  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doCopyFile);
 
-  menu.exec(table->mapToGlobal(pos));
+  menu->exec(table->mapToGlobal(pos));
 }
 
 std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorWindow::getSelectedFile()

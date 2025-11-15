@@ -385,15 +385,14 @@ struct SettingAccessor<QSlider>
     {
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QSlider::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
-        QMenu menu(widget);
-        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
-                        [widget, func = std::move(func)]() {
-                          const bool old = widget->blockSignals(true);
-                          setNullableIntValue(widget, std::nullopt);
-                          widget->blockSignals(old);
-                          func();
-                        });
-        menu.exec(widget->mapToGlobal(pt));
+        QMenu* const menu = QtUtils::NewPopupMenu(widget);
+        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+          const bool old = widget->blockSignals(true);
+          setNullableIntValue(widget, std::nullopt);
+          widget->blockSignals(old);
+          func();
+        });
+        menu->popup(widget->mapToGlobal(pt));
       });
       widget->connect(widget, &QSlider::valueChanged, widget, [widget, func = std::move(func)]() {
         if (widget->property(IS_NULL_PROPERTY).toBool())
@@ -518,16 +517,15 @@ struct SettingAccessor<QSpinBox>
     {
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) mutable {
-        QMenu menu(widget);
-        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
-                        [widget, func = std::move(func)]() {
-                          const bool old = widget->blockSignals(true);
-                          setNullableIntValue(widget, std::nullopt);
-                          widget->blockSignals(old);
-                          updateFont(widget, true);
-                          func();
-                        });
-        menu.exec(widget->mapToGlobal(pt));
+        QMenu* const menu = QtUtils::NewPopupMenu(widget);
+        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+          const bool old = widget->blockSignals(true);
+          setNullableIntValue(widget, std::nullopt);
+          widget->blockSignals(old);
+          updateFont(widget, true);
+          func();
+        });
+        menu->exec(widget->mapToGlobal(pt));
       });
       widget->connect(widget, &QSpinBox::valueChanged, widget, [widget, func = std::move(func)]() {
         if (widget->property(IS_NULL_PROPERTY).toBool())
@@ -655,16 +653,15 @@ struct SettingAccessor<QDoubleSpinBox>
     {
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
       widget->connect(widget, &QDoubleSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
-        QMenu menu(widget);
-        widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
-                        [widget, func = std::move(func)]() {
-                          const bool old = widget->blockSignals(true);
-                          setNullableFloatValue(widget, std::nullopt);
-                          widget->blockSignals(old);
-                          updateFont(widget, true);
-                          func();
-                        });
-        menu.exec(widget->mapToGlobal(pt));
+        QMenu* const menu = QtUtils::NewPopupMenu(widget);
+        menu->addAction(qApp->translate("SettingWidgetBinder", "Reset"), [widget, func = std::move(func)]() {
+          const bool old = widget->blockSignals(true);
+          setNullableFloatValue(widget, std::nullopt);
+          widget->blockSignals(old);
+          updateFont(widget, true);
+          func();
+        });
+        menu->popup(widget->mapToGlobal(pt));
       });
       widget->connect(widget, QOverload<double>::of(&QDoubleSpinBox::valueChanged), widget,
                       [widget, func = std::move(func)]() {

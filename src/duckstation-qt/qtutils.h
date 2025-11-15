@@ -133,6 +133,9 @@ QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const Q
 void StylePopupMenu(QMenu* menu);
 void StyleChildMenus(QWidget* widget);
 
+/// Creates a new popup menu, styled for the current theme.
+QMenu* NewPopupMenu(QWidget* parent, bool delete_on_close = true);
+
 /// Returns icon for language.
 QIcon GetIconForTranslationLanguage(std::string_view language_name);
 

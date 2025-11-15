@@ -1920,7 +1920,9 @@ void GameListWidget::updateBackground(bool reload_image)
   }
 
   QImage scaled_image = m_background_image;
-  resizeAndPadImage(&scaled_image, QtUtils::ApplyDevicePixelRatioToSize(m_ui.stack->size(), m_model->getDevicePixelRatio()), true, true);
+  resizeAndPadImage(&scaled_image,
+                    QtUtils::ApplyDevicePixelRatioToSize(m_ui.stack->size(), m_model->getDevicePixelRatio()), true,
+                    true);
 
   QPalette new_palette = qApp->palette(m_ui.stack);
   new_palette.setBrush(QPalette::Window, QPixmap::fromImage(scaled_image));
@@ -2484,21 +2486,20 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
 
 void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
 {
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
+  QMenu* menu = QtUtils::NewPopupMenu(this);
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {
     if (column == GameListModel::Column_Cover)
       continue;
 
-    QAction* const action = menu.addAction(m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString());
+    QAction* const action = menu->addAction(m_model->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(),
+                                            [this, column](bool enabled) { setAndSaveColumnHidden(column, !enabled); });
     action->setCheckable(true);
     action->setChecked(!isColumnHidden(column));
-    connect(action, &QAction::triggered, [this, column](bool enabled) { setAndSaveColumnHidden(column, !enabled); });
   }
 
-  menu.exec(mapToGlobal(point));
+  menu->exec(mapToGlobal(point));
 }
 
 void GameListListView::adjustIconSize(int delta)

@@ -267,14 +267,13 @@ void SetupWizardDialog::onDirectoryListContextMenuRequested(const QPoint& point)
 
   const int row = selection[0].row();
 
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
-  menu.addAction(tr("Remove"), [this]() { onRemoveSearchDirectoryButtonClicked(); });
-  menu.addSeparator();
-  menu.addAction(tr("Open Directory..."), [this, row]() {
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  menu->addAction(tr("Remove"), [this]() { onRemoveSearchDirectoryButtonClicked(); });
+  menu->addSeparator();
+  menu->addAction(tr("Open Directory..."), [this, row]() {
     QtUtils::OpenURL(this, QUrl::fromLocalFile(m_ui.searchDirectoryList->item(row, 0)->text()));
   });
-  menu.exec(m_ui.searchDirectoryList->mapToGlobal(point));
+  menu->popup(m_ui.searchDirectoryList->mapToGlobal(point));
 }
 
 void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
@@ -284,12 +283,12 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
   if (dir.isEmpty())
     return;
 
-  QMessageBox::StandardButton selection =
-    QtUtils::MessageBoxQuestion(this, tr("Scan Recursively?"),
-                          tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
-                             "more time, but will identify files in subdirectories.")
-                            .arg(dir),
-                          QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+  QMessageBox::StandardButton selection = QtUtils::MessageBoxQuestion(
+    this, tr("Scan Recursively?"),
+    tr("Would you like to scan the directory \"%1\" recursively?\n\nScanning recursively takes "
+       "more time, but will identify files in subdirectories.")
+      .arg(dir),
+    QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
   if (selection != QMessageBox::Yes && selection != QMessageBox::No)
     return;
 
@@ -437,35 +436,29 @@ QString SetupWizardDialog::findCurrentDeviceForPort(u32 port) const
 
 void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
 {
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
   bool added = false;
 
   for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name));
-    action->setIcon(InputDeviceListModel::getIconForKey(dev.key));
-    action->setData(dev.identifier);
-    connect(action, &QAction::triggered, this, [this, port, update_label, action]() {
-      doDeviceAutomaticBinding(port, update_label, action->data().toString());
-    });
+    menu->addAction(
+      InputDeviceListModel::getIconForKey(dev.key), QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name),
+      [this, port, update_label, device = dev.identifier]() { doDeviceAutomaticBinding(port, update_label, device); });
     added = true;
   }
 
   if (added)
   {
-    QAction* action = menu.addAction(tr("Multiple Devices..."));
-    connect(action, &QAction::triggered, this,
-            [this, port, update_label]() { doMultipleDeviceAutomaticBinding(port, update_label); });
+    menu->addAction(tr("Multiple Devices..."),
+                    [this, port, update_label]() { doMultipleDeviceAutomaticBinding(port, update_label); });
   }
   else
   {
-    QAction* action = menu.addAction(tr("No devices available"));
-    action->setEnabled(false);
+    menu->addAction(tr("No devices available"))->setEnabled(false);
   }
 
-  menu.exec(QCursor::pos());
+  menu->popup(QCursor::pos());
 }
 
 void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device)

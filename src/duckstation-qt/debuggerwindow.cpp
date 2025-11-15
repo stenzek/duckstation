@@ -209,11 +209,9 @@ void DebuggerWindow::onBreakpointListContextMenuRequested()
   const u32 address = item->data(1, Qt::UserRole).toUInt();
   const CPU::BreakpointType type = static_cast<CPU::BreakpointType>(item->data(2, Qt::UserRole).toUInt());
 
-  QMenu menu(this);
-  QtUtils::StylePopupMenu(&menu);
-  connect(menu.addAction(tr("&Remove")), &QAction::triggered, this,
-          [this, address, type]() { removeBreakpoint(type, address); });
-  menu.exec(QCursor::pos());
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  menu->addAction(tr("&Remove"), [this, address, type]() { removeBreakpoint(type, address); });
+  menu->popup(QCursor::pos());
 }
 
 void DebuggerWindow::onBreakpointListItemChanged(QTreeWidgetItem* item, int column)
@@ -295,31 +293,28 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
   const VirtualMemoryAddress address = m_ui.codeView->getAddressAtPoint(pt);
   m_ui.codeView->setSelectedAddress(address);
 
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
-  menu.addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
-  menu.addSeparator();
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
+  menu->addAction(QStringLiteral("0x%1").arg(static_cast<uint>(address), 8, 16, QChar('0')))->setEnabled(false);
+  menu->addSeparator();
 
-  QAction* action =
-    menu.addAction(QIcon::fromTheme(QStringLiteral("debug-toggle-breakpoint")), tr("Toggle &Breakpoint"));
-  connect(action, &QAction::triggered, this, [this, address]() { toggleBreakpoint(address); });
+  menu->addAction(QIcon::fromTheme(QStringLiteral("debug-toggle-breakpoint")), tr("Toggle &Breakpoint"),
+                  [this, address]() { toggleBreakpoint(address); });
 
-  action = menu.addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-cursor")), tr("&Run To Cursor"));
-  connect(action, &QAction::triggered, this, [address]() {
+  menu->addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-cursor")), tr("&Run To Cursor"), [address]() {
     Host::RunOnCPUThread([address]() {
       CPU::AddBreakpoint(CPU::BreakpointType::Execute, address, true, true);
       g_emu_thread->setSystemPaused(false);
     });
   });
 
-  menu.addSeparator();
-  action = menu.addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-address")), tr("View in &Dump"));
-  connect(action, &QAction::triggered, this, [this, address]() { scrollToMemoryAddress(address); });
+  menu->addSeparator();
+  menu->addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-address")), tr("View in &Dump"),
+                  [this, address]() { scrollToMemoryAddress(address); });
 
-  action = menu.addAction(QIcon::fromTheme(QStringLiteral("debug-trace-line")), tr("&Follow Load/Store"));
-  connect(action, &QAction::triggered, this, [this, address]() { tryFollowLoadStore(address); });
+  menu->addAction(QIcon::fromTheme(QStringLiteral("debug-trace-line")), tr("&Follow Load/Store"),
+                  [this, address]() { tryFollowLoadStore(address); });
 
-  menu.exec(m_ui.codeView->mapToGlobal(pt));
+  menu->popup(m_ui.codeView->mapToGlobal(pt));
 }
 
 void DebuggerWindow::onMemorySearchTriggered()

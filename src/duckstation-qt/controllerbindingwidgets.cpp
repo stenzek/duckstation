@@ -262,33 +262,30 @@ void ControllerBindingWidget::onTypeChanged()
 
 void ControllerBindingWidget::onAutomaticBindingClicked()
 {
-  QMenu menu;
-  QtUtils::StylePopupMenu(&menu);
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
   bool added = false;
 
   for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name));
-    action->setIcon(InputDeviceListModel::getIconForKey(dev.key));
-    action->setData(dev.identifier);
-    connect(action, &QAction::triggered, this,
-            [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
+    menu->addAction(InputDeviceListModel::getIconForKey(dev.key),
+                    QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name),
+                    [this, device = dev.identifier]() { doDeviceAutomaticBinding(device); });
     added = true;
   }
 
   if (added)
   {
-    QAction* action = menu.addAction(tr("Multiple devices..."));
-    connect(action, &QAction::triggered, this, &ControllerBindingWidget::onMultipleDeviceAutomaticBindingTriggered);
+    menu->addAction(tr("Multiple devices..."), this,
+                    &ControllerBindingWidget::onMultipleDeviceAutomaticBindingTriggered);
   }
   else
   {
-    QAction* action = menu.addAction(tr("No devices available"));
+    QAction* const action = menu->addAction(tr("No devices available"));
     action->setEnabled(false);
   }
 
-  menu.exec(QCursor::pos());
+  menu->popup(QCursor::pos());
 }
 
 void ControllerBindingWidget::onClearBindingsClicked()
