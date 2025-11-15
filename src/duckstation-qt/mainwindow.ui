@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
@@ -989,6 +989,9 @@
    </property>
   </action>
   <action name="actionMemoryCardEditor">
+   <property name="icon">
+    <iconset theme="memcard-line"/>
+   </property>
    <property name="text">
     <string>Memory &amp;Card Editor</string>
    </property>
@@ -997,6 +1000,9 @@
    </property>
   </action>
   <action name="actionCPUDebugger">
+   <property name="icon">
+    <iconset theme="code-line"/>
+   </property>
    <property name="text">
     <string>CPU D&amp;ebugger</string>
    </property>
@@ -1086,6 +1092,9 @@
    </property>
   </action>
   <action name="actionOpenDataDirectory">
+   <property name="icon">
+    <iconset theme="folder-open-line"/>
+   </property>
    <property name="text">
     <string>Open Data Directory...</string>
    </property>
@@ -1138,6 +1147,9 @@
    </property>
   </action>
   <action name="actionCoverDownloader">
+   <property name="icon">
+    <iconset theme="artboard-2-line"/>
+   </property>
    <property name="text">
     <string>Cover Downloader</string>
    </property>
@@ -1146,6 +1158,9 @@
    </property>
   </action>
   <action name="actionMemoryScanner">
+   <property name="icon">
+    <iconset theme="mag-line"/>
+   </property>
    <property name="text">
     <string>Memory &amp;Scanner</string>
    </property>
@@ -1174,6 +1189,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="video-on-line"/>
+   </property>
    <property name="text">
     <string>Media Ca&amp;pture</string>
    </property>
@@ -1182,6 +1200,9 @@
    </property>
   </action>
   <action name="actionOpenTextureDirectory">
+   <property name="icon">
+    <iconset theme="folder-add-line"/>
+   </property>
    <property name="text">
     <string>Open Texture Directory...</string>
    </property>
@@ -1190,6 +1211,9 @@
    </property>
   </action>
   <action name="actionReloadTextureReplacements">
+   <property name="icon">
+    <iconset theme="refresh-line"/>
+   </property>
    <property name="text">
     <string>Reload Texture Replacements</string>
    </property>
@@ -1198,6 +1222,9 @@
    </property>
   </action>
   <action name="actionCaptureGPUFrame">
+   <property name="icon">
+    <iconset theme="image-fill"/>
+   </property>
    <property name="text">
     <string>Capture GPU Frame</string>
    </property>
@@ -1246,6 +1273,9 @@
    </property>
   </action>
   <action name="actionISOBrowser">
+   <property name="icon">
+    <iconset theme="disc-line"/>
+   </property>
    <property name="text">
     <string>ISO Browser</string>
    </property>
@@ -1257,6 +1287,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="camera-switch-line"/>
+   </property>
    <property name="text">
     <string>Free Camera</string>
    </property>
@@ -1265,6 +1298,9 @@
    </property>
   </action>
   <action name="actionControllerTest">
+   <property name="icon">
+    <iconset theme="controller-digital-line"/>
+   </property>
    <property name="text">
     <string>Controller Test</string>
    </property>
@@ -1325,6 +1361,9 @@
    </property>
   </action>
   <action name="actionMemoryEditor">
+   <property name="icon">
+    <iconset theme="chip-line"/>
+   </property>
    <property name="text">
     <string>Memory &amp;Editor</string>
    </property>
