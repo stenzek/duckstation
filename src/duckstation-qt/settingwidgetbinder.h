@@ -525,7 +525,7 @@ struct SettingAccessor<QSpinBox>
           updateFont(widget, true);
           func();
         });
-        menu->exec(widget->mapToGlobal(pt));
+        menu->popup(widget->mapToGlobal(pt));
       });
       widget->connect(widget, &QSpinBox::valueChanged, widget, [widget, func = std::move(func)]() {
         if (widget->property(IS_NULL_PROPERTY).toBool())

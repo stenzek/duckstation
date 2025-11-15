@@ -2485,7 +2485,7 @@ void GameListListView::setAndSaveColumnHidden(int column, bool hidden)
 
 void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
 {
-  QMenu* menu = QtUtils::NewPopupMenu(this);
+  QMenu* const menu = QtUtils::NewPopupMenu(this);
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
   {
@@ -2498,7 +2498,7 @@ void GameListListView::onHeaderContextMenuRequested(const QPoint& point)
     action->setChecked(!isColumnHidden(column));
   }
 
-  menu->exec(mapToGlobal(point));
+  menu->popup(mapToGlobal(point));
 }
 
 void GameListListView::adjustIconSize(int delta)

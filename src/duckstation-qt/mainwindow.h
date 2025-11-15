@@ -269,7 +269,6 @@ private:
   void onChangeDiscMenuAboutToShow();
   void onLoadStateMenuAboutToShow();
   void onSaveStateMenuAboutToShow();
-  void onCheatsActionTriggered();
   void onCheatsMenuAboutToShow();
   void onStartFullscreenUITriggered();
   void onCloseGameActionTriggered();

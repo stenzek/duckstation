@@ -850,7 +850,7 @@ void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
   action = menu->addAction(tr("Copy File"), this, &MemoryCardEditorWindow::doCopyFile);
   action->setEnabled(fi && !m_card_a.filename.empty() && !m_card_b.filename.empty());
 
-  menu->exec(table->mapToGlobal(pos));
+  menu->popup(table->mapToGlobal(pos));
 }
 
 std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorWindow::getSelectedFile()
