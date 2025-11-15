@@ -1930,7 +1930,7 @@ void MainWindow::setupAdditionalUi()
     m_ui.menuSortBy->addSeparator();
 
     QAction* const ascending_action = new QAction(tr("&Ascending"));
-    ascending_action->setIcon(QIcon::fromTheme(QStringLiteral("go-up")));
+    ascending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
     ascending_action->setObjectName(QStringLiteral("SortAscending"));
@@ -1939,7 +1939,7 @@ void MainWindow::setupAdditionalUi()
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
     QAction* const descending_action = new QAction(tr("&Descending"));
-    descending_action->setIcon(QIcon::fromTheme(QStringLiteral("go-down")));
+    descending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
     descending_action->setObjectName(QStringLiteral("SortDescending"));
