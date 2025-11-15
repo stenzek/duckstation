@@ -1893,6 +1893,8 @@ void MainWindow::setupAdditionalUi()
   m_status_vps_widget->setFixedSize(150, 16);
   m_status_vps_widget->hide();
 
+  m_ui.actionAbout->setIcon(QtHost::GetAppIcon());
+
   m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
   QtUtils::StylePopupMenu(m_settings_toolbar_menu);
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);

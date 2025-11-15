@@ -13,16 +13,12 @@
   <property name="windowTitle">
    <string>About DuckStation</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="resources/icons.qrc">
-    <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <widget class="QWidget" name="iconWidget" native="true">
      <layout class="QVBoxLayout" name="iconLayout">
       <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
+       <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
       </property>
       <property name="leftMargin">
        <number>1</number>
@@ -47,18 +43,18 @@
         <property name="text">
          <string/>
         </property>
-        <property name="pixmap">
-         <pixmap resource="resources/icons.qrc">:/icons/duck.png</pixmap>
+        <property name="scaledContents">
+         <bool>true</bool>
         </property>
         <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
        </widget>
       </item>
       <item>
        <spacer name="iconSpacer">
         <property name="orientation">
-         <enum>Qt::Vertical</enum>
+         <enum>Qt::Orientation::Vertical</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -93,7 +89,6 @@
        <property name="font">
         <font>
          <pointsize>14</pointsize>
-         <weight>50</weight>
          <bold>false</bold>
         </font>
        </property>
@@ -120,8 +115,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="resources/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

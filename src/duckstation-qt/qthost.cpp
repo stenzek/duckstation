@@ -412,6 +412,13 @@ const QIcon& QtHost::GetAppIcon()
   return s_state.app_icon;
 }
 
+QPixmap QtHost::GetAppLogo()
+{
+  QPixmap pm(GetResourceQPath("images/duck.png", true));
+  pm.setDevicePixelRatio(qApp->devicePixelRatio());
+  return pm;
+}
+
 std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
 {
   static constexpr u32 HTTP_POLL_INTERVAL = 10;
@@ -637,7 +644,7 @@ bool QtHost::SetDataDirectory()
 
 void QtHost::LoadResources()
 {
-  s_state.app_icon = QIcon(QStringLiteral(":/icons/duck.png"));
+  s_state.app_icon = QIcon(GetResourceQPath("images/duck.png", true));
 }
 
 void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
@@ -2759,6 +2766,11 @@ std::string QtHost::GetResourcePath(std::string_view filename, bool allow_overri
 {
   return allow_override ? EmuFolders::GetOverridableResourcePath(filename) :
                           Path::Combine(EmuFolders::Resources, filename);
+}
+
+QString QtHost::GetResourceQPath(std::string_view name, bool allow_override)
+{
+  return QString::fromStdString(GetResourcePath(name, allow_override));
 }
 
 const QStringList& QtHost::GetRobotoFontFamilies()

@@ -643,7 +643,7 @@ const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) c
   if (it != m_flag_pixmap_cache.end())
     return it->second;
 
-  const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconName(), true)));
+  const QIcon icon(QtHost::GetResourceQPath(ge->GetLanguageIconName(), true));
   it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_SIZE, m_device_pixel_ratio)).first;
   return it->second;
 }
@@ -1267,13 +1267,12 @@ void GameListModel::loadCommonImages()
                                    .pixmap(COMPATIBILITY_PIXMAP_SIZE, m_device_pixel_ratio);
   }
 
-  m_no_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-gray.svg", true)))
+  m_no_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon-gray.svg", true))
                                .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
-  m_has_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon.svg", true)))
+  m_has_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon.svg", true))
                                 .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
-  m_mastered_achievements_pixmap =
-    QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-star.svg", true)))
-      .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
+  m_mastered_achievements_pixmap = QIcon(QtHost::GetResourceQPath("images/trophy-icon-star.svg", true))
+                                     .pixmap(ACHIEVEMENT_PIXMAP_SIZE, m_device_pixel_ratio);
 }
 
 class GameListSortModel final : public QSortFilterProxyModel

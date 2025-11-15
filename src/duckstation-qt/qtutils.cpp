@@ -386,13 +386,13 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-J.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/NTSC-J.svg", true));
 
     case ConsoleRegion::NTSC_U:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-U.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/NTSC-U.svg", true));
 
     case ConsoleRegion::PAL:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/PAL.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/PAL.svg", true));
 
     case ConsoleRegion::Auto:
       return QIcon(QStringLiteral(":/icons/system-search.png"));
@@ -407,13 +407,13 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
   switch (region)
   {
     case DiscRegion::NTSC_J:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-J.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/NTSC-J.svg", true));
 
     case DiscRegion::NTSC_U:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-U.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/NTSC-U.svg", true));
 
     case DiscRegion::PAL:
-      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/PAL.svg", true)));
+      return QIcon(QtHost::GetResourceQPath("images/flags/PAL.svg", true));
 
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
@@ -442,14 +442,12 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
 
 QIcon QtUtils::GetIconForCompatibility(GameDatabase::CompatibilityRating rating)
 {
-  return QIcon(QString::fromStdString(
-    QtHost::GetResourcePath(TinyString::from_format("images/star-{}.svg", static_cast<u32>(rating)), true)));
+  return QIcon(QtHost::GetResourceQPath(TinyString::from_format("images/star-{}.svg", static_cast<u32>(rating)), true));
 }
 
 QIcon QtUtils::GetIconForLanguage(std::string_view language_name)
 {
-  return QIcon(
-    QString::fromStdString(QtHost::GetResourcePath(GameDatabase::GetLanguageFlagResourceName(language_name), true)));
+  return QIcon(QtHost::GetResourceQPath(GameDatabase::GetLanguageFlagResourceName(language_name), true));
 }
 
 template<typename T>

@@ -10,13 +10,6 @@
     <height>562</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Dialog</string>
-  </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>0</number>
@@ -52,7 +45,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="title" />
+    <widget class="QLineEdit" name="title"/>
    </item>
    <item row="1" column="2">
     <widget class="QPushButton" name="restoreTitle">

@@ -146,10 +146,7 @@ void SetupWizardDialog::confirmCancel()
 void SetupWizardDialog::setupUi()
 {
   m_ui.setupUi(this);
-
-  m_ui.logo->setPixmap(
-    QPixmap(QString::fromUtf8(Path::Combine(EmuFolders::Resources, "images" FS_OSPATH_SEPARATOR_STR "duck.png"))));
-
+  m_ui.logo->setPixmap(QtHost::GetAppLogo());
   m_ui.pages->setCurrentIndex(0);
 
   m_page_labels[Page_Language] = m_ui.labelLanguage;
@@ -569,8 +566,7 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
 {
   if (initial)
   {
-    m_ui.achievementsIconLabel->setPixmap(
-      QPixmap(QString::fromStdString(QtHost::GetResourcePath("images/ra-icon.webp", true))));
+    m_ui.achievementsIconLabel->setPixmap(QPixmap(QtHost::GetResourceQPath("images/ra-icon.webp", true)));
     QFont title_font(m_ui.achievementsTitleLabel->font());
     title_font.setBold(true);
     title_font.setPixelSize(20);

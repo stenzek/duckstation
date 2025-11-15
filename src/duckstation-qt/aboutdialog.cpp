@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "aboutdialog.h"
+#include "qthost.h"
 #include "qtutils.h"
 
 #include "core/settings.h"
@@ -22,6 +23,7 @@
 AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
 {
   m_ui.setupUi(this);
+  m_ui.icon->setPixmap(QtHost::GetAppLogo());
 
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setFixedSize(geometry().width(), geometry().height());

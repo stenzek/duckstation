@@ -384,11 +384,15 @@ QString GetAppConfigSuffix();
 /// Returns the main application icon.
 const QIcon& GetAppIcon();
 
+/// Returns a higher resolution logo for the application.
+QPixmap GetAppLogo();
+
 /// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 QString GetResourcesBasePath();
 
 /// Returns the path to the specified resource.
 std::string GetResourcePath(std::string_view name, bool allow_override);
+QString GetResourceQPath(std::string_view name, bool allow_override);
 
 /// Returns the font family for the bundled Roboto font.
 const QStringList& GetRobotoFontFamilies();

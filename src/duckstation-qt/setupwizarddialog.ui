@@ -13,11 +13,6 @@
   <property name="windowTitle">
    <string>DuckStation Setup Wizard</string>
   </property>
-  <property name="windowIcon">
-   <iconset>
-    <normalon>:/icons/duck.png</normalon>
-   </iconset>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="horizontalSpacing">
     <number>10</number>
