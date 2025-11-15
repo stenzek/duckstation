@@ -671,7 +671,7 @@ void MainWindow::onSystemGameChanged(const QString& path, const QString& game_se
   s_current_game_path = path;
   s_current_game_title = game_title;
   s_current_game_serial = game_serial;
-  s_current_game_icon = m_game_list_widget->getModel()->getIconForGame(path);
+  s_current_game_icon = getIconForGame(path);
 
   updateWindowTitle();
 }
@@ -3025,6 +3025,11 @@ void MainWindow::refreshGameListModel()
 void MainWindow::cancelGameListRefresh()
 {
   m_game_list_widget->cancelRefresh();
+}
+
+QIcon MainWindow::getIconForGame(const QString& path)
+{
+  return m_game_list_widget->getModel()->getIconForGame(path);
 }
 
 void MainWindow::runOnUIThread(const std::function<void()>& func)

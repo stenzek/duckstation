@@ -57,6 +57,10 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
     m_hash(entry->hash)
 {
   m_ui.setupUi(this);
+
+  if (const QIcon icon = g_main_window->getIconForGame(QString::fromStdString(entry->path)); !icon.isNull())
+    setWindowIcon(icon);
+
   setGameTitle(entry->GetDisplayTitle(GameList::ShouldShowLocalizedTitles()));
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
