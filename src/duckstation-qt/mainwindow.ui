@@ -300,6 +300,17 @@
     <string>Starts a new session from a physical disc.</string>
    </property>
   </action>
+  <action name="actionStartDiscToolbar">
+   <property name="icon">
+    <iconset theme="disc-line"/>
+   </property>
+   <property name="text">
+    <string>Start Disc</string>
+   </property>
+   <property name="toolTip">
+    <string>Starts a new session from a physical disc.</string>
+   </property>
+  </action>
   <action name="actionStartBios">
    <property name="icon">
     <iconset theme="chip-line"/>
@@ -589,7 +600,7 @@
     <iconset theme="disc-line"/>
    </property>
    <property name="text">
-    <string>Change Disc...</string>
+    <string>Change Disc</string>
    </property>
    <property name="toolTip">
     <string>Swaps the currently-inserted disc with another disc or game.</string>
@@ -1168,6 +1179,17 @@
     <string>Opens the memory scanner window.</string>
    </property>
   </action>
+  <action name="actionMemoryScannerToolbar">
+   <property name="icon">
+    <iconset theme="mag-line"/>
+   </property>
+   <property name="text">
+    <string>Scanner</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens the memory scanner window.</string>
+   </property>
+  </action>
   <action name="actionShowGameIcons">
    <property name="checkable">
     <bool>true</bool>
@@ -1194,6 +1216,20 @@
    </property>
    <property name="text">
     <string>Media Ca&amp;pture</string>
+   </property>
+   <property name="toolTip">
+    <string>Starts or stops capture of video and audio from the content.</string>
+   </property>
+  </action>
+  <action name="actionMediaCaptureToolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="video-on-line"/>
+   </property>
+   <property name="text">
+    <string>Capture</string>
    </property>
    <property name="toolTip">
     <string>Starts or stops capture of video and audio from the content.</string>
@@ -1366,6 +1402,17 @@
    </property>
    <property name="text">
     <string>Memory &amp;Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens the memory editor window.</string>
+   </property>
+  </action>
+  <action name="actionMemoryEditorToolbar">
+   <property name="icon">
+    <iconset theme="chip-line"/>
+   </property>
+   <property name="text">
+    <string>Editor</string>
    </property>
    <property name="toolTip">
     <string>Opens the memory editor window.</string>

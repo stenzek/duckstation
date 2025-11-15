@@ -74,7 +74,7 @@ static constexpr std::array<std::pair<Qt::ToolBarArea, const char*>, 4> s_toolba
 static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_actions[] = {
   {"StartFile", &Ui::MainWindow::actionStartFile},
   {"StartBIOS", &Ui::MainWindow::actionStartBios},
-  {"StartDisc", &Ui::MainWindow::actionStartDisc},
+  {"StartDisc", &Ui::MainWindow::actionStartDiscToolbar},
   {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
   {nullptr, nullptr},
   {"PowerOff", &Ui::MainWindow::actionCloseGameToolbar},
@@ -84,9 +84,13 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
   {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
   {"Screenshot", &Ui::MainWindow::actionScreenshot},
+  {"MediaCapture", &Ui::MainWindow::actionMediaCaptureToolbar},
   {nullptr, nullptr},
   {"LoadState", &Ui::MainWindow::actionLoadState},
   {"SaveState", &Ui::MainWindow::actionSaveState},
+  {nullptr, nullptr},
+  {"MemoryScanner", &Ui::MainWindow::actionMemoryScannerToolbar},
+  {"MemoryEditor", &Ui::MainWindow::actionMemoryEditorToolbar},
   {nullptr, nullptr},
   {"Fullscreen", &Ui::MainWindow::actionFullscreen},
   {"Settings", &Ui::MainWindow::actionSettings2},
@@ -95,8 +99,8 @@ static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_a
 };
 
 static constexpr const char* DEFAULT_TOOLBAR_ACTIONS =
-  "StartFile,StartBIOS,FullscreenUI,PowerOff,Reset,Pause,ChangeDisc,Cheats,Screenshot,LoadState,SaveState,"
-  "Fullscreen,Settings,ControllerSettings";
+  "StartFile,StartBIOS,FullscreenUI,PowerOff,Reset,Pause,ChangeDisc,Screenshot,LoadState,SaveState,Fullscreen,Settings,"
+  "ControllerSettings";
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",
@@ -686,14 +690,21 @@ void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 ti
 
 void MainWindow::onMediaCaptureStarted()
 {
-  QSignalBlocker sb(m_ui.actionMediaCapture);
-  m_ui.actionMediaCapture->setChecked(true);
+  setMediaCaptureActionState(true);
 }
 
 void MainWindow::onMediaCaptureStopped()
 {
-  QSignalBlocker sb(m_ui.actionMediaCapture);
-  m_ui.actionMediaCapture->setChecked(false);
+  setMediaCaptureActionState(false);
+}
+
+void MainWindow::setMediaCaptureActionState(bool checked)
+{
+  for (QAction* action : {m_ui.actionMediaCapture, m_ui.actionMediaCaptureToolbar})
+  {
+    QSignalBlocker sb(action);
+    action->setChecked(checked);
+  }
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -1144,7 +1155,7 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
 std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)
 {
   std::shared_ptr<SystemBootParameters> ret = std::make_shared<SystemBootParameters>(std::move(file));
-  ret->start_media_capture = m_ui.actionMediaCapture->isChecked();
+  ret->start_media_capture = m_ui.actionMediaCapture->isChecked() || m_ui.actionMediaCaptureToolbar->isChecked();
   return ret;
 }
 
@@ -2205,6 +2216,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   const bool starting_or_not_running = (starting || !running);
   m_ui.actionStartFile->setDisabled(starting_or_running);
   m_ui.actionStartDisc->setDisabled(starting_or_running);
+  m_ui.actionStartDiscToolbar->setDisabled(starting_or_running);
   m_ui.actionStartBios->setDisabled(starting_or_running);
   m_ui.actionResumeLastState->setDisabled(starting_or_running || achievements_hardcore_mode);
   m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
@@ -2226,7 +2238,10 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.menuCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionCPUDebugger->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryEditor->setDisabled(achievements_hardcore_mode);
+  m_ui.actionMemoryEditorToolbar->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryScanner->setDisabled(achievements_hardcore_mode);
+  m_ui.actionMemoryScannerToolbar->setDisabled(achievements_hardcore_mode);
+  m_ui.actionFreeCamera->setDisabled(achievements_hardcore_mode);
   m_ui.actionReloadTextureReplacements->setDisabled(starting_or_not_running);
   m_ui.actionDumpRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionDumpVRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2467,6 +2482,7 @@ void MainWindow::connectSignals()
 
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
+  connect(m_ui.actionStartDiscToolbar, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
   connect(m_ui.actionResumeLastState, &QAction::triggered, g_emu_thread, &EmuThread::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
@@ -2540,11 +2556,14 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
+  connect(m_ui.actionMemoryEditorToolbar, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
+  connect(m_ui.actionMemoryScannerToolbar, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionControllerTest, &QAction::triggered, g_emu_thread, &EmuThread::startControllerTest);
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
+  connect(m_ui.actionMediaCaptureToolbar, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -3375,8 +3394,7 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
   if (path.isEmpty())
   {
     // uncheck it again
-    const QSignalBlocker sb(m_ui.actionMediaCapture);
-    m_ui.actionMediaCapture->setChecked(false);
+    setMediaCaptureActionState(false);
     return;
   }
 
