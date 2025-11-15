@@ -33,7 +33,7 @@ struct ZipDeleter
     const int err = zip_close(zf);
     if (err != 0)
     {
-      Log::FastWrite(Log::Channel::Ungrouped, __FUNCTION__, Log::Level::Error, "Failed to close zip file: {}", err);
+      GENERIC_LOG(Log::Channel::Ungrouped, Log::Level::Error, Log::Color::Default, "Failed to close zip file: {}", err);
       zip_discard(zf);
     }
   }

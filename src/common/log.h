@@ -68,9 +68,9 @@ static constexpr Log::Level DEFAULT_LOG_LEVEL = Log::Level::Info;
 
 // Packs a level and channel into one 16-bit number.
 using MessageCategory = u32;
-[[maybe_unused]] ALWAYS_INLINE constexpr u32 PackCategory(Channel channel, Level level, Color colour)
+[[maybe_unused]] ALWAYS_INLINE constexpr u32 PackCategory(Channel channel, Level level, Color color)
 {
-  return ((static_cast<MessageCategory>(colour) << 10) | (static_cast<MessageCategory>(channel) << 3) |
+  return ((static_cast<MessageCategory>(color) << 10) | (static_cast<MessageCategory>(channel) << 3) |
           static_cast<MessageCategory>(level));
 }
 [[maybe_unused]] ALWAYS_INLINE constexpr Color UnpackColor(MessageCategory cat)
@@ -130,106 +130,75 @@ void SetLogChannelEnabled(Channel channel, bool enabled);
 // Returns the name of the specified log channel.
 const char* GetChannelName(Channel channel);
 
-// Returns the default colour for a log level.
+// Returns the default color for a log level.
 Color GetColorForLevel(Level level);
 
 // writes a message to the log
 void Write(MessageCategory cat, std::string_view message);
-void Write(MessageCategory cat, const char* functionName, std::string_view message);
+void WriteFuncName(MessageCategory cat, const char* function_name, std::string_view message);
 void WriteFmtArgs(MessageCategory cat, fmt::string_view fmt, fmt::format_args args);
-void WriteFmtArgs(MessageCategory cat, const char* functionName, fmt::string_view fmt, fmt::format_args args);
+void WriteFuncNameFmtArgs(MessageCategory cat, const char* function_name, fmt::string_view fmt, fmt::format_args args);
 
-ALWAYS_INLINE void FastWrite(Channel channel, Level level, std::string_view message)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    Write(PackCategory(channel, level, Color::Default), message);
-}
-ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, std::string_view message)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    Write(PackCategory(channel, level, Color::Default), functionName, message);
-}
 template<typename... T>
-ALWAYS_INLINE void FastWrite(Channel channel, Level level, fmt::format_string<T...> fmt, T&&... args)
+ALWAYS_INLINE void Write(MessageCategory cat, fmt::format_string<T...> fmt, T&&... args)
 {
-  if (level <= GetLogLevel()) [[unlikely]]
-    WriteFmtArgs(PackCategory(channel, level, Color::Default), fmt, fmt::make_format_args(args...));
+  WriteFmtArgs(cat, fmt, fmt::make_format_args(args...));
 }
+
 template<typename... T>
-ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, fmt::format_string<T...> fmt,
-                             T&&... args)
+ALWAYS_INLINE void WriteFuncName(MessageCategory cat, const char* function_name, fmt::format_string<T...> fmt,
+                                 T&&... args)
 {
-  if (level <= GetLogLevel()) [[unlikely]]
-    WriteFmtArgs(PackCategory(channel, level, Color::Default), functionName, fmt, fmt::make_format_args(args...));
+  WriteFuncNameFmtArgs(cat, function_name, fmt, fmt::make_format_args(args...));
 }
-ALWAYS_INLINE void FastWrite(Channel channel, Level level, Color colour, std::string_view message)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    Write(PackCategory(channel, level, colour), message);
-}
-ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
-                             std::string_view message)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    Write(PackCategory(channel, level, colour), functionName, message);
-}
-template<typename... T>
-ALWAYS_INLINE void FastWrite(Channel channel, Level level, Color colour, fmt::format_string<T...> fmt, T&&... args)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    WriteFmtArgs(PackCategory(channel, level, colour), fmt, fmt::make_format_args(args...));
-}
-template<typename... T>
-ALWAYS_INLINE void FastWrite(Channel channel, const char* functionName, Level level, Color colour,
-                             fmt::format_string<T...> fmt, T&&... args)
-{
-  if (level <= GetLogLevel()) [[unlikely]]
-    WriteFmtArgs(PackCategory(channel, level, colour), functionName, fmt, fmt::make_format_args(args...));
-}
+
 } // namespace Log
 
 // log wrappers
 #define LOG_CHANNEL(name) [[maybe_unused]] static constexpr Log::Channel ___LogChannel___ = Log::Channel::name;
 
-#define ERROR_LOG(...) Log::FastWrite(___LogChannel___, __func__, Log::Level::Error, __VA_ARGS__)
-#define WARNING_LOG(...) Log::FastWrite(___LogChannel___, __func__, Log::Level::Warning, __VA_ARGS__)
-#define INFO_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Info, __VA_ARGS__)
-#define VERBOSE_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Verbose, __VA_ARGS__)
-#define DEV_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Dev, __VA_ARGS__)
+#define GENERIC_LOG(channel, level, color, ...)                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if ((level) <= Log::GetLogLevel()) [[unlikely]]                                                                    \
+      Log::Write(Log::PackCategory((channel), (level), (color)), __VA_ARGS__);                                         \
+  } while (0)
 
-#if defined(_DEBUG) || defined(_DEVEL)
-#define DEBUG_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Debug, __VA_ARGS__)
-#define TRACE_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Trace, __VA_ARGS__)
-#else
-#define DEBUG_LOG(...)                                                                                                 \
+#define GENERIC_FUNC_LOG(channel, level, color, ...)                                                                   \
   do                                                                                                                   \
   {                                                                                                                    \
+    if ((level) <= Log::GetLogLevel()) [[unlikely]]                                                                    \
+      Log::WriteFuncName(Log::PackCategory((channel), (level), (color)), __func__, __VA_ARGS__);                       \
   } while (0)
-#define TRACE_LOG(...)                                                                                                 \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-#endif
 
 // clang-format off
-#define ERROR_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, __func__, Log::Level::Error, Log::Color::colour, __VA_ARGS__)
-#define WARNING_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, __func__, Log::Level::Warning, Log::Color::colour, __VA_ARGS__)
-#define INFO_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Info, Log::Color::colour, __VA_ARGS__)
-#define VERBOSE_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Verbose, Log::Color::colour, __VA_ARGS__)
-#define DEV_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Dev, Log::Color::colour, __VA_ARGS__)
+
+#define ERROR_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Error, Log::Color::Default, __VA_ARGS__)
+#define WARNING_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Warning, Log::Color::Default, __VA_ARGS__)
+#define INFO_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Info, Log::Color::Default, __VA_ARGS__)
+#define VERBOSE_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::Default, __VA_ARGS__)
+#define DEV_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::Default, __VA_ARGS__)
 
 #if defined(_DEBUG) || defined(_DEVEL)
-#define DEBUG_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Debug, Log::Color::colour, __VA_ARGS__)
-#define TRACE_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Trace, Log::Color::colour,__VA_ARGS__)
+#define DEBUG_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::Default, __VA_ARGS__)
+#define TRACE_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::Default, __VA_ARGS__)
 #else
-#define DEBUG_COLOR_LOG(colour, ...)                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
-#define TRACE_COLOR_LOG(colour, ...)                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-  } while (0)
+#define DEBUG_LOG(...) do { } while (0)
+#define TRACE_LOG(...) do { } while (0)
+#endif
+
+#define ERROR_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Error, Log::Color::color, __VA_ARGS__)
+#define WARNING_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Warning, Log::Color::color, __VA_ARGS__)
+#define INFO_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Info, Log::Color::color, __VA_ARGS__)
+#define VERBOSE_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::color, __VA_ARGS__)
+#define DEV_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::color, __VA_ARGS__)
+
+#if defined(_DEBUG) || defined(_DEVEL)
+#define DEBUG_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::color, __VA_ARGS__)
+#define TRACE_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::color, __VA_ARGS__)
+#else
+#define DEBUG_COLOR_LOG(color, ...) do { } while (0)
+#define TRACE_COLOR_LOG(color, ...) do { } while (0)
 #endif
 
 // clang-format on

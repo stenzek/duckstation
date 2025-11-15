@@ -68,15 +68,14 @@ inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view
   const c4::csubstr val = member.val();
   if (val.empty())
   {
-    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
     return false;
   }
 
   const std::optional<T> opt_value = StringUtil::FromChars<T>(to_stringview(val));
   if (!opt_value.has_value())
   {
-    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-uint value in {}",
-                   key);
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-uint value in {}", key);
     return false;
   }
 
@@ -100,25 +99,24 @@ inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object,
       {
         if constexpr (std::is_same_v<T, bool>)
         {
-          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
-                         "Unexpected non-bool value in {}", key);
+          GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-bool value in {}",
+                      key);
         }
         else if constexpr (std::is_floating_point_v<T>)
         {
-          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
-                         "Unexpected non-float value in {}", key);
+          GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                      "Unexpected non-float value in {}", key);
         }
         else if constexpr (std::is_integral_v<T>)
         {
-          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
-                         "Unexpected non-int value in {}", key);
+          GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-int value in {}",
+                      key);
         }
       }
     }
     else
     {
-      Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}",
-                     key);
+      GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
     }
   }
 
@@ -139,13 +137,14 @@ inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& objec
     {
       ret = from_string_function(TinyString(to_stringview(val)));
       if (!ret.has_value())
-        Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unknown value for {}: {}", key,
-                       to_stringview(val));
+      {
+        GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unknown value for {}: {}", key,
+                    to_stringview(val));
+      }
     }
     else
     {
-      Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}",
-                     key);
+      GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
     }
   }
 
@@ -156,13 +155,13 @@ inline void SetRymlCallbacks()
 {
   ryml::Callbacks callbacks = ryml::get_callbacks();
   callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
-    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
-                   "YAML parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset,
-                   std::string_view(msg, msg_len));
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                "YAML parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset,
+                std::string_view(msg, msg_len));
   };
   ryml::set_callbacks(callbacks);
   c4::set_error_callback([](const char* msg, size_t msg_size) {
-    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "C4 error: {}",
-                   std::string_view(msg, msg_size));
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "C4 error: {}",
+                std::string_view(msg, msg_size));
   });
 }

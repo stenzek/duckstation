@@ -715,9 +715,9 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   enabled_features.textureCompressionBC |= features2.features.textureCompressionBC;
 
 #define LOG_EXT(name, field)                                                                                           \
-  Log::FastWrite(___LogChannel___, Log::Level::Info,                                                                   \
-                 m_optional_extensions.field ? Log::Color::StrongGreen : Log::Color::StrongOrange, name " is {}",      \
-                 m_optional_extensions.field ? "supported" : "NOT supported")
+  GENERIC_LOG(___LogChannel___, Log::Level::Info,                                                                      \
+              m_optional_extensions.field ? Log::Color::StrongGreen : Log::Color::StrongOrange, name " is {}",         \
+              m_optional_extensions.field ? "supported" : "NOT supported")
 
   LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
   LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);

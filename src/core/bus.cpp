@@ -943,7 +943,7 @@ void Bus::AddTTYCharacter(char ch)
   {
     if (!s_tty_line_buffer.empty())
     {
-      Log::FastWrite(Log::Channel::TTY, Log::Level::Info, Log::Color::StrongBlue, s_tty_line_buffer);
+      GENERIC_LOG(Log::Channel::TTY, Log::Level::Info, Log::Color::StrongBlue, s_tty_line_buffer);
 #if defined(_DEBUG) || defined(_DEVEL)
       if (CPU::IsTraceEnabled())
         CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());

@@ -194,14 +194,14 @@ Log::Color Log::GetColorForLevel(Level level)
   return s_level_colours[static_cast<size_t>(level)];
 }
 
-void Log::ExecuteCallbacks(MessageCategory cat, const char* functionName, std::string_view message)
+void Log::ExecuteCallbacks(MessageCategory cat, const char* function_name, std::string_view message)
 {
   for (RegisteredCallback& callback : s_state.callbacks)
-    callback.Function(callback.Parameter, cat, functionName, message);
+    callback.Function(callback.Parameter, cat, function_name, message);
 }
 
 ALWAYS_INLINE_RELEASE void Log::FormatLogMessageForDisplay(fmt::memory_buffer& buffer, MessageCategory cat,
-                                                           const char* functionName, std::string_view message,
+                                                           const char* function_name, std::string_view message,
                                                            bool timestamp, bool ansi_color_code)
 {
   static constexpr const std::array s_ansi_color_codes = {
@@ -249,10 +249,10 @@ ALWAYS_INLINE_RELEASE void Log::FormatLogMessageForDisplay(fmt::memory_buffer& b
         (pos == std::string_view::npos) ? message.substr(start) : message.substr(start, pos - start);
       const std::string_view end_message = sub_message.ends_with('\n') ? ""sv : "\n"sv;
 
-      if (functionName)
+      if (function_name)
       {
         fmt::format_to(appender, "[{:10.4f}] {}{}({}): {}{}{}", message_time, color_start,
-                       s_log_level_characters[static_cast<size_t>(level)], functionName, sub_message, color_end,
+                       s_log_level_characters[static_cast<size_t>(level)], function_name, sub_message, color_end,
                        end_message);
       }
       else
@@ -270,10 +270,10 @@ ALWAYS_INLINE_RELEASE void Log::FormatLogMessageForDisplay(fmt::memory_buffer& b
   }
   else
   {
-    if (functionName)
+    if (function_name)
     {
       fmt::format_to(appender, "{}{}({}): {}{}\n", color_start, s_log_level_characters[static_cast<size_t>(level)],
-                     functionName, message, color_end);
+                     function_name, message, color_end);
     }
     else
     {
@@ -284,24 +284,24 @@ ALWAYS_INLINE_RELEASE void Log::FormatLogMessageForDisplay(fmt::memory_buffer& b
 }
 
 template<typename T>
-ALWAYS_INLINE_RELEASE void Log::FormatLogMessageAndPrint(MessageCategory cat, const char* functionName,
+ALWAYS_INLINE_RELEASE void Log::FormatLogMessageAndPrint(MessageCategory cat, const char* function_name,
                                                          std::string_view message, bool timestamp, bool ansi_color_code,
                                                          const T& callback)
 {
   fmt::memory_buffer buffer;
-  FormatLogMessageForDisplay(buffer, cat, functionName, message, timestamp, ansi_color_code);
+  FormatLogMessageForDisplay(buffer, cat, function_name, message, timestamp, ansi_color_code);
   callback(std::string_view(buffer.data(), buffer.size()));
 }
 
 #ifdef _WIN32
 
 template<typename T>
-ALWAYS_INLINE_RELEASE void Log::FormatLogMessageAndPrintW(MessageCategory cat, const char* functionName,
+ALWAYS_INLINE_RELEASE void Log::FormatLogMessageAndPrintW(MessageCategory cat, const char* function_name,
                                                           std::string_view message, bool timestamp,
                                                           bool ansi_color_code, const T& callback)
 {
   fmt::memory_buffer buffer;
-  FormatLogMessageForDisplay(buffer, cat, functionName, message, timestamp, ansi_color_code);
+  FormatLogMessageForDisplay(buffer, cat, function_name, message, timestamp, ansi_color_code);
 
   // Convert to UTF-16 first so unicode characters display correctly. NT is going to do it
   // anyway...
@@ -341,7 +341,7 @@ static bool EnableVirtualTerminalProcessing(HANDLE hConsole)
 
 #endif
 
-void Log::ConsoleOutputLogCallback(void* pUserParam, MessageCategory cat, const char* functionName,
+void Log::ConsoleOutputLogCallback(void* pUserParam, MessageCategory cat, const char* function_name,
                                    std::string_view message)
 {
   if (!s_state.console_output_enabled)
@@ -349,28 +349,28 @@ void Log::ConsoleOutputLogCallback(void* pUserParam, MessageCategory cat, const 
 
 #if defined(_WIN32)
   FormatLogMessageAndPrintW(
-    cat, functionName, message, s_state.console_output_timestamps, true, [cat](const std::wstring_view& message) {
+    cat, function_name, message, s_state.console_output_timestamps, true, [cat](const std::wstring_view& message) {
       HANDLE hOutput = (UnpackLevel(cat) <= Level::Warning) ? s_state.hConsoleStdErr : s_state.hConsoleStdOut;
       DWORD chars_written;
       WriteConsoleW(hOutput, message.data(), static_cast<DWORD>(message.length()), &chars_written, nullptr);
     });
 #elif !defined(__ANDROID__)
   FormatLogMessageAndPrint(
-    cat, functionName, message, s_state.console_output_timestamps, true, [cat](std::string_view message) {
+    cat, function_name, message, s_state.console_output_timestamps, true, [cat](std::string_view message) {
       const int outputFd = (UnpackLevel(cat) <= Log::Level::Warning) ? STDERR_FILENO : STDOUT_FILENO;
       write(outputFd, message.data(), message.length());
     });
 #endif
 }
 
-void Log::DebugOutputLogCallback(void* pUserParam, MessageCategory cat, const char* functionName,
+void Log::DebugOutputLogCallback(void* pUserParam, MessageCategory cat, const char* function_name,
                                  std::string_view message)
 {
   if (!s_state.debug_output_enabled)
     return;
 
 #if defined(_WIN32)
-  FormatLogMessageAndPrintW(cat, functionName, message, false, false,
+  FormatLogMessageAndPrintW(cat, function_name, message, false, false,
                             [](const std::wstring_view& message) { OutputDebugStringW(message.data()); });
 #elif defined(__ANDROID__)
   if (message.empty())
@@ -485,13 +485,13 @@ void Log::SetDebugOutputParams(bool enabled)
     UnregisterCallback(DebugOutputLogCallback, nullptr, lock);
 }
 
-void Log::FileOutputLogCallback(void* pUserParam, MessageCategory cat, const char* functionName,
+void Log::FileOutputLogCallback(void* pUserParam, MessageCategory cat, const char* function_name,
                                 std::string_view message)
 {
   if (!s_state.file_output_enabled)
     return;
 
-  FormatLogMessageAndPrint(cat, functionName, message, s_state.file_output_timestamp, false,
+  FormatLogMessageAndPrint(cat, function_name, message, s_state.file_output_timestamp, false,
                            [](std::string_view message) {
                              std::fwrite(message.data(), 1, message.size(), s_state.file_handle.get());
                              std::fflush(s_state.file_handle.get());
@@ -571,13 +571,13 @@ void Log::Write(MessageCategory cat, std::string_view message)
   ExecuteCallbacks(cat, nullptr, message);
 }
 
-void Log::Write(MessageCategory cat, const char* functionName, std::string_view message)
+void Log::WriteFuncName(MessageCategory cat, const char* function_name, std::string_view message)
 {
   if (!FilterTest(UnpackChannel(cat), UnpackLevel(cat)))
     return;
 
   std::unique_lock lock(s_state.callbacks_mutex);
-  ExecuteCallbacks(cat, functionName, message);
+  ExecuteCallbacks(cat, function_name, message);
 }
 
 void Log::WriteFmtArgs(MessageCategory cat, fmt::string_view fmt, fmt::format_args args)
@@ -592,7 +592,8 @@ void Log::WriteFmtArgs(MessageCategory cat, fmt::string_view fmt, fmt::format_ar
   ExecuteCallbacks(cat, nullptr, std::string_view(buffer.data(), buffer.size()));
 }
 
-void Log::WriteFmtArgs(MessageCategory cat, const char* functionName, fmt::string_view fmt, fmt::format_args args)
+void Log::WriteFuncNameFmtArgs(MessageCategory cat, const char* function_name, fmt::string_view fmt,
+                               fmt::format_args args)
 {
   if (!FilterTest(UnpackChannel(cat), UnpackLevel(cat)))
     return;
@@ -601,5 +602,5 @@ void Log::WriteFmtArgs(MessageCategory cat, const char* functionName, fmt::strin
   fmt::vformat_to(std::back_inserter(buffer), fmt, args);
 
   std::unique_lock lock(s_state.callbacks_mutex);
-  ExecuteCallbacks(cat, functionName, std::string_view(buffer.data(), buffer.size()));
+  ExecuteCallbacks(cat, function_name, std::string_view(buffer.data(), buffer.size()));
 }

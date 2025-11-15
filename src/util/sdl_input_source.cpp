@@ -212,7 +212,7 @@ static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priorit
     Log::Level::Error,   // SDL_LOG_PRIORITY_CRITICAL
   };
 
-  Log::FastWrite(Log::Channel::SDL, priority_map[priority], message);
+  GENERIC_LOG(Log::Channel::SDL, priority_map[priority], Log::Color::Default, message);
 }
 
 bool SDLInputSource::ALLOW_EVENT_POLLING = true;
