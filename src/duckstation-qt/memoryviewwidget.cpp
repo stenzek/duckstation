@@ -1,4 +1,5 @@
 #include "memoryviewwidget.h"
+#include "qthost.h"
 
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMouseEvent>
@@ -262,13 +263,13 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
     return;
 
   const QPalette palette = viewport()->palette();
-  const bool dark = palette.windowText().color().value() > palette.window().color().value();
+  const bool dark = QtHost::IsDarkApplicationTheme();
   const QColor alt_fill_color =
     dark ? palette.color(QPalette::AlternateBase).darker(130) : palette.color(QPalette::AlternateBase).lighter(100);
   const QColor selected_color = dark ? palette.color(QPalette::Highlight) : QColor(190, 190, 190);
   const QColor text_color = palette.color(QPalette::WindowText);
   const QColor highlight_color(100, 100, 0);
-  const QColor edited_color(240, 30, 30);
+  const QColor edited_color = dark ? QColor(255, 80, 80) : QColor(191, 121, 20);
   const int offsetX = horizontalScrollBar()->value();
 
   int y = m_char_height;
