@@ -313,7 +313,6 @@ private:
   void onGameListEntryContextMenuRequested(const QPoint& point);
   void onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder order);
 
-  void setMediaCaptureActionState(bool checked);
   void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
 

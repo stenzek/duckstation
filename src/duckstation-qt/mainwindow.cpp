@@ -74,23 +74,23 @@ static constexpr std::array<std::pair<Qt::ToolBarArea, const char*>, 4> s_toolba
 static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_actions[] = {
   {"StartFile", &Ui::MainWindow::actionStartFile},
   {"StartBIOS", &Ui::MainWindow::actionStartBios},
-  {"StartDisc", &Ui::MainWindow::actionStartDiscToolbar},
+  {"StartDisc", &Ui::MainWindow::actionStartDisc},
   {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
   {nullptr, nullptr},
-  {"PowerOff", &Ui::MainWindow::actionCloseGameToolbar},
-  {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSavingToolbar},
-  {"Reset", &Ui::MainWindow::actionResetGameToolbar},
+  {"PowerOff", &Ui::MainWindow::actionCloseGame},
+  {"PowerOffWithoutSaving", &Ui::MainWindow::actionCloseGameWithoutSaving},
+  {"Reset", &Ui::MainWindow::actionResetGame},
   {"Pause", &Ui::MainWindow::actionPause},
   {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
   {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
   {"Screenshot", &Ui::MainWindow::actionScreenshot},
-  {"MediaCapture", &Ui::MainWindow::actionMediaCaptureToolbar},
+  {"MediaCapture", &Ui::MainWindow::actionMediaCapture},
   {nullptr, nullptr},
   {"LoadState", &Ui::MainWindow::actionLoadState},
   {"SaveState", &Ui::MainWindow::actionSaveState},
   {nullptr, nullptr},
-  {"MemoryScanner", &Ui::MainWindow::actionMemoryScannerToolbar},
-  {"MemoryEditor", &Ui::MainWindow::actionMemoryEditorToolbar},
+  {"MemoryScanner", &Ui::MainWindow::actionMemoryScanner},
+  {"MemoryEditor", &Ui::MainWindow::actionMemoryEditor},
   {nullptr, nullptr},
   {"Fullscreen", &Ui::MainWindow::actionFullscreen},
   {"Settings", &Ui::MainWindow::actionSettings2},
@@ -690,21 +690,14 @@ void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 ti
 
 void MainWindow::onMediaCaptureStarted()
 {
-  setMediaCaptureActionState(true);
+  QSignalBlocker sb(m_ui.actionMediaCapture);
+  m_ui.actionMediaCapture->setChecked(true);
 }
 
 void MainWindow::onMediaCaptureStopped()
 {
-  setMediaCaptureActionState(false);
-}
-
-void MainWindow::setMediaCaptureActionState(bool checked)
-{
-  for (QAction* action : {m_ui.actionMediaCapture, m_ui.actionMediaCaptureToolbar})
-  {
-    QSignalBlocker sb(action);
-    action->setChecked(checked);
-  }
+  QSignalBlocker sb(m_ui.actionMediaCapture);
+  m_ui.actionMediaCapture->setChecked(false);
 }
 
 void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
@@ -1150,7 +1143,7 @@ const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* en
 std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::string file)
 {
   std::shared_ptr<SystemBootParameters> ret = std::make_shared<SystemBootParameters>(std::move(file));
-  ret->start_media_capture = m_ui.actionMediaCapture->isChecked() || m_ui.actionMediaCaptureToolbar->isChecked();
+  ret->start_media_capture = m_ui.actionMediaCapture->isChecked();
   return ret;
 }
 
@@ -2046,7 +2039,7 @@ void MainWindow::updateToolbarActions()
 
     // only one of resume/poweroff should be present depending on system state
     QAction* action = (m_ui.*action_ptr);
-    if (action == m_ui.actionCloseGameToolbar && !s_system_valid)
+    if (action == m_ui.actionCloseGame && !s_system_valid)
       action = m_ui.actionResumeLastState;
 
     m_ui.toolBar->addAction(action);
@@ -2160,7 +2153,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
         continue;
       }
 
-      QAction* const menu_action = menu->addAction((m_ui.*action_ptr)->text());
+      QAction* const menu_action = menu->addAction((m_ui.*action_ptr)->iconText());
       menu_action->setCheckable(true);
       menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
       connect(menu_action, &QAction::toggled, this, [this, name](bool checked) {
@@ -2206,18 +2199,14 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   const bool starting_or_not_running = (starting || !running);
   m_ui.actionStartFile->setDisabled(starting_or_running);
   m_ui.actionStartDisc->setDisabled(starting_or_running);
-  m_ui.actionStartDiscToolbar->setDisabled(starting_or_running);
   m_ui.actionStartBios->setDisabled(starting_or_running);
   m_ui.actionResumeLastState->setDisabled(starting_or_running || achievements_hardcore_mode);
   m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
   m_ui.actionStartFullscreenUI2->setDisabled(starting_or_running);
 
   m_ui.actionCloseGame->setDisabled(starting_or_not_running);
-  m_ui.actionCloseGameToolbar->setDisabled(starting_or_not_running);
   m_ui.actionCloseGameWithoutSaving->setDisabled(starting_or_not_running);
-  m_ui.actionCloseGameWithoutSavingToolbar->setDisabled(starting_or_not_running);
   m_ui.actionResetGame->setDisabled(starting_or_not_running);
-  m_ui.actionResetGameToolbar->setDisabled(starting_or_not_running);
   m_ui.actionPause->setDisabled(starting_or_not_running);
   m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
   m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2228,9 +2217,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.menuCheats->setDisabled(starting_or_not_running || achievements_hardcore_mode);
   m_ui.actionCPUDebugger->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryEditor->setDisabled(achievements_hardcore_mode);
-  m_ui.actionMemoryEditorToolbar->setDisabled(achievements_hardcore_mode);
   m_ui.actionMemoryScanner->setDisabled(achievements_hardcore_mode);
-  m_ui.actionMemoryScannerToolbar->setDisabled(achievements_hardcore_mode);
   m_ui.actionFreeCamera->setDisabled(achievements_hardcore_mode);
   m_ui.actionReloadTextureReplacements->setDisabled(starting_or_not_running);
   m_ui.actionDumpRAM->setDisabled(starting_or_not_running || achievements_hardcore_mode);
@@ -2260,16 +2247,16 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   {
     if (m_ui.toolBar->widgetForAction(m_ui.actionResumeLastState))
     {
-      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionCloseGameToolbar);
+      m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionCloseGame);
       m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
     }
   }
   else
   {
-    if (m_ui.toolBar->widgetForAction(m_ui.actionCloseGameToolbar))
+    if (m_ui.toolBar->widgetForAction(m_ui.actionCloseGame))
     {
-      m_ui.toolBar->insertAction(m_ui.actionCloseGameToolbar, m_ui.actionResumeLastState);
-      m_ui.toolBar->removeAction(m_ui.actionCloseGameToolbar);
+      m_ui.toolBar->insertAction(m_ui.actionCloseGame, m_ui.actionResumeLastState);
+      m_ui.toolBar->removeAction(m_ui.actionCloseGame);
     }
 
     m_ui.actionViewGameProperties->setEnabled(false);
@@ -2472,7 +2459,6 @@ void MainWindow::connectSignals()
 
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
-  connect(m_ui.actionStartDiscToolbar, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
   connect(m_ui.actionResumeLastState, &QAction::triggered, g_emu_thread, &EmuThread::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->popup(QCursor::pos()); });
@@ -2492,13 +2478,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAddGameDirectory, &QAction::triggered,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
   connect(m_ui.actionCloseGame, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
-  connect(m_ui.actionCloseGameToolbar, &QAction::triggered, this, &MainWindow::onCloseGameActionTriggered);
   connect(m_ui.actionCloseGameWithoutSaving, &QAction::triggered, this,
           &MainWindow::onCloseGameWithoutSavingActionTriggered);
-  connect(m_ui.actionCloseGameWithoutSavingToolbar, &QAction::triggered, this,
-          &MainWindow::onCloseGameWithoutSavingActionTriggered);
   connect(m_ui.actionResetGame, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
-  connect(m_ui.actionResetGameToolbar, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
   connect(m_ui.actionPause, &QAction::toggled, this, &MainWindow::onPauseActionToggled);
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
@@ -2546,14 +2528,11 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
-  connect(m_ui.actionMemoryEditorToolbar, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
-  connect(m_ui.actionMemoryScannerToolbar, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionControllerTest, &QAction::triggered, g_emu_thread, &EmuThread::startControllerTest);
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
-  connect(m_ui.actionMediaCaptureToolbar, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
@@ -3384,7 +3363,8 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
   if (path.isEmpty())
   {
     // uncheck it again
-    setMediaCaptureActionState(false);
+    QSignalBlocker sb(m_ui.actionMediaCapture);
+    m_ui.actionMediaCapture->setChecked(false);
     return;
   }
 

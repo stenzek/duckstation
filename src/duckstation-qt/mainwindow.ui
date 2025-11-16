@@ -296,15 +296,7 @@
    <property name="text">
     <string>Start &amp;Disc...</string>
    </property>
-   <property name="toolTip">
-    <string>Starts a new session from a physical disc.</string>
-   </property>
-  </action>
-  <action name="actionStartDiscToolbar">
-   <property name="icon">
-    <iconset theme="disc-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Start Disc</string>
    </property>
    <property name="toolTip">
@@ -351,15 +343,7 @@
    <property name="text">
     <string>Cl&amp;ose Game</string>
    </property>
-   <property name="toolTip">
-    <string>Ends the current session.</string>
-   </property>
-  </action>
-  <action name="actionCloseGameToolbar">
-   <property name="icon">
-    <iconset theme="shut-down-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Close</string>
    </property>
    <property name="toolTip">
@@ -373,15 +357,7 @@
    <property name="text">
     <string>&amp;Reset Game</string>
    </property>
-   <property name="toolTip">
-    <string>Restarts the emulated system.</string>
-   </property>
-  </action>
-  <action name="actionResetGameToolbar">
-   <property name="icon">
-    <iconset theme="restart-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Reset</string>
    </property>
    <property name="toolTip">
@@ -1120,15 +1096,7 @@
    <property name="text">
     <string>Close Game &amp;Without Saving</string>
    </property>
-   <property name="toolTip">
-    <string>Ends the current session without the option to save state.</string>
-   </property>
-  </action>
-  <action name="actionCloseGameWithoutSavingToolbar">
-   <property name="icon">
-    <iconset theme="close-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Close (No Save)</string>
    </property>
    <property name="toolTip">
@@ -1175,15 +1143,7 @@
    <property name="text">
     <string>Memory &amp;Scanner</string>
    </property>
-   <property name="toolTip">
-    <string>Opens the memory scanner window.</string>
-   </property>
-  </action>
-  <action name="actionMemoryScannerToolbar">
-   <property name="icon">
-    <iconset theme="mag-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Scanner</string>
    </property>
    <property name="toolTip">
@@ -1217,18 +1177,7 @@
    <property name="text">
     <string>Media Ca&amp;pture</string>
    </property>
-   <property name="toolTip">
-    <string>Starts or stops capture of video and audio from the content.</string>
-   </property>
-  </action>
-  <action name="actionMediaCaptureToolbar">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset theme="video-on-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Capture</string>
    </property>
    <property name="toolTip">
@@ -1403,15 +1352,7 @@
    <property name="text">
     <string>Memory &amp;Editor</string>
    </property>
-   <property name="toolTip">
-    <string>Opens the memory editor window.</string>
-   </property>
-  </action>
-  <action name="actionMemoryEditorToolbar">
-   <property name="icon">
-    <iconset theme="chip-line"/>
-   </property>
-   <property name="text">
+   <property name="iconText">
     <string>Editor</string>
    </property>
    <property name="toolTip">
