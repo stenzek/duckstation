@@ -139,7 +139,7 @@ void HotkeySettingsWidget::createButtons()
 
     QWidget* const row = new QWidget(m_container);
     row->setAutoFillBackground(true);
-    row->setBackgroundRole((((iter->layout->count()) % 2) == 0) ? QPalette::Base : QPalette::AlternateBase);
+    row->setBackgroundRole(((iter->layout->count() % 2) == 0) ? QPalette::Base : QPalette::AlternateBase);
     row->setPalette(row_palette);
     iter->layout->addWidget(row);
 
@@ -150,7 +150,7 @@ void HotkeySettingsWidget::createButtons()
 
     InputBindingWidget* const bind = new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(),
                                                             InputBindingInfo::Type::Button, "Hotkeys", hotkey->name);
-    bind->setMinimumWidth(300);
+    bind->setFixedWidth(300);
     row_layout->addWidget(bind);
   }
 }

@@ -31,8 +31,7 @@ InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, 
                                        std::string section_name, std::string key_name)
   : QPushButton(parent)
 {
-  setMinimumWidth(220);
-  setMaximumWidth(220);
+  setFixedWidth(220);
 
   connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 
@@ -61,7 +60,22 @@ void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Ty
   reloadBinding();
 }
 
-void InputBindingWidget::updateText()
+void InputBindingWidget::updateElidedText()
+{
+  // https://github.com/qt/qtbase/blob/5dbb3b358950726447765e4fea7feb040a303860/src/widgets/styles/qcommonstyle.cpp#L4867
+  const int button_margin = style()->pixelMetric(QStyle::PM_ButtonMargin, nullptr, this);
+  const int frame_width = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, this);
+  const int text_width = std::max(1, width() - button_margin - frame_width * 2);
+  QString elided = fontMetrics().elidedText(m_full_text, Qt::ElideMiddle, text_width);
+
+  // fix up accelerators
+  if (elided.contains('&'))
+    elided = elided.replace(QStringLiteral("&"), QStringLiteral("&&"));
+
+  setText(elided);
+}
+
+void InputBindingWidget::updateTextAndToolTip()
 {
   static constexpr const char* help_text =
     QT_TR_NOOP("Left-click to change binding.\nShift-click to set multiple bindings.");
@@ -69,11 +83,13 @@ void InputBindingWidget::updateText()
 
   if (m_bindings.empty())
   {
+    m_full_text.clear();
     setText(QString());
     setToolTip(QStringLiteral("%1\n\n%2").arg(tr("No binding set.")).arg(tr(help_text)));
   }
   else if (m_bindings.size() > 1)
   {
+    m_full_text.clear();
     setText(tr("%n bindings", "", static_cast<int>(m_bindings.size())));
 
     // keep the full thing for the tooltip
@@ -82,19 +98,9 @@ void InputBindingWidget::updateText()
   }
   else
   {
-    QString binding_text(QString::fromStdString(m_bindings[0]));
-
-    // fix up accelerators
-    if (binding_text.contains('&'))
-      binding_text = binding_text.replace(QStringLiteral("&"), QStringLiteral("&&"));
-
-    setToolTip(QStringLiteral("%1\n\n%2\n%3").arg(binding_text).arg(tr(help_text)).arg(tr(help_clear_text)));
-
-    // if it's too long, ellipsise it
-    const int max_length = (width() < 300) ? 35 : 60;
-    if (binding_text.length() > max_length)
-      binding_text = binding_text.left(max_length).append(QStringLiteral("..."));
-    setText(binding_text);
+    m_full_text = QString::fromStdString(m_bindings[0]);
+    updateElidedText();
+    setToolTip(QStringLiteral("%1\n\n%2\n%3").arg(m_full_text).arg(tr(help_text)).arg(tr(help_clear_text)));
   }
 }
 
@@ -213,6 +219,14 @@ void InputBindingWidget::mouseReleaseEvent(QMouseEvent* e)
   QPushButton::mouseReleaseEvent(e);
 }
 
+void InputBindingWidget::resizeEvent(QResizeEvent* e)
+{
+  if (!m_full_text.isEmpty())
+    updateElidedText();
+
+  QPushButton::resizeEvent(e);
+}
+
 void InputBindingWidget::setNewBinding()
 {
   if (m_new_bindings.empty())
@@ -266,7 +280,7 @@ void InputBindingWidget::reloadBinding()
 {
   m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
                        Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
-  updateText();
+  updateTextAndToolTip();
 }
 
 void InputBindingWidget::onClicked()
@@ -299,6 +313,7 @@ void InputBindingWidget::onInputListenTimerTimeout()
     return;
   }
 
+  m_full_text.clear();
   setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 }
 
@@ -311,10 +326,10 @@ void InputBindingWidget::startListeningForInput(u32 timeout_in_seconds)
   m_input_listen_timer = new QTimer(this);
   m_input_listen_timer->setSingleShot(false);
   m_input_listen_timer->start(1000);
-
-  m_input_listen_timer->connect(m_input_listen_timer, &QTimer::timeout, this,
-                                &InputBindingWidget::onInputListenTimerTimeout);
+  m_input_listen_timer->callOnTimeout(this, &InputBindingWidget::onInputListenTimerTimeout);
   m_input_listen_remaining_seconds = timeout_in_seconds;
+
+  m_full_text.clear();
   setText(tr("Push Button/Axis... [%1]").arg(m_input_listen_remaining_seconds));
 
   installEventFilter(this);
