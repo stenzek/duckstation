@@ -1089,11 +1089,6 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
     add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
 }
 
-void MainWindow::onCheatsActionTriggered()
-{
-  m_ui.menuCheats->exec(QCursor::pos());
-}
-
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
@@ -1121,7 +1116,7 @@ void MainWindow::onCheatsMenuAboutToShow()
         return;
       }
 
-      QMenu* apply_submenu = menu->addMenu(tr("&Apply Cheat"));
+      QMenu* const apply_submenu = menu->addMenu(tr("&Apply Cheat"));
       QtUtils::StylePopupMenu(apply_submenu);
       for (const QString& name : names)
       {
@@ -1776,7 +1771,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
   menu->addAction(tr("Add Search Directory..."),
                   [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
-  menu->exec(point);
+  menu->popup(point);
 }
 
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
@@ -2142,7 +2137,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     action->setEnabled(show_labels);
     connect(action, &QAction::toggled, this, &MainWindow::onViewToolbarLabelsBesideIconsActionToggled);
 
-    QMenu* position_menu = menu->addMenu(tr("Position"));
+    QMenu* const position_menu = menu->addMenu(tr("Position"));
     QtUtils::StylePopupMenu(position_menu);
     for (const auto& [area, name] : s_toolbar_areas)
     {
@@ -2165,7 +2160,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
         continue;
       }
 
-      QAction* menu_action = menu->addAction((m_ui.*action_ptr)->text());
+      QAction* const menu_action = menu->addAction((m_ui.*action_ptr)->text());
       menu_action->setCheckable(true);
       menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
       connect(menu_action, &QAction::toggled, this, [this, name](bool checked) {
@@ -2480,7 +2475,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionStartDiscToolbar, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
   connect(m_ui.actionResumeLastState, &QAction::triggered, g_emu_thread, &EmuThread::resumeSystemFromMostRecentState);
-  connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->exec(QCursor::pos()); });
+  connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->popup(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this,
           &MainWindow::onChangeDiscFromDeviceActionTriggered);
@@ -2490,7 +2485,7 @@ void MainWindow::connectSignals()
   connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
   connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
-  connect(m_ui.actionCheatsToolbar, &QAction::triggered, this, &MainWindow::onCheatsActionTriggered);
+  connect(m_ui.actionCheatsToolbar, &QAction::triggered, [this] { m_ui.menuCheats->popup(QCursor::pos()); });
   connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionRemoveDisc, &QAction::triggered, this, &MainWindow::onRemoveDiscActionTriggered);
@@ -2508,8 +2503,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
-  connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
-  connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
+  connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->popup(QCursor::pos()); });
+  connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->popup(QCursor::pos()); });
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
   connect(m_ui.actionFullscreen, &QAction::triggered, g_emu_thread, &EmuThread::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
@@ -2886,7 +2881,7 @@ void MainWindow::onViewClearGameListBackgroundTriggered()
 void MainWindow::onSettingsTriggeredFromToolbar()
 {
   if (s_system_valid)
-    m_settings_toolbar_menu->exec(QCursor::pos());
+    m_settings_toolbar_menu->popup(QCursor::pos());
   else
     doSettings();
 }

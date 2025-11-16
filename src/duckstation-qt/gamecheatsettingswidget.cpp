@@ -344,7 +344,7 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
   Cheats::CodeInfo* selected = getSelectedCode();
   const std::string selected_code = selected ? selected->name : std::string();
 
-  QMenu* context_menu = QtUtils::NewPopupMenu(m_ui.cheatList);
+  QMenu* const context_menu = QtUtils::NewPopupMenu(m_ui.cheatList);
 
   context_menu->addAction(QIcon::fromTheme(QStringLiteral("add-line")), tr("Add Cheat..."), this,
                           &GameCheatSettingsWidget::newCode);
@@ -364,7 +364,7 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
   context_menu->addAction(QIcon::fromTheme(QStringLiteral("refresh-line")), tr("Reload Cheats"), this,
                           &GameCheatSettingsWidget::onReloadClicked);
 
-  context_menu->exec(m_ui.cheatList->mapToGlobal(pos));
+  context_menu->popup(m_ui.cheatList->mapToGlobal(pos));
 }
 
 void GameCheatSettingsWidget::onRemoveCodeClicked()
@@ -559,7 +559,7 @@ void GameCheatSettingsWidget::onImportClicked()
   QMenu* const menu = QtUtils::NewPopupMenu(this);
   menu->addAction(tr("From File..."), this, &GameCheatSettingsWidget::onImportFromFileTriggered);
   menu->addAction(tr("From Text..."), this, &GameCheatSettingsWidget::onImportFromTextTriggered);
-  menu->exec(QCursor::pos());
+  menu->popup(QCursor::pos());
 }
 
 void GameCheatSettingsWidget::onImportFromFileTriggered()
