@@ -592,6 +592,11 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
   (*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
 
   rc_client_set_userdata(new_client, http->get());
+
+  // Allow custom host to be overridden through config.
+  if (const std::string host = Host::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
+    rc_client_set_host(new_client, host.c_str());
+
   *client = new_client;
   return true;
 }
