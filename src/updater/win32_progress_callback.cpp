@@ -89,9 +89,13 @@ bool Win32ProgressCallback::Create()
   }
 
   m_dpi = GetDpiForSystem();
-  m_window_hwnd =
-    CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                   Scale(WINDOW_WIDTH), Scale(WINDOW_HEIGHT), nullptr, nullptr, GetModuleHandle(nullptr), this);
+
+  RECT adjusted_rect = {0, 0, Scale(WINDOW_WIDTH), Scale(WINDOW_HEIGHT)};
+  AdjustWindowRectExForDpi(&adjusted_rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE, m_dpi);
+
+  m_window_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                                 adjusted_rect.right - adjusted_rect.left, adjusted_rect.bottom - adjusted_rect.top,
+                                 nullptr, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
     ERROR_LOG("Failed to create window");
@@ -108,6 +112,12 @@ void Win32ProgressCallback::Destroy()
 {
   if (!m_window_hwnd)
     return;
+
+  if (m_font)
+  {
+    DeleteObject(m_font);
+    m_font = nullptr;
+  }
 
   DestroyWindow(m_window_hwnd);
   m_window_hwnd = {};
@@ -169,24 +179,46 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
       m_dpi = GetDpiForWindow(hwnd);
 
       const CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
-      const HFONT default_font = reinterpret_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
-      SendMessage(hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
 
+      LOGFONT lf = {};
+      SystemParametersInfoForDpi(SPI_GETICONTITLELOGFONT, sizeof(lf), &lf, 0, m_dpi);
+      m_font = CreateFontIndirect(&lf);
+
+      SendMessage(hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+
+      m_text_hwnd =
+        CreateWindowEx(0, L"Static", nullptr, WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hwnd, nullptr, cs->hInstance, nullptr);
+      SendMessage(m_text_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+
+      m_progress_hwnd = CreateWindowEx(0, PROGRESS_CLASSW, nullptr, WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hwnd, nullptr,
+                                       cs->hInstance, nullptr);
+
+      m_list_box_hwnd =
+        CreateWindowEx(0, L"LISTBOX", nullptr, WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | LBS_NOSEL,
+                       0, 0, 0, 0, hwnd, nullptr, cs->hInstance, nullptr);
+      SendMessage(m_list_box_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+    }
+      [[fallthrough]];
+
+    case WM_SIZE:
+    {
+      RECT window_rect = {};
+      GetClientRect(m_window_hwnd, &window_rect);
+
+      const int control_width = (window_rect.right - window_rect.left) - (Scale(WINDOW_MARGIN) * 2);
       int y = Scale(WINDOW_MARGIN);
 
-      m_text_hwnd = CreateWindowEx(0, L"Static", nullptr, WS_VISIBLE | WS_CHILD, Scale(WINDOW_MARGIN), y,
-                                   Scale(SUBWINDOW_WIDTH), Scale(16), hwnd, nullptr, cs->hInstance, nullptr);
-      SendMessage(m_text_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
-      y += Scale(16) + Scale(WINDOW_MARGIN);
+      SetWindowPos(m_text_hwnd, nullptr, Scale(WINDOW_MARGIN), y, control_width, Scale(STATUS_TEXT_HEIGHT),
+                   SWP_NOZORDER | SWP_NOACTIVATE);
+      y += Scale(STATUS_TEXT_HEIGHT) + Scale(CONTROL_SPACING);
 
-      m_progress_hwnd = CreateWindowEx(0, PROGRESS_CLASSW, nullptr, WS_VISIBLE | WS_CHILD, Scale(WINDOW_MARGIN), y,
-                                       Scale(SUBWINDOW_WIDTH), Scale(32), hwnd, nullptr, cs->hInstance, nullptr);
-      y += Scale(32) + Scale(WINDOW_MARGIN);
+      SetWindowPos(m_progress_hwnd, nullptr, Scale(WINDOW_MARGIN), y, control_width, Scale(PROGRESS_BAR_HEIGHT),
+                   SWP_NOZORDER | SWP_NOACTIVATE);
+      y += Scale(PROGRESS_BAR_HEIGHT) + Scale(CONTROL_SPACING);
 
-      m_list_box_hwnd = CreateWindowExW(
-        0, L"LISTBOX", nullptr, WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | LBS_NOSEL,
-        Scale(WINDOW_MARGIN), y, Scale(SUBWINDOW_WIDTH), Scale(170), hwnd, nullptr, cs->hInstance, nullptr);
-      SendMessageW(m_list_box_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
+      const int listbox_height = (window_rect.bottom - window_rect.top) - y - Scale(WINDOW_MARGIN);
+      SetWindowPos(m_list_box_hwnd, nullptr, Scale(WINDOW_MARGIN), y, control_width, listbox_height,
+                   SWP_NOZORDER | SWP_NOACTIVATE);
     }
     break;
 
@@ -194,16 +226,30 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
     {
       m_dpi = HIWORD(wparam);
 
+      // Need to update the font.
+      if (m_font)
+      {
+        DeleteObject(m_font);
+        m_font = nullptr;
+      }
+
+      LOGFONTW lf = {};
+      SystemParametersInfoForDpi(SPI_GETICONTITLELOGFONT, sizeof(lf), &lf, 0, m_dpi);
+      m_font = CreateFontIndirect(&lf);
+      SendMessage(m_window_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+      SendMessage(m_text_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+      SendMessage(m_progress_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+      SendMessage(m_list_box_hwnd, WM_SETFONT, WPARAM(m_font), TRUE);
+
+      // Will trigger WM_SIZE.
       const RECT* new_rect = reinterpret_cast<RECT*>(lparam);
       SetWindowPos(m_window_hwnd, nullptr, new_rect->left, new_rect->top, new_rect->right - new_rect->left,
                    new_rect->bottom - new_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
-
-      UpdateControlPositions();
     }
     break;
 
     default:
-      return DefWindowProcW(hwnd, msg, wparam, lparam);
+      return DefWindowProc(hwnd, msg, wparam, lparam);
   }
 
   return 0;
@@ -212,22 +258,6 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
 int Win32ProgressCallback::Scale(int value) const
 {
   return MulDiv(value, m_dpi, 96);
-}
-
-void Win32ProgressCallback::UpdateControlPositions()
-{
-  int y = Scale(WINDOW_MARGIN);
-
-  SetWindowPos(m_text_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(16),
-               SWP_NOZORDER | SWP_NOACTIVATE);
-  y += Scale(16) + Scale(WINDOW_MARGIN);
-
-  SetWindowPos(m_progress_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(32),
-               SWP_NOZORDER | SWP_NOACTIVATE);
-  y += Scale(32) + Scale(WINDOW_MARGIN);
-
-  SetWindowPos(m_list_box_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(170),
-               SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void Win32ProgressCallback::DisplayError(const std::string_view message)

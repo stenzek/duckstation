@@ -32,10 +32,14 @@ public:
 private:
   enum : int
   {
-    WINDOW_WIDTH = 600,
-    WINDOW_HEIGHT = 300,
     WINDOW_MARGIN = 10,
-    SUBWINDOW_WIDTH = WINDOW_WIDTH - 20 - WINDOW_MARGIN - WINDOW_MARGIN,
+    STATUS_TEXT_HEIGHT = 16,
+    PROGRESS_BAR_HEIGHT = 20,
+    LIST_BOX_HEIGHT = 170,
+    CONTROL_SPACING = 10,
+    WINDOW_WIDTH = 600,
+    WINDOW_HEIGHT = WINDOW_MARGIN * 2 + STATUS_TEXT_HEIGHT + CONTROL_SPACING + PROGRESS_BAR_HEIGHT + CONTROL_SPACING +
+                    LIST_BOX_HEIGHT,
   };
 
   bool Create();
@@ -47,13 +51,14 @@ private:
   LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int Scale(int value) const;
-  void UpdateControlPositions();
 
-  HWND m_window_hwnd{};
-  HWND m_text_hwnd{};
-  HWND m_progress_hwnd{};
-  HWND m_list_box_hwnd{};
+  HWND m_window_hwnd = nullptr;
+  HWND m_text_hwnd = nullptr;
+  HWND m_progress_hwnd = nullptr;
+  HWND m_list_box_hwnd = nullptr;
+
+  HFONT m_font = nullptr;
+  UINT m_dpi = 96;
 
   int m_last_progress_percent = -1;
-  UINT m_dpi = 96;
 };
