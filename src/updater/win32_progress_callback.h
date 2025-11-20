@@ -9,6 +9,7 @@ class Win32ProgressCallback final : public ProgressCallback
 {
 public:
   Win32ProgressCallback();
+  ~Win32ProgressCallback() override;
 
   void PushState() override;
   void PopState() override;
