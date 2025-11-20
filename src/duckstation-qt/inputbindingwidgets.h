@@ -40,6 +40,7 @@ protected:
   virtual bool eventFilter(QObject* watched, QEvent* event) override;
   virtual bool event(QEvent* event) override;
   virtual void mouseReleaseEvent(QMouseEvent* e) override;
+  virtual void resizeEvent(QResizeEvent* e) override;
 
   virtual void startListeningForInput(u32 timeout_in_seconds);
   virtual void stopListeningForInput();
@@ -47,7 +48,8 @@ protected:
 
   bool isListeningForInput() const { return m_input_listen_timer != nullptr; }
   void setNewBinding();
-  void updateText();
+  void updateElidedText();
+  void updateTextAndToolTip();
 
   void hookInputManager();
   void unhookInputManager();
@@ -65,6 +67,7 @@ protected:
   std::vector<std::string> m_bindings;
   std::vector<InputBindingKey> m_new_bindings;
   std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
+  QString m_full_text;
   QTimer* m_input_listen_timer = nullptr;
   u32 m_input_listen_remaining_seconds = 0;
   QPoint m_input_listen_start_position{};
