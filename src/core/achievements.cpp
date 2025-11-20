@@ -594,8 +594,17 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
   rc_client_set_userdata(new_client, http->get());
 
   // Allow custom host to be overridden through config.
-  if (const std::string host = Host::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
-    rc_client_set_host(new_client, host.c_str());
+  if (std::string host = Host::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
+  {
+    // drop trailing hash, rc_client appends its own
+    while (!host.empty() && host.back() == '/')
+      host.pop_back();
+    if (!host.empty())
+    {
+      INFO_COLOR_LOG(StrongOrange, "Using alternative host for achievements: {}", host);
+      rc_client_set_host(new_client, host.c_str());
+    }
+  }
 
   *client = new_client;
   return true;

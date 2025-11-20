@@ -66,7 +66,15 @@ void InputBindingWidget::updateElidedText()
   const int button_margin = style()->pixelMetric(QStyle::PM_ButtonMargin, nullptr, this);
   const int frame_width = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, this);
   const int text_width = std::max(1, width() - button_margin - frame_width * 2);
-  QString elided = fontMetrics().elidedText(m_full_text, Qt::ElideMiddle, text_width);
+  const QFontMetrics fm = fontMetrics();
+  QString elided = fm.elidedText(m_full_text, Qt::ElideMiddle, text_width);
+
+  // prefer removing the source part first
+  if (elided != m_full_text)
+  {
+    if (const qsizetype pos = m_full_text.indexOf('/'); pos >= 0)
+      elided = fm.elidedText(m_full_text.mid(pos + 1), Qt::ElideMiddle, text_width);
+  }
 
   // fix up accelerators
   if (elided.contains('&'))
