@@ -177,9 +177,9 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
   {
     case WM_CREATE:
     {
-      m_dpi = GetDpiForWindow(hwnd);
-
       const CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
+      m_dpi = GetDpiForWindow(hwnd);
+      EnableMenuItem(GetSystemMenu(hwnd, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
       LOGFONT lf = {};
       SystemParametersInfoForDpi(SPI_GETICONTITLELOGFONT, sizeof(lf), &lf, 0, m_dpi);
