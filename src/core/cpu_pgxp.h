@@ -11,6 +11,9 @@ void Initialize();
 void Reset();
 void Shutdown();
 
+/// Returns true if PGXP state should be saved to memory save states.
+bool ShouldSavePGXPState();
+
 /// Returns memory usage to serialize additional PGXP state.
 size_t GetStateSize();
 

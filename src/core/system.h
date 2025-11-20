@@ -267,10 +267,10 @@ void ResetSystem();
 bool CanPauseSystem(bool display_message);
 
 /// Returns the maximum size of a save state, considering the current configuration.
-size_t GetMaxSaveStateSize();
+size_t GetMaxSaveStateSize(bool enable_8mb_ram);
 
 /// Returns the maximum size of a save state that is not expected to be serialized to file.
-size_t GetMaxMemorySaveStateSize();
+size_t GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp);
 
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
@@ -440,7 +440,8 @@ std::string GetImageForLoadingScreen(const std::string& game_path);
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
-void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
+void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples, bool use_software_renderer,
+                                bool enable_8mb_ram, u64* ram_usage, u64* vram_usage);
 void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
 void SetRunaheadReplayFlag(bool is_analog_input);
 

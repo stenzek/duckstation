@@ -256,6 +256,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_max_queued_frames = static_cast<u8>(si.GetUIntValue("GPU", "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
+  gpu_use_software_renderer_for_memory_states = si.GetBoolValue("GPU", "UseSoftwareRendererForMemoryStates", false);
   gpu_scaled_interlacing = si.GetBoolValue("GPU", "ScaledInterlacing", true);
   gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
   gpu_texture_filter =
@@ -637,6 +638,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("GPU", "MaxQueuedFrames", gpu_max_queued_frames);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
+  si.SetBoolValue("GPU", "UseSoftwareRendererForMemoryStates", gpu_use_software_renderer_for_memory_states);
   si.SetBoolValue("GPU", "ScaledInterlacing", gpu_scaled_interlacing);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
@@ -1176,6 +1178,9 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
       cpu_recompiler_block_linking = false;
     }
   }
+
+  // Don't waste time running the software renderer for CPU-only rewind when rewind isn't enabled.
+  gpu_use_software_renderer_for_memory_states &= rewind_enable;
 }
 
 bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const

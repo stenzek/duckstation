@@ -2636,7 +2636,7 @@ bool System::AllocateMemoryStates(size_t state_count, bool recycle_old_textures)
 
   // Allocate CPU buffers.
   // TODO: Maybe look at host memory limits here...
-  const size_t size = GetMaxMemorySaveStateSize();
+  const size_t size = GetMaxMemorySaveStateSize(g_settings.cpu_enable_8mb_ram, CPU::PGXP::ShouldSavePGXPState());
   for (MemorySaveState& mss : s_state.memory_save_states)
   {
     mss.state_size = 0;
@@ -2904,18 +2904,17 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* 
   return true;
 }
 
-size_t System::GetMaxSaveStateSize()
+size_t System::GetMaxSaveStateSize(bool enable_8mb_ram)
 {
   // 5 megabytes is sufficient for now, at the moment they're around 4.3MB, or 10.3MB with 8MB RAM enabled.
   static constexpr u32 MAX_2MB_SAVE_STATE_SIZE = 5 * 1024 * 1024;
   static constexpr u32 MAX_8MB_SAVE_STATE_SIZE = 11 * 1024 * 1024;
-  const bool is_8mb_ram = (System::IsValid() ? (Bus::g_ram_size > Bus::RAM_2MB_SIZE) : g_settings.cpu_enable_8mb_ram);
-  return is_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE;
+  return enable_8mb_ram ? MAX_8MB_SAVE_STATE_SIZE : MAX_2MB_SAVE_STATE_SIZE;
 }
 
-size_t System::GetMaxMemorySaveStateSize()
+size_t System::GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp)
 {
-  return GetMaxSaveStateSize() + CPU::PGXP::GetStateSize();
+  return GetMaxSaveStateSize(enable_8mb_ram) + (pgxp ? CPU::PGXP::GetStateSize() : 0);
 }
 
 std::string System::GetMediaPathFromSaveState(const char* path)
@@ -3448,7 +3447,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   // write data
   if (buffer->state_data.empty())
-    buffer->state_data.resize(GetMaxSaveStateSize());
+    buffer->state_data.resize(GetMaxSaveStateSize(Bus::g_ram_size > Bus::RAM_2MB_SIZE));
 
   return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
 }
@@ -4559,6 +4558,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames ||
              g_settings.gpu_use_software_renderer_for_readbacks !=
                old_settings.gpu_use_software_renderer_for_readbacks ||
+             g_settings.gpu_use_software_renderer_for_memory_states !=
+               old_settings.gpu_use_software_renderer_for_memory_states ||
              g_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing ||
              g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
              g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
@@ -4596,9 +4597,19 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       GPUThread::UpdateSettings(true, false, false);
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
-      const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale);
+      const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale &&
+                                          g_settings.gpu_use_software_renderer_for_memory_states ==
+                                            old_settings.gpu_use_software_renderer_for_memory_states);
       FreeMemoryStateStorage(false, true, use_existing_textures);
-      ClearMemorySaveStates(true, true);
+
+      if (g_settings.rewind_enable == old_settings.rewind_enable &&
+          g_settings.rewind_save_frequency == old_settings.rewind_save_frequency &&
+          g_settings.rewind_save_slots == old_settings.rewind_save_slots &&
+          g_settings.runahead_frames == old_settings.runahead_frames)
+      {
+        // done below if rewind settings changed
+        ClearMemorySaveStates(true, true);
+      }
 
       if (IsPaused())
       {
@@ -4633,7 +4644,15 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         FreeMemoryStateStorage(false, true, false);
         StopMediaCapture();
         GPUThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
-        ClearMemorySaveStates(true, false);
+
+        if (g_settings.rewind_enable == old_settings.rewind_enable &&
+            g_settings.rewind_save_frequency == old_settings.rewind_save_frequency &&
+            g_settings.rewind_save_slots == old_settings.rewind_save_slots &&
+            g_settings.runahead_frames == old_settings.runahead_frames)
+        {
+          // done below if rewind settings changed
+          ClearMemorySaveStates(true, false);
+        }
 
         if (IsPaused())
         {
@@ -5019,12 +5038,16 @@ void System::LogUnsafeSettingsToConsole(const SmallStringBase& messages)
   WARNING_LOG(console_messages);
 }
 
-void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage)
+void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisamples,
+                                        bool use_software_renderer, bool enable_8mb_ram, u64* ram_usage,
+                                        u64* vram_usage)
 {
-  const u64 real_resolution_scale = std::max<u64>(g_settings.gpu_resolution_scale, 1u);
-  *ram_usage = GetMaxMemorySaveStateSize() * static_cast<u64>(num_saves);
-  *vram_usage = ((VRAM_WIDTH * real_resolution_scale) * (VRAM_HEIGHT * real_resolution_scale) * 4) *
-                static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);
+  const u32 real_resolution_scale = std::max<u32>(resolution_scale, 1u);
+  *ram_usage = GetMaxMemorySaveStateSize(enable_8mb_ram, false) * static_cast<u64>(num_saves);
+  *vram_usage = use_software_renderer ? 0 :
+                                        ((static_cast<u64>(VRAM_WIDTH * real_resolution_scale) *
+                                          static_cast<u64>(VRAM_HEIGHT * real_resolution_scale) * 4) *
+                                         static_cast<u64>(multisamples) * static_cast<u64>(num_saves));
 }
 
 void System::UpdateMemorySaveStateSettings()
@@ -5048,7 +5071,9 @@ void System::UpdateMemorySaveStateSettings()
     num_slots = g_settings.rewind_save_slots;
 
     u64 ram_usage, vram_usage;
-    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
+    CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale,
+                               g_settings.gpu_multisamples, g_settings.gpu_use_software_renderer_for_memory_states,
+                               g_settings.cpu_enable_8mb_ram, &ram_usage, &vram_usage);
     INFO_LOG("Rewind is enabled, saving every {} frames, with {} slots and {}MB RAM and {}MB VRAM usage",
              std::max(s_state.rewind_save_frequency, 1), g_settings.rewind_save_slots, ram_usage / 1048576,
              vram_usage / 1048576);

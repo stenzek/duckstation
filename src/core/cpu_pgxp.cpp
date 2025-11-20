@@ -63,8 +63,6 @@ enum : u32
 
 #define PGXP_GTE_REGISTER(field) g_state.pgxp_gte[offsetof(GTE::Regs, field) / sizeof(u32)]
 
-static bool ShouldSavePGXPState();
-
 static double f16Sign(double val);
 static double f16Unsign(double val);
 static double f16Overflow(double val);
@@ -203,9 +201,6 @@ bool CPU::PGXP::ShouldSavePGXPState()
 
 size_t CPU::PGXP::GetStateSize()
 {
-  if (!ShouldSavePGXPState())
-    return 0;
-
   const size_t base_size = sizeof(g_state.pgxp_gpr) + sizeof(g_state.pgxp_cop0) + sizeof(g_state.pgxp_gte) +
                            (sizeof(PGXPValue) * PGXP_MEM_SIZE);
   const size_t vertex_cache_size = sizeof(PGXPValue) * VERTEX_CACHE_SIZE;

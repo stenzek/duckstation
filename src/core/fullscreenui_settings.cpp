@@ -2804,6 +2804,11 @@ void FullscreenUI::DrawEmulationSettingsPage()
                     FSUI_VSTR("Saves state periodically so you can rewind any mistakes while playing."), "Main",
                     "RewindEnable", false, !runahead_enabled);
 
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "Use Software Renderer (Low VRAM Mode)"),
+                    FSUI_VSTR("Uses the software renderer when creating rewind states to prevent additional VRAM "
+                              "usage. Especially useful when upscaling."),
+                    "GPU", "UseSoftwareRendererForMemoryStates", false, rewind_enabled);
+
   DrawFloatRangeSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Rewind Save Frequency"),
     FSUI_VSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
@@ -2837,6 +2842,9 @@ void FullscreenUI::DrawEmulationSettingsPage()
   else if (rewind_enabled)
   {
     const u32 resolution_scale = GetEffectiveUIntSetting(bsi, "GPU", "ResolutionScale", 1);
+    const u32 multisamples = GetEffectiveUIntSetting(bsi, "GPU", "Multisamples", 1);
+    const bool use_software_renderer = GetEffectiveBoolSetting(bsi, "GPU", "UseSoftwareRendererForMemoryStates", false);
+    const bool enable_8mb_ram = GetEffectiveBoolSetting(bsi, "Console", "Enable8MBRAM", false);
     const float rewind_frequency = GetEffectiveFloatSetting(bsi, "Main", "RewindFrequency", 10.0f);
     const s32 rewind_save_slots = GetEffectiveIntSetting(bsi, "Main", "RewindSaveSlots", 10);
     const float duration =
@@ -2844,10 +2852,19 @@ void FullscreenUI::DrawEmulationSettingsPage()
       static_cast<float>(rewind_save_slots);
 
     u64 ram_usage, vram_usage;
-    System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, &ram_usage, &vram_usage);
-    rewind_summary.format(
-      FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM."),
-      rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
+    System::CalculateRewindMemoryUsage(rewind_save_slots, resolution_scale, multisamples, use_software_renderer,
+                                       enable_8mb_ram, &ram_usage, &vram_usage);
+    if (vram_usage > 0)
+    {
+      rewind_summary.format(
+        FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM."),
+        rewind_save_slots, duration, ram_usage / 1048576, vram_usage / 1048576);
+    }
+    else
+    {
+      rewind_summary.format(FSUI_FSTR("Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM."),
+                            rewind_save_slots, duration, ram_usage / 1048576);
+    }
   }
   else
   {

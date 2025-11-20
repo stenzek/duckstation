@@ -101,13 +101,14 @@ ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
 
 ALWAYS_INLINE static bool ShouldDrawWithSoftwareRenderer()
 {
-  return g_gpu_settings.gpu_use_software_renderer_for_readbacks;
+  return (g_gpu_settings.gpu_use_software_renderer_for_readbacks ||
+          g_gpu_settings.gpu_use_software_renderer_for_memory_states);
 }
 
 ALWAYS_INLINE static bool ShouldClampUVs(GPUTextureFilter texture_filter)
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
-  return g_gpu_settings.gpu_pgxp_enable || texture_filter != GPUTextureFilter::Nearest;
+  return (g_gpu_settings.gpu_pgxp_enable || texture_filter != GPUTextureFilter::Nearest);
 }
 
 ALWAYS_INLINE static bool ShouldAllowSpriteMode(u8 resolution_scale, GPUTextureFilter texture_filter,
@@ -390,17 +391,24 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
 
 bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
 {
-  mss.vram_texture = g_gpu_device->FetchTexture(
-    m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
-    m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
-    GPUTexture::Format::RGBA8, GPUTexture::Flags::None, nullptr, 0, error);
-  if (!mss.vram_texture) [[unlikely]]
+  if (!g_gpu_settings.gpu_use_software_renderer_for_memory_states)
   {
-    Error::AddPrefix(error, "Failed to allocate VRAM texture for memory save state: ");
-    return false;
-  }
+    mss.vram_texture = g_gpu_device->FetchTexture(
+      m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
+      m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
+      GPUTexture::Format::RGBA8, GPUTexture::Flags::None, nullptr, 0, error);
+    if (!mss.vram_texture) [[unlikely]]
+    {
+      Error::AddPrefix(error, "Failed to allocate VRAM texture for memory save state: ");
+      return false;
+    }
 
-  GL_OBJECT_NAME(mss.vram_texture, "Memory save state VRAM copy");
+    GL_OBJECT_NAME(mss.vram_texture, "Memory save state VRAM copy");
+  }
+  else
+  {
+    mss.vram_texture.reset();
+  }
 
   static constexpr u32 MAX_TC_SIZE = 1024 * 1024;
 
@@ -420,32 +428,19 @@ bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
 
 void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 {
-  Assert(mss.vram_texture && mss.vram_texture->GetWidth() == m_vram_texture->GetWidth() &&
-         mss.vram_texture->GetHeight() == m_vram_texture->GetHeight() &&
-         mss.vram_texture->GetSamples() == m_vram_texture->GetSamples());
-
   if (sw.IsReading())
   {
     if (m_batch_vertex_ptr)
       UnmapGPUBuffer(0, 0);
 
-    g_gpu_device->CopyTextureRegion(m_vram_texture.get(), 0, 0, 0, 0, mss.vram_texture.get(), 0, 0, 0, 0,
-                                    m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
-
     m_batch = {};
-    ClearVRAMDirtyRectangle();
-    SetFullVRAMDirtyRectangle();
-    UpdateVRAMReadTexture(true, false);
-    ClearVRAMDirtyRectangle();
     ResetBatchVertexDepth();
   }
   else
   {
-    FlushRender();
-
-    // saving state
-    g_gpu_device->CopyTextureRegion(mss.vram_texture.get(), 0, 0, 0, 0, m_vram_texture.get(), 0, 0, 0, 0,
-                                    m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+    // don't bother flushing render if we're using the software renderer
+    if (mss.vram_texture)
+      FlushRender();
   }
 
   // Save VRAM/CLUT.
@@ -457,6 +452,37 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   {
     if (!GPUTextureCache::DoState(sw, false)) [[unlikely]]
       Panic("Failed to process texture cache state.");
+  }
+
+  if (sw.IsReading())
+  {
+    if (mss.vram_texture)
+    {
+      Assert(mss.vram_texture->GetWidth() == m_vram_texture->GetWidth() &&
+             mss.vram_texture->GetHeight() == m_vram_texture->GetHeight() &&
+             mss.vram_texture->GetSamples() == m_vram_texture->GetSamples());
+
+      g_gpu_device->CopyTextureRegion(m_vram_texture.get(), 0, 0, 0, 0, mss.vram_texture.get(), 0, 0, 0, 0,
+                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+    }
+    else
+    {
+      UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
+    }
+
+    ClearVRAMDirtyRectangle();
+    SetFullVRAMDirtyRectangle();
+    UpdateVRAMReadTexture(true, false);
+    ClearVRAMDirtyRectangle();
+  }
+  else
+  {
+    // saving state
+    if (mss.vram_texture)
+    {
+      g_gpu_device->CopyTextureRegion(mss.vram_texture.get(), 0, 0, 0, 0, m_vram_texture.get(), 0, 0, 0, 0,
+                                      m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+    }
   }
 }
 

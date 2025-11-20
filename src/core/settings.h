@@ -58,6 +58,7 @@ struct GPUSettings
   u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
+  bool gpu_use_software_renderer_for_memory_states : 1 = false;
   bool gpu_use_debug_device : 1 = false;
   bool gpu_use_debug_device_gpu_validation : 1 = false;
   bool gpu_prefer_gles_context : 1 = DEFAULT_GPU_PREFER_GLES_CONTEXT;

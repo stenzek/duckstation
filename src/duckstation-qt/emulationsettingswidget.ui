@@ -186,10 +186,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="rewindEnable">
         <property name="text">
          <string>Enable Rewinding</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="useSoftwareRendererForMemoryStates">
+        <property name="text">
+         <string>Use Software Renderer (Low VRAM Mode)</string>
         </property>
        </widget>
       </item>
