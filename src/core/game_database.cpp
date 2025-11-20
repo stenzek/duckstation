@@ -41,7 +41,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 32,
+  GAME_DATABASE_CACHE_VERSION = 33,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -101,6 +101,7 @@ static constexpr const std::array s_trait_names = {
   "DisableSpriteTextureFiltering",
   "DisableScaledDithering",
   "DisableScaledInterlacing",
+  "DisableAllBordersCrop",
   "DisableWidescreen",
   "DisablePGXP",
   "DisablePGXPCulling",
@@ -138,6 +139,7 @@ static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Sprite Texture Filtering", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Scaled Dithering", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Scaled Interlacing", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable All Borders Crop", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Widescreen", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Culling", "GameDatabase::Trait"),
@@ -596,6 +598,18 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.display_crop_mode = display_crop_mode.value();
+  }
+  else if (HasTrait(Trait::DisableAllBordersCrop) && settings.display_crop_mode >= DisplayCropMode::Borders &&
+           settings.display_crop_mode <= DisplayCropMode::BordersUncorrected)
+  {
+    constexpr DisplayCropMode new_mode = DisplayCropMode::Overscan;
+    if (display_osd_messages)
+    {
+      append_message_fmt(TRANSLATE_FS("GameDatabase", "Display cropping set to {}."),
+                         Settings::GetDisplayCropModeDisplayName(new_mode));
+    }
+
+    settings.display_crop_mode = new_mode;
   }
 
   if (HasTrait(Trait::ForceSoftwareRenderer))
