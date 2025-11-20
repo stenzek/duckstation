@@ -1901,37 +1901,35 @@ void MainWindow::setupAdditionalUi()
       m_game_list_widget->getListView()->horizontalHeader()->sortIndicatorOrder();
 
     QActionGroup* const column_group = new QActionGroup(m_ui.menuSortBy);
-    QActionGroup* const order_group = new QActionGroup(m_ui.menuSortBy);
 
     for (int i = 0; i <= GameListModel::Column_LastVisible; i++)
     {
-      QAction* const action =
-        new QAction(m_game_list_widget->getModel()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString());
+      QAction* const action = new QAction(
+        m_game_list_widget->getModel()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString(), column_group);
       action->setCheckable(true);
       action->setChecked(current_sort_column == i);
       action->setData(i);
-      column_group->addAction(action);
       m_ui.menuSortBy->addAction(action);
       connect(action, &QAction::triggered, this, &MainWindow::onViewSortByActionTriggered);
     }
 
     m_ui.menuSortBy->addSeparator();
 
-    QAction* const ascending_action = new QAction(tr("&Ascending"));
+    QActionGroup* const order_group = new QActionGroup(m_ui.menuSortBy);
+
+    QAction* const ascending_action = new QAction(tr("&Ascending"), order_group);
     ascending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoUp));
     ascending_action->setCheckable(true);
     ascending_action->setChecked(current_sort_order == Qt::AscendingOrder);
     ascending_action->setObjectName(QStringLiteral("SortAscending"));
-    order_group->addAction(ascending_action);
     m_ui.menuSortBy->addAction(ascending_action);
     connect(ascending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
 
-    QAction* const descending_action = new QAction(tr("&Descending"));
+    QAction* const descending_action = new QAction(tr("&Descending"), order_group);
     descending_action->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::GoDown));
     descending_action->setCheckable(true);
     descending_action->setChecked(current_sort_order == Qt::DescendingOrder);
     descending_action->setObjectName(QStringLiteral("SortDescending"));
-    order_group->addAction(descending_action);
     m_ui.menuSortBy->addAction(descending_action);
     connect(descending_action, &QAction::triggered, this, &MainWindow::onViewSortOrderActionTriggered);
   }
