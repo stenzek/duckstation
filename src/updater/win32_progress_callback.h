@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -28,7 +28,7 @@ public:
   void ModalError(const std::string_view message) override;
   bool ModalConfirmation(const std::string_view message) override;
   void ModalInformation(const std::string_view message) override;
-  
+
 private:
   enum : int
   {
@@ -46,10 +46,14 @@ private:
   static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+  int Scale(int value) const;
+  void UpdateControlPositions();
+
   HWND m_window_hwnd{};
   HWND m_text_hwnd{};
   HWND m_progress_hwnd{};
   HWND m_list_box_hwnd{};
 
   int m_last_progress_percent = -1;
+  UINT m_dpi = 96;
 };

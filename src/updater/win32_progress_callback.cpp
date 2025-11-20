@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "win32_progress_callback.h"
@@ -7,6 +7,7 @@
 #include "common/string_util.h"
 
 #include <CommCtrl.h>
+#include <shellscalingapi.h>
 
 LOG_CHANNEL(Host);
 
@@ -87,8 +88,10 @@ bool Win32ProgressCallback::Create()
     class_registered = true;
   }
 
-  m_window_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                                 WINDOW_WIDTH, WINDOW_HEIGHT, nullptr, nullptr, GetModuleHandle(nullptr), this);
+  m_dpi = GetDpiForSystem();
+  m_window_hwnd =
+    CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                   Scale(WINDOW_WIDTH), Scale(WINDOW_HEIGHT), nullptr, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
     ERROR_LOG("Failed to create window");
@@ -163,34 +166,68 @@ LRESULT CALLBACK Win32ProgressCallback::WndProc(HWND hwnd, UINT msg, WPARAM wpar
   {
     case WM_CREATE:
     {
+      m_dpi = GetDpiForWindow(hwnd);
+
       const CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lparam);
       const HFONT default_font = reinterpret_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
       SendMessage(hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
 
-      int y = WINDOW_MARGIN;
+      int y = Scale(WINDOW_MARGIN);
 
-      m_text_hwnd = CreateWindowEx(0, L"Static", nullptr, WS_VISIBLE | WS_CHILD, WINDOW_MARGIN, y, SUBWINDOW_WIDTH, 16,
-                                   hwnd, nullptr, cs->hInstance, nullptr);
+      m_text_hwnd = CreateWindowEx(0, L"Static", nullptr, WS_VISIBLE | WS_CHILD, Scale(WINDOW_MARGIN), y,
+                                   Scale(SUBWINDOW_WIDTH), Scale(16), hwnd, nullptr, cs->hInstance, nullptr);
       SendMessage(m_text_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
-      y += 16 + WINDOW_MARGIN;
+      y += Scale(16) + Scale(WINDOW_MARGIN);
 
-      m_progress_hwnd = CreateWindowEx(0, PROGRESS_CLASSW, nullptr, WS_VISIBLE | WS_CHILD, WINDOW_MARGIN, y,
-                                       SUBWINDOW_WIDTH, 32, hwnd, nullptr, cs->hInstance, nullptr);
-      y += 32 + WINDOW_MARGIN;
+      m_progress_hwnd = CreateWindowEx(0, PROGRESS_CLASSW, nullptr, WS_VISIBLE | WS_CHILD, Scale(WINDOW_MARGIN), y,
+                                       Scale(SUBWINDOW_WIDTH), Scale(32), hwnd, nullptr, cs->hInstance, nullptr);
+      y += Scale(32) + Scale(WINDOW_MARGIN);
 
-      m_list_box_hwnd =
-        CreateWindowEx(0, L"LISTBOX", nullptr, WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | LBS_NOSEL,
-                       WINDOW_MARGIN, y, SUBWINDOW_WIDTH, 170, hwnd, nullptr, cs->hInstance, nullptr);
-      SendMessage(m_list_box_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
-      y += 170;
+      m_list_box_hwnd = CreateWindowExW(
+        0, L"LISTBOX", nullptr, WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_HSCROLL | WS_BORDER | LBS_NOSEL,
+        Scale(WINDOW_MARGIN), y, Scale(SUBWINDOW_WIDTH), Scale(170), hwnd, nullptr, cs->hInstance, nullptr);
+      SendMessageW(m_list_box_hwnd, WM_SETFONT, WPARAM(default_font), TRUE);
+    }
+    break;
+
+    case WM_DPICHANGED:
+    {
+      m_dpi = HIWORD(wparam);
+
+      const RECT* new_rect = reinterpret_cast<RECT*>(lparam);
+      SetWindowPos(m_window_hwnd, nullptr, new_rect->left, new_rect->top, new_rect->right - new_rect->left,
+                   new_rect->bottom - new_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+
+      UpdateControlPositions();
     }
     break;
 
     default:
-      return DefWindowProc(hwnd, msg, wparam, lparam);
+      return DefWindowProcW(hwnd, msg, wparam, lparam);
   }
 
   return 0;
+}
+
+int Win32ProgressCallback::Scale(int value) const
+{
+  return MulDiv(value, m_dpi, 96);
+}
+
+void Win32ProgressCallback::UpdateControlPositions()
+{
+  int y = Scale(WINDOW_MARGIN);
+
+  SetWindowPos(m_text_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(16),
+               SWP_NOZORDER | SWP_NOACTIVATE);
+  y += Scale(16) + Scale(WINDOW_MARGIN);
+
+  SetWindowPos(m_progress_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(32),
+               SWP_NOZORDER | SWP_NOACTIVATE);
+  y += Scale(32) + Scale(WINDOW_MARGIN);
+
+  SetWindowPos(m_list_box_hwnd, nullptr, Scale(WINDOW_MARGIN), Scale(y), Scale(SUBWINDOW_WIDTH), Scale(170),
+               SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 void Win32ProgressCallback::DisplayError(const std::string_view message)
