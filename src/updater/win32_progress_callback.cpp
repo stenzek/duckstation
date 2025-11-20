@@ -94,9 +94,10 @@ bool Win32ProgressCallback::Create()
   RECT adjusted_rect = {0, 0, Scale(WINDOW_WIDTH), Scale(WINDOW_HEIGHT)};
   AdjustWindowRectExForDpi(&adjusted_rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE, m_dpi);
 
-  m_window_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                                 adjusted_rect.right - adjusted_rect.left, adjusted_rect.bottom - adjusted_rect.top,
-                                 nullptr, nullptr, GetModuleHandle(nullptr), this);
+  m_window_hwnd =
+    CreateWindowEx(WS_EX_CLIENTEDGE, CLASS_NAME, L"DuckStation Update Installer", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+                   CW_USEDEFAULT, adjusted_rect.right - adjusted_rect.left, adjusted_rect.bottom - adjusted_rect.top,
+                   nullptr, nullptr, GetModuleHandle(nullptr), this);
   if (!m_window_hwnd)
   {
     ERROR_LOG("Failed to create window");
