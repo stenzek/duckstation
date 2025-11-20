@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "win32_progress_callback.h"
+#include "resource.h"
 
 #include "common/log.h"
 #include "common/string_util.h"
@@ -74,8 +75,8 @@ bool Win32ProgressCallback::Create()
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.lpfnWndProc = WndProcThunk;
     wc.hInstance = GetModuleHandle(nullptr);
-    // wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON));
-    // wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON));
+    wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+    wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_ICON1));
     wc.hCursor = LoadCursor(NULL, IDC_WAIT);
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
     wc.lpszClassName = CLASS_NAME;

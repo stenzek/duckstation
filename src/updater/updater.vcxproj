@@ -11,6 +11,7 @@
     <Manifest Include="updater.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="updater.h" />
     <ClInclude Include="win32_progress_callback.h" />
   </ItemGroup>

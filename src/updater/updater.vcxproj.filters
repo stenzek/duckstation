@@ -12,6 +12,7 @@
   <ItemGroup>
     <ClInclude Include="updater.h" />
     <ClInclude Include="win32_progress_callback.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="updater.rc" />
