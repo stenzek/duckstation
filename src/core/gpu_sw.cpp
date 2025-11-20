@@ -440,7 +440,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   }
 }
 
-std::unique_ptr<GPUBackend> GPUBackend::CreateSoftwareBackend(GPUPresenter& presenter)
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateSoftwareBackend(GPUPresenter& presenter)
 {
-  return std::make_unique<GPU_SW>(presenter);
+  return Common::make_unique_aligned<GPU_SW>(HOST_CACHE_LINE_SIZE, presenter);
 }

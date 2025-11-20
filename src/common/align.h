@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -118,25 +118,46 @@ namespace detail {
 template<class T>
 struct unique_aligned_ptr_deleter
 {
-  ALWAYS_INLINE void operator()(T* ptr) { Common::AlignedFree(ptr); }
+  ALWAYS_INLINE void operator()(T* ptr) const
+  {
+    // Array types - do nothing, elements must be trivially destructible
+    if constexpr (!std::is_array_v<T> && !std::is_trivially_destructible_v<T>)
+    {
+      if (!ptr)
+        return;
+
+      ptr->~T();
+    }
+
+    Common::AlignedFree(const_cast<std::remove_cv_t<T>*>(ptr));
+  }
+
+  // Allow conversion between compatible deleters for derived-to-base conversions
+  template<class U>
+    requires std::is_convertible_v<U*, T*>
+  constexpr unique_aligned_ptr_deleter(const unique_aligned_ptr_deleter<U>&) noexcept
+  {
+  }
+
+  constexpr unique_aligned_ptr_deleter() noexcept = default;
 };
-
-template<class>
-constexpr bool is_unbounded_array_v = false;
-template<class T>
-constexpr bool is_unbounded_array_v<T[]> = true;
-
-template<class>
-constexpr bool is_bounded_array_v = false;
-template<class T, std::size_t N>
-constexpr bool is_bounded_array_v<T[N]> = true;
 } // namespace detail
 
 template<class T>
 using unique_aligned_ptr = std::unique_ptr<T, detail::unique_aligned_ptr_deleter<std::remove_extent_t<T>>>;
 
 template<class T, class... Args>
-  requires(std::is_unbounded_array_v<T>, std::is_trivially_default_constructible_v<std::remove_extent_t<T>>,
+  requires(!std::is_array_v<T>)
+unique_aligned_ptr<T> make_unique_aligned(size_t alignment, Args&&... args)
+{
+  unique_aligned_ptr<T> ptr(static_cast<T*>(AlignedMalloc(sizeof(T), alignment)));
+  if (ptr)
+    new (ptr.get()) T(std::forward<Args>(args)...);
+  return ptr;
+}
+
+template<class T, class... Args>
+  requires(std::is_unbounded_array_v<T> && std::is_trivially_default_constructible_v<std::remove_extent_t<T>> &&
            std::is_trivially_destructible_v<std::remove_extent_t<T>>)
 unique_aligned_ptr<T> make_unique_aligned(size_t alignment, size_t n)
 {
@@ -148,7 +169,7 @@ unique_aligned_ptr<T> make_unique_aligned(size_t alignment, size_t n)
 }
 
 template<class T, class... Args>
-  requires(std::is_unbounded_array_v<T>, std::is_trivially_default_constructible_v<std::remove_extent_t<T>>,
+  requires(std::is_unbounded_array_v<T> && std::is_trivially_default_constructible_v<std::remove_extent_t<T>> &&
            std::is_trivially_destructible_v<std::remove_extent_t<T>>)
 unique_aligned_ptr<T> make_unique_aligned_for_overwrite(size_t alignment, size_t n)
 {

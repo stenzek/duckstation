@@ -4345,7 +4345,7 @@ void GPU_HW::UpdatePostProcessingSettings(bool force_reload)
   }
 }
 
-std::unique_ptr<GPUBackend> GPUBackend::CreateHardwareBackend(GPUPresenter& presenter)
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateHardwareBackend(GPUPresenter& presenter)
 {
-  return std::make_unique<GPU_HW>(presenter);
+  return Common::make_unique_aligned<GPU_HW>(HOST_CACHE_LINE_SIZE, presenter);
 }

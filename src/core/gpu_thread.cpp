@@ -109,7 +109,7 @@ struct ALIGN_TO_CACHE_LINE State
   Threading::KernelSemaphore thread_is_done_semaphore;
 
   // Owned by GPU thread.
-  ALIGN_TO_CACHE_LINE std::unique_ptr<GPUBackend> gpu_backend;
+  ALIGN_TO_CACHE_LINE Common::unique_aligned_ptr<GPUBackend> gpu_backend;
   std::unique_ptr<GPUPresenter> gpu_presenter;
   std::atomic<u32> command_fifo_read_ptr{0};
   u8 run_idle_reasons = 0;

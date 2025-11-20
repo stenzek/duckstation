@@ -5,6 +5,8 @@
 
 #include "util/gpu_device.h"
 
+#include "common/align.h"
+
 #include "gpu_thread_commands.h"
 
 #include <memory>
@@ -27,7 +29,7 @@ struct MemorySaveState;
 // DESIGN NOTE: Only static methods should be called on the CPU thread.
 // You specifically don't have a global pointer available for this reason.
 
-class ALIGN_TO_CACHE_LINE GPUBackend
+class GPUBackend
 {
 public:
   static GPUThreadCommand* NewClearVRAMCommand();
@@ -54,9 +56,9 @@ public:
 
   static bool IsUsingHardwareBackend();
 
-  static std::unique_ptr<GPUBackend> CreateHardwareBackend(GPUPresenter& presenter);
-  static std::unique_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
-  static std::unique_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
+  static Common::unique_aligned_ptr<GPUBackend> CreateHardwareBackend(GPUPresenter& presenter);
+  static Common::unique_aligned_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
+  static Common::unique_aligned_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
 
   static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
                                        Error* error);

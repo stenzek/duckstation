@@ -962,7 +962,7 @@ void GPUNullBackend::DoMemoryState(StateWrapper& sw, System::MemorySaveState& ms
 {
 }
 
-std::unique_ptr<GPUBackend> GPUBackend::CreateNullBackend(GPUPresenter& presenter)
+Common::unique_aligned_ptr<GPUBackend> GPUBackend::CreateNullBackend(GPUPresenter& presenter)
 {
-  return std::make_unique<GPUNullBackend>(presenter);
+  return Common::make_unique_aligned<GPUNullBackend>(HOST_CACHE_LINE_SIZE, presenter);
 }
