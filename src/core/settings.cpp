@@ -23,6 +23,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
+#include "IconsEmoji.h"
 #include "fmt/format.h"
 
 #include <algorithm>
@@ -1036,80 +1037,78 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
 
 void Settings::ApplySettingRestrictions()
 {
-  if (g_settings.disable_all_enhancements)
+  if (disable_all_enhancements)
   {
-    g_settings.cpu_overclock_enable = false;
-    g_settings.cpu_overclock_active = false;
-    g_settings.cpu_enable_8mb_ram = false;
-    g_settings.gpu_resolution_scale = 1;
-    g_settings.gpu_multisamples = 1;
-    g_settings.gpu_automatic_resolution_scale = false;
-    g_settings.gpu_per_sample_shading = false;
-    g_settings.gpu_scaled_interlacing = false;
-    g_settings.gpu_force_round_texcoords = false;
-    g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
-    g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
-    g_settings.gpu_dithering_mode = GPUDitheringMode::Unscaled;
-    g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
-    g_settings.gpu_force_video_timing = ForceVideoTimingMode::Disabled;
-    g_settings.gpu_widescreen_rendering = false;
-    g_settings.gpu_widescreen_hack = false;
-    g_settings.gpu_texture_cache = false;
-    g_settings.gpu_pgxp_enable = false;
-    g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
-    g_settings.display_24bit_chroma_smoothing = false;
-    g_settings.cdrom_read_speedup = 1;
-    g_settings.cdrom_seek_speedup = 1;
-    g_settings.cdrom_mute_cd_audio = false;
-    g_settings.texture_replacements.enable_vram_write_replacements = false;
-    g_settings.mdec_use_old_routines = false;
-    g_settings.bios_patch_fast_boot = false;
-    g_settings.runahead_frames = 0;
-    g_settings.runahead_for_analog_input = false;
-    g_settings.rewind_enable = false;
-    g_settings.pio_device_type = PIODeviceType::None;
-    g_settings.pcdrv_enable = false;
+    cpu_overclock_enable = false;
+    cpu_overclock_active = false;
+    cpu_enable_8mb_ram = false;
+    gpu_resolution_scale = 1;
+    gpu_multisamples = 1;
+    gpu_automatic_resolution_scale = false;
+    gpu_per_sample_shading = false;
+    gpu_scaled_interlacing = false;
+    gpu_force_round_texcoords = false;
+    gpu_texture_filter = GPUTextureFilter::Nearest;
+    gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
+    gpu_dithering_mode = GPUDitheringMode::Unscaled;
+    gpu_line_detect_mode = GPULineDetectMode::Disabled;
+    gpu_force_video_timing = ForceVideoTimingMode::Disabled;
+    gpu_widescreen_rendering = false;
+    gpu_widescreen_hack = false;
+    gpu_texture_cache = false;
+    gpu_pgxp_enable = false;
+    display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
+    display_24bit_chroma_smoothing = false;
+    cdrom_read_speedup = 1;
+    cdrom_seek_speedup = 1;
+    cdrom_mute_cd_audio = false;
+    texture_replacements.enable_vram_write_replacements = false;
+    mdec_use_old_routines = false;
+    bios_patch_fast_boot = false;
+    runahead_frames = 0;
+    runahead_for_analog_input = false;
+    rewind_enable = false;
+    pio_device_type = PIODeviceType::None;
+    pcdrv_enable = false;
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states
   if (Achievements::IsHardcoreModeActive())
   {
-    g_settings.emulation_speed =
-      (g_settings.emulation_speed != 0.0f) ? std::max(g_settings.emulation_speed, 1.0f) : 0.0f;
-    g_settings.fast_forward_speed =
-      (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
-    g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
-    g_settings.rewind_enable = false;
-    if (g_settings.cpu_overclock_enable && g_settings.GetCPUOverclockPercent() < 100)
+    emulation_speed = (emulation_speed != 0.0f) ? std::max(emulation_speed, 1.0f) : 0.0f;
+    fast_forward_speed = (fast_forward_speed != 0.0f) ? std::max(fast_forward_speed, 1.0f) : 0.0f;
+    turbo_speed = (turbo_speed != 0.0f) ? std::max(turbo_speed, 1.0f) : 0.0f;
+    rewind_enable = false;
+    if (cpu_overclock_enable && GetCPUOverclockPercent() < 100)
     {
-      g_settings.cpu_overclock_enable = false;
-      g_settings.UpdateOverclockActive();
+      cpu_overclock_enable = false;
+      UpdateOverclockActive();
     }
 
 #ifndef __ANDROID__
-    g_settings.enable_gdb_server = false;
+    enable_gdb_server = false;
 #endif
 
-    g_settings.gpu_show_vram = false;
-    g_settings.gpu_dump_cpu_to_vram_copies = false;
-    g_settings.gpu_dump_vram_to_cpu_copies = false;
+    gpu_show_vram = false;
+    gpu_dump_cpu_to_vram_copies = false;
+    gpu_dump_vram_to_cpu_copies = false;
   }
 }
 
 void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages)
 {
   // fast forward boot requires fast boot
-  g_settings.bios_fast_forward_boot = g_settings.bios_patch_fast_boot && g_settings.bios_fast_forward_boot;
+  bios_fast_forward_boot = bios_patch_fast_boot && bios_fast_forward_boot;
 
-  if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty() && display_osd_messages)
+  if (pcdrv_enable && pcdrv_root.empty() && display_osd_messages)
   {
     Host::AddKeyedOSDMessage("pcdrv_disabled_no_root",
                              TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."),
                              Host::OSD_WARNING_DURATION);
-    g_settings.pcdrv_enable = false;
+    pcdrv_enable = false;
   }
 
-  if (g_settings.gpu_pgxp_enable && g_settings.gpu_renderer == GPURenderer::Software)
+  if (gpu_pgxp_enable && gpu_renderer == GPURenderer::Software)
   {
     if (display_osd_messages)
     {
@@ -1117,64 +1116,64 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
         "pgxp_disabled_sw",
         TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
     }
-    g_settings.gpu_pgxp_enable = false;
+    gpu_pgxp_enable = false;
   }
-  else if (!g_settings.gpu_pgxp_enable)
+  else if (!gpu_pgxp_enable)
   {
-    g_settings.gpu_pgxp_culling = false;
-    g_settings.gpu_pgxp_texture_correction = false;
-    g_settings.gpu_pgxp_color_correction = false;
-    g_settings.gpu_pgxp_vertex_cache = false;
-    g_settings.gpu_pgxp_cpu = false;
-    g_settings.gpu_pgxp_preserve_proj_fp = false;
-    g_settings.gpu_pgxp_depth_buffer = false;
-    g_settings.gpu_pgxp_disable_2d = false;
-    g_settings.gpu_pgxp_transparent_depth = false;
+    gpu_pgxp_culling = false;
+    gpu_pgxp_texture_correction = false;
+    gpu_pgxp_color_correction = false;
+    gpu_pgxp_vertex_cache = false;
+    gpu_pgxp_cpu = false;
+    gpu_pgxp_preserve_proj_fp = false;
+    gpu_pgxp_depth_buffer = false;
+    gpu_pgxp_disable_2d = false;
+    gpu_pgxp_transparent_depth = false;
   }
 
   // texture replacements are not available without the TC or with the software renderer
-  g_settings.texture_replacements.enable_texture_replacements &=
-    (g_settings.gpu_renderer != GPURenderer::Software && g_settings.gpu_texture_cache);
-  g_settings.texture_replacements.enable_vram_write_replacements &= (g_settings.gpu_renderer != GPURenderer::Software);
+  texture_replacements.enable_texture_replacements &= (gpu_renderer != GPURenderer::Software && gpu_texture_cache);
+  texture_replacements.enable_vram_write_replacements &= (gpu_renderer != GPURenderer::Software);
 
   // GPU thread should be disabled if any debug windows are active, since they will be racing to read CPU thread state.
-  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames > 0 && ImGuiManager::AreAnyDebugWindowsEnabled(si))
+  if (gpu_use_thread && gpu_max_queued_frames > 0 && ImGuiManager::AreAnyDebugWindowsEnabled(si))
   {
     WARNING_LOG("Setting maximum queued frames to 0 because one or more debug windows are enabled.");
-    g_settings.gpu_max_queued_frames = 0;
+    gpu_max_queued_frames = 0;
   }
 
 #ifndef ENABLE_MMAP_FASTMEM
-  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
+  if (cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
     WARNING_LOG("mmap fastmem is not available on this platform, using LUT instead.");
-    g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+    cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
 
   // fastmem should be off if we're not using the recompiler, save the allocation
-  if (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler)
-    g_settings.cpu_fastmem_mode = CPUFastmemMode::Disabled;
+  if (cpu_execution_mode != CPUExecutionMode::Recompiler)
+    cpu_fastmem_mode = CPUFastmemMode::Disabled;
 
-  if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
+  if (IsRunaheadEnabled() && rewind_enable)
   {
     if (display_osd_messages)
     {
-      Host::AddKeyedOSDMessage("rewind_disabled",
-                               TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
-                               Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDWarning(
+        "RewindDisabled", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Rewind has been disabled."),
+        TRANSLATE_STR("System", "Rewind and runahead cannot be used at the same time."), Host::OSD_WARNING_DURATION);
     }
-    g_settings.rewind_enable = false;
+
+    rewind_enable = false;
   }
 
-  if (g_settings.IsRunaheadEnabled())
+  if (IsRunaheadEnabled())
   {
     // Block linking is good for performance, but hurts when regularly loading (i.e. runahead), since everything has to
     // be unlinked. Which would be thousands of blocks.
-    if (g_settings.cpu_recompiler_block_linking)
+    if (cpu_recompiler_block_linking)
     {
       WARNING_LOG("Disabling block linking due to runahead.");
-      g_settings.cpu_recompiler_block_linking = false;
+      cpu_recompiler_block_linking = false;
     }
   }
 }

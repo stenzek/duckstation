@@ -1314,8 +1314,8 @@ u8 GPU::UpdateOrGetGPUBusyPct()
                         (ComputeVerticalFrequency() / (m_GPUSTAT.pal_mode ? 50.0f : 60.0f)));
   const double usage_pct = busy_frac * 100.0;
 
-  DEV_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", usage_pct,
-          static_cast<double>(m_active_ticks_since_last_update) / (m_GPUSTAT.pal_mode ? 50.0f : 60.0f));
+  DEBUG_LOG("PSX GPU Usage: {:.2f}% [{:.0f} cycles avg per frame]", usage_pct,
+            static_cast<double>(m_active_ticks_since_last_update) / (m_GPUSTAT.pal_mode ? 50.0f : 60.0f));
   m_active_ticks_since_last_update = 0;
 
   m_last_gpu_busy_pct = static_cast<u8>(std::min<double>(std::round(usage_pct), 100));
