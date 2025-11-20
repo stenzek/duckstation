@@ -3836,7 +3836,7 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     {
       m_texture_window_bits = cmd->window;
       m_texture_window_active = (cmd->window != GPUTextureWindow{{0xFF, 0xFF, 0x00, 0x00}});
-      GSVector4i::store<false>(&m_batch_ubo_data.u_texture_window[0], GSVector4i::load32(&cmd->window).u8to32());
+      GSVector4i::store<true>(&m_batch_ubo_data.u_texture_window[0], GSVector4i::load32(&cmd->window).u8to32());
       m_batch_ubo_dirty = true;
     }
 

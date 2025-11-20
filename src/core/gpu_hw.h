@@ -311,7 +311,6 @@ private:
   bool m_prefer_shader_blend : 1 = false;
   bool m_use_rov_for_shader_blend : 1 = false;
   bool m_write_mask_as_depth : 1 = false;
-  bool m_depth_was_copied : 1 = false;
   bool m_texture_window_active : 1 = false;
   bool m_rov_active : 1 = false;
 
@@ -322,11 +321,14 @@ private:
 
   bool m_batch_ubo_dirty = true;
   bool m_drawing_area_changed = true;
+  bool m_depth_was_copied = false;
   BatchConfig m_batch = {};
-  GPUTextureCache::SourceKey m_texture_cache_key = {};
 
   // Changed state
-  BatchUBOData m_batch_ubo_data = {};
+  alignas(VECTOR_ALIGNMENT) BatchUBOData m_batch_ubo_data = {};
+
+  // Texture cache state
+  GPUTextureCache::SourceKey m_texture_cache_key = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
   GSVector4i m_vram_dirty_draw_rect = INVALID_RECT;
