@@ -1993,7 +1993,7 @@ void EmuThread::run()
     }
     else if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
     {
-      g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+      m_event_loop->processEvents(QEventLoop::AllEvents);
 
       // have to double-check the condition after processing events, because the events could shut us down
       if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
@@ -2019,6 +2019,8 @@ void EmuThread::run()
 
   // move back to UI thread
   moveToThread(m_ui_thread);
+  delete m_event_loop;
+  m_event_loop = nullptr;
 }
 
 void EmuThread::gpuThreadEntryPoint()
