@@ -99,6 +99,11 @@ ALWAYS_INLINE_RELEASE static u32 GetBoxDownsampleScale(u32 resolution_scale)
   return scale;
 }
 
+ALWAYS_INLINE static bool ShouldDrawWithSoftwareRenderer()
+{
+  return g_gpu_settings.gpu_use_software_renderer_for_readbacks;
+}
+
 ALWAYS_INLINE static bool ShouldClampUVs(GPUTextureFilter texture_filter)
 {
   // We only need UV limits if PGXP is enabled, or texture filtering is enabled.
@@ -297,6 +302,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
   m_use_texture_cache = g_gpu_settings.gpu_texture_cache;
   m_texture_dumping = m_use_texture_cache && g_gpu_settings.texture_replacements.dump_textures;
+  m_draw_with_software_renderer = ShouldDrawWithSoftwareRenderer();
 
   CheckSettings();
 
@@ -399,9 +405,9 @@ bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
   static constexpr u32 MAX_TC_SIZE = 1024 * 1024;
 
   u32 buffer_size = 0;
-  if (ShouldDrawWithSoftwareRenderer() || m_use_texture_cache)
+  if (m_draw_with_software_renderer || m_use_texture_cache)
     buffer_size += sizeof(g_vram);
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
     buffer_size += sizeof(g_gpu_clut);
   if (m_use_texture_cache)
     buffer_size += MAX_TC_SIZE;
@@ -443,9 +449,9 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
   }
 
   // Save VRAM/CLUT.
-  if (ShouldDrawWithSoftwareRenderer() || m_use_texture_cache)
+  if (m_draw_with_software_renderer || m_use_texture_cache)
     sw.DoBytes(g_vram, sizeof(g_vram));
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
     sw.DoBytes(g_gpu_clut, sizeof(g_gpu_clut));
   if (m_use_texture_cache)
   {
@@ -508,6 +514,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
                                (g_gpu_settings.gpu_downsample_mode == GPUDownsampleMode::Box &&
                                 (resolution_scale != m_resolution_scale ||
                                  g_gpu_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale)))));
+  const bool draw_with_software_renderer = ShouldDrawWithSoftwareRenderer();
+  const bool software_renderer_changed = (m_draw_with_software_renderer != draw_with_software_renderer);
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -558,6 +566,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   m_use_texture_cache = g_gpu_settings.gpu_texture_cache;
   m_texture_dumping = m_use_texture_cache && g_gpu_settings.texture_replacements.dump_textures;
   m_batch.sprite_mode = (m_allow_sprite_mode && m_batch.sprite_mode);
+  m_draw_with_software_renderer = draw_with_software_renderer;
 
   const bool depth_buffer_changed = (m_pgxp_depth_buffer != g_gpu_settings.UsingPGXPDepthBuffer());
   if (depth_buffer_changed)
@@ -640,7 +649,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   }
 
   // Need to reload CLUT if we're enabling SW rendering.
-  if (g_gpu_settings.gpu_use_software_renderer_for_readbacks && !old_settings.gpu_use_software_renderer_for_readbacks)
+  if (software_renderer_changed && draw_with_software_renderer)
   {
     DownloadVRAMFromGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 
@@ -794,12 +803,6 @@ GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
   return (resolution_scale == 1) ? GPUDownsampleMode::Disabled : g_gpu_settings.gpu_downsample_mode;
 }
 
-bool GPU_HW::ShouldDrawWithSoftwareRenderer() const
-{
-  // TODO: FIXME: Move into class.
-  return g_gpu_settings.gpu_use_software_renderer_for_readbacks;
-}
-
 bool GPU_HW::IsUsingMultisampling() const
 {
   return m_multisamples > 1;
@@ -889,7 +892,7 @@ void GPU_HW::PrintSettingsToLog()
   INFO_LOG("Downsampling: {}", Settings::GetDownsampleModeDisplayName(m_downsample_mode));
   INFO_LOG("Wireframe rendering: {}", Settings::GetGPUWireframeModeDisplayName(m_wireframe_mode));
   INFO_LOG("Line detection: {}", Settings::GetLineDetectModeDisplayName(m_line_detect_mode));
-  INFO_LOG("Using software renderer for readbacks: {}", ShouldDrawWithSoftwareRenderer() ? "YES" : "NO");
+  INFO_LOG("Using software renderer for readbacks: {}", m_draw_with_software_renderer ? "YES" : "NO");
   INFO_LOG("Separate sprite shaders: {}", m_allow_sprite_mode ? "YES" : "NO");
 }
 
@@ -2550,7 +2553,7 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
     DrawLine(cmd, GSVector4(bounds), start_color, end_color, 1.0f, 1.0f);
   }
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
       GPU_SW_Rasterizer::GetDrawLineFunction(cmd->shading_enable, cmd->transparency_enable);
@@ -2606,7 +2609,7 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
     DrawLine(cmd, bounds, start_color, end_color, start_depth, end_depth);
   }
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
       GPU_SW_Rasterizer::GetDrawLineFunction(cmd->shading_enable, cmd->transparency_enable);
@@ -2828,7 +2831,7 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 
   AddDrawnRectangle(clamped_rect);
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawRectangleFunction(
       cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
@@ -2859,7 +2862,7 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
     FinishPolygonDraw(cmd, vertices, num_vertices, false, false, clamped_draw_rect_012, clamped_draw_rect_123);
   }
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
       cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
@@ -2903,7 +2906,7 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
     FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
   }
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
       cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
@@ -3330,7 +3333,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
   else
   {
     AddUnclampedDrawnRectangle(bounds);
-    if (ShouldDrawWithSoftwareRenderer())
+    if (m_draw_with_software_renderer)
       GPU_SW_Rasterizer::FillVRAM(x, y, width, height, color, interlaced_rendering, active_line_lsb);
   }
 
@@ -3371,7 +3374,7 @@ void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
   GL_SCOPE_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
 
-  if (ShouldDrawWithSoftwareRenderer())
+  if (m_draw_with_software_renderer)
   {
     GL_INS("VRAM is already up to date due to SW draws.");
     return;
@@ -3563,7 +3566,7 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                     dst_bounds);
     return;
   }
-  else if (ShouldDrawWithSoftwareRenderer())
+  else if (m_draw_with_software_renderer)
   {
     GPU_SW_Rasterizer::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, set_mask, check_mask);
   }

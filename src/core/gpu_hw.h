@@ -199,8 +199,6 @@ private:
   u32 CalculateResolutionScale() const;
   GPUDownsampleMode GetDownsampleMode(u32 resolution_scale) const;
 
-  bool ShouldDrawWithSoftwareRenderer() const;
-
   bool IsUsingMultisampling() const;
   bool IsUsingDownsampling(const GPUBackendUpdateDisplayCommand* cmd) const;
 
@@ -313,6 +311,7 @@ private:
   bool m_write_mask_as_depth : 1 = false;
   bool m_texture_window_active : 1 = false;
   bool m_rov_active : 1 = false;
+  bool m_draw_with_software_renderer : 1 = false;
 
   bool m_use_texture_cache : 1 = false;
   bool m_texture_dumping : 1 = false;
