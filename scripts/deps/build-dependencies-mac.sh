@@ -275,31 +275,13 @@ cd "qtbase-everywhere-src-$QT"
 # Stop checkboxes in Fusion theme having such bright outlines.
 patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
 
+# Allow window-modal dialog boxes in Tahoe, it's not a problem for us.
+patch -p1 < "$SCRIPTDIR/qtbase-window-modal-tahoe.patch"
+
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
-
-patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
---- shared.cpp
-+++ shared.cpp
-@@ -1122,14 +1122,8 @@
-         addPlugins(QStringLiteral("networkinformation"));
-     }
- 
--    // All image formats (svg if QtSvg is used)
--    const bool usesSvg = deploymentInfo.containsModule("Svg", libInfix);
--    addPlugins(QStringLiteral("imageformats"), [usesSvg](const QString &lib) {
--        if (lib.contains(QStringLiteral("qsvg")) && !usesSvg)
--            return false;
--        return true;
--    });
--
-+    // All image formats
-+    addPlugins(QStringLiteral("imageformats"));
-     addPlugins(QStringLiteral("iconengines"));
- 
-     // Platforminputcontext plugins if QtGui is in use
-EOF
+patch -p1 < "$SCRIPTDIR/qtbase-macdeploy-imageformats.patch"
 
 cmake -B build "${CMAKE_COMMON[@]}" "${CMAKE_COMMON_QT[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"

@@ -1,0 +1,19 @@
+--- a/src/tools/macdeployqt/shared/shared.cpp
++++ b/src/tools/macdeployqt/shared/shared.cpp
+@@ -1122,14 +1122,8 @@
+         addPlugins(QStringLiteral("networkinformation"));
+     }
+ 
+-    // All image formats (svg if QtSvg is used)
+-    const bool usesSvg = deploymentInfo.containsModule("Svg", libInfix);
+-    addPlugins(QStringLiteral("imageformats"), [usesSvg](const QString &lib) {
+-        if (lib.contains(QStringLiteral("qsvg")) && !usesSvg)
+-            return false;
+-        return true;
+-    });
+-
++    // All image formats
++    addPlugins(QStringLiteral("imageformats"));
+     addPlugins(QStringLiteral("iconengines"));
+ 
+     // Platforminputcontext plugins if QtGui is in use
