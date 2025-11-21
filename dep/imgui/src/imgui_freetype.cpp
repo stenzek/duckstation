@@ -198,6 +198,8 @@ bool ImGui_ImplFreeType_FontSrcData::InitFont(FT_Library ft_library, ImFontConfi
           VarDesignCoords = nullptr;
           VarDesignNumAxis = 0;
       }
+
+      FT_Done_MM_Var(ft_library, mmvar);
     }
 
     // Convert to FreeType flags (NB: Bold and Oblique are processed separately)
