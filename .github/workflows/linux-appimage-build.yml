@@ -21,7 +21,7 @@ jobs:
             artifact: "linux-x64-sse2-appimage"
             cmakeoptions: "-DDISABLE_SSE4=ON"
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -78,7 +78,7 @@ jobs:
         scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps "${{ matrix.asset }}"
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "${{ matrix.artifact }}"
         path: "${{ matrix.asset }}"

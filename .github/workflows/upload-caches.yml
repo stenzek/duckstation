@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -30,7 +30,7 @@ jobs:
 
     - name: Upload Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "windows"
         path: "deps-*.zip"

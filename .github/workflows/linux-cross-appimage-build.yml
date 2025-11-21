@@ -18,7 +18,7 @@ jobs:
 
     timeout-minutes: 240
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -94,7 +94,7 @@ jobs:
         scripts/packaging/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ matrix.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "linux-${{ matrix.arch }}-appimage"
         path: "DuckStation-*.AppImage"
