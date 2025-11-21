@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 240
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
         zip -9 -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload MacOS .app
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"

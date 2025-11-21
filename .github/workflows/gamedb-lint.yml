@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'data/resources/gamedb.yaml'
+      - 'data/resources/discsets.yaml'
       - 'data/resources/discdb.yaml'
   push:
     branches:
@@ -11,6 +12,7 @@ on:
       - dev
     paths:
       - 'data/resources/gamedb.yaml'
+      - 'data/resources/discsets.yaml'
       - 'data/resources/discdb.yaml'
   workflow_dispatch:
 
@@ -19,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
