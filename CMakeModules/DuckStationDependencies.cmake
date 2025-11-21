@@ -69,7 +69,7 @@ if(BUILD_QT_FRONTEND)
   # All our builds include Qt, so this is not a problem.
   set(QT_NO_PRIVATE_MODULE_WARNING ON)
 
-  find_package(Qt6 6.10.0 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
+  find_package(Qt6 6.10.1 COMPONENTS Core Gui GuiPrivate Widgets LinguistTools REQUIRED)
 
   # Have to verify it down here, don't want users using unpatched Qt.
   if(NOT Qt6_DIR MATCHES "^${CMAKE_PREFIX_PATH}")
