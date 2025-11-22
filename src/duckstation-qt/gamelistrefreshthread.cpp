@@ -12,6 +12,8 @@
 
 #include "moc_gamelistrefreshthread.cpp"
 
+LOG_CHANNEL(Host);
+
 GameListRefreshThread::GameListRefreshThread(bool invalidate_cache) : QThread(), m_invalidate_cache(invalidate_cache)
 {
 }
@@ -79,18 +81,21 @@ void GameListRefreshThread::SetProgressValue(u32 value)
 
 void GameListRefreshThread::ModalError(const std::string_view message)
 {
-  QtUtils::MessageBoxCritical(nullptr, QStringLiteral("Error"), QtUtils::StringViewToQString(message));
+  // Not used.
+  WARNING_LOG(message);
 }
 
 bool GameListRefreshThread::ModalConfirmation(const std::string_view message)
 {
-  return QtUtils::MessageBoxQuestion(nullptr, QStringLiteral("Question"), QtUtils::StringViewToQString(message)) ==
-         QMessageBox::Yes;
+  // Not used.
+  WARNING_LOG(message);
+  return true;
 }
 
 void GameListRefreshThread::ModalInformation(const std::string_view message)
 {
-  QtUtils::MessageBoxInformation(nullptr, QStringLiteral("Information"), QtUtils::StringViewToQString(message));
+  // Not used.
+  WARNING_LOG(message);
 }
 
 void GameListRefreshThread::fireUpdate()

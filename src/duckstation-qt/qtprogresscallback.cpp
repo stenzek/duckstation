@@ -73,18 +73,18 @@ void QtModalProgressCallback::SetProgressValue(u32 value)
 
 void QtModalProgressCallback::ModalError(const std::string_view message)
 {
-  QtUtils::MessageBoxCritical(&m_dialog, tr("Error"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxCritical(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message));
 }
 
 bool QtModalProgressCallback::ModalConfirmation(const std::string_view message)
 {
-  return (QtUtils::MessageBoxQuestion(&m_dialog, tr("Question"), QtUtils::StringViewToQString(message)) ==
+  return (QtUtils::MessageBoxQuestion(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message)) ==
           QMessageBox::Yes);
 }
 
 void QtModalProgressCallback::ModalInformation(const std::string_view message)
 {
-  QtUtils::MessageBoxInformation(&m_dialog, tr("Information"), QtUtils::StringViewToQString(message));
+  QtUtils::MessageBoxInformation(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message));
 }
 
 void QtModalProgressCallback::dialogCancelled()

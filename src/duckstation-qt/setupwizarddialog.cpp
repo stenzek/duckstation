@@ -46,7 +46,7 @@ bool SetupWizardDialog::canShowNextPage()
       if (!BIOS::HasAnyBIOSImages())
       {
         if (QtUtils::MessageBoxQuestion(
-              this, tr("Warning"),
+              this, tr("No BIOS Image Found"),
               tr("No BIOS images were found. DuckStation WILL NOT be able to run games without a BIOS image.\n\nAre "
                  "you sure you wish to continue without selecting a BIOS image?")) != QMessageBox::Yes)
         {
@@ -61,7 +61,7 @@ bool SetupWizardDialog::canShowNextPage()
       if (m_ui.searchDirectoryList->rowCount() == 0)
       {
         if (QtUtils::MessageBoxQuestion(
-              this, tr("Warning"),
+              this, tr("No Game Directories Selected"),
               tr("No game directories have been selected. You will have to manually open any game dumps you "
                  "want to play, DuckStation's list will be empty.\n\nAre you sure you want to continue?")) !=
             QMessageBox::Yes)
@@ -467,7 +467,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
   if (mapping.empty())
   {
     QtUtils::MessageBoxCritical(
-      this, tr("Automatic Binding"),
+      this, tr("Automatic Binding Failed"),
       tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic "
          "mapping.")
         .arg(device));

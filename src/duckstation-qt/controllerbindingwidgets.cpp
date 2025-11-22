@@ -342,7 +342,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   if (mapping.empty())
   {
     QtUtils::MessageBoxCritical(
-      this, tr("Automatic Mapping"),
+      this, tr("Automatic Mapping Failed"),
       tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic mapping.")
         .arg(device));
     return;
@@ -1047,7 +1047,7 @@ void MultipleDeviceAutobindDialog::doAutomaticBinding()
     {
       lock.unlock();
       QtUtils::MessageBoxCritical(
-        this, tr("Automatic Mapping"),
+        this, tr("Automatic Mapping Failed"),
         tr("No generic bindings were generated for device '%1'. The controller/source may not "
            "support automatic mapping.")
           .arg(identifier));
@@ -1062,7 +1062,7 @@ void MultipleDeviceAutobindDialog::doAutomaticBinding()
 
   if (!tried_any)
   {
-    QtUtils::MessageBoxInformation(this, tr("Automatic Mapping"), tr("No devices were selected."));
+    QtUtils::MessageBoxInformation(this, tr("Automatic Mapping Failed"), tr("No devices were selected."));
     return;
   }
 

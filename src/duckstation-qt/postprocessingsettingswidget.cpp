@@ -235,8 +235,8 @@ void PostProcessingChainConfigWidget::onRemoveButtonClicked()
 
 void PostProcessingChainConfigWidget::onClearButtonClicked()
 {
-  if (QtUtils::MessageBoxQuestion(this, tr("Question"), tr("Are you sure you want to clear all shader stages?")) ==
-      QMessageBox::Yes)
+  if (QtUtils::MessageBoxQuestion(this, tr("Clear Shader Stages"),
+                                  tr("Are you sure you want to clear all shader stages?")) == QMessageBox::Yes)
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
