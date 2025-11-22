@@ -114,11 +114,12 @@ struct GPUSettings
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;
   bool display_auto_resize_window : 1 = false;
-  float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
-  float display_osd_scale = DEFAULT_OSD_SCALE;
-  float display_osd_margin = 0.0f;
+
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 0.0f;
+
+  float display_osd_scale = DEFAULT_OSD_SCALE;
+  float display_osd_margin = 0.0f;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -130,15 +131,6 @@ struct GPUSettings
       static constexpr u32 DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB = 512;
 
       constexpr Configuration() = default;
-
-      bool dump_texture_pages : 1 = false;
-      bool dump_full_texture_pages : 1 = false;
-      bool dump_texture_force_alpha_channel : 1 = false;
-      bool dump_vram_write_force_alpha_channel : 1 = true;
-      bool dump_c16_textures : 1 = false;
-      bool reduce_palette_range : 1 = true;
-      bool convert_copies_to_writes : 1 = false;
-      bool replacement_scale_linear_filter : 1 = false;
 
       u32 max_hash_cache_entries = DEFAULT_MAX_HASH_CACHE_ENTRIES;
       u32 max_hash_cache_vram_usage_mb = DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB;
@@ -152,6 +144,15 @@ struct GPUSettings
 
       u16 vram_write_dump_width_threshold = 128;
       u16 vram_write_dump_height_threshold = 128;
+
+      bool dump_texture_pages : 1 = false;
+      bool dump_full_texture_pages : 1 = false;
+      bool dump_texture_force_alpha_channel : 1 = false;
+      bool dump_vram_write_force_alpha_channel : 1 = true;
+      bool dump_c16_textures : 1 = false;
+      bool reduce_palette_range : 1 = true;
+      bool convert_copies_to_writes : 1 = false;
+      bool replacement_scale_linear_filter : 1 = false;
 
       bool operator==(const Configuration& rhs) const;
       bool operator!=(const Configuration& rhs) const;
@@ -342,6 +343,8 @@ struct Settings : public GPUSettings
   float turbo_speed = 0.0f;
 
   float rewind_save_frequency = 10.0f;
+
+  float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};

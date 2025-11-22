@@ -243,7 +243,7 @@ enum class ControllerType : u8
   Count
 };
 
-enum class MemoryCardType
+enum class MemoryCardType : u8
 {
   None,
   Shared,
@@ -254,7 +254,7 @@ enum class MemoryCardType
   Count
 };
 
-enum class MultitapMode
+enum class MultitapMode : u8
 {
   Disabled,
   Port1Only,
