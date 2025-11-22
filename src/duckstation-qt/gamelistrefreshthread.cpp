@@ -79,25 +79,6 @@ void GameListRefreshThread::SetProgressValue(u32 value)
   fireUpdate();
 }
 
-void GameListRefreshThread::ModalError(const std::string_view message)
-{
-  // Not used.
-  WARNING_LOG(message);
-}
-
-bool GameListRefreshThread::ModalConfirmation(const std::string_view message)
-{
-  // Not used.
-  WARNING_LOG(message);
-  return true;
-}
-
-void GameListRefreshThread::ModalInformation(const std::string_view message)
-{
-  // Not used.
-  WARNING_LOG(message);
-}
-
 void GameListRefreshThread::fireUpdate()
 {
   emit refreshProgress(m_status_text, m_last_value, m_last_range, static_cast<int>(GameList::GetEntryCount()),

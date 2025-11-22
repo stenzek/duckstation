@@ -30,15 +30,6 @@ public:
   virtual void SetProgressValue(u32 value);
   virtual void IncrementProgressValue();
 
-  virtual void DisplayError(const std::string_view message);
-  virtual void DisplayWarning(const std::string_view message);
-  virtual void DisplayInformation(const std::string_view message);
-  virtual void DisplayDebugMessage(const std::string_view message);
-
-  virtual void ModalError(const std::string_view message);
-  virtual bool ModalConfirmation(const std::string_view message);
-  virtual void ModalInformation(const std::string_view message);
-
 #define MAKE_PROGRESS_CALLBACK_FORWARDER(from, to)                                                                     \
   template<typename... T>                                                                                              \
   void from(fmt::format_string<T...> fmt, T&&... args)                                                                 \
@@ -49,13 +40,6 @@ public:
   }
 
   MAKE_PROGRESS_CALLBACK_FORWARDER(FormatStatusText, SetStatusText);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatError, DisplayError);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatWarning, DisplayWarning);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatInformation, DisplayInformation);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatDebugMessage, DisplayDebugMessage);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatModalError, ModalError);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatModalConfirmation, ModalConfirmation);
-  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatModalInformation, ModalInformation);
 
 #undef MAKE_PROGRESS_CALLBACK_FORWARDER
 

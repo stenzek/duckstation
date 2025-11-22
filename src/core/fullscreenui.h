@@ -55,10 +55,6 @@ public:
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
 
-  void ModalError(const std::string_view message) override;
-  bool ModalConfirmation(const std::string_view message) override;
-  void ModalInformation(const std::string_view message) override;
-
   void SetCancelled();
 
 private:
@@ -89,9 +85,6 @@ public:
   void SetStatusText(const std::string_view text) override;
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
-
-  void ModalError(const std::string_view message) override;
-  bool ModalConfirmation(const std::string_view message) override;
 
 private:
   void Redraw(bool force);

@@ -12,7 +12,7 @@
 
 LOG_CHANNEL(Host);
 
-Win32ProgressCallback::Win32ProgressCallback() : ProgressCallback()
+Win32ProgressCallback::Win32ProgressCallback() : UpdaterProgressCallback()
 {
   Create();
 }
@@ -24,18 +24,18 @@ Win32ProgressCallback::~Win32ProgressCallback()
 
 void Win32ProgressCallback::PushState()
 {
-  ProgressCallback::PushState();
+  UpdaterProgressCallback::PushState();
 }
 
 void Win32ProgressCallback::PopState()
 {
-  ProgressCallback::PopState();
+  UpdaterProgressCallback::PopState();
   Redraw(true);
 }
 
 void Win32ProgressCallback::SetCancellable(bool cancellable)
 {
-  ProgressCallback::SetCancellable(cancellable);
+  UpdaterProgressCallback::SetCancellable(cancellable);
   Redraw(true);
 }
 
@@ -46,19 +46,19 @@ void Win32ProgressCallback::SetTitle(const std::string_view title)
 
 void Win32ProgressCallback::SetStatusText(const std::string_view text)
 {
-  ProgressCallback::SetStatusText(text);
+  UpdaterProgressCallback::SetStatusText(text);
   Redraw(true);
 }
 
 void Win32ProgressCallback::SetProgressRange(u32 range)
 {
-  ProgressCallback::SetProgressRange(range);
+  UpdaterProgressCallback::SetProgressRange(range);
   Redraw(false);
 }
 
 void Win32ProgressCallback::SetProgressValue(u32 value)
 {
-  ProgressCallback::SetProgressValue(value);
+  UpdaterProgressCallback::SetProgressValue(value);
   Redraw(false);
 }
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "common/progress_callback.h"
+#include "updater_progress_callback.h"
 
 #include <AppKit/AppKit.h>
 #include <Cocoa/Cocoa.h>
@@ -16,7 +16,7 @@
 #error ARC should not be enabled.
 #endif
 
-class CocoaProgressCallback final : public ProgressCallback
+class CocoaProgressCallback final : public UpdaterProgressCallback
 {
 public:
   CocoaProgressCallback();

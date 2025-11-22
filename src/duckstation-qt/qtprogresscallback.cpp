@@ -79,22 +79,6 @@ void QtModalProgressCallback::SetProgressValue(u32 value)
   QCoreApplication::processEvents();
 }
 
-void QtModalProgressCallback::ModalError(const std::string_view message)
-{
-  QtUtils::MessageBoxCritical(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message));
-}
-
-bool QtModalProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  return (QtUtils::MessageBoxQuestion(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message)) ==
-          QMessageBox::Yes);
-}
-
-void QtModalProgressCallback::ModalInformation(const std::string_view message)
-{
-  QtUtils::MessageBoxInformation(&m_dialog, m_dialog.windowTitle(), QtUtils::StringViewToQString(message));
-}
-
 void QtModalProgressCallback::dialogCancelled()
 {
   m_cancelled = true;
@@ -159,22 +143,6 @@ void QtAsyncProgressThread::SetProgressValue(u32 value)
 {
   ProgressCallback::SetProgressValue(value);
   emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
-}
-
-void QtAsyncProgressThread::ModalError(const std::string_view message)
-{
-  QtUtils::MessageBoxCritical(parentWidget(), tr("Error"), QtUtils::StringViewToQString(message));
-}
-
-bool QtAsyncProgressThread::ModalConfirmation(const std::string_view message)
-{
-  return (QtUtils::MessageBoxQuestion(parentWidget(), tr("Question"), QtUtils::StringViewToQString(message)) ==
-          QMessageBox::Yes);
-}
-
-void QtAsyncProgressThread::ModalInformation(const std::string_view message)
-{
-  QtUtils::MessageBoxInformation(parentWidget(), tr("Information"), QtUtils::StringViewToQString(message));
 }
 
 void QtAsyncProgressThread::start()

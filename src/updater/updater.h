@@ -2,15 +2,18 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/progress_callback.h"
+
+#include "updater_progress_callback.h"
+
 #include "unzip.h"
+
 #include <string>
 #include <vector>
 
 class Updater
 {
 public:
-  explicit Updater(ProgressCallback* progress);
+  explicit Updater(UpdaterProgressCallback* progress);
   ~Updater();
 
   bool Initialize(std::string staging_directory, std::string destination_directory);
@@ -43,6 +46,6 @@ private:
   std::vector<FileToUpdate> m_update_paths;
   std::vector<std::string> m_update_directories;
 
-  ProgressCallback* m_progress;
+  UpdaterProgressCallback* m_progress;
   unzFile m_zf = nullptr;
 };

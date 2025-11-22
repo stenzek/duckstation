@@ -33,10 +33,6 @@ private:
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
 
-  void ModalError(const std::string_view message) override;
-  bool ModalConfirmation(const std::string_view message) override;
-  void ModalInformation(const std::string_view message) override;
-
   void fireUpdate();
 
   Timer m_start_time;

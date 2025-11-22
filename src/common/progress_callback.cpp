@@ -101,39 +101,3 @@ void ProgressCallback::IncrementProgressValue()
 {
   SetProgressValue((m_progress_value - m_base_progress_value) + 1);
 }
-
-void ProgressCallback::DisplayError(const std::string_view message)
-{
-  ERROR_LOG(message);
-}
-
-void ProgressCallback::DisplayWarning(const std::string_view message)
-{
-  WARNING_LOG(message);
-}
-
-void ProgressCallback::DisplayInformation(const std::string_view message)
-{
-  INFO_LOG(message);
-}
-
-void ProgressCallback::DisplayDebugMessage(const std::string_view message)
-{
-  DEV_LOG(message);
-}
-
-void ProgressCallback::ModalError(const std::string_view message)
-{
-  ERROR_LOG(message);
-}
-
-bool ProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  INFO_LOG(message);
-  return false;
-}
-
-void ProgressCallback::ModalInformation(const std::string_view message)
-{
-  INFO_LOG(message);
-}
