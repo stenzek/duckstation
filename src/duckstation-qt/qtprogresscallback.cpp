@@ -17,7 +17,15 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
 {
   m_dialog.setWindowTitle(tr("DuckStation"));
   m_dialog.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT_WITHOUT_CANCEL);
-  m_dialog.setModal(parent_widget != nullptr);
+  if (parent_widget)
+  {
+    m_dialog.setWindowModality(Qt::WindowModal);
+  }
+  else
+  {
+    m_dialog.setModal(true);
+    m_dialog.setWindowModality(Qt::ApplicationModal);
+  }
   m_dialog.setAutoClose(false);
   m_dialog.setAutoReset(false);
   m_dialog.setWindowFlag(Qt::CustomizeWindowHint, true);
@@ -104,7 +112,10 @@ void QtModalProgressCallback::MakeVisible()
 {
   m_dialog.setRange(0, m_progress_range);
   m_dialog.setValue(m_progress_value);
-  m_dialog.show();
+  if (m_dialog.parent())
+    m_dialog.open();
+  else
+    m_dialog.show();
 }
 
 // NOTE: We deliberately don't set the thread parent, because otherwise we can't move it.
