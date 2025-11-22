@@ -54,13 +54,14 @@ protected:
     bool cancellable;
   };
 
-  bool m_cancellable = false;
-  bool m_cancelled = false;
   std::string m_status_text;
   u32 m_progress_range = 1;
   u32 m_progress_value = 0;
 
   u32 m_base_progress_value = 0;
+
+  bool m_cancellable = false;
+  bool m_cancelled = false;
 
   std::unique_ptr<State> m_saved_state;
 
