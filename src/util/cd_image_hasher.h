@@ -8,6 +8,7 @@
 #include <array>
 #include <optional>
 #include <string>
+#include <vector>
 
 class CDImage;
 class Error;
@@ -16,6 +17,8 @@ class ProgressCallback;
 namespace CDImageHasher {
 
 using Hash = std::array<u8, 16>;
+using TrackHashes = std::vector<Hash>;
+
 std::string HashToString(const Hash& hash);
 std::optional<Hash> HashFromString(std::string_view str);
 

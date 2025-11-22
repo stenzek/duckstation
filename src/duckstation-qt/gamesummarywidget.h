@@ -1,8 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
+#include "util/cd_image_hasher.h"
+
 #include "common/types.h"
+
 #include <QtWidgets/QWidget>
 
 #include "ui_gamesummarywidget.h"
@@ -13,6 +17,7 @@ namespace GameList {
 struct Entry;
 }
 
+class ProgressCallback;
 class SettingsWindow;
 
 class GameSummaryWidget : public QWidget
@@ -39,6 +44,11 @@ private:
   void onInputProfileChanged(int index);
   void onEditInputProfileClicked();
   void onComputeHashClicked();
+
+  bool computeImageHash(const std::string& path, CDImageHasher::TrackHashes& track_hashes,
+                        ProgressCallback* const progress, Error* const error) const;
+  void processHashResults(const CDImageHasher::TrackHashes& track_hashes, bool result, bool cancelled,
+                          const Error& error);
 
   Ui::GameSummaryWidget m_ui;
   SettingsWindow* m_dialog;
