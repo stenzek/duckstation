@@ -21,6 +21,7 @@
 
 #include "common/align.h"
 #include "common/bitfield.h"
+#include "common/error.h"
 #include "common/fifo_queue.h"
 #include "common/file_system.h"
 #include "common/gsvector.h"
@@ -1023,8 +1024,9 @@ bool CDROM::PrecacheMedia()
     return false;
   }
 
+  Error error;
   FullscreenUI::LoadingScreenProgressCallback callback;
-  if (!s_reader.Precache(&callback))
+  if (!s_reader.Precache(&callback, &error))
   {
     Host::AddOSDMessage(OSDMessageType::Error,
                         TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."));

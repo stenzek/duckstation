@@ -47,7 +47,7 @@ public:
   std::unique_ptr<CDImage> RemoveMedia();
 
   /// Precaches image, either to memory, or using the underlying image precache.
-  bool Precache(ProgressCallback* callback);
+  bool Precache(ProgressCallback* callback, Error* error);
 
   void QueueReadSector(CDImage::LBA lba);
 

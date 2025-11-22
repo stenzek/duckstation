@@ -445,10 +445,12 @@ void GameSummaryWidget::onComputeHashClicked()
     return;
   }
 
-  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
+  Error error;
+  std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, &error);
   if (!image)
   {
-    QtUtils::MessageBoxCritical(QtUtils::GetRootWidget(this), tr("Error"), tr("Failed to open CD image for hashing."));
+    QtUtils::MessageBoxCritical(QtUtils::GetRootWidget(this), tr("Image Open Failed"),
+                                QString::fromStdString(error.GetDescription()));
     return;
   }
 
@@ -468,13 +470,15 @@ void GameSummaryWidget::onComputeHashClicked()
     progress_callback.PushState();
 
     CDImageHasher::Hash hash;
-    if (!CDImageHasher::GetTrackHash(image.get(), track, &hash, &progress_callback))
+    if (!CDImageHasher::GetTrackHash(image.get(), track, &hash, &progress_callback, &error))
     {
       progress_callback.PopState();
 
       if (progress_callback.IsCancelled())
         return;
 
+      QtUtils::MessageBoxCritical(QtUtils::GetRootWidget(this), tr("Hash Calculation Failed"),
+                                  QString::fromStdString(error.GetDescription()));
       calculate_hash_success = false;
       break;
     }

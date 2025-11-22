@@ -58,15 +58,22 @@ void CoverDownloadWindow::onDownloadComplete()
 {
   emit coverRefreshRequested();
 
+  m_ui.status->setText(tr("Download complete."));
+
+  QString error;
   if (m_thread)
   {
     m_thread->join();
+    if (!m_thread->getResult())
+    {
+      if (const std::string& err_str = m_thread->getError().GetDescription(); !err_str.empty())
+        m_ui.status->setText(QString::fromStdString(err_str));
+    }
+
     m_thread.reset();
   }
 
   updateEnabled();
-
-  m_ui.status->setText(tr("Download complete."));
 }
 
 void CoverDownloadWindow::onStartClicked()
@@ -127,5 +134,5 @@ CoverDownloadWindow::CoverDownloadThread::~CoverDownloadThread() = default;
 
 void CoverDownloadWindow::CoverDownloadThread::runAsync()
 {
-  GameList::DownloadCovers(m_urls, m_use_serials, this);
+  m_result = GameList::DownloadCovers(m_urls, m_use_serials, this, &m_error);
 }

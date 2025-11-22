@@ -120,9 +120,9 @@ std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Err
 #endif
     if (FileSystem::FileExists(ppf_path.c_str()))
     {
-      image = CDImage::OverlayPPFPatch(ppf_path.c_str(), std::move(image));
+      image = CDImage::OverlayPPFPatch(ppf_path.c_str(), std::move(image), error);
       if (!image)
-        Error::SetStringFmt(error, "Failed to apply ppf patch from '{}'.", ppf_path);
+        Error::AddPrefixFmt(error, "Failed to apply ppf patch from '{}':\n", ppf_path);
     }
   }
 
@@ -342,7 +342,7 @@ std::string CDImage::GetSubImageTitle(u32 index) const
   return {};
 }
 
-CDImage::PrecacheResult CDImage::Precache(ProgressCallback* progress /*= ProgressCallback::NullProgressCallback*/)
+CDImage::PrecacheResult CDImage::Precache(ProgressCallback* progress, Error* error)
 {
   return PrecacheResult::Unsupported;
 }

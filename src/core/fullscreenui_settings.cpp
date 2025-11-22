@@ -2492,15 +2492,19 @@ void FullscreenUI::DrawCoverDownloaderWindow()
     std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
     System::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
                             use_serial_names = use_serial_names]() {
-      GameList::DownloadCovers(
-        urls, use_serial_names, progress, [](const GameList::Entry* entry, std::string save_path) {
-          // cache the cover path on our side once it's saved
-          Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() mutable {
-            GPUThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
-              FullscreenUI::SetCoverCacheEntry(std::move(path), std::move(save_path));
-            });
-          });
-        });
+      Error error;
+      if (!GameList::DownloadCovers(
+            urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
+              // cache the cover path on our side once it's saved
+              Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() mutable {
+                GPUThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
+                  FullscreenUI::SetCoverCacheEntry(std::move(path), std::move(save_path));
+                });
+              });
+            }))
+      {
+        OpenInfoMessageDialog(FSUI_STR("Cover Download Error"), error.TakeDescription());
+      }
 
       // close the parent window if we weren't cancelled
       if (!progress->IsCancelled())
