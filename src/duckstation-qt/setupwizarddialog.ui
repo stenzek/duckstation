@@ -225,7 +225,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QFormLayout" name="formLayout_3">
+        <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
          <item row="0" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
@@ -333,7 +333,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QFormLayout" name="formLayout_4">
+        <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,1">
          <item row="0" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
@@ -564,7 +564,7 @@
          <property name="title">
           <string>Controller Port 1</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="label_11">
             <property name="text">
@@ -624,7 +624,7 @@
          <property name="title">
           <string>Controller Port 2</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_2">
+         <layout class="QGridLayout" name="gridLayout_7" columnstretch="0,1">
           <item row="0" column="0">
            <widget class="QLabel" name="label_13">
             <property name="text">
@@ -722,7 +722,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QFormLayout" name="formLayout_5">
+        <layout class="QGridLayout" name="gridLayout_8" columnstretch="0,1">
          <property name="leftMargin">
           <number>10</number>
          </property>
