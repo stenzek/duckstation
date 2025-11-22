@@ -27,8 +27,6 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
   const u32 index_length = image->GetTrackIndexLength(track, index);
   const u32 update_interval = std::max<u32>(index_length / 100u, 1u);
 
-  progress_callback->FormatStatusText(TRANSLATE_FS("CDImageHasher", "Computing hash for Track {}/Index {}..."), track,
-                                      index);
   progress_callback->SetProgressRange(index_length);
 
   if (!image->Seek(index_start))
@@ -67,6 +65,7 @@ bool CDImageHasher::ReadTrack(CDImage* image, u8 track, MD5Digest* digest, Progr
   progress_callback->PushState();
 
   const bool dataTrack = track == 1;
+  progress_callback->FormatStatusText(TRANSLATE_FS("CDImageHasher", "Computing hash for Track {}..."), track);
   progress_callback->SetProgressRange(dataTrack ? 1 : 2);
 
   u8 progress = 0;
