@@ -23,6 +23,7 @@ enum class Level : u32;
 
 enum class RenderAPI : u8;
 enum class MediaCaptureBackend : u8;
+enum class OSDMessageType : u8;
 
 struct GPUSettings
 {
@@ -118,6 +119,8 @@ struct GPUSettings
   float display_osd_margin = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 0.0f;
+
+  std::array<float, 6> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -223,6 +226,8 @@ struct GPUSettings
   static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
   static constexpr float DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER = 2.0f;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
+
+  static const std::array<float, 6> DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
 
 #ifndef __ANDROID__
   static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;
@@ -537,6 +542,9 @@ struct Settings : public GPUSettings
   static const char* GetDisplayScreenshotFormatDisplayName(DisplayScreenshotFormat mode);
   static const char* GetDisplayScreenshotFormatExtension(DisplayScreenshotFormat mode);
   static std::optional<DisplayScreenshotFormat> GetDisplayScreenshotFormatFromFileName(const std::string_view filename);
+
+  static const char* GetDisplayOSDMessageTypeName(OSDMessageType type);
+  static const char* GetDisplayOSDMessageTypeDisplayName(OSDMessageType type);
 
   static std::optional<MemoryCardType> ParseMemoryCardTypeName(const char* str);
   static const char* GetMemoryCardTypeName(MemoryCardType type);

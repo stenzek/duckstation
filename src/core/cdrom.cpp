@@ -1018,9 +1018,9 @@ bool CDROM::PrecacheMedia()
   if (s_reader.GetMedia()->HasSubImages() && s_reader.GetMedia()->GetSubImageCount() > 1)
   {
     Host::AddOSDMessage(
+      OSDMessageType::Error,
       fmt::format(TRANSLATE_FS("OSDMessage", "CD image preloading not available for multi-disc image '{}'"),
-                  FileSystem::GetDisplayNameFromPath(s_reader.GetMedia()->GetPath())),
-      Host::OSD_ERROR_DURATION);
+                  FileSystem::GetDisplayNameFromPath(s_reader.GetMedia()->GetPath())));
     return false;
   }
 
@@ -1028,8 +1028,8 @@ bool CDROM::PrecacheMedia()
   FullscreenUI::LoadingScreenProgressCallback callback;
   if (!s_reader.Precache(&callback, &error))
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."),
-                        Host::OSD_ERROR_DURATION);
+    Host::AddOSDMessage(OSDMessageType::Error,
+                        TRANSLATE_STR("OSDMessage", "Precaching CD image failed, it may be unreliable."));
     return false;
   }
 
@@ -3297,11 +3297,10 @@ void CDROM::DoSectorRead()
   // TODO: Queue the next read here and swap the buffer.
   if (!s_reader.WaitForReadToComplete()) [[unlikely]]
   {
-    Host::AddIconOSDWarning(
-      "DiscReadError", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("OSDMessage", "Failed to read sector from disc image. The game will probably crash now.\nYour "
-                                  "dump may be corrupted, or the physical disc is scratched."),
-      Host::OSD_CRITICAL_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Fatal, "DiscReadError", ICON_EMOJI_WARNING, TRANSLATE_STR("CDROM", "Disc Read Error"),
+      TRANSLATE_STR(
+        "CDROM", "The game will probably crash now.\nYour dump may be corrupted, or the physical disc is scratched."));
     StopReadingWithError();
     return;
   }

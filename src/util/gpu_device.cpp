@@ -486,9 +486,8 @@ bool GPUDevice::Create(std::string_view adapter, CreateFlags create_flags, std::
     {
       message.pop_back(); // Remove last newline.
 
-      Host::AddIconOSDMessage("GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING,
-                              "One or more non-standard GPU device flags are enabled.", std::move(message),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "GPUDeviceNonStandardFlags", ICON_EMOJI_WARNING,
+                              "One or more non-standard GPU device flags are enabled.", std::move(message));
     }
 
 #undef FLAG_MSG

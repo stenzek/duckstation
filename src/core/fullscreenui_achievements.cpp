@@ -6,6 +6,8 @@
 #include "gpu_thread.h"
 #include "system.h"
 
+#include "util/imgui_manager.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/timer.h"
@@ -526,8 +528,10 @@ void FullscreenUI::OpenAchievementsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasAchievements())
   {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no achievements.") :
-                                                        FSUI_STR("Achievements are not enabled."));
+    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsUnavailable", ICON_EMOJI_INFORMATION,
+                            TRANSLATE_STR("Achievements", "Achievements Unavailable"),
+                            Achievements::IsActive() ? TRANSLATE_STR("Achievements", "This game has no achievements.") :
+                                                       TRANSLATE_STR("Achievements", "Achievements are not enabled."));
     return;
   }
 
@@ -1002,8 +1006,10 @@ void FullscreenUI::OpenLeaderboardsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
-    ShowToast(std::string(), Achievements::IsActive() ? FSUI_STR("This game has no leaderboards.") :
-                                                        FSUI_STR("Achievements are not enabled."));
+    Host::AddIconOSDMessage(OSDMessageType::Info, "LeaderboardsUnavailable", ICON_EMOJI_INFORMATION,
+                            TRANSLATE_STR("Achievements", "Leaderboards Unavailable"),
+                            Achievements::IsActive() ? TRANSLATE_STR("Achievements", "This game has no leaderboards.") :
+                                                       TRANSLATE_STR("Achievements", "Achievements are not enabled."));
     return;
   }
 
@@ -1524,7 +1530,7 @@ void FullscreenUI::LeaderboardFetchNearbyCallback(int result, const char* error_
 
   if (result != RC_OK)
   {
-    ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+    ShowToast(OSDMessageType::Error, TRANSLATE_STR("Achievements", "Leaderboard download failed"), error_message);
     CloseLeaderboard();
     return;
   }
@@ -1544,7 +1550,7 @@ void FullscreenUI::LeaderboardFetchAllCallback(int result, const char* error_mes
 
   if (result != RC_OK)
   {
-    ShowToast(TRANSLATE("Achievements", "Leaderboard download failed"), error_message);
+    ShowToast(OSDMessageType::Error, TRANSLATE_STR("Achievements", "Leaderboard download failed"), error_message);
     CloseLeaderboard();
     return;
   }

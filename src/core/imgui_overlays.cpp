@@ -1442,11 +1442,11 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
   }
 
   Host::AddIconOSDMessage(
-    "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,
+    OSDMessageType::Quick, "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,
     IsCurrentSlotGlobal() ?
       fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {} selected."), GetCurrentSlot()) :
       fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected."), GetCurrentSlot()),
-    std::move(date), Host::OSD_QUICK_DURATION);
+    std::move(date));
 }
 
 void ImGuiManager::RenderOverlayWindows()

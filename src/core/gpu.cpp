@@ -2155,20 +2155,18 @@ bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
   m_gpu_dump = GPUDump::Recorder::Create(path, System::GetGameSerial(), num_frames, &error);
   if (!m_gpu_dump)
   {
-    Host::AddIconOSDWarning(
-      std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
-      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to start GPU trace:"), error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to start GPU trace:"), error.GetDescription()));
     return false;
   }
 
   Host::AddIconOSDMessage(
-    std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+    OSDMessageType::Quick, std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
     (num_frames != 0) ?
       fmt::format(TRANSLATE_FS("GPU", "Saving {0} frame GPU trace to '{1}'."), num_frames, Path::GetFileName(path)) :
       fmt::format(TRANSLATE_FS("GPU", "Saving multi-frame frame GPU trace to '{1}'."), num_frames,
-                  Path::GetFileName(path)),
-    Host::OSD_QUICK_DURATION);
+                  Path::GetFileName(path)));
 
   // save screenshot to same location to identify it
   GPUBackend::RenderScreenshotToFile(Path::ReplaceExtension(path, "png"), DisplayScreenshotMode::ScreenResolution, 85,
@@ -2184,10 +2182,9 @@ void GPU::StopRecordingGPUDump()
   Error error;
   if (!m_gpu_dump->Close(&error))
   {
-    Host::AddIconOSDWarning(
-      "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
-      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to close GPU trace:"), error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to close GPU trace:"), error.GetDescription()));
     m_gpu_dump.reset();
   }
 
@@ -2199,9 +2196,8 @@ void GPU::StopRecordingGPUDump()
   if (compress_mode == GPUDumpCompressionMode::Disabled)
   {
     Host::AddIconOSDMessage(
-      "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
-      fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(m_gpu_dump->GetPath())),
-      Host::OSD_QUICK_DURATION);
+      OSDMessageType::Info, "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(m_gpu_dump->GetPath())));
     m_gpu_dump.reset();
     return;
   }
@@ -2209,28 +2205,25 @@ void GPU::StopRecordingGPUDump()
   std::string source_path = m_gpu_dump->GetPath();
   m_gpu_dump.reset();
 
-  // Use a 60 second timeout to give it plenty of time to actually save.
   Host::AddIconOSDMessage(
-    osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
-    fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)), 60.0f);
+    OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
+    fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)));
   System::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
     Error error;
     if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
     {
       Host::AddIconOSDMessage(
-        std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
-        fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(source_path)),
-        Host::OSD_QUICK_DURATION);
+        OSDMessageType::Info, std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+        fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(source_path)));
     }
     else
     {
-      Host::AddIconOSDWarning(
-        std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+      Host::AddIconOSDMessage(
+        OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
         fmt::format("{}\n{}",
                     SmallString::from_format(TRANSLATE_FS("GPU", "Failed to save GPU trace to '{}':"),
                                              Path::GetFileName(source_path)),
-                    error.GetDescription()),
-        Host::OSD_ERROR_DURATION);
+                    error.GetDescription()));
     }
   });
 }

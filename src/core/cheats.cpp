@@ -1094,24 +1094,22 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
     {
       System::SetTaint(System::Taint::Patches);
       Host::AddIconOSDMessage(
-        "LoadCheats", ICON_FA_BANDAGE,
-        TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", s_locals.active_patch_count),
-        Host::OSD_INFO_DURATION);
+        OSDMessageType::Info, "LoadCheats", ICON_FA_BANDAGE,
+        TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", s_locals.active_patch_count));
     }
     if (s_locals.active_cheat_count > 0)
     {
       System::SetTaint(System::Taint::Cheats);
       Host::AddIconOSDMessage(
-        "LoadCheats", ICON_EMOJI_WARNING,
+        OSDMessageType::Warning, "LoadCheats", ICON_EMOJI_WARNING,
         TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled.", "OSD Message", s_locals.active_cheat_count),
-        TRANSLATE_STR("Cheats", "This may crash games."), Host::OSD_WARNING_DURATION);
+        TRANSLATE_STR("Cheats", "This may crash games."));
     }
     else if (s_locals.active_patch_count == 0)
     {
       Host::RemoveKeyedOSDMessage("LoadCheats");
-      Host::AddIconOSDMessage("LoadCheats", ICON_FA_BANDAGE,
-                              TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
-                              Host::OSD_INFO_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Info, "LoadCheats", ICON_FA_BANDAGE,
+                              TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."));
     }
   }
 
@@ -1139,7 +1137,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
                       blocked_cheats_msg.view(), blocked_patches_msg.view()) :
           fmt::format(TRANSLATE_FS("Cheats", "{} disabled by achievements hardcore mode/safe mode."),
                       (blocked_cheats > 0) ? blocked_cheats_msg.view() : blocked_patches_msg.view());
-      Host::AddIconOSDMessage("LoadCheats", ICON_EMOJI_WARNING, std::move(message), Host::OSD_INFO_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "LoadCheats", ICON_EMOJI_WARNING, std::move(message));
     }
   }
 }
@@ -1169,9 +1167,8 @@ bool Cheats::ApplyManualCode(const std::string_view name)
   {
     if (code->IsManuallyActivated() && code->GetName() == name)
     {
-      Host::AddIconOSDMessage(code->GetName(), ICON_FA_BANDAGE,
-                              fmt::format(TRANSLATE_FS("Cheats", "Cheat '{}' applied."), code->GetName()),
-                              Host::OSD_INFO_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Quick, code->GetName(), ICON_FA_BANDAGE,
+                              fmt::format(TRANSLATE_FS("Cheats", "Cheat '{}' applied."), code->GetName()));
       code->Apply();
       return true;
     }
@@ -1480,10 +1477,9 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     {
       WARNING_LOG("Failed to parse code ending on line {}: {}", reader.GetCurrentLineNumber(), error.GetDescription());
 
-      Host::AddIconOSDWarning(fmt::format("cheat_parse_error_{}", code_name), ICON_EMOJI_WARNING,
+      Host::AddIconOSDMessage(OSDMessageType::Error, fmt::format("cheat_parse_error_{}", code_name), ICON_EMOJI_WARNING,
                               fmt::format("{} '{}':\n{}", TRANSLATE_SV("Cheats", "Failed to parse cheat code"),
-                                          code_name, error.GetDescription()),
-                              Host::OSD_WARNING_DURATION);
+                                          code_name, error.GetDescription()));
     }
 
     next_code_group = {};

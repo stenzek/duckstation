@@ -115,6 +115,17 @@ void SettingInfo::CopyValue(SettingsInterface* dest_si, const SettingsInterface&
   }
 }
 
+const std::array<float, 6> GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS = {{
+  20.0f,                             // Fatal
+  15.0f,                             // Error
+  10.0f,                             // Warning
+  5.0f,                              // Info
+  2.5f,                              // Quick
+  std::numeric_limits<float>::max(), // Persistent
+}};
+static_assert(static_cast<size_t>(OSDMessageType::MaxCount) ==
+              GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS.size());
+
 GPUSettings::GPUSettings()
 {
   SetPGXPDepthClearThreshold(DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
@@ -1104,9 +1115,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
 
   if (pcdrv_enable && pcdrv_root.empty() && display_osd_messages)
   {
-    Host::AddKeyedOSDMessage("pcdrv_disabled_no_root",
-                             TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."),
-                             Host::OSD_WARNING_DURATION);
+    Host::AddKeyedOSDMessage(OSDMessageType::Warning, "pcdrv_disabled_no_root",
+                             TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."));
     pcdrv_enable = false;
   }
 
@@ -1115,8 +1125,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     if (display_osd_messages)
     {
       Host::AddKeyedOSDMessage(
-        "pgxp_disabled_sw",
-        TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+        OSDMessageType::Warning, "pgxp_disabled_sw",
+        TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."));
     }
     gpu_pgxp_enable = false;
   }
@@ -1160,9 +1170,9 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
   {
     if (display_osd_messages)
     {
-      Host::AddIconOSDWarning(
-        "RewindDisabled", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Rewind has been disabled."),
-        TRANSLATE_STR("System", "Rewind and runahead cannot be used at the same time."), Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "RewindDisabled", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Rewind has been disabled."),
+                              TRANSLATE_STR("System", "Rewind and runahead cannot be used at the same time."));
     }
 
     rewind_enable = false;
@@ -2242,6 +2252,28 @@ std::optional<DisplayScreenshotFormat> Settings::GetDisplayScreenshotFormatFromF
   }
 
   return std::nullopt;
+}
+
+static constexpr const std::array s_display_screenshot_format_names = {
+  "20.0", // Fatal
+  "15.0", // Error
+  "10.0", // Warning
+  "5.0",  // Info
+  "2.5",  // Quick
+  "0.0",  // Disabled
+};
+static constexpr const std::array s_display_screenshot_format_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "PNG", "DisplayScreenshotFormat"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "JPEG", "DisplayScreenshotFormat"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "WebP", "DisplayScreenshotFormat"),
+};
+
+const char* Settings::GetDisplayOSDMessageTypeName(OSDMessageType type)
+{
+}
+
+const char* Settings::GetDisplayOSDMessageTypeDisplayName(OSDMessageType type)
+{
 }
 
 static constexpr const std::array s_achievement_challenge_indicator_mode_names = {

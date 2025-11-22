@@ -545,11 +545,10 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 
   if (m_resolution_scale != resolution_scale)
   {
-    Host::AddIconOSDMessage("ResolutionScaleChanged", ICON_FA_PAINTBRUSH,
+    Host::AddIconOSDMessage(OSDMessageType::Info, "ResolutionScaleChanged", ICON_FA_PAINTBRUSH,
                             fmt::format(TRANSLATE_FS("GPU_HW", "Internal resolution set to {0}x ({1}x{2})."),
                                         resolution_scale, m_presenter.GetDisplayWidth() * resolution_scale,
-                                        m_presenter.GetDisplayHeight() * resolution_scale),
-                            Host::OSD_INFO_DURATION);
+                                        m_presenter.GetDisplayHeight() * resolution_scale));
   }
 
   if (m_multisamples != multisamples || g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
@@ -557,16 +556,14 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
     if (g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading)
     {
       Host::AddIconOSDMessage(
-        "MultisamplingChanged", ICON_FA_PAINTBRUSH,
-        fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x (SSAA)."), multisamples),
-        Host::OSD_INFO_DURATION);
+        OSDMessageType::Info, "MultisamplingChanged", ICON_FA_PAINTBRUSH,
+        fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x (SSAA)."), multisamples));
     }
     else
     {
       Host::AddIconOSDMessage(
-        "MultisamplingChanged", ICON_FA_PAINTBRUSH,
-        fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x."), multisamples),
-        Host::OSD_INFO_DURATION);
+        OSDMessageType::Info, "MultisamplingChanged", ICON_FA_PAINTBRUSH,
+        fmt::format(TRANSLATE_FS("GPU_HW", "Multisample anti-aliasing set to {}x."), multisamples));
     }
   }
 
@@ -695,10 +692,9 @@ void GPU_HW::CheckSettings()
 
   if (m_multisamples != g_gpu_settings.gpu_multisamples)
   {
-    Host::AddIconOSDMessage("MSAAUnsupported", ICON_EMOJI_WARNING,
+    Host::AddIconOSDMessage(OSDMessageType::Error, "MSAAUnsupported", ICON_EMOJI_WARNING,
                             fmt::format(TRANSLATE_FS("GPU_HW", "{}x MSAA is not supported, using {}x instead."),
-                                        g_gpu_settings.gpu_multisamples, m_multisamples),
-                            Host::OSD_CRITICAL_ERROR_DURATION);
+                                        g_gpu_settings.gpu_multisamples, m_multisamples));
   }
   else
   {
@@ -707,18 +703,17 @@ void GPU_HW::CheckSettings()
 
   if (g_gpu_settings.gpu_per_sample_shading && !features.per_sample_shading)
   {
-    Host::AddIconOSDMessage("SSAAUnsupported", ICON_EMOJI_WARNING,
-                            TRANSLATE_STR("GPU_HW", "SSAA is not supported, using MSAA instead."),
-                            Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Error, "SSAAUnsupported", ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("GPU_HW", "SSAA is not supported, using MSAA instead."));
   }
   if (!features.dual_source_blend && !features.framebuffer_fetch &&
       (IsBlendedTextureFiltering(m_texture_filtering) || IsBlendedTextureFiltering(m_sprite_texture_filtering)))
   {
     Host::AddIconOSDMessage(
-      "TextureFilterUnsupported", ICON_EMOJI_WARNING,
+      OSDMessageType::Error, "TextureFilterUnsupported", ICON_EMOJI_WARNING,
       fmt::format(TRANSLATE_FS("GPU_HW", "Texture filter '{}/{}' is not supported with the current renderer."),
                   Settings::GetTextureFilterDisplayName(m_texture_filtering),
-                  Settings::GetTextureFilterName(m_sprite_texture_filtering), Host::OSD_ERROR_DURATION));
+                  Settings::GetTextureFilterName(m_sprite_texture_filtering)));
     m_texture_filtering = GPUTextureFilter::Nearest;
     m_sprite_texture_filtering = GPUTextureFilter::Nearest;
     m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
@@ -729,29 +724,26 @@ void GPU_HW::CheckSettings()
   {
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
     Host::AddIconOSDMessage(
-      "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
+      OSDMessageType::Warning, "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
       TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU."),
-      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
-      Host::OSD_WARNING_DURATION);
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."));
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
            ((g_gpu_settings.IsUsingShaderBlending() && features.raster_order_views) ||
             (m_pgxp_depth_buffer && features.raster_order_views && !features.feedback_loops)))
   {
     Host::AddIconOSDMessage(
-      "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "Multisample anti-aliasing is not supported when using shader blending."),
-      Host::OSD_WARNING_DURATION);
+      OSDMessageType::Warning, "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("GPU_HW", "Multisample anti-aliasing is not supported when using shader blending."));
     m_multisamples = 1;
   }
 
   if (m_pgxp_depth_buffer && !features.feedback_loops && !features.framebuffer_fetch && !features.raster_order_views)
   {
     Host::AddIconOSDMessage(
-      "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
+      OSDMessageType::Warning, "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
       TRANSLATE_STR("GPU_HW", "PGXP depth buffer is not supported by your current GPU or renderer."),
-      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."),
-      Host::OSD_WARNING_DURATION);
+      TRANSLATE_STR("GPU_HW", "It requires framebuffer fetch, feedback loops, or rasterizer order views."));
     m_pgxp_depth_buffer = false;
   }
 
@@ -761,9 +753,8 @@ void GPU_HW::CheckSettings()
   if (!features.geometry_shaders && m_wireframe_mode != GPUWireframeMode::Disabled)
   {
     Host::AddIconOSDMessage(
-      "GeometryShadersUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE("GPU_HW", "Geometry shaders are not supported by your GPU, and are required for wireframe rendering."),
-      Host::OSD_CRITICAL_ERROR_DURATION);
+      OSDMessageType::Warning, "GeometryShadersUnsupported", ICON_EMOJI_WARNING,
+      TRANSLATE("GPU_HW", "Geometry shaders are not supported by your GPU, and are required for wireframe rendering."));
     m_wireframe_mode = GPUWireframeMode::Disabled;
   }
 
@@ -776,21 +767,19 @@ void GPU_HW::CheckSettings()
       m_downsample_mode = GPUDownsampleMode::Disabled;
 
       Host::AddIconOSDMessage(
-        "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
+        OSDMessageType::Warning, "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
         fmt::format(
           TRANSLATE_FS("GPU_HW",
                        "Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled."),
-          resolution_scale, g_gpu_settings.gpu_downsample_scale),
-        Host::OSD_WARNING_DURATION);
+          resolution_scale, g_gpu_settings.gpu_downsample_scale));
     }
     else if (box_downscale != g_gpu_settings.gpu_downsample_scale)
     {
       Host::AddIconOSDMessage(
-        "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
+        OSDMessageType::Warning, "BoxDownsampleUnsupported", ICON_FA_PAINTBRUSH,
         fmt::format(TRANSLATE_FS(
                       "GPU_HW", "Resolution scale {0}x is not divisible by downsample scale {1}x, using {2}x instead."),
-                    resolution_scale, g_gpu_settings.gpu_downsample_scale, box_downscale),
-        Host::OSD_WARNING_DURATION);
+                    resolution_scale, g_gpu_settings.gpu_downsample_scale, box_downscale));
     }
     else
     {
@@ -811,11 +800,10 @@ u32 GPU_HW::CalculateResolutionScale() const
     if (g_gpu_settings.gpu_resolution_scale != 0)
     {
       Host::AddIconOSDMessage(
-        "ResolutionNotPow2", ICON_FA_PAINTBRUSH,
+        OSDMessageType::Warning, "ResolutionNotPow2", ICON_FA_PAINTBRUSH,
         fmt::format(
           TRANSLATE_FS("GPU_HW", "Resolution scale {0}x not supported for adaptive downsampling, using {1}x."), scale,
-          new_scale),
-        Host::OSD_WARNING_DURATION);
+          new_scale));
     }
 
     scale = new_scale;

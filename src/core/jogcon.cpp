@@ -178,7 +178,7 @@ void JogCon::SetJogConMode(bool enabled, bool show_message)
   if (show_message)
   {
     Host::AddIconOSDMessage(
-      fmt::format("Controller{}JogConMode", m_index), ICON_PF_GAMEPAD_ALT,
+      OSDMessageType::Info, fmt::format("Controller{}JogConMode", m_index), ICON_PF_GAMEPAD_ALT,
       m_jogcon_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to JogCon mode."), m_index + 1u) :
                       fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to Digital mode."), m_index + 1u));
   }
@@ -588,11 +588,10 @@ void JogCon::LoadSettings(const SettingsInterface& si, const char* section, bool
         ERROR_LOG("Failed to create force feedback device: {}", error.GetDescription());
         if (initial)
         {
-          Host::AddIconOSDWarning(
-            fmt::format("NoFFDevice{}", m_index), ICON_EMOJI_WARNING,
+          Host::AddIconOSDMessage(
+            OSDMessageType::Warning, fmt::format("NoFFDevice{}", m_index), ICON_EMOJI_WARNING,
             fmt::format(TRANSLATE_FS("JogCon", "Failed to create force feedback device for Port {}:\n{}"),
-                        Controller::GetPortDisplayName(m_index), error.GetDescription()),
-            Host::OSD_WARNING_DURATION);
+                        Controller::GetPortDisplayName(m_index), error.GetDescription()));
         }
       }
     }
