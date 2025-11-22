@@ -111,7 +111,7 @@
      <property name="title">
       <string>Write Tracking Options</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -205,7 +205,7 @@
      <property name="title">
       <string>Texture Dumping Options</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="vramWriteDumpThresholdLabel_2">
         <property name="text">
@@ -275,7 +275,7 @@
      <property name="title">
       <string>Background Dumping Options</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_2">
+     <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,1">
       <item row="0" column="0">
        <widget class="QLabel" name="vramWriteDumpThresholdLabel">
         <property name="text">

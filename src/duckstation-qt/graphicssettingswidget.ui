@@ -908,7 +908,7 @@
             </property>
             <item row="1" column="1">
              <widget class="QWidget" name="audioCaptureOptions" native="true">
-              <layout class="QFormLayout" name="audioCaptureOptionsLayout">
+              <layout class="QGridLayout" name="gridLayout_20" columnstretch="0,1">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -921,13 +921,6 @@
                <property name="bottomMargin">
                 <number>0</number>
                </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="audioCaptureCodecLabel">
-                 <property name="text">
-                  <string>Codec:</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="1">
                 <widget class="QComboBox" name="audioCaptureCodec"/>
                </item>
@@ -967,6 +960,26 @@
                <item row="3" column="0" colspan="2">
                 <widget class="QLineEdit" name="audioCaptureArguments"/>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="audioCaptureCodecLabel">
+                 <property name="text">
+                  <string>Codec:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <spacer name="verticalSpacer_8">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </widget>
             </item>
@@ -979,7 +992,7 @@
             </item>
             <item row="1" column="0">
              <widget class="QWidget" name="videoCaptureOptions" native="true">
-              <layout class="QFormLayout" name="videoCaptureOptionsLayout">
+              <layout class="QGridLayout" name="gridLayout_19" columnstretch="0,1">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -1085,15 +1098,15 @@
                  </item>
                 </layout>
                </item>
-               <item row="4" column="0" colspan="2">
-                <widget class="QLineEdit" name="videoCaptureArguments"/>
-               </item>
                <item row="3" column="0" colspan="2">
                 <widget class="QCheckBox" name="enableVideoCaptureArguments">
                  <property name="text">
                   <string>Extra Arguments</string>
                  </property>
                 </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <widget class="QLineEdit" name="videoCaptureArguments"/>
                </item>
               </layout>
              </widget>
