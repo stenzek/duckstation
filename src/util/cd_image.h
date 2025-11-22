@@ -233,10 +233,9 @@ public:
   static std::unique_ptr<CDImage> OpenPBPImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenM3uImage(const char* path, bool apply_patches, Error* error);
   static std::unique_ptr<CDImage> OpenDeviceImage(const char* path, Error* error);
-  static std::unique_ptr<CDImage>
-  CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
+  static std::unique_ptr<CDImage> CreateMemoryImage(CDImage* image, ProgressCallback* progress, Error* error);
   static std::unique_ptr<CDImage> OverlayPPFPatch(const char* path, std::unique_ptr<CDImage> parent_image,
-                                                  ProgressCallback* progress = ProgressCallback::NullProgressCallback);
+                                                  Error* error);
 
   // Accessors.
   const std::string& GetPath() const { return m_filename; }
@@ -309,7 +308,7 @@ public:
   virtual std::string GetSubImageTitle(u32 index) const;
 
   // Returns true if the source supports precaching, which may be more optimal than an in-memory copy.
-  virtual PrecacheResult Precache(ProgressCallback* progress = ProgressCallback::NullProgressCallback);
+  virtual PrecacheResult Precache(ProgressCallback* progress, Error* error);
   virtual bool IsPrecached() const;
 
   // Returns the size on disk of the image. This could be multiple files.

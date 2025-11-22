@@ -4,6 +4,7 @@
 #include "cd_image.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -21,7 +22,7 @@ public:
   CDImageMemory();
   ~CDImageMemory() override;
 
-  bool CopyImage(CDImage* image, ProgressCallback* progress);
+  bool CopyImage(CDImage* image, ProgressCallback* progress, Error* error);
 
   bool IsPrecached() const override;
 
@@ -43,7 +44,7 @@ CDImageMemory::~CDImageMemory()
     std::free(m_memory);
 }
 
-bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
+bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress, Error* error)
 {
   // figure out the total number of sectors (not including blank pregaps)
   m_memory_sectors = 0;
@@ -57,7 +58,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   if (m_memory_sectors == 0 || (static_cast<u64>(RAW_SECTOR_SIZE) * static_cast<u64>(m_memory_sectors)) >=
                                  static_cast<u64>(std::numeric_limits<size_t>::max()))
   {
-    progress->ModalError("Insufficient address space");
+    Error::SetStringView(error, "Insufficient address space");
     return false;
   }
 
@@ -67,7 +68,7 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
     static_cast<u8*>(std::malloc(static_cast<size_t>(RAW_SECTOR_SIZE) * static_cast<size_t>(m_memory_sectors)));
   if (!m_memory)
   {
-    progress->FormatModalError("Failed to allocate memory for {} sectors", m_memory_sectors);
+    Error::SetStringFmt(error, "Failed to allocate memory for {} sectors", m_memory_sectors);
     return false;
   }
 
@@ -138,11 +139,10 @@ bool CDImageMemory::ReadSectorFromIndex(void* buffer, const Index& index, LBA lb
   return true;
 }
 
-std::unique_ptr<CDImage>
-CDImage::CreateMemoryImage(CDImage* image, ProgressCallback* progress /* = ProgressCallback::NullProgressCallback */)
+std::unique_ptr<CDImage> CDImage::CreateMemoryImage(CDImage* image, ProgressCallback* progress, Error* error)
 {
   std::unique_ptr<CDImageMemory> memory_image = std::make_unique<CDImageMemory>();
-  if (!memory_image->CopyImage(image, progress))
+  if (!memory_image->CopyImage(image, progress, error))
     return {};
 
   return memory_image;

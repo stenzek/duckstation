@@ -60,7 +60,7 @@ std::unique_ptr<CDImage> CDROMAsyncReader::RemoveMedia()
   return std::move(m_media);
 }
 
-bool CDROMAsyncReader::Precache(ProgressCallback* callback)
+bool CDROMAsyncReader::Precache(ProgressCallback* callback, Error* error)
 {
   WaitForIdle();
 
@@ -70,11 +70,11 @@ bool CDROMAsyncReader::Precache(ProgressCallback* callback)
   else if (m_media->IsPrecached())
     return true;
 
-  const CDImage::PrecacheResult res = m_media->Precache(callback);
+  const CDImage::PrecacheResult res = m_media->Precache(callback, error);
   if (res == CDImage::PrecacheResult::Unsupported)
   {
     // fall back to copy precaching
-    std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(m_media.get(), callback);
+    std::unique_ptr<CDImage> memory_image = CDImage::CreateMemoryImage(m_media.get(), callback, error);
     if (memory_image)
     {
       const CDImage::LBA lba = m_media->GetPositionOnDisc();

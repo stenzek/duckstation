@@ -6,6 +6,7 @@
 #include "qtprogresscallback.h"
 #include "ui_coverdownloadwindow.h"
 
+#include "common/error.h"
 #include "common/timer.h"
 #include "common/types.h"
 
@@ -37,12 +38,17 @@ private:
     CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials);
     ~CoverDownloadThread();
 
+    ALWAYS_INLINE const Error& getError() const { return m_error; }
+    ALWAYS_INLINE bool getResult() const { return m_result; }
+
   protected:
     void runAsync() override;
 
   private:
     std::vector<std::string> m_urls;
-    bool m_use_serials;
+    Error m_error;
+    bool m_use_serials = false;
+    bool m_result = false;
   };
 
   void startThread();
