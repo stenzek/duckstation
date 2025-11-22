@@ -679,6 +679,13 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
   const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
   const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
 
+  const std::string program_path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toStdString();
+  if (program_path.empty())
+  {
+    reportError("Failed to get current application path");
+    return false;
+  }
+
   Error error;
   if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFile(update_zip_path.c_str(), &error)))
   {
@@ -693,22 +700,51 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
   }
 
   Error updater_extract_error;
-  if (!extractUpdater(update_zip_path.c_str(), updater_path.c_str(), &updater_extract_error))
+  if (!extractUpdater(update_zip_path.c_str(), updater_path.c_str(), Path::GetFileName(program_path),
+                      &updater_extract_error))
   {
     reportError(fmt::format("Extracting updater failed: {}", updater_extract_error.GetDescription()));
     return false;
   }
 
-  return doUpdate(application_dir, update_zip_path, updater_path);
+  return doUpdate(application_dir, update_zip_path, updater_path, program_path);
 }
 
-bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::string& destination_path, Error* error)
+bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::string& destination_path,
+                                       const std::string_view check_for_file, Error* error)
 {
   unzFile zf = MinizipHelpers::OpenUnzFile(zip_path.c_str());
   if (!zf)
   {
     reportError("Failed to open update zip");
     return false;
+  }
+
+  // check the the expected program name is inside the updater zip. if it's not, we're going to launch the old binary
+  // with a partially updated installation
+  if (unzLocateFile(zf, std::string(check_for_file).c_str(), 0) != UNZ_OK)
+  {
+#ifdef CPU_ARCH_X64
+    const QString expected_executable = QStringLiteral("duckstation-qt-x64-ReleaseLTCG.exe");
+#else
+    const QString expected_executable = QStringLiteral("duckstation-qt-ARM64-ReleaseLTCG.exe");
+#endif
+
+    if (QtUtils::MessageBoxIcon(
+          this, QMessageBox::Warning, tr("Updater Warning"),
+          tr("<h1>Inconsistent Application State</h1><h3>The update zip is missing the current executable:</h3><div "
+             "align=\"center\"><pre>%1</pre></div><p><strong>This is usually a result of manually renaming the "
+             "file.</strong> Continuing to install this update may result in a broken installation if the renamed "
+             "executable is used. The DuckStation executable should be named:<div "
+             "align=\"center\"><pre>%2</pre></div><p>Do you want to continue anyway?</p>")
+            .arg(QString::fromStdString(std::string(check_for_file)))
+            .arg(expected_executable),
+          QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton) == QMessageBox::No)
+    {
+      Error::SetStringFmt(error, "Update zip is missing expected file: {}", check_for_file);
+      unzClose(zf);
+      return false;
+    }
   }
 
   if (unzLocateFile(zf, UPDATER_EXECUTABLE, 0) != UNZ_OK || unzOpenCurrentFile(zf) != UNZ_OK)
@@ -759,15 +795,8 @@ bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::s
 }
 
 bool AutoUpdaterWindow::doUpdate(const std::string& application_dir, const std::string& zip_path,
-                                 const std::string& updater_path)
+                                 const std::string& updater_path, const std::string& program_path)
 {
-  const std::string program_path = QDir::toNativeSeparators(QCoreApplication::applicationFilePath()).toStdString();
-  if (program_path.empty())
-  {
-    reportError("Failed to get current application path");
-    return false;
-  }
-
   const std::wstring wupdater_path = StringUtil::UTF8StringToWideString(updater_path);
   const std::wstring wapplication_dir = StringUtil::UTF8StringToWideString(application_dir);
   const std::wstring arguments = StringUtil::UTF8StringToWideString(fmt::format(

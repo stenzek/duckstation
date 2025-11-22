@@ -70,8 +70,10 @@ private:
 
 #ifdef _WIN32
   bool doesUpdaterNeedElevation(const std::string& application_dir) const;
-  bool doUpdate(const std::string& application_dir, const std::string& zip_path, const std::string& updater_path);
-  bool extractUpdater(const std::string& zip_path, const std::string& destination_path, Error* error);
+  bool doUpdate(const std::string& application_dir, const std::string& zip_path, const std::string& updater_path,
+                const std::string& program_path);
+  bool extractUpdater(const std::string& zip_path, const std::string& destination_path,
+                      const std::string_view check_for_file, Error* error);
 #endif
 
   Ui::AutoUpdaterWindow m_ui;
