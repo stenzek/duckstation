@@ -246,7 +246,7 @@ void QtUtils::SetMessageBoxStyle(QMessageBox* const dlg)
 {
 #ifdef __APPLE__
   // Can't have a stylesheet set even if it doesn't affect the widget.
-  if (QtHost::IsStyleSheetApplicationTheme() || QtHost::NativeThemeStylesheetNeedsUpdate())
+  if (QtHost::HasGlobalStylesheet())
   {
     dlg->setStyleSheet("");
     dlg->setAttribute(Qt::WA_StyleSheet, false);
@@ -292,7 +292,7 @@ QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title
 
 void QtUtils::StylePopupMenu(QMenu* menu)
 {
-  if (QtHost::IsStyleSheetApplicationTheme())
+  if (QtHost::HasGlobalStylesheet())
   {
     menu->setWindowFlags(menu->windowFlags() | Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint);
     menu->setAttribute(Qt::WA_TranslucentBackground, true);
@@ -316,7 +316,7 @@ void QtUtils::StyleChildMenus(QWidget* widget)
 QMenu* QtUtils::NewPopupMenu(QWidget* parent, bool delete_on_close /*= true*/)
 {
   QMenu* menu = new QMenu(parent);
-  if (QtHost::IsStyleSheetApplicationTheme())
+  if (QtHost::HasGlobalStylesheet())
   {
     menu->setWindowFlags(menu->windowFlags() | Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint);
     menu->setAttribute(Qt::WA_TranslucentBackground, true);

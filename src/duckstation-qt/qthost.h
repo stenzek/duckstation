@@ -349,13 +349,10 @@ void UpdateApplicationTheme();
 bool IsDarkApplicationTheme();
 
 /// Returns true if the application theme is using stylesheet overrides.
-bool IsStyleSheetApplicationTheme();
+bool HasGlobalStylesheet();
 
 /// Sets the icon theme, based on the current style (light/dark).
 void UpdateThemeOnStyleChange();
-
-/// Returns true if using the native theme and it has stylesheet overrides.
-bool NativeThemeStylesheetNeedsUpdate();
 
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();

@@ -16,6 +16,7 @@
 
 namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
+static bool NativeThemeStylesheetNeedsUpdate();
 static void SetStyleFromSettings();
 static QString GetNativeThemeStylesheet();
 
@@ -827,10 +828,14 @@ QTextBrowser {
 #endif
   else
   {
-    SetThemeAttributes(false, true, false);
+    const QString stylesheet = GetNativeThemeStylesheet();
+    SetThemeAttributes(!stylesheet.isEmpty(), true, false);
     qApp->setStyle(s_state.unthemed_style_name);
     qApp->setPalette(s_state.unthemed_palette);
-    qApp->setStyleSheet(GetNativeThemeStylesheet());
+
+    // Cleared above.
+    if (!stylesheet.isEmpty())
+      qApp->setStyleSheet(stylesheet);
   }
 }
 
@@ -847,7 +852,7 @@ bool QtHost::IsDarkApplicationTheme()
   return (palette.windowText().color().value() > palette.window().color().value());
 }
 
-bool QtHost::IsStyleSheetApplicationTheme()
+bool QtHost::HasGlobalStylesheet()
 {
   return s_state.is_stylesheet_theme;
 }

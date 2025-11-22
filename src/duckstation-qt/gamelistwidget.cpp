@@ -1930,7 +1930,7 @@ void GameListWidget::updateBackground(bool reload_image)
   m_ui.stack->setAutoFillBackground(true);
   m_list_view->setAlternatingRowColors(false);
 
-  if (QtHost::IsStyleSheetApplicationTheme())
+  if (QtHost::HasGlobalStylesheet())
   {
     // Stylesheets override palette, so we need to set background: transparent on the grid and list view.
     const QString style_sheet = QStringLiteral("QAbstractScrollArea { background-color: transparent; }");
