@@ -32,7 +32,7 @@
 #include "common/cocoa_tools.h"
 #endif
 
-Updater::Updater(ProgressCallback* progress) : m_progress(progress)
+Updater::Updater(UpdaterProgressCallback* progress) : m_progress(progress)
 {
   progress->SetTitle("DuckStation Update Installer");
 }

@@ -8,7 +8,7 @@
 
 LOG_CHANNEL(Host);
 
-CocoaProgressCallback::CocoaProgressCallback() : ProgressCallback()
+CocoaProgressCallback::CocoaProgressCallback() : UpdaterProgressCallback()
 {
   Create();
 }
@@ -20,18 +20,18 @@ CocoaProgressCallback::~CocoaProgressCallback()
 
 void CocoaProgressCallback::PushState()
 {
-  ProgressCallback::PushState();
+  UpdaterProgressCallback::PushState();
 }
 
 void CocoaProgressCallback::PopState()
 {
-  ProgressCallback::PopState();
+  UpdaterProgressCallback::PopState();
   UpdateProgress();
 }
 
 void CocoaProgressCallback::SetCancellable(bool cancellable)
 {
-  ProgressCallback::SetCancellable(cancellable);
+  UpdaterProgressCallback::SetCancellable(cancellable);
 }
 
 void CocoaProgressCallback::SetTitle(const std::string_view title)
@@ -46,7 +46,7 @@ void CocoaProgressCallback::SetTitle(const std::string_view title)
 
 void CocoaProgressCallback::SetStatusText(const std::string_view text)
 {
-  ProgressCallback::SetStatusText(text);
+  UpdaterProgressCallback::SetStatusText(text);
   @autoreleasepool {
     dispatch_async(dispatch_get_main_queue(), [this, text = [CocoaTools::StringViewToNSString(text) retain]]() {
       [m_status setStringValue:text];
@@ -57,13 +57,13 @@ void CocoaProgressCallback::SetStatusText(const std::string_view text)
 
 void CocoaProgressCallback::SetProgressRange(u32 range)
 {
-  ProgressCallback::SetProgressRange(range);
+  UpdaterProgressCallback::SetProgressRange(range);
   UpdateProgress();
 }
 
 void CocoaProgressCallback::SetProgressValue(u32 value)
 {
-  ProgressCallback::SetProgressValue(value);
+  UpdaterProgressCallback::SetProgressValue(value);
   UpdateProgress();
 }
 

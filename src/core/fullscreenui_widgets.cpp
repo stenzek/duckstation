@@ -4235,23 +4235,6 @@ void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
   UpdateBackgroundProgressDialog(m_name, m_status_text, 0, 100, percent);
 }
 
-void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
-{
-  Host::ReportErrorAsync("Error", message);
-}
-
-bool FullscreenUI::BackgroundProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  // Not used.
-  INFO_LOG(message);
-  return true;
-}
-
-void FullscreenUI::BackgroundProgressCallback::ModalInformation(const std::string_view message)
-{
-  Host::ReportErrorAsync("Information", message);
-}
-
 void FullscreenUI::BackgroundProgressCallback::SetCancelled()
 {
   if (m_cancellable)
@@ -4660,19 +4643,6 @@ void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
   }
 
   m_last_progress_percent = percent;
-}
-
-void FullscreenUI::LoadingScreenProgressCallback::ModalError(const std::string_view message)
-{
-  ERROR_LOG(message);
-  Host::ReportErrorAsync("Error", message);
-}
-
-bool FullscreenUI::LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
-{
-  // Not used.
-  INFO_LOG(message);
-  return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/progress_callback.h"
+
+#include "updater_progress_callback.h"
+
 #include "common/windows_headers.h"
 
-class Win32ProgressCallback final : public ProgressCallback
+class Win32ProgressCallback final : public UpdaterProgressCallback
 {
 public:
   Win32ProgressCallback();

@@ -8,6 +8,7 @@ target_link_libraries(updater PRIVATE common minizip ZLIB::ZLIB)
 if(WIN32)
   target_sources(updater PRIVATE
     updater.rc
+    updater_progress_callback.h
     win32_main.cpp
     win32_progress_callback.cpp
     win32_progress_callback.h
@@ -22,6 +23,7 @@ if(APPLE)
     cocoa_main.mm
     cocoa_progress_callback.mm
     cocoa_progress_callback.h
+    updater_progress_callback.h
   )
   target_sources(updater PRIVATE ${MAC_SOURCES})
   set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS TRUE)
