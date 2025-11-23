@@ -1602,11 +1602,11 @@ bool PostProcessing::ReShadeFXShader::ResizeTargets(u32 source_width, u32 source
   return true;
 }
 
-GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth,
-                                                                GPUTexture* final_target, GSVector4i final_rect,
-                                                                s32 orig_width, s32 orig_height, s32 native_width,
-                                                                s32 native_height, u32 target_width, u32 target_height,
-                                                                float time)
+GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
+                                                                GPUTexture* input_depth, GPUTexture* final_target,
+                                                                GSVector4i final_rect, s32 orig_width, s32 orig_height,
+                                                                s32 native_width, s32 native_height, u32 target_width,
+                                                                u32 target_height, float time)
 {
   GL_SCOPE_FMT("PostProcessingShaderFX {}", m_name);
 

@@ -1755,11 +1755,11 @@ std::unique_ptr<GPUPipeline> PostProcessing::SlangShader::CreateBlitPipeline(GPU
   return g_gpu_device->CreatePipeline(plconfig, error);
 }
 
-GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* input_color, GPUTexture* input_depth,
-                                                            GPUTexture* final_target, GSVector4i final_rect,
-                                                            s32 orig_width, s32 orig_height, s32 native_width,
-                                                            s32 native_height, u32 target_width, u32 target_height,
-                                                            float time)
+GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original_color, GPUTexture* input_color,
+                                                            GPUTexture* input_depth, GPUTexture* final_target,
+                                                            GSVector4i final_rect, s32 orig_width, s32 orig_height,
+                                                            s32 native_width, s32 native_height, u32 target_width,
+                                                            u32 target_height, float time)
 {
   const auto bind_final_target = [](GPUTexture* final_target, const GSVector4i& final_rect) {
     if (!final_target)
@@ -1793,16 +1793,16 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* input_co
 
     // Need to copy the input before drawing, because of swap chain
     Error error;
-    if (!g_gpu_device->ResizeTexture(&m_original_history_textures[0], input_color->GetWidth(), input_color->GetHeight(),
-                                     GPUTexture::Type::Texture, input_color->GetFormat(), GPUTexture::Flags::None,
-                                     false, &error))
+    if (!g_gpu_device->ResizeTexture(&m_original_history_textures[0], original_color->GetWidth(),
+                                     original_color->GetHeight(), GPUTexture::Type::Texture,
+                                     original_color->GetFormat(), GPUTexture::Flags::None, false, &error))
     {
       ERROR_LOG("Failed to resize original history texture: {}", error.GetDescription());
     }
     else
     {
-      g_gpu_device->CopyTextureRegion(m_original_history_textures[0].get(), 0, 0, 0, 0, input_color, 0, 0, 0, 0,
-                                      input_color->GetWidth(), input_color->GetHeight());
+      g_gpu_device->CopyTextureRegion(m_original_history_textures[0].get(), 0, 0, 0, 0, original_color, 0, 0, 0, 0,
+                                      original_color->GetWidth(), original_color->GetHeight());
     }
   }
 
@@ -1852,7 +1852,7 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* input_co
     for (const auto& [tex_id, bind_point] : pass.samplers)
     {
       GL_INS_FMT("Texture {}: ID {} [{}]", bind_point, tex_id, GetTextureNameForID(tex_id));
-      std::tie(textures[bind_point], samplers[bind_point]) = GetTextureByID(pass, tex_id, input_color);
+      std::tie(textures[bind_point], samplers[bind_point]) = GetTextureByID(pass, tex_id, original_color, input_color);
       if (textures[bind_point])
         textures[bind_point]->MakeReadyForSampling();
     }
@@ -1891,8 +1891,8 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* input_co
       g_gpu_device->SetTextureSampler(static_cast<u32>(j), textures[j], samplers[j]);
 
     alignas(VECTOR_ALIGNMENT) u8 push_constant_data[MAX_PUSH_CONSTANT_SIZE];
-    BindPassUniforms(pass, push_constant_data, input_color, output_size, final_rect, orig_width, orig_height,
-                     native_width, native_height, target_width, target_height, time);
+    BindPassUniforms(pass, push_constant_data, original_color, input_color, output_size, final_rect, orig_width,
+                     orig_height, native_width, native_height, target_width, target_height, time);
     if (pass.push_constants_size > 0)
       g_gpu_device->DrawWithPushConstants(4, base_vertex, push_constant_data, pass.push_constants_size);
     else
@@ -2041,6 +2041,7 @@ TinyString PostProcessing::SlangShader::GetTextureNameForID(TextureID id) const
 }
 
 std::tuple<GPUTexture*, GPUSampler*> PostProcessing::SlangShader::GetTextureByID(const Pass& pass, TextureID id,
+                                                                                 GPUTexture* original_color,
                                                                                  GPUTexture* input_color) const
 {
   if (id == TEXTURE_ID_SOURCE)
@@ -2054,12 +2055,12 @@ std::tuple<GPUTexture*, GPUSampler*> PostProcessing::SlangShader::GetTextureByID
     else
     {
       // First pass, no last texture.
-      id = TEXTURE_ID_ORIGINAL;
+      return {input_color, g_gpu_device->GetNearestSampler()};
     }
   }
 
   if (id == TEXTURE_ID_ORIGINAL)
-    return {input_color, g_gpu_device->GetNearestSampler()};
+    return {original_color, g_gpu_device->GetNearestSampler()};
 
   if (id >= TEXTURE_ID_ORIGINAL_HISTORY_START)
   {
@@ -2078,10 +2079,10 @@ std::tuple<GPUTexture*, GPUSampler*> PostProcessing::SlangShader::GetTextureByID
 }
 
 void PostProcessing::SlangShader::BindPassUniforms(const Pass& pass, u8* const push_constant_data,
-                                                   GPUTexture* input_color, GSVector2i output_size,
-                                                   GSVector4i final_rect, s32 orig_width, s32 orig_height,
-                                                   s32 native_width, s32 native_height, u32 target_width,
-                                                   u32 target_height, float time)
+                                                   GPUTexture* original_color, GPUTexture* input_color,
+                                                   GSVector2i output_size, GSVector4i final_rect, s32 orig_width,
+                                                   s32 orig_height, s32 native_width, s32 native_height,
+                                                   u32 target_width, u32 target_height, float time)
 {
   GL_INS_FMT("Uniform buffer: {} bytes", pass.uniforms_size);
   GL_INS_FMT("Push constants: {} bytes", pass.push_constants_size);
@@ -2132,7 +2133,8 @@ void PostProcessing::SlangShader::BindPassUniforms(const Pass& pass, u8* const p
 
         case BuiltinUniform::TextureSize:
         {
-          const GPUTexture* texture = std::get<0>(GetTextureByID(pass, ui.associated_texture, input_color));
+          const GPUTexture* texture =
+            std::get<0>(GetTextureByID(pass, ui.associated_texture, original_color, input_color));
           DebugAssert(texture);
 
           const GSVector2 v = GSVector2(texture->GetSizeVec());

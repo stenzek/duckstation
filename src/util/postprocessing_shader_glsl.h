@@ -22,9 +22,10 @@ public:
   bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
 
-  GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                 GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                                 s32 native_height, u32 target_width, u32 target_height, float time) override;
+  GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
+                                 GPUTexture* final_target, GSVector4i final_rect, s32 orig_width, s32 orig_height,
+                                 s32 native_width, s32 native_height, u32 target_width, u32 target_height,
+                                 float time) override;
 
 private:
   struct CommonUniforms

@@ -34,9 +34,10 @@ public:
                      u32 target_height, u32 viewport_width, u32 viewport_height, Error* error) override;
   bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
-  GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                 GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                                 s32 native_height, u32 target_width, u32 target_height, float time) override;
+  GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
+                                 GPUTexture* final_target, GSVector4i final_rect, s32 orig_width, s32 orig_height,
+                                 s32 native_width, s32 native_height, u32 target_width, u32 target_height,
+                                 float time) override;
 
 private:
   using TextureID = u32;
@@ -129,11 +130,13 @@ private:
   std::optional<Uniform> GetUniformInfo(std::string_view name, bool push_constant, u32 offset, u16 size, Error* error);
 
   TinyString GetTextureNameForID(TextureID id) const;
-  std::tuple<GPUTexture*, GPUSampler*> GetTextureByID(const Pass& pass, TextureID id, GPUTexture* input_color) const;
+  std::tuple<GPUTexture*, GPUSampler*> GetTextureByID(const Pass& pass, TextureID id, GPUTexture* original_color,
+                                                      GPUTexture* input_color) const;
 
-  void BindPassUniforms(const Pass& pass, u8* const push_constant_data, GPUTexture* input_color, GSVector2i output_size,
-                        GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width, s32 native_height,
-                        u32 target_width, u32 target_height, float time);
+  void BindPassUniforms(const Pass& pass, u8* const push_constant_data, GPUTexture* original_color,
+                        GPUTexture* input_color, GSVector2i output_size, GSVector4i final_rect, s32 orig_width,
+                        s32 orig_height, s32 native_width, s32 native_height, u32 target_width, u32 target_height,
+                        float time);
 
   std::vector<Texture> m_textures;
   std::vector<Pass> m_passes;

@@ -826,6 +826,7 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
+  GPUTexture* original_color = input_color;
   GPUTexture* output = m_output_texture.get();
   input_color->MakeReadyForSampling();
   if (input_depth)
@@ -837,9 +838,9 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     if (!stage->IsEnabled())
       continue;
 
-    if (const GPUDevice::PresentResult pres =
-          stage->Apply(input_color, input_depth, stage->IsFinalStage() ? final_target : output, final_rect, orig_width,
-                       orig_height, native_width, native_height, m_target_width, m_target_height, time);
+    if (const GPUDevice::PresentResult pres = stage->Apply(
+          original_color, input_color, input_depth, stage->IsFinalStage() ? final_target : output, final_rect,
+          orig_width, orig_height, native_width, native_height, m_target_width, m_target_height, time);
         pres != GPUDevice::PresentResult::OK)
     {
       return pres;
