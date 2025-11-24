@@ -768,7 +768,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
   u32 grid_x = 0;
   float row_item_height = base_item_height;
-  ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
+  if (!s_game_list_locals.game_list_sorted_entries.empty())
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_padding);
+
   for (size_t entry_index = 0; entry_index < s_game_list_locals.game_list_sorted_entries.size(); entry_index++)
   {
     if (window->SkipItems)

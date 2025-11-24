@@ -1187,10 +1187,10 @@ std::string MiniHost::GetWindowTitle(const std::string& game_title)
 
 void MiniHost::WarnAboutInterface()
 {
-  Host::AddIconOSDMessage(OSDMessageType::Warning, "MiniWarning", ICON_EMOJI_WARNING,
-                          "This is the \"mini\" interface for DuckStation, and is missing many features.",
-                          "We recommend using the Qt interface instead, which you can download\n"
-                          "from https://www.duckstation.org/.");
+  Host::AddIconOSDMessage(
+    OSDMessageType::Warning, "MiniWarning", "images/duck.png",
+    "This is the \"mini\" interface for DuckStation, and is missing many features.",
+    "We recommend using the Qt interface instead, which you can download from https://www.duckstation.org/.");
 }
 
 void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,
