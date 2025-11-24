@@ -59,6 +59,7 @@ private:
   void onAddSearchDirectoryButtonClicked();
   void onRemoveSearchDirectoryButtonClicked();
   void onSearchDirectoryListSelectionChanged();
+  void onSearchDirectoryListItemChanged(QTreeWidgetItem* item, int column);
   void refreshDirectoryList();
 
   void doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label);

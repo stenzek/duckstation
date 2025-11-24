@@ -517,7 +517,19 @@
         </layout>
        </item>
        <item>
-        <widget class="QTableWidget" name="searchDirectoryList">
+        <widget class="QTreeWidget" name="searchDirectoryList">
+         <property name="contextMenuPolicy">
+          <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="rootIsDecorated">
+          <bool>false</bool>
+         </property>
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
          <column>
           <property name="text">
            <string>Search Directory</string>
