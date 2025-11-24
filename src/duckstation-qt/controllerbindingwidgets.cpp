@@ -981,8 +981,9 @@ ControllerCustomSettingsDialog::ControllerCustomSettingsDialog(QWidget* parent, 
   QGridLayout* layout = new QGridLayout(this);
   createSettingWidgets(sif, this, layout, section, settings, tr_context);
 
-  QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::RestoreDefaults, this);
-  connect(bbox, &QDialogButtonBox::accepted, this, &ControllerCustomSettingsDialog::accept);
+  QDialogButtonBox* bbox = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::RestoreDefaults, this);
+  bbox->button(QDialogButtonBox::Close)->setDefault(true);
+  connect(bbox, &QDialogButtonBox::rejected, this, &ControllerCustomSettingsDialog::accept);
   connect(bbox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this,
           [this, settings]() { restoreDefaultSettingWidgets(this, settings); });
   layout->addWidget(bbox, layout->rowCount(), 0, 1, 4);
