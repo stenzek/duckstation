@@ -985,11 +985,11 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     // Use larger icon when we have multiple lines.
     const bool use_large_icon = !msg.title.empty() && !msg.text.empty();
     const float icon_font_size = use_large_icon ? large_icon_size : font_size;
-    const ImVec2 icon_size = msg.text.empty() ? ImVec2() :
+    const ImVec2 icon_size = msg.icon.empty() ? ImVec2() :
                                                 font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f,
                                                                     IMSTR_START_END(msg.icon));
     const float icon_size_with_margin =
-      msg.text.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
+      msg.icon.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
     const float max_text_width = max_width - icon_size_with_margin;
 
     // bold the message if there's no title
