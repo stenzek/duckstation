@@ -146,7 +146,10 @@ void SetupWizardDialog::confirmCancel()
 void SetupWizardDialog::setupUi()
 {
   m_ui.setupUi(this);
-  m_ui.logo->setPixmap(QtHost::GetAppLogo());
+
+  const QPixmap app_logo = QtHost::GetAppLogo();
+  setWindowIcon(app_logo);
+  m_ui.logo->setPixmap(app_logo);
   m_ui.pages->setCurrentIndex(0);
 
   m_page_labels[Page_Language] = m_ui.labelLanguage;
