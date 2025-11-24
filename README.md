@@ -4,8 +4,6 @@
 
 **Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
 
-**Game Compatibility List:** https://docs.google.com/spreadsheets/d/e/2PACX-1vRE0jjiK_aldpICoy5kVQlpk2f81Vo6P4p9vfg4d7YoTOoDlH4PQHoXjTD2F7SdN8SSBLoEAItaIqQo/pubhtml
-
 **Discord Server:** https://www.duckstation.org/discord.html
 
 DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices. "Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.
