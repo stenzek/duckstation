@@ -353,14 +353,15 @@ void Host::AddFixedInputBindings(const SettingsInterface& si)
 
 void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
 {
-  Host::AddKeyedOSDMessage(fmt::format("InputDeviceConnected-{}", identifier),
-                           fmt::format("Input device {0} ({1}) connected.", device_name, identifier), 10.0f);
+  Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("InputDeviceConnected-{}", identifier),
+                          ICON_EMOJI_INFORMATION,
+                          fmt::format("Input device {0} ({1}) connected.", device_name, identifier));
 }
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
-  Host::AddKeyedOSDMessage(fmt::format("InputDeviceConnected-{}", identifier),
-                           fmt::format("Input device {} disconnected.", identifier), 10.0f);
+  Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("InputDeviceConnected-{}", identifier),
+                          ICON_EMOJI_INFORMATION, fmt::format("Input device {} disconnected.", identifier));
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,
@@ -1186,10 +1187,10 @@ std::string MiniHost::GetWindowTitle(const std::string& game_title)
 
 void MiniHost::WarnAboutInterface()
 {
-  const char* message = "This is the \"mini\" interface for DuckStation, and is missing many features.\n"
-                        "       We recommend using the Qt interface instead, which you can download\n"
-                        "       from https://www.duckstation.org/.";
-  Host::AddIconOSDWarning("MiniWarning", ICON_EMOJI_WARNING, message, Host::OSD_INFO_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Warning, "MiniWarning", ICON_EMOJI_WARNING,
+                          "This is the \"mini\" interface for DuckStation, and is missing many features.",
+                          "We recommend using the Qt interface instead, which you can download\n"
+                          "from https://www.duckstation.org/.");
 }
 
 void Host::OnSystemGameChanged(const std::string& disc_path, const std::string& game_serial,

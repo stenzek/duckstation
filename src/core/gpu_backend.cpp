@@ -735,8 +735,8 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
         ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
         if (show_osd_message)
         {
-          Host::AddIconOSDWarning(
-            std::move(osd_key), ICON_EMOJI_WARNING,
+          Host::AddIconOSDMessage(
+            OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
             fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
         }
 
@@ -753,8 +753,8 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
         ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
         if (show_osd_message)
         {
-          Host::AddIconOSDWarning(
-            std::move(osd_key), ICON_EMOJI_WARNING,
+          Host::AddIconOSDMessage(
+            OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING,
             fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
         }
 
@@ -763,10 +763,9 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
 
       if (show_osd_message)
       {
-        // Use a 60 second timeout to give it plenty of time to actually save.
-        Host::AddIconOSDMessage(osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
-                                fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)),
-                                60.0f);
+        Host::AddIconOSDMessage(
+          OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
+          fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
       }
 
       System::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
@@ -804,11 +803,11 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
 
         if (!osd_key.empty())
         {
-          Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_CAMERA,
+          Host::AddIconOSDMessage(result ? OSDMessageType::Info : OSDMessageType::Error, std::move(osd_key),
+                                  ICON_EMOJI_CAMERA,
                                   fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
                                                        TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
-                                              Path::GetFileName(path),
-                                              result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));
+                                              Path::GetFileName(path)));
         }
 
         std::fclose(fp);

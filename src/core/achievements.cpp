@@ -9,6 +9,7 @@
 #include "bus.h"
 #include "cheats.h"
 #include "cpu_core.h"
+#include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"
@@ -309,7 +310,7 @@ std::span<const Achievements::ActiveChallengeIndicator> Achievements::GetActiveC
 void Achievements::ReportError(std::string_view sv)
 {
   ERROR_LOG(sv);
-  Host::AddIconOSDWarning(std::string(), ICON_EMOJI_WARNING, std::string(sv), Host::OSD_CRITICAL_ERROR_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Error, std::string(), ICON_EMOJI_WARNING, std::string(sv));
 }
 
 template<typename... T>
@@ -1067,10 +1068,9 @@ bool Achievements::IdentifyGame(CDImage* image)
   if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
   {
     // If we are starting with this game and it's bad, notify the user that this is why.
-    Host::AddIconOSDWarning(
-      "AchievementsHashFailed", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("Achievements", "Failed to read executable from disc. Achievements disabled."),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
+                            TRANSLATE_STR("Achievements", "Achievements have been disabled."));
   }
 
   s_state.game_path = image ? image->GetPath() : std::string();
@@ -1299,9 +1299,18 @@ void Achievements::DisplayHardcoreDeferredMessage()
 {
   if (g_settings.achievements_hardcore_mode && System::IsValid())
   {
-    FullscreenUI::ShowToast(std::string(),
-                            TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
-                            Host::OSD_WARNING_DURATION);
+    GPUThread::RunOnThread([]() {
+      if (FullscreenUI::HasActiveWindow())
+      {
+        FullscreenUI::ShowToast(OSDMessageType::Info, {},
+                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."));
+      }
+      else
+      {
+        Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreDeferred", ICON_EMOJI_TROPHY,
+                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."));
+      }
+    });
   }
 }
 
@@ -1631,32 +1640,32 @@ void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client
 
 void Achievements::HandleServerErrorEvent(const rc_client_event_t* event)
 {
-  std::string message =
-    fmt::format(TRANSLATE_FS("Achievements", "Server error in {}:\n{}"),
-                event->server_error->api ? event->server_error->api : "UNKNOWN",
-                event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
-  ERROR_LOG(message.c_str());
-  Host::AddOSDMessage(std::move(message), Host::OSD_ERROR_DURATION);
+  ERROR_LOG("Server error in {}:\n{}", event->server_error->api ? event->server_error->api : "UNKNOWN",
+            event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
+  Host::AddIconOSDMessage(OSDMessageType::Error, {}, ICON_EMOJI_WARNING,
+                          fmt::format(TRANSLATE_FS("Achievements", "Server error in {}"),
+                                      event->server_error->api ? event->server_error->api : "UNKNOWN"),
+                          event->server_error->error_message ? event->server_error->error_message : "UNKNOWN");
 }
 
 void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 {
   WARNING_LOG("Server disconnected.");
 
-  FullscreenUI::ShowToast(
+  Host::AddIconOSDMessage(
+    OSDMessageType::Error, "AchievementsDisconnected", ICON_EMOJI_WARNING,
     TRANSLATE_STR("Achievements", "Achievements Disconnected"),
     TRANSLATE_STR("Achievements",
-                  "An unlock request could not be completed. We will keep retrying to submit this request."),
-    Host::OSD_ERROR_DURATION);
+                  "An unlock request could not be completed.\nWe will keep trying to submit this request."));
 }
 
 void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 {
   WARNING_LOG("Server reconnected.");
 
-  FullscreenUI::ShowToast(TRANSLATE_STR("Achievements", "Achievements Reconnected"),
-                          TRANSLATE_STR("Achievements", "All pending unlock requests have completed."),
-                          Host::OSD_INFO_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Warning, "AchievementsDisconnected", ICON_EMOJI_INFORMATION,
+                          TRANSLATE_STR("Achievements", "Achievements Reconnected"),
+                          TRANSLATE_STR("Achievements", "All pending unlock requests have completed."));
 }
 
 void Achievements::EnableHardcodeMode(bool display_message, bool display_game_summary)
@@ -1688,10 +1697,11 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
 
   if (System::IsValid() && display_message)
   {
-    FullscreenUI::ShowToast(std::string(),
-                            enabled ? TRANSLATE_STR("Achievements", "Hardcore mode is now enabled.") :
-                                      TRANSLATE_STR("Achievements", "Hardcore mode is now disabled."),
-                            Host::OSD_INFO_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreModeChanged", ICON_EMOJI_TROPHY,
+                            enabled ? TRANSLATE_STR("Achievements", "Hardcore Mode Enabled") :
+                                      TRANSLATE_STR("Achievements", "Hardcore Mode Disabled"),
+                            enabled ? TRANSLATE_STR("Achievements", "Restrictions are now active.") :
+                                      TRANSLATE_STR("Achievements", "Restrictions are no longer active."));
   }
 
   if (HasActiveGame() && display_game_summary)
@@ -1964,7 +1974,7 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
     if (System::IsValid())
     {
       FullscreenUI::AddNotification(
-        "AchievementsLoginFailed", Host::OSD_ERROR_DURATION, "images/warning.svg",
+        "AchievementsLoginFailed", 15.0f, "images/warning.svg",
         TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
         fmt::format(
           TRANSLATE_FS("Achievements", "Achievement unlocks will not be submitted for this session.\nError: {}"),
@@ -2601,8 +2611,8 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
 
   Host::OnAchievementsAllProgressRefreshed();
 
-  FullscreenUI::ShowToast({}, TRANSLATE_STR("Achievements", "Updated achievement progress database."),
-                          Host::OSD_INFO_DURATION);
+  FullscreenUI::ShowToast(OSDMessageType::Quick, {},
+                          TRANSLATE_STR("Achievements", "Updated achievement progress database."));
 }
 
 void Achievements::BuildHashDatabase(const rc_client_hash_library_t* hashlib,

@@ -1443,10 +1443,9 @@ std::unique_ptr<GPUTexture> GPUTextureCache::FetchTexture(u32 width, u32 height,
   if (!tex) [[unlikely]]
   {
     ERROR_LOG("Failed to create {}x{} texture for cache: {}", width, height, error.GetDescription());
-    Host::AddIconOSDWarning("TCFetchTextureFailed", ICON_EMOJI_WARNING,
+    Host::AddIconOSDMessage(OSDMessageType::Error, "TCFetchTextureFailed", ICON_EMOJI_WARNING,
                             fmt::format(TRANSLATE_FS("GPU_HW", "Failed to allocate {}x{} texture for cache:\n{}"),
-                                        width, height, error.GetDescription()),
-                            Host::OSD_ERROR_DURATION);
+                                        width, height, error.GetDescription()));
   }
 
   return tex;
@@ -3707,11 +3706,10 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info, bool show_info_i
                        s_state.texture_page_texture_replacements.size());
     if (total > 0 || show_info_if_none)
     {
-      Host::AddIconOSDMessage("ReloadTextureReplacements", ICON_FA_IMAGES,
+      Host::AddIconOSDMessage(OSDMessageType::Info, "ReloadTextureReplacements", ICON_FA_IMAGES,
                               (total > 0) ? TRANSLATE_PLURAL_STR("GPU_HW", "%n replacement textures found.",
                                                                  "Replacement texture count", total) :
-                                            TRANSLATE_STR("GPU_HW", "No replacement textures found."),
-                              Host::OSD_INFO_DURATION);
+                                            TRANSLATE_STR("GPU_HW", "No replacement textures found."));
     }
   }
 }

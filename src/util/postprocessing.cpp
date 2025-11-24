@@ -443,9 +443,8 @@ void PostProcessing::Chain::ClearStagesWithError(const Error& error)
   if (msg.empty())
     msg = TRANSLATE_SV("PostProcessing", "Unknown Error");
 
-  Host::AddIconOSDMessage("PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
-                          TRANSLATE_STR("OSDMessage", "Failed to load post-processing chain."), std::move(msg),
-                          Host::OSD_ERROR_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Error, "PostProcessLoadFail", ICON_FA_TRIANGLE_EXCLAMATION,
+                          TRANSLATE_STR("OSDMessage", "Failed to load post-processing chain."), std::move(msg));
   DestroyTextures();
   m_stages.clear();
 }
@@ -659,17 +658,15 @@ void PostProcessing::Chain::Toggle()
 {
   if (m_stages.empty())
   {
-    Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                            TRANSLATE_STR("OSDMessage", "No post-processing shaders are selected."),
-                            Host::OSD_QUICK_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Quick, "PostProcessing", ICON_FA_PAINT_ROLLER,
+                            TRANSLATE_STR("OSDMessage", "No post-processing shaders are selected."));
     return;
   }
 
   const bool new_enabled = !m_enabled;
-  Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
+  Host::AddIconOSDMessage(OSDMessageType::Quick, "PostProcessing", ICON_FA_PAINT_ROLLER,
                           new_enabled ? TRANSLATE_STR("OSDMessage", "Post-processing is now enabled.") :
-                                        TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."),
-                          Host::OSD_QUICK_DURATION);
+                                        TRANSLATE_STR("OSDMessage", "Post-processing is now disabled."));
   m_enabled = new_enabled;
   m_needs_depth_buffer = new_enabled && m_wants_depth_buffer;
   if (m_enabled)
@@ -744,10 +741,9 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
       {
         ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
         Host::AddIconOSDMessage(
-          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          OSDMessageType::Error, "PostProcessLoadFail", ICON_EMOJI_WARNING,
           fmt::format(TRANSLATE_FS("PostProcessing", "Failed to compile post-processing shader '{}'."),
-                      shader->GetName()),
-          error.TakeDescription(), Host::OSD_ERROR_DURATION);
+                      shader->GetName()));
         m_enabled = false;
         DestroyTextures();
         return false;
@@ -782,10 +778,10 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
       {
         ERROR_LOG("Failed to resize post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
         Host::AddIconOSDMessage(
-          "PostProcessLoadFail", ICON_EMOJI_WARNING,
+          OSDMessageType::Error, "PostProcessLoadFail", ICON_EMOJI_WARNING,
           fmt::format(TRANSLATE_FS("PostProcessing", "Failed to resize post-processing shader '{}'."),
                       shader->GetName()),
-          error.TakeDescription(), Host::OSD_ERROR_DURATION);
+          error.TakeDescription());
         m_enabled = false;
         DestroyTextures();
         return false;

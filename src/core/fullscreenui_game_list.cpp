@@ -8,6 +8,7 @@
 #include "system.h"
 
 #include "util/gpu_texture.h"
+#include "util/imgui_manager.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -124,18 +125,19 @@ void FullscreenUI::DoSetCoverImage(std::string source_path, std::string existing
   {
     if (!FileSystem::DeleteFile(existing_path.c_str(), &error))
     {
-      ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete existing cover: {}"), error.GetDescription()));
+      ShowToast(OSDMessageType::Error, {},
+                fmt::format(FSUI_FSTR("Failed to delete existing cover: {}"), error.GetDescription()));
       return;
     }
   }
 
   if (!FileSystem::CopyFilePath(source_path.c_str(), new_path.c_str(), true, &error))
   {
-    ShowToast({}, fmt::format(FSUI_FSTR("Failed to copy cover: {}"), error.GetDescription()));
+    ShowToast(OSDMessageType::Error, {}, fmt::format(FSUI_FSTR("Failed to copy cover: {}"), error.GetDescription()));
     return;
   }
 
-  ShowToast({}, FSUI_STR("Cover set."));
+  ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Cover set."));
 
   // Ensure the old one wasn't cached.
   if (!existing_path.empty())

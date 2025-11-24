@@ -327,12 +327,11 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(u32 index, std::string path)
   else if (!MemoryCardImage::LoadFromFile(&mc->m_data, mc->m_path.c_str(), &error)) [[unlikely]]
   {
     Host::AddIconOSDMessage(
-      GetOSDMessageKey(index), ICON_EMOJI_WARNING,
+      OSDMessageType::Error, GetOSDMessageKey(index), ICON_EMOJI_WARNING,
       fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card {} could not be read."), index + 1),
       fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}\nError: {1}\nThe memory card will NOT be saved.\nYou must "
                                              "delete the memory card manually if you want to save."),
-                  Path::GetFileName(mc->m_path), error.GetDescription()),
-      Host::OSD_CRITICAL_ERROR_DURATION);
+                  Path::GetFileName(mc->m_path), error.GetDescription()));
     mc->Format();
     mc->m_path = {};
     mc->m_changed = false;
@@ -370,11 +369,10 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDMessage(GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
+      Host::AddIconOSDMessage(OSDMessageType::Error, GetOSDMessageKey(m_index), ICON_EMOJI_WARNING,
                               fmt::format(TRANSLATE_FS("MemoryCard", "Failed to save memory card {}."), m_index + 1),
                               fmt::format(TRANSLATE_FS("MemoryCard", "File: {0}:\nError: {1}"),
-                                          Path::GetFileName(display_name), error.GetDescription()),
-                              Host::OSD_ERROR_DURATION);
+                                          Path::GetFileName(display_name), error.GetDescription()));
     }
 
     return false;
@@ -383,10 +381,9 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
   if (display_osd_message)
   {
     Host::AddIconOSDMessage(
-      GetOSDMessageKey(m_index), ICON_PF_MEMORY_CARD,
+      OSDMessageType::Quick, GetOSDMessageKey(m_index), ICON_PF_MEMORY_CARD,
       fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
-      fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), Path::GetFileName(display_name)),
-      Host::OSD_QUICK_DURATION);
+      fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), Path::GetFileName(display_name)));
   }
 
   return true;

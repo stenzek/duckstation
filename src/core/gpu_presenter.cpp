@@ -1542,9 +1542,8 @@ void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, boo
       // OSD message first in case any errors occur.
       if (reload_shaders)
       {
-        Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                                TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."),
-                                Host::OSD_QUICK_DURATION);
+        Host::AddIconOSDMessage(OSDMessageType::Quick, "PostProcessing", ICON_FA_PAINT_ROLLER,
+                                TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."));
       }
 
       if (display)

@@ -647,7 +647,7 @@ void FullscreenUI::DoResume()
   std::string path = System::GetMostRecentResumeSaveStatePath();
   if (path.empty())
   {
-    ShowToast({}, FSUI_STR("No resume save state found."));
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("No resume save state found."));
     return;
   }
 
@@ -681,7 +681,7 @@ void FullscreenUI::DoStartDisc()
   std::vector<std::pair<std::string, std::string>> devices = CDImage::GetDeviceList();
   if (devices.empty())
   {
-    ShowToast(std::string(),
+    ShowToast(OSDMessageType::Info, {},
               FSUI_STR("Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient "
                        "permissions to access it."));
     return;
@@ -787,7 +787,7 @@ void FullscreenUI::StartChangeDiscFromFile()
       {
         if (!GameList::IsScannableFilename(path))
         {
-          ShowToast({},
+          ShowToast(OSDMessageType::Error, {},
                     fmt::format(FSUI_FSTR("{} is not a valid disc image."), FileSystem::GetDisplayNameFromPath(path)));
         }
         else
@@ -1819,7 +1819,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
         }
         else
         {
-          ShowToast({}, FSUI_STR("No save states found."), Host::OSD_INFO_DURATION);
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("No save states found."));
         }
       });
     });
@@ -1833,7 +1833,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
     }
     else
     {
-      ShowToast({}, FSUI_STR("No save states found."), Host::OSD_INFO_DURATION);
+      ShowToast(OSDMessageType::Info, {}, FSUI_STR("No save states found."));
     }
   }
 }
@@ -2008,47 +2008,49 @@ void FullscreenUI::DrawSaveStateSelector()
             options.emplace_back(FSUI_ICONVSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false);
           options.emplace_back(FSUI_ICONVSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false);
 
-          OpenChoiceDialog(std::move(title), false, std::move(options),
-                           [i](s32 index, const std::string& title, bool checked) mutable {
-                             if (index < 0 || i >= s_locals.save_state_selector_slots.size())
-                               return;
+          OpenChoiceDialog(
+            std::move(title), false, std::move(options),
+            [i](s32 index, const std::string& title, bool checked) mutable {
+              if (index < 0 || i >= s_locals.save_state_selector_slots.size())
+                return;
 
-                             SaveStateListEntry& entry = s_locals.save_state_selector_slots[i];
-                             if (index == 0)
-                             {
-                               // load state
-                               if (s_locals.save_state_selector_loading)
-                                 do_load_state(entry);
-                               else
-                                 do_save_state(entry);
-                             }
-                             else if (!entry.state_path.empty() && index == 1)
-                             {
-                               // delete state
-                               if (!FileSystem::FileExists(entry.state_path.c_str()))
-                               {
-                                 ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), RemoveHash(entry.title)));
-                               }
-                               else if (FileSystem::DeleteFile(entry.state_path.c_str()))
-                               {
-                                 ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), RemoveHash(entry.title)));
+              SaveStateListEntry& entry = s_locals.save_state_selector_slots[i];
+              if (index == 0)
+              {
+                // load state
+                if (s_locals.save_state_selector_loading)
+                  do_load_state(entry);
+                else
+                  do_save_state(entry);
+              }
+              else if (!entry.state_path.empty() && index == 1)
+              {
+                // delete state
+                if (!FileSystem::FileExists(entry.state_path.c_str()))
+                {
+                  ShowToast(OSDMessageType::Error, {},
+                            fmt::format(FSUI_FSTR("{} does not exist."), RemoveHash(entry.title)));
+                }
+                else if (FileSystem::DeleteFile(entry.state_path.c_str()))
+                {
+                  ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("{} deleted."), RemoveHash(entry.title)));
 
-                                 // need to preserve the texture, since it's going to be drawn this frame
-                                 // TODO: do this with a transition for safety
-                                 g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+                  // need to preserve the texture, since it's going to be drawn this frame
+                  // TODO: do this with a transition for safety
+                  g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
 
-                                 if (s_locals.save_state_selector_loading)
-                                   s_locals.save_state_selector_slots.erase(s_locals.save_state_selector_slots.begin() +
-                                                                            i);
-                                 else
-                                   InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
-                               }
-                               else
-                               {
-                                 ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), RemoveHash(entry.title)));
-                               }
-                             }
-                           });
+                  if (s_locals.save_state_selector_loading)
+                    s_locals.save_state_selector_slots.erase(s_locals.save_state_selector_slots.begin() + i);
+                  else
+                    InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
+                }
+                else
+                {
+                  ShowToast(OSDMessageType::Quick, {},
+                            fmt::format(FSUI_FSTR("Failed to delete {}."), RemoveHash(entry.title)));
+                }
+              }
+            });
         }
       }
 
@@ -2175,7 +2177,8 @@ void FullscreenUI::DrawResumeStateSelector()
 
   if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_TRASH, "Delete State"), true, LAYOUT_CENTER_ALIGN_TEXT))
   {
-    if (FileSystem::DeleteFile(entry.state_path.c_str()))
+    Error error;
+    if (FileSystem::DeleteFile(entry.state_path.c_str(), &error))
     {
       std::string game_path = std::move(entry.game_path);
       ClearSaveStateEntryList();
@@ -2184,7 +2187,7 @@ void FullscreenUI::DrawResumeStateSelector()
     }
     else
     {
-      ShowToast(std::string(), FSUI_STR("Failed to delete save state."));
+      ShowToast(OSDMessageType::Error, FSUI_STR("Failed to delete save state."), error.TakeDescription());
     }
   }
 
@@ -2215,9 +2218,9 @@ void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 {
   if (Host::CopyTextToClipboard(text))
-    ShowToast(std::string(), std::move(title));
+    ShowToast(OSDMessageType::Quick, {}, std::move(title));
   else
-    ShowToast(std::string(), FSUI_STR("Failed to copy text to clipboard."));
+    ShowToast(OSDMessageType::Error, {}, FSUI_STR("Failed to copy text to clipboard."));
 }
 
 void FullscreenUI::DrawAboutWindow()

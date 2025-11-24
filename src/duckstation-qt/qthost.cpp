@@ -1608,7 +1608,7 @@ void EmuThread::dumpRAM(const QString& path)
 
   const std::string path_str = path.toStdString();
   if (System::DumpRAM(path_str.c_str()))
-    Host::AddOSDMessage(fmt::format("RAM dumped to '{}'", path_str), 10.0f);
+    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("RAM dumped to '{}'", path_str));
   else
     Host::ReportErrorAsync("Error", fmt::format("Failed to dump RAM to '{}'", path_str));
 }
@@ -1623,7 +1623,7 @@ void EmuThread::dumpVRAM(const QString& path)
 
   const std::string path_str = path.toStdString();
   if (System::DumpVRAM(path_str.c_str()))
-    Host::AddOSDMessage(fmt::format("VRAM dumped to '{}'", path_str), 10.0f);
+    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("VRAM dumped to '{}'", path_str));
   else
     Host::ReportErrorAsync("Error", fmt::format("Failed to dump VRAM to '{}'", path_str));
 }
@@ -1638,7 +1638,7 @@ void EmuThread::dumpSPURAM(const QString& path)
 
   const std::string path_str = path.toStdString();
   if (System::DumpSPURAM(path_str.c_str()))
-    Host::AddOSDMessage(fmt::format("SPU RAM dumped to '{}'", path_str), 10.0f);
+    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("SPU RAM dumped to '{}'", path_str));
   else
     Host::ReportErrorAsync("Error", fmt::format("Failed to dump SPU RAM to '{}'", path_str));
 }
@@ -2707,9 +2707,8 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
-    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
-                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier),
-                            Host::OSD_INFO_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier));
   }
 }
 
@@ -2729,14 +2728,13 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
       // has to be done after pause, otherwise pause message takes precedence
       emit g_emu_thread->statusMessage(message);
     });
-    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD, std::move(message),
-                            Host::OSD_WARNING_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Warning, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
+                            std::move(message));
   }
   else if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
-    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
-                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier),
-                            Host::OSD_INFO_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier));
   }
 }
 

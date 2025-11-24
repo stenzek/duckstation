@@ -583,10 +583,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
   else if (settings.mdec_disable_cdrom_speedup && settings.cdrom_read_speedup != 1)
   {
-    Host::AddIconOSDWarning(
-      "GameDBDisableCDROMSpeedupUnnecessary", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GameDatabase", "Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game."),
-      Host::OSD_WARNING_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Warning, "GameDBDisableCDROMSpeedupUnnecessary", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("GameDatabase",
+                    "Disable CD-ROM speedup on MDEC is enabled, but it is not required for this game."));
   }
 
   if (display_crop_mode.has_value())
@@ -801,12 +801,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
   else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
   {
-    Host::AddIconOSDWarning(
-      "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
+    Host::AddIconOSDMessage(
+      OSDMessageType::Warning, "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
       TRANSLATE_STR(
         "GameDatabase",
-        "PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors."),
-      Host::OSD_WARNING_DURATION);
+        "PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors."));
   }
 
   if (HasTrait(Trait::ForcePGXPCPUMode))
@@ -816,10 +815,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #ifndef __ANDROID__
       append_message(TRANSLATE_SV("GameDatabase", "PGXP CPU mode enabled."));
 #else
-      Host::AddIconOSDWarning("gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
-                              "This game requires PGXP CPU mode, which increases system requirements.\n"
-                              "       If the game runs too slow, disable PGXP for this game.",
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
+                              "This game requires PGXP CPU mode, which increases system requirements."
+                              "If the game runs too slow, disable PGXP for this game.");
 #endif
     }
 
@@ -827,11 +825,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
   else if (settings.UsingPGXPCPUMode())
   {
-    Host::AddIconOSDWarning(
-      "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GameDatabase",
-                    "PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors."),
-      Host::OSD_WARNING_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Warning, "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
+      TRANSLATE_STR(
+        "GameDatabase",
+        "PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors."));
   }
 
   if (HasTrait(Trait::DisablePGXPDepthBuffer))
@@ -881,9 +879,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (messages.back() == '\n')
       messages.pop_back();
 
-    Host::AddIconOSDMessage("GameDBCompatibility", ICON_EMOJI_INFORMATION,
+    Host::AddIconOSDMessage(OSDMessageType::Info, "GameDBCompatibility", ICON_EMOJI_INFORMATION,
                             TRANSLATE_STR("GameDatabase", "Compatibility settings for this game have been applied."),
-                            std::string(messages.view()), Host::OSD_INFO_DURATION);
+                            std::string(messages.view()));
   }
 
 #define BIT_FOR(ctype) (static_cast<u16>(1) << static_cast<u32>(ctype))
@@ -908,37 +906,33 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
       if (display_osd_messages)
       {
-        SmallString supported_controller_string;
+        SmallString supported_controller_string(
+          TRANSLATE_SV("GameDatabase", "Please configure a supported controller from the following list:"));
+
         for (u32 j = 0; j < static_cast<u32>(ControllerType::Count); j++)
         {
           const ControllerType supported_ctype = static_cast<ControllerType>(j);
           if ((supported_controllers & BIT_FOR(supported_ctype)) == 0)
             continue;
 
-          if (!supported_controller_string.empty())
-            supported_controller_string.append(", ");
-
-          supported_controller_string.append(Controller::GetControllerInfo(supported_ctype).GetDisplayName());
+          supported_controller_string.append_format("\n \u2022 {}",
+                                                    Controller::GetControllerInfo(supported_ctype).GetDisplayName());
         }
 
-        Host::AddIconOSDWarning(
-          fmt::format("GameDBController{}Unsupported", i), ICON_EMOJI_WARNING,
-          fmt::format(
-            TRANSLATE_FS("GameDatabase",
-                         "Controller in Port {0} ({1}) is not supported for this game.\nSupported controllers: "
-                         "{2}\nPlease configure a supported controller from the list above."),
-            i + 1u, Controller::GetControllerInfo(ctype).GetDisplayName(), supported_controller_string),
-          Host::OSD_CRITICAL_ERROR_DURATION);
+        Host::AddIconOSDMessage(
+          OSDMessageType::Error, fmt::format("GameDBController{}Unsupported", i), ICON_EMOJI_WARNING,
+          fmt::format(TRANSLATE_FS("GameDatabase", "Controller in Port {0} ({1}) is not supported for this game."),
+                      i + 1u, Controller::GetControllerInfo(ctype).GetDisplayName()),
+          std::string(supported_controller_string));
       }
     }
 
     if (g_settings.multitap_mode != MultitapMode::Disabled && !(supported_controllers & SUPPORTS_MULTITAP_BIT))
     {
-      Host::AddIconOSDMessage("GameDBMultitapUnsupported", ICON_EMOJI_WARNING,
-                              TRANSLATE_STR("GameDatabase",
-                                            "This game does not support multitap, but multitap is enabled.\n"
-                                            "       This may result in dropped controller inputs."),
-                              Host::OSD_CRITICAL_ERROR_DURATION);
+      Host::AddIconOSDMessage(
+        OSDMessageType::Error, "GameDBMultitapUnsupported", ICON_EMOJI_WARNING,
+        TRANSLATE_STR("GameDatabase", "This game does not support multitap, but multitap is enabled."),
+        TRANSLATE_STR("GameDatabase", "This may result in dropped controller inputs."));
     }
   }
 

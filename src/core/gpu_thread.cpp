@@ -783,10 +783,9 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
     if (is_hardware && !System::IsStartupCancelled())
     {
       Host::AddIconOSDMessage(
-        "GPUBackendCreationFailed", ICON_FA_PAINT_ROLLER,
+        OSDMessageType::Error, "GPUBackendCreationFailed", ICON_FA_PAINT_ROLLER,
         fmt::format(TRANSLATE_FS("OSDMessage", "Failed to initialize {} renderer, falling back to software renderer."),
-                    Settings::GetRendererName(s_state.requested_renderer.value())),
-        Host::OSD_CRITICAL_ERROR_DURATION);
+                    Settings::GetRendererName(s_state.requested_renderer.value())));
 
       s_state.requested_renderer = GPURenderer::Software;
       s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
@@ -863,11 +862,10 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     if (!CreateDeviceOnThread(expected_api, fullscreen, false, &local_error))
     {
       Host::AddIconOSDMessage(
-        "DeviceSwitchFailed", ICON_FA_PAINT_ROLLER,
+        OSDMessageType::Error, "DeviceSwitchFailed", ICON_FA_PAINT_ROLLER,
         fmt::format(TRANSLATE_FS("OSDMessage", "Failed to create {} GPU device, reverting to {}.\n{}"),
                     GPUDevice::RenderAPIToString(expected_api), GPUDevice::RenderAPIToString(current_api),
-                    local_error.GetDescription()),
-        Host::OSD_CRITICAL_ERROR_DURATION);
+                    local_error.GetDescription()));
 
       Host::ReleaseRenderWindow();
       if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, fullscreen, true, &local_error))
@@ -1348,10 +1346,9 @@ bool GPUThread::CheckExclusiveFullscreenOnThread()
   if (g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsExclusiveFullscreen())
     return true;
 
-  Host::AddIconOSDWarning(
-    "ExclusiveFullscreenFailed", ICON_EMOJI_WARNING,
-    TRANSLATE_STR("OSDMessage", "Failed to switch to exclusive fullscreen, using borderless instead."),
-    Host::OSD_INFO_DURATION);
+  Host::AddIconOSDMessage(
+    OSDMessageType::Error, "ExclusiveFullscreenFailed", ICON_EMOJI_WARNING,
+    TRANSLATE_STR("OSDMessage", "Failed to switch to exclusive fullscreen, using borderless instead."));
   return false;
 }
 

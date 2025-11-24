@@ -1104,9 +1104,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
 
   if (pcdrv_enable && pcdrv_root.empty() && display_osd_messages)
   {
-    Host::AddKeyedOSDMessage("pcdrv_disabled_no_root",
-                             TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."),
-                             Host::OSD_WARNING_DURATION);
+    Host::AddKeyedOSDMessage(OSDMessageType::Warning, "pcdrv_disabled_no_root",
+                             TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."));
     pcdrv_enable = false;
   }
 
@@ -1115,8 +1114,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     if (display_osd_messages)
     {
       Host::AddKeyedOSDMessage(
-        "pgxp_disabled_sw",
-        TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
+        OSDMessageType::Warning, "pgxp_disabled_sw",
+        TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."));
     }
     gpu_pgxp_enable = false;
   }
@@ -1160,9 +1159,9 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
   {
     if (display_osd_messages)
     {
-      Host::AddIconOSDWarning(
-        "RewindDisabled", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Rewind has been disabled."),
-        TRANSLATE_STR("System", "Rewind and runahead cannot be used at the same time."), Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "RewindDisabled", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Rewind has been disabled."),
+                              TRANSLATE_STR("System", "Rewind and runahead cannot be used at the same time."));
     }
 
     rewind_enable = false;

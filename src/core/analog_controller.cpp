@@ -135,12 +135,11 @@ bool AnalogController::DoState(StateWrapper& sw, bool apply_input_state)
 
     if (old_analog_mode != m_analog_mode)
     {
-      Host::AddIconOSDMessage(fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
+      Host::AddIconOSDMessage(OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
                               fmt::format(m_analog_mode ?
                                             TRANSLATE_FS("AnalogController", "Controller {} switched to analog mode.") :
                                             TRANSLATE_FS("AnalogController", "Controller {} switched to digital mode."),
-                                          m_index + 1u),
-                              5.0f);
+                                          m_index + 1u));
     }
   }
   return true;
@@ -324,10 +323,9 @@ void AnalogController::SetAnalogMode(bool enabled, bool show_message)
   if (show_message)
   {
     Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
+      OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
       m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
-                      fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u),
-      Host::OSD_QUICK_DURATION);
+                      fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
   }
 }
 
@@ -336,12 +334,11 @@ void AnalogController::ProcessAnalogModeToggle()
   if (m_analog_locked)
   {
     Host::AddIconOSDMessage(
-      fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
+      OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
       fmt::format(m_analog_mode ?
                     TRANSLATE_FS("AnalogController", "Controller {} is locked to analog mode by the game.") :
                     TRANSLATE_FS("AnalogController", "Controller {} is locked to digital mode by the game."),
-                  m_index + 1u),
-      Host::OSD_QUICK_DURATION);
+                  m_index + 1u));
   }
   else
   {

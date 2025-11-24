@@ -1624,8 +1624,8 @@ void System::ResetSystem()
   if (IsFastForwardingBoot())
     UpdateSpeedLimiterState();
 
-  Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
-                          Host::OSD_QUICK_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Quick, "SystemReset", ICON_FA_POWER_OFF,
+                          TRANSLATE_STR("OSDMessage", "System reset."));
 
   PerformanceCounters::Reset();
   ResetThrottler();
@@ -1693,10 +1693,9 @@ bool System::CanPauseSystem(bool display_message)
   {
     const float time_until_pause_allowed = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
     const int seconds_until_pause_allowed = static_cast<int>(std::ceil(time_until_pause_allowed));
-    Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+    Host::AddIconOSDMessage(OSDMessageType::Quick, "PauseCooldown", ICON_FA_CLOCK,
                             TRANSLATE_PLURAL_STR("System", "You cannot pause until another %n second(s) have passed.",
-                                                 "", seconds_until_pause_allowed),
-                            std::max(time_until_pause_allowed, Host::OSD_QUICK_DURATION));
+                                                 "", seconds_until_pause_allowed));
   }
 
   return false;
@@ -2039,7 +2038,7 @@ void System::DestroySystem()
 
   GPUThread::RunOnThread([]() {
     GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::SystemPaused, false);
-    Host::ClearOSDMessages(true);
+    Host::ClearOSDMessages();
   });
 
   InputManager::ClearEffects();
@@ -2495,10 +2494,9 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   {
     WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash),
                 BIOS::ImageInfo::GetHashString(bios_hash));
-    Host::AddIconOSDWarning(
-      "StateBIOSMismatch", ICON_FA_TRIANGLE_EXCLAMATION,
-      TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
-      Host::OSD_WARNING_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, "StateBIOSMismatch", ICON_FA_TRIANGLE_EXCLAMATION,
+      TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."));
   }
 
   if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
@@ -2565,15 +2563,15 @@ bool System::DoState(StateWrapper& sw, bool update_display)
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddIconOSDMessage(
-      "StateOverclockDifference", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "CPU Overclock Changed"),
+      OSDMessageType::Warning, "StateOverclockDifference", ICON_EMOJI_WARNING,
+      TRANSLATE_STR("System", "CPU Overclock Changed"),
       fmt::format(
         TRANSLATE_FS("System",
                      "The save state does not match the current configuration.\nSave State: {0}%\nConfiguration: {1}%"),
         g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
         cpu_overclock_active ?
           Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
-          100u),
-      Host::OSD_WARNING_DURATION);
+          100u));
     UpdateOverclock();
   }
 
@@ -3007,12 +3005,11 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
         if (CDROM::HasMedia())
         {
           Host::AddIconOSDMessage(
-            "UsingExistingCDImage", ICON_EMOJI_WARNING,
+            OSDMessageType::Error, "UsingExistingCDImage", ICON_EMOJI_WARNING,
             TRANSLATE_STR("System", "Failed to open CD image from save state."),
             fmt::format(
               TRANSLATE_FS("System", "Path: {0}\nError: {1}\nUsing current CD image, this may result in instability."),
-              buffer.media_path, error ? error->GetDescription() : local_error.GetDescription()),
-            Host::OSD_CRITICAL_ERROR_DURATION);
+              buffer.media_path, error ? error->GetDescription() : local_error.GetDescription()));
         }
         else
         {
@@ -3312,35 +3309,34 @@ void System::LoadStateFromSlot(bool global, s32 slot)
 
   if (!global && s_state.running_game_serial.empty())
   {
-    Host::AddIconOSDWarning(
-      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
-      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Error, "SaveStatesUnavailable", ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "Save States Unavailable"),
+                            TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."));
     return;
   }
 
   std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
   if (!FileSystem::FileExists(path.c_str()))
   {
-    Host::AddIconOSDWarning(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
-                            fmt::format(TRANSLATE_FS("System", "No save state found in slot {}."), slot),
-                            Host::OSD_INFO_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Info, GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING,
+                            GetSaveStateOSDTitle(global, slot),
+                            fmt::format(TRANSLATE_FS("System", "No save state found in slot {}."), slot));
     return;
   }
 
   Error error;
   if (System::LoadState(path.c_str(), &error, true, false))
   {
-    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
+    Host::AddIconOSDMessage(OSDMessageType::Quick, GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
                             GetSaveStateOSDTitle(global, slot),
-                            fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)),
-                            Host::OSD_QUICK_DURATION);
+                            fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)));
   }
   else
   {
-    Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+    Host::AddIconOSDMessage(OSDMessageType::Error, GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING,
+                            GetSaveStateOSDTitle(global, slot),
                             fmt::format(TRANSLATE_FS("System", "Failed to load state from {0}:\n{1}"),
-                                        Path::GetFileName(path), error.GetDescription()),
-                            Host::OSD_ERROR_DURATION);
+                                        Path::GetFileName(path), error.GetDescription()));
   }
 }
 
@@ -3351,16 +3347,17 @@ void System::SaveStateToSlot(bool global, s32 slot)
 
   if (!global && s_state.running_game_serial.empty())
   {
-    Host::AddIconOSDWarning(
-      "SaveStatesUnavailable", ICON_EMOJI_WARNING, TRANSLATE_STR("System", "Save States Unavailable"),
-      TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."), Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(OSDMessageType::Error, "SaveStatesUnavailable", ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "Save States Unavailable"),
+                            TRANSLATE_STR("System", "Save states require a disc inserted with a valid serial."));
     return;
   }
 
   std::string path = global ? GetGlobalSaveStatePath(slot) : GetGameSaveStatePath(System::GetGameSerial(), slot);
 
-  Host::AddIconOSDMessage(GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
-                          fmt::format(TRANSLATE_FS("System", "Saving state to {}..."), Path::GetFileName(path)), 60.0f);
+  Host::AddIconOSDMessage(OSDMessageType::Persistent, GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK,
+                          GetSaveStateOSDTitle(global, slot),
+                          fmt::format(TRANSLATE_FS("System", "Saving state to {}..."), Path::GetFileName(path)));
 
   static constexpr auto display_result = [](bool global, s32 slot, std::string_view filename, bool success,
                                             const Error& error) {
@@ -3370,16 +3367,15 @@ void System::SaveStateToSlot(bool global, s32 slot)
 
     if (success)
     {
-      Host::AddIconOSDMessage(
-        GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK, GetSaveStateOSDTitle(global, slot),
-        fmt::format(TRANSLATE_FS("System", "State saved to {}."), filename), Host::OSD_QUICK_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Quick, GetSaveStateOSDKey(global, slot), ICON_EMOJI_FLOPPY_DISK,
+                              GetSaveStateOSDTitle(global, slot),
+                              fmt::format(TRANSLATE_FS("System", "State saved to {}."), filename));
     }
     else
     {
       Host::AddIconOSDMessage(
-        GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
-        fmt::format(TRANSLATE_FS("System", "Failed to save state to {0}:\n{1}"), filename, error.GetDescription()),
-        Host::OSD_ERROR_DURATION);
+        OSDMessageType::Error, GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING, GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "Failed to save state to {0}:\n{1}"), filename, error.GetDescription()));
     }
   };
 
@@ -3820,7 +3816,10 @@ void System::SetRewindState(bool enabled)
   if (!g_settings.rewind_enable)
   {
     if (enabled)
-      Host::AddKeyedOSDMessage("SetRewindState", TRANSLATE_STR("OSDMessage", "Rewinding is not enabled."), 5.0f);
+    {
+      Host::AddKeyedOSDMessage(OSDMessageType::Info, "SetRewindState",
+                               TRANSLATE_STR("OSDMessage", "Rewinding is not enabled."));
+    }
 
     return;
   }
@@ -3929,10 +3928,9 @@ void System::UpdateMemoryCards()
 
     if (current_card)
     {
-      Host::AddIconOSDMessage(fmt::format("MemoryCardChange{}", i), ICON_PF_MEMORY_CARD,
+      Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("MemoryCardChange{}", i), ICON_PF_MEMORY_CARD,
                               fmt::format(TRANSLATE_FS("System", "Memory Card Slot {}"), i + 1),
-                              fmt::format(TRANSLATE_FS("System", "Card changed to {}."), Path::GetFileName(path)),
-                              Host::OSD_INFO_DURATION);
+                              fmt::format(TRANSLATE_FS("System", "Card changed to {}."), Path::GetFileName(path)));
     }
 
     std::unique_ptr<MemoryCard> card;
@@ -3983,23 +3981,25 @@ void System::SwapMemoryCards()
 
   if (HasMemoryCard(0) && HasMemoryCard(1))
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Both ports have a memory card."),
-                        10.0f);
+    Host::AddKeyedOSDMessage(OSDMessageType::Quick, "SwapMemoryCards",
+                             TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Both ports have a memory card."));
   }
   else if (HasMemoryCard(1))
   {
-    Host::AddOSDMessage(
-      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."), 10.0f);
+    Host::AddKeyedOSDMessage(
+      OSDMessageType::Info, "SwapMemoryCards",
+      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 2 has a memory card, Port 1 is empty."));
   }
   else if (HasMemoryCard(0))
   {
-    Host::AddOSDMessage(
-      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."), 10.0f);
+    Host::AddKeyedOSDMessage(
+      OSDMessageType::Info, "SwapMemoryCards",
+      TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Port 1 has a memory card, Port 2 is empty."));
   }
   else
   {
-    Host::AddOSDMessage(TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Neither port has a memory card."),
-                        10.0f);
+    Host::AddKeyedOSDMessage(OSDMessageType::Info, "SwapMemoryCards",
+                             TRANSLATE_STR("OSDMessage", "Swapped memory card ports. Neither port has a memory card."));
   }
 }
 
@@ -4093,10 +4093,9 @@ bool System::InsertMedia(const char* path)
                  !CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title,
                                      GetCurrentGameSaveTitle(), &error)))
   {
-    Host::AddIconOSDWarning(
-      "DiscInserted", ICON_FA_COMPACT_DISC,
-      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open disc image '{}': {}."), path, error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, "DiscInserted", ICON_FA_COMPACT_DISC,
+      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open disc image '{}': {}."), path, error.GetDescription()));
     return false;
   }
 
@@ -4105,10 +4104,9 @@ bool System::InsertMedia(const char* path)
   if (g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
 
-  Host::AddIconOSDMessage("DiscInserted", ICON_FA_COMPACT_DISC,
+  Host::AddIconOSDMessage(OSDMessageType::Info, "DiscInserted", ICON_FA_COMPACT_DISC,
                           fmt::format(TRANSLATE_FS("OSDMessage", "Inserted disc '{}' ({})."),
-                                      s_state.running_game_title, s_state.running_game_serial),
-                          Host::OSD_INFO_DURATION);
+                                      s_state.running_game_title, s_state.running_game_serial));
 
   return true;
 }
@@ -4330,11 +4328,10 @@ bool System::SwitchMediaSubImage(u32 index)
   }
   if (!okay)
   {
-    Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
+    Host::AddIconOSDMessage(OSDMessageType::Error, "MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                             fmt::format(TRANSLATE_FS("System", "Failed to switch to subimage {} in '{}': {}."),
                                         index + 1u, FileSystem::GetDisplayNameFromPath(image->GetPath()),
-                                        error.GetDescription()),
-                            Host::OSD_INFO_DURATION);
+                                        error.GetDescription()));
 
     // restore old disc
     const DiscRegion region =
@@ -4346,9 +4343,8 @@ bool System::SwitchMediaSubImage(u32 index)
   }
 
   Host::AddIconOSDMessage(
-    "MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
-    fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title, index + 1u, title),
-    Host::OSD_INFO_DURATION);
+    OSDMessageType::Info, "MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
+    fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title, index + 1u, title));
   return true;
 }
 
@@ -4358,9 +4354,8 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
-                              TRANSLATE_STR("System", "Current game does not have multiple discs."),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Current game does not have multiple discs."));
     }
 
     return false;
@@ -4380,9 +4375,8 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
-                              TRANSLATE_STR("System", "Could not determine current disc for switching."),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("System", "Could not determine current disc for switching."));
     }
 
     return false;
@@ -4393,10 +4387,9 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "SwitchDiscFromSet", ICON_EMOJI_WARNING,
                               (direction < 0) ? TRANSLATE_STR("System", "There is no previous disc to switch to.") :
-                                                TRANSLATE_STR("System", "There is no next disc to switch to."),
-                              Host::OSD_WARNING_DURATION);
+                                                TRANSLATE_STR("System", "There is no next disc to switch to."));
     }
 
     return false;
@@ -4409,9 +4402,8 @@ bool System::SwitchDiscFromSet(s32 direction, bool display_osd_message)
   {
     if (display_osd_message)
     {
-      Host::AddIconOSDWarning("SwitchDiscFromSet", ICON_EMOJI_WARNING,
-                              fmt::format(TRANSLATE_FS("System", "No disc found for serial {}."), next_serial),
-                              Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Warning, "SwitchDiscFromSet", ICON_EMOJI_WARNING,
+                              fmt::format(TRANSLATE_FS("System", "No disc found for serial {}."), next_serial));
     }
 
     return false;
@@ -4471,10 +4463,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
-        Host::AddIconOSDMessage("AudioBackendSwitch", ICON_FA_HEADPHONES,
+        Host::AddIconOSDMessage(OSDMessageType::Info, "AudioBackendSwitch", ICON_FA_HEADPHONES,
                                 fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} audio backend."),
-                                            AudioStream::GetBackendDisplayName(g_settings.audio_backend)),
-                                Host::OSD_INFO_DURATION);
+                                            AudioStream::GetBackendDisplayName(g_settings.audio_backend)));
       }
 
       SPU::RecreateOutputStream();
@@ -4492,11 +4483,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
-      Host::AddIconOSDMessage("CPUExecutionModeSwitch", ICON_FA_MICROCHIP,
+      Host::AddIconOSDMessage(OSDMessageType::Info, "CPUExecutionModeSwitch", ICON_FA_MICROCHIP,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} CPU execution mode."),
                                           TRANSLATE_SV("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(
-                                                                             g_settings.cpu_execution_mode))),
-                              Host::OSD_INFO_DURATION);
+                                                                             g_settings.cpu_execution_mode))));
       CPU::UpdateDebugDispatcherFlag();
       InterruptExecution();
     }
@@ -4507,9 +4497,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache ||
          g_settings.bios_tty_logging != old_settings.bios_tty_logging))
     {
-      Host::AddIconOSDMessage("CPUFlushAllBlocks", ICON_FA_MICROCHIP,
-                              TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."),
-                              Host::OSD_INFO_DURATION);
+      Host::AddIconOSDMessage(OSDMessageType::Info, "CPUFlushAllBlocks", ICON_FA_MICROCHIP,
+                              TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."));
       CPU::CodeCache::Reset();
       CPU::g_state.bus_error = false;
     }
@@ -4545,11 +4534,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.gpu_renderer != old_settings.gpu_renderer)
     {
       // RecreateGPU() also pushes new settings to the thread.
-      Host::AddIconOSDMessage("RendererSwitch", ICON_FA_PAINT_ROLLER,
+      Host::AddIconOSDMessage(OSDMessageType::Info, "RendererSwitch", ICON_FA_PAINT_ROLLER,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {}{} GPU renderer."),
                                           Settings::GetRendererName(g_settings.gpu_renderer),
-                                          g_settings.gpu_use_debug_device ? " (debug)" : ""),
-                              Host::OSD_INFO_DURATION);
+                                          g_settings.gpu_use_debug_device ? " (debug)" : ""));
       RecreateGPU(g_settings.gpu_renderer);
     }
     else if (g_settings.gpu_resolution_scale != old_settings.gpu_resolution_scale ||
@@ -4857,11 +4845,11 @@ void System::WarnAboutStateTaints(u32 state_taints)
   if (messages.empty())
     return;
 
-  Host::AddIconOSDWarning(
-    "SystemTaintsFromState", ICON_EMOJI_WARNING,
+  Host::AddIconOSDMessage(
+    OSDMessageType::Error, "SystemTaintsFromState", ICON_EMOJI_WARNING,
     TRANSLATE_STR("System", "This save state was created with the following tainted options, and may be unstable. You "
                             "will need to reset the system to clear any effects."),
-    std::string(messages.view()), Host::OSD_ERROR_DURATION);
+    std::string(messages.view()));
 }
 
 void System::WarnAboutUnsafeSettings()
@@ -4882,8 +4870,6 @@ void System::WarnAboutUnsafeSettings()
             s_state.running_game_entry->HasTrait(trait));
   };
 
-  // Force the message, but use a reduced duration if they have OSD messages disabled.
-  const float osd_duration = g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION;
   static constexpr std::string_view safe_mode_osd_key = "SafeModeWarn";
 
   if (g_settings.disable_all_enhancements)
@@ -4932,14 +4918,13 @@ void System::WarnAboutUnsafeSettings()
     if (g_settings.bios_patch_fast_boot)
       append(TRANSLATE_SV("System", "Fast boot disabled."));
 
-    Host::AddIconOSDWarning(std::string(safe_mode_osd_key), ICON_EMOJI_WARNING,
-                            TRANSLATE_STR("System", "Safe mode is enabled."), std::string(messages.view()),
-                            osd_duration);
+    Host::AddIconOSDMessage(OSDMessageType::Warning, std::string(safe_mode_osd_key), ICON_EMOJI_WARNING,
+                            TRANSLATE_STR("System", "Safe mode is enabled."), std::string(messages.view()));
     messages.clear();
   }
   else
   {
-    Host::RemoveKeyedOSDWarning(std::string(safe_mode_osd_key));
+    Host::RemoveKeyedOSDMessage(std::string(safe_mode_osd_key));
   }
 
   if (!g_settings.disable_all_enhancements)
@@ -5008,13 +4993,13 @@ void System::WarnAboutUnsafeSettings()
 
     LogUnsafeSettingsToConsole(messages);
 
-    Host::AddIconOSDWarning(std::string(osd_key), ICON_EMOJI_WARNING,
+    Host::AddIconOSDMessage(OSDMessageType::Warning, std::string(osd_key), ICON_EMOJI_WARNING,
                             TRANSLATE_STR("System", "One or more unsafe settings is enabled."),
-                            std::string(messages.view()), osd_duration);
+                            std::string(messages.view()));
   }
   else
   {
-    Host::RemoveKeyedOSDWarning(std::string(osd_key));
+    Host::RemoveKeyedOSDMessage(std::string(osd_key));
   }
 }
 
@@ -5324,10 +5309,9 @@ void System::UndoLoadState()
   Error error;
   if (!LoadStateFromBuffer(s_state.undo_load_state.value(), &error, IsPaused()))
   {
-    Host::AddIconOSDWarning(
-      std::move(osd_key), ICON_EMOJI_WARNING, std::move(osd_title),
-      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, resetting system.\n{}"), error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, std::move(osd_key), ICON_EMOJI_WARNING, std::move(osd_title),
+      fmt::format(TRANSLATE_FS("System", "Failed to load undo state, resetting system.\n{}"), error.GetDescription()));
     s_state.undo_load_state.reset();
     Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     ResetSystem();
@@ -5336,11 +5320,10 @@ void System::UndoLoadState()
 
   INFO_LOG("Loaded undo save state.");
 
-  Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_ARROW_ROTATE_LEFT, std::move(osd_title),
+  Host::AddIconOSDMessage(OSDMessageType::Info, std::move(osd_key), ICON_FA_ARROW_ROTATE_LEFT, std::move(osd_title),
                           fmt::format(TRANSLATE_FS("System", "Loaded undo save state created at {}."),
                                       Host::FormatNumber(Host::NumberFormatType::ShortTime,
-                                                         static_cast<s64>(s_state.undo_load_state->timestamp))),
-                          Host::OSD_INFO_DURATION);
+                                                         static_cast<s64>(s_state.undo_load_state->timestamp))));
 
   s_state.undo_load_state.reset();
   Host::OnSystemUndoStateAvailabilityChanged(false, 0);
@@ -5355,8 +5338,8 @@ bool System::SaveUndoLoadState()
   if (!SaveStateToBuffer(&s_state.undo_load_state.value(), &error))
   {
     Host::AddOSDMessage(
-      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save undo load state:\n{}"), error.GetDescription()),
-      Host::OSD_CRITICAL_ERROR_DURATION);
+      OSDMessageType::Error,
+      fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save undo load state:\n{}"), error.GetDescription()));
     s_state.undo_load_state.reset();
     Host::OnSystemUndoStateAvailabilityChanged(false, 0);
     return false;
@@ -5564,21 +5547,20 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
           std::string(),
         &error))
   {
-    Host::AddIconOSDWarning(
-      "MediaCapture", ICON_FA_TRIANGLE_EXCLAMATION,
-      fmt::format(TRANSLATE_FS("System", "Failed to create media capture: {0}"), error.GetDescription()),
-      Host::OSD_ERROR_DURATION);
+    Host::AddIconOSDMessage(
+      OSDMessageType::Error, "MediaCapture", ICON_FA_TRIANGLE_EXCLAMATION,
+      fmt::format(TRANSLATE_FS("System", "Failed to create media capture: {0}"), error.GetDescription()));
     s_state.media_capture.reset();
     Host::OnMediaCaptureStopped();
     return false;
   }
 
-  Host::AddIconOSDMessage(fmt::format("MediaCapture_{}", s_state.media_capture->GetPath()), ICON_FA_CAMERA,
+  Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("MediaCapture_{}", s_state.media_capture->GetPath()),
+                          ICON_FA_CAMERA,
                           fmt::format(TRANSLATE_FS("System", "Starting {0} to '{1}'."),
                                       GetCaptureTypeForMessage(s_state.media_capture->IsCapturingVideo(),
                                                                s_state.media_capture->IsCapturingAudio()),
-                                      Path::GetFileName(s_state.media_capture->GetPath())),
-                          Host::OSD_INFO_DURATION);
+                                      Path::GetFileName(s_state.media_capture->GetPath())));
 
   Host::OnMediaCaptureStarted();
   return true;
@@ -5614,19 +5596,17 @@ void System::StopMediaCapture(std::unique_ptr<MediaCapture> cap)
   std::string osd_key = fmt::format("MediaCapture_{}", cap->GetPath());
   if (cap->EndCapture(&error))
   {
-    Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_CAMERA,
+    Host::AddIconOSDMessage(OSDMessageType::Info, std::move(osd_key), ICON_FA_CAMERA,
                             fmt::format(TRANSLATE_FS("System", "Stopped {0} to '{1}'."),
                                         GetCaptureTypeForMessage(was_capturing_video, was_capturing_audio),
-                                        Path::GetFileName(cap->GetPath())),
-                            Host::OSD_INFO_DURATION);
+                                        Path::GetFileName(cap->GetPath())));
   }
   else
   {
-    Host::AddIconOSDWarning(std::move(osd_key), ICON_FA_TRIANGLE_EXCLAMATION,
+    Host::AddIconOSDMessage(OSDMessageType::Error, std::move(osd_key), ICON_FA_TRIANGLE_EXCLAMATION,
                             fmt::format(TRANSLATE_FS("System", "Stopped {0}: {1}."),
                                         GetCaptureTypeForMessage(was_capturing_video, was_capturing_audio),
-                                        error.GetDescription()),
-                            Host::OSD_INFO_DURATION);
+                                        error.GetDescription()));
   }
 }
 
@@ -5850,8 +5830,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
     {
       if (s_state.running_game_serial.empty())
       {
-        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
-                                get_shared_card_message(), Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(OSDMessageType::Info, std::move(message_key), ICON_PF_MEMORY_CARD,
+                                get_message_title(slot), get_shared_card_message());
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5866,8 +5846,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
     {
       if (s_state.running_game_title.empty())
       {
-        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
-                                get_shared_card_message(), Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(OSDMessageType::Info, std::move(message_key), ICON_PF_MEMORY_CARD,
+                                get_message_title(slot), get_shared_card_message());
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5894,10 +5874,10 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
             if (g_settings.memory_card_use_playlist_title && !card_path.empty())
             {
               Host::AddIconOSDMessage(
-                fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD, get_message_title(slot),
+                OSDMessageType::Info, fmt::format("DiscSpecificMC{}", slot), ICON_PF_MEMORY_CARD,
+                get_message_title(slot),
                 fmt::format(TRANSLATE_FS("System", "Using disc-specific memory card '{}' instead of per-game card."),
-                            Path::GetFileName(disc_card_path)),
-                Host::OSD_INFO_DURATION);
+                            Path::GetFileName(disc_card_path)));
             }
 
             card_path = std::move(disc_card_path);
@@ -5916,8 +5896,8 @@ std::string System::GetMemoryCardPathForSlot(u32 slot, MemoryCardType type)
       const std::string_view file_title(Path::GetFileTitle(display_name));
       if (file_title.empty())
       {
-        Host::AddIconOSDMessage(std::move(message_key), ICON_PF_MEMORY_CARD, get_message_title(slot),
-                                get_shared_card_message(), Host::OSD_INFO_DURATION);
+        Host::AddIconOSDMessage(OSDMessageType::Info, std::move(message_key), ICON_PF_MEMORY_CARD,
+                                get_message_title(slot), get_shared_card_message());
         ret = g_settings.GetSharedMemoryCardPath(slot);
       }
       else
@@ -5994,18 +5974,16 @@ void System::ToggleWidescreen()
   if (g_settings.gpu_widescreen_hack)
   {
     Host::AddIconOSDMessage(
-      "ToggleWidescreen", ICON_FA_SHAPES,
+      OSDMessageType::Quick, "ToggleWidescreen", ICON_FA_SHAPES,
       fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen rendering is now enabled, and aspect ratio is set to {}."),
-                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)),
-      Host::OSD_QUICK_DURATION);
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)));
   }
   else
   {
     Host::AddIconOSDMessage(
-      "ToggleWidescreen", ICON_FA_SHAPES,
+      OSDMessageType::Quick, "ToggleWidescreen", ICON_FA_SHAPES,
       fmt::format(TRANSLATE_FS("OSDMessage", "Widescreen rendering is now disabled, and aspect ratio is set to {}."),
-                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)),
-      Host::OSD_QUICK_DURATION);
+                  Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio)));
   }
 
   UpdateGTEAspectRatio();
@@ -6019,10 +5997,9 @@ void System::ToggleSoftwareRendering()
   const GPURenderer new_renderer =
     GPUBackend::IsUsingHardwareBackend() ? GPURenderer::Software : g_settings.gpu_renderer;
 
-  Host::AddIconOSDMessage("SoftwareRendering", ICON_FA_PAINT_ROLLER,
+  Host::AddIconOSDMessage(OSDMessageType::Quick, "SoftwareRendering", ICON_FA_PAINT_ROLLER,
                           fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} renderer..."),
-                                      Settings::GetRendererDisplayName(new_renderer)),
-                          Host::OSD_QUICK_DURATION);
+                                      Settings::GetRendererDisplayName(new_renderer)));
 
   RecreateGPU(new_renderer);
 }

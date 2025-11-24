@@ -55,6 +55,15 @@ struct SoftwareCursor
   std::pair<float, float> pos;
 };
 
+struct PostedOSDMessage
+{
+  std::string key;
+  std::string icon;
+  std::string title;
+  std::string text;
+  OSDMessageType type;
+};
+
 struct OSDMessage
 {
   std::string key;
@@ -66,7 +75,7 @@ struct OSDMessage
   float duration;
   float target_y;
   float last_y;
-  bool is_warning;
+  OSDMessageType type;
 };
 
 } // namespace
@@ -86,10 +95,10 @@ static void SetCommonIOOptions(ImGuiIO& io, ImGuiPlatformIO& pio);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(ImGuiContext* ctx);
 static void SetClipboardTextImpl(ImGuiContext* ctx, const char* text);
-static void AddOSDMessage(std::string key, std::string icon, std::string title, std::string message, float duration,
-                          bool is_warning);
-static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
-static void ClearOSDMessages(bool clear_warnings);
+static void AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
+                          std::string message);
+static void RemoveKeyedOSDMessage(std::string key);
+static void ClearOSDMessages();
 static void AcquirePendingOSDMessages(Timer::Value current_time);
 static void DrawOSDMessages(Timer::Value current_time);
 static void CreateSoftwareCursorTextures();
@@ -123,7 +132,7 @@ struct ALIGN_TO_CACHE_LINE State
   std::atomic_bool imgui_wants_mouse{false};
   std::atomic_bool imgui_wants_text{false};
 
-  std::deque<OSDMessage> osd_posted_messages;
+  std::deque<PostedOSDMessage> osd_posted_messages;
   std::mutex osd_messages_lock;
 
   // Owned by GPU thread
@@ -816,77 +825,59 @@ void ImGuiManager::ReloadFontDataIfActive()
   NewFrame();
 }
 
-void ImGuiManager::AddOSDMessage(std::string key, std::string icon, std::string title, std::string message,
-                                 float duration, bool is_warning)
+float ImGuiManager::GetOSDMessageDuration(OSDMessageType type)
+{
+  DebugAssert(type < OSDMessageType::MaxCount);
+
+  static constexpr const std::array<float, static_cast<size_t>(OSDMessageType::MaxCount)> durations = {{
+    15.0f,                             // Error
+    10.0f,                             // Warning
+    5.0f,                              // Info
+    2.5f,                              // Quick
+    std::numeric_limits<float>::max(), // Persistent
+  }};
+
+  return durations[static_cast<size_t>(type)];
+}
+
+void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
+                                 std::string message)
 {
   if (!key.empty())
     INFO_LOG("OSD [{}]: {}{}{}", key, title.empty() ? "" : "\n", title, message);
   else
     INFO_LOG("OSD: {}{}{}", title.empty() ? "" : "\n", title, message);
 
-  const Timer::Value current_time = Timer::GetCurrentValue();
-
-  OSDMessage msg;
-  msg.key = std::move(key);
-  msg.icon = std::move(icon);
-  msg.title = std::move(title);
-  msg.text = std::move(message);
-  msg.duration = duration;
-  msg.start_time = current_time;
-  msg.move_time = current_time;
-  msg.target_y = -1.0f;
-  msg.last_y = -1.0f;
-  msg.is_warning = is_warning;
-
   std::unique_lock lock(s_state.osd_messages_lock);
-  s_state.osd_posted_messages.push_back(std::move(msg));
+  s_state.osd_posted_messages.push_back(PostedOSDMessage{
+    .key = std::move(key),
+    .icon = std::move(icon),
+    .title = std::move(title),
+    .text = std::move(message),
+    .type = type,
+  });
 }
 
-void ImGuiManager::RemoveKeyedOSDMessage(std::string key, bool is_warning)
+void ImGuiManager::RemoveKeyedOSDMessage(std::string key)
 {
-  ImGuiManager::OSDMessage msg = {};
-  msg.key = std::move(key);
-  msg.duration = 0.0f;
-  msg.is_warning = is_warning;
-
   std::unique_lock lock(s_state.osd_messages_lock);
-  s_state.osd_posted_messages.push_back(std::move(msg));
+  s_state.osd_posted_messages.push_back(PostedOSDMessage{
+    .key = std::move(key),
+    .icon = {},
+    .title = {},
+    .text = {},
+    .type = OSDMessageType::MaxCount,
+  });
 }
 
-void ImGuiManager::ClearOSDMessages(bool clear_warnings)
+void ImGuiManager::ClearOSDMessages()
 {
   {
     std::unique_lock lock(s_state.osd_messages_lock);
-    if (clear_warnings)
-    {
-      s_state.osd_posted_messages.clear();
-    }
-    else
-    {
-      for (auto iter = s_state.osd_posted_messages.begin(); iter != s_state.osd_posted_messages.end();)
-      {
-        if (!iter->is_warning)
-          iter = s_state.osd_posted_messages.erase(iter);
-        else
-          ++iter;
-      }
-    }
+    s_state.osd_posted_messages.clear();
   }
 
-  if (clear_warnings)
-  {
-    s_state.osd_active_messages.clear();
-  }
-  else
-  {
-    for (auto iter = s_state.osd_active_messages.begin(); iter != s_state.osd_active_messages.end();)
-    {
-      if (!iter->is_warning)
-        s_state.osd_active_messages.erase(iter);
-      else
-        ++iter;
-    }
-  }
+  s_state.osd_active_messages.clear();
 }
 
 void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
@@ -901,25 +892,51 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
     if (s_state.osd_posted_messages.empty())
       break;
 
-    OSDMessage& new_msg = s_state.osd_posted_messages.front();
+    PostedOSDMessage& new_msg = s_state.osd_posted_messages.front();
+    const float duration = (new_msg.type < OSDMessageType::MaxCount) ? GetOSDMessageDuration(new_msg.type) : 0.0f;
     std::deque<OSDMessage>::iterator iter;
     if (!new_msg.key.empty() &&
         (iter = std::find_if(s_state.osd_active_messages.begin(), s_state.osd_active_messages.end(),
                              [&new_msg](const OSDMessage& other) { return new_msg.key == other.key; })) !=
           s_state.osd_active_messages.end())
     {
-      iter->icon = std::move(new_msg.icon);
-      iter->title = std::move(new_msg.title);
-      iter->text = std::move(new_msg.text);
-      iter->duration = new_msg.duration;
+      // don't bother adding it if it's not visible
+      if (duration > 0.0f)
+      {
+        iter->icon = std::move(new_msg.icon);
+        iter->title = std::move(new_msg.title);
+        iter->text = std::move(new_msg.text);
+        iter->duration = duration;
+        iter->type = new_msg.type;
 
-      // Don't fade it in again
-      const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - iter->start_time));
-      iter->start_time = current_time - Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
+        // Don't fade it in again
+        const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - iter->start_time));
+        iter->start_time = current_time - Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
+      }
+      else
+      {
+        // remove it
+        s_state.osd_active_messages.erase(iter);
+      }
     }
     else
     {
-      s_state.osd_active_messages.push_back(std::move(new_msg));
+      // don't bother adding it if it's not visible
+      if (duration > 0.0f)
+      {
+        s_state.osd_active_messages.push_back(OSDMessage{
+          .key = std::move(new_msg.key),
+          .icon = std::move(new_msg.icon),
+          .title = std::move(new_msg.title),
+          .text = std::move(new_msg.text),
+          .start_time = current_time,
+          .move_time = current_time,
+          .duration = duration,
+          .target_y = -1.0f,
+          .last_y = -1.0f,
+          .type = new_msg.type,
+        });
+      }
     }
 
     s_state.osd_posted_messages.pop_front();
@@ -1055,7 +1072,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
       }
     }
 
-    if (actual_y >= ImGui::GetIO().DisplaySize.y || (!show_messages && !msg.is_warning))
+    if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages))
       break;
 
     const ImVec2 pos = ImVec2(position_x, actual_y);
@@ -1109,56 +1126,35 @@ void ImGuiManager::RenderOSDMessages()
   DrawOSDMessages(current_time);
 }
 
-void Host::AddOSDMessage(std::string message, float duration /*= 2.0f*/)
+void Host::AddOSDMessage(OSDMessageType type, std::string message)
 {
-  ImGuiManager::AddOSDMessage(std::string(), {}, {}, std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(type, std::string(), {}, {}, std::move(message));
 }
 
-void Host::AddKeyedOSDMessage(std::string key, std::string message, float duration /* = 2.0f */)
+void Host::AddKeyedOSDMessage(OSDMessageType type, std::string key, std::string message)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(type, std::move(key), {}, {}, std::move(message));
 }
 
-void Host::AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
+void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string message)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, false);
+  ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), {}, std::move(message));
 }
 
-void Host::AddIconOSDMessage(std::string key, const char* icon, std::string title, std::string message,
-                             float duration /* = 2.0f */)
+void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string title,
+                             std::string message)
 {
-  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, false);
-}
-
-void Host::AddKeyedOSDWarning(std::string key, std::string message, float duration /* = 2.0f */)
-{
-  ImGuiManager::AddOSDMessage(std::move(key), {}, {}, std::move(message), duration, true);
-}
-
-void Host::AddIconOSDWarning(std::string key, const char* icon, std::string message, float duration /* = 2.0f */)
-{
-  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), {}, std::move(message), duration, true);
-}
-
-void Host::AddIconOSDWarning(std::string key, const char* icon, std::string title, std::string message,
-                             float duration /* = 2.0f */)
-{
-  ImGuiManager::AddOSDMessage(std::move(key), std::string(icon), std::move(title), std::move(message), duration, true);
+  ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), std::move(title), std::move(message));
 }
 
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
-  ImGuiManager::RemoveKeyedOSDMessage(std::move(key), false);
+  ImGuiManager::RemoveKeyedOSDMessage(std::move(key));
 }
 
-void Host::RemoveKeyedOSDWarning(std::string key)
+void Host::ClearOSDMessages()
 {
-  ImGuiManager::RemoveKeyedOSDMessage(std::move(key), true);
-}
-
-void Host::ClearOSDMessages(bool clear_warnings)
-{
-  ImGuiManager::ClearOSDMessages(clear_warnings);
+  ImGuiManager::ClearOSDMessages();
 }
 
 float ImGuiManager::GetGlobalScale()

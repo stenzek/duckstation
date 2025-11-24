@@ -554,7 +554,7 @@ void FullscreenUI::BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::
   const InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
   if (effects.empty())
   {
-    ShowToast({}, FSUI_STR("No devices with vibration motors were detected."));
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("No devices with vibration motors were detected."));
     return;
   }
 
@@ -1475,7 +1475,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
   InputManager::DeviceList devices = InputManager::EnumerateDevices();
   if (devices.empty())
   {
-    ShowToast({}, FSUI_STR("Automatic mapping failed, no devices are available."));
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Automatic mapping failed, no devices are available."));
     return;
   }
 
@@ -1501,8 +1501,9 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
                      SetSettingsChanged(bsi);
 
                      // and the toast needs to happen on the UI thread.
-                     ShowToast({}, result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
-                                            fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
+                     ShowToast(result ? OSDMessageType::Quick : OSDMessageType::Info, {},
+                               result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
+                                        fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
                    });
 }
 
@@ -1518,7 +1519,7 @@ void FullscreenUI::StartClearBindingsForPort(u32 port)
       auto lock = Host::GetSettingsLock();
       SettingsInterface* bsi = GetEditingSettingsInterface();
       InputManager::ClearPortBindings(*bsi, port);
-      ShowToast({}, FSUI_STR("Controller mapping cleared."));
+      ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller mapping cleared."));
     });
 }
 
@@ -1612,7 +1613,7 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
   if (!entry || entry->serial.empty())
   {
-    ShowToast({}, FSUI_STR("Game properties is only available for scanned games."));
+    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game properties is only available for scanned games."));
     return false;
   }
 
@@ -1677,7 +1678,7 @@ void FullscreenUI::BeginResetSettings()
                                return;
 
                              Host::RequestResetSettings(true, false);
-                             ShowToast(std::string(), FSUI_STR("Settings reset to default."));
+                             ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Settings reset to default."));
                            });
 }
 
@@ -1691,8 +1692,9 @@ void FullscreenUI::DoCopyGameSettings()
   temp_settings.Save(*s_settings_locals.game_settings_interface, true);
   SetSettingsChanged(s_settings_locals.game_settings_interface.get());
 
-  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
-                                       Path::GetFileTitle(s_settings_locals.game_settings_interface->GetPath())));
+  ShowToast(OSDMessageType::Info, {},
+            fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
+                        Path::GetFileTitle(s_settings_locals.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DoClearGameSettings()
@@ -1706,8 +1708,9 @@ void FullscreenUI::DoClearGameSettings()
 
   SetSettingsChanged(s_settings_locals.game_settings_interface.get());
 
-  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
-                                       Path::GetFileTitle(s_settings_locals.game_settings_interface->GetPath())));
+  ShowToast(OSDMessageType::Info, {},
+            fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
+                        Path::GetFileTitle(s_settings_locals.game_settings_interface->GetPath())));
 }
 
 FullscreenUI::SettingsPage FullscreenUI::GetCurrentSettingsPage()
@@ -2885,7 +2888,7 @@ void FullscreenUI::CopyGlobalControllerSettingsToGame()
   InputManager::CopyConfiguration(dsi, *ssi, true, true, false);
   SetSettingsChanged(dsi);
 
-  ShowToast(std::string(), FSUI_STR("Per-game controller configuration initialized with global settings."));
+  ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Per-game controller configuration initialized with global settings."));
 }
 
 void FullscreenUI::DoLoadInputProfile()
@@ -2893,7 +2896,7 @@ void FullscreenUI::DoLoadInputProfile()
   std::vector<std::string> profiles = InputManager::GetInputProfileNames();
   if (profiles.empty())
   {
-    ShowToast(std::string(), FSUI_STR("No input profiles available."));
+    ShowToast(OSDMessageType::Quick, {}, FSUI_STR("No input profiles available."));
     return;
   }
 
@@ -2909,7 +2912,7 @@ void FullscreenUI::DoLoadInputProfile()
                      INISettingsInterface ssi(System::GetInputProfilePath(title));
                      if (!ssi.Load())
                      {
-                       ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
+                       ShowToast(OSDMessageType::Info, {}, fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
                        return;
                      }
 
@@ -2917,7 +2920,8 @@ void FullscreenUI::DoLoadInputProfile()
                      SettingsInterface* dsi = GetEditingSettingsInterface();
                      InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
-                     ShowToast(std::string(), fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
+                     ShowToast(OSDMessageType::Quick, {},
+                               fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
                    });
 }
 
@@ -2929,9 +2933,9 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
   SettingsInterface* ssi = GetEditingSettingsInterface();
   InputManager::CopyConfiguration(&dsi, *ssi, true, true, true, IsEditingGameSettings(ssi));
   if (dsi.Save())
-    ShowToast(std::string(), fmt::format(FSUI_FSTR("Controller preset '{}' saved."), name));
+    ShowToast(OSDMessageType::Quick, {}, fmt::format(FSUI_FSTR("Controller preset '{}' saved."), name));
   else
-    ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save controller preset '{}'."), name));
+    ShowToast(OSDMessageType::Info, {}, fmt::format(FSUI_FSTR("Failed to save controller preset '{}'."), name));
 }
 
 void FullscreenUI::DoSaveNewInputProfile()
@@ -2980,7 +2984,7 @@ void FullscreenUI::BeginResetControllerSettings()
                                return;
 
                              Host::RequestResetSettings(false, true);
-                             ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+                             ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller settings reset to default."));
                            });
 }
 
@@ -3801,7 +3805,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       else
         bsi->SetStringValue("GPU", "FullscreenMode", value);
       SetSettingsChanged(bsi);
-      ShowToast(std::string(), FSUI_STR("Resolution change will be applied after restarting."), 10.0f);
+      ShowToast(OSDMessageType::Info, std::string(), FSUI_STR("Resolution change will be applied after restarting."));
     };
     OpenChoiceDialog(FSUI_ICONVSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options),
                      std::move(callback));
@@ -4055,7 +4059,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     if (GPUThread::HasGPUBackend())
     {
       Host::RunOnCPUThread([]() { GPUPresenter::ReloadPostProcessingSettings(true, true, true); });
-      ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
+      ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Post-processing shaders reloaded."));
     }
   }
 
@@ -4082,15 +4086,16 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                        Error error;
                        if (PostProcessing::Config::AddStage(*bsi, section, shader_name, &error))
                        {
-                         ShowToast(std::string(), fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
-                                                              PostProcessing::Config::GetStageCount(*bsi, section)));
+                         ShowToast(OSDMessageType::Quick, {},
+                                   fmt::format(FSUI_FSTR("Shader {} added as stage {}."), title,
+                                               PostProcessing::Config::GetStageCount(*bsi, section)));
                          PopulatePostProcessingChain(*bsi, section);
                          SetSettingsChanged(bsi);
                          queue_reload();
                        }
                        else
                        {
-                         ShowToast(std::string(),
+                         ShowToast(OSDMessageType::Quick, {},
                                    fmt::format(FSUI_FSTR("Failed to load shader {}. It may be invalid.\nError was:"),
                                                title, error.GetDescription()));
                        }
@@ -4110,7 +4115,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         PostProcessing::Config::ClearStages(*bsi, section);
         PopulatePostProcessingChain(*bsi, section);
         SetSettingsChanged(bsi);
-        ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
+        ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Post-processing chain cleared."));
         queue_reload();
       });
   }
@@ -4339,7 +4344,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     case POSTPROCESSING_ACTION_REMOVE:
     {
       const PostProcessingStageInfo& si = s_settings_locals.postprocessing_stages[postprocessing_action_index];
-      ShowToast(std::string(),
+      ShowToast(OSDMessageType::Quick, {},
                 fmt::format(FSUI_FSTR("Removed stage {} ({})."), postprocessing_action_index + 1, si.name));
       PostProcessing::Config::RemoveStage(*bsi, section, postprocessing_action_index);
       PopulatePostProcessingChain(*bsi, section);
@@ -4724,7 +4729,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       Host::RunOnCPUThread([]() {
         Error error;
         if (!Achievements::RefreshAllProgressDatabase(&error))
-          ShowToast(FSUI_STR("Failed to update progress database"), error.TakeDescription(), Host::OSD_ERROR_DURATION);
+          ShowToast(OSDMessageType::Error, FSUI_STR("Failed to update progress database"), error.TakeDescription());
       });
     }
 

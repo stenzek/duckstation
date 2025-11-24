@@ -4895,7 +4895,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   }
 }
 
-void FullscreenUI::ShowToast(std::string title, std::string message, float duration)
+void FullscreenUI::ShowToast(OSDMessageType type, std::string title, std::string message)
 {
   const std::unique_lock lock(s_state.shared_state_mutex);
   if (!s_state.has_initialized)
@@ -4905,7 +4905,7 @@ void FullscreenUI::ShowToast(std::string title, std::string message, float durat
   s_state.toast_title = std::move(title);
   s_state.toast_message = std::move(message);
   s_state.toast_start_time = Timer::GetCurrentValue();
-  s_state.toast_duration = duration;
+  s_state.toast_duration = ImGuiManager::GetOSDMessageDuration(type);
 
   if (!prev_had_notifications)
     UpdateNotificationsRunIdle();

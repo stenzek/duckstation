@@ -29,6 +29,8 @@ class GPUTexture;
 class GPUSwapChain;
 class ProgressCallback;
 
+enum class OSDMessageType : u8;
+
 namespace FullscreenUI {
 
 #define HEX_TO_IMVEC4(hex, alpha)                                                                                      \
@@ -493,7 +495,7 @@ void CloseLoadingScreen();
 /// Notification and toast support.
 void AddNotification(std::string key, float duration, std::string image_path, std::string title, std::string text,
                      std::string note);
-void ShowToast(std::string title, std::string message, float duration = 10.0f);
+void ShowToast(OSDMessageType type, std::string title, std::string message);
 
 // Wrapper for an animated popup dialog.
 class PopupDialog
