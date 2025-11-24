@@ -507,7 +507,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
             text.append_format("{}{}", first ? "" : "/", "ME");
         }
 
-        text.append("]:\x03 ");
+        text.append("]:\x01 ");
       }
       else
       {
