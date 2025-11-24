@@ -300,16 +300,19 @@
     </layout>
    </item>
    <item row="13" column="0" colspan="3">
-    <widget class="QTableWidget" name="tracks">
+    <widget class="QTreeWidget" name="tracks">
      <property name="editTriggers">
       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
-     <property name="cornerButtonEnabled">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="rootIsDecorated">
       <bool>false</bool>
      </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
      <column>
       <property name="text">
        <string>#</string>

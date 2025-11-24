@@ -329,8 +329,8 @@ void GameSummaryWidget::populateTracksInfo()
   static constexpr std::array<const char*, 8> track_mode_strings = {
     {"Audio", "Mode 1", "Mode 1/Raw", "Mode 2", "Mode 2/Form 1", "Mode 2/Form 2", "Mode 2/Mix", "Mode 2/Raw"}};
 
-  m_ui.tracks->clearContents();
-  QtUtils::SetColumnWidthsForTableView(m_ui.tracks, {70, 75, 70, 70, -1, 40});
+  m_ui.tracks->clear();
+  QtUtils::SetColumnWidthsForTreeView(m_ui.tracks, {80, 90, 70, 70, -1, 40});
 
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
@@ -347,24 +347,16 @@ void GameSummaryWidget::populateTracksInfo()
     const CDImage::Position position = image->GetTrackStartMSFPosition(static_cast<u8>(track));
     const CDImage::Position length = image->GetTrackMSFLength(static_cast<u8>(track));
     const CDImage::TrackMode mode = image->GetTrackMode(static_cast<u8>(track));
-    const int row = static_cast<int>(track - 1u);
 
-    QTableWidgetItem* num = new QTableWidgetItem(tr("Track %1").arg(track));
-    num->setIcon(QIcon::fromTheme((mode == CDImage::TrackMode::Audio) ? QStringLiteral("file-music-line") :
-                                                                        QStringLiteral("disc-line")));
-    m_ui.tracks->insertRow(row);
-    m_ui.tracks->setItem(row, 0, num);
-    m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
-    m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFToString(position)));
-    m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFToString(length)));
-    m_ui.tracks->setItem(row, 4, new QTableWidgetItem(tr("<not computed>")));
-
-    for (int i = 1; i <= 4; i++)
-      m_ui.tracks->item(row, i)->setTextAlignment(Qt::AlignCenter);
-
-    QTableWidgetItem* status = new QTableWidgetItem(QString());
-    status->setTextAlignment(Qt::AlignCenter);
-    m_ui.tracks->setItem(row, 5, status);
+    QTreeWidgetItem* row = new QTreeWidgetItem(m_ui.tracks);
+    row->setIcon(0, QIcon::fromTheme((mode == CDImage::TrackMode::Audio) ? QStringLiteral("file-music-line") :
+                                                                           QStringLiteral("disc-line")));
+    row->setText(0, tr("Track %1").arg(track));
+    row->setText(1, QString::fromUtf8(track_mode_strings[static_cast<u32>(mode)]));
+    row->setText(2, MSFToString(position));
+    row->setText(3, MSFToString(length));
+    row->setText(4, tr("<not computed>"));
+    row->setTextAlignment(5, Qt::AlignCenter);
   }
 }
 
@@ -491,8 +483,8 @@ void GameSummaryWidget::onComputeHashClicked()
     }
     track_hashes.emplace_back(hash);
 
-    QTableWidgetItem* item = m_ui.tracks->item(track - 1, 4);
-    item->setText(QString::fromStdString(CDImageHasher::HashToString(hash)));
+    QTreeWidgetItem* const row = m_ui.tracks->topLevelItem(track - 1);
+    row->setText(4, QString::fromStdString(CDImageHasher::HashToString(hash)));
 
     progress_callback.PopState();
   }
@@ -589,21 +581,20 @@ void GameSummaryWidget::onComputeHashClicked()
 
   for (u8 track = 0; track < image->GetTrackCount(); track++)
   {
-    QTableWidgetItem* hash_text = m_ui.tracks->item(track, 4);
-    QTableWidgetItem* status_text = m_ui.tracks->item(track, 5);
+    QTreeWidgetItem* const row = m_ui.tracks->topLevelItem(track);
     QBrush brush;
     if (verification_results[track])
     {
       brush = QColor(0, 200, 0);
-      status_text->setText(QString::fromUtf8(u8"\u2713"));
+      row->setText(5, QString::fromUtf8(u8"\u2713"));
     }
     else
     {
       brush = QColor(200, 0, 0);
-      status_text->setText(QString::fromUtf8(u8"\u2715"));
+      row->setText(5, QString::fromUtf8(u8"\u2715"));
     }
-    status_text->setForeground(brush);
-    hash_text->setForeground(brush);
+    row->setForeground(4, brush);
+    row->setForeground(5, brush);
   }
 
   if (!m_redump_search_keyword.empty())

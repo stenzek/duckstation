@@ -854,6 +854,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
 
     // disable it if we don't have a choice
     m_ui.adapter->setEnabled(!m_adapters.empty());
+    m_ui.adapterLabel->setEnabled(!m_adapters.empty());
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, "GPU", "Adapter");
     connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &GraphicsSettingsWidget::updateRendererDependentOptions);
