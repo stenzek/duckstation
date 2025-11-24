@@ -528,10 +528,11 @@ void FullscreenUI::OpenAchievementsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasAchievements())
   {
-    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsUnavailable", ICON_EMOJI_INFORMATION,
-                            TRANSLATE_STR("Achievements", "Achievements Unavailable"),
-                            Achievements::IsActive() ? TRANSLATE_STR("Achievements", "This game has no achievements.") :
-                                                       TRANSLATE_STR("Achievements", "Achievements are not enabled."));
+    Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsUnavailable", Achievements::RA_LOGO_ICON_NAME,
+                            TRANSLATE_STR("Achievements", "Achievements are not available."),
+                            Achievements::IsActive() ?
+                              TRANSLATE_STR("Achievements", "This game has no achievements.") :
+                              TRANSLATE_STR("Achievements", "Achievements are disabled in settings."));
     return;
   }
 
@@ -1006,10 +1007,11 @@ void FullscreenUI::OpenLeaderboardsWindow()
   const auto lock = Achievements::GetLock();
   if (!Achievements::IsActive() || !Achievements::HasLeaderboards())
   {
-    Host::AddIconOSDMessage(OSDMessageType::Info, "LeaderboardsUnavailable", ICON_EMOJI_INFORMATION,
-                            TRANSLATE_STR("Achievements", "Leaderboards Unavailable"),
-                            Achievements::IsActive() ? TRANSLATE_STR("Achievements", "This game has no leaderboards.") :
-                                                       TRANSLATE_STR("Achievements", "Achievements are not enabled."));
+    Host::AddIconOSDMessage(OSDMessageType::Info, "LeaderboardsUnavailable", Achievements::RA_LOGO_ICON_NAME,
+                            TRANSLATE_STR("Achievements", "Leaderboards are not available."),
+                            Achievements::IsActive() ?
+                              TRANSLATE_STR("Achievements", "This game has no leaderboards.") :
+                              TRANSLATE_STR("Achievements", "Achievements are disabled in settings."));
     return;
   }
 

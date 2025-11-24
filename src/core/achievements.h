@@ -191,6 +191,9 @@ u32 GetPauseThrottleFrames();
 /// Draws ImGui overlays when not paused.
 void DrawGameOverlays();
 
+/// The name of the RetroAchievements icon, which can be used in notifications.
+extern const char* const RA_LOGO_ICON_NAME;
+
 } // namespace Achievements
 
 /// Functions implemented in the frontend.
