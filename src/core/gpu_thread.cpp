@@ -696,8 +696,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
     return false;
   }
 
-  if (!ImGuiManager::Initialize(g_gpu_settings.display_osd_scale / 100.0f, g_gpu_settings.display_osd_margin,
-                                &create_error))
+  if (!ImGuiManager::Initialize(&create_error))
   {
     ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
@@ -1038,9 +1037,7 @@ void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
   if (g_gpu_device)
   {
     if (g_gpu_settings.display_osd_scale != old_settings.display_osd_scale)
-      ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
-    if (g_gpu_settings.display_osd_margin != old_settings.display_osd_margin)
-      ImGuiManager::SetScreenMargin(g_settings.display_osd_margin);
+      ImGuiManager::RequestScaleUpdate();
 
     FullscreenUI::CheckForConfigChanges(old_settings);
   }

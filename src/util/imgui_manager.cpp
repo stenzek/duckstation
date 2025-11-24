@@ -73,6 +73,7 @@ struct OSDMessage
 
 static_assert(std::is_same_v<WCharType, ImWchar>);
 
+static float GetGlobalPrescale();
 static void UpdateScale();
 static void SetStyle(ImGuiStyle& style, float scale);
 static bool LoadFontData(Error* error);
@@ -128,10 +129,7 @@ struct ALIGN_TO_CACHE_LINE State
   // Owned by GPU thread
   ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
 
-  float global_prescale = 0.0f; // before window scale
   float global_scale = 0.0f;
-  float screen_margin = 0.0f;
-
   float window_width = 0.0f;
   float window_height = 0.0f;
   GPUTexture::Format window_format = GPUTexture::Format::Unknown;
@@ -178,16 +176,7 @@ void ImGuiManager::SetTextFontOrder(const TextFontOrder& order)
   ReloadFontDataIfActive();
 }
 
-void ImGuiManager::SetGlobalScale(float global_scale)
-{
-  if (s_state.global_prescale == global_scale)
-    return;
-
-  s_state.global_prescale = global_scale;
-  s_state.scale_changed = true;
-}
-
-bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* error)
+bool ImGuiManager::Initialize(Error* error)
 {
   if (!LoadFontData(error))
   {
@@ -197,9 +186,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 
   GPUSwapChain* const main_swap_chain = g_gpu_device->GetMainSwapChain();
 
-  s_state.global_prescale = global_scale;
-  s_state.global_scale = std::max((main_swap_chain ? main_swap_chain->GetScale() : 1.0f) * global_scale, 1.0f);
-  s_state.screen_margin = std::max(screen_margin, 0.0f);
+  s_state.global_scale = std::max((main_swap_chain ? main_swap_chain->GetScale() : 1.0f) * GetGlobalPrescale(), 1.0f);
   s_state.scale_changed = false;
 
   s_state.imgui_context = ImGui::CreateContext();
@@ -275,11 +262,6 @@ bool ImGuiManager::IsInitialized()
   return (s_state.imgui_context != nullptr);
 }
 
-void ImGuiManager::SetScreenMargin(float margin)
-{
-  s_state.screen_margin = std::max(margin, 0.0f);
-}
-
 float ImGuiManager::GetWindowWidth()
 {
   return s_state.window_width;
@@ -318,11 +300,16 @@ void ImGuiManager::RequestScaleUpdate()
   s_state.scale_changed = true;
 }
 
+float ImGuiManager::GetGlobalPrescale()
+{
+  return g_gpu_settings.display_osd_scale / 100.0f;
+}
+
 void ImGuiManager::UpdateScale()
 {
   const float window_scale =
     (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
-  const float scale = std::max(window_scale * s_state.global_prescale, 1.0f);
+  const float scale = std::max(window_scale * GetGlobalPrescale(), 1.0f);
   const bool scale_changed = (scale != s_state.global_scale);
 
   if (!FullscreenUI::UpdateLayoutScale() && !scale_changed)
@@ -964,7 +951,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const ImVec4 subtext_color = DarkerColor(text_color, 0.85f);
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
-  const float margin = std::ceil(s_state.screen_margin * scale);
+  const float margin = std::ceil(GetScreenMargin() * scale);
   const float padding = std::ceil(10.0f * scale);
   const float rounding = std::ceil(10.0f * scale);
   const float normal_icon_margin = std::ceil(4.0f * scale);
@@ -1181,7 +1168,7 @@ float ImGuiManager::GetGlobalScale()
 
 float ImGuiManager::GetScreenMargin()
 {
-  return s_state.screen_margin;
+  return g_gpu_settings.display_osd_margin;
 }
 
 ImFont* ImGuiManager::GetTextFont()

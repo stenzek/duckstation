@@ -368,7 +368,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
-  display_osd_margin = si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN);
+  display_osd_margin = std::max(si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN), 0.0f);
 
   save_state_compression = ParseSaveStateCompressionModeName(
                              si.GetStringValue("Main", "SaveStateCompression",

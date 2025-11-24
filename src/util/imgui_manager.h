@@ -80,11 +80,8 @@ inline constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
 TextFontOrder GetDefaultTextFontOrder();
 void SetTextFontOrder(const TextFontOrder& order);
 
-/// Changes the global scale.
-void SetGlobalScale(float global_scale);
-
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(float global_scale, float screen_margin, Error* error);
+bool Initialize(Error* error);
 
 /// Frees all ImGui resources.
 void Shutdown(bool clear_fsui_state);
@@ -94,9 +91,6 @@ ImGuiContext* GetMainContext();
 
 /// Returns true if there is currently a context created.
 bool IsInitialized();
-
-/// Sets the size of the screen margins, or "safe zone".
-void SetScreenMargin(float margin);
 
 /// Returns the size of the display window. Can be safely called from any thread.
 float GetWindowWidth();
