@@ -2568,10 +2568,10 @@ bool System::DoState(StateWrapper& sw, bool update_display)
       fmt::format(
         TRANSLATE_FS("System",
                      "The save state does not match the current configuration.\nSave State: {0}%\nConfiguration: {1}%"),
-        g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
         cpu_overclock_active ?
           Settings::CPUOverclockFractionToPercent(cpu_overclock_numerator, cpu_overclock_denominator) :
-          100u));
+          100u,
+        g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u));
     UpdateOverclock();
   }
 
