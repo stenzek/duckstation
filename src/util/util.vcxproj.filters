@@ -79,6 +79,7 @@
     <ClInclude Include="dyn_spirv_cross.h" />
     <ClInclude Include="spirv_module.h" />
     <ClInclude Include="postprocessing_shader_slang.h" />
+    <ClInclude Include="imgui_gsvector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />

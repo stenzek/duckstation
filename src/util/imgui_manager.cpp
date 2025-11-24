@@ -76,6 +76,7 @@ struct OSDMessage
   float target_y;
   float last_y;
   OSDMessageType type;
+  bool is_texture_icon;
 };
 
 } // namespace
@@ -884,7 +885,14 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
       break;
 
     PostedOSDMessage& new_msg = s_state.osd_posted_messages.front();
+
+    // MaxCount is used to indicate removal of a message.
     const float duration = (new_msg.type < OSDMessageType::MaxCount) ? GetOSDMessageDuration(new_msg.type) : 0.0f;
+
+    // Any filenames are going to have an extension of at least 4 bytes (e.g. ".png"), so we can use that
+    // to determine if it's a texture or not.
+    const bool is_texture_icon = StringUtil::GetUTF8CharacterCount(new_msg.icon) >= 4;
+
     std::deque<OSDMessage>::iterator iter;
     if (!new_msg.key.empty() &&
         (iter = std::find_if(s_state.osd_active_messages.begin(), s_state.osd_active_messages.end(),
@@ -899,6 +907,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
         iter->text = std::move(new_msg.text);
         iter->duration = duration;
         iter->type = new_msg.type;
+        iter->is_texture_icon = is_texture_icon;
 
         // Don't fade it in again
         const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - iter->start_time));
@@ -926,6 +935,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
           .target_y = -1.0f,
           .last_y = -1.0f,
           .type = new_msg.type,
+          .is_texture_icon = is_texture_icon,
         });
       }
     }
@@ -985,9 +995,18 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     // Use larger icon when we have multiple lines.
     const bool use_large_icon = !msg.title.empty() && !msg.text.empty();
     const float icon_font_size = use_large_icon ? large_icon_size : font_size;
-    const ImVec2 icon_size = msg.icon.empty() ? ImVec2() :
-                                                font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f,
-                                                                    IMSTR_START_END(msg.icon));
+    GPUTexture* icon_texture =
+      msg.is_texture_icon ?
+        FullscreenUI::GetCachedTexture(msg.icon, static_cast<u32>(icon_font_size), static_cast<u32>(icon_font_size)) :
+        nullptr;
+    const ImVec2 icon_size =
+      msg.icon.empty() ?
+        ImVec2() :
+        (msg.is_texture_icon ?
+           ImVec2(icon_font_size *
+                    (static_cast<float>(icon_texture->GetWidth()) / static_cast<float>(icon_texture->GetHeight())),
+                  icon_font_size) :
+           font->CalcTextSizeA(icon_font_size, body_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(msg.icon)));
     const float icon_size_with_margin =
       msg.icon.empty() ? 0.0f : (icon_size.x + (use_large_icon ? large_icon_margin : normal_icon_margin));
     const float max_text_width = max_width - icon_size_with_margin;
@@ -1079,7 +1098,12 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
-    if (!msg.icon.empty())
+    if (icon_texture)
+    {
+      dl->AddImage(icon_texture, base_pos, base_pos + icon_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                   ImGui::GetColorU32(ModAlpha(0xFFFFFFFFu, opacity)));
+    }
+    else if (!msg.icon.empty())
     {
       const ImRect icon_rect = ImRect(base_pos, base_pos + icon_size);
       RenderShadowedTextClipped(dl, font, icon_font_size, body_font_weight, icon_rect.Min, icon_rect.Max, color,

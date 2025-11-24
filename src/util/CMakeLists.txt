@@ -36,6 +36,7 @@ add_library(util
   http_downloader.h
   image.cpp
   image.h
+  imgui_gsvector.h
   imgui_manager.cpp
   imgui_manager.h
   ini_settings_interface.cpp

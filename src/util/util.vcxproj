@@ -31,6 +31,7 @@
     <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="http_downloader.h" />
+    <ClInclude Include="imgui_gsvector.h" />
     <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="ini_settings_interface.h" />
     <ClInclude Include="input_manager.h" />
