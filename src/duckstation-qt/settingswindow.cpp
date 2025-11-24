@@ -46,9 +46,6 @@ SettingsWindow::SettingsWindow() : QWidget()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   addPages();
   connectUi();
-
-  if (!QtUtils::RestoreWindowGeometry("SettingsWindow", this))
-    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
@@ -56,6 +53,7 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
     m_hash(entry->hash)
 {
   m_ui.setupUi(this);
+  setAttribute(Qt::WA_DeleteOnClose);
 
   if (const QIcon icon = g_main_window->getIconForGame(QString::fromStdString(entry->path)); !icon.isNull())
     setWindowIcon(icon);
@@ -71,8 +69,6 @@ SettingsWindow::SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INI
   connectUi();
 
   s_open_game_properties_dialogs.push_back(this);
-
-  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 SettingsWindow::~SettingsWindow()
@@ -83,11 +79,10 @@ SettingsWindow::~SettingsWindow()
 
 void SettingsWindow::closeEvent(QCloseEvent* event)
 {
-  // we need to clean up ourselves, since we're not modal
-  if (isPerGameSettings())
-    deleteLater();
-  else
+  if (!isPerGameSettings())
     QtUtils::SaveWindowGeometry("SettingsWindow", this);
+
+  QWidget::closeEvent(event);
 }
 
 void SettingsWindow::addPages()
@@ -705,10 +700,7 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* 
 void SettingsWindow::closeGamePropertiesDialogs()
 {
   for (SettingsWindow* dialog : s_open_game_properties_dialogs)
-  {
     dialog->close();
-    dialog->deleteLater();
-  }
 }
 
 bool SettingsWindow::setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key,

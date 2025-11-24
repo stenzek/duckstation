@@ -15,7 +15,6 @@ CoverDownloadWindow::CoverDownloadWindow() : QWidget()
   m_ui.setupUi(this);
   m_ui.coverIcon->setPixmap(QIcon::fromTheme(QStringLiteral("artboard-2-line")).pixmap(32));
   updateEnabled();
-  QtUtils::RestoreWindowGeometry("CoverDownloadWindow", this);
 
   connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadWindow::onStartClicked);
   connect(m_ui.close, &QPushButton::clicked, this, &CoverDownloadWindow::onCloseClicked);

@@ -10,7 +10,7 @@
 
 #include <QtCore/QMap>
 #include <QtCore/QString>
-#include <QtWidgets/QDialog>
+#include <QtWidgets/QWidget>
 #include <array>
 #include <optional>
 
@@ -49,7 +49,6 @@ class SettingsWindow final : public QWidget
 
 public:
   SettingsWindow();
-  SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
   static SettingsWindow* openGamePropertiesDialog(const GameList::Entry* entry, const char* category = nullptr);
@@ -125,6 +124,9 @@ private:
   {
     MAX_SETTINGS_WIDGETS = 13
   };
+
+  // Private constructor used by openGamePropertiesDialog()
+  SettingsWindow(const GameList::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
 
   void connectUi();
   void addPages();

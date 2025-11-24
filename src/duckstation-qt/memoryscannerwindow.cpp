@@ -22,6 +22,7 @@
 #include "fmt/format.h"
 
 #include <QtGui/QColor>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QTreeWidgetItemIterator>
 #include <array>
@@ -101,8 +102,6 @@ void MemoryScannerWindow::setupAdditionalUi()
 {
   QtUtils::SetColumnWidthsForTableView(m_ui.scanTable, {-1, 100, 100, 100});
   QtUtils::SetColumnWidthsForTableView(m_ui.watchTable, {-1, 100, 100, 150, 40});
-  if (!QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this))
-    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 void MemoryScannerWindow::connectUi()
@@ -335,7 +334,8 @@ void MemoryScannerWindow::addManualWatchAddressClicked()
     items.append(tr(title));
 
   bool ok = false;
-  const QString selected_item = QInputDialog::getItem(this, windowTitle(), tr("Select data size:"), items, 0, false, &ok);
+  const QString selected_item =
+    QInputDialog::getItem(this, windowTitle(), tr("Select data size:"), items, 0, false, &ok);
   const qsizetype index = items.indexOf(selected_item);
   if (index < 0 || !ok)
     return;
@@ -403,7 +403,7 @@ void MemoryScannerWindow::tryOpenAddressInMemoryEditor(VirtualMemoryAddress addr
     return;
   }
 
-  QtUtils::ShowOrRaiseWindow(editor);
+  QtUtils::ShowOrRaiseWindow(editor, g_main_window, true);
 }
 
 void MemoryScannerWindow::scanItemChanged(QTableWidgetItem* item)

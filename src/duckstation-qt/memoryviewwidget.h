@@ -16,8 +16,8 @@ public:
 
   using EditCallback = void (*)(size_t offset, size_t bytes);
 
-  MemoryViewWidget(QWidget* parent = nullptr, size_t address_offset = 0, void* data_ptr = nullptr, size_t data_size = 0,
-                   bool data_editable = false, EditCallback edit_callback = nullptr);
+  explicit MemoryViewWidget(QWidget* parent = nullptr, size_t address_offset = 0, void* data_ptr = nullptr,
+                            size_t data_size = 0, bool data_editable = false, EditCallback edit_callback = nullptr);
   ~MemoryViewWidget();
 
   size_t addressOffset() const { return m_address_offset; }
@@ -39,11 +39,11 @@ Q_SIGNALS:
   void selectedAddressChanged(size_t address);
 
 protected:
-  void paintEvent(QPaintEvent* event);
-  void resizeEvent(QResizeEvent* event);
-  void mousePressEvent(QMouseEvent* event);
-  void mouseMoveEvent(QMouseEvent* event);
-  void keyPressEvent(QKeyEvent* event);
+  void paintEvent(QPaintEvent* event) override;
+  void resizeEvent(QResizeEvent* event) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void keyPressEvent(QKeyEvent* event) override;
 
 private:
   int addressWidth() const;

@@ -455,9 +455,6 @@ void DebuggerWindow::setupAdditionalUi()
 
   setCentralWidget(nullptr);
   delete m_ui.centralwidget;
-
-  if (!QtUtils::RestoreWindowGeometry("DebuggerWindow", this))
-    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 void DebuggerWindow::connectSignals()

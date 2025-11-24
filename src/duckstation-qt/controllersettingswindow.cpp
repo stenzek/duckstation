@@ -102,12 +102,6 @@ ControllerSettingsWindow::ControllerSettingsWindow(INISettingsInterface* game_si
   }
 
   createWidgets();
-
-  if (isEditingGlobalSettings())
-  {
-    if (!QtUtils::RestoreWindowGeometry("ControllerSettingsWindow", this))
-      QtUtils::CenterWindowRelativeToParent(this, g_main_window);
-  }
 }
 
 ControllerSettingsWindow::~ControllerSettingsWindow() = default;
@@ -117,7 +111,7 @@ void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, IN
   ControllerSettingsWindow* dlg = new ControllerSettingsWindow(sif, false, parent);
   dlg->setWindowFlag(Qt::Window);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
-  dlg->setWindowModality(Qt::WindowModality::WindowModal);
+  dlg->setWindowModality(Qt::WindowModal);
   dlg->setWindowTitle(parent->windowTitle());
   dlg->setWindowIcon(parent->windowIcon());
   dlg->show();
@@ -503,10 +497,10 @@ void ControllerSettingsWindow::createWidgets()
 
 void ControllerSettingsWindow::closeEvent(QCloseEvent* event)
 {
-  QWidget::closeEvent(event);
-
   if (isEditingGlobalSettings())
     QtUtils::SaveWindowGeometry("ControllerSettingsWindow", this);
+
+  QWidget::closeEvent(event);
 }
 
 void ControllerSettingsWindow::updateListDescription(u32 global_slot, ControllerBindingWidget* widget)

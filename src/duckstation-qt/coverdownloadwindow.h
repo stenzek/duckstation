@@ -28,7 +28,7 @@ Q_SIGNALS:
   void coverRefreshRequested();
 
 protected:
-  void closeEvent(QCloseEvent* ev);
+  void closeEvent(QCloseEvent* ev) override;
 
 private:
   class CoverDownloadThread : public QtAsyncProgressThread
