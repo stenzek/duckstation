@@ -35,8 +35,11 @@
      </item>
      <item>
       <widget class="QPushButton" name="openFile">
+       <property name="toolTip">
+        <string>Open...</string>
+       </property>
        <property name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+        <iconset theme="folder-open-line"/>
        </property>
       </widget>
      </item>
@@ -94,12 +97,6 @@
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
        </property>
       </spacer>
      </item>
