@@ -1095,6 +1095,7 @@ void FullscreenUI::RenderOverlays()
   const float notification_vertical_pos = GetNotificationVerticalPosition();
   ImVec2 position(margin, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
                             ((notification_vertical_pos >= 0.5f) ? -margin : margin));
+  position.y = std::max(position.y, ImGuiManager::GetOSDMessageEndPosition());
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
   DrawToast();

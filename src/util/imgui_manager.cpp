@@ -126,8 +126,6 @@ namespace {
 
 struct ALIGN_TO_CACHE_LINE State
 {
-  ImGuiContext* imgui_context = nullptr;
-
   // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
@@ -137,7 +135,8 @@ struct ALIGN_TO_CACHE_LINE State
   std::mutex osd_messages_lock;
 
   // Owned by GPU thread
-  ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
+  ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
+  Timer::Value last_render_time = 0;
 
   float global_scale = 0.0f;
   float window_width = 0.0f;
@@ -154,6 +153,7 @@ struct ALIGN_TO_CACHE_LINE State
   ImFont* fixed_font = nullptr;
 
   std::deque<OSDMessage> osd_active_messages;
+  float osd_messages_end_y = 0.0f;
 
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
@@ -832,6 +832,11 @@ float ImGuiManager::GetOSDMessageDuration(OSDMessageType type)
   return g_gpu_settings.display_osd_message_duration[static_cast<size_t>(type)];
 }
 
+float ImGuiManager::GetOSDMessageEndPosition()
+{
+  return s_state.osd_messages_end_y;
+}
+
 void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
                                  std::string message)
 {
@@ -958,7 +963,10 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   static constexpr float MOVE_DURATION = 0.5f;
 
   if (s_state.osd_active_messages.empty())
+  {
+    s_state.osd_messages_end_y = 0.0f;
     return;
+  }
 
   ImFont* const font = s_state.text_font;
   const float font_size = GetOSDFontSize();
@@ -1132,6 +1140,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     position_y += box_height + spacing;
   }
+
+  s_state.osd_messages_end_y = position_y;
 }
 
 void ImGuiManager::RenderOSDMessages()

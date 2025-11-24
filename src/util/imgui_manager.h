@@ -192,6 +192,9 @@ std::string StripIconCharacters(std::string_view str);
 /// Returns the duration for the specified OSD message type.
 float GetOSDMessageDuration(OSDMessageType type);
 
+/// Returns the ending position of OSD messages from the last frame.
+float GetOSDMessageEndPosition();
+
 #ifndef __ANDROID__
 
 /// Auxiliary imgui windows.
