@@ -49,6 +49,8 @@ private:
   void updateResolutionDependentOptions();
   void onDownsampleModeChanged();
 
+  void onOSDShowMessagesChanged();
+
   void onMediaCaptureBackendChanged();
   void onMediaCaptureContainerChanged();
   void onMediaCaptureVideoEnabledChanged();

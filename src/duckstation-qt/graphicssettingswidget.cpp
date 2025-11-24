@@ -219,7 +219,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showOSDMessages, "Display", "ShowOSDMessages", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, "Display", "ShowOSDMessages", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showResolution, "Display", "ShowResolution", false);
@@ -233,8 +233,22 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "Display", "ShowEnhancements", false);
 
+  SettingWidgetBinder::BindWidgetToFloatSetting(
+    sif, m_ui.osdErrorDuration, "Display", "OSDErrorDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Error)]);
+  SettingWidgetBinder::BindWidgetToFloatSetting(
+    sif, m_ui.osdWarningDuration, "Display", "OSDWarningDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Warning)]);
+  SettingWidgetBinder::BindWidgetToFloatSetting(
+    sif, m_ui.osdInformationDuration, "Display", "OSDInfoDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Info)]);
+  SettingWidgetBinder::BindWidgetToFloatSetting(
+    sif, m_ui.osdQuickDuration, "Display", "OSDQuickDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)]);
+
   connect(m_ui.fullscreenUITheme, QOverload<int>::of(&QComboBox::currentIndexChanged), g_emu_thread,
           &EmuThread::updateFullscreenUITheme);
+  connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onOSDShowMessagesChanged);
 
   // Capture Tab
 
@@ -363,6 +377,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   updateRendererDependentOptions();
   onDownsampleModeChanged();
   updateResolutionDependentOptions();
+  onOSDShowMessagesChanged();
   onMediaCaptureBackendChanged();
   onMediaCaptureAudioEnabledChanged();
   onMediaCaptureVideoEnabledChanged();
@@ -549,9 +564,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
   dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
                              tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
-  dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
-                             tr("Shows on-screen-display messages when events occur such as save states being "
-                                "created/loaded, screenshots being taken, etc."));
+  dialog->registerWidgetHelp(
+    m_ui.showMessages, tr("Show Messages"), tr("Checked"),
+    tr("Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being "
+       "taken, etc. Errors and warnings are still displayed regardless of this setting."));
   dialog->registerWidgetHelp(m_ui.showResolution, tr("Show Resolution"), tr("Unchecked"),
                              tr("Shows the resolution of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(
@@ -1142,6 +1158,18 @@ void GraphicsSettingsWidget::onDownsampleModeChanged()
     m_ui.gpuDownsampleScale->setVisible(false);
     m_ui.gpuDownsampleLayout->removeWidget(m_ui.gpuDownsampleScale);
   }
+}
+
+void GraphicsSettingsWidget::onOSDShowMessagesChanged()
+{
+  const bool enabled = m_dialog->getEffectiveBoolValue("Display", "ShowOSDMessages", true);
+
+  // Errors/warnings are always shown.
+
+  m_ui.osdInformationDurationLabel->setEnabled(enabled);
+  m_ui.osdInformationDuration->setEnabled(enabled);
+  m_ui.osdQuickDurationLabel->setEnabled(enabled);
+  m_ui.osdQuickDuration->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onMediaCaptureBackendChanged()

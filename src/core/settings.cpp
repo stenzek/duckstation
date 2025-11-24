@@ -115,6 +115,16 @@ void SettingInfo::CopyValue(SettingsInterface* dest_si, const SettingsInterface&
   }
 }
 
+const std::array<float, 5> GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS = {{
+  15.0f,                             // Error
+  10.0f,                             // Warning
+  5.0f,                              // Info
+  2.5f,                              // Quick
+  std::numeric_limits<float>::max(), // Persistent
+}};
+static_assert(static_cast<size_t>(OSDMessageType::MaxCount) ==
+              GPUSettings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS.size());
+
 GPUSettings::GPUSettings()
 {
   SetPGXPDepthClearThreshold(DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
@@ -369,6 +379,14 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
   display_osd_margin = std::max(si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN), 0.0f);
+
+  for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::Persistent); i++)
+  {
+    display_osd_message_duration[i] = si.GetFloatValue(
+      "Display", TinyString::from_format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i))),
+      DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[i]);
+  }
+  display_osd_message_duration[static_cast<size_t>(OSDMessageType::Persistent)] = std::numeric_limits<float>::max();
 
   save_state_compression = ParseSaveStateCompressionModeName(
                              si.GetStringValue("Main", "SaveStateCompression",
@@ -708,6 +726,14 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
     si.SetFloatValue("Display", "OSDScale", display_osd_scale);
     si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
+
+    for (size_t i = 0; i < static_cast<size_t>(OSDMessageType::MaxCount); i++)
+    {
+      si.SetFloatValue(
+        "Display",
+        TinyString::from_format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i))),
+        display_osd_message_duration[i]);
+    }
   }
 
   si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
@@ -2241,6 +2267,16 @@ std::optional<DisplayScreenshotFormat> Settings::GetDisplayScreenshotFormatFromF
   }
 
   return std::nullopt;
+}
+
+static constexpr const std::array s_display_osd_message_type_names = {
+  "Error", "Warning", "Info", "Quick", "Persistent",
+};
+static_assert(s_display_osd_message_type_names.size() == static_cast<size_t>(OSDMessageType::MaxCount));
+
+const char* Settings::GetDisplayOSDMessageTypeName(OSDMessageType type)
+{
+  return s_display_osd_message_type_names[static_cast<size_t>(type)];
 }
 
 static constexpr const std::array s_achievement_challenge_indicator_mode_names = {

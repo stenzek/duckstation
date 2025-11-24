@@ -828,16 +828,7 @@ void ImGuiManager::ReloadFontDataIfActive()
 float ImGuiManager::GetOSDMessageDuration(OSDMessageType type)
 {
   DebugAssert(type < OSDMessageType::MaxCount);
-
-  static constexpr const std::array<float, static_cast<size_t>(OSDMessageType::MaxCount)> durations = {{
-    15.0f,                             // Error
-    10.0f,                             // Warning
-    5.0f,                              // Info
-    2.5f,                              // Quick
-    std::numeric_limits<float>::max(), // Persistent
-  }};
-
-  return durations[static_cast<size_t>(type)];
+  return g_gpu_settings.display_osd_message_duration[static_cast<size_t>(type)];
 }
 
 void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,

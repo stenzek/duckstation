@@ -652,14 +652,14 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,1" columnminimumwidth="100,0">
           <property name="topMargin">
            <number>6</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_29">
             <property name="text">
-             <string>OSD Scale:</string>
+             <string>Display Scale:</string>
             </property>
            </widget>
           </item>
@@ -679,7 +679,7 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_10">
             <property name="text">
-             <string>Screen Margins:</string>
+             <string>Display Margins:</string>
             </property>
            </widget>
           </item>
@@ -706,9 +706,9 @@
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
-             <widget class="QCheckBox" name="showOSDMessages">
+             <widget class="QCheckBox" name="showMessages">
               <property name="text">
-               <string>Show OSD Messages</string>
+               <string>Show Messages</string>
               </property>
              </widget>
             </item>
@@ -790,6 +790,119 @@
              </widget>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="osdMessageDurations">
+         <property name="title">
+          <string>Message Durations</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,1,0,1" columnminimumwidth="100,0,100,0">
+          <item row="0" column="0">
+           <widget class="QLabel" name="osdErrorDurationLabel">
+            <property name="text">
+             <string>Error:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="osdErrorDuration">
+            <property name="suffix">
+             <string> seconds</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="osdWarningDurationLabel">
+            <property name="text">
+             <string>Warning:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QDoubleSpinBox" name="osdWarningDuration">
+            <property name="suffix">
+             <string> seconds</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="osdInformationDurationLabel">
+            <property name="text">
+             <string>Informational:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="osdInformationDuration">
+            <property name="suffix">
+             <string> seconds</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="osdQuickDurationLabel">
+            <property name="text">
+             <string>Quick:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QDoubleSpinBox" name="osdQuickDuration">
+            <property name="suffix">
+             <string> seconds</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>60.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

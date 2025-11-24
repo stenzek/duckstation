@@ -2203,9 +2203,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                           FSUI_VSTR("Determines the margin between the edge of the screen and on-screen messages."),
                           "Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN, 0.0f, 100.0f, 1.0f, 1.0f,
                           "%.0fpx");
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_EXCLAMATION, "Show OSD Messages"),
-                    FSUI_VSTR("Shows on-screen-display messages when events occur."), "Display", "ShowOSDMessages",
-                    true);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_EXCLAMATION, "Show Messages"),
+                    FSUI_VSTR("Shows on-screen-display messages when events occur. Errors and warnings are still "
+                              "displayed regardless of this setting."),
+                    "Display", "ShowOSDMessages", true);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PLAY, "Show Status Indicators"),
                     FSUI_VSTR("Shows persistent icons when turbo is active or when paused."), "Display",
                     "ShowStatusIndicators", true);
@@ -2247,6 +2248,32 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CHART_LINE, "Show Enhancement Settings"),
                     FSUI_VSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
+
+  MenuHeading(FSUI_VSTR("On-Screen Display Message Durations"));
+
+  static constexpr float MIN_OSD_MESSAGE_DURATION = 0.5f;
+  static constexpr float MAX_OSD_MESSAGE_DURATION = 60.0f;
+  static constexpr float OSD_MESSAGE_DURATION_STEP = 0.5f;
+  DrawFloatSpinBoxSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_TRIANGLE_EXCLAMATION, "Error Message Duration"),
+    FSUI_VSTR("Determines how long error messages are displayed on screen."), "Display", "OSDErrorDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Error)],
+    MIN_OSD_MESSAGE_DURATION, MAX_OSD_MESSAGE_DURATION, OSD_MESSAGE_DURATION_STEP, 1.0f, FSUI_CSTR("%g seconds"));
+  DrawFloatSpinBoxSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_CIRCLE_EXCLAMATION, "Warning Message Duration"),
+    FSUI_VSTR("Determines how long warning messages are displayed on screen."), "Display", "OSDWarningDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Warning)],
+    MIN_OSD_MESSAGE_DURATION, MAX_OSD_MESSAGE_DURATION, OSD_MESSAGE_DURATION_STEP, 1.0f, FSUI_CSTR("%g seconds"));
+  DrawFloatSpinBoxSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_CIRCLE_INFO, "Informational Message Duration"),
+    FSUI_VSTR("Determines how long informational messages are displayed on screen."), "Display", "OSDInfoDuration",
+    Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Info)],
+    MIN_OSD_MESSAGE_DURATION, MAX_OSD_MESSAGE_DURATION, OSD_MESSAGE_DURATION_STEP, 1.0f, FSUI_CSTR("%g seconds"));
+  DrawFloatSpinBoxSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_CIRCLE_CHECK, "Quick Message Duration"),
+    FSUI_VSTR("Determines how long action confirmation messages are displayed on screen."), "Display",
+    "OSDQuickDuration", Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)],
+    MIN_OSD_MESSAGE_DURATION, MAX_OSD_MESSAGE_DURATION, OSD_MESSAGE_DURATION_STEP, 1.0f, FSUI_CSTR("%g seconds"));
 
   MenuHeading(FSUI_VSTR("Operations"));
   {
