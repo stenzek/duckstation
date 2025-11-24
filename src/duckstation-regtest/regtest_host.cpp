@@ -764,7 +764,7 @@ void RegTestHost::DumpSystemStateHashes()
   // don't save full state on gpu dump, it's not going to be complete...
   if (!System::IsReplayingGPUDump())
   {
-    DynamicHeapArray<u8> state_data(System::GetMaxSaveStateSize());
+    DynamicHeapArray<u8> state_data(System::GetMaxSaveStateSize(g_settings.cpu_enable_8mb_ram));
     size_t state_data_size;
     if (!System::SaveStateDataToBuffer(state_data, &state_data_size, &error))
     {
