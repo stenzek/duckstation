@@ -2560,7 +2560,7 @@ void MainWindow::connectSignals()
 
   connect(g_emu_thread, &EmuThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
           Qt::QueuedConnection);
-  connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError, Qt::BlockingQueuedConnection);
+  connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError);
   connect(g_emu_thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
   connect(g_emu_thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
