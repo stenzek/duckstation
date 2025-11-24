@@ -1606,11 +1606,18 @@ void EmuThread::dumpRAM(const QString& path)
     return;
   }
 
+  Error error;
   const std::string path_str = path.toStdString();
-  if (System::DumpRAM(path_str.c_str()))
-    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("RAM dumped to '{}'", path_str));
+  if (System::DumpRAM(path_str.c_str(), &error))
+  {
+    emit statusMessage(QStringLiteral("RAM dumped to %1.").arg(path));
+  }
   else
-    Host::ReportErrorAsync("Error", fmt::format("Failed to dump RAM to '{}'", path_str));
+  {
+    emit errorReported(
+      QStringLiteral("Error"),
+      QStringLiteral("Failed to dump RAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+  }
 }
 
 void EmuThread::dumpVRAM(const QString& path)
@@ -1621,11 +1628,18 @@ void EmuThread::dumpVRAM(const QString& path)
     return;
   }
 
+  Error error;
   const std::string path_str = path.toStdString();
-  if (System::DumpVRAM(path_str.c_str()))
-    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("VRAM dumped to '{}'", path_str));
+  if (System::DumpVRAM(path_str.c_str(), &error))
+  {
+    emit statusMessage(QStringLiteral("VRAM dumped to %1.").arg(path));
+  }
   else
-    Host::ReportErrorAsync("Error", fmt::format("Failed to dump VRAM to '{}'", path_str));
+  {
+    emit errorReported(
+      QStringLiteral("Error"),
+      QStringLiteral("Failed to dump VRAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+  }
 }
 
 void EmuThread::dumpSPURAM(const QString& path)
@@ -1636,11 +1650,18 @@ void EmuThread::dumpSPURAM(const QString& path)
     return;
   }
 
+  Error error;
   const std::string path_str = path.toStdString();
-  if (System::DumpSPURAM(path_str.c_str()))
-    Host::AddOSDMessage(OSDMessageType::Info, fmt::format("SPU RAM dumped to '{}'", path_str));
+  if (System::DumpSPURAM(path_str.c_str(), &error))
+  {
+    emit statusMessage(QStringLiteral("SPU RAM dumped to %1.").arg(path));
+  }
   else
-    Host::ReportErrorAsync("Error", fmt::format("Failed to dump SPU RAM to '{}'", path_str));
+  {
+    emit errorReported(
+      QStringLiteral("Error"),
+      QStringLiteral("Failed to dump SPU RAM to %1: %2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+  }
 }
 
 void EmuThread::saveScreenshot()

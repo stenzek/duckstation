@@ -4041,28 +4041,37 @@ void System::UpdateMultitaps()
   }
 }
 
-bool System::DumpRAM(const char* path)
+bool System::DumpRAM(std::string path, Error* error)
 {
   if (!IsValid())
+  {
+    Error::SetStringView(error, "Invalid system state.");
     return false;
+  }
 
-  return FileSystem::WriteBinaryFile(path, Bus::g_unprotected_ram, Bus::g_ram_size);
+  return FileSystem::WriteAtomicRenamedFile(std::move(path), Bus::g_unprotected_ram, Bus::g_ram_size, error);
 }
 
-bool System::DumpVRAM(const char* path)
+bool System::DumpVRAM(std::string path, Error* error)
 {
   if (!IsValid())
+  {
+    Error::SetStringView(error, "Invalid system state.");
     return false;
+  }
 
-  return g_gpu.DumpVRAMToFile(path);
+  return g_gpu.DumpVRAMToFile(path, error);
 }
 
-bool System::DumpSPURAM(const char* path)
+bool System::DumpSPURAM(std::string path, Error* error)
 {
   if (!IsValid())
+  {
+    Error::SetStringView(error, "Invalid system state.");
     return false;
+  }
 
-  return FileSystem::WriteBinaryFile(path, SPU::GetRAM().data(), SPU::RAM_SIZE);
+  return FileSystem::WriteAtomicRenamedFile(std::move(path), SPU::GetRAM(), error);
 }
 
 bool System::HasMedia()

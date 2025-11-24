@@ -312,13 +312,13 @@ bool IsSavingMemoryCards();
 void SwapMemoryCards();
 
 /// Dumps RAM to a file.
-bool DumpRAM(const char* path);
+bool DumpRAM(std::string path, Error* error);
 
 /// Dumps video RAM to a file.
-bool DumpVRAM(const char* path);
+bool DumpVRAM(std::string path, Error* error);
 
 /// Dumps sound RAM to a file.
-bool DumpSPURAM(const char* path);
+bool DumpSPURAM(std::string path, Error* error);
 
 bool HasMedia();
 std::string GetMediaPath();

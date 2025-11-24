@@ -2030,27 +2030,28 @@ u8 GPU::CalculateAutomaticResolutionScale() const
   return Truncate8(scale);
 }
 
-bool GPU::DumpVRAMToFile(const char* filename)
+bool GPU::DumpVRAMToFile(std::string path, Error* error)
 {
   ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
 
-  const char* extension = std::strrchr(filename, '.');
-  if (extension && StringUtil::Strcasecmp(extension, ".png") == 0)
+  const std::string_view extension = Path::GetExtension(path);
+  if (StringUtil::EqualNoCase(extension, "png"))
   {
-    return DumpVRAMToFile(filename, VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, g_vram, true);
+    return DumpVRAMToFile(std::move(path), VRAM_WIDTH, VRAM_HEIGHT, sizeof(u16) * VRAM_WIDTH, g_vram, true, error);
   }
-  else if (extension && StringUtil::Strcasecmp(extension, ".bin") == 0)
+  else if (StringUtil::EqualNoCase(extension, "bin"))
   {
-    return FileSystem::WriteBinaryFile(filename, g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+    return FileSystem::WriteAtomicRenamedFile(std::move(path), g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16), error);
   }
   else
   {
-    ERROR_LOG("Unknown extension: '{}'", filename);
+    Error::SetStringFmt(error, "Unknown extension: '{}'", extension);
     return false;
   }
 }
 
-bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)
+bool GPU::DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha,
+                         Error* error /* = nullptr */)
 {
   Image image(width, height, ImageFormat::RGBA8);
 
@@ -2074,7 +2075,7 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
     ptr_in += stride;
   }
 
-  return image.SaveToFile(filename);
+  return image.SaveToFile(path.c_str(), Image::DEFAULT_SAVE_QUALITY, error);
 }
 
 void GPU::DrawDebugStateWindow(float scale)

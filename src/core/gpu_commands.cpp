@@ -12,6 +12,7 @@
 #include "common/assert.h"
 #include "common/gsvector_formatter.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 
 LOG_CHANNEL(GPU);
@@ -1017,8 +1018,10 @@ void GPU::FinishVRAMWrite()
   {
     if (g_settings.gpu_dump_cpu_to_vram_copies)
     {
-      DumpVRAMToFile(TinyString::from_format("cpu_to_vram_copy_{}.png", s_cpu_to_vram_dump_id++), m_vram_transfer.width,
-                     m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width, m_blit_buffer.data(), true);
+      DumpVRAMToFile(fmt::format("{}" FS_OSPATH_SEPARATOR_STR "cpu_to_vram_copy_{}.png", EmuFolders::DataRoot,
+                                 s_cpu_to_vram_dump_id++),
+                     m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width,
+                     m_blit_buffer.data(), true);
     }
 
     UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,
@@ -1075,8 +1078,9 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
 
   if (g_settings.gpu_dump_vram_to_cpu_copies)
   {
-    DumpVRAMToFile(TinyString::from_format("vram_to_cpu_copy_{}.png", s_vram_to_cpu_dump_id++), m_vram_transfer.width,
-                   m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
+    DumpVRAMToFile(fmt::format("{}" FS_OSPATH_SEPARATOR_STR "vram_to_cpu_copy_{}.png", EmuFolders::DataRoot,
+                               s_vram_to_cpu_dump_id++),
+                   m_vram_transfer.width, m_vram_transfer.height, sizeof(u16) * VRAM_WIDTH,
                    &g_vram[m_vram_transfer.y * VRAM_WIDTH + m_vram_transfer.x], true);
   }
 

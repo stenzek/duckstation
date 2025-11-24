@@ -228,7 +228,7 @@ public:
   void FrameDoneEvent(TickCount ticks);
 
   // Dumps raw VRAM to a file.
-  bool DumpVRAMToFile(const char* filename);
+  bool DumpVRAMToFile(std::string path, Error* error);
 
   // Kicks the current frame to the backend for display.
   void UpdateDisplay(bool submit_frame);
@@ -257,8 +257,8 @@ private:
   }
   ALWAYS_INLINE static constexpr TickCount SystemTicksToGPUTicks(TickCount sysclk_ticks) { return sysclk_ticks << 1; }
 
-  static bool DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer,
-                             bool remove_alpha);
+  static bool DumpVRAMToFile(std::string path, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha,
+                             Error* error = nullptr);
 
   void SoftReset();
   void ClearDisplay();
