@@ -13,9 +13,6 @@
 #include "common/assert.h"
 #include "common/string_util.h"
 
-#include <QtCore/QSignalBlocker>
-#include <QtGui/QCursor>
-#include <QtGui/QFontDatabase>
 #include <QtGui/QShortcut>
 #include <QtWidgets/QAbstractScrollArea>
 #include <QtWidgets/QFileDialog>
@@ -382,9 +379,6 @@ void MemoryEditorWindow::setupAdditionalUi()
 {
   const QFont& fixed_font = QtHost::GetFixedFont();
   m_ui.memoryView->setFont(fixed_font);
-
-  if (!QtUtils::RestoreWindowGeometry("MemoryEditorWindow", this))
-    QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 
   // Set minimum width for data inspector.
   m_ui.dataInspectorAddress->setFont(fixed_font);

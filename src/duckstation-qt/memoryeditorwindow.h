@@ -27,7 +27,7 @@ Q_SIGNALS:
   void closed();
 
 protected:
-  void closeEvent(QCloseEvent* event);
+  void closeEvent(QCloseEvent* event) override;
 
 private:
   void setupAdditionalUi();

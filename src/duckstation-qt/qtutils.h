@@ -54,7 +54,8 @@ QFrame* CreateHorizontalLine(QWidget* parent);
 QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog = true);
 
 /// Shows or raises a window (brings it to the front).
-void ShowOrRaiseWindow(QWidget* window);
+/// If the window was hidden and parent_window is provided, the window is centered on parent_window.
+void ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window = nullptr, bool restore_geometry = false);
 
 /// Closes and deletes a window later, outside of this event pump.
 template<typename T>
@@ -174,7 +175,7 @@ void SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto
 bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
 /// Positions a window in the center of its parent or the screen.
-void CenterWindowRelativeToParent(QWidget* window, QWidget* parent_window);
+void CenterWindowRelativeToParent(QWidget* window, const QWidget* parent_window);
 
 /// CPU-friendly way of blocking the UI thread while some predicate holds true.
 template<typename Predicate>

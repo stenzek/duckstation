@@ -174,8 +174,6 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
   m_animation_timer = new QTimer(this);
   m_animation_timer->setInterval(MEMORY_CARD_ICON_FRAME_DURATION_MS);
   connect(m_animation_timer, &QTimer::timeout, this, &MemoryCardEditorWindow::incrementAnimationFrame);
-
-  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 MemoryCardEditorWindow::~MemoryCardEditorWindow() = default;
@@ -226,12 +224,7 @@ bool MemoryCardEditorWindow::createMemoryCard(const QString& path, Error* error)
 
 bool MemoryCardEditorWindow::event(QEvent* event)
 {
-  if (event->type() == QEvent::Close)
-  {
-    m_card_a.path_cb->setCurrentIndex(0);
-    m_card_b.path_cb->setCurrentIndex(0);
-  }
-  else if (event->type() == QEvent::DevicePixelRatioChange)
+  if (event->type() == QEvent::DevicePixelRatioChange)
   {
     const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
     MemoryCardEditorIconStyleDelegate::getForView(m_card_a.table)->setDevicePixelRatio(dpr);
@@ -239,6 +232,14 @@ bool MemoryCardEditorWindow::event(QEvent* event)
   }
 
   return QWidget::event(event);
+}
+
+void MemoryCardEditorWindow::closeEvent(QCloseEvent* event)
+{
+  m_card_a.path_cb->setCurrentIndex(0);
+  m_card_b.path_cb->setCurrentIndex(0);
+
+  QWidget::closeEvent(event);
 }
 
 void MemoryCardEditorWindow::createCardButtons(Card* card, QDialogButtonBox* buttonBox)

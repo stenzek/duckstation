@@ -8,8 +8,6 @@
 #include "core/memory_scanner.h"
 
 #include <QtCore/QTimer>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QWidget>
@@ -27,7 +25,7 @@ Q_SIGNALS:
   void closed();
 
 protected:
-  void closeEvent(QCloseEvent* event);
+  void closeEvent(QCloseEvent* event) override;
 
 private:
   enum : int

@@ -84,14 +84,21 @@ QWidget* QtUtils::GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
   return widget;
 }
 
-void QtUtils::ShowOrRaiseWindow(QWidget* window)
+void QtUtils::ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window, bool restore_geometry)
 {
   if (!window)
     return;
 
   if (!window->isVisible())
   {
+    bool restored = false;
+    if (restore_geometry)
+      restored = RestoreWindowGeometry(window->metaObject()->className(), window);
+
     window->show();
+
+    if (!restored && parent_window)
+      CenterWindowRelativeToParent(window, parent_window);
   }
   else
   {
@@ -703,14 +710,14 @@ bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widge
   return true;
 }
 
-void QtUtils::CenterWindowRelativeToParent(QWidget* window, QWidget* parent_window)
+void QtUtils::CenterWindowRelativeToParent(QWidget* window, const QWidget* parent_window)
 {
   // la la la, this won't work on fucking wankland, I don't care, it'll appear in the top-left
   // corner of the screen or whatever, shit experience is shit
 
-  const QRect parent_geometry = (parent_window && parent_window->isVisible()) ?
-                                  parent_window->geometry() :
-                                  QGuiApplication::primaryScreen()->availableGeometry();
+  const QRect& parent_geometry = (parent_window && parent_window->isVisible()) ?
+                                   parent_window->geometry() :
+                                   QGuiApplication::primaryScreen()->availableGeometry();
   const QPoint parent_center_pos = parent_geometry.center();
 
   QRect window_geometry = window->geometry();

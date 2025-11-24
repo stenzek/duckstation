@@ -30,8 +30,8 @@ public:
   static void populateFilterMenu(QMenu* menu);
 
 protected:
-  void closeEvent(QCloseEvent* event);
-  void changeEvent(QEvent* event);
+  void closeEvent(QCloseEvent* event) override;
+  void changeEvent(QEvent* event) override;
 
 private:
   static constexpr int DEFAULT_WIDTH = 750;

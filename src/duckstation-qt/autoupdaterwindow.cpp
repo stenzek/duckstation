@@ -90,8 +90,6 @@ AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
   m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!m_http)
     ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available:\n{}", error.GetDescription());
-
-  QtUtils::CenterWindowRelativeToParent(this, g_main_window);
 }
 
 AutoUpdaterWindow::~AutoUpdaterWindow() = default;

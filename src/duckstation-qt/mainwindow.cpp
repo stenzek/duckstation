@@ -1661,6 +1661,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
           {
             ib->setAttribute(Qt::WA_DeleteOnClose);
             ib->show();
+            QtUtils::CenterWindowRelativeToParent(ib, this);
           }
         });
       }
@@ -2778,10 +2779,10 @@ SettingsWindow* MainWindow::getSettingsWindow()
 
 void MainWindow::doSettings(const char* category /* = nullptr */)
 {
-  SettingsWindow* dlg = getSettingsWindow();
-  QtUtils::ShowOrRaiseWindow(dlg);
+  SettingsWindow* window = getSettingsWindow();
+  QtUtils::ShowOrRaiseWindow(window, this, true);
   if (category)
-    dlg->setCategory(category);
+    window->setCategory(category);
 }
 
 void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = nullptr */)
@@ -2832,10 +2833,10 @@ MemoryEditorWindow* MainWindow::getMemoryEditorWindow()
 void MainWindow::doControllerSettings(
   ControllerSettingsWindow::Category category /*= ControllerSettingsDialog::Category::Count*/)
 {
-  ControllerSettingsWindow* dlg = getControllerSettingsWindow();
-  QtUtils::ShowOrRaiseWindow(dlg);
+  ControllerSettingsWindow* window = getControllerSettingsWindow();
+  QtUtils::ShowOrRaiseWindow(window, this, true);
   if (category != ControllerSettingsWindow::Category::Count)
-    dlg->setCategory(category);
+    window->setCategory(category);
 }
 
 void MainWindow::onViewChangeGameListBackgroundTriggered()
@@ -2868,7 +2869,7 @@ void MainWindow::onSettingsControllerProfilesTriggered()
   if (!m_input_profile_editor_window)
     m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
 
-  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window);
+  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
 }
 
 void MainWindow::openInputProfileEditor(const std::string_view name)
@@ -2876,7 +2877,7 @@ void MainWindow::openInputProfileEditor(const std::string_view name)
   if (!m_input_profile_editor_window)
     m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
 
-  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window);
+  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window, this);
   m_input_profile_editor_window->switchProfile(name);
 }
 
@@ -3205,7 +3206,7 @@ void MainWindow::openMemoryCardEditor(const QString& card_a_path, const QString&
   if (!m_memory_card_editor_window)
     m_memory_card_editor_window = new MemoryCardEditorWindow();
 
-  QtUtils::ShowOrRaiseWindow(m_memory_card_editor_window);
+  QtUtils::ShowOrRaiseWindow(m_memory_card_editor_window, this);
 
   if (!card_a_path.isEmpty())
   {
@@ -3333,7 +3334,7 @@ void MainWindow::onToolsCoverDownloaderTriggered()
     });
   }
 
-  QtUtils::ShowOrRaiseWindow(m_cover_download_window);
+  QtUtils::ShowOrRaiseWindow(m_cover_download_window, this, true);
 }
 
 void MainWindow::onToolsMediaCaptureToggled(bool checked)
@@ -3374,7 +3375,7 @@ void MainWindow::onToolsMemoryEditorTriggered()
   if (s_achievements_hardcore_mode)
     return;
 
-  QtUtils::ShowOrRaiseWindow(getMemoryEditorWindow());
+  QtUtils::ShowOrRaiseWindow(getMemoryEditorWindow(), this, true);
 }
 
 void MainWindow::onToolsMemoryScannerTriggered()
@@ -3391,7 +3392,7 @@ void MainWindow::onToolsMemoryScannerTriggered()
     });
   }
 
-  QtUtils::ShowOrRaiseWindow(m_memory_scanner_window);
+  QtUtils::ShowOrRaiseWindow(m_memory_scanner_window, this, true);
 }
 
 void MainWindow::onToolsISOBrowserTriggered()
@@ -3399,6 +3400,7 @@ void MainWindow::onToolsISOBrowserTriggered()
   ISOBrowserWindow* ib = new ISOBrowserWindow();
   ib->setAttribute(Qt::WA_DeleteOnClose);
   ib->show();
+  QtUtils::CenterWindowRelativeToParent(ib, this);
 }
 
 void MainWindow::openCPUDebugger()
@@ -3415,7 +3417,7 @@ void MainWindow::openCPUDebugger()
     });
   }
 
-  QtUtils::ShowOrRaiseWindow(m_debugger_window);
+  QtUtils::ShowOrRaiseWindow(m_debugger_window, this, true);
 }
 
 void MainWindow::onToolsOpenDataDirectoryTriggered()
@@ -3466,7 +3468,7 @@ void MainWindow::checkForUpdates(bool display_message)
 
   if (m_auto_updater_dialog)
   {
-    QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog);
+    QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this);
     return;
   }
 
