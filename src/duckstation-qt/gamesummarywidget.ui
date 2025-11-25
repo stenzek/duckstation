@@ -160,23 +160,19 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-     <item>
-      <widget class="QComboBox" name="compatibility">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="compatibilityComments">
-       <property name="icon">
-        <iconset theme="information-line"/>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="compatibility">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2">
+    <widget class="QPushButton" name="compatibilityComments">
+     <property name="icon">
+      <iconset theme="information-line"/>
+     </property>
+    </widget>
    </item>
    <item row="7" column="0">
     <widget class="QLabel" name="label_11">
