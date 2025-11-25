@@ -33,7 +33,6 @@
 
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QScrollBar>
-#include <QtWidgets/QTextEdit>
 
 #include "moc_settingswindow.cpp"
 

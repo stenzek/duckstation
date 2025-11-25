@@ -17,9 +17,7 @@
 #include "fmt/format.h"
 
 #include <QtCore/QDateTime>
-#include <QtCore/QFuture>
 #include <QtCore/QSignalBlocker>
-#include <QtCore/QStringBuilder>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTextBrowser>
@@ -229,7 +227,7 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
     m_ui.separateDiscSettings->setVisible(false);
   }
 
-  m_ui.compatibilityComments->setVisible(!m_compatibility_comments.isEmpty());
+  m_ui.compatibilityComments->setEnabled(!m_compatibility_comments.isEmpty());
 
   m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("global-line")), tr("Use Global Settings"));
   m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")),
