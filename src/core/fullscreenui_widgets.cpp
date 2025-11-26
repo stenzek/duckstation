@@ -4906,7 +4906,8 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
 
     if (!notif.note.empty())
     {
-      const ImVec2 note_pos = ImVec2(box_max.x - horizontal_padding - note_size.x, box_min.y + vertical_padding);
+      const ImVec2 note_pos =
+        ImVec2((box_min.x + full_box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
       const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
       RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
                                 notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
