@@ -63,14 +63,15 @@ void CoverDownloadWindow::onDownloadComplete()
   QString error;
   if (m_thread)
   {
-    m_thread->join();
+    m_thread->wait();
     if (!m_thread->getResult())
     {
       if (const std::string& err_str = m_thread->getError().GetDescription(); !err_str.empty())
         m_ui.status->setText(QString::fromStdString(err_str));
     }
 
-    m_thread.reset();
+    delete m_thread;
+    m_thread = nullptr;
   }
 
   updateEnabled();
@@ -103,12 +104,12 @@ void CoverDownloadWindow::updateEnabled()
 
 void CoverDownloadWindow::startThread()
 {
-  m_thread =
-    std::make_unique<CoverDownloadThread>(this, m_ui.urls->toPlainText(), m_ui.useSerialFileNames->isChecked());
+  m_thread = new CoverDownloadThread(m_ui.urls->toPlainText(), m_ui.useSerialFileNames->isChecked());
   m_last_refresh_time.Reset();
-  connect(m_thread.get(), &CoverDownloadThread::statusUpdated, this, &CoverDownloadWindow::onDownloadStatus);
-  connect(m_thread.get(), &CoverDownloadThread::progressUpdated, this, &CoverDownloadWindow::onDownloadProgress);
-  connect(m_thread.get(), &CoverDownloadThread::threadFinished, this, &CoverDownloadWindow::onDownloadComplete);
+  m_thread->moveToThread(m_thread);
+  connect(m_thread, &CoverDownloadThread::statusUpdated, this, &CoverDownloadWindow::onDownloadStatus);
+  connect(m_thread, &CoverDownloadThread::progressUpdated, this, &CoverDownloadWindow::onDownloadProgress);
+  connect(m_thread, &CoverDownloadThread::threadFinished, this, &CoverDownloadWindow::onDownloadComplete);
   m_thread->start();
   updateEnabled();
 }
@@ -119,20 +120,49 @@ void CoverDownloadWindow::cancelThread()
     return;
 
   m_thread->requestInterruption();
-  m_thread->join();
-  m_thread.reset();
+  m_thread->wait();
+  delete m_thread;
+  m_thread = nullptr;
 }
 
-CoverDownloadWindow::CoverDownloadThread::CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials)
-  : QtAsyncProgressThread(parent), m_use_serials(use_serials)
+CoverDownloadThread::CoverDownloadThread(const QString& urls, bool use_serials) : QThread(), m_use_serials(use_serials)
 {
   for (const QString& str : urls.split(QChar('\n')))
     m_urls.push_back(str.toStdString());
 }
 
-CoverDownloadWindow::CoverDownloadThread::~CoverDownloadThread() = default;
+CoverDownloadThread::~CoverDownloadThread() = default;
 
-void CoverDownloadWindow::CoverDownloadThread::runAsync()
+bool CoverDownloadThread::IsCancelled() const
 {
-  m_result = GameList::DownloadCovers(m_urls, m_use_serials, this, &m_error);
+  return isInterruptionRequested();
+}
+
+void CoverDownloadThread::SetTitle(const std::string_view title)
+{
+  emit titleUpdated(QtUtils::StringViewToQString(title));
+}
+
+void CoverDownloadThread::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  emit statusUpdated(QtUtils::StringViewToQString(text));
+}
+
+void CoverDownloadThread::SetProgressRange(u32 range)
+{
+  ProgressCallback::SetProgressRange(range);
+  emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
+}
+
+void CoverDownloadThread::SetProgressValue(u32 value)
+{
+  ProgressCallback::SetProgressValue(value);
+  emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
+}
+
+void CoverDownloadThread::run()
+{
+  m_result = GameList::DownloadCovers(m_urls, m_use_serials, static_cast<ProgressCallback*>(this), &m_error);
+  emit threadFinished();
 }

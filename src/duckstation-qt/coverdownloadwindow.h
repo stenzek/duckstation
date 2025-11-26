@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "qtprogresscallback.h"
 #include "ui_coverdownloadwindow.h"
 
 #include "common/error.h"
+#include "common/progress_callback.h"
 #include "common/timer.h"
 #include "common/types.h"
 
@@ -15,6 +15,8 @@
 #include <array>
 #include <memory>
 #include <string>
+
+class CoverDownloadThread;
 
 class CoverDownloadWindow final : public QWidget
 {
@@ -32,25 +34,6 @@ protected:
   void closeEvent(QCloseEvent* ev) override;
 
 private:
-  class CoverDownloadThread : public QtAsyncProgressThread
-  {
-  public:
-    CoverDownloadThread(QWidget* parent, const QString& urls, bool use_serials);
-    ~CoverDownloadThread();
-
-    ALWAYS_INLINE const Error& getError() const { return m_error; }
-    ALWAYS_INLINE bool getResult() const { return m_result; }
-
-  protected:
-    void runAsync() override;
-
-  private:
-    std::vector<std::string> m_urls;
-    Error m_error;
-    bool m_use_serials = false;
-    bool m_result = false;
-  };
-
   void startThread();
   void cancelThread();
 
@@ -62,6 +45,39 @@ private:
   void updateEnabled();
 
   Ui::CoverDownloadWindow m_ui;
-  std::unique_ptr<CoverDownloadThread> m_thread;
+  CoverDownloadThread* m_thread = nullptr;
   Timer m_last_refresh_time;
+};
+
+class CoverDownloadThread final : public QThread, private ProgressCallback
+{
+  Q_OBJECT
+
+public:
+  CoverDownloadThread(const QString& urls, bool use_serials);
+  ~CoverDownloadThread();
+
+  ALWAYS_INLINE const Error& getError() const { return m_error; }
+  ALWAYS_INLINE bool getResult() const { return m_result; }
+
+Q_SIGNALS:
+  void titleUpdated(const QString& title);
+  void statusUpdated(const QString& status);
+  void progressUpdated(int value, int range);
+  void threadFinished();
+
+protected:
+  void run() override;
+
+  bool IsCancelled() const override;
+  void SetTitle(const std::string_view title) override;
+  void SetStatusText(const std::string_view text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
+
+private:
+  std::vector<std::string> m_urls;
+  Error m_error;
+  bool m_use_serials = false;
+  bool m_result = false;
 };

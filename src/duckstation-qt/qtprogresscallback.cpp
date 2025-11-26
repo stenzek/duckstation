@@ -96,6 +96,7 @@ void QtModalProgressCallback::checkForDelayedShow()
   if (m_show_timer.GetTimeSeconds() >= m_show_delay)
     MakeVisible();
 }
+
 void QtModalProgressCallback::MakeVisible()
 {
   m_dialog.setRange(0, m_progress_range);
@@ -104,79 +105,6 @@ void QtModalProgressCallback::MakeVisible()
     m_dialog.open();
   else
     m_dialog.show();
-}
-
-// NOTE: We deliberately don't set the thread parent, because otherwise we can't move it.
-QtAsyncProgressThread::QtAsyncProgressThread(QWidget* parent) : QThread()
-{
-}
-
-QtAsyncProgressThread::~QtAsyncProgressThread() = default;
-
-bool QtAsyncProgressThread::IsCancelled() const
-{
-  return isInterruptionRequested();
-}
-
-void QtAsyncProgressThread::SetCancellable(bool cancellable)
-{
-  if (m_cancellable == cancellable)
-    return;
-
-  ProgressCallback::SetCancellable(cancellable);
-}
-
-void QtAsyncProgressThread::SetTitle(const std::string_view title)
-{
-  emit titleUpdated(QtUtils::StringViewToQString(title));
-}
-
-void QtAsyncProgressThread::SetStatusText(const std::string_view text)
-{
-  ProgressCallback::SetStatusText(text);
-  emit statusUpdated(QtUtils::StringViewToQString(text));
-}
-
-void QtAsyncProgressThread::SetProgressRange(u32 range)
-{
-  ProgressCallback::SetProgressRange(range);
-  emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
-}
-
-void QtAsyncProgressThread::SetProgressValue(u32 value)
-{
-  ProgressCallback::SetProgressValue(value);
-  emit progressUpdated(static_cast<int>(m_progress_value), static_cast<int>(m_progress_range));
-}
-
-void QtAsyncProgressThread::start()
-{
-  Assert(!isRunning());
-
-  QThread::start();
-  moveToThread(this);
-  m_starting_thread = QThread::currentThread();
-  m_start_semaphore.release();
-}
-
-void QtAsyncProgressThread::join()
-{
-  if (isRunning())
-    QThread::wait();
-}
-
-void QtAsyncProgressThread::run()
-{
-  m_start_semaphore.acquire();
-  emit threadStarting();
-  runAsync();
-  emit threadFinished();
-  moveToThread(m_starting_thread);
-}
-
-QWidget* QtAsyncProgressThread::parentWidget() const
-{
-  return qobject_cast<QWidget*>(parent());
 }
 
 QtAsyncTaskWithProgress::QtAsyncTaskWithProgress(const QString& initial_title, const QString& initial_status_text,
@@ -266,9 +194,9 @@ void QtAsyncTaskWithProgress::ProgressDialog::cancelled()
   m_task.m_ts_cancelled.store(true, std::memory_order_release);
 }
 
-void QtAsyncTaskWithProgress::create(QWidget* parent, std::string_view initial_title,
-                                     std::string_view initial_status_text, bool cancellable, int range, int value,
-                                     float show_delay, WorkCallback callback)
+QtAsyncTaskWithProgress* QtAsyncTaskWithProgress::create(QWidget* parent, std::string_view initial_title,
+                                                         std::string_view initial_status_text, bool cancellable,
+                                                         int range, int value, float show_delay, WorkCallback callback)
 {
   DebugAssert(parent);
 
@@ -286,11 +214,18 @@ void QtAsyncTaskWithProgress::create(QWidget* parent, std::string_view initial_t
       delete task;
     });
   });
+
+  return task;
 }
 
-void QtAsyncTaskWithProgress::create(QWidget* parent, float show_delay, WorkCallback callback)
+QtAsyncTaskWithProgress* QtAsyncTaskWithProgress::create(QWidget* parent, float show_delay, WorkCallback callback)
 {
-  create(parent, {}, {}, false, 0, 1, show_delay, std::move(callback));
+  return create(parent, {}, {}, false, 0, 1, show_delay, std::move(callback));
+}
+
+void QtAsyncTaskWithProgress::cancel()
+{
+  m_ts_cancelled.store(true, std::memory_order_release);
 }
 
 bool QtAsyncTaskWithProgress::IsCancelled() const
