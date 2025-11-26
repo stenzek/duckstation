@@ -4766,6 +4766,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float min_height = (vertical_padding * 2.0f) + badge_size;
   const float shadow_size = FullscreenUI::LayoutScale(2.0f);
   const float rounding = FullscreenUI::LayoutScale(20.0f);
+  const float min_rounded_width = rounding * 2.0f;
 
   ImFont*& font = UIStyle.Font;
   const float& title_font_size = UIStyle.LargeFontSize;
@@ -4774,6 +4775,9 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float& text_font_weight = UIStyle.NormalFontWeight;
   const float& note_font_size = UIStyle.MediumFontSize;
   const float& note_font_weight = UIStyle.BoldFontWeight;
+
+  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.2f);
+  const ImVec4& right_background_color = UIStyle.ToastBackgroundColor;
 
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
@@ -4794,7 +4798,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
-    float box_width = std::max(
+    const float full_box_width = std::max(
       (horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
         ImCeil(std::max(title_size.x, text_size.x) + (notif.note.empty() ? 0.0f : (horizontal_spacing + note_size.x))),
       min_width);
@@ -4802,20 +4806,21 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
     float opacity = 1.0f;
+    float box_width = full_box_width;
     bool clip_box = false;
     if (time_passed < NOTIFICATION_APPEAR_ANIMATION_TIME)
     {
       const float pct = time_passed / NOTIFICATION_APPEAR_ANIMATION_TIME;
       const float eased_pct = Easing::OutExpo(pct);
-      box_width = box_width * eased_pct;
+      box_width = ImCeil(box_width * eased_pct);
       opacity = pct;
       clip_box = true;
     }
     else if (time_passed >= (notif.duration - NOTIFICATION_DISAPPEAR_ANIMATION_TIME))
     {
       const float pct = (notif.duration - time_passed) / NOTIFICATION_DISAPPEAR_ANIMATION_TIME;
-      const float eased_pct = Easing::InExpo(pct);
-      box_width = box_width * eased_pct;
+      const float eased_pct = Easing::OutExpo(pct);
+      box_width = ImCeil(box_width * eased_pct);
       opacity = eased_pct;
       clip_box = true;
     }
@@ -4847,10 +4852,29 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
 
     const ImVec2 box_min(position.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
-    const u32 background_color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f));
+    const float background_opacity = opacity * 0.95f;
+    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
 
-    ImDrawList* dl = ImGui::GetForegroundDrawList();
-    dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
+    ImDrawList* const dl = ImGui::GetForegroundDrawList();
+    if (box_width <= min_rounded_width)
+    {
+      dl->AddRectFilled(box_min, box_max, left_background_color32, rounding, ImDrawFlags_RoundCornersAll);
+    }
+    else
+    {
+      const u32 right_background_color32 =
+        ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
+                                           (box_width - min_rounded_width) / (full_box_width - min_rounded_width)),
+                                    background_opacity));
+
+      dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
+                        ImDrawFlags_RoundCornersLeft);
+      dl->AddRectFilledMultiColor(ImVec2(box_min.x + rounding, box_min.y), ImVec2(box_max.x - rounding, box_max.y),
+                                  left_background_color32, right_background_color32, right_background_color32,
+                                  left_background_color32);
+      dl->AddRectFilled(ImVec2(box_max.x - rounding, box_min.y), box_max, right_background_color32, rounding,
+                        ImDrawFlags_RoundCornersRight);
+    }
 
     if (clip_box)
       dl->PushClipRect(box_min, box_max);
