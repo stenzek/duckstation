@@ -399,95 +399,61 @@ QPixmap QtHost::GetAppLogo()
   return pm;
 }
 
-std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data)
-{
-  static constexpr u32 HTTP_POLL_INTERVAL = 10;
-
-  Error error;
-  std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
-  if (!http)
-  {
-    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
-                                qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
-                                  .arg(QString::fromStdString(error.GetDescription())));
-    return false;
-  }
-
-  std::optional<bool> download_result;
-  const std::string::size_type url_file_part_pos = url.rfind('/');
-  QtModalProgressCallback progress(parent);
-  progress.GetDialog().setLabelText(qApp->translate("QtHost", "Downloading %1...")
-                                      .arg(QtUtils::StringViewToQString(std::string_view(url).substr(
-                                        (url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0))));
-  progress.GetDialog().setWindowTitle(title);
-  progress.SetCancellable(true);
-  progress.MakeVisible();
-
-  http->CreateRequest(
-    std::move(url),
-    [parent, data, &download_result](s32 status_code, const Error& error, const std::string&, std::vector<u8> hdata) {
-      if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
-        return;
-
-      if (status_code != HTTPDownloader::HTTP_STATUS_OK)
-      {
-        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
-                                    qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
-                                      .arg(status_code)
-                                      .arg(QString::fromStdString(error.GetDescription())));
-        download_result = false;
-        return;
-      }
-
-      if (hdata.empty())
-      {
-        QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
-                                    qApp->translate("QtHost", "Download failed: Data is empty.").arg(status_code));
-
-        download_result = false;
-        return;
-      }
-
-      *data = std::move(hdata);
-      download_result = true;
-    },
-    &progress);
-
-  // Block until completion.
-  QtUtils::ProcessEventsWithSleep(
-    QEventLoop::AllEvents,
-    [http = http.get()]() {
-      http->PollRequests();
-      return http->HasAnyRequests();
-    },
-    HTTP_POLL_INTERVAL);
-
-  return download_result;
-}
-
-bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path)
+void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
+                          std::function<void(bool result, std::string path, const Error& error)> completion_callback)
 {
   INFO_LOG("Download from {}, saving to {}.", url, path);
 
-  std::vector<u8> data;
-  if (!DownloadFile(parent, title, std::move(url), &data).value_or(false) || data.empty())
-    return false;
+  const std::string::size_type url_file_part_pos = url.rfind('/');
+  const std::string status_text =
+    fmt::format(TRANSLATE_FS("QtHost", "Downloading {}..."),
+                std::string_view(url).substr((url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0));
 
-  // Directory may not exist. Create it.
-  const std::string directory(Path::GetDirectory(path));
-  Error error;
-  if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
-       !FileSystem::CreateDirectory(directory.c_str(), true, &error)) ||
-      !FileSystem::WriteBinaryFile(path, data, &error))
-  {
-    QtUtils::MessageBoxCritical(parent, qApp->translate("QtHost", "Error"),
-                                qApp->translate("QtHost", "Failed to write '%1':\n%2")
-                                  .arg(QString::fromUtf8(path))
-                                  .arg(QString::fromUtf8(error.GetDescription())));
-    return false;
-  }
+  QtAsyncTaskWithProgress::create(
+    parent, TRANSLATE_SV("QtHost", "File Download"), status_text, true, 0, 0, 0.0f,
+    [url = std::move(url), path = std::move(path),
+     completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
+      Error error;
+      std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
+      bool result;
+      if ((result = static_cast<bool>(http)))
+      {
+        http->CreateRequest(
+          std::move(url),
+          [&result, &error, &path](s32 status_code, const Error& http_error, const std::string&,
+                                   std::vector<u8> hdata) {
+            if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+            {
+              error.SetString(http_error.GetDescription());
+              return;
+            }
+            else if (hdata.empty())
+            {
+              error.SetStringView(TRANSLATE_SV("QtHost", "Download failed: Data is empty."));
+              return;
+            }
 
-  return true;
+            result = FileSystem::WriteBinaryFile(path.c_str(), hdata, &error);
+          },
+          progress);
+
+        // Block until completion.
+        http->WaitForAllRequests();
+      }
+
+      QtAsyncTaskWithProgress::CompletionCallback ret;
+      if (completion_callback)
+      {
+        ret = [path = std::move(path), completion_callback = std::move(completion_callback), error = std::move(error),
+               result]() mutable { completion_callback(result, std::move(path), error); };
+      }
+      else
+      {
+        ret = []() {};
+      }
+
+      return ret;
+    });
 }
 
 bool QtHost::InitializeConfig()
@@ -1403,21 +1369,29 @@ void EmuThread::startControllerTest()
   }
 
   Host::RunOnUIThread([path = std::move(path)]() mutable {
-    {
-      auto lock = g_main_window->pauseAndLockSystem();
-      if (QtUtils::MessageBoxQuestion(
-            lock.getDialogParent(), tr("Confirm Download"),
-            tr("Your DuckStation installation does not have the padtest application "
-               "available.\n\nThis file is approximately 206KB, do you want to download it now?")) != QMessageBox::Yes)
-      {
-        return;
-      }
+    if (QtHost::IsSystemValid())
+      return;
 
-      if (!QtHost::DownloadFile(lock.getDialogParent(), tr("File Download"), PADTEST_URL, path.c_str()))
-        return;
-    }
+    QMessageBox* const msgbox =
+      QtUtils::NewMessageBox(g_main_window, QMessageBox::Question, tr("Confirm Download"),
+                             tr("Your DuckStation installation does not have the padtest application "
+                                "available.\n\nThis file is approximately 206KB, do you want to download it now?"),
+                             QMessageBox::Yes | QMessageBox::No);
+    msgbox->connect(msgbox, &QMessageBox::accepted, g_main_window, [path = std::move(path)]() mutable {
+      QtHost::DownloadFile(
+        g_main_window, PADTEST_URL, std::move(path), [](bool result, std::string path, const Error& error) {
+          if (!result)
+          {
+            QtUtils::MessageBoxCritical(
+              g_main_window, tr("Error"),
+              tr("Failed to download padtest application: %1").arg(QString::fromStdString(error.GetDescription())));
+            return;
+          }
 
-    g_emu_thread->startControllerTest();
+          g_emu_thread->bootSystem(std::make_shared<SystemBootParameters>(std::move(path)));
+        });
+    });
+    msgbox->open();
   });
 }
 
@@ -2163,8 +2137,8 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
-      QMessageBox* const msgbox = QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, title, message,
-                                                         QMessageBox::NoButton);
+      QMessageBox* const msgbox =
+        QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, title, message, QMessageBox::NoButton);
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);

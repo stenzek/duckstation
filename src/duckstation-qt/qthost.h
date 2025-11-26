@@ -407,7 +407,8 @@ QString FormatNumber(Host::NumberFormatType type, s64 value);
 QString FormatNumber(Host::NumberFormatType type, double value);
 
 /// Downloads the specified URL to the provided path.
-bool DownloadFile(QWidget* parent, const QString& title, std::string url, const char* path);
+void DownloadFile(QWidget* parent, std::string url, std::string path,
+                  std::function<void(bool result, std::string path, const Error& error)> completion_callback);
 
 /// Thread-safe settings access.
 void QueueSettingsSave();
