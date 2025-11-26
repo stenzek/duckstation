@@ -210,7 +210,7 @@ void MemoryScannerWindow::enableUi(bool enabled)
 
 void MemoryScannerWindow::closeEvent(QCloseEvent* event)
 {
-  QtUtils::SaveWindowGeometry("MemoryScannerWindow", this);
+  QtUtils::SaveWindowGeometry(this);
   QWidget::closeEvent(event);
   emit closed();
 }

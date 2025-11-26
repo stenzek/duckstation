@@ -80,7 +80,7 @@ SettingsWindow::~SettingsWindow()
 void SettingsWindow::closeEvent(QCloseEvent* event)
 {
   if (!isPerGameSettings())
-    QtUtils::SaveWindowGeometry("SettingsWindow", this);
+    QtUtils::SaveWindowGeometry(this);
 
   QWidget::closeEvent(event);
 }

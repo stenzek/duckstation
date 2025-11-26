@@ -434,7 +434,7 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
-  QtUtils::SaveWindowGeometry("DebuggerWindow", this);
+  QtUtils::SaveWindowGeometry(this);
   g_emu_thread->disconnect(this);
   Host::RunOnCPUThread(&CPU::ClearBreakpoints);
   QMainWindow::closeEvent(event);

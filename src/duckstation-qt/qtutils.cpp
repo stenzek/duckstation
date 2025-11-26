@@ -93,8 +93,9 @@ void QtUtils::ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window, b
   {
     bool restored = false;
     if (restore_geometry)
-      restored = RestoreWindowGeometry(window->metaObject()->className(), window);
+      restored = RestoreWindowGeometry(window);
 
+    // NOTE: Must be before centering the window, otherwise the size may not be correct.
     window->show();
 
     if (!restored && parent_window)
@@ -594,6 +595,11 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
   return wi;
 }
 
+void QtUtils::SaveWindowGeometry(QWidget* widget, bool auto_commit_changes /* = true */)
+{
+  SaveWindowGeometry(widget->metaObject()->className(), widget, auto_commit_changes);
+}
+
 void QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes)
 {
   // don't touch minimized/fullscreen windows
@@ -650,6 +656,11 @@ void QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, 
 
   if (changed && auto_commit_changes)
     Host::CommitBaseSettingChanges();
+}
+
+bool QtUtils::RestoreWindowGeometry(QWidget* widget)
+{
+  return RestoreWindowGeometry(widget->metaObject()->className(), widget);
 }
 
 bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widget)

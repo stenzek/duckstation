@@ -169,9 +169,11 @@ QSize GetPixelSizeForWidget(const QWidget* widget, qreal device_pixel_ratio = -1
 std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);
 
 /// Saves a window's geometry to configuration. Returns false if the configuration was changed.
+void SaveWindowGeometry(QWidget* widget, bool auto_commit_changes = true);
 void SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes = true);
 
 /// Restores a window's geometry from configuration. Returns false if it was not found in the configuration.
+bool RestoreWindowGeometry(QWidget* widget);
 bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
 
 /// Positions a window in the center of its parent or the screen.

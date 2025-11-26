@@ -180,13 +180,13 @@ bool MiniHost::EarlyProcessStartup()
   // Thanks, and I hope you understand.
   //
 
-  const char* message = ICON_EMOJI_WARNING "WARNING! You are not using an official release! " ICON_EMOJI_WARNING "\n\n"
-                                           "DuckStation is licensed under the terms of CC-BY-NC-ND-4.0,\n"
-                                           "which does not allow modified builds to be distributed.\n\n"
-                                           "This build is NOT OFFICIAL and may be broken and/or malicious.\n\n"
-                                           "You should download an official build from https://www.duckstation.org/.";
+  const char* title = "WARNING! You are not using an official release!";
+  const char* message = "DuckStation is licensed under the terms of CC-BY-NC-ND-4.0,\n"
+                        "which does not allow modified builds to be distributed.\n\n"
+                        "This build is NOT OFFICIAL and may be broken and/or malicious.\n\n"
+                        "You should download an official build from https://www.duckstation.org/.";
 
-  Host::AddKeyedOSDWarning("OfficialReleaseWarning", message, Host::OSD_CRITICAL_ERROR_DURATION);
+  Host::AddIconOSDMessage(OSDMessageType::Error, "OfficialReleaseWarning", ICON_EMOJI_WARNING, title, message);
 #endif
 
   return true;
@@ -1483,8 +1483,17 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
       FullscreenUI::Initialize();
 
       // Need to reset run idle state _again_ after displaying.
-      auto final_callback = [callback = std::move(callback)](bool result) {
+      auto final_callback = [callback = std::move(callback), needs_pause](bool result) {
         FullscreenUI::UpdateRunIdleState();
+
+        if (needs_pause)
+        {
+          Host::RunOnCPUThread([]() {
+            if (System::IsValid())
+              System::PauseSystem(false);
+          });
+        }
+
         callback(result);
       };
 

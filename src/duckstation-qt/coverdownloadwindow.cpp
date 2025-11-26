@@ -28,7 +28,7 @@ CoverDownloadWindow::~CoverDownloadWindow()
 
 void CoverDownloadWindow::closeEvent(QCloseEvent* ev)
 {
-  QtUtils::SaveWindowGeometry("CoverDownloadWindow", this);
+  QtUtils::SaveWindowGeometry(this);
   QWidget::closeEvent(ev);
   cancelThread();
   emit closed();

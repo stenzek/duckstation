@@ -498,7 +498,7 @@ void ControllerSettingsWindow::createWidgets()
 void ControllerSettingsWindow::closeEvent(QCloseEvent* event)
 {
   if (isEditingGlobalSettings())
-    QtUtils::SaveWindowGeometry("ControllerSettingsWindow", this);
+    QtUtils::SaveWindowGeometry(this);
 
   QWidget::closeEvent(event);
 }

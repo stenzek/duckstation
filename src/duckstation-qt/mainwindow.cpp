@@ -199,7 +199,7 @@ void MainWindow::initialize()
 
   switchToGameListView();
 
-  QtUtils::RestoreWindowGeometry("MainWindow", this);
+  QtUtils::RestoreWindowGeometry(this);
 
 #ifdef _WIN32
   registerForDeviceNotifications();
@@ -2887,7 +2887,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
   // When recreating, g_main_window will be null at this point.
   if (!QtHost::IsSystemValidOrStarting() || !g_main_window)
   {
-    QtUtils::SaveWindowGeometry("MainWindow", this);
+    QtUtils::SaveWindowGeometry(this);
 
     // surfaceless for language change
     if (s_fullscreen_ui_started && g_main_window)

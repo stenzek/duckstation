@@ -455,7 +455,7 @@ void MemoryEditorWindow::updateUIEnabled()
 
 void MemoryEditorWindow::closeEvent(QCloseEvent* event)
 {
-  QtUtils::SaveWindowGeometry("MemoryEditorWindow", this);
+  QtUtils::SaveWindowGeometry(this);
   QWidget::closeEvent(event);
   emit closed();
 }
