@@ -645,13 +645,13 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     {
       pregap_frames = userdata_start - pregap_start;
       pregap_sector_size = track_sector_size;
+
+      if (is_first_track)
+        m_lba_count += pregap_frames;
     }
 
     if (is_first_track)
-    {
-      m_lba_count += pregap_frames;
       track1_pregap_frames = pregap_frames;
-    }
 
     Index pregap_index = {};
     pregap_index.file_offset =
@@ -795,11 +795,16 @@ bool CDImagePBP::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   const u32 offset_in_block = offset_in_file % DECOMPRESSED_BLOCK_SIZE;
   const u32 requested_block = offset_in_file / DECOMPRESSED_BLOCK_SIZE;
 
-  BlockInfo& bi = m_blockinfo_table[requested_block];
-
-  if (bi.size == 0) [[unlikely]]
+  if (requested_block >= m_blockinfo_table.size()) [[unlikely]]
   {
     ERROR_LOG("Invalid block {} requested", requested_block);
+    return false;
+  }
+
+  const BlockInfo& bi = m_blockinfo_table[requested_block];
+  if (bi.size == 0) [[unlikely]]
+  {
+    ERROR_LOG("Requested block {} has size 0", requested_block);
     return false;
   }
 
