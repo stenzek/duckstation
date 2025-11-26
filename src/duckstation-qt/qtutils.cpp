@@ -298,6 +298,13 @@ QMessageBox* QtUtils::NewMessageBox(QWidget* parent, QMessageBox::Icon icon, con
   return msgbox;
 }
 
+void QtUtils::AsyncMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& title, const QString& text,
+                              QMessageBox::StandardButtons button /*= QMessageBox::Ok*/)
+{
+  QMessageBox* msgbox = NewMessageBox(parent, icon, title, text, button, QMessageBox::NoButton, true);
+  msgbox->open();
+}
+
 void QtUtils::StylePopupMenu(QMenu* menu)
 {
   if (QtHost::HasGlobalStylesheet())
