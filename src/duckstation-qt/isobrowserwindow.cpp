@@ -178,41 +178,49 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
 
 void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode)
 {
-  const std::string spath = path.toStdString();
+  std::string spath = path.toStdString();
   const QString filename = QtUtils::StringViewToQString(Path::GetFileName(spath));
   std::string save_path =
     QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Extract File"), filename)).toStdString();
   if (save_path.empty())
     return;
 
-  Error error;
-  std::optional<IsoReader::ISODirectoryEntry> de = m_iso.LocateFile(path.toStdString(), &error);
-  if (de.has_value())
-  {
-    auto fp = FileSystem::CreateAtomicRenamedFile(std::move(save_path), &error);
-    if (fp)
-    {
-      QtModalProgressCallback cb(this, 0.15f);
-      cb.SetCancellable(true);
-      cb.SetTitle("ISO Browser");
-      cb.SetStatusText(tr("Extracting %1...").arg(filename).toStdString());
-      if (m_iso.WriteFileToStream(de.value(), fp.get(), mode, &error, &cb))
+  const std::string status_text =
+    fmt::format(TRANSLATE_FS("ISOBrowserWindow", "Extracting {}..."), Path::GetFileName(spath));
+  QtAsyncTaskWithProgress::create(
+    this, windowTitle().toStdString(), status_text, true, 0, 0, 0.15f,
+    [this, spath = std::move(spath), save_path = std::move(save_path), mode](ProgressCallback* const progress) mutable {
+      Error error;
+      std::optional<IsoReader::ISODirectoryEntry> de = m_iso.LocateFile(spath, &error);
+      bool result;
+      if ((result = de.has_value()))
       {
-        if (FileSystem::CommitAtomicRenamedFile(fp, &error))
-          return;
+        auto fp = FileSystem::CreateAtomicRenamedFile(std::move(save_path), &error);
+        if (fp)
+        {
+          if (m_iso.WriteFileToStream(de.value(), fp.get(), mode, &error, progress))
+          {
+            result = FileSystem::CommitAtomicRenamedFile(fp, &error);
+          }
+          else
+          {
+            // don't display error if cancelled
+            FileSystem::DiscardAtomicRenamedFile(fp);
+            result = progress->IsCancelled();
+          }
+        }
       }
-      else
-      {
-        // don't display error if cancelled
-        FileSystem::DiscardAtomicRenamedFile(fp);
-        if (cb.IsCancellable())
-          return;
-      }
-    }
-  }
 
-  QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                           tr("Failed to save %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
+      return [this, spath = std::move(spath), error = std::move(error), result]() mutable {
+        if (!result)
+        {
+          QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                                   tr("Failed to save %1:\n%2")
+                                     .arg(QtUtils::StringViewToQString(Path::GetFileName(spath)))
+                                     .arg(QString::fromStdString(error.GetDescription())));
+        }
+      };
+    });
 }
 
 QTreeWidgetItem* ISOBrowserWindow::findDirectoryItemForPath(const QString& path, QTreeWidgetItem* parent) const
