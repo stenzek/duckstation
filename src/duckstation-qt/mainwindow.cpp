@@ -1283,9 +1283,9 @@ void MainWindow::promptForDiscChange(const QString& path)
   SystemLock lock(pauseAndLockSystem());
 
   QMessageBox* const mb =
-    QtUtils::NewMessageBox(QMessageBox::Question, tr("Confirm Disc Change"),
+    QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, tr("Confirm Disc Change"),
                            tr("Do you want to swap discs or boot the new image (via system reset)?"),
-                           QMessageBox::NoButton, QMessageBox::NoButton, lock.getDialogParent());
+                           QMessageBox::NoButton, QMessageBox::NoButton);
 
   /*const QAbstractButton* const swap_button = */ mb->addButton(tr("Swap Disc"), QMessageBox::YesRole);
   const QAbstractButton* const reset_button = mb->addButton(tr("Reset"), QMessageBox::NoRole);
@@ -3065,11 +3065,11 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
     SystemLock lock(pauseAndLockSystem());
 
-    QMessageBox* msgbox =
-      QtUtils::NewMessageBox(QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
-                             quit_afterwards ? tr("Are you sure you want to exit the application?") :
-                                               tr("Are you sure you want to close the current game?"),
-                             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes, lock.getDialogParent());
+    QMessageBox* const msgbox = QtUtils::NewMessageBox(
+      lock.getDialogParent(), QMessageBox::Question, quit_afterwards ? tr("Confirm Exit") : tr("Confirm Close"),
+      quit_afterwards ? tr("Are you sure you want to exit the application?") :
+                        tr("Are you sure you want to close the current game?"),
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 
     QCheckBox* const save_cb = new QCheckBox(tr("Save State For Resume"), msgbox);
     save_cb->setChecked(allow_save_to_state && save_state);

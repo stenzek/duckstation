@@ -126,9 +126,9 @@ QMessageBox::StandardButton MessageBoxQuestion(
 QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon icon, const QString& title,
                                            const QString& text, QMessageBox::StandardButtons buttons,
                                            QMessageBox::StandardButton defaultButton);
-QMessageBox* NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+QMessageBox* NewMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& title, const QString& text,
                            QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
-                           QWidget* parent, bool delete_on_close = true);
+                           bool delete_on_close = true);
 
 /// Styles a popup menu for the current theme.
 void StylePopupMenu(QMenu* menu);

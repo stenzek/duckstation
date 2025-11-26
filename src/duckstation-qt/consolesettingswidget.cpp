@@ -192,8 +192,8 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
          "system requirements.\n\nBy enabling this option you are agreeing to not create any bug reports unless you "
          "have confirmed the bug also occurs with overclocking disabled.\n\nThis warning will only be shown once.");
 
-    QMessageBox* const mb = QtUtils::NewMessageBox(QMessageBox::Warning, tr("CPU Overclocking Warning"), message,
-                                                   QMessageBox::NoButton, QMessageBox::NoButton, this);
+    QMessageBox* const mb = QtUtils::NewMessageBox(this, QMessageBox::Warning, tr("CPU Overclocking Warning"), message,
+                                                   QMessageBox::NoButton, QMessageBox::NoButton);
     const QPushButton* const yes_button =
       mb->addButton(tr("Yes, I will confirm bugs without overclocking before reporting."), QMessageBox::YesRole);
     const QPushButton* const no_button = mb->addButton(tr("No, take me back to safety."), QMessageBox::NoRole);

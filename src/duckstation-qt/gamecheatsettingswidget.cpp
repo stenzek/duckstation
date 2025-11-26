@@ -397,10 +397,10 @@ void GameCheatSettingsWidget::checkForMasterDisable()
   if (!game_settings_enabled)
   {
     QMessageBox* mbox = QtUtils::NewMessageBox(
-      QMessageBox::Warning, tr("Confirm Game Settings Enable"),
+      this, QMessageBox::Warning, tr("Confirm Game Settings Enable"),
       tr("<h3>Game settings are currently disabled.</h3><p>This is <strong>not</strong> the default. Enabling this "
          "cheat will not have any effect until game settings are enabled. Do you want to do this now?"),
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, this);
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
     QCheckBox* cb = new QCheckBox(mbox);
     cb->setText(tr("Do not show again"));
     mbox->setCheckBox(cb);
@@ -417,10 +417,10 @@ void GameCheatSettingsWidget::checkForMasterDisable()
   if (!cheats_enabled)
   {
     QMessageBox* mbox = QtUtils::NewMessageBox(
-      QMessageBox::Warning, tr("Confirm Cheat Enable"),
+      this, QMessageBox::Warning, tr("Confirm Cheat Enable"),
       tr("<h3>Cheats are not currently enabled for this game.</h3><p>Enabling this cheat will not have any "
          "effect until cheats are enabled for this game. Do you want to do this now?"),
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton, this);
+      QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
     QCheckBox* cb = new QCheckBox(mbox);
     cb->setText(tr("Do not show again"));
     cb->setChecked(m_master_enable_ignored);

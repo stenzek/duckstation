@@ -280,9 +280,9 @@ QMessageBox::StandardButton QtUtils::MessageBoxIcon(QWidget* parent, QMessageBox
   return static_cast<QMessageBox::StandardButton>(msgbox.exec());
 }
 
-QMessageBox* QtUtils::NewMessageBox(QMessageBox::Icon icon, const QString& title, const QString& text,
+QMessageBox* QtUtils::NewMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& title, const QString& text,
                                     QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
-                                    QWidget* parent, bool delete_on_close)
+                                    bool delete_on_close)
 {
 #ifndef __APPLE__
   QMessageBox* msgbox = new QMessageBox(icon, title, text, buttons, parent ? QtUtils::GetRootWidget(parent) : nullptr);
