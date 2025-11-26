@@ -543,7 +543,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
     if (g_gpu_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
     {
-      text.assign(BOLD("GPU:"));
+      text.assign(BOLD("GPU:") " ");
       FormatProcessorStat(text, PerformanceCounters::GetGPUUsage(), PerformanceCounters::GetGPUAverageTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
