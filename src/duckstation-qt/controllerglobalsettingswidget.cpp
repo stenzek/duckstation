@@ -135,7 +135,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
         g_emu_thread->getInputDeviceListModel()->getDeviceList(),
         [](const InputDeviceListModel::Device& dev) { return (dev.key.source_type == InputSourceType::SDL); }))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"), tr("No SDL devices are currently connected."));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"), tr("No SDL devices are currently connected."));
     return;
   }
 

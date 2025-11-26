@@ -1427,7 +1427,8 @@ void TextureReplacementSettingsDialog::onExportClicked()
     if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toUtf8().constData(),
                                        idlg->textValue().toStdString(), &error))
     {
-      QtUtils::MessageBoxCritical(this, tr("Write Failed"), QString::fromStdString(error.GetDescription()));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Write Failed"),
+                               QString::fromStdString(error.GetDescription()));
     }
   });
   idlg->open();

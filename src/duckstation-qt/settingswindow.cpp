@@ -327,8 +327,8 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
 
   reloadPages();
 
-  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"),
-                                 tr("Per-game configuration copied from global settings."));
+  QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Settings"),
+                           tr("Per-game configuration copied from global settings."));
 }
 
 void SettingsWindow::onClearSettingsClicked()
@@ -349,7 +349,8 @@ void SettingsWindow::onClearSettingsClicked()
 
   reloadPages();
 
-  QtUtils::MessageBoxInformation(this, tr("DuckStation Settings"), tr("Per-game configuration cleared."));
+  QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Settings"),
+                           tr("Per-game configuration cleared."));
 }
 
 void SettingsWindow::registerWidgetHelp(QObject* object, QString title, QString recommended_value, QString text)

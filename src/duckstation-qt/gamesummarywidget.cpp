@@ -403,9 +403,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
         SettingsInterface* base_sif = Host::Internal::GetBaseSettingsLayer();
         InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
-        QWidget* dlg_parent = QtUtils::GetRootWidget(this);
-        QtUtils::MessageBoxInformation(dlg_parent, dlg_parent->windowTitle(),
-                                       tr("Per-game controller configuration initialized with global settings."));
+        QtUtils::AsyncMessageBox(this, QMessageBox::Information, QtUtils::GetRootWidget(this)->windowTitle(),
+                                 tr("Per-game controller configuration initialized with global settings."));
       }
     }
   }

@@ -72,8 +72,8 @@ void AchievementLoginDialog::processLoginResult(bool result, const QString& mess
 {
   if (!result)
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Login Error"),
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Login Error"),
       tr("Login failed.\nError: %1\n\nPlease check your username and password, and try again.").arg(message));
     m_ui.status->setText(tr("Login failed."));
     enableUI(true);

@@ -373,8 +373,8 @@ bool MemoryCardEditorWindow::loadCard(const QString& filename, Card* card)
   std::string filename_str = filename.toStdString();
   if (!MemoryCardImage::LoadFromFile(&card->data, filename_str.c_str(), &error))
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"), tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -536,8 +536,8 @@ void MemoryCardEditorWindow::openCard(Card* card)
   Error error;
   if (!MemoryCardImage::LoadFromFile(&card->data, filename.toUtf8().constData(), &error))
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"), tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to load memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -566,8 +566,8 @@ void MemoryCardEditorWindow::saveCard(Card* card)
   Error error;
   if (!MemoryCardImage::SaveToFile(card->data, card->filename.c_str(), &error))
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"), tr("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to save memory card: %1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -603,8 +603,8 @@ void MemoryCardEditorWindow::doCopyFile()
   {
     if (dst_fi.filename == fi->filename)
     {
-      QtUtils::MessageBoxCritical(
-        this, tr("Error"),
+      QtUtils::AsyncMessageBox(
+        this, QMessageBox::Critical, tr("Error"),
         tr("Destination memory card already contains a save file with the same name (%1) as the one you are attempting "
            "to copy. Please delete this file from the destination memory card before copying.")
           .arg(QString(fi->filename.c_str())));
@@ -614,10 +614,10 @@ void MemoryCardEditorWindow::doCopyFile()
 
   if (dst->blocks_free < fi->num_blocks)
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Insufficient blocks, this file needs %1 but only %2 are available.")
-                                  .arg(fi->num_blocks)
-                                  .arg(dst->blocks_free));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Insufficient blocks, this file needs %1 but only %2 are available.")
+                               .arg(fi->num_blocks)
+                               .arg(dst->blocks_free));
     return;
   }
 
@@ -625,19 +625,19 @@ void MemoryCardEditorWindow::doCopyFile()
   std::vector<u8> buffer;
   if (!MemoryCardImage::ReadFile(src->data, *fi, &buffer, &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to read file %1:\n%2")
-                                  .arg(QString::fromStdString(fi->filename))
-                                  .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to read file %1:\n%2")
+                               .arg(QString::fromStdString(fi->filename))
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
   if (!MemoryCardImage::WriteFile(&dst->data, fi->filename, buffer, &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to write file %1:\n%2")
-                                  .arg(QString::fromStdString(fi->filename))
-                                  .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to write file %1:\n%2")
+                               .arg(QString::fromStdString(fi->filename))
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -656,8 +656,8 @@ void MemoryCardEditorWindow::doDeleteFile()
 
   if (!MemoryCardImage::DeleteFile(&card->data, *fi, fi->deleted))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to delete file %1").arg(QString::fromStdString(fi->filename)));
     return;
   }
 
@@ -676,8 +676,8 @@ void MemoryCardEditorWindow::doUndeleteFile()
 
   if (!MemoryCardImage::UndeleteFile(&card->data, *fi))
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"),
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Error"),
       tr("Failed to undelete file %1. The file may have been partially overwritten by another save.")
         .arg(QString::fromStdString(fi->filename)));
     return;
@@ -705,10 +705,10 @@ void MemoryCardEditorWindow::doExportSaveFile()
   Error error;
   if (!MemoryCardImage::ExportSave(&card->data, *fi, filename.toStdString().c_str(), &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to export save file %1:\n%2")
-                                  .arg(QString::fromStdString(fi->filename))
-                                  .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to export save file %1:\n%2")
+                               .arg(QString::fromStdString(fi->filename))
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 }
@@ -734,10 +734,10 @@ void MemoryCardEditorWindow::doRenameSaveFile()
     Error error;
     if (!MemoryCardImage::RenameFile(&card->data, *fi, new_name, &error))
     {
-      QtUtils::MessageBoxCritical(this, tr("Error"),
-                                  tr("Failed to rename save file %1:\n%2")
-                                    .arg(QString::fromStdString(fi->filename))
-                                    .arg(QString::fromStdString(error.GetDescription())));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                               tr("Failed to rename save file %1:\n%2")
+                                 .arg(QString::fromStdString(fi->filename))
+                                 .arg(QString::fromStdString(error.GetDescription())));
       return;
     }
 
@@ -764,10 +764,10 @@ void MemoryCardEditorWindow::importCard(Card* card)
   std::unique_ptr<MemoryCardImage::DataArray> temp = std::make_unique<MemoryCardImage::DataArray>();
   if (!MemoryCardImage::ImportCard(temp.get(), filename.toStdString().c_str(), &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to import memory card from %1:\n%2")
-                                  .arg(QFileInfo(filename).fileName())
-                                  .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to import memory card from %1:\n%2")
+                               .arg(QFileInfo(filename).fileName())
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 
@@ -816,10 +816,10 @@ void MemoryCardEditorWindow::importSaveFile(Card* card)
   Error error;
   if (!MemoryCardImage::ImportSave(&card->data, filename.toStdString().c_str(), &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to import save from %1:\n%2")
-                                  .arg(QFileInfo(filename).fileName())
-                                  .arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to import save from %1:\n%2")
+                               .arg(QFileInfo(filename).fileName())
+                               .arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 

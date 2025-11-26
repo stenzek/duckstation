@@ -115,7 +115,7 @@ void DebuggerWindow::onRunToCursorTriggered()
   std::optional<VirtualMemoryAddress> addr = m_ui.codeView->getSelectedAddress();
   if (!addr.has_value())
   {
-    QtUtils::MessageBoxCritical(this, windowTitle(), tr("No address selected."));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(), tr("No address selected."));
     return;
   }
 
@@ -164,13 +164,14 @@ void DebuggerWindow::onTraceTriggered()
 
       if (trace_enabled)
       {
-        QtUtils::MessageBoxCritical(
-          win, win->windowTitle(),
+        QtUtils::AsyncMessageBox(
+          win, QMessageBox::Critical, win->windowTitle(),
           tr("Trace logging started to cpu_log.txt.\nThis file can be several gigabytes, so be aware of SSD wear."));
       }
       else
       {
-        QtUtils::MessageBoxCritical(win, win->windowTitle(), tr("Trace logging to cpu_log.txt stopped."));
+        QtUtils::AsyncMessageBox(win, QMessageBox::Critical, win->windowTitle(),
+                                 tr("Trace logging to cpu_log.txt stopped."));
       }
     });
   });
@@ -261,8 +262,8 @@ void DebuggerWindow::onStepOutActionTriggered()
   Assert(QtHost::IsSystemPaused());
   if (!CPU::AddStepOutBreakpoint())
   {
-    QtUtils::MessageBoxCritical(this, tr("Debugger"),
-                                tr("Failed to add step-out breakpoint, are you in a valid function?"));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Debugger"),
+                             tr("Failed to add step-out breakpoint, are you in a valid function?"));
     return;
   }
 
@@ -361,8 +362,8 @@ void DebuggerWindow::onMemorySearchTriggered()
     }
     else
     {
-      QtUtils::MessageBoxCritical(this, windowTitle(),
-                                  tr("Invalid search pattern. It should contain hex digits or question marks."));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(),
+                               tr("Invalid search pattern. It should contain hex digits or question marks."));
       return;
     }
 
@@ -388,8 +389,8 @@ void DebuggerWindow::onMemorySearchTriggered()
 
   if (pattern.empty())
   {
-    QtUtils::MessageBoxCritical(this, windowTitle(),
-                                tr("Invalid search pattern. It should contain hex digits or question marks."));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(),
+                             tr("Invalid search pattern. It should contain hex digits or question marks."));
     return;
   }
 
@@ -711,8 +712,8 @@ void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 
       if (!result)
       {
-        QtUtils::MessageBoxCritical(win, win->windowTitle(),
-                                    tr("Failed to add breakpoint. A breakpoint may already exist at this address."));
+        QtUtils::AsyncMessageBox(win, QMessageBox::Critical, win->windowTitle(),
+                                 tr("Failed to add breakpoint. A breakpoint may already exist at this address."));
         return;
       }
 
@@ -732,8 +733,8 @@ void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 
       if (!result)
       {
-        QtUtils::MessageBoxCritical(win, win->windowTitle(),
-                                    tr("Failed to remove breakpoint. This breakpoint may not exist."));
+        QtUtils::AsyncMessageBox(win, QMessageBox::Critical, win->windowTitle(),
+                                 tr("Failed to remove breakpoint. This breakpoint may not exist."));
         return;
       }
 

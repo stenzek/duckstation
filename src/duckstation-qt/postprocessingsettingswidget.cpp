@@ -199,9 +199,8 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     Error error;
     if (!PostProcessing::Config::AddStage(si, m_section, selected_shader, &error))
     {
-      lock.unlock();
-      QtUtils::MessageBoxCritical(this, tr("Error"),
-                                  tr("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                               tr("Failed to add shader: %1").arg(QString::fromStdString(error.GetDescription())));
       return;
     }
 
@@ -658,8 +657,8 @@ void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
   if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toStdString().c_str(), output.toStdString(),
                                      &error))
   {
-    QtUtils::MessageBoxCritical(this, tr("Export Error"),
-                                tr("Failed to save file: %1").arg(QString::fromStdString(error.GetDescription())));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Export Error"),
+                             tr("Failed to save file: %1").arg(QString::fromStdString(error.GetDescription())));
   }
 }
 

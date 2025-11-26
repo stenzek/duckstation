@@ -1456,8 +1456,8 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     }
     else
     {
-      QtUtils::MessageBoxCritical(widget, qApp->translate("SettingWidgetBinder", "Error"),
-                                  qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
+      QtUtils::AsyncMessageBox(widget, QMessageBox::Critical, qApp->translate("SettingWidgetBinder", "Error"),
+                               qApp->translate("SettingWidgetBinder", "Folder path cannot be empty."));
     }
 
     // reset to old value

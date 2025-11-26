@@ -168,8 +168,8 @@ void MemoryEditorWindow::onMemorySearchTriggered()
     }
     else
     {
-      QtUtils::MessageBoxCritical(this, windowTitle(),
-                                  tr("Invalid search pattern. It should contain hex digits or question marks."));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(),
+                               tr("Invalid search pattern. It should contain hex digits or question marks."));
       return;
     }
 
@@ -195,8 +195,8 @@ void MemoryEditorWindow::onMemorySearchTriggered()
 
   if (pattern.empty())
   {
-    QtUtils::MessageBoxCritical(this, windowTitle(),
-                                tr("Invalid search pattern. It should contain hex digits or question marks."));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(),
+                             tr("Invalid search pattern. It should contain hex digits or question marks."));
     return;
   }
 
@@ -208,7 +208,7 @@ void MemoryEditorWindow::onMemorySearchTriggered()
     found_address = Bus::SearchMemory(0, pattern.data(), mask.data(), static_cast<u32>(pattern.size()));
     if (!found_address.has_value())
     {
-      QtUtils::MessageBoxCritical(this, windowTitle(), tr("Pattern not found in memory."));
+      QtUtils::AsyncMessageBox(this, QMessageBox::Critical, windowTitle(), tr("Pattern not found in memory."));
       return;
     }
 
@@ -224,14 +224,14 @@ void MemoryEditorWindow::onMemorySearchTriggered()
 
   if (wrapped_around)
   {
-    QtUtils::MessageBoxInformation(this, windowTitle(),
-                                   tr("Pattern found at 0x%1 (passed the end of memory).")
-                                     .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Information, windowTitle(),
+                             tr("Pattern found at 0x%1 (passed the end of memory).")
+                               .arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
   else
   {
-    QtUtils::MessageBoxInformation(
-      this, windowTitle(),
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Information, windowTitle(),
       tr("Pattern found at 0x%1.").arg(static_cast<uint>(found_address.value()), 8, 16, static_cast<QChar>('0')));
   }
 }

@@ -467,8 +467,8 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
     InputManager::GetGenericBindingMapping(device.toStdString());
   if (mapping.empty())
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Automatic Binding Failed"),
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Automatic Binding Failed"),
       tr("No generic bindings were generated for device '%1'. The controller/source may not support automatic "
          "mapping.")
         .arg(device));

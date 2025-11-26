@@ -127,7 +127,8 @@ QMessageBox::StandardButton MessageBoxIcon(QWidget* parent, QMessageBox::Icon ic
                                            const QString& text, QMessageBox::StandardButtons buttons,
                                            QMessageBox::StandardButton defaultButton);
 QMessageBox* NewMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& title, const QString& text,
-                           QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton,
+                           QMessageBox::StandardButtons buttons,
+                           QMessageBox::StandardButton defaultButton = QMessageBox::NoButton,
                            bool delete_on_close = true);
 void AsyncMessageBox(QWidget* parent, QMessageBox::Icon icon, const QString& title, const QString& text,
                      QMessageBox::StandardButtons button = QMessageBox::Ok);

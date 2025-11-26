@@ -176,8 +176,9 @@ void ControllerSettingsWindow::onNewProfileClicked()
   std::string profile_path = System::GetInputProfilePath(profile_name);
   if (FileSystem::FileExists(profile_path.c_str()))
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"), tr("A preset with the name '%1' already exists.").arg(QString::fromStdString(profile_name)));
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Error"),
+      tr("A preset with the name '%1' already exists.").arg(QString::fromStdString(profile_name)));
     return;
   }
 
@@ -231,8 +232,9 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
   if (!temp_si.Save())
   {
-    QtUtils::MessageBoxCritical(
-      this, tr("Error"), tr("Failed to save the new preset to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Error"),
+      tr("Failed to save the new preset to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
     return;
   }
 
@@ -278,8 +280,8 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
   std::string profile_path(System::GetInputProfilePath(m_profile_name.toStdString()));
   if (!FileSystem::DeleteFile(profile_path.c_str()))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("Failed to delete '%1'.").arg(QString::fromStdString(profile_path)));
     return;
   }
 
@@ -319,10 +321,9 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   g_emu_thread->reloadGameSettings();
   createWidgets();
 
-  QtUtils::MessageBoxInformation(QtUtils::GetRootWidget(this), tr("DuckStation Controller Settings"),
-                                 isEditingGameSettings() ?
-                                   tr("Per-game controller configuration reset to global settings.") :
-                                   tr("Controller preset reset to global settings."));
+  QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Controller Settings"),
+                           isEditingGameSettings() ? tr("Per-game controller configuration reset to global settings.") :
+                                                     tr("Controller preset reset to global settings."));
 }
 
 bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key, bool default_value) const
@@ -585,8 +586,8 @@ void ControllerSettingsWindow::switchProfile(const std::string_view name)
   std::string path = System::GetInputProfilePath(name);
   if (!FileSystem::FileExists(path.c_str()))
   {
-    QtUtils::MessageBoxCritical(this, tr("Error"),
-                                tr("The controller preset named '%1' cannot be found.").arg(name_qstr));
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
+                             tr("The controller preset named '%1' cannot be found.").arg(name_qstr));
     return;
   }
 

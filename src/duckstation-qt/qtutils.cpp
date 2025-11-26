@@ -145,8 +145,8 @@ void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
   {
-    MessageBoxCritical(parent, QObject::tr("Failed to open URL"),
-                       QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
+    QtUtils::AsyncMessageBox(parent, QMessageBox::Critical, QObject::tr("Failed to open URL"),
+                             QObject::tr("Failed to open URL.\n\nThe URL was: %1").arg(qurl.toString()));
   }
 }
 
