@@ -138,7 +138,6 @@ public:
   void* getNativeWindowId();
 
   void reportError(const QString& title, const QString& message);
-  bool confirmMessage(const QString& title, const QString& message);
   void onStatusMessage(const QString& message);
 
   void onRAIntegrationMenuChanged();

@@ -1438,28 +1438,6 @@ std::string Host::FormatNumber(NumberFormatType type, double value)
   return fmt::format("{}", value);
 }
 
-bool Host::ConfirmMessage(std::string_view title, std::string_view message)
-{
-  const SmallString title_copy(title);
-  const SmallString message_copy(message);
-
-  static constexpr SDL_MessageBoxButtonData bd[2] = {
-    {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
-    {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "No"},
-  };
-  const SDL_MessageBoxData md = {SDL_MESSAGEBOX_INFORMATION,
-                                 nullptr,
-                                 title_copy.c_str(),
-                                 message_copy.c_str(),
-                                 static_cast<int>(std::size(bd)),
-                                 bd,
-                                 nullptr};
-
-  int buttonid = -1;
-  SDL_ShowMessageBox(&md, &buttonid);
-  return (buttonid == 1);
-}
-
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                                std::string_view yes_text /* = std::string_view() */,
                                std::string_view no_text /* = std::string_view() */)

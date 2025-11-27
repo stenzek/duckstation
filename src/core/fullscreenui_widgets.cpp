@@ -4242,7 +4242,9 @@ void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view
 
 bool FullscreenUI::BackgroundProgressCallback::ModalConfirmation(const std::string_view message)
 {
-  return Host::ConfirmMessage("Confirm", message);
+  // Not used.
+  INFO_LOG(message);
+  return true;
 }
 
 void FullscreenUI::BackgroundProgressCallback::ModalInformation(const std::string_view message)
@@ -4668,8 +4670,9 @@ void FullscreenUI::LoadingScreenProgressCallback::ModalError(const std::string_v
 
 bool FullscreenUI::LoadingScreenProgressCallback::ModalConfirmation(const std::string_view message)
 {
+  // Not used.
   INFO_LOG(message);
-  return Host::ConfirmMessage("Confirm", message);
+  return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

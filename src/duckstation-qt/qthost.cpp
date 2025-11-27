@@ -2102,14 +2102,6 @@ void Host::ReportErrorAsync(std::string_view title, std::string_view message)
                             message.empty() ? QString() : QString::fromUtf8(message.data(), message.size()));
 }
 
-bool Host::ConfirmMessage(std::string_view title, std::string_view message)
-{
-  auto lock = g_emu_thread->pauseAndLockSystem();
-
-  return emit g_emu_thread->messageConfirmed(QString::fromUtf8(title.data(), title.size()),
-                                             QString::fromUtf8(message.data(), message.size()));
-}
-
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                                std::string_view yes_text, std::string_view no_text)
 {

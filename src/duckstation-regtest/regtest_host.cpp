@@ -161,16 +161,6 @@ void Host::ReportErrorAsync(std::string_view title, std::string_view message)
     ERROR_LOG("ReportErrorAsync: {}", message);
 }
 
-bool Host::ConfirmMessage(std::string_view title, std::string_view message)
-{
-  if (!title.empty() && !message.empty())
-    ERROR_LOG("ConfirmMessage: {}: {}", title, message);
-  else if (!message.empty())
-    ERROR_LOG("ConfirmMessage: {}", message);
-
-  return true;
-}
-
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                                std::string_view yes_text, std::string_view no_text)
 {

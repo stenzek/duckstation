@@ -38,9 +38,6 @@ void ReportFatalError(std::string_view title, std::string_view message);
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(std::string_view title, std::string_view message);
 
-/// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
-bool ConfirmMessage(std::string_view title, std::string_view message);
-
 /// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
 /// The callback may be executed on a different thread. Use RunOnCPUThread() in the callback to ensure safety.
 using ConfirmMessageAsyncCallback = std::function<void(bool)>;

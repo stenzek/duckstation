@@ -216,13 +216,6 @@ void MainWindow::reportError(const QString& title, const QString& message)
   QtUtils::AsyncMessageBox(this, QMessageBox::Critical, title, message);
 }
 
-bool MainWindow::confirmMessage(const QString& title, const QString& message)
-{
-  SystemLock lock(pauseAndLockSystem());
-
-  return (QtUtils::MessageBoxQuestion(this, title, message) == QMessageBox::Yes);
-}
-
 void MainWindow::onStatusMessage(const QString& message)
 {
   m_ui.statusBar->showMessage(message);
@@ -2560,7 +2553,6 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
           Qt::QueuedConnection);
   connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError);
-  connect(g_emu_thread, &EmuThread::messageConfirmed, this, &MainWindow::confirmMessage, Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
   connect(g_emu_thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
           Qt::BlockingQueuedConnection);
