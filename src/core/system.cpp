@@ -5304,6 +5304,15 @@ void System::UndoLoadState()
   if (!IsValid() || !s_state.undo_load_state.has_value())
     return;
 
+  if (Achievements::IsHardcoreModeActive())
+  {
+    Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE_SV("System", "Undo load state"), [](bool result) {
+      if (result)
+        Host::RunOnCPUThread(&System::UndoLoadState);
+    });
+    return;
+  }
+
   std::string osd_key = "UndoLoadState";
   std::string osd_title = TRANSLATE_STR("System", "Undo Load State");
 
