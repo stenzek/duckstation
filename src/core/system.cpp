@@ -1831,36 +1831,21 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
     {
-      const bool is_exe_override_boot = parameters.save_state.empty();
-      bool cancelled;
-      if (FullscreenUI::IsInitialized())
-      {
-        Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
-                                                        TRANSLATE("Achievements", "Overriding executable") :
-                                                        TRANSLATE("Achievements", "Resuming state"),
-                                                      [parameters = std::move(parameters)](bool approved) mutable {
-                                                        if (approved)
-                                                        {
-                                                          parameters.disable_achievements_hardcore_mode = true;
-                                                          BootSystem(std::move(parameters), nullptr);
-                                                        }
-                                                      });
-        cancelled = true;
-      }
-      else
-      {
-        cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
-                                                                TRANSLATE("Achievements", "Overriding executable") :
-                                                                TRANSLATE("Achievements", "Resuming state"));
-      }
+      Achievements::ConfirmHardcoreModeDisableAsync(parameters.save_state.empty() ?
+                                                      TRANSLATE_SV("Achievements", "Resuming state") :
+                                                      TRANSLATE_SV("Achievements", "Overriding executable"),
+                                                    [parameters = std::move(parameters)](bool approved) mutable {
+                                                      if (approved)
+                                                      {
+                                                        parameters.disable_achievements_hardcore_mode = true;
+                                                        BootSystem(std::move(parameters), nullptr);
+                                                      }
+                                                    });
 
-      if (cancelled)
-      {
-        // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
-        Host::OnSystemStopping();
-        DestroySystem();
-        return true;
-      }
+      // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+      Host::OnSystemStopping();
+      DestroySystem();
+      return true;
     }
   }
 
