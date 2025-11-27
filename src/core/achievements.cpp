@@ -1336,7 +1336,9 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
     else
       title = cheevo->title;
 
-    std::string note = fmt::format(ICON_EMOJI_TROPHY " {}", cheevo->points);
+    std::string note;
+    if (cheevo->points > 0)
+      note = fmt::format(ICON_EMOJI_TROPHY " {}", cheevo->points);
 
     FullscreenUI::AddNotification(fmt::format("achievement_unlock_{}", cheevo->id),
                                   static_cast<float>(g_settings.achievements_notification_duration),
