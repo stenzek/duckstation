@@ -273,7 +273,7 @@ size_t GetMaxSaveStateSize(bool enable_8mb_ram);
 size_t GetMaxMemorySaveStateSize(bool enable_8mb_ram, bool pgxp);
 
 /// Loads state from the specified path.
-bool LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
+std::optional<bool> LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display);
 bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy,
                std::function<void(bool, const Error& error)> completion_callback = {});
 bool SaveResumeState(Error* error);

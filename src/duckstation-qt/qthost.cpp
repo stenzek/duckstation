@@ -860,7 +860,7 @@ void EmuThread::bootOrLoadState(std::string path)
   if (System::IsValid())
   {
     Error error;
-    if (!System::LoadState(path.c_str(), &error, true, false))
+    if (!System::LoadState(path.c_str(), &error, true, false).value_or(true))
     {
       emit errorReported(tr("Error"),
                          tr("Failed to load state: %1").arg(QString::fromStdString(error.GetDescription())));
@@ -1503,7 +1503,6 @@ void EmuThread::loadState(bool global, qint32 slot)
     return;
   }
 
-  // shouldn't even get here if we don't have a running game
   if (System::IsValid())
   {
     System::LoadStateFromSlot(global, slot);

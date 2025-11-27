@@ -1883,7 +1883,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   const bool start_paused = (ShouldStartPaused() || parameters.override_start_paused.value_or(false));
 
   // try to load the state, if it fails, bail out
-  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false, start_paused))
+  if (!parameters.save_state.empty() &&
+      !LoadState(parameters.save_state.c_str(), error, false, start_paused).value_or(false))
   {
     Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
                         Path::GetFileName(parameters.save_state));
@@ -2910,7 +2911,7 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return std::move(buffer.media_path);
 }
 
-bool System::LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display)
+std::optional<bool> System::LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -2926,7 +2927,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state, boo
         if (approved)
           LoadState(path.c_str(), nullptr, save_undo_state, force_update_display);
       });
-    return true;
+    return std::nullopt;
   }
 
   FlushSaveStates();
@@ -3310,18 +3311,23 @@ void System::LoadStateFromSlot(bool global, s32 slot)
   }
 
   Error error;
-  if (System::LoadState(path.c_str(), &error, true, false))
+  const std::optional<bool> result = System::LoadState(path.c_str(), &error, true, false);
+  if (result.has_value())
   {
-    Host::AddIconOSDMessage(OSDMessageType::Quick, GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
-                            GetSaveStateOSDTitle(global, slot),
-                            fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)));
-  }
-  else
-  {
-    Host::AddIconOSDMessage(OSDMessageType::Error, GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING,
-                            GetSaveStateOSDTitle(global, slot),
-                            fmt::format(TRANSLATE_FS("System", "Failed to load state from {0}:\n{1}"),
-                                        Path::GetFileName(path), error.GetDescription()));
+    if (result.value())
+    {
+      Host::AddIconOSDMessage(
+        OSDMessageType::Quick, GetSaveStateOSDKey(global, slot), ICON_EMOJI_FILE_FOLDER_OPEN,
+        GetSaveStateOSDTitle(global, slot),
+        fmt::format(TRANSLATE_FS("System", "Loaded save state from {}."), Path::GetFileName(path)));
+    }
+    else
+    {
+      Host::AddIconOSDMessage(OSDMessageType::Error, GetSaveStateOSDKey(global, slot), ICON_EMOJI_WARNING,
+                              GetSaveStateOSDTitle(global, slot),
+                              fmt::format(TRANSLATE_FS("System", "Failed to load state from {0}:\n{1}"),
+                                          Path::GetFileName(path), error.GetDescription()));
+    }
   }
 }
 
