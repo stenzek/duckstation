@@ -1859,12 +1859,38 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Load BIOS image, component setup, check for subchannel in games that need it.
   if (!SetBootMode(boot_mode, disc_region, error) ||
       !Initialize(std::move(disc), disc_region, parameters.force_software_renderer,
-                  parameters.override_fullscreen.value_or(ShouldStartFullscreen()), error) ||
-      !CheckForRequiredSubQ(error))
+                  parameters.override_fullscreen.value_or(ShouldStartFullscreen()), error))
   {
     Host::OnSystemStopping();
     DestroySystem();
     return false;
+  }
+
+  // Check for required subchannel data.
+  // Annoyingly we can't do this before initializing, because subchannel data can be loaded from outside the image.
+  if (!parameters.ignore_missing_subchannel && !CheckForRequiredSubQ(error) &&
+      Host::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
+  {
+    Host::ConfirmMessageAsync(
+      "Confirm Unsupported Configuration",
+      fmt::format(TRANSLATE_FS("System",
+                               "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                               "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
+                               "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
+                  s_state.running_game_serial, s_state.running_game_title),
+      [parameters = std::move(parameters)](bool result) mutable {
+        if (result)
+        {
+          Host::RunOnCPUThread([parameters = std::move(parameters)]() mutable {
+            parameters.ignore_missing_subchannel = true;
+            BootSystem(std::move(parameters), nullptr);
+          });
+        }
+      });
+
+    Host::OnSystemStopping();
+    DestroySystem();
+    return true;
   }
 
   s_state.exe_override = std::move(exe_override);
@@ -4251,20 +4277,6 @@ bool System::CheckForRequiredSubQ(Error* error)
   }
 
   WARNING_LOG("SBI file missing but required for {} ({})", s_state.running_game_serial, s_state.running_game_title);
-
-  if (Host::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
-  {
-    if (Host::ConfirmMessage(
-          "Confirm Unsupported Configuration",
-          LargeString::from_format(
-            TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
-                                   "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
-                                   "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
-            s_state.running_game_serial, s_state.running_game_title)))
-    {
-      return true;
-    }
-  }
 
   Error::SetStringFmt(
     error,

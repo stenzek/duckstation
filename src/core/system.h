@@ -46,11 +46,14 @@ struct SystemBootParameters
   std::string path;
   std::string save_state;
   std::string override_exe;
+  u32 media_playlist_index = 0;
+
   std::optional<bool> override_fast_boot;
   std::optional<bool> override_fullscreen;
   std::optional<bool> override_start_paused;
-  u32 media_playlist_index = 0;
+
   bool load_image_to_ram = false;
+  bool ignore_missing_subchannel = false;
   bool force_software_renderer = false;
   bool disable_achievements_hardcore_mode = false;
   bool start_media_capture = false;
