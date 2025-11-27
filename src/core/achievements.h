@@ -116,9 +116,8 @@ void Logout();
 /// Forces hardcore mode off until next reset.
 void DisableHardcoreMode(bool show_message, bool display_game_summary);
 
-/// Prompts the user to disable hardcore mode, if they agree, returns true.
-bool ConfirmHardcoreModeDisable(const char* trigger);
-void ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback);
+/// Prompts the user to disable hardcore mode. Invokes callback with result.
+void ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback);
 
 /// Returns true if hardcore mode is active, and functionality should be restricted.
 bool IsHardcoreModeActive();

@@ -2091,22 +2091,7 @@ void Achievements::Logout()
   ClearProgressDatabase();
 }
 
-bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
-{
-  // I really hope this doesn't deadlock :/
-  const bool confirmed = Host::ConfirmMessage(
-    TRANSLATE("Achievements", "Confirm Hardcore Mode Disable"),
-    fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
-                                             "want to disable hardcore mode? {0} will be cancelled if you select No."),
-                trigger));
-  if (!confirmed)
-    return false;
-
-  DisableHardcoreMode(true, true);
-  return true;
-}
-
-void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
+void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std::function<void(bool)> callback)
 {
   Host::ConfirmMessageAsync(
     TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
