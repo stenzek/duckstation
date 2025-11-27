@@ -692,9 +692,10 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const GameList::Entry* 
   if (!sif_window)
     sif_window = new SettingsWindow(entry, std::move(sif));
 
-  QtUtils::ShowOrRaiseWindow(sif_window);
+  QtUtils::ShowOrRaiseWindow(sif_window, g_main_window, false);
   if (category)
     sif_window->setCategory(category);
+
   return sif_window;
 }
 
