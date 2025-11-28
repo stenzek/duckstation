@@ -284,7 +284,7 @@ bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
   }
 
   // Context version restrictions are mostly fine here, but we still need to check for UBO for GL3.0.
-  if (!m_gl_context->IsGLES() && !GLAD_GL_ARB_uniform_buffer_object)
+  if (!m_gl_context->IsGLES() && !GLAD_GL_VERSION_3_1 && !GLAD_GL_ARB_uniform_buffer_object)
   {
     Error::SetStringView(error, "OpenGL 3.1 or GL_ARB_uniform_buffer_object is required.");
     m_gl_context.reset();

@@ -130,7 +130,8 @@ OpenGLTexture::~OpenGLTexture()
 
 bool OpenGLTexture::UseTextureStorage(bool multisampled)
 {
-  return GLAD_GL_ARB_texture_storage || (multisampled ? GLAD_GL_ES_VERSION_3_1 : GLAD_GL_ES_VERSION_3_0);
+  return (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_storage) ||
+         (multisampled ? GLAD_GL_ES_VERSION_3_1 : GLAD_GL_ES_VERSION_3_0);
 }
 
 bool OpenGLTexture::UseTextureStorage() const
