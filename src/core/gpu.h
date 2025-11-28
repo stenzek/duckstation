@@ -189,8 +189,6 @@ public:
 
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;
-  float ComputeDisplayAspectRatio() const;
-  float ComputeSourceAspectRatio() const;
   float ComputePixelAspectRatio() const;
 
   /// Computes aspect ratio correction, i.e. the scale to apply to the source aspect ratio to preserve

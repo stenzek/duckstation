@@ -640,53 +640,39 @@ float GPU::ComputeVerticalFrequency() const
     static_cast<double>(ticks_per_frame));
 }
 
-float GPU::ComputeDisplayAspectRatio() const
-{
-  // Display off => Doesn't matter.
-  if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
-    return 4.0f / 3.0f;
-
-  // PAR 1:1 is not corrected.
-  if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1())
-    return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
-
-  float ar = 4.0f / 3.0f;
-  if (!g_settings.display_force_4_3_for_24bit || !m_GPUSTAT.display_area_color_depth_24)
-  {
-    if (g_settings.display_aspect_ratio == DisplayAspectRatio::Stretch())
-    {
-      const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
-      if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
-        ar = static_cast<float>(wi.surface_width) / static_cast<float>(wi.surface_height);
-    }
-    else if (g_settings.display_aspect_ratio != DisplayAspectRatio::Auto())
-    {
-      ar = static_cast<float>(g_settings.display_aspect_ratio.numerator) /
-           static_cast<float>(g_settings.display_aspect_ratio.denominator);
-    }
-  }
-
-  return ar;
-}
-
-float GPU::ComputeSourceAspectRatio() const
-{
-  const float source_aspect_ratio =
-    static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
-
-  // Correction is applied to the GTE for stretch to fit, that way it fills the window.
-  const float source_aspect_ratio_correction =
-    (g_settings.display_aspect_ratio == DisplayAspectRatio::Stretch()) ? 1.0f : ComputeAspectRatioCorrection();
-
-  return source_aspect_ratio / source_aspect_ratio_correction;
-}
-
 float GPU::ComputePixelAspectRatio() const
 {
-  const float dar = ComputeDisplayAspectRatio();
-  const float sar = ComputeSourceAspectRatio();
-  const float par = dar / sar;
-  return par;
+  float sar = (m_crtc_state.display_width > 0 && m_crtc_state.display_height > 0) ?
+                static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height) :
+                1.0f;
+
+  // Force 4:3 for 24-bit modes option.
+  const DisplayAspectRatio dar_type =
+    (!g_settings.display_force_4_3_for_24bit || !m_GPUSTAT.display_area_color_depth_24) ?
+      g_settings.display_aspect_ratio :
+      DisplayAspectRatio::Auto();
+  float dar = 4.0f / 3.0f;
+  if (dar_type == DisplayAspectRatio::PAR1_1())
+  {
+    dar = sar;
+  }
+  else if (dar_type == DisplayAspectRatio::Stretch())
+  {
+    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
+    {
+      // Correction is applied to the GTE for stretch to fit, that way it fills the window.
+      sar /= ComputeAspectRatioCorrection();
+      dar = static_cast<float>(wi.surface_width) / static_cast<float>(wi.surface_height);
+    }
+  }
+  else if (dar_type != DisplayAspectRatio::Auto())
+  {
+    dar = static_cast<float>(g_settings.display_aspect_ratio.numerator) /
+          static_cast<float>(g_settings.display_aspect_ratio.denominator);
+  }
+
+  return (dar / sar);
 }
 
 float GPU::ComputeAspectRatioCorrection() const
