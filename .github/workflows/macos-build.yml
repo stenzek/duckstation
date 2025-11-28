@@ -31,22 +31,19 @@ jobs:
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'
       run: scripts/deps/build-dependencies-mac.sh "$HOME/deps"
 
-    - name: Set Build Tags
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-        echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
-        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
-
     - name: Tag as Preview Release
       if: github.ref == 'refs/heads/master'
       run: |
-        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+        echo '#pragma once' > src/scmversion/tag.h
+        echo '#define UPDATER_RELEASE_CHANNEL "preview"' >> src/scmversion/tag.h
+        echo '#define UPDATER_RELEASE_IS_OFFICIAL 1' >> src/scmversion/tag.h
 
-    - name: Tag as Rolling Release
+    - name: Tag as Stable Release
       if: github.ref == 'refs/heads/dev'
       run: |
-        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+        echo '#pragma once' > src/scmversion/tag.h
+        echo '#define UPDATER_RELEASE_CHANNEL "latest"' >> src/scmversion/tag.h
+        echo '#define UPDATER_RELEASE_IS_OFFICIAL 1' >> src/scmversion/tag.h
 
     - name: Download Patch Archives
       shell: bash

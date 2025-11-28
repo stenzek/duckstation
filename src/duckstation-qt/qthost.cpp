@@ -3274,7 +3274,7 @@ bool QtHost::ParseCommandLineParametersAndInitializeConfig(QApplication& app,
       }
       else if (CHECK_ARG("-updatecleanup"))
       {
-        s_state.cleanup_after_update = AutoUpdaterWindow::isSupported();
+        s_state.cleanup_after_update = true;
         continue;
       }
       else if (CHECK_ARG("--"))

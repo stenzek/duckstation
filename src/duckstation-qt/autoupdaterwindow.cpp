@@ -54,30 +54,58 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 // Requires that the channel be defined by the buildbot.
 #if __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
-#define UPDATE_CHECKER_SUPPORTED
-#ifdef SCM_RELEASE_ASSET
-#define AUTO_UPDATER_SUPPORTED
-#endif
+#else
+#define UPDATER_RELEASE_CHANNEL "preview"
 #endif
 
-#ifdef UPDATE_CHECKER_SUPPORTED
-
-static const char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
-static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/{}";
-static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/{}...{}";
-static const char* DOWNLOAD_PAGE_URL = "https://github.com/stenzek/duckstation/releases/tag/{}";
-static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
-static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
-
-#ifdef AUTO_UPDATER_SUPPORTED
-static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
+// Updater asset information.
+// clang-format off
+#if defined(_WIN32)
+  #if defined(CPU_ARCH_X64) && defined(CPU_ARCH_SSE41)
+    #define UPDATER_EXPECTED_EXECUTABLE "duckstation-qt-x64-ReleaseLTCG.exe"
+    #define UPDATER_ASSET_FILENAME "duckstation-windows-x64-release.zip"
+  #elif defined(CPU_ARCH_X64)
+    #define UPDATER_EXPECTED_EXECUTABLE "duckstation-qt-x64-ReleaseLTCG-SSE2.exe"
+    #define UPDATER_ASSET_FILENAME "duckstation-windows-x64-sse2-release.zip"
+  #elif defined(CPU_ARCH_ARM64)
+    #define UPDATER_EXPECTED_EXECUTABLE "duckstation-qt-ARM64-ReleaseLTCG.exe"
+    #define UPDATER_ASSET_FILENAME "duckstation-windows-arm64-release.zip"
+  #endif
+#elif defined(__APPLE__)
+  #define UPDATER_ASSET_FILENAME "duckstation-mac-release.zip"
+#elif defined(__linux__)
+  #if defined(CPU_ARCH_X64) && defined(CPU_ARCH_SSE41)
+    #define UPDATER_ASSET_FILENAME "DuckStation-x64.AppImage"
+  #elif defined(CPU_ARCH_X64)
+    #define UPDATER_ASSET_FILENAME "DuckStation-x64-SSE2.AppImage"
+  #elif defined(CPU_ARCH_ARM64)
+    #define UPDATER_ASSET_FILENAME "DuckStation-arm64.AppImage"
+  #elif defined(CPU_ARCH_ARM32)
+    #define UPDATER_ASSET_FILENAME "DuckStation-armhf.AppImage"
+  #elif defined(CPU_ARCH_RISCV64)
+    #define UPDATER_ASSET_FILENAME "DuckStation-riscv64.AppImage"
+  #endif
 #endif
-
+#ifndef UPDATER_ASSET_FILENAME
+  #error Unsupported platform.
 #endif
+// clang-format on
+
+// URLs for downloading updates.
+#define LATEST_TAG_URL "https://api.github.com/repos/stenzek/duckstation/tags"
+#define LATEST_RELEASE_URL "https://api.github.com/repos/stenzek/duckstation/releases/tags/{}"
+#define CHANGES_URL "https://api.github.com/repos/stenzek/duckstation/compare/{}...{}"
+#define DOWNLOAD_PAGE_URL "https://github.com/stenzek/duckstation/releases/tag/{}"
+
+// Update channels.
+static constexpr const std::pair<const char*, const char*> s_update_channels[] = {
+  {"latest", QT_TRANSLATE_NOOP("AutoUpdaterWindow", "Stable Releases")},
+  {"preview", QT_TRANSLATE_NOOP("AutoUpdaterWindow", "Preview Releases")},
+};
 
 LOG_CHANNEL(Host);
 
-AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
+AutoUpdaterWindow::AutoUpdaterWindow(Error* const error) : QWidget()
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -87,43 +115,24 @@ AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterWindow::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterWindow::remindMeLaterClicked);
 
-  Error error;
-  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
-  if (!m_http)
-    ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available:\n{}", error.GetDescription());
+  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), error);
+
+  m_http_poll_timer = new QTimer(this);
+  m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterWindow::httpPollTimerPoll);
 }
 
 AutoUpdaterWindow::~AutoUpdaterWindow() = default;
 
-bool AutoUpdaterWindow::isSupported()
+AutoUpdaterWindow* AutoUpdaterWindow::create(Error* const error)
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  return true;
-#else
-  return false;
-#endif
-}
+  AutoUpdaterWindow* const win = new AutoUpdaterWindow(error);
+  if (!win->m_http)
+  {
+    delete win;
+    return nullptr;
+  }
 
-bool AutoUpdaterWindow::canInstallUpdate()
-{
-#ifndef AUTO_UPDATER_SUPPORTED
-  return false;
-#elif defined(__linux__)
-  // Linux Flatpak is a wrapper of the AppImage, which will have the AUTO_UPDATER_SUPPORTED flag set.
-  // Redirect to the download page instead if not running under an AppImage.
-  return (std::getenv("APPIMAGE") != nullptr);
-#else
-  return true;
-#endif
-}
-
-bool AutoUpdaterWindow::isOfficialBuild()
-{
-#if !__has_include("scmversion/tag.h")
-  return false;
-#else
-  return true;
-#endif
+  return win;
 }
 
 void AutoUpdaterWindow::warnAboutUnofficialBuild()
@@ -147,19 +156,19 @@ void AutoUpdaterWindow::warnAboutUnofficialBuild()
   // Thanks, and I hope you understand.
   //
 
-#if !__has_include("scmversion/tag.h")
+#if !__has_include("scmversion/tag.h") || !UPDATER_RELEASE_IS_OFFICIAL
   constexpr const char* CONFIG_SECTION = "UI";
   constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
   if (
-#ifndef _WIN32
-    !StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr") &&
+#if defined(_WIN32) && !defined(__APPLE__)
+    EmuFolders::AppRoot.starts_with("/home") && // Devbuilds should be in home directory.
 #endif
     Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
   {
     return;
   }
 
-  constexpr int DELAY_SECONDS = 5;
+  constexpr int DELAY_SECONDS = 10;
 
   const QString message =
     QStringLiteral("<h1>You are not using an official release!</h1><h3>DuckStation is licensed under the terms of "
@@ -218,31 +227,23 @@ void AutoUpdaterWindow::warnAboutUnofficialBuild()
 #endif
 }
 
-QStringList AutoUpdaterWindow::getTagList()
+std::vector<std::pair<QString, QString>> AutoUpdaterWindow::getChannelList()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  return QStringList(std::begin(UPDATE_TAGS), std::end(UPDATE_TAGS));
-#else
-  return QStringList();
-#endif
+  std::vector<std::pair<QString, QString>> ret;
+  ret.reserve(std::size(s_update_channels));
+  for (const auto& [name, desc] : s_update_channels)
+    ret.emplace_back(QString::fromUtf8(name), qApp->translate("AutoUpdaterWindow", desc));
+  return ret;
 }
 
 std::string AutoUpdaterWindow::getDefaultTag()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  return THIS_RELEASE_TAG;
-#else
-  return {};
-#endif
+  return UPDATER_RELEASE_CHANNEL;
 }
 
 std::string AutoUpdaterWindow::getCurrentUpdateTag()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
-#else
-  return {};
-#endif
+  return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
 }
 
 void AutoUpdaterWindow::setDownloadSectionVisibility(bool visible)
@@ -257,33 +258,30 @@ void AutoUpdaterWindow::setDownloadSectionVisibility(bool visible)
 
 void AutoUpdaterWindow::reportError(const std::string_view msg)
 {
-  QtUtils::MessageBoxCritical(this, tr("Updater Error"), QtUtils::StringViewToQString(msg));
+  // if we're visible, use ourselves.
+  QWidget* const parent = (isVisible() ? static_cast<QWidget*>(this) : g_main_window);
+  const QString full_msg = tr("Failed to retrieve or download update:\n\n%1\n\nYou can manually update DuckStation by "
+                              "re-downloading the latest release. Do you want to open the download page now?")
+                             .arg(QtUtils::StringViewToQString(msg));
+  QMessageBox* const msgbox = QtUtils::NewMessageBox(parent, QMessageBox::Critical, tr("Updater Error"), full_msg,
+                                                     QMessageBox::Yes | QMessageBox::No);
+  msgbox->connect(msgbox, &QMessageBox::accepted, parent,
+                  [parent]() { QtUtils::OpenURL(parent, fmt::format(DOWNLOAD_PAGE_URL, UPDATER_RELEASE_CHANNEL)); });
+  msgbox->open();
 }
 
-bool AutoUpdaterWindow::ensureHttpReady()
+void AutoUpdaterWindow::ensureHttpPollingActive()
 {
-  if (!m_http)
-    return false;
+  if (m_http_poll_timer->isActive())
+    return;
 
-  if (!m_http_poll_timer)
-  {
-    m_http_poll_timer = new QTimer(this);
-    m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterWindow::httpPollTimerPoll);
-  }
-
-  if (!m_http_poll_timer->isActive())
-  {
-    m_http_poll_timer->setSingleShot(false);
-    m_http_poll_timer->setInterval(HTTP_POLL_INTERVAL);
-    m_http_poll_timer->start();
-  }
-
-  return true;
+  m_http_poll_timer->setSingleShot(false);
+  m_http_poll_timer->setInterval(HTTP_POLL_INTERVAL);
+  m_http_poll_timer->start();
 }
 
 void AutoUpdaterWindow::httpPollTimerPoll()
 {
-  Assert(m_http);
   m_http->PollRequests();
 
   if (!m_http->HasAnyRequests())
@@ -295,42 +293,25 @@ void AutoUpdaterWindow::httpPollTimerPoll()
 
 void AutoUpdaterWindow::queueUpdateCheck(bool display_errors)
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  if (!ensureHttpReady())
-  {
-    emit updateCheckCompleted();
-    return;
-  }
-
+  ensureHttpPollingActive();
   m_http->CreateRequest(LATEST_TAG_URL,
                         [this, display_errors](s32 status_code, const Error& error, const std::string& content_type,
                                                std::vector<u8> response) {
                           getLatestTagComplete(status_code, error, std::move(response), display_errors);
                         });
-#else
-  emit updateCheckCompleted();
-#endif
 }
 
 void AutoUpdaterWindow::queueGetLatestRelease()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  if (!ensureHttpReady())
-  {
-    emit updateCheckCompleted();
-    return;
-  }
-
-  std::string url = fmt::format(fmt::runtime(LATEST_RELEASE_URL), getCurrentUpdateTag());
+  ensureHttpPollingActive();
+  std::string url = fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag());
   m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterWindow::getLatestReleaseComplete, this,
                                                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_4));
-#endif
 }
 
 void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
                                              bool display_errors)
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
   const std::string selected_tag(getCurrentUpdateTag());
   const QString selected_tag_qstr = QString::fromStdString(selected_tag);
 
@@ -363,11 +344,11 @@ void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error
         {
           if (display_errors)
           {
-            QtUtils::MessageBoxInformation(this, tr("Automatic Updater"),
-                                           tr("No updates are currently available. Please try again later."));
+            QtUtils::AsyncMessageBox(g_main_window, QMessageBox::Information, tr("Automatic Updater"),
+                                     tr("No updates are currently available. Please try again later."));
           }
 
-          emit updateCheckCompleted();
+          emit updateCheckCompleted(false);
           return;
         }
       }
@@ -387,13 +368,11 @@ void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error
       reportError(fmt::format("Failed to download latest tag info: {}", error.GetDescription()));
   }
 
-  emit updateCheckCompleted();
-#endif
+  emit updateCheckCompleted(false);
 }
 
 void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -403,10 +382,9 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
     {
       const QJsonObject doc_object(doc.object());
 
-#ifdef AUTO_UPDATER_SUPPORTED
       // search for the correct file
       const QJsonArray assets(doc_object["assets"].toArray());
-      const QString asset_filename(UPDATE_ASSET_FILENAME);
+      const QString asset_filename = QStringLiteral(UPDATER_ASSET_FILENAME);
       bool asset_found = false;
       for (const QJsonValue& asset : assets)
       {
@@ -426,7 +404,6 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
         reportError("Asset not found");
         return;
       }
-#endif
 
       const QString current_date = QtHost::FormatNumber(
         Host::NumberFormatType::ShortDateTime,
@@ -437,25 +414,19 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
         static_cast<s64>(
           QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
 
-      m_ui.currentVersion->setText(
-        tr("Current Version: %1 (%2)")
-          .arg(QtUtils::StringViewToQString(TinyString::from_format("{}/{}", g_scm_version_str, THIS_RELEASE_TAG)))
-          .arg(current_date));
+      m_ui.currentVersion->setText(tr("Current Version: %1 (%2)")
+                                     .arg(QtUtils::StringViewToQString(
+                                       TinyString::from_format("{}/{}", g_scm_version_str, UPDATER_RELEASE_CHANNEL)))
+                                     .arg(current_date));
       m_ui.newVersion->setText(
         tr("New Version: %1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));
       m_ui.downloadSize->setText(
         tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
-      if (!canInstallUpdate())
-      {
-        // Just display the version and a download link.
-        m_ui.downloadAndInstall->setText(tr("Download..."));
-      }
-
       m_ui.downloadAndInstall->setEnabled(true);
       m_ui.updateNotes->setText(tr("Loading..."));
       queueGetChanges();
-      QtUtils::ShowOrRaiseWindow(this);
+      emit updateCheckCompleted(true);
       return;
     }
     else
@@ -468,25 +439,19 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
     reportError(fmt::format("Failed to download latest release info: {}", error.GetDescription()));
   }
 
-  emit updateCheckCompleted();
-#endif
+  emit updateCheckCompleted(false);
 }
 
 void AutoUpdaterWindow::queueGetChanges()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  if (!ensureHttpReady())
-    return;
-
-  std::string url = fmt::format(fmt::runtime(CHANGES_URL), g_scm_hash_str, getCurrentUpdateTag());
+  ensureHttpPollingActive();
+  std::string url = fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag());
   m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterWindow::getChangesComplete, this, std::placeholders::_1,
                                                   std::placeholders::_2, std::placeholders::_4));
-#endif
 }
 
 void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -552,19 +517,10 @@ void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, 
   {
     reportError(fmt::format("Failed to download change list: {}", error.GetDescription()));
   }
-#endif
 }
 
 void AutoUpdaterWindow::downloadUpdateClicked()
 {
-#ifdef UPDATE_CHECKER_SUPPORTED
-  if (!canInstallUpdate())
-  {
-    QtUtils::OpenURL(this, fmt::format(fmt::runtime(DOWNLOAD_PAGE_URL), getCurrentUpdateTag()));
-    return;
-  }
-#endif
-#ifdef AUTO_UPDATER_SUPPORTED
   // Prevent multiple clicks of the button.
   if (m_download_progress_callback)
     return;
@@ -576,7 +532,7 @@ void AutoUpdaterWindow::downloadUpdateClicked()
                                                m_ui.downloadButtonBox->button(QDialogButtonBox::Cancel));
   m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Downloading Update..."));
 
-  ensureHttpReady();
+  ensureHttpPollingActive();
   m_http->CreateRequest(
     m_download_url.toStdString(),
     [this](s32 status_code, const Error& error, const std::string&, std::vector<u8> response) {
@@ -619,7 +575,6 @@ void AutoUpdaterWindow::downloadUpdateClicked()
       }
     },
     m_download_progress_callback);
-#endif
 }
 
 bool AutoUpdaterWindow::updateNeeded() const
@@ -653,7 +608,7 @@ void AutoUpdaterWindow::remindMeLaterClicked()
 
 void AutoUpdaterWindow::closeEvent(QCloseEvent* event)
 {
-  emit updateCheckCompleted();
+  emit closed();
   QWidget::closeEvent(event);
 }
 
@@ -726,12 +681,6 @@ bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::s
   // with a partially updated installation
   if (unzLocateFile(zf, std::string(check_for_file).c_str(), 0) != UNZ_OK)
   {
-#ifdef CPU_ARCH_X64
-    const QString expected_executable = QStringLiteral("duckstation-qt-x64-ReleaseLTCG.exe");
-#else
-    const QString expected_executable = QStringLiteral("duckstation-qt-ARM64-ReleaseLTCG.exe");
-#endif
-
     if (QtUtils::MessageBoxIcon(
           this, QMessageBox::Warning, tr("Updater Warning"),
           tr("<h1>Inconsistent Application State</h1><h3>The update zip is missing the current executable:</h3><div "
@@ -740,7 +689,7 @@ bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::s
              "executable is used. The DuckStation executable should be named:<div "
              "align=\"center\"><pre>%2</pre></div><p>Do you want to continue anyway?</p>")
             .arg(QString::fromStdString(std::string(check_for_file)))
-            .arg(expected_executable),
+            .arg(QStringLiteral(UPDATER_EXPECTED_EXECUTABLE)),
           QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton) == QMessageBox::No)
     {
       Error::SetStringFmt(error, "Update zip is missing expected file: {}", check_for_file);

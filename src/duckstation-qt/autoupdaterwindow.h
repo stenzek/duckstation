@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -7,9 +7,10 @@
 
 #include "ui_autoupdaterwindow.h"
 
-#include <memory>
+#include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QStringList>
@@ -26,38 +27,44 @@ class AutoUpdaterWindow final : public QWidget
   Q_OBJECT
 
 public:
-  explicit AutoUpdaterWindow();
   ~AutoUpdaterWindow();
+
+  static AutoUpdaterWindow* create(Error* const error);
 
   void queueUpdateCheck(bool display_errors);
   void queueGetLatestRelease();
 
-  static bool isSupported();
-  static bool canInstallUpdate();
-  static QStringList getTagList();
+  // (channel name, channel display name)
+  static std::vector<std::pair<QString, QString>> getChannelList();
+
   static std::string getDefaultTag();
   static std::string getCurrentUpdateTag();
   static void cleanupAfterUpdate();
-  static bool isOfficialBuild();
   static void warnAboutUnofficialBuild();
 
 Q_SIGNALS:
-  void updateCheckCompleted();
+  /// Update check completed, might have an update available.
+  void updateCheckCompleted(bool update_available);
+
+  /// Update was available, but the window was closed.
+  void closed();
 
 protected:
   void closeEvent(QCloseEvent* event) override;
 
 private:
+  explicit AutoUpdaterWindow(Error* const error);
+
   void setDownloadSectionVisibility(bool visible);
+
+  void reportError(const std::string_view msg);
+  void ensureHttpPollingActive();
   void httpPollTimerPoll();
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
   void remindMeLaterClicked();
 
-  void reportError(const std::string_view msg);
-
-  bool ensureHttpReady();
 
   bool updateNeeded() const;
 

@@ -99,22 +99,12 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.theme->setMinimumContentsLength(m_ui.language->minimumContentsLength());
     m_ui.theme->setSizeAdjustPolicy(m_ui.language->sizeAdjustPolicy());
 
-    if (AutoUpdaterWindow::isSupported())
-    {
-      SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-      m_ui.autoUpdateTag->addItems(AutoUpdaterWindow::getTagList());
-      SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
-                                                     AutoUpdaterWindow::getDefaultTag());
-      connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
-    }
-    else
-    {
-      m_ui.autoUpdateTag->addItem(tr("Unavailable"));
-      m_ui.autoUpdateEnabled->setEnabled(false);
-      m_ui.autoUpdateTag->setEnabled(false);
-      m_ui.checkForUpdates->setEnabled(false);
-      m_ui.updatesGroup->setEnabled(false);
-    }
+    SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
+    for (const auto& [name, desc] : AutoUpdaterWindow::getChannelList())
+      m_ui.autoUpdateTag->addItem(desc, name);
+    SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
+                                                   AutoUpdaterWindow::getDefaultTag());
+    connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
 
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
   }

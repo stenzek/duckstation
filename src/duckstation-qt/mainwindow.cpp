@@ -3427,45 +3427,52 @@ void MainWindow::onToolsOpenTextureDirectoryTriggered()
 
 void MainWindow::checkForUpdates(bool display_message)
 {
-  if (!AutoUpdaterWindow::isSupported())
-  {
-    if (display_message)
-    {
-      QMessageBox mbox(this);
-      mbox.setWindowTitle(tr("Updater Error"));
-      mbox.setTextFormat(Qt::RichText);
+  // The user could click Check for Updates while an update check is in progress.
+  // Don't show an incomplete dialog in this case.
+  if (m_auto_updater_dialog)
+    return;
 
-      QString message;
-      if (!AutoUpdaterWindow::isOfficialBuild())
+  Error error;
+  m_auto_updater_dialog = AutoUpdaterWindow::create(&error);
+  if (!m_auto_updater_dialog)
+  {
+    QtUtils::AsyncMessageBox(
+      this, QMessageBox::Critical, tr("Error"),
+      tr("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
+    return;
+  }
+
+  connect(m_auto_updater_dialog, &AutoUpdaterWindow::closed, this, [this]() {
+    if (!m_auto_updater_dialog)
+      return;
+
+    m_auto_updater_dialog->deleteLater();
+    m_auto_updater_dialog = nullptr;
+  });
+  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, [this](bool update_available) {
+    if (!m_auto_updater_dialog)
+      return;
+
+    if (update_available)
+    {
+      if (isRenderingFullscreen())
       {
-        message =
-          tr("<p>Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To "
-             "prevent incompatibilities, the auto-updater is only enabled on official builds.</p>"
-             "<p>Please download an official release from from <a "
-             "href=\"https://www.duckstation.org/\">duckstation.org</a>.</p>");
+        // This is truely awful. We have to exit fullscreen to show the dialog, but because it's asynchronous
+        // the fullscreen exit may not have happened yet. So we have to wait for it.
+        g_emu_thread->setFullscreen(false);
+        QTimer::singleShot(500, this, [this]() { QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this); });
       }
       else
       {
-        message = tr("Automatic updating is not supported on the current platform.");
+        QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this);
       }
-
-      mbox.setText(message);
-      mbox.setIcon(QMessageBox::Critical);
-      mbox.exec();
     }
-
-    return;
-  }
-
-  if (m_auto_updater_dialog)
-  {
-    QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this);
-    return;
-  }
-
-  m_auto_updater_dialog = new AutoUpdaterWindow();
-  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this,
-          [this] { QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog); });
+    else
+    {
+      m_auto_updater_dialog->disconnect(m_auto_updater_dialog, &AutoUpdaterWindow::closed, this, nullptr);
+      QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog);
+    }
+  });
   m_auto_updater_dialog->queueUpdateCheck(display_message);
 }
 
