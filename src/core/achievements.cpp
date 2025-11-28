@@ -688,9 +688,7 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (g_settings.achievements_hardcore_mode != old_config.achievements_hardcore_mode)
   {
     // Enables have to wait for reset, disables can go through immediately.
-    if (g_settings.achievements_hardcore_mode)
-      DisplayHardcoreDeferredMessage();
-    else
+    if (!g_settings.achievements_hardcore_mode)
       DisableHardcoreMode(true, true);
   }
 
@@ -1701,8 +1699,8 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
   if (System::IsValid() && display_message)
   {
     Host::AddIconOSDMessage(OSDMessageType::Info, "AchievementsHardcoreModeChanged", RA_LOGO_ICON_NAME,
-                            enabled ? TRANSLATE_STR("Achievements", "Hardcore Mode Enabled") :
-                                      TRANSLATE_STR("Achievements", "Hardcore Mode Disabled"),
+                            enabled ? TRANSLATE_STR("Achievements", "Hardcore mode enabled.") :
+                                      TRANSLATE_STR("Achievements", "Hardcore mode disabled."),
                             enabled ? TRANSLATE_STR("Achievements", "Restrictions are now active.") :
                                       TRANSLATE_STR("Achievements", "Restrictions are no longer active."));
   }

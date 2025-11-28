@@ -179,15 +179,12 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
       return;
   }
 
-  if (QtUtils::MessageBoxQuestion(
-        this, tr("Reset System"),
-        tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?")) !=
-      QMessageBox::Yes)
-  {
-    return;
-  }
-
-  g_emu_thread->resetSystem(true);
+  QMessageBox* const msgbox = QtUtils::NewMessageBox(
+    this, QMessageBox::Question, tr("Reset System"),
+    tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
+    QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+  msgbox->connect(msgbox, &QMessageBox::accepted, this, []() { g_emu_thread->resetSystem(true); });
+  msgbox->open();
 }
 
 void AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged()

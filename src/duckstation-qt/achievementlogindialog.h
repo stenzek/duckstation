@@ -27,6 +27,10 @@ private:
   void cancelClicked();
   void processLoginResult(bool result, const QString& message);
 
+  void askToEnableAchievementsAndAccept();
+  void askToEnableHardcoreModeAndAccept();
+  void askToResetGameAndAccept();
+
   Ui::AchievementLoginDialog m_ui;
   QPushButton* m_login;
   Achievements::LoginRequestReason m_reason;
