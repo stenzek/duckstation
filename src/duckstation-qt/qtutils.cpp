@@ -98,7 +98,7 @@ void QtUtils::ShowOrRaiseWindow(QWidget* window, const QWidget* parent_window, b
     // NOTE: Must be before centering the window, otherwise the size may not be correct.
     window->show();
 
-    if (!restored && parent_window)
+    if (!restored && parent_window && parent_window->isVisible())
       CenterWindowRelativeToParent(window, parent_window);
   }
   else
