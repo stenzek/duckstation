@@ -3434,7 +3434,7 @@ int main(int argc, char* argv[])
   }
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!s_state.batch_mode)
+  if (!autoboot)
     g_main_window->refreshGameList(false);
   else
     GameList::Refresh(false, true);
