@@ -569,12 +569,7 @@ void MainWindow::onSystemStarted()
 
 void MainWindow::onSystemPaused()
 {
-  // update UI
-  {
-    QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(true);
-  }
-
+  m_ui.actionPause->setChecked(true);
   s_system_paused = true;
   updateStatusBarWidgetVisibility();
   m_ui.statusBar->showMessage(tr("Paused"));
@@ -583,12 +578,7 @@ void MainWindow::onSystemPaused()
 
 void MainWindow::onSystemResumed()
 {
-  // update UI
-  {
-    QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(false);
-  }
-
+  m_ui.actionPause->setChecked(false);
   s_system_paused = false;
   m_was_disc_change_request = false;
   m_ui.statusBar->clearMessage();
@@ -600,12 +590,7 @@ void MainWindow::onSystemResumed()
 
 void MainWindow::onSystemStopping()
 {
-  // update UI
-  {
-    QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(false);
-  }
-
+  m_ui.actionPause->setChecked(false);
   s_system_starting = false;
   s_system_valid = false;
   s_system_paused = false;
@@ -654,13 +639,11 @@ void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 ti
 
 void MainWindow::onMediaCaptureStarted()
 {
-  QSignalBlocker sb(m_ui.actionMediaCapture);
   m_ui.actionMediaCapture->setChecked(true);
 }
 
 void MainWindow::onMediaCaptureStopped()
 {
-  QSignalBlocker sb(m_ui.actionMediaCapture);
   m_ui.actionMediaCapture->setChecked(false);
 }
 
@@ -1405,7 +1388,6 @@ void MainWindow::onPauseActionToggled(bool checked)
       {
         // Restore action state.
         Host::RunOnUIThread([]() {
-          QSignalBlocker sb(g_main_window->m_ui.actionPause);
           g_main_window->m_ui.actionPause->setChecked(false);
         });
       }
@@ -1442,7 +1424,6 @@ void MainWindow::onViewToolbarLockActionToggled(bool checked)
   m_ui.toolBar->setMovable(!checked);
 
   // ensure synced
-  const QSignalBlocker sb(m_ui.actionViewLockToolbar);
   m_ui.actionViewLockToolbar->setChecked(checked);
 }
 
@@ -1453,7 +1434,6 @@ void MainWindow::onViewToolbarSmallIconsActionToggled(bool checked)
   updateToolbarIconStyle();
 
   // ensure synced
-  const QSignalBlocker sb(m_ui.actionViewSmallToolbarIcons);
   m_ui.actionViewSmallToolbarIcons->setChecked(checked);
 }
 
@@ -1464,7 +1444,6 @@ void MainWindow::onViewToolbarLabelsActionToggled(bool checked)
   updateToolbarIconStyle();
 
   // ensure synced
-  const QSignalBlocker sb(m_ui.actionViewToolbarLabels);
   m_ui.actionViewToolbarLabels->setChecked(checked);
 }
 
@@ -1475,7 +1454,6 @@ void MainWindow::onViewToolbarLabelsBesideIconsActionToggled(bool checked)
   updateToolbarIconStyle();
 
   // ensure synced
-  const QSignalBlocker sb(m_ui.actionViewToolbarLabelsBesideIcons);
   m_ui.actionViewToolbarLabelsBesideIcons->setChecked(checked);
 }
 
@@ -1942,10 +1920,7 @@ void MainWindow::onGameListSortIndicatorOrderChanged(int column, Qt::SortOrder o
       activate = (action->data() == column);
 
     if (activate)
-    {
-      const QSignalBlocker sb(m_ui.menuSortBy);
       action->setChecked(true);
-    }
   }
 }
 
@@ -3314,8 +3289,6 @@ void MainWindow::onToolsMediaCaptureToggled(bool checked)
   path = QDir::toNativeSeparators(QFileDialog::getSaveFileName(this, tr("Media Capture"), path, filter));
   if (path.isEmpty())
   {
-    // uncheck it again
-    QSignalBlocker sb(m_ui.actionMediaCapture);
     m_ui.actionMediaCapture->setChecked(false);
     return;
   }

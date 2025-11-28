@@ -51,21 +51,14 @@ void DebuggerWindow::onSystemPaused()
   setUIEnabled(true, true);
   refreshAll();
 
-  {
-    QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(true);
-  }
+  m_ui.actionPause->setChecked(true);
 }
 
 void DebuggerWindow::onSystemResumed()
 {
   setUIEnabled(false, true);
   m_ui.codeView->invalidatePC();
-
-  {
-    QSignalBlocker sb(m_ui.actionPause);
-    m_ui.actionPause->setChecked(false);
-  }
+  m_ui.actionPause->setChecked(false);
 }
 
 void DebuggerWindow::onDebuggerMessageReported(const QString& message)
@@ -589,19 +582,10 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
     ((region == Bus::MemoryRegion::RAM) ? static_cast<MemoryViewWidget::EditCallback>(edit_ram_callback) : nullptr);
   m_ui.memoryView->setData(start, mem_ptr, end - start, mem_writable, edit_callback);
 
-#define SET_REGION_RADIO_BUTTON(name, rb_region)                                                                       \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    QSignalBlocker sb(name);                                                                                           \
-    name->setChecked(region == rb_region);                                                                             \
-  } while (0)
-
-  SET_REGION_RADIO_BUTTON(m_ui.memoryRegionRAM, Bus::MemoryRegion::RAM);
-  SET_REGION_RADIO_BUTTON(m_ui.memoryRegionEXP1, Bus::MemoryRegion::EXP1);
-  SET_REGION_RADIO_BUTTON(m_ui.memoryRegionScratchpad, Bus::MemoryRegion::Scratchpad);
-  SET_REGION_RADIO_BUTTON(m_ui.memoryRegionBIOS, Bus::MemoryRegion::BIOS);
-
-#undef SET_REGION_REGION_BUTTON
+  m_ui.memoryRegionRAM->setChecked(region == Bus::MemoryRegion::RAM);
+  m_ui.memoryRegionEXP1->setChecked(region == Bus::MemoryRegion::EXP1);
+  m_ui.memoryRegionScratchpad->setChecked(region == Bus::MemoryRegion::Scratchpad);
+  m_ui.memoryRegionBIOS->setChecked(region == Bus::MemoryRegion::BIOS);
 
   m_ui.memoryView->repaint();
 }

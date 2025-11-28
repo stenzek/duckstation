@@ -636,15 +636,11 @@ void SetupWizardDialog::onAchievementsLoginCompleted()
   // Login can enable achievements/hardcore.
   if (!m_ui.enable->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
   {
-    QSignalBlocker sb(m_ui.enable);
     m_ui.enable->setChecked(true);
     updateAchievementsLoginState();
   }
   if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
-  {
-    QSignalBlocker sb(m_ui.hardcoreMode);
     m_ui.hardcoreMode->setChecked(true);
-  }
 }
 
 void SetupWizardDialog::onAchievementsViewProfileClicked()
