@@ -165,10 +165,8 @@ bool DisplayWidget::isActuallyFullscreen() const
 
 void DisplayWidget::checkForSizeChange()
 {
-  const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
-  const QSize size = QtUtils::GetPixelSizeForWidget(this, dpr);
-
   // avoid spamming resize events for paint events (sent on move on windows)
+  const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
   if (m_last_window_size != size || m_last_window_scale != dpr)
   {
     m_last_window_size = size;
@@ -270,11 +268,9 @@ bool DisplayWidget::event(QEvent* event)
     {
       if (!m_relative_mouse_enabled)
       {
-        const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
         const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
-
-        const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
-        const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * dpr);
+        const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * m_last_window_scale);
+        const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * m_last_window_scale);
         InputManager::UpdatePointerAbsolutePosition(0, scaled_x, scaled_y);
       }
       else
@@ -596,10 +592,8 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
-      const QSize size = QtUtils::GetPixelSizeForWidget(this, dpr);
-
       // avoid spamming resize events for paint events (sent on move on windows)
+      const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
       if (m_last_window_size != size || m_last_window_scale != dpr)
       {
         m_last_window_size = size;

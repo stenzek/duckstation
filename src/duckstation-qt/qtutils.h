@@ -165,8 +165,9 @@ QSize GetDeviceIndependentSize(const QSize& size, qreal device_pixel_ratio);
 /// Returns the pixel ratio/scaling factor for a widget.
 qreal GetDevicePixelRatioForWidget(const QWidget* widget);
 
-/// Returns the pixel size (real geometry) for a widget. DPR can be passed to avoid re-querying when needed.
-QSize GetPixelSizeForWidget(const QWidget* widget, qreal device_pixel_ratio = -1);
+/// Returns the pixel size (real geometry) for a widget.
+/// Also returns the "real" DPR scale for the widget,  ignoring any operating-system level downsampling.
+std::pair<QSize, qreal> GetPixelSizeForWidget(const QWidget* widget);
 
 /// Returns the common window info structure for a Qt widget.
 std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);

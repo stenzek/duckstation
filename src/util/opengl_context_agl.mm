@@ -204,7 +204,12 @@ void OpenGLContextAGL::BindContextToView(WindowInfo& wi, NSOpenGLContext* contex
   else
     dispatch_sync(dispatch_get_main_queue(), block);
 
-  UpdateSurfaceSize(wi, context);
+  const NSSize window_size = [view frame].size;
+  const CGFloat window_scale = [[view window] backingScaleFactor];
+  wi.surface_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
+  wi.surface_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
+  wi.surface_scale = window_scale;
+  wi.surface_format = GPUTexture::Format::RGBA8;
 }
 
 void OpenGLContextAGL::UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* context)
@@ -215,11 +220,12 @@ void OpenGLContextAGL::UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* contex
   const u32 new_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
   const u32 new_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
 
-  if (wi.surface_width == new_width && wi.surface_height == new_height)
+  if (wi.surface_width == new_width && wi.surface_height == new_height && wi.surface_scale == window_scale)
     return;
 
   wi.surface_width = static_cast<u16>(new_width);
   wi.surface_height = static_cast<u16>(new_height);
+  wi.surface_scale = static_cast<float>(window_scale);
 
   dispatch_block_t block = ^{
     [context update];

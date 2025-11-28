@@ -265,8 +265,13 @@ void AdvancedSettingsWidget::addTweakOptions()
                        static_cast<u32>(SaveStateCompressionMode::Count),
                        Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
+#if defined(_WIN32)
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Window Rounded Corners"), "Main",
                         "DisableWindowRoundedCorners", false);
+#elif defined(__APPLE__)
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Use Fractional Window Scale"), "Main",
+                        "UseFractionalWindowScale", true);
+#endif
 
   if (m_dialog->isPerGameSettings())
   {
@@ -340,7 +345,11 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);            // Disable Window Rounded Corners
+#if defined(_WIN32)
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Disable Window Rounded Corners
+#elif defined(__APPLE__)
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true); // Use Fractional Rendering Scale
+#endif
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
@@ -382,6 +391,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
   sif->DeleteValue("Main", "CompressSaveStates");
   sif->DeleteValue("Main", "DisableWindowRoundedCorners");
+  sif->DeleteValue("Main", "UseFractionalWindowScale");
   sif->DeleteValue("Display", "ActiveStartOffset");
   sif->DeleteValue("Display", "ActiveEndOffset");
   sif->DeleteValue("Display", "LineStartOffset");

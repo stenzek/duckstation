@@ -48,4 +48,7 @@ bool DelayedLaunch(std::string_view file, std::span<const std::string_view> args
 
 /// Returns the size of a NSView in pixels.
 std::optional<std::pair<int, int>> GetViewSizeInPixels(const void* view);
+
+/// Returns the "real" scaling factor for a given view, on its current display.
+std::optional<double> GetViewRealScalingFactor(const void* view);
 } // namespace CocoaTools
