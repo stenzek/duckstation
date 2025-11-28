@@ -193,7 +193,6 @@ private:
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions();
   void updateGameListRelatedActions();
-  void exitFullscreen(bool wait_for_completion);
 
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
@@ -206,6 +205,7 @@ private:
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void onSettingsThemeChanged();
   void destroySubWindows();
+  void showAutoUpdaterWindow();
 
   void registerForDeviceNotifications();
   void unregisterForDeviceNotifications();

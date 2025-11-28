@@ -414,16 +414,6 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   m_display_widget->setFocus();
 }
 
-void MainWindow::exitFullscreen(bool wait_for_completion)
-{
-  if (!isRenderingFullscreen())
-    return;
-
-  g_emu_thread->setFullscreen(false);
-  if (wait_for_completion)
-    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
-}
-
 void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 {
   if (!m_display_widget || isRenderingFullscreen())
@@ -2377,9 +2367,12 @@ bool MainWindow::shouldHideMainWindow() const
 
 void MainWindow::switchToGameListView()
 {
-  if (QtHost::CanRenderToMainWindow())
-    // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
-    exitFullscreen(true);
+  // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
+  if (QtHost::CanRenderToMainWindow() && isRenderingFullscreen())
+  {
+    g_emu_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->switchToGameListView(); });
+    return;
+  }
 
   if (isShowingGameList())
     return;
@@ -3399,7 +3392,10 @@ void MainWindow::checkForUpdates(bool display_message)
   // The user could click Check for Updates while an update check is in progress.
   // Don't show an incomplete dialog in this case.
   if (m_auto_updater_dialog)
+  {
+    showAutoUpdaterWindow();
     return;
+  }
 
   Error error;
   m_auto_updater_dialog = AutoUpdaterDialog::create(this, &error);
@@ -3424,10 +3420,7 @@ void MainWindow::checkForUpdates(bool display_message)
 
     if (update_available)
     {
-      if (isRenderingFullscreen())
-        g_emu_thread->setFullscreen(false);
-
-      m_auto_updater_dialog->open();
+      showAutoUpdaterWindow();
     }
     else
     {
@@ -3436,6 +3429,29 @@ void MainWindow::checkForUpdates(bool display_message)
     }
   });
   m_auto_updater_dialog->queueUpdateCheck(display_message);
+}
+
+void MainWindow::showAutoUpdaterWindow()
+{
+  if (isRenderingFullscreen())
+  {
+    // Gotta get out of fullscreen first.
+    g_emu_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->showAutoUpdaterWindow(); });
+    return;
+  }
+
+  if (m_auto_updater_dialog->isVisible())
+  {
+    QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog);
+    return;
+  }
+
+  // If the main window cannot be shown (e.g. render to separate), then don't make it window-modal.
+  // Otherwise it ends as a sheet on MacOS, and leaves an empty main window behind.
+  if (!isVisible())
+    m_auto_updater_dialog->show();
+  else
+    m_auto_updater_dialog->open();
 }
 
 void* MainWindow::getNativeWindowId()
