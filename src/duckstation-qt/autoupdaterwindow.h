@@ -14,10 +14,10 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QStringList>
 #include <QtCore/QTimer>
-#include <QtWidgets/QDialog>
 
 class Error;
 class HTTPDownloader;
+class QtProgressCallback;
 
 class EmuThread;
 
@@ -36,6 +36,7 @@ public:
   static bool canInstallUpdate();
   static QStringList getTagList();
   static std::string getDefaultTag();
+  static std::string getCurrentUpdateTag();
   static void cleanupAfterUpdate();
   static bool isOfficialBuild();
   static void warnAboutUnofficialBuild();
@@ -47,6 +48,7 @@ protected:
   void closeEvent(QCloseEvent* event) override;
 
 private:
+  void setDownloadSectionVisibility(bool visible);
   void httpPollTimerPoll();
 
   void downloadUpdateClicked();
@@ -58,7 +60,6 @@ private:
   bool ensureHttpReady();
 
   bool updateNeeded() const;
-  std::string getCurrentUpdateTag() const;
 
   void getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response, bool display_errors);
   void getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response);
@@ -80,6 +81,7 @@ private:
 
   std::unique_ptr<HTTPDownloader> m_http;
   QTimer* m_http_poll_timer = nullptr;
+  QtProgressCallback* m_download_progress_callback = nullptr;
   QString m_latest_sha;
   QString m_download_url;
   int m_download_size = 0;

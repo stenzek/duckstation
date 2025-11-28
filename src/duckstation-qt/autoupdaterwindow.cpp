@@ -81,6 +81,7 @@ AutoUpdaterWindow::AutoUpdaterWindow() : QWidget()
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+  setDownloadSectionVisibility(false);
 
   connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterWindow::downloadUpdateClicked);
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterWindow::skipThisUpdateClicked);
@@ -235,13 +236,23 @@ std::string AutoUpdaterWindow::getDefaultTag()
 #endif
 }
 
-std::string AutoUpdaterWindow::getCurrentUpdateTag() const
+std::string AutoUpdaterWindow::getCurrentUpdateTag()
 {
 #ifdef UPDATE_CHECKER_SUPPORTED
   return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
 #else
   return {};
 #endif
+}
+
+void AutoUpdaterWindow::setDownloadSectionVisibility(bool visible)
+{
+  m_ui.downloadProgress->setVisible(visible);
+  m_ui.downloadStatus->setVisible(visible);
+  m_ui.downloadButtonBox->setVisible(visible);
+  m_ui.downloadAndInstall->setVisible(!visible);
+  m_ui.skipThisUpdate->setVisible(!visible);
+  m_ui.remindMeLater->setVisible(!visible);
 }
 
 void AutoUpdaterWindow::reportError(const std::string_view msg)
@@ -555,66 +566,59 @@ void AutoUpdaterWindow::downloadUpdateClicked()
 #endif
 #ifdef AUTO_UPDATER_SUPPORTED
   // Prevent multiple clicks of the button.
-  if (!m_ui.downloadAndInstall->isEnabled())
+  if (m_download_progress_callback)
     return;
-  m_ui.downloadAndInstall->setEnabled(false);
 
-  std::optional<bool> download_result;
-  QtModalProgressCallback progress(this);
-  progress.SetTitle(tr("Automatic Updater").toUtf8().constData());
-  progress.SetStatusText(tr("Downloading %1...").arg(m_latest_sha).toUtf8().constData());
-  progress.GetDialog().setWindowIcon(windowIcon());
-  progress.SetCancellable(true);
-  progress.MakeVisible();
+  setDownloadSectionVisibility(true);
 
+  m_download_progress_callback = new QtProgressCallback(this);
+  m_download_progress_callback->connectWidgets(m_ui.downloadStatus, m_ui.downloadProgress,
+                                               m_ui.downloadButtonBox->button(QDialogButtonBox::Cancel));
+  m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Downloading Update..."));
+
+  ensureHttpReady();
   m_http->CreateRequest(
     m_download_url.toStdString(),
-    [this, &download_result](s32 status_code, const Error& error, const std::string&, std::vector<u8> response) {
+    [this](s32 status_code, const Error& error, const std::string&, std::vector<u8> response) {
+      m_download_progress_callback->SetStatusText(TRANSLATE_SV("AutoUpdaterWindow", "Processing Update..."));
+      m_download_progress_callback->SetProgressRange(1);
+      m_download_progress_callback->SetProgressValue(1);
+      DebugAssert(m_download_progress_callback);
+      delete m_download_progress_callback;
+      m_download_progress_callback = nullptr;
+
       if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
+      {
+        setDownloadSectionVisibility(false);
         return;
+      }
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
         reportError(fmt::format("Download failed: {}", error.GetDescription()));
-        download_result = false;
+        setDownloadSectionVisibility(false);
         return;
       }
 
       if (response.empty())
       {
         reportError("Download failed: Update is empty");
-        download_result = false;
+        setDownloadSectionVisibility(false);
         return;
       }
 
-      download_result = processUpdate(response);
+      if (processUpdate(response))
+      {
+        // updater started, request exit
+        g_main_window->requestExit(false);
+      }
+      else
+      {
+        // allow user to try again
+        setDownloadSectionVisibility(false);
+      }
     },
-    &progress);
-
-  // Since we're going to block, don't allow the timer to poll, otherwise the progress callback can cause the timer
-  // to run, and recursively poll again.
-  m_http_poll_timer->stop();
-
-  // Block until completion.
-  QtUtils::ProcessEventsWithSleep(
-    QEventLoop::AllEvents,
-    [this]() {
-      m_http->PollRequests();
-      return m_http->HasAnyRequests();
-    },
-    HTTP_POLL_INTERVAL);
-
-  if (download_result.value_or(false))
-  {
-    // updater started. since we're a modal on the main window, we have to queue this.
-    QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, false);
-    close();
-  }
-  else
-  {
-    // update failed, re-enable download button
-    m_ui.downloadAndInstall->setEnabled(true);
-  }
+    m_download_progress_callback);
 #endif
 }
 
@@ -956,8 +960,8 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
       return false;
     }
 
-    // We do this as a manual write here, rather than using WriteAtomicUpdatedFile(), because we want to write the file
-    // and set the permissions as one atomic operation.
+    // We do this as a manual write here, rather than using WriteAtomicUpdatedFile(), because we want to write the
+    // file and set the permissions as one atomic operation.
     FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(new_appimage_path.c_str(), "wb", &error);
     bool success = static_cast<bool>(fp);
     if (fp)

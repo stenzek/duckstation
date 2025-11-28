@@ -14,6 +14,7 @@
 #include <QtWidgets/QProgressDialog>
 #include <atomic>
 
+class QAbstractButton;
 class QLabel;
 class QProgressBar;
 class QPushButton;
@@ -48,6 +49,33 @@ private:
   QProgressDialog m_dialog;
   Timer m_show_timer;
   float m_show_delay;
+};
+
+class QtProgressCallback final : public QObject, public ProgressCallback
+{
+  Q_OBJECT
+
+public:
+  explicit QtProgressCallback(QObject* parent = nullptr);
+  ~QtProgressCallback() override;
+
+  bool IsCancelled() const override;
+  void SetTitle(const std::string_view title) override;
+  void SetStatusText(const std::string_view text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
+
+  void connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
+                      QAbstractButton* const cancel_button);
+
+Q_SIGNALS:
+  void titleUpdated(const QString& title);
+  void statusTextUpdated(const QString& status);
+  void progressRangeUpdated(int min, int max);
+  void progressValueUpdated(int value);
+
+private:
+  std::atomic_bool m_ts_cancelled{false};
 };
 
 class QtAsyncTaskWithProgress final : public QObject, private ProgressCallback

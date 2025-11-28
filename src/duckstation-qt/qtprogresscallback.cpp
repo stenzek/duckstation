@@ -107,6 +107,67 @@ void QtModalProgressCallback::MakeVisible()
     m_dialog.show();
 }
 
+QtProgressCallback::QtProgressCallback(QObject* parent /* = nullptr */) : QObject(parent)
+{
+}
+
+QtProgressCallback::~QtProgressCallback() = default;
+
+bool QtProgressCallback::IsCancelled() const
+{
+  return m_ts_cancelled.load(std::memory_order_acquire);
+}
+
+void QtProgressCallback::SetTitle(const std::string_view title)
+{
+  emit titleUpdated(QtUtils::StringViewToQString(title));
+}
+
+void QtProgressCallback::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  emit statusTextUpdated(QtUtils::StringViewToQString(text));
+}
+
+void QtProgressCallback::SetProgressRange(u32 range)
+{
+  const u32 prev_range = m_progress_range;
+  ProgressCallback::SetProgressRange(range);
+  if (m_progress_range == prev_range)
+    return;
+
+  emit progressRangeUpdated(0, static_cast<int>(m_progress_range));
+}
+
+void QtProgressCallback::SetProgressValue(u32 value)
+{
+  const u32 prev_value = m_progress_value;
+  ProgressCallback::SetProgressValue(value);
+  if (m_progress_value == prev_value)
+    return;
+
+  emit progressValueUpdated(static_cast<int>(m_progress_value));
+}
+
+void QtProgressCallback::connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
+                                        QAbstractButton* const cancel_button)
+{
+  if (status_label)
+    connect(this, &QtProgressCallback::statusTextUpdated, status_label, &QLabel::setText);
+  if (progress_bar)
+  {
+    connect(this, &QtProgressCallback::progressRangeUpdated, progress_bar, &QProgressBar::setRange);
+    connect(this, &QtProgressCallback::progressValueUpdated, progress_bar, &QProgressBar::setValue);
+  }
+  if (cancel_button)
+  {
+    // force direct connection so it executes on the calling thread
+    connect(
+      cancel_button, &QAbstractButton::clicked, this,
+      [this]() { m_ts_cancelled.store(true, std::memory_order_release); }, Qt::DirectConnection);
+  }
+}
+
 QtAsyncTaskWithProgress::QtAsyncTaskWithProgress(const QString& initial_title, const QString& initial_status_text,
                                                  bool cancellable, int range, int value, float show_delay,
                                                  QWidget* dialog_parent, WorkCallback callback)
