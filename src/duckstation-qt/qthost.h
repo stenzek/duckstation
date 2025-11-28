@@ -217,9 +217,6 @@ private:
   bool m_is_fullscreen = false;
   bool m_is_fullscreen_ui_started = false;
   bool m_gpu_thread_run_idle = false;
-  bool m_save_state_on_shutdown = false;
-
-  bool m_was_paused_by_focus_loss = false;
 
   float m_last_speed = std::numeric_limits<float>::infinity();
   float m_last_game_fps = std::numeric_limits<float>::infinity();
