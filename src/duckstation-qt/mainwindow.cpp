@@ -816,7 +816,7 @@ void MainWindow::recreate()
   destroySubWindows();
 
   const bool was_display_created = wantsDisplayWidget();
-  const bool was_fullscreen = (was_display_created && g_emu_thread->isFullscreen());
+  const bool was_fullscreen = (was_display_created && isRenderingFullscreen());
   if (was_display_created)
   {
     // Ensure the main window is visible, otherwise last-window-closed terminates the application.
@@ -3490,7 +3490,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   // On MacOS, it forces a workspace switch, which is kinda jarring.
 
 #ifndef __APPLE__
-  const bool was_fullscreen = g_emu_thread->isFullscreen();
+  const bool was_fullscreen = isRenderingFullscreen();
 #else
   const bool was_fullscreen = false;
 #endif
