@@ -3021,47 +3021,6 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
   return ret;
 }
 
-EmuThread::SystemLock EmuThread::pauseAndLockSystem()
-{
-  const bool was_fullscreen = QtHost::IsSystemValid() && isFullscreen();
-  const bool was_paused = QtHost::IsSystemPaused();
-
-  // We use surfaceless rather than switching out of fullscreen, because
-  // we're paused, so we're not going to be rendering anyway.
-  if (was_fullscreen)
-    setSurfaceless(true);
-  if (!was_paused)
-    setSystemPaused(true);
-
-  return SystemLock(was_paused, was_fullscreen);
-}
-
-EmuThread::SystemLock::SystemLock(bool was_paused, bool was_fullscreen)
-  : m_was_paused(was_paused), m_was_fullscreen(was_fullscreen)
-{
-}
-
-EmuThread::SystemLock::SystemLock(SystemLock&& lock)
-  : m_was_paused(lock.m_was_paused), m_was_fullscreen(lock.m_was_fullscreen)
-{
-  lock.m_was_paused = true;
-  lock.m_was_fullscreen = false;
-}
-
-EmuThread::SystemLock::~SystemLock()
-{
-  if (m_was_fullscreen)
-    g_emu_thread->setSurfaceless(false);
-  if (!m_was_paused)
-    g_emu_thread->setSystemPaused(false);
-}
-
-void EmuThread::SystemLock::cancelResume()
-{
-  m_was_paused = true;
-  m_was_fullscreen = false;
-}
-
 BEGIN_HOTKEY_LIST(g_host_hotkeys)
 END_HOTKEY_LIST()
 

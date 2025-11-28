@@ -66,29 +66,6 @@ class EmuThread : public QThread
   Q_OBJECT
 
 public:
-  /// This class is a scoped lock on the system, which prevents it from running while
-  /// the object exists. Its purpose is to be used for blocking/modal popup boxes,
-  /// where the VM needs to exit fullscreen temporarily.
-  class SystemLock
-  {
-  public:
-    SystemLock(SystemLock&& lock);
-    SystemLock(const SystemLock&) = delete;
-    ~SystemLock();
-
-    /// Cancels any pending unpause/fullscreen transition.
-    /// Call when you're going to destroy the system anyway.
-    void cancelResume();
-
-  private:
-    SystemLock(bool was_paused, bool was_fullscreen);
-    friend EmuThread;
-
-    bool m_was_paused;
-    bool m_was_fullscreen;
-  };
-
-public:
   EmuThread();
   ~EmuThread();
 
@@ -115,10 +92,6 @@ public:
 
   void updatePerformanceCounters(const GPUBackend* gpu_backend);
   void resetPerformanceCounters();
-
-  /// Locks the system by pausing it, while a popup dialog is displayed.
-  /// This version is **only** for the system thread. UI thread should use the MainWindow variant.
-  SystemLock pauseAndLockSystem();
 
   /// Queues an input event for an additional render window to the emu thread.
   void queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
