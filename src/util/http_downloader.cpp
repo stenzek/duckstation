@@ -45,6 +45,13 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, 
   req->progress = progress;
   req->start_time = Timer::GetCurrentValue();
 
+  // set progress state to indeterminate until we know the size
+  if (req->progress)
+  {
+    req->progress->SetProgressRange(0);
+    req->progress->SetProgressValue(0);
+  }
+
   std::unique_lock lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
   {
