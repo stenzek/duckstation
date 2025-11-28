@@ -175,13 +175,13 @@ ALWAYS_INLINE void WriteFuncName(MessageCategory cat, const char* function_name,
 
 #define ERROR_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Error, Log::Color::Default, __VA_ARGS__)
 #define WARNING_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Warning, Log::Color::Default, __VA_ARGS__)
-#define INFO_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Info, Log::Color::Default, __VA_ARGS__)
-#define VERBOSE_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::Default, __VA_ARGS__)
-#define DEV_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::Default, __VA_ARGS__)
+#define INFO_LOG(...) GENERIC_LOG(___LogChannel___, Log::Level::Info, Log::Color::Default, __VA_ARGS__)
+#define VERBOSE_LOG(...) GENERIC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::Default, __VA_ARGS__)
+#define DEV_LOG(...) GENERIC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::Default, __VA_ARGS__)
 
 #if defined(_DEBUG) || defined(_DEVEL)
-#define DEBUG_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::Default, __VA_ARGS__)
-#define TRACE_LOG(...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::Default, __VA_ARGS__)
+#define DEBUG_LOG(...) GENERIC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::Default, __VA_ARGS__)
+#define TRACE_LOG(...) GENERIC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::Default, __VA_ARGS__)
 #else
 #define DEBUG_LOG(...) do { } while (0)
 #define TRACE_LOG(...) do { } while (0)
@@ -189,13 +189,13 @@ ALWAYS_INLINE void WriteFuncName(MessageCategory cat, const char* function_name,
 
 #define ERROR_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Error, Log::Color::color, __VA_ARGS__)
 #define WARNING_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Warning, Log::Color::color, __VA_ARGS__)
-#define INFO_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Info, Log::Color::color, __VA_ARGS__)
-#define VERBOSE_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::color, __VA_ARGS__)
-#define DEV_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::color, __VA_ARGS__)
+#define INFO_COLOR_LOG(color, ...) GENERIC_LOG(___LogChannel___, Log::Level::Info, Log::Color::color, __VA_ARGS__)
+#define VERBOSE_COLOR_LOG(color, ...) GENERIC_LOG(___LogChannel___, Log::Level::Verbose, Log::Color::color, __VA_ARGS__)
+#define DEV_COLOR_LOG(color, ...) GENERIC_LOG(___LogChannel___, Log::Level::Dev, Log::Color::color, __VA_ARGS__)
 
 #if defined(_DEBUG) || defined(_DEVEL)
-#define DEBUG_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::color, __VA_ARGS__)
-#define TRACE_COLOR_LOG(color, ...) GENERIC_FUNC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::color, __VA_ARGS__)
+#define DEBUG_COLOR_LOG(color, ...) GENERIC_LOG(___LogChannel___, Log::Level::Debug, Log::Color::color, __VA_ARGS__)
+#define TRACE_COLOR_LOG(color, ...) GENERIC_LOG(___LogChannel___, Log::Level::Trace, Log::Color::color, __VA_ARGS__)
 #else
 #define DEBUG_COLOR_LOG(color, ...) do { } while (0)
 #define TRACE_COLOR_LOG(color, ...) do { } while (0)
