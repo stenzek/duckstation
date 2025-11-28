@@ -108,6 +108,10 @@ LOG_CHANNEL(Host);
 AutoUpdaterWindow::AutoUpdaterWindow(Error* const error) : QWidget()
 {
   m_ui.setupUi(this);
+  QFont title_font(m_ui.titleLabel->font());
+  title_font.setBold(true);
+  title_font.setPixelSize(20);
+  m_ui.titleLabel->setFont(title_font);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setDownloadSectionVisibility(false);
 
@@ -414,14 +418,12 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
         static_cast<s64>(
           QDateTime::fromString(doc_object["published_at"].toString(), Qt::DateFormat::ISODate).toSecsSinceEpoch()));
 
-      m_ui.currentVersion->setText(tr("Current Version: %1 (%2)")
+      m_ui.currentVersion->setText(tr("%1 (%2)")
                                      .arg(QtUtils::StringViewToQString(
                                        TinyString::from_format("{}/{}", g_scm_version_str, UPDATER_RELEASE_CHANNEL)))
                                      .arg(current_date));
-      m_ui.newVersion->setText(
-        tr("New Version: %1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));
-      m_ui.downloadSize->setText(
-        tr("Download Size: %1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
+      m_ui.newVersion->setText(tr("%1 (%2)").arg(QString::fromStdString(getCurrentUpdateTag())).arg(release_date));
+      m_ui.downloadSize->setText(tr("%1 MB").arg(static_cast<double>(m_download_size) / 1000000.0, 0, 'f', 2));
 
       m_ui.downloadAndInstall->setEnabled(true);
       m_ui.updateNotes->setText(tr("Loading..."));

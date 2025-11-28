@@ -22,12 +22,24 @@
    <item>
     <layout class="QHBoxLayout" name="updateTextLayout" stretch="0,1">
      <item>
-      <widget class="QLabel" name="icon">
+      <widget class="QLabel" name="iconLabel">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
        </property>
        <property name="text">
         <string/>
@@ -35,43 +47,71 @@
        <property name="pixmap">
         <pixmap resource="resources/duckstation-qt.qrc">:/icons/UpdateDuck.png</pixmap>
        </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="updateLabel">
-       <property name="font">
-        <font>
-         <pointsize>16</pointsize>
-         <bold>true</bold>
-        </font>
-       </property>
+      <widget class="QLabel" name="titleLabel">
        <property name="text">
         <string>Update Available</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="currentVersion">
-     <property name="text">
-      <string>Current Version: </string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="newVersion">
-     <property name="text">
-      <string>New Version: </string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="downloadSize">
-     <property name="text">
-      <string>Download Size:</string>
-     </property>
-    </widget>
+    <layout class="QGridLayout" name="versionInfoLayout" columnstretch="0,1">
+     <item row="0" column="0">
+      <widget class="QLabel" name="currentVersionLabel">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Current Version: </string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="currentVersion"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="newVersionLabel">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>New Version: </string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="newVersion"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="downloadSizeLabel">
+       <property name="font">
+        <font>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Download Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="downloadSize"/>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QTextBrowser" name="updateNotes"/>
@@ -133,11 +173,7 @@
       </widget>
      </item>
      <item row="0" column="0" colspan="2">
-      <widget class="QLabel" name="downloadStatus">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
+      <widget class="QLabel" name="downloadStatus"/>
      </item>
     </layout>
    </item>
