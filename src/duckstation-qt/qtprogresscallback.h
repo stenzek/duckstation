@@ -1,55 +1,19 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include "qthost.h"
-
 #include "common/progress_callback.h"
 #include "common/timer.h"
 
-#include <QtCore/QSemaphore>
-#include <QtCore/QThread>
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QProgressDialog>
 #include <atomic>
 
 class QAbstractButton;
+class QDialogButtonBox;
 class QLabel;
 class QProgressBar;
 class QPushButton;
-
-class QtModalProgressCallback final : public QObject, public ProgressCallback
-{
-  Q_OBJECT
-
-public:
-  explicit QtModalProgressCallback(QWidget* parent_widget, float show_delay = 0.0f);
-  ~QtModalProgressCallback();
-
-  QProgressDialog& GetDialog() { return m_dialog; }
-
-  void SetCancellable(bool cancellable) override;
-  void SetTitle(const std::string_view title) override;
-  void SetStatusText(const std::string_view text) override;
-  void SetProgressRange(u32 range) override;
-  void SetProgressValue(u32 value) override;
-
-  void MakeVisible();
-
-private:
-  static constexpr int MINIMUM_WIDTH = 500;
-  static constexpr int MINIMUM_HEIGHT_WITHOUT_CANCEL = 70;
-  static constexpr int MINIMUM_HEIGHT_WITH_CANCEL = 100;
-
-  void checkForDelayedShow();
-
-  void dialogCancelled();
-
-  QProgressDialog m_dialog;
-  Timer m_show_timer;
-  float m_show_delay;
-};
 
 class QtProgressCallback final : public QObject, public ProgressCallback
 {
