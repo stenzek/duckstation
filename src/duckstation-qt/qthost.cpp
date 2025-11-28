@@ -131,7 +131,6 @@ static bool RunSetupWizard();
 static void UpdateFontOrder(std::string_view language);
 static void UpdateApplicationLocale(std::string_view language);
 static std::string_view GetSystemLanguage();
-static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
 static void PrintCommandLineVersion();
