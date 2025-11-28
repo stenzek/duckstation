@@ -439,6 +439,9 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
     s_state.choice_dialog.ClearState();
     s_state.file_selector_dialog.ClearState();
   }
+
+  UpdateLoadingScreenRunIdle();
+  UpdateNotificationsRunIdle();
 }
 
 void FullscreenUI::UpdateWidgetsSettings()
