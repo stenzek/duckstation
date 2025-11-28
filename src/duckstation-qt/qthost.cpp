@@ -954,21 +954,6 @@ void Host::SetFullscreen(bool enabled)
   g_emu_thread->setFullscreen(enabled);
 }
 
-void EmuThread::setSurfaceless(bool surfaceless)
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::setSurfaceless, Qt::QueuedConnection, surfaceless);
-    return;
-  }
-
-  if (!g_gpu_device || m_is_surfaceless == surfaceless)
-    return;
-
-  m_is_surfaceless = surfaceless;
-  GPUThread::UpdateDisplayWindow(false);
-}
-
 void EmuThread::updateDisplayWindow()
 {
   if (!isCurrentThread())
@@ -1001,15 +986,13 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, b
 
   m_is_fullscreen = fullscreen;
 
-  return emit onAcquireRenderWindowRequested(render_api, m_is_fullscreen, exclusive_fullscreen, m_is_surfaceless,
-                                             error);
+  return emit onAcquireRenderWindowRequested(render_api, m_is_fullscreen, exclusive_fullscreen, error);
 }
 
 void EmuThread::releaseRenderWindow()
 {
   emit onReleaseRenderWindowRequested();
   m_is_fullscreen = false;
-  m_is_surfaceless = false;
 }
 
 void EmuThread::connectDisplaySignals(DisplayWidget* widget)
@@ -1045,10 +1028,6 @@ void Host::OnSystemPaused()
 
 void Host::OnSystemResumed()
 {
-  // if we were surfaceless (view->game list, system->unpause), get our display widget back
-  if (g_emu_thread->isSurfaceless())
-    g_emu_thread->setSurfaceless(false);
-
   emit g_emu_thread->systemResumed();
   g_emu_thread->wakeThread();
 

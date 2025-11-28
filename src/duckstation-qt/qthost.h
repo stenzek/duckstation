@@ -75,7 +75,6 @@ public:
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }
-  ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
 
   ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
 
@@ -115,7 +114,7 @@ Q_SIGNALS:
   void systemUndoStateAvailabilityChanged(bool available, quint64 timestamp);
   void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
-                                                           bool exclusive_fullscreen, bool surfaceless, Error* error);
+                                                           bool exclusive_fullscreen, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void inputProfileLoaded();
@@ -174,7 +173,6 @@ public:
   void redrawDisplayWindow();
   void toggleFullscreen();
   void setFullscreen(bool fullscreen);
-  void setSurfaceless(bool surfaceless);
   void updateDisplayWindow();
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
@@ -219,7 +217,6 @@ private:
   bool m_is_fullscreen = false;
   bool m_is_fullscreen_ui_started = false;
   bool m_gpu_thread_run_idle = false;
-  bool m_is_surfaceless = false;
   bool m_save_state_on_shutdown = false;
 
   bool m_was_paused_by_focus_loss = false;

@@ -163,6 +163,22 @@ bool DisplayWidget::isActuallyFullscreen() const
   return container ? container->isFullScreen() : isFullScreen();
 }
 
+void DisplayWidget::checkForSizeChange()
+{
+  const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+  const QSize size = QtUtils::GetPixelSizeForWidget(this, dpr);
+
+  // avoid spamming resize events for paint events (sent on move on windows)
+  if (m_last_window_size != size || m_last_window_scale != dpr)
+  {
+    m_last_window_size = size;
+    m_last_window_scale = dpr;
+    emit windowResizedEvent(size.width(), size.height(), static_cast<float>(dpr));
+  }
+
+  updateCenterPos();
+}
+
 void DisplayWidget::updateCenterPos()
 {
 #ifdef _WIN32
@@ -349,23 +365,14 @@ bool DisplayWidget::event(QEvent* event)
     {
       QWidget::event(event);
 
-      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
-      const QSize size = QtUtils::GetPixelSizeForWidget(this, dpr);
-
-      // avoid spamming resize events for paint events (sent on move on windows)
-      if (m_last_window_size != size || m_last_window_scale != dpr)
-      {
-        m_last_window_size = size;
-        m_last_window_scale = dpr;
-        emit windowResizedEvent(size.width(), size.height(), static_cast<float>(dpr));
-      }
-
-      updateCenterPos();
+      checkForSizeChange();
       return true;
     }
 
     case QEvent::Move:
     {
+      QWidget::event(event);
+
       updateCenterPos();
       return true;
     }

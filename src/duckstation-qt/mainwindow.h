@@ -189,9 +189,9 @@ private:
   void restoreDisplayWindowGeometryFromConfig();
   bool wantsDisplayWidget() const;
   void createDisplayWidget(bool fullscreen, bool render_to_main);
-  void destroyDisplayWidget(bool show_game_list);
+  void destroyDisplayWidget();
   void updateDisplayWidgetCursor();
-  void updateDisplayRelatedActions(bool has_surface, bool fullscreen);
+  void updateDisplayRelatedActions();
   void updateGameListRelatedActions();
   void exitFullscreen(bool wait_for_completion);
 
@@ -226,7 +226,7 @@ private:
   void promptForDiscChange(const QString& path);
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
-                                                bool surfaceless, Error* error);
+                                                Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
@@ -355,7 +355,7 @@ private:
   bool m_hide_mouse_cursor = false;
 
   bool m_exclusive_fullscreen_requested = false;
-  bool m_was_paused_on_surface_loss = false;
+  bool m_was_paused_on_game_list_switch = false;
   bool m_was_disc_change_request = false;
   bool m_is_closing = false;
 

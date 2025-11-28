@@ -35,6 +35,7 @@ public:
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);
 
+  void checkForSizeChange();
   void handleCloseEvent(QCloseEvent* event);
   void destroy();
 
