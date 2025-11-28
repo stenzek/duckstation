@@ -84,20 +84,6 @@ void RunOnCPUThread(std::function<void()> function, bool block = false);
 /// Safely executes a function on the main/UI thread.
 void RunOnUIThread(std::function<void()> function, bool block = false);
 
-/// Called when the core is creating a render device.
-/// This could also be fullscreen transition.
-std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
-                                              Error* error);
-
-/// Called when the core is finished with a render window.
-void ReleaseRenderWindow();
-
-/// Returns true if the hosting application is currently fullscreen.
-bool IsFullscreen();
-
-/// Alters fullscreen state of hosting application.
-void SetFullscreen(bool enabled);
-
 namespace Internal {
 
 /// Based on the current configuration, determines what the data directory is.

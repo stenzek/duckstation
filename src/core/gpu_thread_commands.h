@@ -73,10 +73,10 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
   Error* error_ptr;
   bool* out_result;
   std::optional<GPURenderer> renderer;
-  std::optional<bool> fullscreen;
   std::optional<bool> start_fullscreen_ui;
   GPUVSyncMode vsync_mode;
   bool allow_present_throttle;
+  bool fullscreen;
   bool force_recreate_device;
   bool upload_vram;
   GPUSettings settings;

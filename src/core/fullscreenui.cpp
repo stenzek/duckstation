@@ -953,7 +953,7 @@ void FullscreenUI::DoDesktopMode()
 
 void FullscreenUI::DoToggleFullscreen()
 {
-  Host::RunOnCPUThread([]() { Host::SetFullscreen(!Host::IsFullscreen()); });
+  Host::RunOnCPUThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2208,9 +2208,7 @@ void FullscreenUI::DrawResumeStateSelector()
 void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
   Host::RunOnCPUThread([url = std::string(url)]() {
-    if (Host::IsFullscreen())
-      Host::SetFullscreen(false);
-
+    GPUThread::SetFullscreen(false);
     Host::OpenURL(url);
   });
 }

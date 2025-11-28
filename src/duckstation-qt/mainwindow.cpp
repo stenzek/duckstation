@@ -426,7 +426,7 @@ void MainWindow::exitFullscreen(bool wait_for_completion)
 
 void MainWindow::displayResizeRequested(qint32 width, qint32 height)
 {
-  if (!m_display_widget)
+  if (!m_display_widget || isRenderingFullscreen())
     return;
 
   // unapply the pixel scaling factor for hidpi

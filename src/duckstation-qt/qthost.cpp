@@ -653,9 +653,6 @@ bool QtHost::UseMainWindowGeometryForDisplayWindow()
 
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
 {
-  if (g_emu_thread->isFullscreen())
-    return;
-
   emit g_emu_thread->onResizeRenderWindowRequested(new_window_width, new_window_height);
 }
 
@@ -725,7 +722,7 @@ void EmuThread::startFullscreenUI()
     return;
   }
 
-  if (System::IsValid() || m_is_fullscreen_ui_started)
+  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
     return;
 
   // we want settings loaded so we choose the correct renderer
@@ -922,7 +919,7 @@ void EmuThread::toggleFullscreen()
     return;
   }
 
-  setFullscreen(!m_is_fullscreen);
+  GPUThread::SetFullscreen(!GPUThread::IsFullscreen());
 }
 
 void EmuThread::setFullscreen(bool fullscreen)
@@ -933,25 +930,22 @@ void EmuThread::setFullscreen(bool fullscreen)
     return;
   }
 
-  if (!g_gpu_device || m_is_fullscreen == fullscreen)
-    return;
-
-  m_is_fullscreen = fullscreen;
-  GPUThread::UpdateDisplayWindow(fullscreen);
+  GPUThread::SetFullscreen(fullscreen);
 }
 
-bool Host::IsFullscreen()
+void EmuThread::setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler)
 {
-  return g_emu_thread->isFullscreen();
-}
-
-void Host::SetFullscreen(bool enabled)
-{
-  // don't mess with fullscreen while locked
-  if (QtHost::IsSystemLocked())
+  if (!isCurrentThread())
+  {
+    DebugAssert(QThread::isMainThread());
+    QMetaObject::invokeMethod(this, &EmuThread::setFullscreenWithCompletionHandler, Qt::QueuedConnection, fullscreen,
+                              [completion_handler = std::move(completion_handler)]() mutable {
+                                Host::RunOnUIThread(std::move(completion_handler));
+                              });
     return;
+  }
 
-  g_emu_thread->setFullscreen(enabled);
+  GPUThread::SetFullscreenWithCompletionHandler(fullscreen, std::move(completion_handler));
 }
 
 void EmuThread::updateDisplayWindow()
@@ -962,7 +956,7 @@ void EmuThread::updateDisplayWindow()
     return;
   }
 
-  GPUThread::UpdateDisplayWindow(m_is_fullscreen);
+  GPUThread::UpdateDisplayWindow();
 }
 
 void EmuThread::requestDisplaySize(float scale)
@@ -982,17 +976,12 @@ void EmuThread::requestDisplaySize(float scale)
 std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, bool fullscreen,
                                                          bool exclusive_fullscreen, Error* error)
 {
-  DebugAssert(g_gpu_device);
-
-  m_is_fullscreen = fullscreen;
-
-  return emit onAcquireRenderWindowRequested(render_api, m_is_fullscreen, exclusive_fullscreen, error);
+  return emit onAcquireRenderWindowRequested(render_api, fullscreen, exclusive_fullscreen, error);
 }
 
 void EmuThread::releaseRenderWindow()
 {
   emit onReleaseRenderWindowRequested();
-  m_is_fullscreen = false;
 }
 
 void EmuThread::connectDisplaySignals(DisplayWidget* widget)
@@ -2818,6 +2807,12 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
 void Host::ReleaseRenderWindow()
 {
   g_emu_thread->releaseRenderWindow();
+}
+
+bool Host::CanChangeFullscreenMode(bool new_fullscreen_state)
+{
+  // Don't mess with fullscreen while locked.
+  return QtHost::IsSystemLocked();
 }
 
 void EmuThread::updatePerformanceCounters(const GPUBackend* gpu_backend)

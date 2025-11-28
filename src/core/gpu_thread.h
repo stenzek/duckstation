@@ -52,13 +52,16 @@ bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, b
 void DestroyGPUBackend();
 bool HasGPUBackend();
 bool IsGPUBackendRequested();
+bool IsFullscreen();
 
 /// Re-presents the current frame. Call when things like window resizes happen to re-display
 /// the current frame with the correct proportions. Should only be called from the CPU thread.
 void PresentCurrentFrame();
 
 /// Handles fullscreen transitions and such.
-void UpdateDisplayWindow(bool fullscreen);
+void UpdateDisplayWindow();
+void SetFullscreen(bool fullscreen);
+void SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler);
 
 /// Called when the window is resized.
 void ResizeDisplayWindow(s32 width, s32 height, float scale);
@@ -109,6 +112,17 @@ bool PresentFrameAndRestoreContext();
 } // namespace GPUThread
 
 namespace Host {
+
+/// Called when the core is creating a render device.
+/// This could also be fullscreen transition.
+std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                              Error* error);
+
+/// Called when the core is finished with a render window.
+void ReleaseRenderWindow();
+
+/// Called before a fullscreen transition occurs.
+bool CanChangeFullscreenMode(bool new_fullscreen_state);
 
 /// Called when the pause state changes, or fullscreen UI opens.
 void OnGPUThreadRunIdleChanged(bool is_active);

@@ -1325,7 +1325,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     if (pres == GPUDevice::PresentResult::ExclusiveFullscreenLost) [[unlikely]]
     {
       WARNING_LOG("Lost exclusive fullscreen.");
-      Host::SetFullscreen(false);
+      GPUThread::SetFullscreen(false);
     }
 
     if (!skip_present)

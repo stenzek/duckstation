@@ -417,16 +417,6 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check
   //
 }
 
-bool Host::IsFullscreen()
-{
-  return false;
-}
-
-void Host::SetFullscreen(bool enabled)
-{
-  //
-}
-
 std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                     Error* error)
 {
@@ -436,6 +426,11 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
 void Host::ReleaseRenderWindow()
 {
   //
+}
+
+bool Host::CanChangeFullscreenMode(bool new_fullscreen_state)
+{
+  return false;
 }
 
 void Host::BeginTextInput()

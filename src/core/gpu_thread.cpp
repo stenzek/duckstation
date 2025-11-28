@@ -101,6 +101,7 @@ struct ALIGN_TO_CACHE_LINE State
   WindowInfo render_window_info;
   std::optional<GPURenderer> requested_renderer; // TODO: Non thread safe accessof this
   bool use_gpu_thread = false;
+  bool requested_fullscreen = false;
 
   // Hot variables between both threads.
   ALIGN_TO_CACHE_LINE std::atomic<u32> command_fifo_write_ptr{0};
@@ -538,10 +539,13 @@ bool GPUThread::Reconfigure(std::optional<GPURenderer> renderer, bool upload_vra
 {
   INFO_LOG("Reconfiguring GPU thread.");
 
+  s_state.requested_renderer = renderer;
+  s_state.requested_fullscreen = fullscreen.value_or(s_state.requested_fullscreen);
+
   bool result = false;
   GPUThreadReconfigureCommand* cmd = AllocateCommand<GPUThreadReconfigureCommand>(GPUBackendCommandType::Reconfigure);
-  cmd->renderer = renderer;
-  cmd->fullscreen = fullscreen;
+  cmd->renderer = s_state.requested_renderer;
+  cmd->fullscreen = s_state.requested_fullscreen;
   cmd->start_fullscreen_ui = start_fullscreen_ui;
   cmd->vsync_mode = System::GetEffectiveVSyncMode();
   cmd->allow_present_throttle = System::ShouldAllowPresentThrottle();
@@ -596,7 +600,6 @@ std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
 bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
                                  Error* error)
 {
-  s_state.requested_renderer = renderer;
   return Reconfigure(renderer, upload_vram, fullscreen ? std::optional<bool>(true) : std::nullopt, std::nullopt,
                      force_recreate_device, error);
 }
@@ -616,6 +619,11 @@ bool GPUThread::HasGPUBackend()
 bool GPUThread::IsGPUBackendRequested()
 {
   return s_state.requested_renderer.has_value();
+}
+
+bool GPUThread::IsFullscreen()
+{
+  return s_state.requested_fullscreen;
 }
 
 bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_fsui_state_on_failure, Error* error)
@@ -723,7 +731,10 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
 
   // Switch to borderless if exclusive failed.
   if (fullscreen_mode.has_value() && !CheckExclusiveFullscreenOnThread())
+  {
+    WARNING_LOG("Failed to get exclusive fullscreen, requesting borderless fullscreen instead.");
     UpdateDisplayWindowOnThread(true, false);
+  }
 
   return true;
 }
@@ -854,12 +865,11 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (cmd->force_recreate_device || !GPUDevice::IsSameRenderAPI(current_api, expected_api))
   {
     Timer timer;
-    const bool fullscreen = cmd->fullscreen.value_or(Host::IsFullscreen());
     DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(false);
 
     Error local_error;
-    if (!CreateDeviceOnThread(expected_api, fullscreen, false, &local_error))
+    if (!CreateDeviceOnThread(expected_api, cmd->fullscreen, false, &local_error))
     {
       Host::AddIconOSDMessage(
         OSDMessageType::Error, "DeviceSwitchFailed", ICON_FA_PAINT_ROLLER,
@@ -868,7 +878,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
                     local_error.GetDescription()));
 
       Host::ReleaseRenderWindow();
-      if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, fullscreen, true, &local_error))
+      if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, cmd->fullscreen, true, &local_error))
       {
         if (cmd->error_ptr)
           *cmd->error_ptr = local_error;
@@ -909,11 +919,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   }
   else if (s_state.requested_fullscreen_ui)
   {
-    if (!(*cmd->out_result =
-            g_gpu_device || CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr)))
-    {
+    if (!(*cmd->out_result = g_gpu_device || CreateDeviceOnThread(expected_api, cmd->fullscreen, true, cmd->error_ptr)))
       return;
-    }
 
     // Don't need to present game frames anymore.
     DestroyGPUPresenterOnThread();
@@ -992,7 +999,7 @@ void GPUThread::SetThreadEnabled(bool enabled)
     return;
   }
 
-  const bool fullscreen = Host::IsFullscreen();
+  const bool requested_fullscreen = s_state.requested_fullscreen;
   const bool requested_fullscreen_ui = s_state.requested_fullscreen_ui;
   const std::optional<GPURenderer> requested_renderer = s_state.requested_renderer;
 
@@ -1017,8 +1024,8 @@ void GPUThread::SetThreadEnabled(bool enabled)
   s_state.use_gpu_thread = enabled;
 
   Error error;
-  if (!Reconfigure(requested_renderer, requested_renderer.has_value(), fullscreen, requested_fullscreen_ui, true,
-                   &error))
+  if (!Reconfigure(requested_renderer, requested_renderer.has_value(), requested_fullscreen, requested_fullscreen_ui,
+                   true, &error))
   {
     ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
     ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
@@ -1268,17 +1275,46 @@ void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale)
   Error error;
   if (!g_gpu_device->GetMainSwapChain()->ResizeBuffers(width, height, scale, &error))
   {
+    // ick, CPU thread read, but this is unlikely to happen in the first place
     ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
-    UpdateDisplayWindowOnThread(Host::IsFullscreen(), true);
+    UpdateDisplayWindowOnThread(s_state.requested_fullscreen, true);
     return;
   }
 
   DisplayWindowResizedOnThread();
 }
 
-void GPUThread::UpdateDisplayWindow(bool fullscreen)
+void GPUThread::UpdateDisplayWindow()
 {
+  RunOnThread([fullscreen = s_state.requested_fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
+}
+
+void GPUThread::SetFullscreen(bool fullscreen)
+{
+  // Technically not safe to read g_gpu_device here on the CPU thread, but we do sync on create/destroy.
+  if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
+    return;
+
+  s_state.requested_fullscreen = fullscreen;
   RunOnThread([fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
+}
+
+void GPUThread::SetFullscreenWithCompletionHandler(bool fullscreen, AsyncCallType completion_handler)
+{
+  if (s_state.requested_fullscreen == fullscreen || !Host::CanChangeFullscreenMode(fullscreen) || !g_gpu_device)
+  {
+    if (completion_handler)
+      completion_handler();
+
+    return;
+  }
+
+  s_state.requested_fullscreen = fullscreen;
+  RunOnThread([fullscreen, completion_handler = std::move(completion_handler)]() {
+    UpdateDisplayWindowOnThread(fullscreen, true);
+    if (completion_handler)
+      completion_handler();
+  });
 }
 
 void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen)

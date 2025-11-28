@@ -135,7 +135,7 @@ DEFINE_NON_ANDROID_HOTKEY("TogglePause", TRANSLATE_NOOP("Hotkeys", "Interface"),
 DEFINE_NON_ANDROID_HOTKEY("ToggleFullscreen", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Toggle Fullscreen"), [](s32 pressed) {
                             if (!pressed)
-                              Host::SetFullscreen(!Host::IsFullscreen());
+                              GPUThread::SetFullscreen(!GPUThread::IsFullscreen());
                           })
 
 DEFINE_HOTKEY("FastForward", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Fast Forward (Hold)"),

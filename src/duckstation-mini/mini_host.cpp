@@ -111,7 +111,6 @@ struct SDLHostState
   SDL_Window* sdl_window = nullptr;
   float sdl_window_scale = 0.0f;
   WindowInfo::PreRotation force_prerotation = WindowInfo::PreRotation::Identity;
-  std::atomic_bool fullscreen{false};
 
   Threading::Thread cpu_thread;
   Threading::Thread gpu_thread;
@@ -624,11 +623,7 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
     if (s_state.sdl_window)
     {
       wi = TranslateSDLWindowInfo(s_state.sdl_window, error);
-      if (wi.has_value())
-      {
-        s_state.fullscreen.store(fullscreen, std::memory_order_release);
-      }
-      else
+      if (!wi.has_value())
       {
         SDL_DestroyWindow(s_state.sdl_window);
         s_state.sdl_window = nullptr;
@@ -661,17 +656,13 @@ void Host::ReleaseRenderWindow()
     return;
 
   Host::RunOnUIThread([]() {
-    if (!s_state.fullscreen.load(std::memory_order_acquire))
+    if (!(SDL_GetWindowFlags(s_state.sdl_window) & SDL_WINDOW_FULLSCREEN))
     {
       int window_x = SDL_WINDOWPOS_UNDEFINED, window_y = SDL_WINDOWPOS_UNDEFINED;
       int window_width = DEFAULT_WINDOW_WIDTH, window_height = DEFAULT_WINDOW_HEIGHT;
       SDL_GetWindowPosition(s_state.sdl_window, &window_x, &window_y);
       SDL_GetWindowSize(s_state.sdl_window, &window_width, &window_height);
       MiniHost::SavePlatformWindowGeometry(window_x, window_y, window_width, window_height);
-    }
-    else
-    {
-      s_state.fullscreen.store(false, std::memory_order_release);
     }
 
     SDL_DestroyWindow(s_state.sdl_window);
@@ -683,27 +674,9 @@ void Host::ReleaseRenderWindow()
   s_state.platform_window_updated.Wait();
 }
 
-bool Host::IsFullscreen()
+bool Host::CanChangeFullscreenMode(bool new_fullscreen_state)
 {
-  using namespace MiniHost;
-
-  return s_state.fullscreen.load(std::memory_order_acquire);
-}
-
-void Host::SetFullscreen(bool enabled)
-{
-  using namespace MiniHost;
-
-  if (!s_state.sdl_window || s_state.fullscreen.load(std::memory_order_acquire) == enabled)
-    return;
-
-  if (!SDL_SetWindowFullscreen(s_state.sdl_window, enabled))
-  {
-    ERROR_LOG("SDL_SetWindowFullscreen() failed: {}", SDL_GetError());
-    return;
-  }
-
-  s_state.fullscreen.store(enabled, std::memory_order_release);
+  return true;
 }
 
 void Host::BeginTextInput()
@@ -747,9 +720,6 @@ bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* h
 
 void MiniHost::SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height)
 {
-  if (Host::IsFullscreen())
-    return;
-
   const auto lock = Host::GetSettingsLock();
   s_state.base_settings_interface.SetIntValue("UI", "MainWindowX", x);
   s_state.base_settings_interface.SetIntValue("UI", "MainWindowY", y);
@@ -1348,7 +1318,7 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   using namespace MiniHost;
 
-  if (!s_state.sdl_window || s_state.fullscreen.load(std::memory_order_acquire))
+  if (!s_state.sdl_window || SDL_GetWindowFlags(s_state.sdl_window) & SDL_WINDOW_FULLSCREEN)
     return;
 
   SDL_SetWindowSize(s_state.sdl_window, width, height);

@@ -74,8 +74,6 @@ public:
 
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
-  ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }
-
   ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
 
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
@@ -173,6 +171,7 @@ public:
   void redrawDisplayWindow();
   void toggleFullscreen();
   void setFullscreen(bool fullscreen);
+  void setFullscreenWithCompletionHandler(bool fullscreen, std::function<void()> completion_handler);
   void updateDisplayWindow();
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
@@ -214,9 +213,8 @@ private:
   std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 
   bool m_shutdown_flag = false;
-  bool m_is_fullscreen = false;
-  bool m_is_fullscreen_ui_started = false;
   bool m_gpu_thread_run_idle = false;
+  bool m_is_fullscreen_ui_started = false;
 
   float m_last_speed = std::numeric_limits<float>::infinity();
   float m_last_game_fps = std::numeric_limits<float>::infinity();
