@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "interfacesettingswidget.h"
-#include "autoupdaterwindow.h"
+#include "autoupdaterdialog.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "settingswindow.h"
@@ -100,10 +100,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.theme->setSizeAdjustPolicy(m_ui.language->sizeAdjustPolicy());
 
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-    for (const auto& [name, desc] : AutoUpdaterWindow::getChannelList())
+    for (const auto& [name, desc] : AutoUpdaterDialog::getChannelList())
       m_ui.autoUpdateTag->addItem(desc, name);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
-                                                   AutoUpdaterWindow::getDefaultTag());
+                                                   AutoUpdaterDialog::getDefaultTag());
     connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
 
     m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_version_str).arg(g_scm_date_str));
@@ -187,7 +187,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                                tr("Selects the theme for the application."));
 
     dialog->registerWidgetHelp(m_ui.autoUpdateTag, tr("Update Channel"),
-                               QString::fromStdString(AutoUpdaterWindow::getDefaultTag()),
+                               QString::fromStdString(AutoUpdaterDialog::getDefaultTag()),
                                tr("Selects the channel that will be checked for updates to the application. The "
                                   "<strong>preview</strong> channel contains the latest changes, and may be unstable. "
                                   "The <strong>latest</strong> channel tracks the latest release."));

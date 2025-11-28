@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "autoupdaterwindow.h"
+#include "autoupdaterdialog.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
@@ -36,7 +36,7 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QPushButton>
 
-#include "moc_autoupdaterwindow.cpp"
+#include "moc_autoupdaterdialog.cpp"
 
 // Interval at which HTTP requests are polled.
 static constexpr u32 HTTP_POLL_INTERVAL = 10;
@@ -105,7 +105,7 @@ static constexpr const std::pair<const char*, const char*> s_update_channels[] =
 
 LOG_CHANNEL(Host);
 
-AutoUpdaterWindow::AutoUpdaterWindow(Error* const error) : QWidget()
+AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) : QDialog(parent)
 {
   m_ui.setupUi(this);
   QFont title_font(m_ui.titleLabel->font());
@@ -115,21 +115,21 @@ AutoUpdaterWindow::AutoUpdaterWindow(Error* const error) : QWidget()
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setDownloadSectionVisibility(false);
 
-  connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterWindow::downloadUpdateClicked);
-  connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterWindow::skipThisUpdateClicked);
-  connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterWindow::remindMeLaterClicked);
+  connect(m_ui.downloadAndInstall, &QPushButton::clicked, this, &AutoUpdaterDialog::downloadUpdateClicked);
+  connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
+  connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
 
   m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), error);
 
   m_http_poll_timer = new QTimer(this);
-  m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterWindow::httpPollTimerPoll);
+  m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
 }
 
-AutoUpdaterWindow::~AutoUpdaterWindow() = default;
+AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 
-AutoUpdaterWindow* AutoUpdaterWindow::create(Error* const error)
+AutoUpdaterDialog* AutoUpdaterDialog::create(QWidget* const parent, Error* const error)
 {
-  AutoUpdaterWindow* const win = new AutoUpdaterWindow(error);
+  AutoUpdaterDialog* const win = new AutoUpdaterDialog(parent, error);
   if (!win->m_http)
   {
     delete win;
@@ -139,7 +139,7 @@ AutoUpdaterWindow* AutoUpdaterWindow::create(Error* const error)
   return win;
 }
 
-void AutoUpdaterWindow::warnAboutUnofficialBuild()
+void AutoUpdaterDialog::warnAboutUnofficialBuild()
 {
   //
   // To those distributing their own builds or packages of DuckStation, and seeing this message:
@@ -231,7 +231,7 @@ void AutoUpdaterWindow::warnAboutUnofficialBuild()
 #endif
 }
 
-std::vector<std::pair<QString, QString>> AutoUpdaterWindow::getChannelList()
+std::vector<std::pair<QString, QString>> AutoUpdaterDialog::getChannelList()
 {
   std::vector<std::pair<QString, QString>> ret;
   ret.reserve(std::size(s_update_channels));
@@ -240,17 +240,17 @@ std::vector<std::pair<QString, QString>> AutoUpdaterWindow::getChannelList()
   return ret;
 }
 
-std::string AutoUpdaterWindow::getDefaultTag()
+std::string AutoUpdaterDialog::getDefaultTag()
 {
   return UPDATER_RELEASE_CHANNEL;
 }
 
-std::string AutoUpdaterWindow::getCurrentUpdateTag()
+std::string AutoUpdaterDialog::getCurrentUpdateTag()
 {
   return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
 }
 
-void AutoUpdaterWindow::setDownloadSectionVisibility(bool visible)
+void AutoUpdaterDialog::setDownloadSectionVisibility(bool visible)
 {
   m_ui.downloadProgress->setVisible(visible);
   m_ui.downloadStatus->setVisible(visible);
@@ -260,7 +260,7 @@ void AutoUpdaterWindow::setDownloadSectionVisibility(bool visible)
   m_ui.remindMeLater->setVisible(!visible);
 }
 
-void AutoUpdaterWindow::reportError(const std::string_view msg)
+void AutoUpdaterDialog::reportError(const std::string_view msg)
 {
   // if we're visible, use ourselves.
   QWidget* const parent = (isVisible() ? static_cast<QWidget*>(this) : g_main_window);
@@ -274,7 +274,7 @@ void AutoUpdaterWindow::reportError(const std::string_view msg)
   msgbox->open();
 }
 
-void AutoUpdaterWindow::ensureHttpPollingActive()
+void AutoUpdaterDialog::ensureHttpPollingActive()
 {
   if (m_http_poll_timer->isActive())
     return;
@@ -284,7 +284,7 @@ void AutoUpdaterWindow::ensureHttpPollingActive()
   m_http_poll_timer->start();
 }
 
-void AutoUpdaterWindow::httpPollTimerPoll()
+void AutoUpdaterDialog::httpPollTimerPoll()
 {
   m_http->PollRequests();
 
@@ -295,7 +295,7 @@ void AutoUpdaterWindow::httpPollTimerPoll()
   }
 }
 
-void AutoUpdaterWindow::queueUpdateCheck(bool display_errors)
+void AutoUpdaterDialog::queueUpdateCheck(bool display_errors)
 {
   ensureHttpPollingActive();
   m_http->CreateRequest(LATEST_TAG_URL,
@@ -305,15 +305,15 @@ void AutoUpdaterWindow::queueUpdateCheck(bool display_errors)
                         });
 }
 
-void AutoUpdaterWindow::queueGetLatestRelease()
+void AutoUpdaterDialog::queueGetLatestRelease()
 {
   ensureHttpPollingActive();
   std::string url = fmt::format(LATEST_RELEASE_URL, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterWindow::getLatestReleaseComplete, this,
+  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this,
                                                   std::placeholders::_1, std::placeholders::_2, std::placeholders::_4));
 }
 
-void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
                                              bool display_errors)
 {
   const std::string selected_tag(getCurrentUpdateTag());
@@ -375,7 +375,7 @@ void AutoUpdaterWindow::getLatestTagComplete(s32 status_code, const Error& error
   emit updateCheckCompleted(false);
 }
 
-void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
+void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
@@ -444,15 +444,15 @@ void AutoUpdaterWindow::getLatestReleaseComplete(s32 status_code, const Error& e
   emit updateCheckCompleted(false);
 }
 
-void AutoUpdaterWindow::queueGetChanges()
+void AutoUpdaterDialog::queueGetChanges()
 {
   ensureHttpPollingActive();
   std::string url = fmt::format(CHANGES_URL, g_scm_hash_str, getCurrentUpdateTag());
-  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterWindow::getChangesComplete, this, std::placeholders::_1,
+  m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
                                                   std::placeholders::_2, std::placeholders::_4));
 }
 
-void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
+void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
@@ -521,7 +521,7 @@ void AutoUpdaterWindow::getChangesComplete(s32 status_code, const Error& error, 
   }
 }
 
-void AutoUpdaterWindow::downloadUpdateClicked()
+void AutoUpdaterDialog::downloadUpdateClicked()
 {
   // Prevent multiple clicks of the button.
   if (m_download_progress_callback)
@@ -579,7 +579,7 @@ void AutoUpdaterWindow::downloadUpdateClicked()
     m_download_progress_callback);
 }
 
-bool AutoUpdaterWindow::updateNeeded() const
+bool AutoUpdaterDialog::updateNeeded() const
 {
   QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
@@ -596,19 +596,19 @@ bool AutoUpdaterWindow::updateNeeded() const
   return true;
 }
 
-void AutoUpdaterWindow::skipThisUpdateClicked()
+void AutoUpdaterDialog::skipThisUpdateClicked()
 {
   Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   close();
 }
 
-void AutoUpdaterWindow::remindMeLaterClicked()
+void AutoUpdaterDialog::remindMeLaterClicked()
 {
   close();
 }
 
-void AutoUpdaterWindow::closeEvent(QCloseEvent* event)
+void AutoUpdaterDialog::closeEvent(QCloseEvent* event)
 {
   emit closed();
   QWidget::closeEvent(event);
@@ -619,7 +619,7 @@ void AutoUpdaterWindow::closeEvent(QCloseEvent* event)
 static constexpr char UPDATER_EXECUTABLE[] = "updater.exe";
 static constexpr char UPDATER_ARCHIVE_NAME[] = "update.zip";
 
-bool AutoUpdaterWindow::doesUpdaterNeedElevation(const std::string& application_dir) const
+bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_dir) const
 {
   // Try to create a dummy text file in the updater directory. If it fails, we probably won't have write permission.
   const std::string dummy_path = Path::Combine(application_dir, "update.txt");
@@ -632,7 +632,7 @@ bool AutoUpdaterWindow::doesUpdaterNeedElevation(const std::string& application_
   return false;
 }
 
-bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   const std::string& application_dir = EmuFolders::AppRoot;
   const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
@@ -669,7 +669,7 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
   return doUpdate(application_dir, update_zip_path, updater_path, program_path);
 }
 
-bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::string& destination_path,
+bool AutoUpdaterDialog::extractUpdater(const std::string& zip_path, const std::string& destination_path,
                                        const std::string_view check_for_file, Error* error)
 {
   unzFile zf = MinizipHelpers::OpenUnzFile(zip_path.c_str());
@@ -747,7 +747,7 @@ bool AutoUpdaterWindow::extractUpdater(const std::string& zip_path, const std::s
   return true;
 }
 
-bool AutoUpdaterWindow::doUpdate(const std::string& application_dir, const std::string& zip_path,
+bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::string& zip_path,
                                  const std::string& updater_path, const std::string& program_path)
 {
   const std::wstring wupdater_path = StringUtil::UTF8StringToWideString(updater_path);
@@ -774,7 +774,7 @@ bool AutoUpdaterWindow::doUpdate(const std::string& application_dir, const std::
   return true;
 }
 
-void AutoUpdaterWindow::cleanupAfterUpdate()
+void AutoUpdaterDialog::cleanupAfterUpdate()
 {
   // If we weren't portable, then updater executable gets left in the application directory.
   if (EmuFolders::AppRoot == EmuFolders::DataRoot)
@@ -796,7 +796,7 @@ void AutoUpdaterWindow::cleanupAfterUpdate()
 
 #elif defined(__APPLE__)
 
-bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   std::optional<std::string> bundle_path = CocoaTools::GetNonTranslocatedBundlePath();
   if (!bundle_path.has_value())
@@ -857,13 +857,13 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
   return true;
 }
 
-void AutoUpdaterWindow::cleanupAfterUpdate()
+void AutoUpdaterDialog::cleanupAfterUpdate()
 {
 }
 
 #elif defined(__linux__)
 
-bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   const char* appimage_path = std::getenv("APPIMAGE");
   if (!appimage_path || !FileSystem::FileExists(appimage_path))
@@ -982,7 +982,7 @@ bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
   return true;
 }
 
-void AutoUpdaterWindow::cleanupAfterUpdate()
+void AutoUpdaterDialog::cleanupAfterUpdate()
 {
   // Remove old/backup AppImage.
   const char* appimage_path = std::getenv("APPIMAGE");
@@ -1001,12 +1001,12 @@ void AutoUpdaterWindow::cleanupAfterUpdate()
 
 #else
 
-bool AutoUpdaterWindow::processUpdate(const std::vector<u8>& update_data)
+bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
 {
   return false;
 }
 
-void AutoUpdaterWindow::cleanupAfterUpdate()
+void AutoUpdaterDialog::cleanupAfterUpdate()
 {
 }
 

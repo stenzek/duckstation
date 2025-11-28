@@ -7,7 +7,7 @@
     <ClCompile Include="achievementlogindialog.cpp" />
     <ClCompile Include="advancedsettingswidget.cpp" />
     <ClCompile Include="audiosettingswidget.cpp" />
-    <ClCompile Include="autoupdaterwindow.cpp" />
+    <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
@@ -70,7 +70,7 @@
     <QtMoc Include="advancedsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="inputbindingdialog.h" />
-    <QtMoc Include="autoupdaterwindow.h" />
+    <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="achievementsettingswidget.h" />
@@ -149,7 +149,7 @@
     <QtUi Include="inputbindingdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="autoupdaterwindow.ui">
+    <QtUi Include="autoupdaterdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="achievementsettingswidget.ui">

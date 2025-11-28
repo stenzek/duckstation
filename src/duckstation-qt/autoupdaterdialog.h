@@ -3,18 +3,14 @@
 
 #pragma once
 
+#include "ui_autoupdaterdialog.h"
+
 #include "common/types.h"
 
-#include "ui_autoupdaterwindow.h"
-
-#include <span>
+#include <QtCore/QTimer>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include <QtCore/QDateTime>
-#include <QtCore/QStringList>
-#include <QtCore/QTimer>
 
 class Error;
 class HTTPDownloader;
@@ -22,14 +18,14 @@ class QtProgressCallback;
 
 class EmuThread;
 
-class AutoUpdaterWindow final : public QWidget
+class AutoUpdaterDialog final : public QDialog
 {
   Q_OBJECT
 
 public:
-  ~AutoUpdaterWindow();
+  ~AutoUpdaterDialog();
 
-  static AutoUpdaterWindow* create(Error* const error);
+  static AutoUpdaterDialog* create(QWidget* const parent, Error* const error);
 
   void queueUpdateCheck(bool display_errors);
   void queueGetLatestRelease();
@@ -53,7 +49,7 @@ protected:
   void closeEvent(QCloseEvent* event) override;
 
 private:
-  explicit AutoUpdaterWindow(Error* const error);
+  AutoUpdaterDialog(QWidget* const parent, Error* const error);
 
   void setDownloadSectionVisibility(bool visible);
 
@@ -64,7 +60,6 @@ private:
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
   void remindMeLaterClicked();
-
 
   bool updateNeeded() const;
 
@@ -84,7 +79,7 @@ private:
                       const std::string_view check_for_file, Error* error);
 #endif
 
-  Ui::AutoUpdaterWindow m_ui;
+  Ui::AutoUpdaterDialog m_ui;
 
   std::unique_ptr<HTTPDownloader> m_http;
   QTimer* m_http_poll_timer = nullptr;

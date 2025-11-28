@@ -4,7 +4,7 @@
 #include "mainwindow.h"
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
-#include "autoupdaterwindow.h"
+#include "autoupdaterdialog.h"
 #include "coverdownloadwindow.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
@@ -3433,7 +3433,7 @@ void MainWindow::checkForUpdates(bool display_message)
     return;
 
   Error error;
-  m_auto_updater_dialog = AutoUpdaterWindow::create(&error);
+  m_auto_updater_dialog = AutoUpdaterDialog::create(this, &error);
   if (!m_auto_updater_dialog)
   {
     QtUtils::AsyncMessageBox(
@@ -3442,34 +3442,27 @@ void MainWindow::checkForUpdates(bool display_message)
     return;
   }
 
-  connect(m_auto_updater_dialog, &AutoUpdaterWindow::closed, this, [this]() {
+  connect(m_auto_updater_dialog, &AutoUpdaterDialog::closed, this, [this]() {
     if (!m_auto_updater_dialog)
       return;
 
     m_auto_updater_dialog->deleteLater();
     m_auto_updater_dialog = nullptr;
   });
-  connect(m_auto_updater_dialog, &AutoUpdaterWindow::updateCheckCompleted, this, [this](bool update_available) {
+  connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, [this](bool update_available) {
     if (!m_auto_updater_dialog)
       return;
 
     if (update_available)
     {
       if (isRenderingFullscreen())
-      {
-        // This is truely awful. We have to exit fullscreen to show the dialog, but because it's asynchronous
-        // the fullscreen exit may not have happened yet. So we have to wait for it.
         g_emu_thread->setFullscreen(false);
-        QTimer::singleShot(500, this, [this]() { QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this); });
-      }
-      else
-      {
-        QtUtils::ShowOrRaiseWindow(m_auto_updater_dialog, this);
-      }
+
+      m_auto_updater_dialog->open();
     }
     else
     {
-      m_auto_updater_dialog->disconnect(m_auto_updater_dialog, &AutoUpdaterWindow::closed, this, nullptr);
+      m_auto_updater_dialog->disconnect(m_auto_updater_dialog, &AutoUpdaterDialog::closed, this, nullptr);
       QtUtils::CloseAndDeleteWindow(m_auto_updater_dialog);
     }
   });

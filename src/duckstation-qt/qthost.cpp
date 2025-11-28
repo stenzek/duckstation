@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qthost.h"
-#include "autoupdaterwindow.h"
+#include "autoupdaterdialog.h"
 #include "displaywidget.h"
 #include "logwindow.h"
 #include "mainwindow.h"
@@ -3405,13 +3405,13 @@ int main(int argc, char* argv[])
 
   // Remove any previous-version remanants.
   if (s_state.cleanup_after_update)
-    AutoUpdaterWindow::cleanupAfterUpdate();
+    AutoUpdaterDialog::cleanupAfterUpdate();
 
   // Set theme before creating any windows.
   QtHost::UpdateApplicationTheme();
 
   // Build warning.
-  AutoUpdaterWindow::warnAboutUnofficialBuild();
+  AutoUpdaterDialog::warnAboutUnofficialBuild();
 
   // Start logging early.
   LogWindow::updateSettings();
