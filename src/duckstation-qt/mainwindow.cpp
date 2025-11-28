@@ -2580,7 +2580,6 @@ void MainWindow::connectSignals()
           &MainWindow::onAchievementsHardcoreModeChanged);
   connect(g_emu_thread, &EmuThread::achievementsAllProgressRefreshed, this,
           &MainWindow::onAchievementsAllProgressRefreshed);
-  connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(g_emu_thread, &EmuThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
@@ -3310,10 +3309,6 @@ void MainWindow::onToolsMemoryCardEditorTriggered()
 
 void MainWindow::onToolsCoverDownloaderTriggered()
 {
-  // This can be invoked via big picture, so exit fullscreen.
-  // Wait for the fullscreen request to actually go through, otherwise the downloader appears behind the main window.
-  exitFullscreen(true);
-
   if (!m_cover_download_window)
   {
     m_cover_download_window = new CoverDownloadWindow();

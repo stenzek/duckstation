@@ -137,9 +137,6 @@ Q_SIGNALS:
                                      Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
   void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 
-  /// Big Picture UI requests.
-  void onCoverDownloaderOpenRequested();
-
 public:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);
