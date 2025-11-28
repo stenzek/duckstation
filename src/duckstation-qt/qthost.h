@@ -118,7 +118,6 @@ Q_SIGNALS:
                                                            bool exclusive_fullscreen, bool surfaceless, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
-  void focusDisplayWidgetRequested();
   void inputProfileLoaded();
   void mouseModeRequested(bool relative, bool hide_cursor);
   void fullscreenUIStartedOrStopped(bool running);

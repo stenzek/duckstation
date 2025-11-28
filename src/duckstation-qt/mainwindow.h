@@ -229,7 +229,6 @@ private:
                                                 bool surfaceless, Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
-  void focusDisplayWidget();
   void onMouseModeRequested(bool relative_mode, bool hide_cursor);
 
   void onSettingsResetToDefault(bool system, bool controller);

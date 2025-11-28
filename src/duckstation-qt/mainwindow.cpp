@@ -551,14 +551,6 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
 
-void MainWindow::focusDisplayWidget()
-{
-  if (!m_display_widget || centralWidget() != m_display_widget)
-    return;
-
-  m_display_widget->setFocus();
-}
-
 QWidget* MainWindow::getDisplayContainer() const
 {
   return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
@@ -2559,7 +2551,6 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
   connect(g_emu_thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::focusDisplayWidgetRequested, this, &MainWindow::focusDisplayWidget);
   connect(g_emu_thread, &EmuThread::systemStarting, this, &MainWindow::onSystemStarting);
   connect(g_emu_thread, &EmuThread::systemStarted, this, &MainWindow::onSystemStarted);
   connect(g_emu_thread, &EmuThread::systemStopping, this, &MainWindow::onSystemStopping);
