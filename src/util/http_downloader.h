@@ -67,7 +67,7 @@ public:
   HTTPDownloader();
   virtual ~HTTPDownloader();
 
-  static std::unique_ptr<HTTPDownloader> Create(std::string user_agent = DEFAULT_USER_AGENT, Error* error = nullptr);
+  static std::unique_ptr<HTTPDownloader> Create(std::string user_agent, Error* error = nullptr);
   static std::string GetExtensionForContentType(const std::string& content_type);
 
   void SetTimeout(float timeout);
@@ -80,8 +80,6 @@ public:
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
   bool HasAnyRequests();
-
-  static const char DEFAULT_USER_AGENT[];
 
 protected:
   virtual Request* InternalCreateRequest() = 0;
