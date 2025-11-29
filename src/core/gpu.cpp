@@ -662,14 +662,17 @@ float GPU::ComputePixelAspectRatio() const
     if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
     {
       // Correction is applied to the GTE for stretch to fit, that way it fills the window.
-      sar /= ComputeAspectRatioCorrection();
       dar = static_cast<float>(wi.surface_width) / static_cast<float>(wi.surface_height);
     }
   }
-  else if (dar_type != DisplayAspectRatio::Auto())
+  else
   {
-    dar = static_cast<float>(g_settings.display_aspect_ratio.numerator) /
-          static_cast<float>(g_settings.display_aspect_ratio.denominator);
+    sar /= ComputeAspectRatioCorrection();
+    if (dar_type != DisplayAspectRatio::Auto())
+    {
+      dar = static_cast<float>(g_settings.display_aspect_ratio.numerator) /
+            static_cast<float>(g_settings.display_aspect_ratio.denominator);
+    }
   }
 
   return (dar / sar);
