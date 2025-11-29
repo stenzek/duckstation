@@ -117,6 +117,7 @@ public:
 private:
   static std::optional<std::pair<std::string, std::string>> ReadShaderFile(std::string_view base_path,
                                                                            std::string_view path, Error* error);
+  static std::string_view StripCommentsAndWhitespace(std::string_view line);
 
   std::string_view GetCurrentFilename() const;
 
@@ -330,6 +331,45 @@ PostProcessing::SlangShaderPreprocessor::ReadShaderFile(std::string_view base_pa
   return result;
 }
 
+inline std::string_view PostProcessing::SlangShaderPreprocessor::StripCommentsAndWhitespace(std::string_view line)
+{
+  // TODO: Handle block comments, not just line comments
+  std::string_view clean_line = StringUtil::StripWhitespace(line);
+
+  // Parse the line to find comments, but skip string literals
+  bool in_string = false;
+  char string_delimiter = '\0';
+
+  for (size_t i = 0; i < clean_line.size(); ++i)
+  {
+    const char c = clean_line[i];
+
+    // Handle string literal delimiters
+    if (!in_string && (c == '"' || c == '\''))
+    {
+      in_string = true;
+      string_delimiter = c;
+    }
+    else if (in_string && c == string_delimiter)
+    {
+      // Check if it's escaped
+      if (i == 0 || clean_line[i - 1] != '\\')
+      {
+        in_string = false;
+        string_delimiter = '\0';
+      }
+    }
+    // Only process comments if we're not inside a string literal
+    else if (!in_string && c == '/' && i + 1 < clean_line.size() && clean_line[i + 1] == '/')
+    {
+      clean_line = StringUtil::StripWhitespace(clean_line.substr(0, i));
+      break;
+    }
+  }
+
+  return clean_line;
+}
+
 template<typename... T>
 inline void PostProcessing::SlangShaderPreprocessor::Write(fmt::format_string<T...> fmt, T&&... args)
 {
@@ -378,12 +418,7 @@ inline bool PostProcessing::SlangShaderPreprocessor::ParseFile(std::string_view 
   std::string_view line;
   while (GetLine(&line))
   {
-    std::string_view clean_line = StringUtil::StripWhitespace(line);
-
-    // TODO: Handle block comments, not just line comments
-    std::string_view::size_type pos = clean_line.find("//");
-    if (pos != std::string_view::npos)
-      clean_line = StringUtil::StripWhitespace(clean_line.substr(0, pos));
+    const std::string_view clean_line = StripCommentsAndWhitespace(line);
 
     // Is this a preprocessor directive?
     if (clean_line.size() > 0 && clean_line[0] == '#')
