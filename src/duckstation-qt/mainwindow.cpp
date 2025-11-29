@@ -1387,9 +1387,7 @@ void MainWindow::onPauseActionToggled(bool checked)
       else
       {
         // Restore action state.
-        Host::RunOnUIThread([]() {
-          g_main_window->m_ui.actionPause->setChecked(false);
-        });
+        Host::RunOnUIThread([]() { g_main_window->m_ui.actionPause->setChecked(false); });
       }
     });
   }
@@ -2288,7 +2286,11 @@ void MainWindow::updateWindowState()
 
 void MainWindow::setProgressBar(int current, int total)
 {
+  // avoid frequent updates by normalizing value first
+  const int maximum = (total != 0) ? 100 : 0;
   const int value = (total != 0) ? ((current * 100) / total) : 0;
+  if (m_status_progress_widget->maximum() != maximum)
+    m_status_progress_widget->setMaximum(maximum);
   if (m_status_progress_widget->value() != value)
     m_status_progress_widget->setValue(value);
 
@@ -3374,10 +3376,28 @@ void MainWindow::checkForUpdates(bool display_message)
   m_auto_updater_dialog = AutoUpdaterDialog::create(this, &error);
   if (!m_auto_updater_dialog)
   {
-    QtUtils::AsyncMessageBox(
-      this, QMessageBox::Critical, tr("Error"),
-      tr("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
+    if (display_message)
+    {
+      QtUtils::AsyncMessageBox(
+        this, QMessageBox::Critical, tr("Error"),
+        tr("Failed to create auto updater: %1").arg(QString::fromStdString(error.GetDescription())));
+    }
+
     return;
+  }
+
+  // display status message indicating check is in progress
+  // technically this could conflict with the game list refresh, but this is only for manual update checks.
+  // by that point the game list refresh should have completed anyway
+  if (display_message)
+  {
+    setProgressBar(0, 0);
+    m_ui.statusBar->showMessage(tr("Checking for updates..."));
+
+    connect(m_auto_updater_dialog, &AutoUpdaterDialog::updateCheckCompleted, this, [this](bool) {
+      clearProgressBar();
+      m_ui.statusBar->clearMessage();
+    });
   }
 
   connect(m_auto_updater_dialog, &AutoUpdaterDialog::closed, this, [this]() {
