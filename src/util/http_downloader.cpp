@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "http_downloader.h"
@@ -88,8 +88,6 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 {
   if (m_pending_http_requests.empty())
     return;
-
-  InternalPollRequests();
 
   const Timer::Value current_time = Timer::GetCurrentValue();
   u32 active_requests = 0;

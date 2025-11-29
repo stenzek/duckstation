@@ -30,7 +30,6 @@ public:
 
 protected:
   Request* InternalCreateRequest() override;
-  void InternalPollRequests() override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
 
@@ -277,11 +276,6 @@ void HTTPDownloaderCurl::ReadMultiResults()
 
     req->state.store(Request::State::Complete, std::memory_order_release);
   }
-}
-
-void HTTPDownloaderCurl::InternalPollRequests()
-{
-  // noop - all handled by worker thread
 }
 
 bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)

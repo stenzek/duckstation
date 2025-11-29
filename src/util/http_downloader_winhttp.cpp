@@ -25,7 +25,6 @@ public:
 
 protected:
   Request* InternalCreateRequest() override;
-  void InternalPollRequests() override;
   bool StartRequest(HTTPDownloader::Request* request) override;
   void CloseRequest(HTTPDownloader::Request* request) override;
 
@@ -260,11 +259,6 @@ HTTPDownloader::Request* HTTPDownloaderWinHttp::InternalCreateRequest()
 {
   Request* req = new Request();
   return req;
-}
-
-void HTTPDownloaderWinHttp::InternalPollRequests()
-{
-  // noop - it uses windows's worker threads
 }
 
 bool HTTPDownloaderWinHttp::StartRequest(HTTPDownloader::Request* request)

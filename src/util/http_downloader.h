@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -85,7 +85,6 @@ public:
 
 protected:
   virtual Request* InternalCreateRequest() = 0;
-  virtual void InternalPollRequests() = 0;
 
   virtual bool StartRequest(Request* request) = 0;
   virtual void CloseRequest(Request* request) = 0;
