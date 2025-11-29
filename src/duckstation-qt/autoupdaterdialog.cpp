@@ -567,8 +567,8 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
       if (processUpdate(response))
       {
-        // updater started, request exit
-        g_main_window->requestExit(false);
+        // updater started, request exit. can't do it immediately as closing the main window will delete us.
+        QMetaObject::invokeMethod(g_main_window, &MainWindow::requestExit, Qt::QueuedConnection, false);
       }
       else
       {
