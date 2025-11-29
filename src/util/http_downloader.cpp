@@ -98,20 +98,21 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
   for (size_t index = 0; index < m_pending_http_requests.size();)
   {
     Request* req = m_pending_http_requests[index];
-    if (req->state == Request::State::Pending)
+    const Request::State req_state = req->state.load(std::memory_order_acquire);
+    if (req_state == Request::State::Pending)
     {
       unstarted_requests++;
       index++;
       continue;
     }
 
-    if ((req->state == Request::State::Started || req->state == Request::State::Receiving) &&
+    if ((req_state == Request::State::Started || req_state == Request::State::Receiving) &&
         current_time >= req->start_time && Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
     {
       // request timed out
       ERROR_LOG("Request for '{}' timed out", req->url);
 
-      req->state.store(Request::State::Cancelled);
+      req->state.store(Request::State::Cancelled, std::memory_order_release);
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
@@ -123,13 +124,13 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       lock.lock();
       continue;
     }
-    else if ((req->state == Request::State::Started || req->state == Request::State::Receiving) && req->progress &&
+    else if ((req_state == Request::State::Started || req_state == Request::State::Receiving) && req->progress &&
              req->progress->IsCancelled())
     {
       // request timed out
       ERROR_LOG("Request for '{}' cancelled", req->url);
 
-      req->state.store(Request::State::Cancelled);
+      req->state.store(Request::State::Cancelled, std::memory_order_release);
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
@@ -142,7 +143,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       continue;
     }
 
-    if (req->state != Request::State::Complete)
+    if (req_state != Request::State::Complete)
     {
       if (req->progress)
       {
@@ -245,9 +246,10 @@ void HTTPDownloader::LockedAddRequest(Request* request)
 u32 HTTPDownloader::LockedGetActiveRequestCount()
 {
   u32 count = 0;
-  for (Request* req : m_pending_http_requests)
+  for (const Request* const req : m_pending_http_requests)
   {
-    if (req->state == Request::State::Started || req->state == Request::State::Receiving)
+    const Request::State req_state = req->state.load(std::memory_order_acquire);
+    if (req_state == Request::State::Started || req_state == Request::State::Receiving)
       count++;
   }
   return count;
