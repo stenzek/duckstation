@@ -164,7 +164,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   constexpr const char* CONFIG_SECTION = "UI";
   constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
   if (
-#if defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__)
     EmuFolders::AppRoot.starts_with("/home") && // Devbuilds should be in home directory.
 #endif
     Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
