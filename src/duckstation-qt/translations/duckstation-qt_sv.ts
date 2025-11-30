@@ -8506,7 +8506,7 @@ ${serial}: Serienumret för spelet.</translation>
     </message>
     <message>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
-        <translation>Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM och {3} MB VRAM.</translation>
+        <translation>Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM.</translation>
     </message>
     <message>
         <source>Show Messages</source>
