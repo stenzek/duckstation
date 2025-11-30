@@ -238,6 +238,7 @@ void AddOSDMessage(OSDMessageType type, std::string message);
 void AddKeyedOSDMessage(OSDMessageType type, std::string key, std::string message);
 void AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string message);
 void AddIconOSDMessage(OSDMessageType type, std::string key, const char* icon, std::string title, std::string message);
+void AddIconOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title, std::string message);
 void RemoveKeyedOSDMessage(std::string key);
 void ClearOSDMessages();
 

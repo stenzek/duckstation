@@ -806,6 +806,14 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
+std::string System::GetGameIconPath()
+{
+  return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?
+                                     std::string_view(s_state.running_game_title) :
+                                     std::string_view(),
+                                   s_state.running_game_serial, s_state.running_game_path, Achievements::GetGameID());
+}
+
 bool System::IsUsingKnownPS1BIOS()
 {
   return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type1);
@@ -5761,8 +5769,8 @@ void System::DeleteSaveStates(std::string_view serial, bool resume)
   }
 }
 
-std::string System::GetGameMemoryCardPath(std::string_view title, bool is_custom_title, std::string_view serial,
-                                          std::string_view path, u32 slot, MemoryCardType* out_type /* = nullptr */)
+std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::string_view serial, std::string_view path,
+                                          u32 slot, MemoryCardType* out_type /* = nullptr */)
 {
   const char* section = "MemoryCards";
   const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
@@ -5822,7 +5830,7 @@ std::string System::GetGameMemoryCardPath(std::string_view title, bool is_custom
     case MemoryCardType::PerGameTitle:
     {
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
-      const std::string_view game_title = (is_custom_title || !entry) ? title : entry->GetSaveTitle();
+      const std::string_view game_title = (!custom_title.empty() || !entry) ? custom_title : entry->GetSaveTitle();
 
       // Multi-disc game - use disc set name.
       if (entry && entry->disc_set)

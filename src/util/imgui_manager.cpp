@@ -1172,6 +1172,12 @@ void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* i
   ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), std::move(title), std::move(message));
 }
 
+void Host::AddIconOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
+                             std::string message)
+{
+  ImGuiManager::AddOSDMessage(type, std::move(key), std::move(icon), std::move(title), std::move(message));
+}
+
 void Host::RemoveKeyedOSDMessage(std::string key)
 {
   ImGuiManager::RemoveKeyedOSDMessage(std::move(key));

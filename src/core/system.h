@@ -237,6 +237,9 @@ bool IsRunningUnknownGame();
 bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
 
+/// Returns a path to the game icon, if any.
+std::string GetGameIconPath();
+
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
 
@@ -404,8 +407,8 @@ std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path);
 void DeleteSaveStates(std::string_view serial, bool resume);
 
 /// Returns the path to the memory card for the specified game, considering game settings.
-std::string GetGameMemoryCardPath(std::string_view title, bool is_custom_title, std::string_view serial,
-                                  std::string_view path, u32 slot, MemoryCardType* out_type = nullptr);
+std::string GetGameMemoryCardPath(std::string_view save_title, std::string_view serial, std::string_view path, u32 slot,
+                                  MemoryCardType* out_type = nullptr);
 
 /// Returns intended output volume considering fast forwarding.
 u8 GetAudioOutputVolume();

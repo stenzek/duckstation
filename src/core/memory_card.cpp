@@ -380,8 +380,12 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
 
   if (display_osd_message)
   {
+    std::string icon_path = System::GetGameIconPath();
+    if (icon_path.empty())
+      icon_path = ICON_PF_MEMORY_CARD;
+
     Host::AddIconOSDMessage(
-      OSDMessageType::Quick, GetOSDMessageKey(m_index), ICON_PF_MEMORY_CARD,
+      OSDMessageType::Quick, GetOSDMessageKey(m_index), std::move(icon_path),
       fmt::format(TRANSLATE_FS("MemoryCard", "Memory Card Slot {}"), m_index + 1),
       fmt::format(TRANSLATE_FS("MemoryCard", "Saved card to '{}'."), Path::GetFileName(display_name)));
   }

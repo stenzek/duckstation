@@ -910,10 +910,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 
     QString paths[2];
     for (u32 i = 0; i < 2; i++)
-    {
-      paths[i] = QString::fromStdString(
-        System::GetGameMemoryCardPath(entry->title, entry->has_custom_title, entry->serial, entry->path, i));
-    }
+      paths[i] = QString::fromStdString(System::GetGameMemoryCardPath(entry->title, entry->serial, entry->path, i));
 
     g_main_window->openMemoryCardEditor(paths[0], paths[1]);
   });
