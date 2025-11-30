@@ -1012,6 +1012,7 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
 
 void Achievements::OnSystemDestroyed()
 {
+  const auto lock = GetLock();
   ClearGameInfo();
   ClearGameHash();
   DisableHardcoreMode(false, false);
