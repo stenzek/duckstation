@@ -42,7 +42,7 @@ private:
   std::atomic_bool m_ts_cancelled{false};
 };
 
-class QtAsyncTaskWithProgress final : public QObject, private ProgressCallback
+class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCallback
 {
   Q_OBJECT
 
@@ -50,27 +50,27 @@ public:
   using CompletionCallback = std::function<void()>;
   using WorkCallback = std::function<CompletionCallback(ProgressCallback*)>;
 
-  static QtAsyncTaskWithProgress* create(QWidget* parent, std::string_view initial_title,
-                                         std::string_view initial_status_text, bool cancellable, int range, int value,
-                                         float show_delay, WorkCallback callback);
-  static QtAsyncTaskWithProgress* create(QWidget* parent, float show_delay, WorkCallback callback);
+  static QtAsyncTaskWithProgressDialog* create(QWidget* parent, std::string_view initial_title,
+                                               std::string_view initial_status_text, bool cancellable, int range,
+                                               int value, float show_delay, WorkCallback callback);
+  static QtAsyncTaskWithProgressDialog* create(QWidget* parent, float show_delay, WorkCallback callback);
 
   /// Asynchronously cancel the task. Should only be called from the UI thread.
   /// There is no guarantee when the cancel will go through.
   void cancel();
 
 Q_SIGNALS:
-  void completed(QtAsyncTaskWithProgress* self);
+  void completed(QtAsyncTaskWithProgressDialog* self);
 
 private:
   // can't use QProgressDialog, it starts an event in setValue()...
   class ProgressDialog final : public QDialog
   {
-    friend QtAsyncTaskWithProgress;
+    friend QtAsyncTaskWithProgressDialog;
 
   public:
     ProgressDialog(const QString& initial_title, const QString& initial_status_text, bool cancellable, int range,
-                   int value, QtAsyncTaskWithProgress& task, QWidget* parent);
+                   int value, QtAsyncTaskWithProgressDialog& task, QWidget* parent);
     ~ProgressDialog() override;
 
     void setCancellable(bool cancellable);
@@ -85,7 +85,7 @@ private:
 
     void cancelled();
 
-    QtAsyncTaskWithProgress& m_task;
+    QtAsyncTaskWithProgressDialog& m_task;
     QLabel* m_status_label = nullptr;
     QProgressBar* m_progress_bar = nullptr;
     QDialogButtonBox* m_button_box = nullptr;
@@ -94,9 +94,9 @@ private:
   friend ProgressDialog;
 
   // constructor hidden, clients should not be creating this directly
-  QtAsyncTaskWithProgress(const QString& initial_title, const QString& initial_status_text, bool cancellable, int range,
-                          int value, float show_delay, QWidget* dialog_parent, WorkCallback callback);
-  ~QtAsyncTaskWithProgress();
+  QtAsyncTaskWithProgressDialog(const QString& initial_title, const QString& initial_status_text, bool cancellable,
+                                int range, int value, float show_delay, QWidget* dialog_parent, WorkCallback callback);
+  ~QtAsyncTaskWithProgressDialog();
 
   // progress callback overrides
   bool IsCancelled() const override;

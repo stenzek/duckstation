@@ -448,16 +448,17 @@ void GameSummaryWidget::onComputeHashClicked()
 
   m_ui.computeHashes->setEnabled(false);
 
-  QtAsyncTaskWithProgress::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0, 0.0f,
-                                  [this, path = m_path](ProgressCallback* progress) {
-                                    Error error;
-                                    CDImageHasher::TrackHashes track_hashes;
-                                    const bool result = computeImageHash(path, track_hashes, progress, &error);
-                                    const bool cancelled = (!result && progress->IsCancelled());
-                                    return
-                                      [this, track_hashes = std::move(track_hashes), error = std::move(error), result,
-                                       cancelled]() { processHashResults(track_hashes, result, cancelled, error); };
-                                  });
+  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0,
+                                        0.0f, [this, path = m_path](ProgressCallback* progress) {
+                                          Error error;
+                                          CDImageHasher::TrackHashes track_hashes;
+                                          const bool result = computeImageHash(path, track_hashes, progress, &error);
+                                          const bool cancelled = (!result && progress->IsCancelled());
+                                          return [this, track_hashes = std::move(track_hashes),
+                                                  error = std::move(error), result, cancelled]() {
+                                            processHashResults(track_hashes, result, cancelled, error);
+                                          };
+                                        });
 }
 
 bool GameSummaryWidget::computeImageHash(const std::string& path, CDImageHasher::TrackHashes& track_hashes,

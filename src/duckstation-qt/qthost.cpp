@@ -408,7 +408,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
     fmt::format(TRANSLATE_FS("QtHost", "Downloading {}..."),
                 std::string_view(url).substr((url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0));
 
-  QtAsyncTaskWithProgress::create(
+  QtAsyncTaskWithProgressDialog::create(
     parent, TRANSLATE_SV("QtHost", "File Download"), status_text, true, 0, 0, 0.0f,
     [url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
@@ -440,7 +440,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
         http->WaitForAllRequests();
       }
 
-      QtAsyncTaskWithProgress::CompletionCallback ret;
+      QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)
       {
         ret = [path = std::move(path), completion_callback = std::move(completion_callback), error = std::move(error),
