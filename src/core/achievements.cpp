@@ -128,7 +128,7 @@ static void ClearGameInfo();
 static void ClearGameHash();
 static bool HasSavedCredentials();
 static bool TryLoggingInWithToken();
-static void EnableHardcodeMode(bool display_message, bool display_game_summary);
+static void EnableHardcoreMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
 static void FinishInitialize();
@@ -1002,7 +1002,7 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   {
     // only enable hardcore mode if we're logged in, or waiting for a login response
     if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
-      EnableHardcodeMode(false, false);
+      EnableHardcoreMode(false, false);
   }
 
   // now we can finally identify the game
@@ -1028,7 +1028,7 @@ void Achievements::OnSystemReset()
   {
     // This will raise the silly reset event, but we can safely ignore that since we're immediately resetting the client
     DEV_LOG("Enabling hardcore mode after reset");
-    EnableHardcodeMode(true, true);
+    EnableHardcoreMode(true, true);
   }
 
   DEV_LOG("Reset client");
@@ -1062,14 +1062,16 @@ bool Achievements::IdentifyGame(CDImage* image)
 {
   std::optional<GameHash> game_hash;
   if (image)
+  {
     game_hash = GetGameHash(image);
 
-  if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
-  {
-    // If we are starting with this game and it's bad, notify the user that this is why.
-    Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
-                            TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
-                            TRANSLATE_STR("Achievements", "Achievements have been disabled."));
+    if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
+    {
+      // If we are starting with this game and it's bad, notify the user that this is why.
+      Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
+                              TRANSLATE_STR("Achievements", "Achievements have been disabled."));
+    }
   }
 
   s_state.game_path = image ? image->GetPath() : std::string();
@@ -1669,7 +1671,7 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
                           TRANSLATE_STR("Achievements", "All pending unlock requests have completed."));
 }
 
-void Achievements::EnableHardcodeMode(bool display_message, bool display_game_summary)
+void Achievements::EnableHardcoreMode(bool display_message, bool display_game_summary)
 {
   DebugAssert(IsActive());
   if (rc_client_get_hardcore_enabled(s_state.client))
