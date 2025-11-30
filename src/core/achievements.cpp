@@ -1001,7 +1001,7 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   else
   {
     // only enable hardcore mode if we're logged in, or waiting for a login response
-    if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
+    if (image && !disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
       EnableHardcoreMode(false, false);
   }
 
