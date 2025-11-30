@@ -77,6 +77,106 @@ void QtProgressCallback::connectWidgets(QLabel* const status_label, QProgressBar
   }
 }
 
+QtAsyncTaskWithProgress::QtAsyncTaskWithProgress() : QObject()
+{
+}
+
+QtAsyncTaskWithProgress::~QtAsyncTaskWithProgress() = default;
+
+bool QtAsyncTaskWithProgress::IsCancelled() const
+{
+  return m_ts_cancelled.load(std::memory_order_acquire);
+}
+
+void QtAsyncTaskWithProgress::SetTitle(const std::string_view title)
+{
+  emit titleUpdated(QtUtils::StringViewToQString(title));
+}
+
+void QtAsyncTaskWithProgress::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  emit statusTextUpdated(QtUtils::StringViewToQString(text));
+}
+
+void QtAsyncTaskWithProgress::SetProgressRange(u32 range)
+{
+  const u32 prev_range = m_progress_range;
+  ProgressCallback::SetProgressRange(range);
+  if (m_progress_range == prev_range)
+    return;
+
+  emit progressRangeUpdated(0, static_cast<int>(m_progress_range));
+}
+
+void QtAsyncTaskWithProgress::SetProgressValue(u32 value)
+{
+  const u32 prev_value = m_progress_value;
+  ProgressCallback::SetProgressValue(value);
+  if (m_progress_value == prev_value)
+    return;
+
+  emit progressValueUpdated(static_cast<int>(m_progress_value));
+}
+
+void QtAsyncTaskWithProgress::connectWidgets(QLabel* const status_label, QProgressBar* const progress_bar,
+                                             QAbstractButton* const cancel_button)
+{
+  if (status_label)
+    connect(this, &QtAsyncTaskWithProgress::statusTextUpdated, status_label, &QLabel::setText);
+  if (progress_bar)
+  {
+    connect(this, &QtAsyncTaskWithProgress::progressRangeUpdated, progress_bar, &QProgressBar::setRange);
+    connect(this, &QtAsyncTaskWithProgress::progressValueUpdated, progress_bar, &QProgressBar::setValue);
+  }
+  if (cancel_button)
+  {
+    // force direct connection so it executes on the calling thread
+    connect(
+      cancel_button, &QAbstractButton::clicked, this,
+      [this]() { m_ts_cancelled.store(true, std::memory_order_release); }, Qt::DirectConnection);
+  }
+}
+
+QtAsyncTaskWithProgress* QtAsyncTaskWithProgress::create(QWidget* const callback_parent, WorkCallback callback)
+{
+  QtAsyncTaskWithProgress* self = new QtAsyncTaskWithProgress();
+  self->m_callback = std::move(callback);
+
+  connect(self, &QtAsyncTaskWithProgress::completed, callback_parent, [self]() {
+    const CompletionCallback& cb = std::get<CompletionCallback>(self->m_callback);
+    if (cb)
+      cb();
+  });
+
+  return self;
+}
+
+void QtAsyncTaskWithProgress::start()
+{
+  // Disconnect from the calling thread, so it can be pulled by the async task.
+  moveToThread(nullptr);
+
+  System::QueueAsyncTask([this]() mutable {
+    QThread* const worker_thread = QThread::currentThread();
+    moveToThread(worker_thread);
+
+    m_callback = std::get<WorkCallback>(m_callback)(this);
+    moveToThread(nullptr);
+
+    Host::RunOnUIThread([self = this]() {
+      self->moveToThread(QThread::currentThread());
+      emit self->completed();
+      delete self;
+    });
+  });
+}
+
+void QtAsyncTaskWithProgress::cancel()
+{
+  m_ts_cancelled.store(true, std::memory_order_release);
+}
+
 QtAsyncTaskWithProgressDialog::QtAsyncTaskWithProgressDialog(const QString& initial_title,
                                                              const QString& initial_status_text, bool cancellable,
                                                              int range, int value, float show_delay,
