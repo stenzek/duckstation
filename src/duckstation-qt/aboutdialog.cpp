@@ -28,12 +28,13 @@ AboutDialog::AboutDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
   setFixedSize(geometry().width(), geometry().height());
 
-  m_ui.scmversion->setTextInteractionFlags(Qt::TextSelectableByMouse);
+  QFont title_font(m_ui.title->font());
+  title_font.setPixelSize(20);
+  m_ui.title->setFont(title_font);
+
   m_ui.scmversion->setText(
     tr("%1 (%2)").arg(QLatin1StringView(g_scm_tag_str)).arg(QLatin1StringView(g_scm_branch_str)));
 
-  m_ui.description->setTextInteractionFlags(Qt::TextBrowserInteraction);
-  m_ui.description->setOpenExternalLinks(true);
   m_ui.description->setText(QStringLiteral(R"(
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
 <html><head><meta name="qrichtext" content="1" /><style type="text/css">
@@ -53,6 +54,8 @@ p, li { white-space: pre-wrap; }
                               .arg(tr("and other contributors"))
                               .arg(tr("Icon by"))
                               .arg(tr("License")));
+
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
 }
 
 AboutDialog::~AboutDialog() = default;
