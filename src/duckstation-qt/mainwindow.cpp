@@ -129,7 +129,10 @@ struct MainWindowLocals
   bool system_paused = false;
   bool achievements_hardcore_mode = false;
   bool fullscreen_ui_started = false;
+
+#ifdef _WIN32
   bool disable_window_rounded_corners = false;
+#endif
 };
 } // namespace
 
@@ -398,8 +401,10 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
     restoreDisplayWindowGeometryFromConfig();
     container->showNormal();
 
+#ifdef _WIN32
     if (s_locals.disable_window_rounded_corners)
       PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()), false);
+#endif
   }
   else
   {
@@ -1899,9 +1904,11 @@ void MainWindow::setupAdditionalUi()
     new QShortcut(QKeySequence::ZoomOut, this, this, &MainWindow::onViewZoomOutActionTriggered);
   m_shortcuts.settings = new QShortcut(QKeySequence::Preferences, this, [this] { doSettings(); });
 
+#ifdef _WIN32
   s_locals.disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_locals.disable_window_rounded_corners)
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
+#endif
 
   QtUtils::StyleChildMenus(this);
 }
@@ -3072,6 +3079,7 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
 
 void MainWindow::checkForSettingChanges()
 {
+#ifdef _WIN32
   if (const bool disable_window_rounded_corners =
         Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
       disable_window_rounded_corners != s_locals.disable_window_rounded_corners)
@@ -3086,6 +3094,7 @@ void MainWindow::checkForSettingChanges()
                                                 !s_locals.disable_window_rounded_corners);
     }
   }
+#endif
 
   // don't change state if temporary unfullscreened
   if (m_display_widget && !QtHost::IsSystemLocked() && !isRenderingFullscreen())
@@ -3241,8 +3250,10 @@ bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, q
   if (!widget)
     return false;
 
+#ifdef _WIN32
   if (s_locals.disable_window_rounded_corners)
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(widget->winId()), false);
+#endif
 
   const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, render_api, error);
   if (!owi.has_value())
