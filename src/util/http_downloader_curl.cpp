@@ -193,7 +193,8 @@ void HTTPDownloaderCurl::WorkerThreadEntryPoint()
     ProcessQueuedActions();
 
     // Perform curl operations
-    err = curl_multi_perform(m_multi_handle, nullptr);
+    int running_handles;
+    err = curl_multi_perform(m_multi_handle, &running_handles);
     if (err != CURLM_OK)
       ERROR_LOG("curl_multi_perform() returned {}", static_cast<int>(err));
 
