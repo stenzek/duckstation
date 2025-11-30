@@ -4251,7 +4251,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
 bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error)
 {
-  if (!IsValid() || IsReplayingGPUDump() || IsPsfPath(s_state.running_game_path))
+  if (!IsValid() || !GameList::CanEditGameSettingsForPath(s_state.running_game_path, s_state.running_game_serial))
   {
     Error::SetStringView(error, TRANSLATE_SV("System", "No valid game is running."));
     return false;

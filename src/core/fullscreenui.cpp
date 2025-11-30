@@ -1604,8 +1604,9 @@ void FullscreenUI::DrawPauseMenu()
           DoToggleAnalogMode();
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
-                                     has_game && !GPUThread::GetGameSerial().empty()))
+        if (MenuButtonWithoutSummary(
+              FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
+              has_game && GameList::CanEditGameSettingsForPath(GPUThread::GetGameSerial(), GPUThread::GetGamePath())))
         {
           BeginTransition([]() { SwitchToGameSettings(); });
         }

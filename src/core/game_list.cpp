@@ -214,6 +214,11 @@ bool GameList::IsScannableFilename(std::string_view path)
   return (System::IsDiscPath(path) || System::IsExePath(path) || System::IsPsfPath(path));
 }
 
+bool GameList::CanEditGameSettingsForPath(const std::string_view path, const std::string_view serial)
+{
+  return (!path.empty() && !serial.empty() && !System::IsPsfPath(path) && !System::IsGPUDumpPath(path));
+}
+
 bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
 {
   const auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");

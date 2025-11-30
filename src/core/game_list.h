@@ -115,6 +115,9 @@ size_t GetEntryCount();
 bool IsGameListLoaded();
 bool ShouldShowLocalizedTitles();
 
+/// Returns true if the specified path should not have game properties saved.
+bool CanEditGameSettingsForPath(const std::string_view path, const std::string_view serial);
+
 /// Populates the game list with files in the configured directories.
 /// If invalidate_cache is set, all files will be re-scanned.
 /// If only_cache is set, no new files will be scanned, only those present in the cache.

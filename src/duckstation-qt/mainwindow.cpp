@@ -635,6 +635,7 @@ void MainWindow::onSystemGameChanged(const QString& path, const QString& game_se
   s_locals.current_game_icon = getIconForGame(path);
 
   updateWindowTitle();
+  updateEmulationActions();
 }
 
 void MainWindow::onSystemUndoStateAvailabilityChanged(bool available, quint64 timestamp)
@@ -2195,6 +2196,11 @@ void MainWindow::updateEmulationActions()
       m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionCloseGame);
       m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
     }
+
+    m_ui.actionViewGameProperties->setEnabled(
+      !s_locals.current_game_path.isEmpty() && !s_locals.current_game_serial.isEmpty() &&
+      GameList::CanEditGameSettingsForPath(s_locals.current_game_path.toStdString(),
+                                           s_locals.current_game_serial.toStdString()));
   }
   else
   {
