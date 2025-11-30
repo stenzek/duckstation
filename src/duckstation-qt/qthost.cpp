@@ -1360,6 +1360,29 @@ void EmuThread::startControllerTest()
   });
 }
 
+void EmuThread::openGamePropertiesForCurrentGame(const QString& category)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::openGamePropertiesForCurrentGame, Qt::QueuedConnection, category);
+    return;
+  }
+
+  Error error;
+  GameList::Entry dynamic_entry;
+  if (System::PopulateGameListEntryFromCurrentGame(&dynamic_entry, &error))
+  {
+    Host::RunOnUIThread([dynamic_entry = std::move(dynamic_entry), category]() {
+      SettingsWindow::openGamePropertiesDialog(&dynamic_entry,
+                                               category.isEmpty() ? nullptr : category.toUtf8().constData());
+    });
+  }
+  else
+  {
+    emit errorReported(tr("Error"), QString::fromStdString(error.GetDescription()));
+  }
+}
+
 void EmuThread::runOnEmuThread(const std::function<void()>& callback)
 {
   callback();
@@ -3365,10 +3388,8 @@ int main(int argc, char* argv[])
   }
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!autoboot)
+  if (!s_state.batch_mode)
     g_main_window->refreshGameList(false);
-  else
-    GameList::Refresh(false, true);
 
   // Don't bother showing the window in no-gui mode.
   if (!s_state.nogui_mode)

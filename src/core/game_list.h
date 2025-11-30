@@ -38,6 +38,7 @@ struct Entry
   bool disc_set_member = false;
   bool has_custom_title = false;
   bool has_custom_region = false;
+  bool is_runtime_populated = false;
   GameDatabase::Language custom_language = GameDatabase::Language::MaxCount;
 
   std::string path;
@@ -96,8 +97,7 @@ const char* GetEntryTypeDisplayName(EntryType type);
 
 bool IsScannableFilename(std::string_view path);
 
-/// Populates a game list entry struct with information from the iso/elf.
-/// Do *not* call while the system is running, it will mess with CDVD state.
+/// Populates a game list entry struct with information from the specified path.
 bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 
 // Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.

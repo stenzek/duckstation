@@ -2446,7 +2446,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);
   connect(m_ui.actionViewToolbar, &QAction::triggered, this, &MainWindow::onViewToolbarActionTriggered);
   connect(m_ui.actionViewLockToolbar, &QAction::triggered, this, &MainWindow::onViewToolbarLockActionTriggered);
-  connect(m_ui.actionViewSmallToolbarIcons, &QAction::triggered, this, &MainWindow::onViewToolbarSmallIconsActionTriggered);
+  connect(m_ui.actionViewSmallToolbarIcons, &QAction::triggered, this,
+          &MainWindow::onViewToolbarSmallIconsActionTriggered);
   connect(m_ui.actionViewToolbarLabels, &QAction::triggered, this, &MainWindow::onViewToolbarLabelsActionTriggered);
   connect(m_ui.actionViewToolbarLabelsBesideIcons, &QAction::triggered, this,
           &MainWindow::onViewToolbarLabelsBesideIconsActionTriggered);
@@ -2725,21 +2726,18 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
     return;
 
   auto lock = GameList::GetLock();
-  const GameList::Entry* entry = GameList::GetEntryForPath(s_current_game_path.toStdString());
+  const std::string game_path = s_current_game_path.toStdString();
+  const GameList::Entry* entry = GameList::GetEntryForPath(game_path);
   if (entry && entry->disc_set_member && !entry->dbentry->IsFirstDiscInSet() &&
       !System::ShouldUseSeparateDiscSettingsForSerial(entry->serial))
   {
     // show for first disc instead
     entry = GameList::GetFirstDiscSetMember(entry->dbentry->disc_set);
   }
-  if (!entry)
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
-                             tr("Game properties is only available for scanned games."));
-    return;
-  }
-
-  SettingsWindow::openGamePropertiesDialog(entry, category);
+  if (entry)
+    SettingsWindow::openGamePropertiesDialog(entry, category);
+  else
+    g_emu_thread->openGamePropertiesForCurrentGame(category ? QString::fromUtf8(category) : QString());
 }
 
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()

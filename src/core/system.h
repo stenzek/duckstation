@@ -34,6 +34,9 @@ class MediaCapture;
 namespace GameDatabase {
 struct Entry;
 }
+namespace GameList {
+struct Entry;
+}
 
 struct SystemBootParameters
 {
@@ -186,7 +189,6 @@ void CancelPendingStartup();
 void InterruptExecution();
 
 ConsoleRegion GetRegion();
-DiscRegion GetDiscRegion();
 bool IsPALRegion();
 
 /// Taints - flags that are set on the system and only cleared on reset.
@@ -237,6 +239,9 @@ BootMode GetBootMode();
 
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
+
+/// Populates a game list entry struct with information from the currently-running game.
+bool PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error);
 
 void FormatLatencyStats(SmallStringBase& str);
 
@@ -323,8 +328,6 @@ bool DumpVRAM(std::string path, Error* error);
 /// Dumps sound RAM to a file.
 bool DumpSPURAM(std::string path, Error* error);
 
-bool HasMedia();
-std::string GetMediaPath();
 bool InsertMedia(const char* path);
 void RemoveMedia();
 

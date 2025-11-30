@@ -34,9 +34,9 @@ private:
   void populateUi(const GameList::Entry* entry);
   void setCustomTitle(const std::string& text);
   void setCustomRegion(int region);
-  void setRevisionText(const QString& text);
 
   void populateTracksInfo();
+  void disableWidgetsForRuntimeScannedEntry();
 
   void onSeparateDiscSettingsChanged(Qt::CheckState state);
   void onCustomLanguageChanged(int language);

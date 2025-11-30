@@ -1613,7 +1613,22 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
   if (!entry || entry->serial.empty())
   {
-    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game properties is only available for scanned games."));
+    Host::RunOnCPUThread([page]() {
+      Error error;
+      GameList::Entry dynamic_entry;
+      if (System::PopulateGameListEntryFromCurrentGame(&dynamic_entry, &error))
+      {
+        GPUThread::RunOnThread([dynamic_entry = std::move(dynamic_entry), page]() {
+          if (IsInitialized())
+            SwitchToGameSettings(&dynamic_entry, page);
+        });
+      }
+      else
+      {
+        ShowToast(OSDMessageType::Info, {}, error.TakeDescription());
+      }
+    });
+
     return false;
   }
 
@@ -1992,6 +2007,13 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
   BeginMenuButtons();
   ResetFocusHere();
 
+  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->is_runtime_populated)
+  {
+    MenuButton(FSUI_ICONVSTR(ICON_EMOJI_WARNING,
+                             "This game was not scanned by DuckStation. Some functionality is not available."),
+               {}, false);
+  }
+
   MenuHeading(FSUI_VSTR("Details"));
 
   if (s_settings_locals.game_settings_entry)
@@ -2033,10 +2055,6 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
     {
       CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_settings_locals.game_settings_entry->path);
     }
-  }
-  else
-  {
-    MenuButton(FSUI_ICONVSTR(ICON_FA_BAN, "Details unavailable for game not scanned in game list."), "");
   }
 
   MenuHeading(FSUI_VSTR("Options"));

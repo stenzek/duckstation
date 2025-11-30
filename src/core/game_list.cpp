@@ -401,6 +401,7 @@ void GameList::MakeInvalidEntry(Entry* entry)
   entry->disc_set_member = false;
   entry->has_custom_title = false;
   entry->has_custom_region = false;
+  entry->is_runtime_populated = false;
   entry->custom_language = GameDatabase::Language::MaxCount;
   entry->path = {};
   entry->serial = {};

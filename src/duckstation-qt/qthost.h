@@ -181,6 +181,7 @@ public:
   void reloadTextureReplacements();
   void captureGPUFrameDump();
   void startControllerTest();
+  void openGamePropertiesForCurrentGame(const QString& category = {});
   void setGPUThreadRunIdle(bool active);
   void updateFullscreenUITheme();
   void runOnEmuThread(const std::function<void()>& callback);

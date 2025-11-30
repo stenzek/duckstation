@@ -679,11 +679,6 @@ ConsoleRegion System::GetRegion()
   return s_state.region;
 }
 
-DiscRegion System::GetDiscRegion()
-{
-  return CDROM::GetDiscRegion();
-}
-
 bool System::IsPALRegion()
 {
   return s_state.region == ConsoleRegion::PAL;
@@ -4091,19 +4086,6 @@ bool System::DumpSPURAM(std::string path, Error* error)
   return FileSystem::WriteAtomicRenamedFile(std::move(path), SPU::GetRAM(), error);
 }
 
-bool System::HasMedia()
-{
-  return CDROM::HasMedia();
-}
-
-std::string System::GetMediaPath()
-{
-  if (!CDROM::HasMedia())
-    return {};
-
-  return CDROM::GetMediaPath();
-}
-
 bool System::InsertMedia(const char* path)
 {
   if (IsGPUDumpPath(path)) [[unlikely]]
@@ -4265,6 +4247,40 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                             s_state.running_game_hash);
+}
+
+bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error)
+{
+  if (!IsValid() || IsReplayingGPUDump() || IsPsfPath(s_state.running_game_path))
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "No valid game is running."));
+    return false;
+  }
+
+  entry->path = s_state.running_game_path;
+  entry->serial = s_state.running_game_serial;
+  entry->title = s_state.running_game_title;
+  entry->dbentry = s_state.running_game_entry;
+  entry->hash = s_state.running_game_hash;
+  entry->has_custom_title = s_state.running_game_custom_title;
+
+  if (CDROM::HasMedia())
+  {
+    entry->type = CDROM::GetMedia()->HasSubImages() ? GameList::EntryType::Playlist : GameList::EntryType::Disc;
+    entry->region = CDROM::GetDiscRegion();
+  }
+  else
+  {
+    entry->type = GameList::EntryType::PSExe;
+    entry->region = ((s_state.region == ConsoleRegion::NTSC_U) ?
+                       DiscRegion::NTSC_U :
+                       ((s_state.region == ConsoleRegion::NTSC_J) ? DiscRegion::NTSC_J : DiscRegion::PAL));
+  }
+
+  entry->achievements_game_id = Achievements::GetGameID();
+  entry->is_runtime_populated = true;
+
+  return true;
 }
 
 bool System::CheckForRequiredSubQ(Error* error)
