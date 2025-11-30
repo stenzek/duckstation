@@ -323,7 +323,6 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     m_display_widget->setFocus();
     updateWindowState();
 
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     return m_display_widget->getWindowInfo(render_api, error);
   }
 
@@ -362,10 +361,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   // If we're rendering to main and were hidden (e.g. coming back from fullscreen),
   // make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
   if (!fullscreen && render_to_main && !isVisible())
-  {
     setVisible(true);
-    QGuiApplication::sync();
-  }
 
   QWidget* container;
   if (DisplayContainer::isNeeded(fullscreen, render_to_main))
@@ -417,9 +413,6 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   updateDisplayRelatedActions();
   updateShortcutActions();
   updateDisplayWidgetCursor();
-
-  // We need the surface visible.
-  QGuiApplication::sync();
 
   if (!render_to_main)
     QtUtils::ShowOrRaiseWindow(QtUtils::GetRootWidget(m_display_widget));
@@ -3522,9 +3515,6 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 
     // Need to wait for the pause to go through, and make the main window visible if needed.
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return !s_locals.system_paused; });
-
-    // Ensure it's visible before we try to create any dialogs parented to us.
-    QApplication::sync();
   }
 
   // Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
