@@ -329,26 +329,25 @@ void QtHost::ApplyWaylandWorkarounds()
     return;
   }
 
-  std::fputs("Wayland platform detected, applying workarounds.\n", stderr);
-
-  // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
-  // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
-  // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
-  QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-  // When rendering fullscreen or to a separate window on Wayland, because we take over the surface we need
-  // to wrap the widget in a container because GNOME is stupid and refuses to ever support server-side
-  // decorations. There's no sign of this ever changing. Fuck Wayland.
   if (const char* desktop = std::getenv("XDG_SESSION_DESKTOP"); desktop && std::strcmp(desktop, "KDE") == 0)
   {
-    std::fputs("Wayland with KDE detected, not creating display widget containers.\n", stderr);
+    std::fputs("Wayland with KDE detected, not applying Wayland workarounds.\n", stderr);
   }
   else
   {
-    std::fputs("Wayland with non-KDE desktop detected, creating display widget containers.\n"
+    std::fputs("Wayland with non-KDE desktop detected, applying Wayland workarounds.\n"
                "Don't complain when things break.\n",
                stderr);
+
+    // When rendering fullscreen or to a separate window on Wayland, because we take over the surface we need
+    // to wrap the widget in a container because GNOME is stupid and refuses to ever support server-side
+    // decorations. There's no sign of this ever changing. Fuck Wayland.
     s_state.display_container_needed = true;
+
+    // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
+    // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
+    // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
+    QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
   }
 }
 
