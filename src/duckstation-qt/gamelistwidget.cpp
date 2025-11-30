@@ -222,7 +222,7 @@ const char* GameListModel::getColumnName(Column col)
 }
 
 GameListModel::GameListModel(GameListWidget* parent)
-  : QAbstractTableModel(parent), m_device_pixel_ratio(QtUtils::GetDevicePixelRatioForWidget(parent)),
+  : QAbstractTableModel(parent), m_device_pixel_ratio(parent->devicePixelRatio()),
     m_icon_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", DEFAULT_COVER_SCALE);
@@ -232,7 +232,7 @@ GameListModel::GameListModel(GameListWidget* parent)
   m_show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);
 
   loadCommonImages();
-  updateCoverScale();
+  loadCoverScaleDependentPixmaps();
 
   if (m_show_game_icons)
     GameList::ReloadMemcardTimestampCache();
@@ -332,7 +332,7 @@ void GameListModel::setCoverScale(float scale)
   updateCoverScale();
 }
 
-void GameListModel::updateCoverScale()
+void GameListModel::loadCoverScaleDependentPixmaps()
 {
   QImage loading_image;
   if (loading_image.load(QtHost::GetResourceQPath("images/placeholder.png", true)))
@@ -360,7 +360,11 @@ void GameListModel::updateCoverScale()
     m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
     m_placeholder_image.fill(QColor(0, 0, 0, 0));
   }
+}
 
+void GameListModel::updateCoverScale()
+{
+  loadCoverScaleDependentPixmaps();
   emit coverScaleChanged(m_cover_scale);
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover),
                    {Qt::DecorationRole, Qt::FontRole, Qt::SizeHintRole});
@@ -415,6 +419,7 @@ void GameListModel::setDevicePixelRatio(qreal dpr)
   m_loading_pixmap.setDevicePixelRatio(dpr);
   m_flag_pixmap_cache.clear();
   loadCommonImages();
+  loadCoverScaleDependentPixmaps();
   refreshCovers();
   refreshIcons();
 }
@@ -2262,7 +2267,7 @@ bool GameListWidget::event(QEvent* e)
   if (type == QEvent::Resize)
     updateBackground(false);
   else if (type == QEvent::DevicePixelRatioChange)
-    m_model->setDevicePixelRatio(QtUtils::GetDevicePixelRatioForWidget(this));
+    m_model->setDevicePixelRatio(devicePixelRatio());
 
   return QWidget::event(e);
 }

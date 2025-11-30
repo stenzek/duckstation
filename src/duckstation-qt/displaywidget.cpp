@@ -169,6 +169,8 @@ void DisplayWidget::checkForSizeChange()
   const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
   if (m_last_window_size != size || m_last_window_scale != dpr)
   {
+    DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(), dpr);
+
     m_last_window_size = size;
     m_last_window_scale = dpr;
     emit windowResizedEvent(size.width(), size.height(), static_cast<float>(dpr));
@@ -521,10 +523,9 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
 
     case QEvent::MouseMove:
     {
-      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
       const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
-      const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
-      const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * dpr);
+      const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * m_last_window_scale);
+      const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * m_last_window_scale);
 
       g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata, Host::AuxiliaryRenderWindowEvent::MouseMoved,
@@ -583,6 +584,9 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
       if (m_last_window_size != size || m_last_window_scale != dpr)
       {
+        DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(),
+                dpr);
+
         m_last_window_size = size;
         m_last_window_scale = dpr;
         g_emu_thread->queueAuxiliaryRenderWindowInputEvent(

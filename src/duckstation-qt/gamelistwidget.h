@@ -144,6 +144,7 @@ private:
   void loadCommonImages();
   void loadSizeDependentPixmaps();
   void updateCoverScale();
+  void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);

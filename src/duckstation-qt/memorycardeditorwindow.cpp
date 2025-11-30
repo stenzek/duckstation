@@ -226,7 +226,7 @@ bool MemoryCardEditorWindow::event(QEvent* event)
 {
   if (event->type() == QEvent::DevicePixelRatioChange)
   {
-    const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+    const qreal dpr = devicePixelRatio();
     MemoryCardEditorIconStyleDelegate::getForView(m_card_a.table)->setDevicePixelRatio(dpr);
     MemoryCardEditorIconStyleDelegate::getForView(m_card_b.table)->setDevicePixelRatio(dpr);
   }
@@ -261,7 +261,7 @@ void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonB
 
 void MemoryCardEditorWindow::connectUi()
 {
-  const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+  const qreal dpr = devicePixelRatio();
   m_ui.cardA->setItemDelegateForColumn(
     0, new MemoryCardEditorIconStyleDelegate(m_card_a.files, dpr, m_current_frame_index, m_ui.cardA));
   m_ui.cardB->setItemDelegateForColumn(
