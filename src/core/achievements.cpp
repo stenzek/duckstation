@@ -1024,7 +1024,8 @@ void Achievements::OnSystemReset()
     return;
 
   // Do we need to enable hardcore mode?
-  if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client))
+  if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client) &&
+      (s_state.load_game_request || s_state.has_achievements || s_state.has_leaderboards))
   {
     // This will raise the silly reset event, but we can safely ignore that since we're immediately resetting the client
     DEV_LOG("Enabling hardcore mode after reset");
