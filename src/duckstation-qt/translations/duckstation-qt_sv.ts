@@ -341,7 +341,7 @@ Inloggningstoken genererades %2.</translation>
     <name>Achievements</name>
     <message>
         <source>Failed to read executable from disc. Achievements disabled.</source>
-        <translation>Misslyckades med att läsa körbar fil från skiva. Prestationer inaktiverade.</translation>
+        <translation type="vanished">Misslyckades med att läsa körbar fil från skiva. Prestationer inaktiverade.</translation>
     </message>
     <message>
         <source>{0}, {1}.</source>
@@ -436,7 +436,7 @@ Position på ledartavlan: {} av {}</translation>
     <message>
         <source>Server error in {}:
 {}</source>
-        <translation>Serverfel i {}:
+        <translation type="vanished">Serverfel i {}:
 {}</translation>
     </message>
     <message>
@@ -445,7 +445,7 @@ Position på ledartavlan: {} av {}</translation>
     </message>
     <message>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
-        <translation>En upplåst begäran kunde inte färdigställas. Vi fortsätter att försöka att skicka in denna begäran.</translation>
+        <translation type="vanished">En upplåst begäran kunde inte färdigställas. Vi fortsätter att försöka att skicka in denna begäran.</translation>
     </message>
     <message>
         <source>Achievements Reconnected</source>
@@ -457,11 +457,11 @@ Position på ledartavlan: {} av {}</translation>
     </message>
     <message>
         <source>Hardcore mode is now enabled.</source>
-        <translation>Hardcore-läget är nu aktiverat.</translation>
+        <translation type="vanished">Hardcore-läget är nu aktiverat.</translation>
     </message>
     <message>
         <source>Hardcore mode is now disabled.</source>
-        <translation>Hardcore-läget är nu inaktiverat.</translation>
+        <translation type="vanished">Hardcore-läget är nu inaktiverat.</translation>
     </message>
     <message>
         <source>Downloading achievements data...</source>
@@ -794,6 +794,56 @@ Olästa meddelanden: {}</translation>
         <comment>Pause Menu</comment>
         <translation>Senaste framstegsuppdatering</translation>
     </message>
+    <message>
+        <source>Failed to read executable from disc.</source>
+        <translation>Misslyckades med att läsa körbar fil från skiva.</translation>
+    </message>
+    <message>
+        <source>Achievements have been disabled.</source>
+        <translation>Prestationer har inaktiverats.</translation>
+    </message>
+    <message>
+        <source>Server error in {}</source>
+        <translation>Serverfel i {}</translation>
+    </message>
+    <message>
+        <source>An unlock request could not be completed.
+We will keep trying to submit this request.</source>
+        <translation>En upplåsningsbegäran kunde inte färdigställas.
+Vi kommer att fortsätta försöka skicka in begäran.</translation>
+    </message>
+    <message>
+        <source>Hardcore mode enabled.</source>
+        <translation>Hardcore-läget aktiverat.</translation>
+    </message>
+    <message>
+        <source>Hardcore mode disabled.</source>
+        <translation>Hardcore-läget inaktiverat.</translation>
+    </message>
+    <message>
+        <source>Restrictions are now active.</source>
+        <translation>Begränsningar är nu aktiva.</translation>
+    </message>
+    <message>
+        <source>Restrictions are no longer active.</source>
+        <translation>Begränsningar är inte längre aktiva.</translation>
+    </message>
+    <message>
+        <source>Achievements are not available.</source>
+        <translation>Prestationer är inte tillgängliga.</translation>
+    </message>
+    <message>
+        <source>Achievements are disabled in settings.</source>
+        <translation>Prestationer är inaktiverade i inställningarna.</translation>
+    </message>
+    <message>
+        <source>Leaderboards are not available.</source>
+        <translation>Ledartavlor är inte tillgängliga.</translation>
+    </message>
+    <message>
+        <source>This game has no leaderboards.</source>
+        <translation>Detta spel har inga ledartavlor.</translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -1052,6 +1102,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>CD-ROM Disable Speedup on MDEC</source>
         <translation>Inaktivera CD-ROM-hastighetsökning på MDEC</translation>
+    </message>
+    <message>
+        <source>Use Fractional Window Scale</source>
+        <translation>Använd fraktionell fönsterskalning</translation>
     </message>
 </context>
 <context>
@@ -1778,7 +1832,7 @@ Olästa meddelanden: {}</translation>
     </message>
 </context>
 <context>
-    <name>AutoUpdaterWindow</name>
+    <name>AutoUpdaterDialog</name>
     <message>
         <source>Automatic Updater</source>
         <translation>Automatisk uppdatering</translation>
@@ -1796,6 +1850,10 @@ Olästa meddelanden: {}</translation>
         <translation>Ny version: </translation>
     </message>
     <message>
+        <source>Download Size:</source>
+        <translation>Hämtningsstorlek:</translation>
+    </message>
+    <message>
         <source>Download and Install...</source>
         <translation>Hämta och installera...</translation>
     </message>
@@ -1808,40 +1866,133 @@ Olästa meddelanden: {}</translation>
         <translation>Påminn mig senare</translation>
     </message>
     <message>
+        <source>Do not show again</source>
+        <translation>Visa inte igen</translation>
+    </message>
+    <message>
+        <source>Failed to retrieve or download update:
+
+%1
+
+You can manually update DuckStation by re-downloading the latest release. Do you want to open the download page now?</source>
+        <translation>Misslyckades med att hämta uppdatering:
+
+%1
+
+Du kan uppdatera DuckStation manuellt genom att hämta ner den senaste utgåvan igen. Vill du öppna hämtningssidan nu?</translation>
+    </message>
+    <message>
         <source>Updater Error</source>
         <translation>Fel vid uppdatering</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
-        <translation>&lt;h2&gt;Ändringar:&lt;/h2&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
-        <translation>&lt;h2&gt;Varning för inställningar&lt;/h2&gt;&lt;p&gt;Installation av denna uppdatering kommer att nollställa din programkonfiguration. Observera att du måste konfigurera om dina inställningar efter denna uppdatering.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Downloading %1...</source>
-        <translation>Hämtar %1...</translation>
     </message>
     <message>
         <source>No updates are currently available. Please try again later.</source>
         <translation>Inga uppdateringar finns för närvarande tillgängliga. Försök igen senare.</translation>
     </message>
     <message>
-        <source>Current Version: %1 (%2)</source>
-        <translation>Aktuell version: %1 (%2)</translation>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
-        <source>New Version: %1 (%2)</source>
-        <translation>Ny version: %1 (%2)</translation>
+        <source>%1 MB</source>
+        <translation>%1 MB</translation>
     </message>
     <message>
-        <source>Download...</source>
-        <translation>Hämta...</translation>
+        <source>Loading...</source>
+        <translation>Läser in...</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
+        <translation>&lt;h2&gt;Ändringar:&lt;/h2&gt;</translation>
     </message>
     <message>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Varning för sparade tillstånd&lt;/h2&gt;&lt;p&gt;Installation av denna uppdatering kommer att göra dina sparade tillstånd &lt;b&gt;inkompatibla&lt;/b&gt;. Försäkra dig om att du har sparat dina spel till minneskort innan du installerar denna uppdatering annars kommer du förlora dem.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
+        <translation>&lt;h2&gt;Varning för inställningar&lt;/h2&gt;&lt;p&gt;Installation av denna uppdatering kommer att nollställa din programkonfiguration. Observera att du måste konfigurera om dina inställningar efter denna uppdatering.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Updater Warning</source>
+        <translation>Uppdateringsvarning</translation>
+    </message>
+    <message>
+        <source>&lt;h1&gt;Inconsistent Application State&lt;/h1&gt;&lt;h3&gt;The update zip is missing the current executable:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;This is usually a result of manually renaming the file.&lt;/strong&gt; Continuing to install this update may result in a broken installation if the renamed executable is used. The DuckStation executable should be named:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Do you want to continue anyway?&lt;/p&gt;</source>
+        <translation>&lt;h1&gt;Inkonsekvent applikationstillstånd&lt;/h1&gt;&lt;h3&gt;Den aktuella körbara filen saknas i uppdateringszipfilen:&lt;/h3&gt;&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Detta beror vanligtvis på att filen har bytt namn manuellt. &lt;/strong&gt;Om du fortsätter att installera den här uppdateringen kan det leda till en felaktig installation om den omdöpta körbara filen används. Den körbara filen för DuckStation ska ha namnet:&lt;div align=&quot;center&quot;&gt;&lt;pre&gt;%2&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Vill du fortsätta ändå?&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Failed to remove updater exe after update:
+%1</source>
+        <translation>Misslyckades med att ta bort uppdateringsfil efter uppdatering:
+%1</translation>
+    </message>
+</context>
+<context>
+    <name>AutoUpdaterWindow</name>
+    <message>
+        <source>Automatic Updater</source>
+        <translation type="vanished">Automatisk uppdatering</translation>
+    </message>
+    <message>
+        <source>Update Available</source>
+        <translation type="vanished">Uppdatering tillgänglig</translation>
+    </message>
+    <message>
+        <source>Current Version: </source>
+        <translation type="vanished">Aktuell version: </translation>
+    </message>
+    <message>
+        <source>New Version: </source>
+        <translation type="vanished">Ny version: </translation>
+    </message>
+    <message>
+        <source>Download and Install...</source>
+        <translation type="vanished">Hämta och installera...</translation>
+    </message>
+    <message>
+        <source>Skip This Update</source>
+        <translation type="vanished">Hoppa över denna uppdatering</translation>
+    </message>
+    <message>
+        <source>Remind Me Later</source>
+        <translation type="vanished">Påminn mig senare</translation>
+    </message>
+    <message>
+        <source>Updater Error</source>
+        <translation type="vanished">Fel vid uppdatering</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
+        <translation type="vanished">&lt;h2&gt;Ändringar:&lt;/h2&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
+        <translation type="vanished">&lt;h2&gt;Varning för inställningar&lt;/h2&gt;&lt;p&gt;Installation av denna uppdatering kommer att nollställa din programkonfiguration. Observera att du måste konfigurera om dina inställningar efter denna uppdatering.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Downloading %1...</source>
+        <translation type="vanished">Hämtar %1...</translation>
+    </message>
+    <message>
+        <source>No updates are currently available. Please try again later.</source>
+        <translation type="vanished">Inga uppdateringar finns för närvarande tillgängliga. Försök igen senare.</translation>
+    </message>
+    <message>
+        <source>Current Version: %1 (%2)</source>
+        <translation type="vanished">Aktuell version: %1 (%2)</translation>
+    </message>
+    <message>
+        <source>New Version: %1 (%2)</source>
+        <translation type="vanished">Ny version: %1 (%2)</translation>
+    </message>
+    <message>
+        <source>Download...</source>
+        <translation type="vanished">Hämta...</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to memory card before installing this update or you will lose progress.&lt;/p&gt;</source>
+        <translation type="vanished">&lt;h2&gt;Varning för sparade tillstånd&lt;/h2&gt;&lt;p&gt;Installation av denna uppdatering kommer att göra dina sparade tillstånd &lt;b&gt;inkompatibla&lt;/b&gt;. Försäkra dig om att du har sparat dina spel till minneskort innan du installerar denna uppdatering annars kommer du förlora dem.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h4&gt;Installing this update will download %1 MB through your internet connection.&lt;/h4&gt;</source>
@@ -1850,24 +2001,40 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Failed to remove updater exe after update:
 %1</source>
-        <translation>Misslyckades med att ta bort uppdateringsfil efter uppdatering:
+        <translation type="vanished">Misslyckades med att ta bort uppdateringsfil efter uppdatering:
 %1</translation>
     </message>
     <message>
         <source>Loading...</source>
-        <translation>Läser in...</translation>
+        <translation type="vanished">Läser in...</translation>
     </message>
     <message>
         <source>Do not show again</source>
-        <translation>Visa inte igen</translation>
+        <translation type="vanished">Visa inte igen</translation>
     </message>
     <message>
         <source>Download Size:</source>
-        <translation>Hämtningsstorlek:</translation>
+        <translation type="vanished">Hämtningsstorlek:</translation>
     </message>
     <message>
         <source>Download Size: %1 MB</source>
-        <translation>Hämtningsstorlek: %1 MB</translation>
+        <translation type="vanished">Hämtningsstorlek: %1 MB</translation>
+    </message>
+    <message>
+        <source>Stable Releases</source>
+        <translation>Stabila utgåvor</translation>
+    </message>
+    <message>
+        <source>Preview Releases</source>
+        <translation>Förhandsvisningar</translation>
+    </message>
+    <message>
+        <source>Downloading Update...</source>
+        <translation>Hämtar uppdatering...</translation>
+    </message>
+    <message>
+        <source>Processing Update...</source>
+        <translation>Behandlar uppdatering...</translation>
     </message>
 </context>
 <context>
@@ -2042,7 +2209,24 @@ WAV-filer måste vara stereo och använda en samplingsfrekvens på 44100hz.</tra
     <name>CDImageHasher</name>
     <message>
         <source>Computing hash for Track {}/Index {}...</source>
-        <translation>Beräknar hash för spår {}/Index {}...</translation>
+        <translation type="vanished">Beräknar hash för spår {}/Index {}...</translation>
+    </message>
+    <message>
+        <source>Computing hash for Track {}...</source>
+        <translation>Beräknar kontrollsumma för spår {}...</translation>
+    </message>
+</context>
+<context>
+    <name>CDROM</name>
+    <message>
+        <source>Disc Read Error</source>
+        <translation>Fel vid skivläsning</translation>
+    </message>
+    <message>
+        <source>The game will probably crash now.
+Your dump may be corrupted, or the physical disc is scratched.</source>
+        <translation>Spelet kommer antagligen att krascha nu.
+Din dump kan vara skadad eller så är den fysiska skivan repad.</translation>
     </message>
 </context>
 <context>
@@ -2574,11 +2758,11 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Select the devices from the list below that you want to bind to this controller.</source>
-        <translation>Välj de enheter i listan nedan som du vill binda till den här kontrollern.</translation>
+        <translation type="vanished">Välj de enheter i listan nedan som du vill binda till den här kontrollern.</translation>
     </message>
     <message>
         <source>No devices were selected.</source>
-        <translation>Inga enheter valdes.</translation>
+        <translation type="vanished">Inga enheter valdes.</translation>
     </message>
     <message>
         <source>Axes</source>
@@ -2595,6 +2779,10 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>Controller Type</source>
         <translation>Handkontrollertyp</translation>
+    </message>
+    <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Automatisk mappning misslyckades</translation>
     </message>
 </context>
 <context>
@@ -4357,7 +4545,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>File Download</source>
-        <translation>Filhämtning</translation>
+        <translation type="vanished">Filhämtning</translation>
     </message>
     <message>
         <source>Failed to save state: %1</source>
@@ -4378,6 +4566,10 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     <message>
         <source>State saved to %1.</source>
         <translation>Tillstånd sparades till %1.</translation>
+    </message>
+    <message>
+        <source>Failed to download padtest application: %1</source>
+        <translation>Misslyckades med att hämta applikationen padtest: %1</translation>
     </message>
 </context>
 <context>
@@ -4580,7 +4772,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message numerus="yes">
         <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>Rewind for %n frame, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
             <numerusform>Rewind for %n frames, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
         </translation>
@@ -4628,6 +4820,28 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     <message>
         <source>Activates runahead when analog input changes, which significantly increases system requirements.</source>
         <translation>Aktiverar runahead när analog inmatning ändras, vilket avsevärt ökar systemkraven.</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer (Low VRAM Mode)</source>
+        <translation>Använd programvarurenderare (lågt VRAM-läge)</translation>
+    </message>
+    <message>
+        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling, as this will significantly reduce the system requirements for rewinding.</source>
+        <translation>Använder programvarurenderaren när tillbakaspolningstillstånd skapas för att förhindra ytterligare VRAM-användning. Särskilt användbart vid uppskalning, eftersom detta avsevärt minskar systemkraven för tillbakaspolning.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
+        <translation>
+            <numerusform>Spola tillbaka %n bildruta, varaktighet %1 sekund(er) kommer kräva %2MB RAM och %3MB VRAM.</numerusform>
+            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kommer kräva %2MB RAM och %3MB VRAM.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
+        <translation>
+            <numerusform>Spola tillbaka %n bildruta, varaktighet %1 sekund(er) kräver %2MB RAM.</numerusform>
+            <numerusform>Spola tillbaka %n bildrutor, varaktighet %1 sekund(er) kräver %2MB RAM.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -4717,7 +4931,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>This game has no achievements.</source>
-        <translation>Detta spel har inga prestationer.</translation>
+        <translation type="vanished">Detta spel har inga prestationer.</translation>
     </message>
     <message>
         <source>Reset System</source>
@@ -5485,7 +5699,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     </message>
     <message>
         <source>Achievements are not enabled.</source>
-        <translation>Prestationer har inte aktiverats.</translation>
+        <translation type="vanished">Prestationer har inte aktiverats.</translation>
     </message>
     <message>
         <source>Achievements: %u (%u) / %u</source>
@@ -7011,7 +7225,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Rewind for {0} frames, lasting {1:.2f} seconds will require up to {2} MB of RAM and {3} MB of VRAM.</source>
-        <translation>Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM och {3} MB VRAM.</translation>
+        <translation type="vanished">Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM och {3} MB VRAM.</translation>
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled. Runahead will significantly increase system requirements.</source>
@@ -7231,7 +7445,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Show OSD Messages</source>
-        <translation>Visa OSD-meddelanden</translation>
+        <translation type="vanished">Visa OSD-meddelanden</translation>
     </message>
     <message>
         <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
@@ -7259,7 +7473,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur.</source>
-        <translation>Visar OSD-meddelanden när händelser sker.</translation>
+        <translation type="vanished">Visar OSD-meddelanden när händelser sker.</translation>
     </message>
     <message>
         <source>Shows persistent icons when turbo is active or when paused.</source>
@@ -7419,7 +7633,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>This game has no leaderboards.</source>
-        <translation>Detta spel har inga ledartavlor.</translation>
+        <translation type="vanished">Detta spel har inga ledartavlor.</translation>
     </message>
     <message>
         <source>Threaded Rendering</source>
@@ -8242,6 +8456,78 @@ ${serial}: Serienumret för spelet.</translation>
             <numerusform>%n minuter återstår</numerusform>
         </translation>
     </message>
+    <message>
+        <source>%g seconds</source>
+        <translation>%g sekunder</translation>
+    </message>
+    <message>
+        <source>Determines how long action confirmation messages are displayed on screen.</source>
+        <translation>Bestämmer hur länge bekräftelsemeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Determines how long error messages are displayed on screen.</source>
+        <translation>Bestämmer hur länge felmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Determines how long informational messages are displayed on screen.</source>
+        <translation>Bestämmer hur länge informationsmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Determines how long warning messages are displayed on screen.</source>
+        <translation>Bestämmer hur länge varningsmeddelanden visas på skärmen.</translation>
+    </message>
+    <message>
+        <source>Enable Stage</source>
+        <translation>Aktivera steg</translation>
+    </message>
+    <message>
+        <source>Error Message Duration</source>
+        <translation>Visningstid för felmeddelanden</translation>
+    </message>
+    <message>
+        <source>If disabled, the shader in this stage will not be applied.</source>
+        <translation>Om inaktiverad kommer shadern i detta steg inte att tillämpas.</translation>
+    </message>
+    <message>
+        <source>Informational Message Duration</source>
+        <translation>Visningstid för informationsmeddelanden</translation>
+    </message>
+    <message>
+        <source>On-Screen Display Message Durations</source>
+        <translation>Visningstid för skärmmeddelanden</translation>
+    </message>
+    <message>
+        <source>Quick Message Duration</source>
+        <translation>Visningstid för snabbmeddelanden</translation>
+    </message>
+    <message>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM and {3} MB of VRAM.</source>
+        <translation>Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM och {3} MB VRAM.</translation>
+    </message>
+    <message>
+        <source>Rewind for {0} frames, lasting {1:.2f} seconds will require {2} MB of RAM.</source>
+        <translation>Tillbakaspolning för {0} bildrutor, varaktighet {1:.2f} sekunder kräver upp till {2} MB RAM.</translation>
+    </message>
+    <message>
+        <source>Show Messages</source>
+        <translation>Visa meddelanden</translation>
+    </message>
+    <message>
+        <source>Shows on-screen-display messages when events occur. Errors and warnings are still displayed regardless of this setting.</source>
+        <translation>Visar meddelanden på skärmen när händelser inträffar. Fel och varningar visas alltid oavsett denna inställning.</translation>
+    </message>
+    <message>
+        <source>Use Software Renderer (Low VRAM Mode)</source>
+        <translation>Använd programvarurenderare (lågt VRAM-läge)</translation>
+    </message>
+    <message>
+        <source>Uses the software renderer when creating rewind states to prevent additional VRAM usage. Especially useful when upscaling.</source>
+        <translation>Använder programvarurenderaren när tillbakaspolningstillstånd skapas för att förhindra ytterligare VRAM-användning. Särskilt användbart vid uppskalning.</translation>
+    </message>
+    <message>
+        <source>Warning Message Duration</source>
+        <translation>Visningstid för varningsmeddelanden</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -8948,14 +9234,14 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <source>Controller in Port {0} ({1}) is not supported for this game.
 Supported controllers: {2}
 Please configure a supported controller from the list above.</source>
-        <translation>Handkontrollern i port {0} ({1}) stöds inte i detta spel.
+        <translation type="vanished">Handkontrollern i port {0} ({1}) stöds inte i detta spel.
 Handkontroller som stöds: {2}
 Konfigurera en handkontroller som stöds från listan ovan.</translation>
     </message>
     <message>
         <source>This game does not support multitap, but multitap is enabled.
        This may result in dropped controller inputs.</source>
-        <translation>Detta spel saknar stöd för multitap men multitap är aktiverat.
+        <translation type="vanished">Detta spel saknar stöd för multitap men multitap är aktiverat.
        Detta kan betyda problem för dina handkontroller.</translation>
     </message>
     <message>
@@ -9154,6 +9440,27 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
         <source>Fast forward memory card access disabled.</source>
         <translation>Snabbspolning av minneskort inaktiverad.</translation>
     </message>
+    <message>
+        <source>Disable All Borders Crop</source>
+        <comment>GameDatabase::Trait</comment>
+        <translation>Inaktivera alla rambeskärningar</translation>
+    </message>
+    <message>
+        <source>Please configure a supported controller from the following list:</source>
+        <translation>Konfigurera en handkontroller som stöds från följande lista:</translation>
+    </message>
+    <message>
+        <source>Controller in Port {0} ({1}) is not supported for this game.</source>
+        <translation>Handkontroller i port {0} ({1}) stöds inte för detta spel.</translation>
+    </message>
+    <message>
+        <source>This game does not support multitap, but multitap is enabled.</source>
+        <translation>Detta spel har inte stöd för multitap men multitap är aktiverat.</translation>
+    </message>
+    <message>
+        <source>This may result in dropped controller inputs.</source>
+        <translation>Detta kan resultera i förlorade handkontrollerinmatningar.</translation>
+    </message>
 </context>
 <context>
     <name>GameList</name>
@@ -9258,7 +9565,7 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <source>Failed to create HTTP downloader:
 {}</source>
-        <translation>Misslyckades med att skapa HTTP-hämtare:
+        <translation type="vanished">Misslyckades med att skapa HTTP-hämtare:
 {}</translation>
     </message>
 </context>
@@ -9556,7 +9863,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Hash</source>
-        <translation>Hash</translation>
+        <translation>Kontrollsumma</translation>
     </message>
     <message>
         <source>Developer:</source>
@@ -9644,11 +9951,11 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>Dialog</source>
-        <translation>Dialogruta</translation>
+        <translation type="vanished">Dialogruta</translation>
     </message>
     <message>
         <source>Show Default Flag</source>
@@ -9712,11 +10019,11 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Failed to open CD image for hashing.</source>
-        <translation>Misslyckades med att öppna cd-avbild för att skapa hash.</translation>
+        <translation type="vanished">Misslyckades med att öppna cd-avbild för att skapa hash.</translation>
     </message>
     <message>
         <source>Verifying hashes...</source>
-        <translation>Verifierar hashar...</translation>
+        <translation type="vanished">Verifierar hashar...</translation>
     </message>
     <message>
         <source>Revision: %1</source>
@@ -9745,6 +10052,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Restore Region</source>
         <translation>Återställ region</translation>
+    </message>
+    <message>
+        <source>Verifying Image</source>
+        <translation>Verifierar avbild</translation>
+    </message>
+    <message>
+        <source>Hash Calculation Failed</source>
+        <translation>Beräkning av kontrollsumma misslyckades</translation>
     </message>
 </context>
 <context>
@@ -9895,7 +10210,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Show OSD Messages</source>
-        <translation>Visa OSD-meddelanden</translation>
+        <translation type="vanished">Visa OSD-meddelanden</translation>
     </message>
     <message>
         <source>Show GPU Statistics</source>
@@ -9919,7 +10234,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Screen Margins:</source>
-        <translation>Skärmmarginaler:</translation>
+        <translation type="vanished">Skärmmarginaler:</translation>
     </message>
     <message>
         <source>Capture</source>
@@ -10127,7 +10442,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>OSD Scale:</source>
-        <translation>OSD-skala:</translation>
+        <translation type="vanished">OSD-skala:</translation>
     </message>
     <message>
         <source>Show Resolution</source>
@@ -10360,7 +10675,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-        <translation>Visar meddelanden på skärmen när händelser inträffar, t.ex. när sparlägen skapas/läses in, skärmbilder tas osv.</translation>
+        <translation type="vanished">Visar meddelanden på skärmen när händelser inträffar, t.ex. när sparlägen skapas/läses in, skärmbilder tas osv.</translation>
     </message>
     <message>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
@@ -10832,27 +11147,27 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Texture Replacement Configuration</source>
-        <translation>Konfiguration för texturersättning</translation>
+        <translation type="vanished">Konfiguration för texturersättning</translation>
     </message>
     <message>
         <source>Texture Replacement Configuration (config.yaml)</source>
-        <translation>Konfiguration för texturersättning (config.yaml)</translation>
+        <translation type="vanished">Konfiguration för texturersättning (config.yaml)</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Spara</translation>
+        <translation type="vanished">Spara</translation>
     </message>
     <message>
         <source>Save Configuration</source>
-        <translation>Spara konfiguration</translation>
+        <translation type="vanished">Spara konfiguration</translation>
     </message>
     <message>
         <source>Configuration Files (config.yaml)</source>
-        <translation>Konfigurationsfiler (config.yaml)</translation>
+        <translation type="vanished">Konfigurationsfiler (config.yaml)</translation>
     </message>
     <message>
         <source>Write Failed</source>
-        <translation>Skrivning misslyckades</translation>
+        <translation type="vanished">Skrivning misslyckades</translation>
     </message>
     <message>
         <source>Theme:</source>
@@ -10941,6 +11256,46 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Custom</source>
         <translation>Anpassad</translation>
+    </message>
+    <message>
+        <source>Display Scale:</source>
+        <translation>Visningsskala:</translation>
+    </message>
+    <message>
+        <source>Display Margins:</source>
+        <translation>Visningsmarginaler:</translation>
+    </message>
+    <message>
+        <source>Show Messages</source>
+        <translation>Visa meddelanden</translation>
+    </message>
+    <message>
+        <source>Message Durations</source>
+        <translation>Meddelandelängd</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Fel:</translation>
+    </message>
+    <message>
+        <source> seconds</source>
+        <translation> sekunder</translation>
+    </message>
+    <message>
+        <source>Warning:</source>
+        <translation>Varning:</translation>
+    </message>
+    <message>
+        <source>Informational:</source>
+        <translation>Informationell:</translation>
+    </message>
+    <message>
+        <source>Quick:</source>
+        <translation>Snabb:</translation>
+    </message>
+    <message>
+        <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc. Errors and warnings are still displayed regardless of this setting.</source>
+        <translation>Visar meddelanden på skärmen när händelser inträffar, till exempel när spartillstånd skapas/läses in, skärmbilder fångas osv. Fel och varningar visas fortfarande oavsett denna inställning.</translation>
     </message>
 </context>
 <context>
@@ -11574,7 +11929,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Extracting %1...</source>
-        <translation>Extraherar %1...</translation>
+        <translation type="vanished">Extraherar %1...</translation>
     </message>
     <message>
         <source>Failed to save %1:
@@ -11589,6 +11944,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>&lt;Parent Directory&gt;</source>
         <translation>&lt;föräldrakatalog&gt;</translation>
+    </message>
+    <message>
+        <source>Open...</source>
+        <translation>Öppna...</translation>
+    </message>
+    <message>
+        <source>Extracting {}...</source>
+        <translation>Extraherar {}...</translation>
     </message>
 </context>
 <context>
@@ -11864,7 +12227,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Unavailable</source>
-        <translation>Inte tillgänglig</translation>
+        <translation type="vanished">Inte tillgänglig</translation>
     </message>
     <message>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
@@ -12397,7 +12760,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Change Disc...</source>
-        <translation>Byt skiva...</translation>
+        <translation type="vanished">Byt skiva...</translation>
     </message>
     <message>
         <source>Audio</source>
@@ -12893,7 +13256,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>&lt;p&gt;Sorry, you are trying to update a DuckStation version which is not an official GitHub release. To prevent incompatibilities, the auto-updater is only enabled on official builds.&lt;/p&gt;&lt;p&gt;Please download an official release from from &lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Tyvärr, du försöker att uppdatera an DuckStation-version som inte är en officiell GitHub-utgåva. För att förhindra inkompatibilitet så är den automatiska uppdateringen endast aktiverad för officiella byggversioner.&lt;/p&gt;&lt;p&gt;Hämta en officiella utgåva från &lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;.&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Tyvärr, du försöker att uppdatera an DuckStation-version som inte är en officiell GitHub-utgåva. För att förhindra inkompatibilitet så är den automatiska uppdateringen endast aktiverad för officiella byggversioner.&lt;/p&gt;&lt;p&gt;Hämta en officiella utgåva från &lt;a href=&quot;https://www.duckstation.org/&quot;&gt;duckstation.org&lt;/a&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Default Boot</source>
@@ -12925,11 +13288,11 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Updater Error</source>
-        <translation>Fel vid uppdatering</translation>
+        <translation type="vanished">Fel vid uppdatering</translation>
     </message>
     <message>
         <source>Automatic updating is not supported on the current platform.</source>
-        <translation>Automatisk uppdatering stöds inte på aktuell plattform.</translation>
+        <translation type="vanished">Automatisk uppdatering stöds inte på aktuell plattform.</translation>
     </message>
     <message>
         <source>Paused</source>
@@ -12937,7 +13300,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Failed to get window info from widget</source>
-        <translation>Misslyckades med att få fönsterinfo från widget</translation>
+        <translation type="vanished">Misslyckades med att få fönsterinfo från widget</translation>
     </message>
     <message>
         <source>Stop Big Picture Mode</source>
@@ -13073,7 +13436,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation type="vanished">DuckStation</translation>
     </message>
     <message>
         <source>Native</source>
@@ -13691,6 +14054,26 @@ Detta går inte att ångra.</translation>
         <source>Are you sure you want to close the current game?</source>
         <translation>Är du säker på att du vill stänga det aktuella spelet?</translation>
     </message>
+    <message>
+        <source>Scanner</source>
+        <translation>Skanner</translation>
+    </message>
+    <message>
+        <source>Capture</source>
+        <translation>Fånga</translation>
+    </message>
+    <message>
+        <source>Editor</source>
+        <translation>Redigerare</translation>
+    </message>
+    <message>
+        <source>Failed to create auto updater: %1</source>
+        <translation>Misslyckades med att skapa automatisk uppdaterare: %1</translation>
+    </message>
+    <message>
+        <source>Checking for updates...</source>
+        <translation>Letar efter uppdateringar...</translation>
+    </message>
 </context>
 <context>
     <name>MediaCapture</name>
@@ -13902,6 +14285,10 @@ Fel: {1}</translation>
         <source>Memory Card 1:</source>
         <translation>Minneskort 1:</translation>
     </message>
+    <message>
+        <source>Card Modified</source>
+        <translation>Kortet ändrat</translation>
+    </message>
 </context>
 <context>
     <name>MemoryCardEditorWindow</name>
@@ -13979,7 +14366,7 @@ Fel: {1}</translation>
     </message>
     <message numerus="yes">
         <source>%n block(s) free%1</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n block ledigt %1</numerusform>
             <numerusform>%n block lediga %1</numerusform>
         </translation>
@@ -14083,6 +14470,13 @@ Fel: {1}</translation>
     <message>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
         <translation>Alla importerbara minneskortstyper (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n block(s) free</source>
+        <translation>
+            <numerusform>%n block ledigt</numerusform>
+            <numerusform>%n block lediga</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -14578,6 +14972,25 @@ Fel: {1}</translation>
     </message>
 </context>
 <context>
+    <name>MultipleDeviceAutobindDialog</name>
+    <message>
+        <source>Select the devices from the list below that you want to bind to this controller.</source>
+        <translation>Välj de enheter i listan nedan som du vill binda till den här kontrollern.</translation>
+    </message>
+    <message>
+        <source>Automatic Mapping Failed</source>
+        <translation>Automatisk mappning misslyckades</translation>
+    </message>
+    <message>
+        <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
+        <translation>Inga generiska bindningar genererades för enheten &apos;%1&apos;. Handkontrollern/källan kanske inte har stöd för automatisk mappning.</translation>
+    </message>
+    <message>
+        <source>No devices were selected.</source>
+        <translation>Inga enheter valdes.</translation>
+    </message>
+</context>
+<context>
     <name>NeGcon</name>
     <message>
         <source>D-Pad Up</source>
@@ -15049,7 +15462,7 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
     </message>
     <message>
         <source>Rewind is disabled because runahead is enabled.</source>
-        <translation>Tillbakaspolning är inaktiverad därför att runahead är aktiverat.</translation>
+        <translation type="vanished">Tillbakaspolning är inaktiverad därför att runahead är aktiverat.</translation>
     </message>
     <message>
         <source>Failed to load post-processing chain: {}</source>
@@ -15112,7 +15525,7 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
     <message>
         <source>Failed to read sector from disc image. The game will probably crash now.
 Your dump may be corrupted, or the physical disc is scratched.</source>
-        <translation>Det gick inte att läsa sektorn från skivavbildningen. Spelet kommer troligen att krascha nu.
+        <translation type="vanished">Det gick inte att läsa sektorn från skivavbildningen. Spelet kommer troligen att krascha nu.
 Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
     </message>
     <message>
@@ -15333,7 +15746,7 @@ Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
     </message>
     <message>
         <source>Question</source>
-        <translation>Fråga</translation>
+        <translation type="vanished">Fråga</translation>
     </message>
     <message>
         <source>Are you sure you want to clear all shader stages?</source>
@@ -15342,6 +15755,10 @@ Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
     <message>
         <source>Open Directory</source>
         <translation>Öppna katalog</translation>
+    </message>
+    <message>
+        <source>Clear Shader Stages</source>
+        <translation>Töm shader-steg</translation>
     </message>
 </context>
 <context>
@@ -15559,15 +15976,15 @@ URLen var: %1</translation>
     <name>QtAsyncProgressThread</name>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>Question</source>
-        <translation>Fråga</translation>
+        <translation type="vanished">Fråga</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation>Information</translation>
+        <translation type="vanished">Information</translation>
     </message>
 </context>
 <context>
@@ -15590,18 +16007,18 @@ URLen var: %1</translation>
     </message>
     <message>
         <source>Downloading %1...</source>
-        <translation>Hämtar %1...</translation>
+        <translation type="vanished">Hämtar %1...</translation>
     </message>
     <message>
         <source>Failed to create HTTPDownloader:
 %1</source>
-        <translation>Misslyckades med att skapa HTTPDownloader.
+        <translation type="vanished">Misslyckades med att skapa HTTPDownloader.
 %1</translation>
     </message>
     <message>
         <source>Download failed with HTTP status code %1:
 %2</source>
-        <translation>Hämtning misslyckades med HTTP-statuskoden %1:
+        <translation type="vanished">Hämtning misslyckades med HTTP-statuskoden %1:
 %2</translation>
     </message>
     <message>
@@ -15679,7 +16096,7 @@ URLen var: %1</translation>
     <message>
         <source>Failed to write &apos;%1&apos;:
 %2</source>
-        <translation>Misslyckades med att skriva &apos;%1&apos;:
+        <translation type="vanished">Misslyckades med att skriva &apos;%1&apos;:
 %2</translation>
     </message>
     <message>
@@ -15698,28 +16115,36 @@ URLen var: %1</translation>
         <source>Unknown</source>
         <translation>Okänt</translation>
     </message>
+    <message>
+        <source>Downloading {}...</source>
+        <translation>Hämtar {}...</translation>
+    </message>
+    <message>
+        <source>File Download</source>
+        <translation>Filhämtning</translation>
+    </message>
 </context>
 <context>
     <name>QtModalProgressCallback</name>
     <message>
         <source>Cancel</source>
-        <translation>Avbryt</translation>
+        <translation type="vanished">Avbryt</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>Question</source>
-        <translation>Fråga</translation>
+        <translation type="vanished">Fråga</translation>
     </message>
     <message>
         <source>Information</source>
-        <translation>Information</translation>
+        <translation type="vanished">Information</translation>
     </message>
     <message>
         <source>DuckStation</source>
-        <translation>DuckStation</translation>
+        <translation type="vanished">DuckStation</translation>
     </message>
 </context>
 <context>
@@ -17039,7 +17464,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Warning</source>
-        <translation>Varning</translation>
+        <translation type="vanished">Varning</translation>
     </message>
     <message>
         <source>No BIOS images were found. DuckStation WILL NOT be able to run games without a BIOS image.
@@ -17107,7 +17532,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Automatic Binding</source>
-        <translation>Automatisk bindning</translation>
+        <translation type="vanished">Automatisk bindning</translation>
     </message>
     <message>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
@@ -17273,6 +17698,18 @@ Inloggningstoken genererades %2.</translation>
     <message>
         <source>FMV Scaling:</source>
         <translation>FMV-skalning:</translation>
+    </message>
+    <message>
+        <source>No BIOS Image Found</source>
+        <translation>Ingen BIOS-avbild hittades</translation>
+    </message>
+    <message>
+        <source>No Game Directories Selected</source>
+        <translation>Inga spelkataloger valda</translation>
+    </message>
+    <message>
+        <source>Automatic Binding Failed</source>
+        <translation>Automatisk bindning misslyckades</translation>
     </message>
 </context>
 <context>
@@ -17785,6 +18222,18 @@ Using shared card instead.</source>
         <translation>Det går inte att använda minneskort per spel utan en skiva.
 Använder istället ett delat kort.</translation>
     </message>
+    <message>
+        <source>Rewind has been disabled.</source>
+        <translation>Tillbakaspolning har inaktiverats.</translation>
+    </message>
+    <message>
+        <source>Rewind and runahead cannot be used at the same time.</source>
+        <translation>Tillbakaspolning och runahead kan inte användas samtidigt.</translation>
+    </message>
+    <message>
+        <source>Undo load state</source>
+        <translation>Ångra inläst tillstånd</translation>
+    </message>
 </context>
 <context>
     <name>TextureReplacementSettingsDialog</name>
@@ -17879,6 +18328,30 @@ Använder istället ett delat kort.</translation>
     <message>
         <source>Close</source>
         <translation>Stäng</translation>
+    </message>
+    <message>
+        <source>Texture Replacement Configuration</source>
+        <translation>Konfiguration för texturersättning</translation>
+    </message>
+    <message>
+        <source>Texture Replacement Configuration (config.yaml)</source>
+        <translation>Konfiguration för texturersättning (config.yaml)</translation>
+    </message>
+    <message>
+        <source>Save As...</source>
+        <translation>Spara som...</translation>
+    </message>
+    <message>
+        <source>Save Configuration</source>
+        <translation>Spara konfiguration</translation>
+    </message>
+    <message>
+        <source>Configuration Files (config.yaml)</source>
+        <translation>Konfigurationsfiler (config.yaml)</translation>
+    </message>
+    <message>
+        <source>Write Failed</source>
+        <translation>Skrivning misslyckades</translation>
     </message>
 </context>
 </TS>
