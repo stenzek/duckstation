@@ -192,7 +192,7 @@ void MainWindow::initialize()
   updateToolbarActions();
   updateToolbarIconStyle();
   updateToolbarArea();
-  updateEmulationActions(false, false, false);
+  updateEmulationActions();
   updateDisplayRelatedActions();
   updateWindowTitle();
   connectSignals();
@@ -403,7 +403,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   }
 
   updateDisplayRelatedActions();
-  updateShortcutActions(false);
+  updateShortcutActions();
   updateDisplayWidgetCursor();
 
   // We need the surface visible.
@@ -482,7 +482,7 @@ void MainWindow::destroyDisplayWidget()
   m_exclusive_fullscreen_requested = false;
 
   updateDisplayRelatedActions();
-  updateShortcutActions(false);
+  updateShortcutActions();
 }
 
 void MainWindow::updateDisplayWidgetCursor()
@@ -550,7 +550,7 @@ void MainWindow::onSystemStarting()
   s_system_paused = false;
 
   switchToEmulationView();
-  updateEmulationActions(true, false, s_achievements_hardcore_mode);
+  updateEmulationActions();
   updateDisplayRelatedActions();
 }
 
@@ -560,7 +560,7 @@ void MainWindow::onSystemStarted()
   s_system_starting = false;
   s_system_valid = true;
 
-  updateEmulationActions(false, true, s_achievements_hardcore_mode);
+  updateEmulationActions();
   updateDisplayRelatedActions();
   updateWindowTitle();
   updateStatusBarWidgetVisibility();
@@ -596,7 +596,7 @@ void MainWindow::onSystemStopping()
   s_system_paused = false;
   s_undo_state_timestamp.reset();
 
-  updateEmulationActions(false, false, s_achievements_hardcore_mode);
+  updateEmulationActions();
   updateDisplayRelatedActions();
   updateStatusBarWidgetVisibility();
 }
@@ -802,7 +802,7 @@ void MainWindow::recreate()
     g_emu_thread->updateDisplayWindow();
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
                                     []() { return !g_main_window->hasDisplayWidget(); });
-    g_main_window->updateEmulationActions(false, s_system_valid, s_achievements_hardcore_mode);
+    g_main_window->updateEmulationActions();
     g_main_window->onFullscreenUIStartedOrStopped(s_fullscreen_ui_started);
   }
 
@@ -2128,10 +2128,12 @@ void MainWindow::onToolbarTopLevelChanged(bool top_level)
   }
 }
 
-void MainWindow::updateEmulationActions(bool starting, bool running, bool achievements_hardcore_mode)
+void MainWindow::updateEmulationActions()
 {
-  const bool starting_or_running = (starting || running);
-  const bool starting_or_not_running = (starting || !running);
+  const bool starting = s_system_starting;
+  const bool starting_or_running = (starting || s_system_valid);
+  const bool starting_or_not_running = (starting || !s_system_valid);
+  const bool achievements_hardcore_mode = s_achievements_hardcore_mode;
   m_ui.actionStartFile->setDisabled(starting_or_running);
   m_ui.actionStartDisc->setDisabled(starting_or_running);
   m_ui.actionStartBios->setDisabled(starting_or_running);
@@ -2176,7 +2178,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
 
   m_game_list_widget->setDisabled(starting);
 
-  updateShortcutActions(starting);
+  updateShortcutActions();
 
   if (starting_or_running)
   {
@@ -2200,9 +2202,9 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool achiev
   m_ui.statusBar->clearMessage();
 }
 
-void MainWindow::updateShortcutActions(bool starting)
+void MainWindow::updateShortcutActions()
 {
-  const bool starting_or_running = starting || s_system_valid;
+  const bool starting_or_running = s_system_starting || s_system_valid;
   const bool is_showing_game_list = isShowingGameList();
 
   m_shortcuts.open_file->setEnabled(!starting_or_running);
@@ -2365,7 +2367,7 @@ void MainWindow::switchToGameListView()
     m_ui.actionViewGameList->setChecked(true);
   m_game_list_widget->setFocus();
 
-  updateShortcutActions(false);
+  updateShortcutActions();
 }
 
 void MainWindow::switchToEmulationView()
@@ -2384,7 +2386,7 @@ void MainWindow::switchToEmulationView()
   if (s_system_paused && !m_was_paused_on_game_list_switch)
     g_emu_thread->setSystemPaused(false);
 
-  updateShortcutActions(false);
+  updateShortcutActions();
 }
 
 void MainWindow::connectSignals()
@@ -3202,7 +3204,7 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
   }
 
   s_achievements_hardcore_mode = enabled;
-  updateEmulationActions(s_system_starting, s_system_valid, enabled);
+  updateEmulationActions();
 }
 
 void MainWindow::onAchievementsAllProgressRefreshed()

@@ -167,8 +167,8 @@ private:
   void updateToolbarActions();
   void updateToolbarIconStyle();
   void updateToolbarArea();
-  void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
-  void updateShortcutActions(bool starting);
+  void updateEmulationActions();
+  void updateShortcutActions();
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
   void updateWindowState();
