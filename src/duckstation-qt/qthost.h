@@ -321,8 +321,8 @@ bool InBatchMode();
 /// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
 bool InNoGUIMode();
 
-/// Returns true if the application is running under Wayland.
-bool IsRunningOnWayland();
+/// Returns true if display widgets need to wrapped in a container, thanks to Wayland stupidity.
+bool IsDisplayWidgetContainerNeeded();
 
 /// Returns true if rendering to the main window should be allowed.
 bool CanRenderToMainWindow();

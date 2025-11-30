@@ -292,11 +292,9 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   m_exclusive_fullscreen_requested = exclusive_fullscreen;
 
   // Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
-  // .. except on Wayland, where everything tends to break if you don't recreate.
-  // Container can also be null if we're messing with settings while surfaceless.
-  const bool has_container = (m_display_container != nullptr);
-  const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-  if (container && !is_rendering_to_main && !render_to_main && !has_container && !needs_container)
+  // We also need to unparent the display widget from the container when switching to fullscreen on Wayland.
+  const bool needs_container = (QtHost::IsDisplayWidgetContainerNeeded() && !fullscreen && !is_rendering_to_main);
+  if (container && !is_rendering_to_main && !render_to_main && (m_display_container != nullptr) == needs_container)
   {
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
     m_exclusive_fullscreen_requested = exclusive_fullscreen;
@@ -364,7 +362,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
     setVisible(true);
 
   QWidget* container;
-  if (DisplayContainer::isNeeded(fullscreen, render_to_main))
+  if (!fullscreen && !render_to_main && QtHost::IsDisplayWidgetContainerNeeded())
   {
     m_display_container = new DisplayContainer();
     m_display_widget = new DisplayWidget(m_display_container);

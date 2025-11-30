@@ -413,19 +413,6 @@ DisplayContainer::DisplayContainer() : QStackedWidget(nullptr)
 
 DisplayContainer::~DisplayContainer() = default;
 
-bool DisplayContainer::isNeeded(bool fullscreen, bool render_to_main)
-{
-#if defined(_WIN32) || defined(__APPLE__)
-  return false;
-#else
-  if (!QtHost::IsRunningOnWayland())
-    return false;
-
-  // We only need this on Wayland because of client-side decorations...
-  return (fullscreen || !render_to_main);
-#endif
-}
-
 void DisplayContainer::setDisplayWidget(DisplayWidget* widget)
 {
   Assert(!m_display_widget);
@@ -620,7 +607,7 @@ AuxiliaryDisplayWidget* AuxiliaryDisplayWidget::create(s32 pos_x, s32 pos_y, u32
                                                        const QString& title, const QString& icon_name, void* userdata)
 {
   QStackedWidget* parent = nullptr;
-  if (DisplayContainer::isNeeded(false, false))
+  if (QtHost::IsDisplayWidgetContainerNeeded())
   {
     parent = new QStackedWidget(nullptr);
     parent->resize(width, height);

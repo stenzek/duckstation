@@ -137,6 +137,10 @@ static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
 static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
                                                           std::shared_ptr<SystemBootParameters>& boot_params);
+
+#ifdef __linux__
+static void ApplyWaylandWorkarounds();
+#endif
 } // namespace QtHost
 
 namespace {
@@ -158,6 +162,10 @@ struct State
   bool start_fullscreen_ui_fullscreen = false;
   bool run_setup_wizard = false;
   bool cleanup_after_update = false;
+
+#ifdef __linux__
+  bool display_container_needed = false;
+#endif
 };
 } // namespace
 
@@ -233,12 +241,8 @@ bool QtHost::VeryEarlyProcessStartup()
 
 bool QtHost::EarlyProcessStartup()
 {
-#if !defined(_WIN32) && !defined(__APPLE__)
-  // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
-  // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
-  // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
-  if (QtHost::IsRunningOnWayland())
-    QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+#ifdef __linux__
+  ApplyWaylandWorkarounds();
 #endif
 
   // redirect qt errors
@@ -305,15 +309,50 @@ bool QtHost::InNoGUIMode()
   return s_state.nogui_mode;
 }
 
-bool QtHost::IsRunningOnWayland()
+bool QtHost::IsDisplayWidgetContainerNeeded()
 {
-#if defined(_WIN32) || defined(__APPLE__)
-  return false;
+#ifdef __linux__
+  return s_state.display_container_needed;
 #else
-  const QString platform_name = QGuiApplication::platformName();
-  return (platform_name == QStringLiteral("wayland"));
+  return false;
 #endif
 }
+
+#ifdef __linux__
+
+void QtHost::ApplyWaylandWorkarounds()
+{
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name != QStringLiteral("wayland"))
+  {
+    std::fputs("Wayland not detected, not applying workarounds.\n", stderr);
+    return;
+  }
+
+  std::fputs("Wayland platform detected, applying workarounds.\n", stderr);
+
+  // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
+  // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
+  // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
+  QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+
+  // When rendering fullscreen or to a separate window on Wayland, because we take over the surface we need
+  // to wrap the widget in a container because GNOME is stupid and refuses to ever support server-side
+  // decorations. There's no sign of this ever changing. Fuck Wayland.
+  if (const char* desktop = std::getenv("XDG_SESSION_DESKTOP"); desktop && std::strcmp(desktop, "KDE") == 0)
+  {
+    std::fputs("Wayland with KDE detected, not creating display widget containers.\n", stderr);
+  }
+  else
+  {
+    std::fputs("Wayland with non-KDE desktop detected, creating display widget containers.\n"
+               "Don't complain when things break.\n",
+               stderr);
+    s_state.display_container_needed = true;
+  }
+}
+
+#endif
 
 QString QtHost::GetAppNameAndVersion()
 {
