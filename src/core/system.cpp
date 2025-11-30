@@ -4833,8 +4833,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames) [[unlikely]]
+  if (IsValid() && g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
+    [[unlikely]]
+  {
     GPUThread::SyncGPUThread(false);
+  }
 }
 
 void System::SetTaintsFromSettings()
