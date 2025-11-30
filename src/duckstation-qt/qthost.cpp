@@ -1167,13 +1167,11 @@ void EmuThread::resetSystem(bool check_memcard_busy)
   System::ResetSystem();
 }
 
-void EmuThread::setSystemPaused(bool paused, bool wait_until_paused /* = false */)
+void EmuThread::setSystemPaused(bool paused)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &EmuThread::setSystemPaused,
-                              wait_until_paused ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, paused,
-                              wait_until_paused);
+    QMetaObject::invokeMethod(this, &EmuThread::setSystemPaused, Qt::QueuedConnection, paused);
     return;
   }
 

@@ -45,7 +45,7 @@ public:
 
 private:
   void onEnableCheatsChanged(Qt::CheckState state);
-  void onSortCheatsToggled(bool checked);
+  void onSortCheatsClicked(bool checked);
   void onSearchFilterChanged(const QString& text);
   void onLoadDatabaseCheatsChanged(Qt::CheckState state);
   void onCheatListItemDoubleClicked(const QModelIndex& index);

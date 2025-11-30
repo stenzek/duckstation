@@ -92,7 +92,7 @@ void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address, bool cent
   m_ui.codeView->setSelectedAddress(address);
 }
 
-void DebuggerWindow::onPauseActionToggled(bool paused)
+void DebuggerWindow::onPauseActionTriggered(bool paused)
 {
   if (!paused)
   {
@@ -459,7 +459,7 @@ void DebuggerWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
   connect(g_emu_thread, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
-  connect(m_ui.actionPause, &QAction::toggled, this, &DebuggerWindow::onPauseActionToggled);
+  connect(m_ui.actionPause, &QAction::triggered, this, &DebuggerWindow::onPauseActionTriggered);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
   connect(m_ui.actionGoToPC, &QAction::triggered, this, &DebuggerWindow::onGoToPCTriggered);
   connect(m_ui.actionGoToAddress, &QAction::triggered, this, &DebuggerWindow::onGoToAddressTriggered);

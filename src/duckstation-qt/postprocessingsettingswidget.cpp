@@ -90,8 +90,8 @@ void PostProcessingChainConfigWidget::connectUi()
   connect(m_ui.moveUp, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveUpButtonClicked);
   connect(m_ui.moveDown, &QPushButton::clicked, this, &PostProcessingChainConfigWidget::onMoveDownButtonClicked);
   connect(m_ui.stages, &QListWidget::itemSelectionChanged, this,
-          &PostProcessingChainConfigWidget::onSelectedShaderChanged);
-  connect(m_ui.stages, &QListWidget::itemChanged, this, &PostProcessingChainConfigWidget::onShaderToggled);
+          &PostProcessingChainConfigWidget::onStageItemSelectionChanged);
+  connect(m_ui.stages, &QListWidget::itemChanged, this, &PostProcessingChainConfigWidget::onStageItemChanged);
 }
 
 std::optional<u32> PostProcessingChainConfigWidget::getSelectedIndex() const
@@ -286,13 +286,13 @@ void PostProcessingChainConfigWidget::onOpenDirectoryButtonClicked()
   QtUtils::OpenURL(this, QUrl::fromLocalFile(QString::fromStdString(EmuFolders::Shaders)));
 }
 
-void PostProcessingChainConfigWidget::onSelectedShaderChanged()
+void PostProcessingChainConfigWidget::onStageItemSelectionChanged()
 {
   std::optional<u32> index = getSelectedIndex();
   updateButtonsAndConfigPane(index);
 }
 
-void PostProcessingChainConfigWidget::onShaderToggled(QListWidgetItem* item)
+void PostProcessingChainConfigWidget::onStageItemChanged(QListWidgetItem* item)
 {
   if (!item)
     return;

@@ -725,10 +725,10 @@ struct SettingAccessor<QAction>
   template<typename F>
   static void connectValueChanged(QAction* widget, F func)
   {
-    widget->connect(widget, &QAction::toggled, func);
+    widget->connect(widget, &QAction::triggered, func);
   }
 
-  static void disconnect(QAction* widget) { QObject::disconnect(widget, &QAction::toggled, nullptr, nullptr); }
+  static void disconnect(QAction* widget) { QObject::disconnect(widget, &QAction::triggered, nullptr, nullptr); }
 };
 
 /// Binds a widget's value to a setting, updating it when the value changes.

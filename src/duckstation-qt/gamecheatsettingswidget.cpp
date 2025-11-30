@@ -200,7 +200,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   m_ui.sortCheats->setChecked(sorting_enabled);
 
   connect(m_ui.enableCheats, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::onEnableCheatsChanged);
-  connect(m_ui.sortCheats, &QPushButton::toggled, this, &GameCheatSettingsWidget::onSortCheatsToggled);
+  connect(m_ui.sortCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onSortCheatsClicked);
   connect(m_ui.search, &QLineEdit::textChanged, this, &GameCheatSettingsWidget::onSearchFilterChanged);
   connect(m_ui.loadDatabaseCheats, &QCheckBox::checkStateChanged, this,
           &GameCheatSettingsWidget::onLoadDatabaseCheatsChanged);
@@ -271,7 +271,7 @@ void GameCheatSettingsWidget::onEnableCheatsChanged(Qt::CheckState state)
   m_dialog->saveAndReloadGameSettings();
 }
 
-void GameCheatSettingsWidget::onSortCheatsToggled(bool checked)
+void GameCheatSettingsWidget::onSortCheatsClicked(bool checked)
 {
   m_sort_model->sort(checked ? 0 : -1, Qt::AscendingOrder);
 
