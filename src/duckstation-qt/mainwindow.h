@@ -200,7 +200,7 @@ private:
   void onViewChangeGameListBackgroundTriggered();
   void onViewClearGameListBackgroundTriggered();
 
-  std::string getDeviceDiscPath(const QString& title);
+  void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void onSettingsThemeChanged();
