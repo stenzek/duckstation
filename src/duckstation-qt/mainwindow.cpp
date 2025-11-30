@@ -2960,6 +2960,16 @@ QIcon MainWindow::getIconForGame(const QString& path)
   return m_game_list_widget->getModel()->getIconForGame(path);
 }
 
+void MainWindow::invalidateCoverCacheForPath(const std::string& path)
+{
+  m_game_list_widget->getModel()->invalidateCoverCacheForPath(path);
+}
+
+void MainWindow::refreshGameGridCovers()
+{
+  m_game_list_widget->getModel()->refreshCovers();
+}
+
 void MainWindow::runOnUIThread(const std::function<void()>& func)
 {
   func();
@@ -3266,8 +3276,6 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   if (!m_cover_download_window)
   {
     m_cover_download_window = new CoverDownloadWindow();
-    connect(m_cover_download_window, &CoverDownloadWindow::coverRefreshRequested, m_game_list_widget,
-            &GameListWidget::refreshGridCovers);
     connect(m_cover_download_window, &CoverDownloadWindow::closed, this, [this]() {
       m_cover_download_window->deleteLater();
       m_cover_download_window = nullptr;

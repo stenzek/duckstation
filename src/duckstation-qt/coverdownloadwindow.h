@@ -28,7 +28,6 @@ public:
 
 Q_SIGNALS:
   void closed();
-  void coverRefreshRequested();
 
 protected:
   void closeEvent(QCloseEvent* ev) override;

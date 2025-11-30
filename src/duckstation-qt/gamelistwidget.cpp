@@ -569,6 +569,12 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
+void GameListModel::invalidateCoverCacheForPath(const std::string& path)
+{
+  m_cover_pixmap_cache.Remove(path);
+  invalidateCoverForPath(path);
+}
+
 const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 {
   CoverPixmapCacheEntry* pm = m_cover_pixmap_cache.Lookup(ge->path);

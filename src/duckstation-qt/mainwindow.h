@@ -124,6 +124,8 @@ public:
   void refreshGameListModel();
   void cancelGameListRefresh();
   QIcon getIconForGame(const QString& path);
+  void invalidateCoverCacheForPath(const std::string& path);
+  void refreshGameGridCovers();
 
   void runOnUIThread(const std::function<void()>& func);
   void requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,

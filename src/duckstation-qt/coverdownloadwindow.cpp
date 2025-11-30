@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "coverdownloadwindow.h"
+#include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
 
@@ -49,21 +50,14 @@ void CoverDownloadWindow::onStartClicked()
   m_task = QtAsyncTaskWithProgress::create(
     this, [this, urls = std::move(urls), use_serials](ProgressCallback* const progress) {
       Error error;
-      const bool result = GameList::DownloadCovers(urls, use_serials, progress, &error);
+      const bool result = GameList::DownloadCovers(
+        urls, use_serials, progress, &error, [](const GameList::Entry* entry, std::string) mutable {
+          Host::RunOnUIThread([path = entry->path]() { g_main_window->invalidateCoverCacheForPath(path); });
+        });
       return [this, result, error = std::move(error)]() { downloadComplete(result, error); };
     });
 
   m_task->connectWidgets(m_ui.status, m_ui.progress, m_ui.start);
-
-  connect(m_task, &QtAsyncTaskWithProgress::progressValueUpdated, this, [this]() {
-    // Limit to once every five seconds, otherwise it's way too flickery.
-    // Ideally in the future we'd have some way to invalidate only a single cover.
-    if (m_last_refresh_time.GetTimeSeconds() >= 5.0f)
-    {
-      emit coverRefreshRequested();
-      m_last_refresh_time.Reset();
-    }
-  });
 
   m_task->start();
 
@@ -72,7 +66,8 @@ void CoverDownloadWindow::onStartClicked()
 
 void CoverDownloadWindow::downloadComplete(bool result, const Error& error)
 {
-  emit coverRefreshRequested();
+  g_main_window->refreshGameGridCovers();
+
   m_ui.status->setText(tr("Download complete."));
   if (!result)
   {
