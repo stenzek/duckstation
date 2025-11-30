@@ -531,6 +531,7 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionViewZoomIn->setDisabled(disable);
   m_ui.actionViewZoomOut->setDisabled(disable);
   m_ui.actionGridViewRefreshCovers->setDisabled(disable || !game_grid);
+  m_ui.actionPreferAchievementGameIcons->setDisabled(disable || !game_list);
   m_ui.actionChangeGameListBackground->setDisabled(disable);
   m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
@@ -909,7 +910,10 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 
     QString paths[2];
     for (u32 i = 0; i < 2; i++)
-      paths[i] = QString::fromStdString(System::GetGameMemoryCardPath(entry->serial, entry->path, i));
+    {
+      paths[i] = QString::fromStdString(
+        System::GetGameMemoryCardPath(entry->title, entry->has_custom_title, entry->serial, entry->path, i));
+    }
 
     g_main_window->openMemoryCardEditor(paths[0], paths[1]);
   });

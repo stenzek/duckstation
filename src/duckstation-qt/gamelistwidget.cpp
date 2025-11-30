@@ -610,7 +610,7 @@ const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
-  if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
+  if (m_show_game_icons && !ge->serial.empty() && ge->IsDiscOrDiscSet())
   {
     QPixmap* item = m_icon_pixmap_cache.Lookup(ge->serial);
     if (item)
@@ -621,7 +621,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path, ge->achievements_game_id);
+      const std::string path = GameList::GetGameIconPath(ge);
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
@@ -682,7 +682,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
 
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
-  if (!entry || entry->serial.empty() || (!entry->IsDisc() && !entry->IsDiscSet()))
+  if (!entry || entry->serial.empty() || !entry->IsDiscOrDiscSet())
     return ret;
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
@@ -697,7 +697,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
     }
   }
 
-  const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+  const std::string icon_path = GameList::GetGameIconPath(entry);
   if (!icon_path.empty())
     ret = QIcon(QString::fromStdString(icon_path));
 
@@ -1535,7 +1535,7 @@ public:
   {
     DebugAssert(source_row >= 0);
 
-    const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+    const std::string icon_path = GameList::GetGameIconPath(entry);
     if (icon_path.empty())
     {
       clearEntry();

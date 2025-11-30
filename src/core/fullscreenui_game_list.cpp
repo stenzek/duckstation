@@ -1065,12 +1065,12 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
   }
 
   // because memcard icons are crap res
-  if (fallback_to_icon && cover_it->second.empty())
+  if (fallback_to_icon && cover_it->second.empty() && !entry->serial.empty() && entry->IsDiscOrDiscSet())
   {
     cover_it = s_game_list_locals.icon_image_map.find(entry->serial);
     if (cover_it == s_game_list_locals.icon_image_map.end())
     {
-      std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+      std::string icon_path = GameList::GetGameIconPath(entry);
       cover_it = s_game_list_locals.icon_image_map.emplace(entry->serial, std::move(icon_path)).first;
     }
   }

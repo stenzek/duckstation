@@ -5761,8 +5761,8 @@ void System::DeleteSaveStates(std::string_view serial, bool resume)
   }
 }
 
-std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot,
-                                          MemoryCardType* out_type)
+std::string System::GetGameMemoryCardPath(std::string_view title, bool is_custom_title, std::string_view serial,
+                                          std::string_view path, u32 slot, MemoryCardType* out_type /* = nullptr */)
 {
   const char* section = "MemoryCards";
   const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
@@ -5821,10 +5821,8 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
 
     case MemoryCardType::PerGameTitle:
     {
-      const std::string custom_title = GameList::GetCustomTitleForPath(path);
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
-      const std::string_view game_title =
-        (!custom_title.empty() || !entry) ? std::string_view(custom_title) : entry->GetSaveTitle();
+      const std::string_view game_title = (is_custom_title || !entry) ? title : entry->GetSaveTitle();
 
       // Multi-disc game - use disc set name.
       if (entry && entry->disc_set)

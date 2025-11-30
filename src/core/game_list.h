@@ -76,6 +76,7 @@ struct Entry
   ALWAYS_INLINE bool IsValid() const { return (type < EntryType::MaxCount); }
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
+  ALWAYS_INLINE bool IsDiscOrDiscSet() const { return (type == EntryType::Disc || type == EntryType::DiscSet); }
   ALWAYS_INLINE bool HasCustomLanguage() const { return (custom_language != GameDatabase::Language::MaxCount); }
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
   ALWAYS_INLINE const GameDatabase::DiscSetEntry* GetDiscSetEntry() const
@@ -170,7 +171,7 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
 /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
 /// timestamp of the memory card has changed.
-std::string GetGameIconPath(std::string_view serial, std::string_view path, u32 achievements_game_id);
+std::string GetGameIconPath(const GameList::Entry* entry);
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.
