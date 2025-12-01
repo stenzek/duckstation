@@ -1551,7 +1551,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification)
   {
     FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
-                                  CHALLENGE_STARTED_NOTIFICATION_TIME, std::move(badge_path),
+                                  CHALLENGE_STARTED_NOTIFICATION_TIME, badge_path,
                                   fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
                                               event->achievement->title ? event->achievement->title : ""),
                                   event->achievement->description, {});
@@ -1580,8 +1580,7 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
       event->achievement->state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
   {
     FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
-                                  CHALLENGE_FAILED_NOTIFICATION_TIME,
-                                  GetAchievementBadgePath(event->achievement, false),
+                                  CHALLENGE_FAILED_NOTIFICATION_TIME, it->badge_path,
                                   fmt::format(TRANSLATE_FS("Achievements", "Challenge Failed: {}"),
                                               event->achievement->title ? event->achievement->title : ""),
                                   event->achievement->description, {});
