@@ -2871,7 +2871,7 @@ void Host::ReleaseRenderWindow()
 bool Host::CanChangeFullscreenMode(bool new_fullscreen_state)
 {
   // Don't mess with fullscreen while locked.
-  return !QtHost::IsSystemLocked();
+  return (!new_fullscreen_state || !QtHost::IsSystemLocked());
 }
 
 void EmuThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
