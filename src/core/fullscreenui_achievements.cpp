@@ -41,6 +41,11 @@ struct PauseMenuAchievementInfo
   float measured_percent;
 };
 
+struct PauseMenuAchievementInfoWithPoints : PauseMenuAchievementInfo
+{
+  u32 points;
+};
+
 struct PauseMenuMeasuredAchievementInfo : PauseMenuAchievementInfo
 {
   std::string measured_progress;
@@ -82,7 +87,7 @@ struct AchievementsLocals
   rc_client_achievement_list_t* achievement_list = nullptr;
   std::vector<std::tuple<const void*, std::string, bool>> achievement_badge_paths;
 
-  std::optional<PauseMenuAchievementInfo> most_recent_unlock;
+  std::optional<PauseMenuAchievementInfoWithPoints> most_recent_unlock;
   std::optional<PauseMenuMeasuredAchievementInfo> achievement_nearest_completion;
   std::optional<PauseMenuTimedMeasuredAchievementInfo> most_recent_progress_update;
 
@@ -161,6 +166,8 @@ void FullscreenUI::CachePauseMenuAchievementInfo(const rc_client_achievement_t* 
   value->measured_percent = achievement->measured_percent;
   value->achievement_id = achievement->id;
 
+  if constexpr (std::is_base_of_v<PauseMenuAchievementInfoWithPoints, T>)
+    value->points = achievement->points;
   if constexpr (std::is_base_of_v<PauseMenuMeasuredAchievementInfo, T>)
     value->measured_progress = achievement->measured_progress;
   if constexpr (std::is_same_v<PauseMenuTimedMeasuredAchievementInfo, T>)
@@ -318,82 +325,106 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
     }
   }
 
-  const auto draw_achievement_in_box =
-    [&box_margin, &box_width, &box_padding, &box_rounding, &box_content_width, &box_background_color, &box_min,
-     &box_max, &badge_text_width, &dl, &box_title_text_color, &title_text_color, &text_color, &paragraph_spacing,
-     &text_spacing, &progress_rounding, &text_pos,
-     &badge_size](std::string_view box_title, std::string_view title, std::string_view description,
-                  const std::string& badge_path, std::string_view measured_progress, float measured_percent) {
-      const ImVec2 description_size =
-        description.empty() ? ImVec2(0.0f, 0.0f) :
-                              UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight,
-                                                          FLT_MAX, badge_text_width, IMSTR_START_END(description));
+  const auto draw_achievement_in_box = [&box_margin, &box_width, &box_padding, &box_rounding, &box_content_width,
+                                        &box_background_color, &box_min, &box_max, &badge_text_width, &dl,
+                                        &box_title_text_color, &title_text_color, &text_color, &paragraph_spacing,
+                                        &text_spacing, &progress_rounding, &text_pos, &badge_size](
+                                         std::string_view box_title, std::string_view title,
+                                         std::string_view description, const std::string& badge_path,
+                                         std::string_view measured_progress, float measured_percent, u32 points) {
+    const ImVec2 description_size =
+      description.empty() ? ImVec2(0.0f, 0.0f) :
+                            UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, FLT_MAX,
+                                                        badge_text_width, IMSTR_START_END(description));
 
-      const float box_height = box_padding + box_padding + UIStyle.MediumFontSize + paragraph_spacing +
-                               std::max((title.empty() ? 0.0f : UIStyle.MediumSmallFontSize) +
-                                          (description.empty() ? 0.0f : (text_spacing + description_size.y)),
-                                        badge_size);
+    const float box_height = box_padding + box_padding + UIStyle.MediumFontSize + paragraph_spacing +
+                             std::max((title.empty() ? 0.0f : UIStyle.MediumSmallFontSize) +
+                                        (description.empty() ? 0.0f : (text_spacing + description_size.y)),
+                                      badge_size);
 
-      box_min = ImVec2(box_min.x, box_max.y + box_margin);
-      box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
-      text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
+    box_min = ImVec2(box_min.x, box_max.y + box_margin);
+    box_max = ImVec2(box_min.x + box_width, box_min.y + box_height);
+    text_pos = ImVec2(box_min.x + box_padding, box_min.y + box_padding);
 
-      dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
+    dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
 
-      ImVec4 clip_rect = ImVec4(text_pos.x, text_pos.y, text_pos.x + box_content_width, box_max.y);
-      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
-                  IMSTR_START_END(box_title), 0.0f, &clip_rect);
+    ImVec4 clip_rect = ImVec4(text_pos.x, text_pos.y, text_pos.x + box_content_width, box_max.y);
+    dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos, box_title_text_color,
+                IMSTR_START_END(box_title), 0.0f, &clip_rect);
 
-      if (!measured_progress.empty())
+    if (!measured_progress.empty())
+    {
+      const float progress_width = LayoutScale(100.0f);
+      const float progress_height = UIStyle.MediumFontSize;
+      const ImRect progress_bb(ImVec2(text_pos.x + box_content_width - progress_width, text_pos.y),
+                               ImVec2(text_pos.x + box_content_width, text_pos.y + progress_height));
+      dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
+                        progress_rounding);
+      if (measured_percent > 0.0f)
       {
-        const float progress_width = LayoutScale(100.0f);
-        const float progress_height = UIStyle.MediumFontSize;
-        const ImRect progress_bb(ImVec2(text_pos.x + box_content_width - progress_width, text_pos.y),
-                                 ImVec2(text_pos.x + box_content_width, text_pos.y + progress_height));
-        dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
-                          progress_rounding);
-        if (measured_percent > 0.0f)
-        {
-          ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), 0.0f,
-                                        measured_percent * 0.01f, progress_rounding);
-        }
-
-        const ImVec2 measured_progress_size =
-          UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, FLT_MAX, badge_text_width,
-                                      IMSTR_START_END(measured_progress));
-
-        dl->AddText(
-          UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
-          ImVec2(
-            progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (measured_progress_size.x / 2.0f),
-            progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (measured_progress_size.y / 2.0f)),
-          ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(measured_progress));
+        ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), 0.0f,
+                                      measured_percent * 0.01f, progress_rounding);
       }
 
-      text_pos.y += UIStyle.MediumFontSize + paragraph_spacing;
+      const ImVec2 measured_progress_size =
+        UIStyle.Font->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, FLT_MAX, badge_text_width,
+                                    IMSTR_START_END(measured_progress));
 
-      const ImVec2 image_max = ImVec2(text_pos.x + badge_size, text_pos.y + badge_size);
-      ImVec2 badge_text_pos = ImVec2(image_max.x + (text_spacing * 3.0f), text_pos.y);
+      dl->AddText(
+        UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight,
+        ImVec2(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (measured_progress_size.x / 2.0f),
+               progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) -
+                 (measured_progress_size.y / 2.0f)),
+        ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(measured_progress));
+    }
+
+    text_pos.y += UIStyle.MediumFontSize + paragraph_spacing;
+
+    const ImVec2 image_max = ImVec2(text_pos.x + badge_size, text_pos.y + badge_size);
+    GPUTexture* const badge_tex = GetCachedTextureAsync(badge_path);
+    dl->AddImage(badge_tex, text_pos, image_max);
+
+    TinyString points_text;
+    float points_width = 0.0f;
+    if (points > 0)
+    {
+      points_text.format(ICON_EMOJI_TROPHY " {}", points);
+      points_width = UIStyle.Font
+                       ->CalcTextSizeA(UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
+                                       IMSTR_START_END(points_text))
+                       .x;
+    }
+
+    ImVec2 badge_text_pos = ImVec2(image_max.x + (text_spacing * 3.0f), text_pos.y);
+
+    if (!title.empty())
+    {
+      clip_rect =
+        ImVec4(badge_text_pos.x, badge_text_pos.y, badge_text_pos.x + badge_text_width - points_width, box_max.y);
+
+      dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, badge_text_pos, title_text_color,
+                  IMSTR_START_END(title), 0.0f, &clip_rect);
+
+      if (points > 0)
+      {
+        clip_rect = ImVec4(clip_rect.z, clip_rect.y, clip_rect.z + points_width, clip_rect.w);
+        dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, ImVec2(clip_rect.x, clip_rect.y),
+                    title_text_color, IMSTR_START_END(points_text), 0.0f, &clip_rect);
+      }
+
+      badge_text_pos.y += UIStyle.MediumSmallFontSize;
+    }
+
+    if (!description.empty())
+    {
       clip_rect = ImVec4(badge_text_pos.x, badge_text_pos.y, badge_text_pos.x + badge_text_width, box_max.y);
 
-      GPUTexture* badge_tex = GetCachedTextureAsync(badge_path);
-      dl->AddImage(badge_tex, text_pos, image_max);
-
-      if (!title.empty())
-      {
-        dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.BoldFontWeight, badge_text_pos, title_text_color,
-                    IMSTR_START_END(title), 0.0f, &clip_rect);
-        badge_text_pos.y += UIStyle.MediumSmallFontSize;
-      }
-
-      if (!description.empty())
-      {
-        badge_text_pos.y += text_spacing;
-        dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, badge_text_pos, text_color,
-                    IMSTR_START_END(description), badge_text_width, &clip_rect);
-        badge_text_pos.y += description_size.y;
-      }
-    };
+      badge_text_pos.y += text_spacing;
+      dl->AddText(UIStyle.Font, UIStyle.MediumSmallFontSize, UIStyle.NormalFontWeight, badge_text_pos, text_color,
+                  IMSTR_START_END(description), badge_text_width, &clip_rect);
+      badge_text_pos.y += description_size.y;
+    }
+  };
 
   const auto get_achievement_height = [&badge_size, &badge_text_width, &text_spacing](std::string_view description) {
     const ImVec2 description_size =
@@ -439,9 +470,9 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
   if (s_achievements_locals.most_recent_unlock.has_value())
   {
     buffer.format(ICON_FA_LOCK_OPEN " {}", TRANSLATE_DISAMBIG_SV("Achievements", "Most Recent", "Pause Menu"));
-    draw_achievement_in_box(buffer, s_achievements_locals.most_recent_unlock->title,
-                            s_achievements_locals.most_recent_unlock->description,
-                            s_achievements_locals.most_recent_unlock->badge_path, {}, 0.0f);
+    draw_achievement_in_box(
+      buffer, s_achievements_locals.most_recent_unlock->title, s_achievements_locals.most_recent_unlock->description,
+      s_achievements_locals.most_recent_unlock->badge_path, {}, 0.0f, s_achievements_locals.most_recent_unlock->points);
 
     // extra spacing if we have two
     text_pos.y += s_achievements_locals.achievement_nearest_completion ? (paragraph_spacing + paragraph_spacing) : 0.0f;
@@ -458,7 +489,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                             s_achievements_locals.achievement_nearest_completion->description,
                             s_achievements_locals.achievement_nearest_completion->badge_path,
                             s_achievements_locals.achievement_nearest_completion->measured_progress,
-                            s_achievements_locals.achievement_nearest_completion->measured_percent);
+                            s_achievements_locals.achievement_nearest_completion->measured_percent, 0);
     text_pos.y += paragraph_spacing;
   }
 
@@ -474,7 +505,7 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                               s_achievements_locals.most_recent_progress_update->description,
                               s_achievements_locals.most_recent_progress_update->badge_path,
                               s_achievements_locals.most_recent_progress_update->measured_progress,
-                              s_achievements_locals.most_recent_progress_update->measured_percent);
+                              s_achievements_locals.most_recent_progress_update->measured_percent, 0);
       text_pos.y += paragraph_spacing;
     }
     else
