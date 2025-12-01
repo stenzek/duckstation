@@ -380,7 +380,7 @@ bool MemoryCard::SaveIfChanged(bool display_osd_message)
 
   if (display_osd_message)
   {
-    std::string icon_path = System::GetGameIconPath();
+    std::string icon_path = System::GetGameIconPath(false);
     if (icon_path.empty())
       icon_path = ICON_PF_MEMORY_CARD;
 

@@ -806,12 +806,20 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
-std::string System::GetGameIconPath()
+std::string System::GetGameIconPath(bool allow_achievements_badge)
 {
+  u32 achievements_game_id = 0;
+  if (allow_achievements_badge)
+  {
+    const auto lock = Achievements::GetLock();
+    achievements_game_id = Achievements::GetGameID();
+  }
+
+  const auto lock = GameList::GetLock();
   return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?
                                      std::string_view(s_state.running_game_title) :
                                      std::string_view(),
-                                   s_state.running_game_serial, s_state.running_game_path, Achievements::GetGameID());
+                                   s_state.running_game_serial, s_state.running_game_path, achievements_game_id);
 }
 
 bool System::IsUsingKnownPS1BIOS()

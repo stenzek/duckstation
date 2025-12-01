@@ -238,7 +238,7 @@ bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
 
 /// Returns a path to the game icon, if any.
-std::string GetGameIconPath();
+std::string GetGameIconPath(bool allow_achievements_badge);
 
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
