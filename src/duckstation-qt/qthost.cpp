@@ -3431,7 +3431,7 @@ int main(int argc, char* argv[])
 
   // Don't bother showing the window in no-gui mode.
   if (!s_state.nogui_mode)
-    g_main_window->show();
+    QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
   if (s_state.start_fullscreen_ui)

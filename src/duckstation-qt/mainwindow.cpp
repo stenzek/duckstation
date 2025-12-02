@@ -209,8 +209,6 @@ void MainWindow::initialize()
 
   switchToGameListView();
 
-  QtUtils::RestoreWindowGeometry(this);
-
 #ifdef _WIN32
   registerForDeviceNotifications();
 #endif
