@@ -1513,13 +1513,12 @@ void EmuThread::loadState(bool global, qint32 slot)
                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
 }
 
-void EmuThread::saveState(const QString& path, bool block_until_done /* = false */)
+void EmuThread::saveState(const QString& path)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(const QString&, bool)>(&EmuThread::saveState),
-                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, path,
-                              block_until_done);
+    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(const QString&)>(&EmuThread::saveState),
+                              Qt::QueuedConnection, path);
     return;
   }
 
@@ -1533,13 +1532,12 @@ void EmuThread::saveState(const QString& path, bool block_until_done /* = false 
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
-void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
+void EmuThread::saveState(bool global, qint32 slot)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(bool, qint32, bool)>(&EmuThread::saveState),
-                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, global, slot,
-                              block_until_done);
+    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(bool, qint32)>(&EmuThread::saveState),
+                              Qt::QueuedConnection, global, slot);
     return;
   }
 
