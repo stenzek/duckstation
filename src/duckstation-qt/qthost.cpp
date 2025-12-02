@@ -1353,7 +1353,8 @@ void EmuThread::captureGPUFrameDump()
 
 void EmuThread::startControllerTest()
 {
-  static constexpr const char* PADTEST_URL = "https://downloads.duckstation.org/runtime-resources/padtest.psexe";
+  static constexpr const char* PADTEST_URL =
+    "https://github.com/stenzek/duckstation/raw/refs/heads/master/extras/padtest/padtest.psexe";
 
   if (!isCurrentThread())
   {
