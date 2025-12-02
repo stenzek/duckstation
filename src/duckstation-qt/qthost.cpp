@@ -2163,14 +2163,15 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
+      QWidget* const dialog_parent = lock.getDialogParent();
       QMessageBox* const msgbox =
-        QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, title, message, QMessageBox::NoButton);
+        QtUtils::NewMessageBox(dialog_parent, QMessageBox::Question, title, message, QMessageBox::NoButton);
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);
 
-      QObject::connect(msgbox, &QMessageBox::finished, lock.getDialogParent(),
-                       [msgbox, yes_button, callback = std::move(callback), needs_pause]() {
+      QObject::connect(msgbox, &QMessageBox::finished, dialog_parent,
+                       [msgbox, yes_button, callback = std::move(callback), lock = std::move(lock), needs_pause]() {
                          const bool result = (msgbox->clickedButton() == yes_button);
                          callback(result);
 
