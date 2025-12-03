@@ -903,7 +903,7 @@ SDL_Joystick* SDLInputSource::GetJoystickForDevice(std::string_view device)
   return it->joystick;
 }
 
-SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForJoystickId(int id)
+SDLInputSource::ControllerDataVector::iterator SDLInputSource::GetControllerDataForJoystickId(SDL_JoystickID id)
 {
   return std::find_if(m_controllers.begin(), m_controllers.end(),
                       [id](const ControllerData& cd) { return cd.joystick_id == id; });
@@ -951,13 +951,10 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   if (!gamepad && !joystick)
   {
     ERROR_LOG("Failed to open controller {}", index);
-    if (gamepad)
-      SDL_CloseGamepad(gamepad);
-
     return false;
   }
 
-  const int joystick_id = SDL_GetJoystickID(joystick);
+  const SDL_JoystickID joystick_id = SDL_GetJoystickID(joystick);
   int player_id = gamepad ? SDL_GetGamepadPlayerIndex(gamepad) : SDL_GetJoystickPlayerIndex(joystick);
   if (player_id < 0 || GetControllerDataForPlayerId(player_id) != m_controllers.end())
   {
@@ -967,14 +964,17 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
     player_id = free_player_id;
   }
 
+  char guid[33];
+  SDL_GUIDToString(SDL_GetJoystickGUID(joystick), guid, sizeof(guid));
+
   const char* name = gamepad ? SDL_GetGamepadName(gamepad) : SDL_GetJoystickName(joystick);
   if (!name)
     name = "Unknown Device";
 
-  const SDL_PropertiesID properties = gamepad ? SDL_GetGamepadProperties(gamepad) : SDL_GetJoystickProperties(joystick);
+  VERBOSE_LOG("Opened {} {} (instance id {}, player id {}, guid {}): {}",
+              is_gamecontroller ? "game controller" : "joystick", index, joystick_id, player_id, guid, name);
 
-  VERBOSE_LOG("Opened {} {} (instance id {}, player id {}): {}", is_gamecontroller ? "game controller" : "joystick",
-              index, joystick_id, player_id, name);
+  const SDL_PropertiesID properties = gamepad ? SDL_GetGamepadProperties(gamepad) : SDL_GetJoystickProperties(joystick);
 
   ControllerData cd = {};
   cd.player_id = player_id;
@@ -1112,7 +1112,7 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   return true;
 }
 
-bool SDLInputSource::CloseDevice(int joystick_index)
+bool SDLInputSource::CloseDevice(SDL_JoystickID joystick_index)
 {
   auto it = GetControllerDataForJoystickId(joystick_index);
   if (it == m_controllers.end())
