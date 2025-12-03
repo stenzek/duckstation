@@ -1275,7 +1275,7 @@ void FullscreenUI::DrawLandingWindow()
     ImGui::SetItemDefaultFocus();
 
     if (UserThemeableHorizontalButton(
-          "fullscreenui/cdrom.png", "fullscreenui/start-disc.svg", FSUI_VSTR("Start Game"),
+          "fullscreenui/start-disc.png", "fullscreenui/start-disc.svg", FSUI_VSTR("Start Game"),
           FSUI_VSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
     {
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::StartGame); });
