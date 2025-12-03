@@ -1487,7 +1487,7 @@ void FullscreenUI::DrawFullscreenFooter()
 
   ImFont* const font = UIStyle.Font;
   const float font_size = UIStyle.MediumFontSize;
-  const float font_weight = UIStyle.BoldFontWeight;
+  const float font_weight = UIStyle.NormalFontWeight;
   const float max_width = io.DisplaySize.x - padding * 2.0f;
 
   float prev_opacity = 0.0f;

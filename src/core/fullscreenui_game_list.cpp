@@ -745,8 +745,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const bool show_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowGridTitles", true);
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
-  const float title_font_size = UIStyle.MediumFontSize;
-  const float title_font_weight = UIStyle.BoldFontWeight;
+  const float title_font_size = UIStyle.MediumLargeFontSize;
+  const float title_font_weight = UIStyle.NormalFontWeight;
   const float avail_width = ImGui::GetContentRegionAvail().x;
   const float title_spacing = LayoutScale(10.0f);
   const float item_width_with_spacing = std::floor(avail_width / 5.0f);
