@@ -5,9 +5,11 @@
 #include "gamelistrefreshthread.h"
 #include "mainwindow.h"
 #include "qthost.h"
+#include "qtprogresscallback.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 
+#include "core/achievements.h"
 #include "core/fullscreenui.h"
 #include "core/game_list.h"
 #include "core/host.h"
@@ -2159,6 +2161,19 @@ void GameListWidget::setPreferAchievementGameIcons(bool enabled)
     GameList::ReloadMemcardTimestampCache();
 
   m_model->refreshIcons();
+}
+
+void GameListWidget::downloadAllGameIcons()
+{
+  QtAsyncTaskWithProgressDialog::create(
+    this, tr("Loading Game Icons").toStdString(), tr("Downloading game icons...").toStdString(), true, 0, 0, 0.0f,
+    [](ProgressCallback* progress) -> std::function<void()> {
+      Error error;
+      if (!Achievements::DownloadGameIcons(progress, &error))
+        WARNING_LOG("Failed to download game icons: {}", error.GetDescription());
+
+      return []() { g_main_window->refreshGameListModel(); };
+    });
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)

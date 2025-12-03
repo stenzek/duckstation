@@ -218,6 +218,7 @@
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionAnimateGameIcons"/>
     <addaction name="actionPreferAchievementGameIcons"/>
+    <addaction name="actionDownloadAllGameIcons"/>
     <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewRefreshCovers"/>
@@ -1385,6 +1386,17 @@
    </property>
    <property name="toolTip">
     <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
+   </property>
+  </action>
+  <action name="actionDownloadAllGameIcons">
+   <property name="icon">
+    <iconset theme="download-2-line"/>
+   </property>
+   <property name="text">
+    <string>Download All Game Icons</string>
+   </property>
+   <property name="toolTip">
+    <string>Downloads icons for all games from RetroAchievements.</string>
    </property>
   </action>
  </widget>

@@ -22,6 +22,7 @@
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
 #include "common/error.h"
+#include "common/progress_callback.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
 #include "common/log.h"
@@ -46,6 +47,7 @@
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "rc_api_info.h"
 #include "rc_api_runtime.h"
 #include "rc_client.h"
 #include "rc_consoles.h"
@@ -2057,6 +2059,170 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
 std::string Achievements::GetGameBadgePath(std::string_view badge_name)
 {
   return GetLocalImagePath(badge_name, RC_IMAGE_TYPE_GAME);
+}
+
+bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
+{
+  progress->SetStatusText("Collecting games...");
+
+  // Collect all unique game IDs that don't have icons yet
+  std::vector<u32> game_ids;
+  {
+    const auto lock = GameList::GetLock();
+    for (const GameList::Entry& entry : GameList::GetEntries())
+    {
+      if (entry.achievements_game_id != 0)
+      {
+        // Check if we already have this badge
+        const std::string existing_badge = GameList::GetAchievementGameBadgePath(entry.achievements_game_id);
+        if (existing_badge.empty() &&
+            std::find(game_ids.begin(), game_ids.end(), entry.achievements_game_id) == game_ids.end())
+        {
+          game_ids.push_back(entry.achievements_game_id);
+        }
+      }
+    }
+  }
+
+  if (game_ids.empty())
+  {
+    progress->SetStatusText("No games need icon downloads.");
+    return true;
+  }
+
+  INFO_LOG("Downloading icons for {} games from RetroAchievements", game_ids.size());
+  progress->SetStatusText(fmt::format("Fetching icon info for {} games...", game_ids.size()).c_str());
+
+  // Create HTTP downloader
+  std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+  if (!http)
+  {
+    Error::SetStringView(error, "Failed to create HTTP downloader.");
+    return false;
+  }
+  http->SetTimeout(30.0f);
+
+  // Fetch game titles (includes badge names) from RetroAchievements
+  rc_api_fetch_game_titles_request_t titles_request;
+  titles_request.game_ids = game_ids.data();
+  titles_request.num_game_ids = static_cast<u32>(game_ids.size());
+
+  rc_api_request_t request;
+  if (rc_api_init_fetch_game_titles_request(&request, &titles_request) != RC_OK)
+  {
+    Error::SetStringView(error, "Failed to create API request.");
+    return false;
+  }
+
+  std::vector<u8> response_data;
+  bool request_success = false;
+
+  HTTPDownloader::Request::Callback callback = [&response_data, &request_success](
+                                                 s32 status_code, const Error&, const std::string&,
+                                                 HTTPDownloader::Request::Data data) {
+    if (status_code == HTTPDownloader::HTTP_STATUS_OK)
+    {
+      response_data = std::move(data);
+      request_success = true;
+    }
+  };
+
+  if (request.post_data)
+    http->CreatePostRequest(request.url, request.post_data, std::move(callback));
+  else
+    http->CreateRequest(request.url, std::move(callback));
+
+  rc_api_destroy_request(&request);
+  http->WaitForAllRequests();
+
+  if (!request_success || response_data.empty())
+  {
+    Error::SetStringView(error, "Failed to fetch game info from RetroAchievements.");
+    return false;
+  }
+
+  // Parse response
+  rc_api_fetch_game_titles_response_t titles_response;
+  rc_api_server_response_t server_response;
+  server_response.body = reinterpret_cast<const char*>(response_data.data());
+  server_response.body_length = response_data.size();
+  server_response.http_status_code = 200;
+
+  const int parse_result = rc_api_process_fetch_game_titles_server_response(&titles_response, &server_response);
+  if (parse_result != RC_OK)
+  {
+    const std::string_view response_preview(server_response.body,
+                                            std::min<size_t>(server_response.body_length, 500));
+    ERROR_LOG("Failed to parse game titles response ({}): {}", parse_result, response_preview);
+    if (titles_response.response.error_message)
+      Error::SetStringFmt(error, "RetroAchievements error: {}", titles_response.response.error_message);
+    else
+      Error::SetStringFmt(error, "Failed to parse API response (code {})", parse_result);
+    rc_api_destroy_fetch_game_titles_response(&titles_response);
+    return false;
+  }
+
+  ScopedGuard response_guard([&titles_response]() { rc_api_destroy_fetch_game_titles_response(&titles_response); });
+
+  if (titles_response.num_entries == 0)
+  {
+    progress->SetStatusText("No icon information found.");
+    return true;
+  }
+
+  // Download each icon
+  progress->SetProgressRange(titles_response.num_entries);
+  u32 downloaded = 0;
+
+  for (u32 i = 0; i < titles_response.num_entries; i++)
+  {
+    if (progress->IsCancelled())
+      break;
+
+    const rc_api_game_title_entry_t& entry = titles_response.entries[i];
+    progress->SetProgressValue(i);
+    progress->SetStatusText(fmt::format("Downloading icon for {}...", entry.title).c_str());
+
+    if (!entry.image_name || entry.image_name[0] == '\0')
+      continue;
+
+    const std::string local_path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
+    if (FileSystem::FileExists(local_path.c_str()))
+    {
+      GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+      continue;
+    }
+
+    const std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
+    if (url.empty())
+      continue;
+
+    std::vector<u8> image_data;
+    bool download_success = false;
+
+    http->CreateRequest(url, [&image_data, &download_success](s32 status_code, const Error&, const std::string&,
+                                                              HTTPDownloader::Request::Data data) {
+      if (status_code == HTTPDownloader::HTTP_STATUS_OK)
+      {
+        image_data = std::move(data);
+        download_success = true;
+      }
+    });
+    http->WaitForAllRequests();
+
+    if (download_success && !image_data.empty())
+    {
+      if (FileSystem::WriteBinaryFile(local_path.c_str(), image_data))
+      {
+        GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+        downloaded++;
+      }
+    }
+  }
+
+  progress->SetProgressValue(titles_response.num_entries);
+  INFO_LOG("Downloaded {} game icons", downloaded);
+  return true;
 }
 
 u32 Achievements::GetPauseThrottleFrames()
