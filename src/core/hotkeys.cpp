@@ -298,6 +298,7 @@ DEFINE_HOTKEY("RotateClockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                 {
                   g_settings.display_rotation = static_cast<DisplayRotation>(
                     (static_cast<u8>(g_settings.display_rotation) + 1) % static_cast<u8>(DisplayRotation::Count));
+                  GPUThread::UpdateSettings(true, false, false);
                 }
               })
 
@@ -310,6 +311,7 @@ DEFINE_HOTKEY("RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                       static_cast<DisplayRotation>((static_cast<u8>(g_settings.display_rotation) - 1) %
                                                    static_cast<u8>(DisplayRotation::Count)) :
                       static_cast<DisplayRotation>(static_cast<u8>(DisplayRotation::Count) - 1);
+                  GPUThread::UpdateSettings(true, false, false);
                 }
               })
 
