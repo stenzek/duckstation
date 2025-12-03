@@ -68,7 +68,7 @@ private:
     SDL_Joystick* joystick;
     u16 rumble_intensity[2];
     int haptic_left_right_effect;
-    int joystick_id;
+    SDL_JoystickID joystick_id;
     int player_id;
     float last_touch_x;
     float last_touch_y;
@@ -95,12 +95,12 @@ private:
   void LoadSettings(const SettingsInterface& si);
   void SetHints();
 
-  ControllerDataVector::iterator GetControllerDataForJoystickId(int id);
+  ControllerDataVector::iterator GetControllerDataForJoystickId(SDL_JoystickID id);
   ControllerDataVector::iterator GetControllerDataForPlayerId(int id);
   int GetFreePlayerId() const;
 
   bool OpenDevice(int index, bool is_gamecontroller);
-  bool CloseDevice(int joystick_index);
+  bool CloseDevice(SDL_JoystickID joystick_index);
   bool HandleGamepadAxisMotionEvent(const SDL_GamepadAxisEvent* ev);
   bool HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev);
   bool HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* ev);
