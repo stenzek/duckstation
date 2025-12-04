@@ -2063,7 +2063,7 @@ std::string Achievements::GetGameBadgePath(std::string_view badge_name)
 
 bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 {
-  progress->SetStatusText("Collecting games...");
+  progress->SetStatusText(TRANSLATE_SV("Achievements", "Collecting games..."));
 
   // Collect all unique game IDs that don't have icons yet
   std::vector<u32> game_ids;
@@ -2086,12 +2086,12 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   if (game_ids.empty())
   {
-    progress->SetStatusText("No games need icon downloads.");
+    progress->SetStatusText(TRANSLATE_SV("Achievements", "No games need icon downloads."));
     return true;
   }
 
   INFO_LOG("Downloading icons for {} games from RetroAchievements", game_ids.size());
-  progress->SetStatusText(fmt::format("Fetching icon info for {} games...", game_ids.size()).c_str());
+  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Fetching icon info for {} games..."), game_ids.size());
 
   // Create HTTP downloader
   std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
@@ -2166,7 +2166,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   if (titles_response.num_entries == 0)
   {
-    progress->SetStatusText("No icon information found.");
+    progress->SetStatusText(TRANSLATE_SV("Achievements", "No icon information found."));
     return true;
   }
 
@@ -2181,7 +2181,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
     const rc_api_game_title_entry_t& entry = titles_response.entries[i];
     progress->SetProgressValue(i);
-    progress->SetStatusText(fmt::format("Downloading icon for {}...", entry.title).c_str());
+    progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading icon for {}..."), entry.title);
 
     if (!entry.image_name || entry.image_name[0] == '\0')
       continue;
