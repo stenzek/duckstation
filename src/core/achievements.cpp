@@ -2170,57 +2170,82 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
     return true;
   }
 
-  // Download each icon
-  progress->SetProgressRange(titles_response.num_entries);
-  u32 downloaded = 0;
+  // Collect icons to download
+  struct PendingDownload
+  {
+    u32 game_id;
+    std::string image_name;
+    std::string local_path;
+    std::string url;
+    std::vector<u8> data;
+    bool success = false;
+  };
+
+  std::vector<PendingDownload> downloads;
+  downloads.reserve(titles_response.num_entries);
 
   for (u32 i = 0; i < titles_response.num_entries; i++)
   {
-    if (progress->IsCancelled())
-      break;
-
     const rc_api_game_title_entry_t& entry = titles_response.entries[i];
-    progress->SetProgressValue(i);
-    progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading icon for {}..."), entry.title);
 
     if (!entry.image_name || entry.image_name[0] == '\0')
       continue;
 
-    const std::string local_path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string local_path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
     if (FileSystem::FileExists(local_path.c_str()))
     {
+      // Already have this icon, just update the cache
       GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
       continue;
     }
 
-    const std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
     if (url.empty())
       continue;
 
-    std::vector<u8> image_data;
-    bool download_success = false;
+    downloads.push_back({entry.id, entry.image_name, std::move(local_path), std::move(url), {}, false});
+  }
 
-    http->CreateRequest(url, [&image_data, &download_success](s32 status_code, const Error&, const std::string&,
-                                                              HTTPDownloader::Request::Data data) {
+  if (downloads.empty())
+  {
+    progress->SetStatusText(TRANSLATE_SV("Achievements", "All icons already downloaded."));
+    return true;
+  }
+
+  // Create all download requests in parallel
+  progress->SetProgressRange(static_cast<u32>(downloads.size()));
+  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game icons..."), downloads.size());
+
+  std::atomic<u32> completed_count{0};
+  for (PendingDownload& dl : downloads)
+  {
+    http->CreateRequest(dl.url, [&dl, &completed_count, progress](s32 status_code, const Error&, const std::string&,
+                                                                  HTTPDownloader::Request::Data data) {
       if (status_code == HTTPDownloader::HTTP_STATUS_OK)
       {
-        image_data = std::move(data);
-        download_success = true;
+        dl.data = std::move(data);
+        dl.success = true;
       }
+      progress->SetProgressValue(completed_count.fetch_add(1, std::memory_order_relaxed) + 1);
     });
-    http->WaitForAllRequests();
+  }
 
-    if (download_success && !image_data.empty())
+  http->WaitForAllRequests();
+
+  // Process completed downloads
+  u32 downloaded = 0;
+  for (const PendingDownload& dl : downloads)
+  {
+    if (dl.success && !dl.data.empty())
     {
-      if (FileSystem::WriteBinaryFile(local_path.c_str(), image_data))
+      if (FileSystem::WriteBinaryFile(dl.local_path.c_str(), dl.data))
       {
-        GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+        GameList::UpdateAchievementBadgeName(dl.game_id, dl.image_name);
         downloaded++;
       }
     }
   }
 
-  progress->SetProgressValue(titles_response.num_entries);
   INFO_LOG("Downloaded {} game icons", downloaded);
   return true;
 }
