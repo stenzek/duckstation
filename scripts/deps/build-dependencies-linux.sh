@@ -108,6 +108,13 @@ if [ "$ONLY_DOWNLOAD" == true ]; then
 	exit 0
 fi
 
+# Prefer local deps for pkg-config search path.
+if [[ -z "$PKG_CONFIG_PATH" ]]; then
+	export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig"
+else
+	export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+fi
+
 # Build zlib first because of the things that depend on it.
 echo "Building zlib-ng..."
 rm -fr "zlib-ng-$ZLIBNG"
