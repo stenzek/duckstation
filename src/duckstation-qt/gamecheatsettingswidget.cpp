@@ -350,11 +350,11 @@ void GameCheatSettingsWidget::onCheatListContextMenuRequested(const QPoint& pos)
                           &GameCheatSettingsWidget::newCode);
   context_menu
     ->addAction(QIcon::fromTheme(QStringLiteral("mag-line")), tr("Edit Cheat..."),
-                [this, &selected_code]() { editCode(selected_code); })
+                [this, selected_code]() { editCode(selected_code); })
     ->setEnabled(selected != nullptr);
   context_menu
     ->addAction(QIcon::fromTheme(QStringLiteral("minus-line")), tr("Remove Cheat"),
-                [this, &selected_code]() { removeCode(selected_code, true); })
+                [this, selected_code]() { removeCode(selected_code, true); })
     ->setEnabled(selected != nullptr);
   context_menu->addSeparator();
 
