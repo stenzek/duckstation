@@ -225,10 +225,16 @@ void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sl
   {
     // Don't burn too much CPU.
     if (before_sleep_cb)
+    {
+      lock.unlock();
       before_sleep_cb();
+    }
     Timer::NanoSleep(1000000);
     if (after_sleep_cb)
+    {
       after_sleep_cb();
+      lock.lock();
+    }
     LockedPollRequests(lock);
   }
 }
