@@ -198,8 +198,6 @@ private:
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
-  void onViewChangeGameListBackgroundTriggered();
-  void onViewClearGameListBackgroundTriggered();
 
   void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
@@ -290,6 +288,8 @@ private:
   void onViewZoomOutActionTriggered();
   void onViewSortByActionTriggered();
   void onViewSortOrderActionTriggered();
+  void onViewChangeGameListBackgroundTriggered();
+  void onViewClearGameListBackgroundTriggered();
   void onGitHubRepositoryActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
@@ -299,6 +299,7 @@ private:
   void onToolsMemoryScannerTriggered();
   void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
+  void onToolsDownloadAchievementGameIconsTriggered();
   void onToolsMediaCaptureTriggered(bool checked);
   void onToolsOpenDataDirectoryTriggered();
   void onToolsOpenTextureDirectoryTriggered();

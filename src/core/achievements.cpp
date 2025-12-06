@@ -2097,7 +2097,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   if (game_ids.empty())
   {
-    Error::SetStringView(error, TRANSLATE_SV("Achievements", "No games need badge downloads."));
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "All available icons have already been downloaded."));
     return false;
   }
 
@@ -2147,7 +2147,7 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
     [&titles_response]() { rc_api_destroy_fetch_game_titles_response(&titles_response.value()); });
   if (titles_response->num_entries == 0)
   {
-    Error::SetStringView(error, TRANSLATE_SV("Achievements", "No badge names returned."));
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "No image names returned."));
     return false;
   }
 
@@ -2198,12 +2198,12 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   if (badges_to_download == 0)
   {
-    Error::SetStringView(error, TRANSLATE_SV("Achievements", "All badges have already been downloaded."));
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "All icons have already been downloaded."));
     return false;
   }
 
   progress->SetProgressRange(badges_to_download);
-  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game badges..."), badges_to_download);
+  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game icons..."), badges_to_download);
   WaitForHTTPRequestsWithYield(lock);
   return true;
 }

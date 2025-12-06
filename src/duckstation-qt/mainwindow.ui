@@ -189,10 +189,16 @@
      <property name="title">
       <string>&amp;Window Size</string>
      </property>
+     <property name="icon">
+      <iconset theme="window-2-line"/>
+     </property>
     </widget>
     <widget class="QMenu" name="menuSortBy">
      <property name="title">
       <string>Sort B&amp;y</string>
+     </property>
+     <property name="icon">
+      <iconset theme="sort-alphabet-asc"/>
      </property>
     </widget>
     <addaction name="actionViewToolbar"/>
@@ -218,14 +224,12 @@
     <addaction name="actionShowGameIcons"/>
     <addaction name="actionAnimateGameIcons"/>
     <addaction name="actionPreferAchievementGameIcons"/>
-    <addaction name="actionDownloadAllGameIcons"/>
     <addaction name="separator"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewRefreshCovers"/>
     <addaction name="separator"/>
     <addaction name="actionChangeGameListBackground"/>
     <addaction name="actionClearGameListBackground"/>
-    <addaction name="actionViewRefreshAchievementProgress"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
     <property name="title">
@@ -236,6 +240,9 @@
     <addaction name="actionMemoryCardEditor"/>
     <addaction name="actionCoverDownloader"/>
     <addaction name="actionControllerTest"/>
+    <addaction name="separator"/>
+    <addaction name="actionToolsDownloadAchievementGameIcons"/>
+    <addaction name="actionToolsRefreshAchievementProgress"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryEditor"/>
     <addaction name="actionMemoryScanner"/>
@@ -1072,6 +1079,9 @@
    </property>
   </action>
   <action name="actionGridViewRefreshCovers">
+   <property name="icon">
+    <iconset theme="refresh-line"/>
+   </property>
    <property name="text">
     <string>Refresh Grid &amp;Covers</string>
    </property>
@@ -1321,9 +1331,12 @@
     <string>Removes the background image shown in the game list/grid.</string>
    </property>
   </action>
-  <action name="actionViewRefreshAchievementProgress">
+  <action name="actionToolsRefreshAchievementProgress">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="refresh-line"/>
    </property>
    <property name="text">
     <string>Refresh Achievement &amp;Progress</string>
@@ -1388,12 +1401,15 @@
     <string>Prioritizes the games badges used for RetroAchievements over memory card icons.</string>
    </property>
   </action>
-  <action name="actionDownloadAllGameIcons">
+  <action name="actionToolsDownloadAchievementGameIcons">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="download-2-line"/>
    </property>
    <property name="text">
-    <string>Download All Game Icons</string>
+    <string>Download Achievement &amp;Icons</string>
    </property>
    <property name="toolTip">
     <string>Downloads icons for all games from RetroAchievements.</string>

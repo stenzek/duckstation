@@ -55,7 +55,7 @@ p, li { white-space: pre-wrap; }
                               .arg(tr("Icon by"))
                               .arg(tr("License")));
 
-  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
+  connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
 }
 
 AboutDialog::~AboutDialog() = default;
@@ -84,8 +84,8 @@ void AboutDialog::openThirdPartyNotices(QWidget* parent)
   }
   layout->addWidget(tb, 1);
 
-  QDialogButtonBox* const bb = new QDialogButtonBox(QDialogButtonBox::Close, dialog);
-  connect(bb, &QDialogButtonBox::rejected, dialog, &QDialog::accept);
+  QDialogButtonBox* const bb = new QDialogButtonBox(QDialogButtonBox::Ok, dialog);
+  connect(bb, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
   layout->addWidget(bb, 0);
 
   dialog->open();

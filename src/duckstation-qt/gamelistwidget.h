@@ -283,7 +283,6 @@ public:
   void setShowGameIcons(bool enabled);
   void setAnimateGameIcons(bool enabled);
   void setPreferAchievementGameIcons(bool enabled);
-  void downloadAllGameIcons();
   void setShowCoverTitles(bool enabled);
   void refreshGridCovers();
   void focusSearchWidget();

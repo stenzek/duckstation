@@ -17,11 +17,13 @@
 #include "memoryeditorwindow.h"
 #include "memoryscannerwindow.h"
 #include "qthost.h"
+#include "qtprogresscallback.h"
 #include "qtutils.h"
 #include "selectdiscdialog.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "core/achievements.h"
 #include "core/cheats.h"
 #include "core/game_list.h"
 #include "core/host.h"
@@ -530,7 +532,6 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionViewZoomOut->setDisabled(disable);
   m_ui.actionGridViewRefreshCovers->setDisabled(disable || !game_grid);
   m_ui.actionPreferAchievementGameIcons->setDisabled(disable || !game_list);
-  m_ui.actionDownloadAllGameIcons->setDisabled(disable);
   m_ui.actionChangeGameListBackground->setDisabled(disable);
   m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
@@ -2475,8 +2476,12 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
-  connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionControllerTest, &QAction::triggered, g_emu_thread, &EmuThread::startControllerTest);
+  connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
+  connect(m_ui.actionToolsDownloadAchievementGameIcons, &QAction::triggered, this,
+          &MainWindow::onToolsDownloadAchievementGameIconsTriggered);
+  connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_emu_thread,
+          &EmuThread::refreshAchievementsAllProgress);
   connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
@@ -2492,15 +2497,12 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAnimateGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setAnimateGameIcons);
   connect(m_ui.actionPreferAchievementGameIcons, &QAction::triggered, m_game_list_widget,
           &GameListWidget::setPreferAchievementGameIcons);
-  connect(m_ui.actionDownloadAllGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::downloadAllGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);
   connect(m_ui.actionViewZoomOut, &QAction::triggered, this, &MainWindow::onViewZoomOutActionTriggered);
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
-  connect(m_ui.actionViewRefreshAchievementProgress, &QAction::triggered, g_emu_thread,
-          &EmuThread::refreshAchievementsAllProgress);
   connect(m_ui.actionChangeGameListBackground, &QAction::triggered, this,
           &MainWindow::onViewChangeGameListBackgroundTriggered);
   connect(m_ui.actionClearGameListBackground, &QAction::triggered, this,
@@ -3212,7 +3214,8 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
 
 void MainWindow::onAchievementsActiveChanged(bool active)
 {
-  m_ui.actionViewRefreshAchievementProgress->setEnabled(active);
+  m_ui.actionToolsRefreshAchievementProgress->setEnabled(active);
+  m_ui.actionToolsDownloadAchievementGameIcons->setEnabled(active);
 }
 
 void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
@@ -3286,6 +3289,24 @@ void MainWindow::onToolsCoverDownloaderTriggered()
   }
 
   QtUtils::ShowOrRaiseWindow(m_cover_download_window, this, true);
+}
+
+void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
+{
+  QtAsyncTaskWithProgressDialog::create(
+    this, TRANSLATE_STR("GameListWidget", "Download Game Badges"),
+    TRANSLATE_STR("GameListWidget", "Downloading game badges..."), true, 0, 0, 0.0f, [](ProgressCallback* progress) {
+      Error error;
+      const bool result = Achievements::DownloadGameIcons(progress, &error);
+      return [error = std::move(error), result]() {
+        if (!result)
+        {
+          g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
+        }
+
+        g_main_window->refreshGameListModel();
+      };
+    });
 }
 
 void MainWindow::onToolsMediaCaptureTriggered(bool checked)
