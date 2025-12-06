@@ -143,6 +143,7 @@ static float ApplySingleBindingScale(float sensitivity, float deadzone, float va
 static void AddHotkeyBindings(const SettingsInterface& si);
 static void AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad,
                            const Controller::ControllerInfo& cinfo);
+static void InternalReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si);
 static void SynchronizePadEffectBindings(InputBindingKey key);
 static void UpdateContinuedVibration();
 static void GenerateRelativeMouseEvents();
@@ -2150,12 +2151,9 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
+void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
+                                          const SettingsInterface& hotkey_binding_si)
 {
-  PauseVibration();
-
-  std::unique_lock lock(s_state.mutex);
-
   s_state.binding_map.clear();
   s_state.pad_vibration_array.clear();
   s_state.pad_led_array.clear();
@@ -2190,6 +2188,14 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
                         TinyString::from_format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale),
                       1.0f);
   }
+}
+
+void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
+{
+  PauseVibration();
+
+  std::unique_lock lock(s_state.mutex);
+  InternalReloadBindings(binding_si, hotkey_binding_si);
 
   UpdateRelativeMouseMode();
 }
@@ -2398,7 +2404,8 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
   }
 }
 
-void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
+                                            std::unique_lock<std::mutex>& settings_lock)
 {
   std::unique_lock lock(s_state.mutex);
 
@@ -2415,6 +2422,9 @@ void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<s
 #endif
 
   UpdatePointerCount();
+
+  InternalReloadBindings(si, hotkey_binding_si);
+  UpdateRelativeMouseMode();
 }
 
 ForceFeedbackDevice::~ForceFeedbackDevice()

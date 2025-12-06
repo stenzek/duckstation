@@ -1259,8 +1259,7 @@ void System::LoadSettings(bool display_osd_messages)
 
   Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
-  InputManager::ReloadSources(controller_si, lock);
-  InputManager::ReloadBindings(controller_si, hotkey_si);
+  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
@@ -1276,14 +1275,8 @@ void System::ReloadInputSources()
 {
   auto lock = Host::GetSettingsLock();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
-  InputManager::ReloadSources(controller_si, lock);
-
-  // skip loading bindings if we're not running, since it'll get done on startup anyway
-  if (IsValid())
-  {
-    const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
-    InputManager::ReloadBindings(controller_si, hotkey_si);
-  }
+  const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
+  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
 }
 
 void System::ReloadInputBindings()

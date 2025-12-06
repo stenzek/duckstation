@@ -294,7 +294,8 @@ void SynchronizeBindingHandlerState();
 void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si);
 
 /// Re-parses the sources part of the config and initializes any backends.
-void ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
+void ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
+                              std::unique_lock<std::mutex>& settings_lock);
 
 /// Called when a device change is triggered by the system (DBT_DEVNODES_CHANGED on Windows).
 /// Returns true if any device changes are detected.
