@@ -530,6 +530,7 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionViewZoomOut->setDisabled(disable);
   m_ui.actionGridViewRefreshCovers->setDisabled(disable || !game_grid);
   m_ui.actionPreferAchievementGameIcons->setDisabled(disable || !game_list);
+  m_ui.actionDownloadAllGameIcons->setDisabled(disable);
   m_ui.actionChangeGameListBackground->setDisabled(disable);
   m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
@@ -2491,6 +2492,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAnimateGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setAnimateGameIcons);
   connect(m_ui.actionPreferAchievementGameIcons, &QAction::triggered, m_game_list_widget,
           &GameListWidget::setPreferAchievementGameIcons);
+  connect(m_ui.actionDownloadAllGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::downloadAllGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);

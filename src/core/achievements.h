@@ -16,6 +16,7 @@
 #include <vector>
 
 class Error;
+class ProgressCallback;
 class StateWrapper;
 class CDImage;
 
@@ -183,6 +184,10 @@ SmallString GetLoggedInUserPointsSummary();
 
 /// Returns the path to the local cache for the specified badge name.
 std::string GetGameBadgePath(std::string_view badge_name);
+
+/// Downloads game icons from RetroAchievements for all games that have an achievements_game_id.
+/// This fetches the game badge images that are normally downloaded when a game is opened.
+bool DownloadGameIcons(ProgressCallback* progress, Error* error);
 
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();
