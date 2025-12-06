@@ -98,6 +98,7 @@ static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static void DrawCoverDownloaderWindow();
 static void DrawAchievementsLoginWindow();
+static void StartAchievementsGameIconDownload();
 
 static bool ShouldShowAdvancedSettings();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
@@ -4782,6 +4783,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       });
     }
 
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Game Icons"),
+                   FSUI_VSTR("Downloads icons for all games from RetroAchievements.")))
+    {
+      StartAchievementsGameIconDownload();
+    }
+
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
       const std::string ts_string = Host::FormatNumber(
@@ -4906,6 +4913,25 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   EndMenuButtons();
 
   EndFixedPopupDialog();
+}
+
+void FullscreenUI::StartAchievementsGameIconDownload()
+{
+  auto progress = OpenModalProgressDialog(FSUI_STR("Download Game Icons"));
+
+  System::QueueAsyncTask([progress = progress.release()]() {
+    Error error;
+    const bool result = Achievements::DownloadGameIcons(progress, &error);
+    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+      GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
+        delete progress;
+        if (result)
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game icons downloaded."));
+        else
+          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Download Game Icons"), error.TakeDescription());
+      });
+    });
+  });
 }
 
 void FullscreenUI::DrawAdvancedSettingsPage()

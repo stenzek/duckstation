@@ -3955,13 +3955,18 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::ProgressCallbackImpl() = def
 
 FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
 {
-  Host::RunOnCPUThread([]() mutable {
-    GPUThread::RunOnThread([]() mutable {
-      if (!s_state.progress_dialog.IsOpen())
-        return;
-      s_state.progress_dialog.StartClose();
-    });
-  });
+  static constexpr auto close_cb = []() {
+    if (!s_state.progress_dialog.IsOpen())
+      return;
+    s_state.progress_dialog.StartClose();
+  };
+  if (GPUThread::IsOnThread())
+  {
+    close_cb();
+    return;
+  }
+
+  Host::RunOnCPUThread([]() { GPUThread::RunOnThread(close_cb); });
 }
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
