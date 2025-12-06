@@ -2480,8 +2480,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionToolsDownloadAchievementGameIcons, &QAction::triggered, this,
           &MainWindow::onToolsDownloadAchievementGameIconsTriggered);
-  connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_emu_thread,
-          &EmuThread::refreshAchievementsAllProgress);
+  connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_main_window,
+          &MainWindow::refreshAchievementProgress);
   connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
@@ -2535,8 +2535,6 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::achievementsActiveChanged, this, &MainWindow::onAchievementsActiveChanged);
   connect(g_emu_thread, &EmuThread::achievementsHardcoreModeChanged, this,
           &MainWindow::onAchievementsHardcoreModeChanged);
-  connect(g_emu_thread, &EmuThread::achievementsAllProgressRefreshed, this,
-          &MainWindow::onAchievementsAllProgressRefreshed);
   connect(g_emu_thread, &EmuThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
   connect(g_emu_thread, &EmuThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
@@ -3231,11 +3229,6 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
   updateEmulationActions();
 }
 
-void MainWindow::onAchievementsAllProgressRefreshed()
-{
-  m_ui.statusBar->showMessage(tr("RA: Updated achievement progress database."));
-}
-
 bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
                                                const QString& title, const QString& icon_name,
                                                Host::AuxiliaryRenderWindowUserData userdata,
@@ -3304,6 +3297,25 @@ void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
           g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
         }
 
+        g_main_window->refreshGameListModel();
+      };
+    });
+}
+
+void MainWindow::refreshAchievementProgress()
+{
+  QtAsyncTaskWithProgressDialog::create(
+    this, TRANSLATE_STR("MainWindow", "Refresh Achievement Progress"), {}, true, 0, 0, 0.0f,
+    [](ProgressCallback* progress) {
+      Error error;
+      const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
+      return [error = std::move(error), result]() {
+        if (!result)
+        {
+          g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
+        }
+
+        g_main_window->m_ui.statusBar->showMessage(tr("RA: Updated achievement progress database."));
         g_main_window->refreshGameListModel();
       };
     });

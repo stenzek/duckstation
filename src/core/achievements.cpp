@@ -2704,12 +2704,11 @@ void Achievements::FinishRefreshHashDatabase()
 
   // update game list, we might have some new games that weren't in the seed database
   GameList::UpdateAllAchievementData();
-
-  Host::OnAchievementsAllProgressRefreshed();
 }
 
-bool Achievements::RefreshAllProgressDatabase(Error* error)
+bool Achievements::RefreshAllProgressDatabase(ProgressCallback* progress, Error* error)
 {
+  auto lock = GetLock();
   if (!IsLoggedIn())
   {
     Error::SetStringView(error, TRANSLATE_SV("Achievements", "User is not logged in."));
@@ -2723,8 +2722,15 @@ bool Achievements::RefreshAllProgressDatabase(Error* error)
   }
 
   // refresh in progress
+  progress->SetStatusText(TRANSLATE_SV("Achievements", "Refreshing achievement progress..."));
+  progress->SetProgressRange(0);
+  progress->SetProgressValue(0);
+
+  std::pair<bool, Error*> result = {false, error};
   s_state.refresh_all_progress_request = rc_client_begin_fetch_all_user_progress(s_state.client, RC_CONSOLE_PLAYSTATION,
-                                                                                 RefreshAllProgressCallback, nullptr);
+                                                                                 RefreshAllProgressCallback, &result);
+  while (s_state.refresh_all_progress_request)
+    WaitForHTTPRequestsWithYield(lock);
 
   return true;
 }
@@ -2735,11 +2741,16 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
 {
   s_state.refresh_all_progress_request = nullptr;
 
+  std::pair<bool, Error*>* result_ud = static_cast<std::pair<bool, Error*>*>(callback_userdata);
   if (result != RC_OK)
   {
-    Host::ReportErrorAsync(TRANSLATE_SV("Achievements", "Error"),
-                           fmt::format("{}: {}\n{}", TRANSLATE_SV("Achievements", "Refresh all progress failed"),
-                                       rc_error_str(result), error_message));
+    if (result_ud)
+    {
+      result_ud->first = false;
+      result_ud->second->SetStringFmt("{}: {}\n{}", TRANSLATE_SV("Achievements", "Refresh all progress failed"),
+                                      rc_error_str(result), error_message);
+    }
+
     return;
   }
 
@@ -2748,10 +2759,8 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
 
   GameList::UpdateAllAchievementData();
 
-  Host::OnAchievementsAllProgressRefreshed();
-
-  FullscreenUI::ShowToast(OSDMessageType::Quick, {},
-                          TRANSLATE_STR("Achievements", "Updated achievement progress database."));
+  if (result_ud)
+    result_ud->first = true;
 }
 
 void Achievements::BuildHashDatabase(const rc_client_hash_library_t* hashlib,

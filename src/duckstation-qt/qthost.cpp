@@ -1673,22 +1673,6 @@ void EmuThread::saveScreenshot()
   System::SaveScreenshot();
 }
 
-void EmuThread::refreshAchievementsAllProgress()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::refreshAchievementsAllProgress, Qt::QueuedConnection);
-    return;
-  }
-
-  Error error;
-  if (!Achievements::RefreshAllProgressDatabase(&error))
-  {
-    emit errorReported(tr("Error"), QString::fromStdString(error.GetDescription()));
-    return;
-  }
-}
-
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
   emit g_emu_thread->achievementsLoginRequested(reason);
@@ -1735,11 +1719,6 @@ void Host::OnAchievementsActiveChanged(bool active)
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
   emit g_emu_thread->achievementsHardcoreModeChanged(enabled);
-}
-
-void Host::OnAchievementsAllProgressRefreshed()
-{
-  emit g_emu_thread->achievementsAllProgressRefreshed();
 }
 
 bool Host::ShouldPreferHostFileSelector()

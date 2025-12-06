@@ -1105,11 +1105,6 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
   // noop
 }
 
-void Host::OnAchievementsAllProgressRefreshed()
-{
-  // noop
-}
-
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
 void Host::OnRAIntegrationMenuChanged()

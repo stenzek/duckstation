@@ -98,6 +98,7 @@ static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static void DrawCoverDownloaderWindow();
 static void DrawAchievementsLoginWindow();
+static void StartAchievementsProgressRefresh();
 static void StartAchievementsGameIconDownload();
 
 static bool ShouldShowAdvancedSettings();
@@ -4773,14 +4774,12 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
   if (!IsEditingGameSettings(bsi))
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Update Progress"),
+    MenuHeading(FSUI_VSTR("Operations"));
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Refresh Achievement Progress"),
                    FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
     {
-      Host::RunOnCPUThread([]() {
-        Error error;
-        if (!Achievements::RefreshAllProgressDatabase(&error))
-          ShowToast(OSDMessageType::Error, FSUI_STR("Failed to update progress database"), error.TakeDescription());
-      });
+      StartAchievementsProgressRefresh();
     }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Game Icons"),
@@ -4913,6 +4912,25 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   EndMenuButtons();
 
   EndFixedPopupDialog();
+}
+
+void FullscreenUI::StartAchievementsProgressRefresh()
+{
+  auto progress = OpenModalProgressDialog(FSUI_STR("Refresh Achievement Progress"));
+
+  System::QueueAsyncTask([progress = progress.release()]() {
+    Error error;
+    const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
+    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+      GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
+        delete progress;
+        if (result)
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Progress database updated."));
+        else
+          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Update Progress"), error.TakeDescription());
+      });
+    });
+  });
 }
 
 void FullscreenUI::StartAchievementsGameIconDownload()

@@ -81,7 +81,7 @@ void UpdateSettings(const Settings& old_config);
 void Shutdown();
 
 /// Call to refresh the all-progress database.
-bool RefreshAllProgressDatabase(Error* error);
+bool RefreshAllProgressDatabase(ProgressCallback* progress, Error* error);
 
 /// Called when the system is start. Engages hardcore mode if enabled.
 void OnSystemStarting(CDImage* image, bool disable_hardcore_mode);
@@ -218,9 +218,6 @@ void OnAchievementsActiveChanged(bool active);
 
 /// Called whenever hardcore mode is toggled.
 void OnAchievementsHardcoreModeChanged(bool enabled);
-
-/// Called whenever all progress is manually refreshed and completed.
-void OnAchievementsAllProgressRefreshed();
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 

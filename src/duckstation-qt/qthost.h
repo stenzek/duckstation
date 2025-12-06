@@ -123,7 +123,6 @@ Q_SIGNALS:
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
-  void achievementsAllProgressRefreshed();
   void mediaCaptureStarted();
   void mediaCaptureStopped();
 
@@ -148,7 +147,6 @@ public:
   void startFullscreenUI();
   void stopFullscreenUI();
   void exitFullscreenUI();
-  void refreshAchievementsAllProgress();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromMostRecentState();
   void shutdownSystem(bool save_state, bool check_memcard_busy);
