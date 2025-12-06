@@ -3294,8 +3294,8 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
 {
   QtAsyncTaskWithProgressDialog::create(
-    this, TRANSLATE_STR("GameListWidget", "Download Game Badges"),
-    TRANSLATE_STR("GameListWidget", "Downloading game badges..."), true, 0, 0, 0.0f, [](ProgressCallback* progress) {
+    this, TRANSLATE_STR("GameListWidget", "Download Game Icons"),
+    TRANSLATE_STR("GameListWidget", "Downloading game icons..."), true, 0, 0, 0.0f, [](ProgressCallback* progress) {
       Error error;
       const bool result = Achievements::DownloadGameIcons(progress, &error);
       return [error = std::move(error), result]() {

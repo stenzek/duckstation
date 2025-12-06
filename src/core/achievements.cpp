@@ -2135,7 +2135,8 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
                             rc_error_str(parse_result));
         titles_response.reset();
       }
-    });
+    },
+    progress);
 
   rc_api_destroy_request(&request);
   WaitForHTTPRequestsWithYield(lock);
