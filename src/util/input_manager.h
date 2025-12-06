@@ -281,6 +281,9 @@ using DeviceEffectList = std::vector<std::pair<InputBindingInfo::Type, InputBind
 DeviceEffectList EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type = std::nullopt,
                                         std::optional<InputBindingKey> for_device = std::nullopt);
 
+/// Returns the number of pollable devices across all input sources.
+u32 GetPollableDeviceCount();
+
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
 

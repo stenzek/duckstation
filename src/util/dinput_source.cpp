@@ -322,6 +322,11 @@ InputManager::DeviceEffectList DInputSource::EnumerateEffects(std::optional<Inpu
   return {};
 }
 
+u32 DInputSource::GetPollableDeviceCount() const
+{
+  return static_cast<u32>(m_controllers.size());
+}
+
 bool DInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   return {};

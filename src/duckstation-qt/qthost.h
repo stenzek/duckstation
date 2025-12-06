@@ -83,6 +83,7 @@ public:
 
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
+  void updateBackgroundControllerPollInterval();
   void wakeThread();
 
   void bootOrLoadState(std::string path);
@@ -188,6 +189,7 @@ protected:
   void run() override;
 
 private:
+  int getBackgroundControllerPollInterval() const;
   void stopInThread();
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(float dx, float dy);

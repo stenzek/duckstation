@@ -101,13 +101,14 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 /// Interval at which the controllers are polled when the system is not active.
-static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
+static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES = 100;
+static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES = 1000;
 
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
-static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
+static constexpr int FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
-static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
+static constexpr int GDB_SERVER_POLLING_INTERVAL = 1;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
@@ -1870,15 +1871,14 @@ void EmuThread::destroyBackgroundControllerPollTimer()
 void EmuThread::startBackgroundControllerPollTimer()
 {
   if (m_background_controller_polling_timer->isActive())
+  {
+    updateBackgroundControllerPollInterval();
     return;
+  }
 
-  u32 poll_interval = BACKGROUND_CONTROLLER_POLLING_INTERVAL;
-  if (m_gpu_thread_run_idle)
-    poll_interval = FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
-  if (GDBServer::HasAnyClients())
-    poll_interval = GDB_SERVER_POLLING_INTERVAL;
-
-  m_background_controller_polling_timer->start(poll_interval);
+  const int interval = getBackgroundControllerPollInterval();
+  DEV_LOG("Starting background controller polling timer with interval {} ms", interval);
+  m_background_controller_polling_timer->start(interval);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -1886,7 +1886,40 @@ void EmuThread::stopBackgroundControllerPollTimer()
   if (!m_background_controller_polling_timer->isActive())
     return;
 
+  DEV_LOG("Stopping background controller polling timer");
   m_background_controller_polling_timer->stop();
+}
+
+void EmuThread::updateBackgroundControllerPollInterval()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateBackgroundControllerPollInterval, Qt::QueuedConnection);
+    return;
+  }
+
+  if (!m_background_controller_polling_timer || !m_background_controller_polling_timer->isActive())
+    return;
+
+  const int current_interval = m_background_controller_polling_timer->interval();
+  const int new_interval = getBackgroundControllerPollInterval();
+  if (current_interval != new_interval)
+  {
+    WARNING_LOG("Changed background polling interval from {} ms to {} ms", current_interval, new_interval);
+    m_background_controller_polling_timer->setInterval(new_interval);
+  }
+}
+
+int EmuThread::getBackgroundControllerPollInterval() const
+{
+  if (GDBServer::HasAnyClients())
+    return GDB_SERVER_POLLING_INTERVAL;
+  else if (m_gpu_thread_run_idle)
+    return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+  else if (InputManager::GetPollableDeviceCount() > 0)
+    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
+  else
+    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
 }
 
 void EmuThread::setGPUThreadRunIdle(bool active)
@@ -1907,8 +1940,7 @@ void EmuThread::setGPUThreadRunIdle(bool active)
   if (!m_background_controller_polling_timer->isActive())
     return;
 
-  g_emu_thread->stopBackgroundControllerPollTimer();
-  g_emu_thread->startBackgroundControllerPollTimer();
+  g_emu_thread->updateBackgroundControllerPollInterval();
 }
 
 void EmuThread::updateFullscreenUITheme()
@@ -2695,6 +2727,7 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceConnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier),
                             QtUtils::StringViewToQString(device_name), qeffect_list);
+  g_emu_thread->updateBackgroundControllerPollInterval();
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
@@ -2707,6 +2740,7 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
 {
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceDisconnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier));
+  g_emu_thread->updateBackgroundControllerPollInterval();
 
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
       InputManager::HasAnyBindingsForSource(key))

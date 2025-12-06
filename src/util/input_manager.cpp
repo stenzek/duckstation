@@ -2304,6 +2304,21 @@ InputManager::DeviceEffectList InputManager::EnumerateDeviceEffects(std::optiona
   return ret;
 }
 
+u32 InputManager::GetPollableDeviceCount()
+{
+  std::unique_lock lock(s_state.mutex);
+
+  u32 count = 0;
+
+  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+  {
+    if (s_state.input_sources[i])
+      count += s_state.input_sources[i]->GetPollableDeviceCount();
+  }
+
+  return count;
+}
+
 static void GetKeyboardGenericBindingMapping(std::vector<std::pair<GenericInputBinding, std::string>>* mapping)
 {
   mapping->emplace_back(GenericInputBinding::DPadUp, "Keyboard/UpArrow");

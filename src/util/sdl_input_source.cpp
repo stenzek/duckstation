@@ -1118,9 +1118,6 @@ bool SDLInputSource::CloseDevice(SDL_JoystickID joystick_index)
   if (it == m_controllers.end())
     return false;
 
-  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, it->player_id),
-                                          fmt::format("SDL-{}", it->player_id));
-
   if (it->haptic)
     SDL_CloseHaptic(it->haptic);
 
@@ -1129,7 +1126,12 @@ bool SDLInputSource::CloseDevice(SDL_JoystickID joystick_index)
   else
     SDL_CloseJoystick(it->joystick);
 
+  const int player_id = it->player_id;
   m_controllers.erase(it);
+
+  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, player_id),
+                                          fmt::format("SDL-{}", player_id));
+
   return true;
 }
 
@@ -1370,6 +1372,11 @@ InputManager::DeviceEffectList SDLInputSource::EnumerateEffects(std::optional<In
   }
 
   return ret;
+}
+
+u32 SDLInputSource::GetPollableDeviceCount() const
+{
+  return static_cast<u32>(m_controllers.size());
 }
 
 bool SDLInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
