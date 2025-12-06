@@ -6,6 +6,7 @@
 #include "qtutils.h"
 
 #include "common/assert.h"
+#include "common/log.h"
 
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
@@ -15,6 +16,8 @@
 #include <array>
 
 #include "moc_qtprogresscallback.cpp"
+
+LOG_CHANNEL(Host);
 
 QtProgressCallback::QtProgressCallback(QObject* parent /* = nullptr */) : QObject(parent)
 {
@@ -36,6 +39,8 @@ void QtProgressCallback::SetStatusText(const std::string_view text)
 {
   ProgressCallback::SetStatusText(text);
   emit statusTextUpdated(QtUtils::StringViewToQString(text));
+  if (!text.empty())
+    INFO_LOG(text);
 }
 
 void QtProgressCallback::SetProgressRange(u32 range)
@@ -97,6 +102,8 @@ void QtAsyncTaskWithProgress::SetStatusText(const std::string_view text)
 {
   ProgressCallback::SetStatusText(text);
   emit statusTextUpdated(QtUtils::StringViewToQString(text));
+  if (!text.empty())
+    INFO_LOG(text);
 }
 
 void QtAsyncTaskWithProgress::SetProgressRange(u32 range)
@@ -345,6 +352,9 @@ void QtAsyncTaskWithProgressDialog::SetStatusText(const std::string_view text)
   {
     CheckForDelayedShow();
   }
+
+  if (!text.empty())
+    INFO_LOG(text);
 }
 
 void QtAsyncTaskWithProgressDialog::SetProgressRange(u32 range)

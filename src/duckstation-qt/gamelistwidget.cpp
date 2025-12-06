@@ -2165,15 +2165,21 @@ void GameListWidget::setPreferAchievementGameIcons(bool enabled)
 
 void GameListWidget::downloadAllGameIcons()
 {
-  QtAsyncTaskWithProgressDialog::create(
-    this, tr("Loading Game Icons").toStdString(), tr("Downloading game icons...").toStdString(), true, 0, 0, 0.0f,
-    [](ProgressCallback* progress) -> std::function<void()> {
-      Error error;
-      if (!Achievements::DownloadGameIcons(progress, &error))
-        WARNING_LOG("Failed to download game icons: {}", error.GetDescription());
+  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_STR("GameListWidget", "Download Game Badges"),
+                                        TRANSLATE_STR("GameListWidget", "Downloading game badges..."), true, 0, 0, 0.0f,
+                                        [](ProgressCallback* progress) -> std::function<void()> {
+                                          Error error;
+                                          const bool result = Achievements::DownloadGameIcons(progress, &error);
+                                          return [error = std::move(error), result]() {
+                                            if (!result)
+                                            {
+                                              g_main_window->reportError(
+                                                tr("Error"), QString::fromStdString(error.GetDescription()));
+                                            }
 
-      return []() { g_main_window->refreshGameListModel(); };
-    });
+                                            g_main_window->refreshGameListModel();
+                                          };
+                                        });
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
