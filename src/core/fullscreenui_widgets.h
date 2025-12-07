@@ -54,6 +54,7 @@ inline constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 inline constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
 inline constexpr float LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING = 6.0f;
 inline constexpr float LAYOUT_MENU_ITEM_EXTRA_HEIGHT = 2.0f;
+static constexpr float LAYOUT_MENU_ITEM_BORDER_ROUNDING = 10.0f;
 inline constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 inline constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -426,9 +427,22 @@ bool HorizontalMenuButton(std::string_view title, bool enabled = true,
 void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void EndNavBar();
 void NavTitle(std::string_view title);
-void RightAlignNavButtons(u32 num_items = 0);
+void RightAlignNavButtons(u32 num_items);
+void RightAlignNavButtons(float total_width);
 bool NavButton(std::string_view title, bool is_active, bool enabled = true);
 bool NavTab(std::string_view title, bool is_active, bool enabled, float width);
+
+bool BeginFloatingNavBar(float x, float y, float items_width, float font_size = UIStyle.LargeFontSize,
+                         float anchor_x = 0.0f, float anchor_y = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
+                         float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
+void EndFloatingNavBar();
+float CalcFloatingNavBarButtonWidth(std::string_view title, float icon_size = UIStyle.LargeFontSize,
+                                    float font_size = UIStyle.LargeFontSize, float font_weight = UIStyle.BoldFontWeight,
+                                    float x_padding = LAYOUT_MENU_BUTTON_X_PADDING);
+bool FloatingNavBarIcon(std::string_view title, ImTextureID image, bool is_active,
+                        float image_size = UIStyle.LargeFontSize, float font_size = UIStyle.LargeFontSize,
+                        float font_weight = UIStyle.BoldFontWeight, bool enabled = true,
+                        const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
 
 bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, const ImVec4& bg_color,
                          u32 num_items);

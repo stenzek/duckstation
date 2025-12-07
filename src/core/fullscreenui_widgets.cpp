@@ -50,7 +50,6 @@ LOG_CHANNEL(FullscreenUI);
 namespace FullscreenUI {
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
-static constexpr float MENU_ITEM_BORDER_ROUNDING = 10.0f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
@@ -1572,7 +1571,7 @@ void FullscreenUI::PrerenderMenuButtonBorder()
   const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
   ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-  ImGui::RenderFrame(min, max, col, true, LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+  ImGui::RenderFrame(min, max, col, true, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
   ImGui::PopStyleColor();
 
@@ -1773,7 +1772,7 @@ void FullscreenUI::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max,
   if (!s_state.rendered_menu_item_border)
   {
     s_state.rendered_menu_item_border = true;
-    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
   }
 }
 
@@ -2324,17 +2323,21 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   else if (anchor_x == -0.5f)
     x -= (width * 0.5f);
   else if (anchor_x == 0.5f)
-    x = (window_size.x * 0.5f) - (width * 0.5f) - x;
+    x = (window_size.x * 0.5f) - (width * 0.5f) - LayoutScale(x);
   else if (anchor_x == 1.0f)
-    x = window_size.x - width - x;
+    x = window_size.x - width - LayoutScale(x);
+  else
+    x = LayoutScale(x);
   if (anchor_y == -1.0f)
     y -= height;
   else if (anchor_y == -0.5f)
     y -= (height * 0.5f);
   else if (anchor_y == 0.5f)
-    y = (window_size.y * 0.5f) - (height * 0.5f) - y;
+    y = (window_size.y * 0.5f) - (height * 0.5f) - LayoutScale(y);
   else if (anchor_y == 1.0f)
-    y = window_size.y - height - y;
+    y = window_size.y - height - LayoutScale(y);
+  else
+    y = LayoutScale(y);
 
   if (out_position)
     *out_position = ImVec2(x, y);
@@ -2679,7 +2682,7 @@ void FullscreenUI::BeginHorizontalMenuButtons(u32 num_items, float max_item_widt
   for (u32 i = 0; i < num_items; i++)
   {
     ImGui::RenderFrame(current_pos, current_pos + s_state.horizontal_menu_button_size, frame_background, false,
-                       LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+                       LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
     current_pos.x += s_state.horizontal_menu_button_size.x + style.ItemSpacing.x;
   }
@@ -2801,15 +2804,22 @@ void FullscreenUI::NavTitle(std::string_view title)
                             ImGui::GetColorU32(ImGuiCol_Text), title, &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
 }
 
-void FullscreenUI::RightAlignNavButtons(u32 num_items /*= 0*/)
+void FullscreenUI::RightAlignNavButtons(u32 num_items)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   const ImGuiStyle& style = ImGui::GetStyle();
-
   const float total_item_width = style.FramePadding.x * 2.0f + style.FrameBorderSize + style.ItemSpacing.x +
                                  LayoutScale(LAYOUT_LARGE_FONT_SIZE - 1.0f);
   const float margin = total_item_width * static_cast<float>(num_items);
   ImGui::SetCursorPosX(window->InnerClipRect.Max.x - margin - style.FramePadding.x);
+}
+
+void FullscreenUI::RightAlignNavButtons(float total_width)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  const ImGuiStyle& style = ImGui::GetStyle();
+
+  ImGui::SetCursorPosX(window->InnerClipRect.Max.x - total_width - style.FramePadding.x);
 }
 
 bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enabled /* = true */)
@@ -2925,7 +2935,7 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
   {
     const ImU32 col = hovered ? ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f) :
                                 ImGui::GetColorU32(DarkerColor(style.Colors[ImGuiCol_ButtonHovered]));
-    ImGui::RenderFrame(bb.Min, bb.Max, col, true, LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+    ImGui::RenderFrame(bb.Min, bb.Max, col, true, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
   }
 
   const ImVec2 pad(std::max((size.x - text_size.x) * 0.5f, 0.0f), std::max((size.y - text_size.y) * 0.5f, 0.0f));
@@ -2936,6 +2946,170 @@ bool FullscreenUI::NavTab(std::string_view title, bool is_active, bool enabled, 
     UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, bb.Min, bb.Max,
     ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered), title,
     nullptr, ImVec2(0.0f, 0.0f), 0.0f, &bb);
+
+  return pressed;
+}
+
+bool FullscreenUI::BeginFloatingNavBar(float x, float y, float items_width,
+                                       float font_size /* = UIStyle.LargeFontSize */, float anchor_x /* = 0.0f */,
+                                       float anchor_y /* = 0.0f */,
+                                       float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */,
+                                       float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */)
+{
+  if (ImGui::GetCurrentWindowRead()->SkipItems)
+    return false;
+
+  const ImVec2 padding = LayoutScale(x_padding, y_padding);
+  const float width = (padding.x * 2.0f) + items_width;
+  const float height = (padding.y * 2.0f) + font_size;
+
+  const ImVec2 window_size = ImGui::GetWindowSize();
+  ImVec2 local_pos = LayoutScale(x, y);
+  if (anchor_x == -1.0f)
+    local_pos.x -= width;
+  else if (anchor_x == -0.5f)
+    local_pos.x -= (width * 0.5f);
+  else if (anchor_x == 0.5f)
+    local_pos.x = (window_size.x * 0.5f) - (width * 0.5f) - local_pos.x;
+  else if (anchor_x == 1.0f)
+    local_pos.x = window_size.x - width - local_pos.x;
+  if (anchor_y == -1.0f)
+    local_pos.y -= height;
+  else if (anchor_y == -0.5f)
+    local_pos.y -= (height * 0.5f);
+  else if (anchor_y == 0.5f)
+    local_pos.y = (window_size.y * 0.5f) - (height * 0.5f) - local_pos.y;
+  else if (anchor_y == 1.0f)
+    local_pos.y = window_size.y - height - local_pos.y;
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 0.0f));
+  PushPrimaryColor();
+
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 nav_pos = ImGui::GetWindowPos() + local_pos;
+  const ImVec2 nav_size = ImVec2(items_width, font_size + style.FramePadding.y * 2.0f);
+  ImGui::GetWindowDrawList()->AddRectFilled(nav_pos, nav_pos + nav_size,
+                                            ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundHighlight, 0.4f)),
+                                            LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  ImGui::SetCursorPos(local_pos);
+
+  return true;
+}
+
+void FullscreenUI::EndFloatingNavBar()
+{
+  PopPrimaryColor();
+  ImGui::PopStyleVar(4);
+}
+
+float FullscreenUI::CalcFloatingNavBarButtonWidth(std::string_view title, float icon_size /* = UIStyle.LargeFontSize */,
+                                                  float font_size /* = UIStyle.LargeFontSize */,
+                                                  float font_weight /* = UIStyle.BoldFontWeight */,
+                                                  float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */)
+{
+  float text_width;
+  if (!title.empty())
+  {
+    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(),
+                                                         0.0f, IMSTR_START_END(title));
+    text_width = text_size.x;
+
+    if (icon_size > 0.0f)
+    {
+      text_width +=
+        (UIStyle.Font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(), 0.0f, " ").x * 2.0f);
+    }
+  }
+  else
+  {
+    text_width = 0.0f;
+  }
+
+  return icon_size + text_width + (LayoutScale(x_padding) * 2.0f) + /* spacing */ LayoutScale(1.0f);
+}
+
+bool FullscreenUI::FloatingNavBarIcon(std::string_view title, ImTextureID image, bool is_active,
+                                      float image_size /* = UIStyle.LargeFontSize */,
+                                      float font_size /* = UIStyle.LargeFontSize */,
+                                      float font_weight /* = UIStyle.BoldFontWeight */, bool enabled /* = true */,
+                                      const ImVec2& uv0 /* = ImVec2(0.0f, 0.0f) */,
+                                      const ImVec2& uv1 /* = ImVec2(1.0f, 1.0f) */)
+{
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (window->SkipItems)
+    return false;
+
+  const ImVec2 text_size = !title.empty() ?
+                             UIStyle.Font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(),
+                                                         0.0f, IMSTR_START_END(title)) :
+                             ImVec2();
+  const float text_space_size =
+    (!title.empty() && image) ?
+      (UIStyle.Font->CalcTextSizeA(font_size, font_weight, std::numeric_limits<float>::max(), 0.0f, " ").x * 2.0f) :
+      0.0f;
+  const ImVec2 pos(window->DC.CursorPos);
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const ImVec2 size = ImVec2(image_size + text_space_size + text_size.x + style.FramePadding.x * 2.0f,
+                             text_size.y + style.FramePadding.y * 2.0f);
+
+  ImGui::ItemSize(
+    ImVec2(size.x + style.FrameBorderSize + style.ItemSpacing.x, size.y + style.FrameBorderSize + style.ItemSpacing.y));
+  ImGui::SameLine();
+
+  ImRect bb(pos, pos + size);
+  const ImGuiID id = window->GetID(IMSTR_START_END(title));
+  if (enabled)
+  {
+    // bit contradictory - we don't want this button to be used for *gamepad* navigation, since they're usually
+    // activated with the bumpers and/or the back button.
+    if (!ImGui::ItemAdd(bb, id, nullptr, ImGuiItemFlags_NoNav | ImGuiItemFlags_NoNavDefaultFocus))
+      return false;
+  }
+  else
+  {
+    if (ImGui::IsClippedEx(bb, id))
+      return false;
+  }
+
+  bool held;
+  bool pressed;
+  bool hovered;
+  if (enabled)
+  {
+    pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
+    if (hovered || is_active)
+    {
+      // Intentionally no animation here.
+      const ImU32 col = ImGui::GetColorU32((hovered && !held) ? ImGuiCol_ButtonHovered : ImGuiCol_ButtonActive, 1.0f);
+      ImGui::RenderFrame(bb.Min, bb.Max, col, false, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+    }
+  }
+  else
+  {
+    pressed = false;
+    held = false;
+    hovered = false;
+  }
+
+  bb.Min += style.FramePadding;
+  bb.Max -= style.FramePadding;
+
+  if (image)
+  {
+    const ImVec2& image_min = bb.Min;
+    const ImVec2 image_max = image_min + ImVec2(image_size, image_size);
+    ImGui::GetWindowDrawList()->AddImage(image, image_min, image_max, uv0, uv1,
+                                         ImGui::GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled));
+    bb.Min.x = image_max.x + text_space_size;
+  }
+
+  RenderShadowedTextClipped(
+    UIStyle.Font, font_size, font_weight, bb.Min, bb.Max,
+    ImGui::GetColorU32(enabled ? (is_active ? ImGuiCol_Text : ImGuiCol_TextDisabled) : ImGuiCol_ButtonHovered), title,
+    &text_size, ImVec2(0.0f, 0.0f), 0.0f, &bb);
 
   return pressed;
 }
@@ -3556,7 +3730,7 @@ void FullscreenUI::ChoiceDialog::Draw()
 
         ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(),
                            ImGui::GetColorU32(DarkerColor(UIStyle.PopupBackgroundColor, 0.6f)), false,
-                           LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+                           LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
         break;
       }
     }
@@ -5195,7 +5369,7 @@ void FullscreenUI::UpdateTheme()
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
     UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x999999, 0xff);
+    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x444444, 0xff);
     UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0x8e8e8e, 0xff);
     UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);

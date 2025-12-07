@@ -42,3 +42,5 @@
 #define ICON_EMOJI_CLOCK_FIVE_OCLOCK "\xf0\x9f\x95\x94"
 #define ICON_EMOJI_DESKTOP_COMPUTER "\xf0\x9f\x96\xa5"
 #define ICON_EMOJI_INDEX_DIVIDERS "\xf0\x9f\x97\x82"
+#define ICON_EMOJI_CLIPBOARD "\xf0\x9f\x93\x8b"
+#define ICON_EMOJI_NOTEBOOK "\xf0\x9f\x93\x99"
