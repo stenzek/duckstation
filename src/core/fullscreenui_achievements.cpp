@@ -126,6 +126,8 @@ struct AchievementsLocals
   rc_client_leaderboard_entry_list_t* leaderboard_nearby_entries;
   bool is_showing_all_leaderboard_entries = false;
   bool has_fetched_all_leaderboard_entries = false;
+
+  u32 last_open_subset_id = 0;
 };
 
 } // namespace
@@ -161,6 +163,7 @@ void FullscreenUI::ClearAchievementsState()
 
   s_achievements_locals.open_subset = nullptr;
   s_achievements_locals.subset_info_list.clear();
+  s_achievements_locals.last_open_subset_id = 0;
 
   s_achievements_locals.most_recent_unlock.reset();
   s_achievements_locals.achievement_nearest_completion.reset();
@@ -716,6 +719,7 @@ void FullscreenUI::SetCurrentSubsetID(u32 subset_id)
     if (info.subset_id == subset_id)
     {
       s_achievements_locals.open_subset = &info;
+      s_achievements_locals.last_open_subset_id = subset_id;
       QueueResetFocus(FocusResetType::ViewChanged);
       return;
     }
@@ -744,7 +748,13 @@ void FullscreenUI::CollectSubsetsFromList(const T* list)
 
     // hopefully the first will be core...
     Assert(s_achievements_locals.subset_info_list.size() > 1);
-    s_achievements_locals.open_subset = &s_achievements_locals.subset_info_list[0];
+    const auto it = std::ranges::find_if(s_achievements_locals.subset_info_list, [](const SubsetInfo& info) {
+      return info.subset_id == s_achievements_locals.last_open_subset_id;
+    });
+    if (it != s_achievements_locals.subset_info_list.end())
+      s_achievements_locals.open_subset = &(*it);
+    else
+      s_achievements_locals.open_subset = &s_achievements_locals.subset_info_list[0];
   }
 }
 
