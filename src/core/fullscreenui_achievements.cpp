@@ -98,6 +98,7 @@ struct AchievementsLocals
   std::vector<std::pair<const rc_client_leaderboard_entry_t*, std::string>> leaderboard_user_icon_paths;
   rc_client_leaderboard_entry_list_t* leaderboard_nearby_entries;
   bool is_showing_all_leaderboard_entries = false;
+  bool has_fetched_all_leaderboard_entries = false;
 };
 
 } // namespace
@@ -1404,11 +1405,14 @@ void FullscreenUI::DrawLeaderboardsWindow()
           }
         }
 
-        bool visible;
-        text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
-        MenuButtonWithVisibilityQuery(text, text, {}, {}, &visible, false);
-        if (visible && !s_achievements_locals.leaderboard_fetch_handle)
-          FetchNextLeaderboardEntries();
+        if (!s_achievements_locals.has_fetched_all_leaderboard_entries)
+        {
+          bool visible;
+          text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
+          MenuButtonWithVisibilityQuery(text, text, {}, {}, &visible, false);
+          if (visible && !s_achievements_locals.leaderboard_fetch_handle)
+            FetchNextLeaderboardEntries();
+        }
       }
 
       EndMenuButtons();
@@ -1548,6 +1552,7 @@ bool FullscreenUI::OpenLeaderboardById(u32 leaderboard_id)
 
   s_achievements_locals.open_leaderboard = lb;
   s_achievements_locals.is_showing_all_leaderboard_entries = false;
+  s_achievements_locals.has_fetched_all_leaderboard_entries = false;
   s_achievements_locals.leaderboard_fetch_handle = rc_client_begin_fetch_leaderboard_entries_around_user(
     client, lb->id, LEADERBOARD_NEARBY_ENTRIES_TO_FETCH, LeaderboardFetchNearbyCallback, nullptr);
   QueueResetFocus(FocusResetType::Other);
@@ -1592,6 +1597,9 @@ void FullscreenUI::LeaderboardFetchAllCallback(int result, const char* error_mes
     QueueResetFocus(FocusResetType::Other);
 
   s_achievements_locals.leaderboard_entry_lists.push_back(list);
+
+  // at the end if we don't have the request size full of entries
+  s_achievements_locals.has_fetched_all_leaderboard_entries |= (list->num_entries < LEADERBOARD_ALL_FETCH_SIZE);
 }
 
 void FullscreenUI::FetchNextLeaderboardEntries()
@@ -1616,7 +1624,9 @@ void FullscreenUI::CloseLeaderboard()
 
   for (auto iter = s_achievements_locals.leaderboard_entry_lists.rbegin();
        iter != s_achievements_locals.leaderboard_entry_lists.rend(); ++iter)
+  {
     rc_client_destroy_leaderboard_entry_list(*iter);
+  }
   s_achievements_locals.leaderboard_entry_lists.clear();
 
   if (s_achievements_locals.leaderboard_nearby_entries)
@@ -1632,6 +1642,8 @@ void FullscreenUI::CloseLeaderboard()
   }
 
   s_achievements_locals.open_leaderboard = nullptr;
+  s_achievements_locals.has_fetched_all_leaderboard_entries = false;
+  s_achievements_locals.is_showing_all_leaderboard_entries = false;
 }
 
 #endif // __ANDROID__
