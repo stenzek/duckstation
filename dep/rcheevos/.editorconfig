@@ -11,5 +11,7 @@ insert_final_newline = true
 charset                  = latin1
 indent_style             = space
 indent_size              = 2
+continuation_indent_size = 4
 trim_trailing_whitespace = true
 curly_bracket_next_line  = false
+indent_brace_style       = K&R

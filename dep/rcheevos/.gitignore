@@ -63,3 +63,6 @@ test/galaga_nes.h
 test/smw_snes.h
 validator/validator
 .vscode/*
+
+# Swift Package Manager
+.swiftpm/

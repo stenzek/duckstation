@@ -316,6 +316,8 @@ typedef struct rc_client_state_t {
   rc_client_raintegration_t* raintegration;
 #endif
 
+  uint32_t frames_processed;
+  uint32_t frames_at_last_ping;
   uint16_t unpaused_frame_decay;
   uint16_t required_unpaused_frames;
 
