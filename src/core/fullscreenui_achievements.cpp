@@ -24,6 +24,9 @@ namespace FullscreenUI {
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
 static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachievements.org/user/{}";
 
+static constexpr float WINDOW_ALPHA = 0.9f;
+static constexpr float WINDOW_HEADING_ALPHA = 0.95f;
+
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
@@ -628,15 +631,12 @@ void FullscreenUI::DrawAchievementsWindow()
     return;
   }
 
-  static constexpr float alpha = 0.8f;
-  static constexpr float heading_alpha = 0.95f;
-
   const rc_client_user_game_summary_t& summary = Achievements::GetGameSummary();
   const float heading_height_unscaled = ((summary.beaten_time > 0 || summary.completed_time) ? 122.0f : 102.0f) +
                                         ((summary.num_unsupported_achievements > 0) ? 20.0f : 0.0f);
 
-  const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, alpha);
-  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, heading_alpha);
+  const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, WINDOW_ALPHA);
+  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, WINDOW_HEADING_ALPHA);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float heading_height = LayoutScale(heading_height_unscaled);
   bool close_window = false;
@@ -667,7 +667,7 @@ void FullscreenUI::DrawAchievementsWindow()
     SmallString text;
     ImVec2 text_size;
 
-    close_window = (FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) || WantsToCloseMenu());
+    close_window = (FloatingButton(ICON_FA_XMARK, 10.0f, 10.0f, 1.0f, 0.0f, true) || WantsToCloseMenu());
 
     const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFontSize));
     text.assign(Achievements::GetGameTitle());
@@ -705,7 +705,7 @@ void FullscreenUI::DrawAchievementsWindow()
 
     top += UIStyle.MediumFontSize + spacing;
 
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, summary_bb.Min,
+    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
                               summary_bb.Max, ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
                               text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
@@ -753,7 +753,7 @@ void FullscreenUI::DrawAchievementsWindow()
       }
 
       const ImRect beaten_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFontSize));
-      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, beaten_bb.Min,
+      RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, beaten_bb.Min,
                                 beaten_bb.Max, ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
                                 text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &beaten_bb);
 
@@ -776,12 +776,12 @@ void FullscreenUI::DrawAchievementsWindow()
       }
 
       text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
-      text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
+      text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f,
                                               IMSTR_START_END(text));
       const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                             progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) -
                               (text_size.y / 2.0f));
-      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.BoldFontWeight, text_pos,
+      dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos,
                   ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(text));
       // top += progress_height + spacing;
     }
@@ -1084,8 +1084,6 @@ void FullscreenUI::SwitchToLeaderboards()
 
 void FullscreenUI::DrawLeaderboardsWindow()
 {
-  static constexpr float alpha = 0.9f;
-  static constexpr float heading_alpha = 0.95f;
   static constexpr float heading_height_unscaled = 102.0f;
 
   const auto lock = Achievements::GetLock();
@@ -1100,8 +1098,8 @@ void FullscreenUI::DrawLeaderboardsWindow()
 
   SmallString text;
 
-  const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, alpha);
-  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, heading_alpha);
+  const ImVec4 background = ModAlpha(UIStyle.BackgroundColor, WINDOW_ALPHA);
+  const ImVec4 heading_background = ModAlpha(UIStyle.BackgroundColor, WINDOW_HEADING_ALPHA);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
   const float spacing = LayoutScale(10.0f);
