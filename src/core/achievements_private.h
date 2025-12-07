@@ -32,6 +32,8 @@ std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, 
                                     bool download_if_missing = true);
 std::string GetLeaderboardUserBadgePath(const rc_client_leaderboard_entry_t* entry);
 
+std::string GetSubsetBadgePath(const rc_client_subset_t* subset);
+
 } // namespace Achievements
 
 #ifndef __ANDROID__

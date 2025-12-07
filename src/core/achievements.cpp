@@ -1394,16 +1394,7 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
   if (g_settings.achievements_notifications && event->subset->badge_name[0] != '\0')
   {
     // Need to grab the icon for the subset.
-    std::string badge_path = GetLocalImagePath(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
-    if (!FileSystem::FileExists(badge_path.c_str()))
-    {
-      std::string url;
-      if (IsUsingRAIntegration() || !event->subset->badge_url)
-        url = GetImageURL(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
-      else
-        url = event->subset->badge_url;
-      DownloadImage(std::move(url), badge_path);
-    }
+    std::string badge_path = GetSubsetBadgePath(event->subset);
 
     std::string message = fmt::format(
       TRANSLATE_FS("Achievements", "Subset complete.\n{0}, {1}."),
@@ -1871,6 +1862,22 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
   }
 
   return path;
+}
+
+std::string Achievements::GetSubsetBadgePath(const rc_client_subset_t* subset)
+{
+  std::string badge_path = GetLocalImagePath(subset->badge_name, RC_IMAGE_TYPE_GAME);
+  if (!FileSystem::FileExists(badge_path.c_str()))
+  {
+    std::string url;
+    if (IsUsingRAIntegration() || !subset->badge_url)
+      url = GetImageURL(subset->badge_name, RC_IMAGE_TYPE_GAME);
+    else
+      url = subset->badge_url;
+    DownloadImage(std::move(url), badge_path);
+  }
+
+  return badge_path;
 }
 
 bool Achievements::IsLoggedIn()
