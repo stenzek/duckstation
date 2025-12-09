@@ -4932,8 +4932,8 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float& note_font_size = UIStyle.MediumFontSize;
   const float& note_font_weight = UIStyle.BoldFontWeight;
 
-  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.2f);
-  const ImVec4& right_background_color = UIStyle.ToastBackgroundColor;
+  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+  const ImVec4& right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
 
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
@@ -4954,7 +4954,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
-    const float full_box_width =
+    const float box_width =
       std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
                  ImCeil(std::max(title_size.x + (notif.note.empty() ? 0.0f : (larger_horizontal_spacing + note_size.x)),
                                  text_size.x)),
@@ -4963,23 +4963,20 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
     float opacity = 1.0f;
-    float box_width = full_box_width;
-    bool clip_box = false;
+    float box_start = position.x;
     if (time_passed < NOTIFICATION_APPEAR_ANIMATION_TIME)
     {
       const float pct = time_passed / NOTIFICATION_APPEAR_ANIMATION_TIME;
       const float eased_pct = Easing::OutExpo(pct);
-      box_width = ImCeil(box_width * eased_pct);
+      box_start = ImFloor(position.x - (box_width * 0.2f * (1.0f - eased_pct)));
       opacity = pct;
-      clip_box = true;
     }
     else if (time_passed >= (notif.duration - NOTIFICATION_DISAPPEAR_ANIMATION_TIME))
     {
       const float pct = (notif.duration - time_passed) / NOTIFICATION_DISAPPEAR_ANIMATION_TIME;
       const float eased_pct = Easing::OutExpo(pct);
-      box_width = ImCeil(box_width * eased_pct);
+      box_start = ImFloor(position.x - (box_width * 0.2f * (1.0f - eased_pct)));
       opacity = eased_pct;
-      clip_box = true;
     }
 
     const float expected_y = position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f);
@@ -5007,34 +5004,24 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
       }
     }
 
-    const ImVec2 box_min(position.x, actual_y);
+    const ImVec2 box_min(box_start, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
     const float background_opacity = opacity * 0.95f;
-    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
-    if (box_width <= min_rounded_width)
-    {
-      dl->AddRectFilled(box_min, box_max, left_background_color32, rounding, ImDrawFlags_RoundCornersAll);
-    }
-    else
-    {
-      const u32 right_background_color32 =
-        ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
-                                           (box_width - min_rounded_width) / (full_box_width - min_rounded_width)),
-                                    background_opacity));
+    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
+    const u32 right_background_color32 =
+      ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
+                                         (box_width - min_rounded_width) / (box_width - min_rounded_width)),
+                                  background_opacity));
 
-      dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
-                        ImDrawFlags_RoundCornersLeft);
-      dl->AddRectFilledMultiColor(ImVec2(box_min.x + rounding, box_min.y), ImVec2(box_max.x - rounding, box_max.y),
-                                  left_background_color32, right_background_color32, right_background_color32,
-                                  left_background_color32);
-      dl->AddRectFilled(ImVec2(box_max.x - rounding, box_min.y), box_max, right_background_color32, rounding,
-                        ImDrawFlags_RoundCornersRight);
-    }
-
-    if (clip_box)
-      dl->PushClipRect(box_min, box_max);
+    dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
+                      ImDrawFlags_RoundCornersLeft);
+    dl->AddRectFilledMultiColor(ImVec2(box_min.x + rounding, box_min.y), ImVec2(box_max.x - rounding, box_max.y),
+                                left_background_color32, right_background_color32, right_background_color32,
+                                left_background_color32);
+    dl->AddRectFilled(ImVec2(box_max.x - rounding, box_min.y), box_max, right_background_color32, rounding,
+                      ImDrawFlags_RoundCornersRight);
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
@@ -5064,14 +5051,11 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     if (!notif.note.empty())
     {
       const ImVec2 note_pos =
-        ImVec2((box_min.x + full_box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
+        ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
       const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
       RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
                                 notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
     }
-
-    if (clip_box)
-      dl->PopClipRect();
 
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
