@@ -4913,6 +4913,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float horizontal_padding = FullscreenUI::LayoutScale(20.0f);
   const float vertical_padding = FullscreenUI::LayoutScale(15.0f);
   const float horizontal_spacing = FullscreenUI::LayoutScale(10.0f);
+  const float larger_horizontal_spacing = FullscreenUI::LayoutScale(18.0f);
   const float vertical_spacing = FullscreenUI::LayoutScale(4.0f);
   const float badge_size = FullscreenUI::LayoutScale(48.0f);
   const float min_width = FullscreenUI::LayoutScale(200.0f);
@@ -4953,10 +4954,11 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
                                                  IMSTR_START_END(notif.text));
 
-    const float full_box_width = std::max(
-      (horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
-        ImCeil(std::max(title_size.x, text_size.x) + (notif.note.empty() ? 0.0f : (horizontal_spacing + note_size.x))),
-      min_width);
+    const float full_box_width =
+      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+                 ImCeil(std::max(title_size.x + (notif.note.empty() ? 0.0f : (larger_horizontal_spacing + note_size.x)),
+                                 text_size.x)),
+               min_width);
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
