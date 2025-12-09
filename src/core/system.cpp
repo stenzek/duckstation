@@ -4933,6 +4933,10 @@ void System::WarnAboutUnsafeSettings()
     {
       append(TRANSLATE_SV("System", "Texture filtering disabled."));
     }
+    if (g_settings.gpu_wireframe_mode != GPUWireframeMode::Disabled)
+      append(TRANSLATE_SV("System", "Wireframe rendering disabled."));
+    if (g_settings.gpu_downsample_mode != GPUDownsampleMode::Disabled)
+      append(TRANSLATE_SV("System", "Downsampling disabled."));
     if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
       append(TRANSLATE_SV("System", "Interlaced rendering enabled."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
