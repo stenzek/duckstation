@@ -464,10 +464,11 @@ void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 
   // Need to take a copy of the display texture.
   GPUTexture* const read_texture = presenter.GetDisplayTexture();
-  const u32 read_x = static_cast<u32>(presenter.GetDisplayTextureViewX());
-  const u32 read_y = static_cast<u32>(presenter.GetDisplayTextureViewY());
-  const u32 read_width = static_cast<u32>(presenter.GetDisplayTextureViewWidth());
-  const u32 read_height = static_cast<u32>(presenter.GetDisplayTextureViewHeight());
+  const GSVector4i read_rect = presenter.GetDisplayTextureRect();
+  const u32 read_x = static_cast<u32>(read_rect.x);
+  const u32 read_y = static_cast<u32>(read_rect.y);
+  const u32 read_width = static_cast<u32>(read_rect.width());
+  const u32 read_height = static_cast<u32>(read_rect.height());
   const ImageFormat read_format = GPUTexture::GetImageFormatForTextureFormat(read_texture->GetFormat());
   if (read_format == ImageFormat::None)
     return;

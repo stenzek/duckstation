@@ -549,11 +549,19 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
 {
   s_stats.gpu_busy_pct = cmd->gpu_busy_pct;
 
+  // Assumptions about struct layout.
+  static_assert(offsetof(GPUBackendUpdateDisplayCommand, display_width) + sizeof(u16) ==
+                offsetof(GPUBackendUpdateDisplayCommand, display_height));
+  static_assert(offsetof(GPUBackendUpdateDisplayCommand, display_origin_left) + sizeof(u16) ==
+                offsetof(GPUBackendUpdateDisplayCommand, display_origin_top));
+
   // Height has to be doubled because we halved it on the GPU side.
-  m_presenter.SetDisplayParameters(cmd->display_width, cmd->display_height, cmd->display_origin_left,
-                                   cmd->display_origin_top, cmd->display_vram_width,
-                                   cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled),
-                                   cmd->display_pixel_aspect_ratio, cmd->display_24bit);
+  const GSVector2i display_size = GSVector2i::load32(&cmd->display_width).u16to32();
+  const GSVector2i active_origin = GSVector2i::load32(&cmd->display_origin_left).u16to32();
+  const GSVector2i active_size =
+    GSVector2i(cmd->display_vram_width, cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled));
+  const GSVector4i active_rect = GSVector4i::xyxy(active_origin, active_origin.add32(active_size));
+  m_presenter.SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
 
   UpdateDisplay(cmd);
   if (cmd->submit_frame)
@@ -693,9 +701,10 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
       else
       {
         // Crop it if border overlay isn't enabled.
-        GSVector4i draw_rect, display_rect;
-        backend->GetPresenter().CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), apply_aspect_ratio,
-                                                  false, false, &display_rect, &draw_rect);
+        GSVector4i source_rect, draw_rect, display_rect;
+        backend->GetPresenter().CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
+                                                  apply_aspect_ratio, false, false, &source_rect, &display_rect,
+                                                  &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }

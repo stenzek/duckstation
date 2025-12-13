@@ -12,6 +12,7 @@
 
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "common/gsvector.h"
 #include "common/types.h"
 
 #include <algorithm>
@@ -196,7 +197,7 @@ public:
   float ComputeAspectRatioCorrection() const;
 
   /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
-  static void ApplyPixelAspectRatioToSize(float par, float* width, float* height);
+  static GSVector2 ApplyPixelAspectRatioToSize(float par, GSVector2 size);
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
@@ -216,9 +217,11 @@ public:
 
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;
-  ALWAYS_INLINE u16 GetCRTCDotClockDivider() const { return m_crtc_state.dot_clock_divider; }
-  ALWAYS_INLINE s32 GetCRTCDisplayWidth() const { return m_crtc_state.display_width; }
-  ALWAYS_INLINE s32 GetCRTCDisplayHeight() const { return m_crtc_state.display_height; }
+
+  // Video output access.
+  GSVector2i GetCRTCVideoSize() const;
+  GSVector4i GetCRTCVideoActiveRect() const;
+  GSVector4i GetCRTCVRAMSourceRect() const;
 
   // Ticks for hblank/vblank.
   void CRTCTickEvent(TickCount ticks);
@@ -238,11 +241,11 @@ public:
   u8 CalculateAutomaticResolutionScale() const;
 
   /// Helper function for computing the draw rectangle in a larger window.
-  static void CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
-                                s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
-                                u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                                float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
-                                GSVector4i* draw_rect);
+  static void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
+                                const GSVector4i& video_active_rect, const GSVector4i& source_rect,
+                                DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
+                                bool integer_scale, GSVector4i* out_source_rect, GSVector4i* out_display_rect,
+                                GSVector4i* out_draw_rect);
 
 private:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
@@ -274,7 +277,7 @@ private:
   void UpdateDMARequest();
   void UpdateGPUIdle();
 
-  /// Updates drawing area that's suitablef or clamping.
+  /// Updates drawing area that's suitable for clamping.
   void SetClampedDrawingArea();
 
   /// Sets/decodes GP0(E1h) (set draw mode).

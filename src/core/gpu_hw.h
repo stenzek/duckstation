@@ -263,8 +263,8 @@ private:
   void UpdateDownsamplingLevels();
 
   void DownsampleFramebuffer();
-  void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
-  void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferAdaptive(GPUTexture* source, const GSVector4i& source_rect);
+  void DownsampleFramebufferBoxFilter(GPUTexture* source, const GSVector4i& source_rect);
 
   void LoadInternalPostProcessing();
 
