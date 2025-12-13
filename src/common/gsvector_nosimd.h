@@ -417,7 +417,7 @@ public:
   }
 
   ALWAYS_INLINE bool alltrue() const { return (U64[0] == 0xFFFFFFFFFFFFFFFFULL); }
-
+  ALWAYS_INLINE bool anytrue() const { return (U64[0] != 0); }
   ALWAYS_INLINE bool allfalse() const { return (U64[0] == 0); }
 
   template<s32 i>
@@ -638,7 +638,7 @@ public:
   ALWAYS_INLINE int mask() const { return (U32[0] >> 31) | ((U32[1] >> 30) & 2); }
 
   ALWAYS_INLINE bool alltrue() const { return (U64[0] == 0xFFFFFFFFFFFFFFFFULL); }
-
+  ALWAYS_INLINE bool anytrue() const { return (U64[0] != 0); }
   ALWAYS_INLINE bool allfalse() const { return (U64[0] == 0); }
 
   ALWAYS_INLINE GSVector2 replace_nan(const GSVector2& v) const { return v.blend32(*this, *this == *this); }
@@ -1462,7 +1462,7 @@ public:
   }
 
   ALWAYS_INLINE bool alltrue() const { return ((U64[0] & U64[1]) == 0xFFFFFFFFFFFFFFFFULL); }
-
+  ALWAYS_INLINE bool anytrue() const { return ((U64[0] | U64[1]) != 0); }
   ALWAYS_INLINE bool allfalse() const { return ((U64[0] | U64[1]) == 0); }
 
   template<s32 i>
@@ -1862,6 +1862,22 @@ public:
   ALWAYS_INLINE float minv() const { return std::min(x, std::min(y, std::min(z, w))); }
   ALWAYS_INLINE float maxv() const { return std::max(x, std::max(y, std::max(z, w))); }
 
+  ALWAYS_INLINE float width() const { return right - left; }
+  ALWAYS_INLINE float height() const { return bottom - top; }
+
+  ALWAYS_INLINE GSVector2 rsize() const { return GSVector2(width(), height()); }
+  ALWAYS_INLINE bool rempty() const { return ((*this < zwzw()).mask() != 0x3); }
+  ALWAYS_INLINE bool rvalid() const { return (((*this >= zwzw()).mask()) == 0); }
+
+  GSVector4 runion(const GSVector4& v) const
+  {
+    return GSVector4(std::min(x, v.x), std::min(y, v.y), std::max(z, v.z), std::max(w, v.w));
+  }
+
+  ALWAYS_INLINE GSVector4 rintersect(const GSVector4& v) const { return sat(v); }
+  ALWAYS_INLINE bool rintersects(const GSVector4& v) const { return rintersect(v).rvalid(); }
+  ALWAYS_INLINE bool rcontains(const GSVector4& v) const { return rintersect(v).eq(v); }
+
   GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {
     return GSVector4(std::clamp(x, min.x, max.x), std::clamp(y, min.y, max.y), std::clamp(z, min.z, max.z),
@@ -1940,7 +1956,7 @@ public:
   }
 
   ALWAYS_INLINE bool alltrue() const { return ((U64[0] & U64[1]) == 0xFFFFFFFFFFFFFFFFULL); }
-
+  ALWAYS_INLINE bool anytrue() const { return ((U64[0] | U64[1]) != 0); }
   ALWAYS_INLINE bool allfalse() const { return ((U64[0] | U64[1]) == 0); }
 
   ALWAYS_INLINE GSVector4 replace_nan(const GSVector4& v) const { return v.blend32(*this, *this == *this); }
@@ -2000,6 +2016,17 @@ public:
     ret.w = 0.0f;
     return ret;
   }
+
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector4 loadh(const void* p)
+  {
+    GSVector4 ret;
+    ret.U64[0] = 0;
+    std::memcpy(&ret.U64[1], p, sizeof(ret.U64[1]));
+    return ret;
+  }
+
+  ALWAYS_INLINE static GSVector4 loadh(const GSVector2& v) { return loadh<true>(&v); }
 
   template<bool aligned>
   ALWAYS_INLINE static GSVector4 load(const void* p)
@@ -2218,6 +2245,8 @@ public:
     ret.I32[3] = (v1.w <= v2.w) ? -1 : 0;
     return ret;
   }
+
+  ALWAYS_INLINE bool eq(const GSVector4& v) const { return (std::memcmp(F32, v.F32, sizeof(F32))) == 0; }
 
   ALWAYS_INLINE GSVector4 mul64(const GSVector4& v_) const
   {

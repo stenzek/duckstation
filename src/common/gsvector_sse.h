@@ -329,7 +329,7 @@ public:
 #else
     constexpr s32 bit1 = ((mask & 2) * 3) << 1;
     constexpr s32 bit0 = (mask & 1) * 3;
-    return blend16 < bit1 | bit0 > (v);
+    return blend16<bit1 | bit0>(v);
 #endif
   }
 
@@ -527,6 +527,7 @@ public:
   ALWAYS_INLINE s32 mask() const { return (_mm_movemask_epi8(m) & 0xff); }
 
   ALWAYS_INLINE bool alltrue() const { return (mask() == 0xff); }
+  ALWAYS_INLINE bool anytrue() const { return (mask() != 0x00); }
   ALWAYS_INLINE bool allfalse() const { return (mask() == 0x00); }
 
   template<s32 i>
@@ -790,7 +791,7 @@ public:
   ALWAYS_INLINE int mask() const { return (_mm_movemask_ps(m) & 0x3); }
 
   ALWAYS_INLINE bool alltrue() const { return (mask() == 0x3); }
-
+  ALWAYS_INLINE bool anytrue() const { return (mask() != 0x0); }
   ALWAYS_INLINE bool allfalse() const { return (mask() == 0x0); }
 
   ALWAYS_INLINE GSVector2 replace_nan(const GSVector2& v) const { return v.blend32(*this, *this == *this); }
@@ -1349,7 +1350,7 @@ public:
     constexpr s32 bit2 = ((mask & 4) * 3) << 2;
     constexpr s32 bit1 = ((mask & 2) * 3) << 1;
     constexpr s32 bit0 = (mask & 1) * 3;
-    return blend16 < bit3 | bit2 | bit1 | bit0 > (v);
+    return blend16<bit3 | bit2 | bit1 | bit0>(v);
 #endif
   }
 
@@ -1630,12 +1631,21 @@ public:
 
   ALWAYS_INLINE bool alltrue() const { return mask() == 0xffff; }
 
+  ALWAYS_INLINE bool anytrue() const
+  {
+#ifdef CPU_ARCH_SSE41
+    return (_mm_testz_si128(m, m) == 0);
+#else
+    return (mask() != 0);
+#endif
+  }
+
   ALWAYS_INLINE bool allfalse() const
   {
 #ifdef CPU_ARCH_SSE41
-    return _mm_testz_si128(m, m) != 0;
+    return (_mm_testz_si128(m, m) != 0);
 #else
-    return mask() == 0;
+    return (mask() == 0);
 #endif
   }
 
@@ -2102,6 +2112,19 @@ public:
     return _mm_cvtss_f32(v);
   }
 
+  ALWAYS_INLINE float width() const { return right - left; }
+  ALWAYS_INLINE float height() const { return bottom - top; }
+
+  ALWAYS_INLINE GSVector2 rsize() const { return (zwzw() - xyxy()).xy(); }
+  ALWAYS_INLINE bool rempty() const { return ((*this < zwzw()).mask() != 0x3); }
+  ALWAYS_INLINE bool rvalid() const { return (((*this >= zwzw()).mask()) == 0); }
+
+  ALWAYS_INLINE GSVector4 runion(const GSVector4 v) const { return min(v).blend32<0xc>(max(v)); }
+
+  ALWAYS_INLINE GSVector4 rintersect(const GSVector4& v) const { return sat(v); }
+  ALWAYS_INLINE bool rintersects(const GSVector4& v) const { return rintersect(v).rvalid(); }
+  ALWAYS_INLINE bool rcontains(const GSVector4& v) const { return rintersect(v).eq(v); }
+
   ALWAYS_INLINE GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {
     return GSVector4(_mm_min_ps(_mm_max_ps(m, min), max));
@@ -2123,7 +2146,85 @@ public:
   template<int mask>
   ALWAYS_INLINE GSVector4 blend32(const GSVector4& v) const
   {
+#ifdef CPU_ARCH_SSE41
     return GSVector4(_mm_blend_ps(m, v, mask));
+#else
+    // horrible, just horrible
+    static_assert(mask >= 0 && mask < 16);
+    __m128 ret;
+    if constexpr (mask == 0)
+    {
+      ret = m;
+    }
+    else if constexpr (mask == 1)
+    {
+      ret = _mm_move_ss(m, v.m);
+    }
+    else if constexpr (mask == 2)
+    {
+      ret = _mm_shuffle_ps(_mm_shuffle_ps(m, v.m, _MM_SHUFFLE(1, 1, 0, 0)), m, _MM_SHUFFLE(3, 2, 2, 0));
+    }
+    else if constexpr (mask == 3)
+    {
+      ret = _mm_castpd_ps(_mm_move_sd(_mm_castps_pd(m), _mm_castps_pd(v.m)));
+    }
+    else if constexpr (mask == 4)
+    {
+      ret = _mm_shuffle_ps(m, _mm_shuffle_ps(v.m, m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 5)
+    {
+      ret =
+        _mm_shuffle_ps(_mm_move_ss(m, v.m), _mm_shuffle_ps(v.m, m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 6)
+    {
+      ret = _mm_shuffle_ps(_mm_shuffle_ps(m, v.m, _MM_SHUFFLE(1, 1, 0, 0)),
+                           _mm_shuffle_ps(v.m, m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 2, 0));
+    }
+    else if constexpr (mask == 7)
+    {
+      ret = _mm_shuffle_ps(_mm_castpd_ps(_mm_move_sd(_mm_castps_pd(m), _mm_castps_pd(v.m))),
+                           _mm_shuffle_ps(v.m, m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 8)
+    {
+      ret = _mm_shuffle_ps(m, _mm_shuffle_ps(m, v.m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 9)
+    {
+      ret =
+        _mm_shuffle_ps(_mm_move_ss(m, v.m), _mm_shuffle_ps(m, v.m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 10)
+    {
+      ret = _mm_shuffle_ps(_mm_shuffle_ps(m, v.m, _MM_SHUFFLE(1, 1, 0, 0)),
+                           _mm_shuffle_ps(m, v.m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 2, 0));
+    }
+    else if constexpr (mask == 11)
+    {
+      ret = _mm_shuffle_ps(_mm_castpd_ps(_mm_move_sd(_mm_castps_pd(m), _mm_castps_pd(v.m))),
+                           _mm_shuffle_ps(m, v.m, _MM_SHUFFLE(3, 3, 2, 2)), _MM_SHUFFLE(2, 0, 1, 0));
+    }
+    else if constexpr (mask == 12)
+    {
+      ret = _mm_shuffle_ps(m, v.m, _MM_SHUFFLE(3, 2, 1, 0));
+    }
+    else if constexpr (mask == 13)
+    {
+      ret = _mm_shuffle_ps(_mm_move_ss(m, v.m), v.m, _MM_SHUFFLE(3, 2, 1, 0));
+    }
+    else if constexpr (mask == 14)
+    {
+      ret = _mm_shuffle_ps(_mm_shuffle_ps(m, v.m, _MM_SHUFFLE(1, 1, 0, 0)), v.m, _MM_SHUFFLE(3, 2, 2, 0));
+    }
+    else if constexpr (mask == 15)
+    {
+      ret = v.m;
+    }
+
+    return GSVector4(ret);
+#endif
   }
 
   ALWAYS_INLINE GSVector4 blend32(const GSVector4& v, const GSVector4& mask) const
@@ -2160,13 +2261,23 @@ public:
 
   ALWAYS_INLINE bool alltrue() const { return mask() == 0xf; }
 
+  ALWAYS_INLINE bool anytrue() const
+  {
+#ifdef CPU_ARCH_AVX2
+    return (_mm_testz_ps(m, m) == 0);
+#else
+    const __m128i ii = _mm_castps_si128(m);
+    return (_mm_testz_si128(ii, ii) == 0);
+#endif
+  }
+
   ALWAYS_INLINE bool allfalse() const
   {
 #ifdef CPU_ARCH_AVX2
-    return _mm_testz_ps(m, m) != 0;
+    return (_mm_testz_ps(m, m) != 0);
 #else
     const __m128i ii = _mm_castps_si128(m);
-    return _mm_testz_si128(ii, ii) != 0;
+    return (_mm_testz_si128(ii, ii) != 0);
 #endif
   }
 
@@ -2250,6 +2361,17 @@ public:
   ALWAYS_INLINE static GSVector4 loadl(const void* p)
   {
     return GSVector4(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p))));
+  }
+
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector4 loadh(const void* p)
+  {
+    return GSVector4(_mm_castpd_ps(_mm_loadh_pd(_mm_setzero_pd(), static_cast<const double*>(p))));
+  }
+
+  ALWAYS_INLINE static GSVector4 loadh(const GSVector2& v)
+  {
+    return GSVector4(_mm_unpacklo_pd(_mm_setzero_pd(), _mm_castps_pd(v.m)));
   }
 
   template<bool aligned>
@@ -2422,6 +2544,16 @@ public:
   ALWAYS_INLINE friend GSVector4 operator<=(const GSVector4& v1, const GSVector4& v2)
   {
     return GSVector4(_mm_cmple_ps(v1, v2));
+  }
+
+  ALWAYS_INLINE bool eq(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_SSE41
+    const __m128i t = _mm_castps_si128(_mm_xor_ps(m, v.m));
+    return _mm_testz_si128(t, t) != 0;
+#else
+    return (*this == v).alltrue();
+#endif
   }
 
   ALWAYS_INLINE GSVector4 mul64(const GSVector4& v_) const
@@ -2944,8 +3076,8 @@ public:
   ALWAYS_INLINE u32 mask() const { return static_cast<u32>(_mm256_movemask_epi8(m)); }
 
   ALWAYS_INLINE bool alltrue() const { return mask() == 0xFFFFFFFFu; }
-
-  ALWAYS_INLINE bool allfalse() const { return _mm256_testz_si256(m, m) != 0; }
+  ALWAYS_INLINE bool anytrue() const { return (_mm256_testz_si256(m, m) == 0); }
+  ALWAYS_INLINE bool allfalse() const { return (_mm256_testz_si256(m, m) != 0); }
 
   template<s32 i>
   ALWAYS_INLINE GSVector8i insert8(s32 a) const
