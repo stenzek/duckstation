@@ -3883,12 +3883,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
                     resolution_scale > 1);
 
-    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOX, "Wireframe Rendering"),
-                    FSUI_VSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
-                    "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
-                    &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
-                    GPUWireframeMode::Count);
-
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_DROPLET_SLASH, "Scaled Interlacing"),
                       FSUI_VSTR("Scales line skipping in interlaced rendering to the internal resolution, making it "
                                 "less noticeable. Usually safe to enable."),
@@ -5004,6 +4998,12 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   "SaveStateCompression", Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE,
                   &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
                   &Settings::GetSaveStateCompressionModeDisplayName, SaveStateCompressionMode::Count);
+
+  DrawEnumSetting(bsi, FSUI_VSTR("Wireframe Rendering"),
+                  FSUI_VSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
+                  "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
+                  &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
+                  GPUWireframeMode::Count);
 
   MenuHeading(FSUI_VSTR("CPU Emulation"));
 

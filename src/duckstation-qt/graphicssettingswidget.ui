@@ -316,7 +316,7 @@
          <property name="title">
           <string>Display Options</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,1" columnminimumwidth="120,0">
           <item row="0" column="0">
            <widget class="QLabel" name="exclusiveFullscreenLabel">
             <property name="text">
@@ -391,7 +391,7 @@
          <property name="title">
           <string>Rendering Options</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_12" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_12" columnstretch="0,1" columnminimumwidth="120,0">
           <item row="0" column="0">
            <widget class="QLabel" name="msaaModeLabel">
             <property name="text">
@@ -412,17 +412,7 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="gpuLineDetectMode"/>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="gpuWireframeModeLabel">
-            <property name="text">
-             <string>Wireframe Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="gpuWireframeMode"/>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="1" column="1">
              <widget class="QCheckBox" name="scaledInterlacing">
@@ -1448,11 +1438,30 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
+          <string>Rendering Options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_22" columnstretch="0,1" columnminimumwidth="160,0">
+          <item row="0" column="0">
+           <widget class="QLabel" name="gpuWireframeModeLabel">
+            <property name="text">
+             <string>Wireframe Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="gpuWireframeMode"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="gpuDumpGroup">
          <property name="title">
           <string>GPU Dump Recording/Playback</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_17" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_17" columnstretch="0,1" columnminimumwidth="160,0">
           <item row="0" column="0">
            <widget class="QLabel" name="groupDumpCompressionModeLabel">
             <property name="text">

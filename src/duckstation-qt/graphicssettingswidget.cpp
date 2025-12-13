@@ -150,10 +150,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &Settings::ParseLineDetectModeName, &Settings::GetLineDetectModeName,
                                                &Settings::GetLineDetectModeDisplayName,
                                                Settings::DEFAULT_GPU_LINE_DETECT_MODE, GPULineDetectMode::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, "GPU", "WireframeMode",
-                                               Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
-                                               &Settings::GetGPUWireframeModeDisplayName,
-                                               Settings::DEFAULT_GPU_WIREFRAME_MODE, GPUWireframeMode::Count);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
@@ -349,6 +345,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Debugging Tab
 
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, "GPU", "WireframeMode",
+                                               Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
+                                               &Settings::GetGPUWireframeModeDisplayName,
+                                               Settings::DEFAULT_GPU_WIREFRAME_MODE, GPUWireframeMode::Count);
+
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.gpuDumpCompressionMode, "GPU", "DumpCompressionMode", &Settings::ParseGPUDumpCompressionMode,
     &Settings::GetGPUDumpCompressionModeName, &Settings::GetGPUDumpCompressionModeDisplayName,
@@ -500,9 +501,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.msaaMode, tr("Multi-Sampling"), tr("Disabled"),
     tr("Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance "
        "requirement compared to upscaling, <strong>but often introduces rendering errors.</strong>"));
-  dialog->registerWidgetHelp(m_ui.gpuWireframeMode, tr("Wireframe Mode"), tr("Disabled"),
-                             tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
-                                "replacement or an overlay."));
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Provides a significant speed improvement "
                                 "particularly with the software renderer, and is safe to use."));
@@ -681,6 +679,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // Debugging Tab
 
+  dialog->registerWidgetHelp(m_ui.gpuWireframeMode, tr("Wireframe Mode"), tr("Disabled"),
+                             tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
+                                "replacement or an overlay."));
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
     tr("Enable debugging when supported by the host's renderer API. <strong>Only for developer use.</strong>"));
