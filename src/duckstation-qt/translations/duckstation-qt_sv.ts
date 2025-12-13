@@ -542,7 +542,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Show Nearby</source>
-        <translation>Visa närliggande</translation>
+        <translation type="vanished">Visa närliggande</translation>
     </message>
     <message>
         <source>Rank</source>
@@ -622,7 +622,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Show Best</source>
-        <translation>Visa bästa</translation>
+        <translation type="vanished">Visa bästa</translation>
     </message>
     <message>
         <source>Name</source>
@@ -730,7 +730,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Fel</translation>
+        <translation type="vanished">Fel</translation>
     </message>
     <message>
         <source>Refresh all progress failed</source>
@@ -738,7 +738,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Updated achievement progress database.</source>
-        <translation>Uppdaterade framstegsdatasbasen för prestationer.</translation>
+        <translation type="vanished">Uppdaterade framstegsdatasbasen för prestationer.</translation>
     </message>
     <message>
         <source>Score: {} ({} softcore)</source>
@@ -843,6 +843,70 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>This game has no leaderboards.</source>
         <translation>Detta spel har inga ledartavlor.</translation>
+    </message>
+    <message>
+        <source>All available icons have already been downloaded.</source>
+        <translation>Alla tillgängliga ikoner har redan hämtats ner.</translation>
+    </message>
+    <message>
+        <source>Fetching icon info for {} games...</source>
+        <translation>Hämtar ikoninformation för {} spel...</translation>
+    </message>
+    <message>
+        <source>Achievements are not enabled.</source>
+        <translation>Prestationer har inte aktiverats.</translation>
+    </message>
+    <message>
+        <source>No image names returned.</source>
+        <translation>Inga bildnamn returnerades.</translation>
+    </message>
+    <message>
+        <source>All icons have already been downloaded.</source>
+        <translation>Alla ikoner har redan hämtats ner.</translation>
+    </message>
+    <message>
+        <source>Downloading {} game icons...</source>
+        <translation>Hämtar {} spelikoner...</translation>
+    </message>
+    <message>
+        <source>Refreshing achievement progress...</source>
+        <translation>Uppdaterar prestationsförlopp...</translation>
+    </message>
+    <message>
+        <source>Core</source>
+        <translation>Kärna</translation>
+    </message>
+    <message>
+        <source>{0} - {1}</source>
+        <translation>{0} - {1}</translation>
+    </message>
+    <message>
+        <source>This subset has no achievements.</source>
+        <translation>Denna deluppsättning har inga prestationer.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on {0}, and completed on {1}.</source>
+        <translation>Deluppsättningen besegrades den {0}, och färdigställdes den {1}.</translation>
+    </message>
+    <message>
+        <source>Subset was beaten on {0}.</source>
+        <translation>Deluppsättningen besegrades den {0}.</translation>
+    </message>
+    <message>
+        <source>Subset was completed on {0}.</source>
+        <translation>Deluppsättningen färdigställdes den {0}.</translation>
+    </message>
+    <message>
+        <source>Change Subset</source>
+        <translation>Ändra deluppsättning</translation>
+    </message>
+    <message numerus="yes">
+        <source>This subset has %n leaderboards.</source>
+        <comment>Leaderboard count</comment>
+        <translation>
+            <numerusform>Denna deluppsättning har %n ledartavla.</numerusform>
+            <numerusform>Denna deluppsättning har %n ledartavlor.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -6095,7 +6159,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Details unavailable for game not scanned in game list.</source>
-        <translation>Information inte tillgänglig för spel som inte lästs in i spellistan.</translation>
+        <translation type="vanished">Information inte tillgänglig för spel som inte lästs in i spellistan.</translation>
     </message>
     <message>
         <source>Determines how large the on-screen messages and monitor are.</source>
@@ -8181,7 +8245,7 @@ Du kan inte ångra den här åtgärden.</translation>
     </message>
     <message>
         <source>Failed to update progress database</source>
-        <translation>Misslyckades med att uppdatera framstegsdatabasen</translation>
+        <translation type="vanished">Misslyckades med att uppdatera framstegsdatabasen</translation>
     </message>
     <message>
         <source>Switch to Next Disc on Stop</source>
@@ -8422,7 +8486,7 @@ ${serial}: Serienumret för spelet.</translation>
     </message>
     <message>
         <source>Game properties is only available for scanned games.</source>
-        <translation>Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
+        <translation type="vanished">Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
     </message>
     <message>
         <source>Maximum (Safer)</source>
@@ -8527,6 +8591,34 @@ ${serial}: Serienumret för spelet.</translation>
     <message>
         <source>Warning Message Duration</source>
         <translation>Visningstid för varningsmeddelanden</translation>
+    </message>
+    <message>
+        <source>Cover Download Error</source>
+        <translation>Fel vid hämtning av omslagsbilder</translation>
+    </message>
+    <message>
+        <source>Download Game Icons</source>
+        <translation>Hämta spelikoner</translation>
+    </message>
+    <message>
+        <source>Downloads icons for all games from RetroAchievements.</source>
+        <translation>Hämtar ner ikoner för alla spel från RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>Game icons downloaded.</source>
+        <translation>Spelikoner hämtades.</translation>
+    </message>
+    <message>
+        <source>Progress database updated.</source>
+        <translation>Förloppsdatabas uppdaterad.</translation>
+    </message>
+    <message>
+        <source>Refresh Achievement Progress</source>
+        <translation>Uppdatera prestationsförlopp</translation>
+    </message>
+    <message>
+        <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
+        <translation>Detta spel har inte sökts igenom av DuckStation. Viss funktionalitet är inte tillgänglig.</translation>
     </message>
 </context>
 <context>
@@ -9784,6 +9876,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>Icon size: %1%</source>
         <translation>Ikonstorlek: %1%</translation>
     </message>
+    <message>
+        <source>Download Game Icons</source>
+        <translation>Hämta spelikoner</translation>
+    </message>
+    <message>
+        <source>Downloading game icons...</source>
+        <translation>Hämtar spelikoner...</translation>
+    </message>
 </context>
 <context>
     <name>GamePatchDetailsWidget</name>
@@ -10060,6 +10160,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Hash Calculation Failed</source>
         <translation>Beräkning av kontrollsumma misslyckades</translation>
+    </message>
+    <message>
+        <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
+        <translation>Detta spel har inte sökts igenom av DuckStation. Viss funktionalitet är inte tillgänglig.</translation>
     </message>
 </context>
 <context>
@@ -13600,7 +13704,7 @@ Detta går inte att ångra.</translation>
     </message>
     <message>
         <source>Game properties is only available for scanned games.</source>
-        <translation>Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
+        <translation type="vanished">Spelegenskaper är endast tillgängliga för genomsökta spel.</translation>
     </message>
     <message>
         <source>Sort B&amp;y</source>
@@ -14073,6 +14177,18 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Checking for updates...</source>
         <translation>Letar efter uppdateringar...</translation>
+    </message>
+    <message>
+        <source>Download Achievement &amp;Icons</source>
+        <translation>Hämta prestations&amp;ikoner</translation>
+    </message>
+    <message>
+        <source>Downloads icons for all games from RetroAchievements.</source>
+        <translation>Hämtar ikoner för alla spel från RetroAchievements.</translation>
+    </message>
+    <message>
+        <source>Refresh Achievement Progress</source>
+        <translation>Uppdatera prestationsförlopp</translation>
     </message>
 </context>
 <context>
@@ -18233,6 +18349,18 @@ Använder istället ett delat kort.</translation>
     <message>
         <source>Undo load state</source>
         <translation>Ångra inläst tillstånd</translation>
+    </message>
+    <message>
+        <source>No valid game is running.</source>
+        <translation>Inget giltigt spel körs.</translation>
+    </message>
+    <message>
+        <source>Wireframe rendering disabled.</source>
+        <translation>Trådramsrendering inaktiverad.</translation>
+    </message>
+    <message>
+        <source>Downsampling disabled.</source>
+        <translation>Nedsampling inaktiverad.</translation>
     </message>
 </context>
 <context>
