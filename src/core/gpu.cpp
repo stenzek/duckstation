@@ -1806,115 +1806,104 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
                             bool integer_scale, GSVector4i* out_source_rect, GSVector4i* out_display_rect,
                             GSVector4i* out_draw_rect)
 {
-  const float fwindow_width = static_cast<float>(window_size.x);
-  const float fwindow_height = static_cast<float>(window_size.y);
-  float display_width = static_cast<float>(video_size.x);
-  float display_height = static_cast<float>(video_size.y);
-  float active_left = static_cast<float>(video_active_rect.x);
-  float active_top = static_cast<float>(video_active_rect.y);
-  float active_width = static_cast<float>(video_active_rect.width());
-  float active_height = static_cast<float>(video_active_rect.height());
+  GSVector2 fwindow_size = GSVector2(window_size);
+  GSVector2 fvideo_size = GSVector2(video_size);
+  GSVector4 fvideo_active_rect = GSVector4(video_active_rect);
 
   // for integer scale, use whichever gets us a greater effective display size
   // this is needed for games like crash where the framebuffer is wide to not lose detail
   if (integer_scale ?
-        IntegerScalePreferWidth(display_width, display_height, pixel_aspect_ratio, fwindow_width, fwindow_height) :
+        IntegerScalePreferWidth(fvideo_size.x, fvideo_size.y, pixel_aspect_ratio, fwindow_size.x, fwindow_size.y) :
         (pixel_aspect_ratio >= 1.0f))
   {
-    display_width *= pixel_aspect_ratio;
-    active_left *= pixel_aspect_ratio;
-    active_width *= pixel_aspect_ratio;
+    fvideo_size.x *= pixel_aspect_ratio;
+    fvideo_active_rect = fvideo_active_rect.blend32<5>(fvideo_active_rect * pixel_aspect_ratio);
   }
   else
   {
-    display_height /= pixel_aspect_ratio;
-    active_top /= pixel_aspect_ratio;
-    active_height /= pixel_aspect_ratio;
+    fvideo_size.y /= pixel_aspect_ratio;
+    fvideo_active_rect = fvideo_active_rect.blend32<10>(fvideo_active_rect / pixel_aspect_ratio);
   }
 
   // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
   if (rotation == DisplayRotation::Rotate90 || rotation == DisplayRotation::Rotate270)
   {
-    std::swap(display_width, display_height);
-    std::swap(active_width, active_height);
-    std::swap(active_top, active_left);
+    fvideo_size = fvideo_size.yx();
+    fvideo_active_rect = fvideo_active_rect.yxwz();
   }
 
   // now fit it within the window
   float scale;
-  float left_padding, top_padding;
-  if ((display_width / display_height) >= (fwindow_width / fwindow_height))
+  GSVector2 padding;
+  if ((fvideo_size.x / fvideo_size.y) >= (fwindow_size.x / fwindow_size.y))
   {
     // align in middle vertically
-    scale = fwindow_width / display_width;
+    scale = fwindow_size.x / fvideo_size.x;
     if (integer_scale)
     {
       // skip integer scaling if we cannot fit in the window at all
       scale = (scale >= 1.0f) ? std::floor(scale) : scale;
-      left_padding = std::max<float>((fwindow_width - display_width * scale) / 2.0f, 0.0f);
+      padding.x = std::max<float>((fwindow_size.x - fvideo_size.x * scale) / 2.0f, 0.0f);
     }
     else
     {
-      left_padding = 0.0f;
+      padding.x = 0.0f;
     }
 
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        top_padding = std::max<float>(fwindow_height - (display_height * scale), 0.0f);
+        padding.y = std::max<float>(fwindow_size.y - (fvideo_size.y * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
+        padding.y = std::max<float>((fwindow_size.y - (fvideo_size.y * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:
       default:
-        top_padding = 0.0f;
+        padding.y = 0.0f;
         break;
     }
   }
   else
   {
     // align in middle horizontally
-    scale = fwindow_height / display_height;
+    scale = fwindow_size.y / fvideo_size.y;
     if (integer_scale)
     {
       // skip integer scaling if we cannot fit in the window at all
       scale = (scale >= 1.0f) ? std::floor(scale) : scale;
-      top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
+      padding.y = std::max<float>((fwindow_size.y - (fvideo_size.y * scale)) / 2.0f, 0.0f);
     }
     else
     {
-      top_padding = 0.0f;
+      padding.y = 0.0f;
     }
 
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        left_padding = std::max<float>(fwindow_width - (display_width * scale), 0.0f);
+        padding.x = std::max<float>(fwindow_size.x - (fvideo_size.x * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        left_padding = std::max<float>((fwindow_width - (display_width * scale)) / 2.0f, 0.0f);
+        padding.x = std::max<float>((fwindow_size.x - (fvideo_size.x * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:
       default:
-        left_padding = 0.0f;
+        padding.x = 0.0f;
         break;
     }
   }
 
-  // TODO: This should be a float rectangle. But because GL is lame, it only has integer viewports...
-  const s32 left = static_cast<s32>(active_left * scale + left_padding);
-  const s32 top = static_cast<s32>(active_top * scale + top_padding);
-  const s32 right = left + static_cast<s32>(active_width * scale);
-  const s32 bottom = top + static_cast<s32>(active_height * scale);
+  const GSVector4 padding4 = GSVector4::xyxy(padding);
+  fvideo_size *= scale;
+  fvideo_active_rect *= scale;
   *out_source_rect = source_rect;
-  *out_draw_rect = GSVector4i(left, top, right, bottom);
-  *out_display_rect = GSVector4i(
-    GSVector4(left_padding, top_padding, left_padding + display_width * scale, top_padding + display_height * scale));
+  *out_draw_rect = GSVector4i(fvideo_active_rect + padding4);
+  *out_display_rect = GSVector4i(GSVector4::loadh(fvideo_size) + padding4);
 }
 
 void GPU::ReadVRAM(u16 x, u16 y, u16 width, u16 height)
