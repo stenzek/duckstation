@@ -114,7 +114,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QTextBrowser" name="updateNotes"/>
+    <widget class="QTextBrowser" name="updateNotes">
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="actionButtons">

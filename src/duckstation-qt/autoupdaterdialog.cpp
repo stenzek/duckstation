@@ -454,6 +454,8 @@ void AutoUpdaterDialog::queueGetChanges()
 
 void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
+  std::string_view error_message;
+
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -509,16 +511,23 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, 
       }
 
       m_ui.updateNotes->setText(changes_html);
+      return;
     }
     else
     {
-      reportError("Change list JSON is not an object");
+      error_message = "Change list JSON is not an object";
     }
   }
   else
   {
-    reportError(fmt::format("Failed to download change list: {}", error.GetDescription()));
+    error_message = error.GetDescription();
   }
+
+  m_ui.updateNotes->setText(QString::fromStdString(
+    fmt::format("<h2>Failed to download change list</h2><p>The error was:<pre>{}</pre></p><p>You may be able to "
+                "install this update anyway. If the download installation fails, you can download the update "
+                "from:</p><p><a href=\"" DOWNLOAD_PAGE_URL "\">" DOWNLOAD_PAGE_URL "</a></p>",
+                error_message, UPDATER_RELEASE_CHANNEL, UPDATER_RELEASE_CHANNEL)));
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()
