@@ -83,6 +83,7 @@ public:
 
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
+  void updateBackgroundControllerPollInterval();
   void wakeThread();
 
   void bootOrLoadState(std::string path);
@@ -123,7 +124,6 @@ Q_SIGNALS:
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
-  void achievementsAllProgressRefreshed();
   void mediaCaptureStarted();
   void mediaCaptureStopped();
 
@@ -148,18 +148,17 @@ public:
   void startFullscreenUI();
   void stopFullscreenUI();
   void exitFullscreenUI();
-  void refreshAchievementsAllProgress();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
   void resumeSystemFromMostRecentState();
   void shutdownSystem(bool save_state, bool check_memcard_busy);
   void resetSystem(bool check_memcard_busy);
-  void setSystemPaused(bool paused, bool wait_until_paused = false);
+  void setSystemPaused(bool paused);
   void changeDisc(const QString& new_disc_path, bool reset_system, bool check_memcard_busy);
   void changeDiscFromPlaylist(quint32 index);
   void loadState(const QString& path);
   void loadState(bool global, qint32 slot);
-  void saveState(const QString& path, bool block_until_done = false);
-  void saveState(bool global, qint32 slot, bool block_until_done = false);
+  void saveState(const QString& path);
+  void saveState(bool global, qint32 slot);
   void undoLoadState();
   void setAudioOutputVolume(int volume, int fast_forward_volume);
   void setAudioOutputMuted(bool muted);
@@ -181,6 +180,7 @@ public:
   void reloadTextureReplacements();
   void captureGPUFrameDump();
   void startControllerTest();
+  void openGamePropertiesForCurrentGame(const QString& category = {});
   void setGPUThreadRunIdle(bool active);
   void updateFullscreenUITheme();
   void runOnEmuThread(const std::function<void()>& callback);
@@ -189,6 +189,7 @@ protected:
   void run() override;
 
 private:
+  int getBackgroundControllerPollInterval() const;
   void stopInThread();
   void onDisplayWindowMouseButtonEvent(int button, bool pressed);
   void onDisplayWindowMouseWheelEvent(float dx, float dy);
@@ -320,8 +321,8 @@ bool InBatchMode();
 /// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
 bool InNoGUIMode();
 
-/// Returns true if the application is running under Wayland.
-bool IsRunningOnWayland();
+/// Returns true if display widgets need to wrapped in a container, thanks to Wayland stupidity.
+bool IsDisplayWidgetContainerNeeded();
 
 /// Returns true if rendering to the main window should be allowed.
 bool CanRenderToMainWindow();

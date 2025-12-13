@@ -106,7 +106,6 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
-  ALWAYS_INLINE AutoUpdaterDialog* getAutoUpdaterDialog() const { return m_auto_updater_dialog; }
   ALWAYS_INLINE DebuggerWindow* getDebuggerWindow() const { return m_debugger_window; }
 
   /// Opens the editor for a specific input profile.
@@ -124,6 +123,9 @@ public:
   void refreshGameListModel();
   void cancelGameListRefresh();
   QIcon getIconForGame(const QString& path);
+  void invalidateCoverCacheForPath(const std::string& path);
+  void refreshGameGridCovers();
+  void refreshAchievementProgress();
 
   void runOnUIThread(const std::function<void()>& func);
   void requestShutdown(bool allow_confirm, bool allow_save_to_state, bool save_state, bool check_safety,
@@ -167,8 +169,8 @@ private:
   void updateToolbarActions();
   void updateToolbarIconStyle();
   void updateToolbarArea();
-  void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
-  void updateShortcutActions(bool starting);
+  void updateEmulationActions();
+  void updateShortcutActions();
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
   void updateWindowState();
@@ -197,10 +199,8 @@ private:
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
-  void onViewChangeGameListBackgroundTriggered();
-  void onViewClearGameListBackgroundTriggered();
 
-  std::string getDeviceDiscPath(const QString& title);
+  void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);
   void onSettingsThemeChanged();
@@ -246,7 +246,6 @@ private:
   void onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
   void onAchievementsActiveChanged(bool active);
   void onAchievementsHardcoreModeChanged(bool enabled);
-  void onAchievementsAllProgressRefreshed();
   bool onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
                                      const QString& title, const QString& icon_name,
                                      Host::AuxiliaryRenderWindowUserData userdata,
@@ -272,16 +271,16 @@ private:
   void onCloseGameActionTriggered();
   void onCloseGameWithoutSavingActionTriggered();
   void onResetGameActionTriggered();
-  void onPauseActionToggled(bool checked);
+  void onPauseActionTriggered(bool checked);
   void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();
   void onScanForNewGamesTriggered();
-  void onViewToolbarActionToggled(bool checked);
-  void onViewToolbarLockActionToggled(bool checked);
-  void onViewToolbarSmallIconsActionToggled(bool checked);
-  void onViewToolbarLabelsActionToggled(bool checked);
-  void onViewToolbarLabelsBesideIconsActionToggled(bool checked);
-  void onViewStatusBarActionToggled(bool checked);
+  void onViewToolbarActionTriggered(bool checked);
+  void onViewToolbarLockActionTriggered(bool checked);
+  void onViewToolbarSmallIconsActionTriggered(bool checked);
+  void onViewToolbarLabelsActionTriggered(bool checked);
+  void onViewToolbarLabelsBesideIconsActionTriggered(bool checked);
+  void onViewStatusBarActionTriggered(bool checked);
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
@@ -289,6 +288,8 @@ private:
   void onViewZoomOutActionTriggered();
   void onViewSortByActionTriggered();
   void onViewSortOrderActionTriggered();
+  void onViewChangeGameListBackgroundTriggered();
+  void onViewClearGameListBackgroundTriggered();
   void onGitHubRepositoryActionTriggered();
   void onDiscordServerActionTriggered();
   void onAboutActionTriggered();
@@ -298,7 +299,8 @@ private:
   void onToolsMemoryScannerTriggered();
   void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
-  void onToolsMediaCaptureToggled(bool checked);
+  void onToolsDownloadAchievementGameIconsTriggered();
+  void onToolsMediaCaptureTriggered(bool checked);
   void onToolsOpenDataDirectoryTriggered();
   void onToolsOpenTextureDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();

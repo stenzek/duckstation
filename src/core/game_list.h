@@ -38,6 +38,7 @@ struct Entry
   bool disc_set_member = false;
   bool has_custom_title = false;
   bool has_custom_region = false;
+  bool is_runtime_populated = false;
   GameDatabase::Language custom_language = GameDatabase::Language::MaxCount;
 
   std::string path;
@@ -75,6 +76,7 @@ struct Entry
   ALWAYS_INLINE bool IsValid() const { return (type < EntryType::MaxCount); }
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
+  ALWAYS_INLINE bool IsDiscOrDiscSet() const { return (type == EntryType::Disc || type == EntryType::DiscSet); }
   ALWAYS_INLINE bool HasCustomLanguage() const { return (custom_language != GameDatabase::Language::MaxCount); }
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
   ALWAYS_INLINE const GameDatabase::DiscSetEntry* GetDiscSetEntry() const
@@ -96,8 +98,7 @@ const char* GetEntryTypeDisplayName(EntryType type);
 
 bool IsScannableFilename(std::string_view path);
 
-/// Populates a game list entry struct with information from the iso/elf.
-/// Do *not* call while the system is running, it will mess with CDVD state.
+/// Populates a game list entry struct with information from the specified path.
 bool PopulateEntryFromPath(const std::string& path, Entry* entry);
 
 // Game list access. It's the caller's responsibility to hold the lock while manipulating the entry in any way.
@@ -114,6 +115,9 @@ size_t GetEntryCount();
 
 bool IsGameListLoaded();
 bool ShouldShowLocalizedTitles();
+
+/// Returns true if the specified path should not have game properties saved.
+bool CanEditGameSettingsForPath(const std::string_view path, const std::string_view serial);
 
 /// Populates the game list with files in the configured directories.
 /// If invalidate_cache is set, all files will be re-scanned.
@@ -167,7 +171,9 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
 /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
 /// timestamp of the memory card has changed.
-std::string GetGameIconPath(std::string_view serial, std::string_view path, u32 achievements_game_id);
+std::string GetGameIconPath(std::string_view title, std::string_view serial, std::string_view path,
+                            u32 achievements_game_id);
+std::string GetGameIconPath(const GameList::Entry* entry);
 void ReloadMemcardTimestampCache();
 
 /// Updates game list with new achievement unlocks.

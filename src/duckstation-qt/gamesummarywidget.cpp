@@ -28,7 +28,6 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
   : m_dialog(dialog)
 {
   m_ui.setupUi(this);
-  m_ui.revision->setVisible(false);
 
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
   {
@@ -236,7 +235,10 @@ void GameSummaryWidget::populateUi(const GameList::Entry* entry)
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
   reloadGameSettings();
-  populateTracksInfo();
+  if (!entry->is_runtime_populated)
+    populateTracksInfo();
+  else
+    disableWidgetsForRuntimeScannedEntry();
 }
 
 void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
@@ -299,21 +301,6 @@ void GameSummaryWidget::onCustomLanguageChanged(int language)
   g_main_window->refreshGameListModel();
 }
 
-void GameSummaryWidget::setRevisionText(const QString& text)
-{
-  if (text.isEmpty())
-    return;
-
-  if (m_ui.verifySpacer)
-  {
-    m_ui.verifyLayout->removeItem(m_ui.verifySpacer);
-    delete m_ui.verifySpacer;
-    m_ui.verifySpacer = nullptr;
-  }
-  m_ui.revision->setText(text);
-  m_ui.revision->setVisible(true);
-}
-
 static QString MSFToString(const CDImage::Position& position)
 {
   return QStringLiteral("%1:%2:%3")
@@ -334,10 +321,10 @@ void GameSummaryWidget::populateTracksInfo()
   if (!image)
     return;
 
-  setRevisionText(tr("%1 tracks covering %2 MB (%3 MB on disk)")
-                    .arg(image->GetTrackCount())
-                    .arg(((image->GetLBACount() * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576)
-                    .arg((image->GetSizeOnDisk() + 1048575) / 1048576));
+  m_ui.revision->setText(tr("%1 tracks covering %2 MB (%3 MB on disk)")
+                           .arg(image->GetTrackCount())
+                           .arg(((image->GetLBACount() * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576)
+                           .arg((image->GetSizeOnDisk() + 1048575) / 1048576));
 
   const u32 num_tracks = image->GetTrackCount();
   for (u32 track = 1; track <= num_tracks; track++)
@@ -356,6 +343,20 @@ void GameSummaryWidget::populateTracksInfo()
     row->setText(4, tr("<not computed>"));
     row->setTextAlignment(5, Qt::AlignCenter);
   }
+}
+
+void GameSummaryWidget::disableWidgetsForRuntimeScannedEntry()
+{
+  m_ui.tracks->setEnabled(false);
+  m_ui.computeHashes->setEnabled(false);
+  m_ui.title->setReadOnly(true);
+  m_ui.restoreTitle->setEnabled(false);
+  m_ui.region->setEnabled(false);
+  m_ui.restoreRegion->setEnabled(false);
+  m_ui.languages->setReadOnly(true);
+  m_ui.customLanguage->setEnabled(false);
+  m_ui.revision->setText(tr("This game was not scanned by DuckStation. Some functionality is not available."));
+  m_ui.tracks->setVisible(false);
 }
 
 void GameSummaryWidget::onCompatibilityCommentsClicked()
@@ -447,16 +448,17 @@ void GameSummaryWidget::onComputeHashClicked()
 
   m_ui.computeHashes->setEnabled(false);
 
-  QtAsyncTaskWithProgress::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0, 0.0f,
-                                  [this, path = m_path](ProgressCallback* progress) {
-                                    Error error;
-                                    CDImageHasher::TrackHashes track_hashes;
-                                    const bool result = computeImageHash(path, track_hashes, progress, &error);
-                                    const bool cancelled = (!result && progress->IsCancelled());
-                                    return
-                                      [this, track_hashes = std::move(track_hashes), error = std::move(error), result,
-                                       cancelled]() { processHashResults(track_hashes, result, cancelled, error); };
-                                  });
+  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0,
+                                        0.0f, [this, path = m_path](ProgressCallback* progress) {
+                                          Error error;
+                                          CDImageHasher::TrackHashes track_hashes;
+                                          const bool result = computeImageHash(path, track_hashes, progress, &error);
+                                          const bool cancelled = (!result && progress->IsCancelled());
+                                          return [this, track_hashes = std::move(track_hashes),
+                                                  error = std::move(error), result, cancelled]() {
+                                            processHashResults(track_hashes, result, cancelled, error);
+                                          };
+                                        });
 }
 
 bool GameSummaryWidget::computeImageHash(const std::string& path, CDImageHasher::TrackHashes& track_hashes,
@@ -587,7 +589,7 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     }
   }
 
-  setRevisionText(text);
+  m_ui.revision->setText(text);
 
   // update in ui
   for (size_t i = 0; i < track_hashes.size(); i++)

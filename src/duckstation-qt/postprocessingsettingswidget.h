@@ -52,8 +52,8 @@ private:
   void onMoveDownButtonClicked();
   void onReloadButtonClicked();
   void onOpenDirectoryButtonClicked();
-  void onSelectedShaderChanged();
-  void onShaderToggled(QListWidgetItem* item);
+  void onStageItemSelectionChanged();
+  void onStageItemChanged(QListWidgetItem* item);
   void triggerSettingsReload();
 
   SettingsWindow* m_dialog;

@@ -679,11 +679,6 @@ ConsoleRegion System::GetRegion()
   return s_state.region;
 }
 
-DiscRegion System::GetDiscRegion()
-{
-  return CDROM::GetDiscRegion();
-}
-
 bool System::IsPALRegion()
 {
   return s_state.region == ConsoleRegion::PAL;
@@ -809,6 +804,22 @@ bool System::IsRunningUnknownGame()
 System::BootMode System::GetBootMode()
 {
   return s_state.boot_mode;
+}
+
+std::string System::GetGameIconPath(bool allow_achievements_badge)
+{
+  u32 achievements_game_id = 0;
+  if (allow_achievements_badge)
+  {
+    const auto lock = Achievements::GetLock();
+    achievements_game_id = Achievements::GetGameID();
+  }
+
+  const auto lock = GameList::GetLock();
+  return GameList::GetGameIconPath((s_state.running_game_custom_title || !s_state.running_game_entry) ?
+                                     std::string_view(s_state.running_game_title) :
+                                     std::string_view(),
+                                   s_state.running_game_serial, s_state.running_game_path, achievements_game_id);
 }
 
 bool System::IsUsingKnownPS1BIOS()
@@ -1248,8 +1259,7 @@ void System::LoadSettings(bool display_osd_messages)
 
   Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
-  InputManager::ReloadSources(controller_si, lock);
-  InputManager::ReloadBindings(controller_si, hotkey_si);
+  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
@@ -1265,14 +1275,8 @@ void System::ReloadInputSources()
 {
   auto lock = Host::GetSettingsLock();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
-  InputManager::ReloadSources(controller_si, lock);
-
-  // skip loading bindings if we're not running, since it'll get done on startup anyway
-  if (IsValid())
-  {
-    const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
-    InputManager::ReloadBindings(controller_si, hotkey_si);
-  }
+  const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
+  InputManager::ReloadSourcesAndBindings(controller_si, hotkey_si, lock);
 }
 
 void System::ReloadInputBindings()
@@ -4091,19 +4095,6 @@ bool System::DumpSPURAM(std::string path, Error* error)
   return FileSystem::WriteAtomicRenamedFile(std::move(path), SPU::GetRAM(), error);
 }
 
-bool System::HasMedia()
-{
-  return CDROM::HasMedia();
-}
-
-std::string System::GetMediaPath()
-{
-  if (!CDROM::HasMedia())
-    return {};
-
-  return CDROM::GetMediaPath();
-}
-
 bool System::InsertMedia(const char* path)
 {
   if (IsGPUDumpPath(path)) [[unlikely]]
@@ -4265,6 +4256,40 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   Host::OnSystemGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                             s_state.running_game_hash);
+}
+
+bool System::PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error)
+{
+  if (!IsValid() || !GameList::CanEditGameSettingsForPath(s_state.running_game_path, s_state.running_game_serial))
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "No valid game is running."));
+    return false;
+  }
+
+  entry->path = s_state.running_game_path;
+  entry->serial = s_state.running_game_serial;
+  entry->title = s_state.running_game_title;
+  entry->dbentry = s_state.running_game_entry;
+  entry->hash = s_state.running_game_hash;
+  entry->has_custom_title = s_state.running_game_custom_title;
+
+  if (CDROM::HasMedia())
+  {
+    entry->type = CDROM::GetMedia()->HasSubImages() ? GameList::EntryType::Playlist : GameList::EntryType::Disc;
+    entry->region = CDROM::GetDiscRegion();
+  }
+  else
+  {
+    entry->type = GameList::EntryType::PSExe;
+    entry->region = ((s_state.region == ConsoleRegion::NTSC_U) ?
+                       DiscRegion::NTSC_U :
+                       ((s_state.region == ConsoleRegion::NTSC_J) ? DiscRegion::NTSC_J : DiscRegion::PAL));
+  }
+
+  entry->achievements_game_id = Achievements::GetGameID();
+  entry->is_runtime_populated = true;
+
+  return true;
 }
 
 bool System::CheckForRequiredSubQ(Error* error)
@@ -4538,7 +4563,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
         g_settings.display_crop_mode != old_settings.display_crop_mode ||
-        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+        g_settings.display_active_start_offset != old_settings.display_active_start_offset ||
+        g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
+        g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
+        g_settings.display_line_end_offset != old_settings.display_line_end_offset)
     {
       g_gpu.UpdateSettings(old_settings);
     }
@@ -4814,8 +4842,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames) [[unlikely]]
+  if (IsValid() && g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
+    [[unlikely]]
+  {
     GPUThread::SyncGPUThread(false);
+  }
 }
 
 void System::SetTaintsFromSettings()
@@ -4902,6 +4933,10 @@ void System::WarnAboutUnsafeSettings()
     {
       append(TRANSLATE_SV("System", "Texture filtering disabled."));
     }
+    if (g_settings.gpu_wireframe_mode != GPUWireframeMode::Disabled)
+      append(TRANSLATE_SV("System", "Wireframe rendering disabled."));
+    if (g_settings.gpu_downsample_mode != GPUDownsampleMode::Disabled)
+      append(TRANSLATE_SV("System", "Downsampling disabled."));
     if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
       append(TRANSLATE_SV("System", "Interlaced rendering enabled."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
@@ -5739,8 +5774,8 @@ void System::DeleteSaveStates(std::string_view serial, bool resume)
   }
 }
 
-std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot,
-                                          MemoryCardType* out_type)
+std::string System::GetGameMemoryCardPath(std::string_view custom_title, std::string_view serial, std::string_view path,
+                                          u32 slot, MemoryCardType* out_type /* = nullptr */)
 {
   const char* section = "MemoryCards";
   const TinyString type_key = TinyString::from_format("Card{}Type", slot + 1);
@@ -5799,10 +5834,8 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
 
     case MemoryCardType::PerGameTitle:
     {
-      const std::string custom_title = GameList::GetCustomTitleForPath(path);
       const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(serial);
-      const std::string_view game_title =
-        (!custom_title.empty() || !entry) ? std::string_view(custom_title) : entry->GetSaveTitle();
+      const std::string_view game_title = (!custom_title.empty() || !entry) ? custom_title : entry->GetSaveTitle();
 
       // Multi-disc game - use disc set name.
       if (entry && entry->disc_set)

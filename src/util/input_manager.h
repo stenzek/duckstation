@@ -281,6 +281,9 @@ using DeviceEffectList = std::vector<std::pair<InputBindingInfo::Type, InputBind
 DeviceEffectList EnumerateDeviceEffects(std::optional<InputBindingInfo::Type> type = std::nullopt,
                                         std::optional<InputBindingKey> for_device = std::nullopt);
 
+/// Returns the number of pollable devices across all input sources.
+u32 GetPollableDeviceCount();
+
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
 
@@ -294,7 +297,8 @@ void SynchronizeBindingHandlerState();
 void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si);
 
 /// Re-parses the sources part of the config and initializes any backends.
-void ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
+void ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
+                              std::unique_lock<std::mutex>& settings_lock);
 
 /// Called when a device change is triggered by the system (DBT_DEVNODES_CHANGED on Windows).
 /// Returns true if any device changes are detected.

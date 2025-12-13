@@ -78,8 +78,6 @@ public:
   DisplayContainer();
   ~DisplayContainer();
 
-  static bool isNeeded(bool fullscreen, bool render_to_main);
-
   void setDisplayWidget(DisplayWidget* widget);
   DisplayWidget* removeDisplayWidget();
 

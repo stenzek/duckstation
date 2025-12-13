@@ -60,7 +60,7 @@ private:
   void timerRefresh();
   void refreshAll();
 
-  void onPauseActionToggled(bool paused);
+  void onPauseActionTriggered(bool paused);
   void onRunToCursorTriggered();
   void onGoToPCTriggered();
   void onGoToAddressTriggered();

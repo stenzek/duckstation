@@ -98,6 +98,8 @@ static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static void DrawCoverDownloaderWindow();
 static void DrawAchievementsLoginWindow();
+static void StartAchievementsProgressRefresh();
+static void StartAchievementsGameIconDownload();
 
 static bool ShouldShowAdvancedSettings();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
@@ -1613,7 +1615,22 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
   if (!entry || entry->serial.empty())
   {
-    ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game properties is only available for scanned games."));
+    Host::RunOnCPUThread([page]() {
+      Error error;
+      GameList::Entry dynamic_entry;
+      if (System::PopulateGameListEntryFromCurrentGame(&dynamic_entry, &error))
+      {
+        GPUThread::RunOnThread([dynamic_entry = std::move(dynamic_entry), page]() {
+          if (IsInitialized())
+            SwitchToGameSettings(&dynamic_entry, page);
+        });
+      }
+      else
+      {
+        ShowToast(OSDMessageType::Info, {}, error.TakeDescription());
+      }
+    });
+
     return false;
   }
 
@@ -1992,6 +2009,13 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
   BeginMenuButtons();
   ResetFocusHere();
 
+  if (!s_settings_locals.game_settings_entry || s_settings_locals.game_settings_entry->is_runtime_populated)
+  {
+    MenuButton(FSUI_ICONVSTR(ICON_EMOJI_WARNING,
+                             "This game was not scanned by DuckStation. Some functionality is not available."),
+               {}, false);
+  }
+
   MenuHeading(FSUI_VSTR("Details"));
 
   if (s_settings_locals.game_settings_entry)
@@ -2033,10 +2057,6 @@ void FullscreenUI::DrawSummarySettingsPage(bool show_localized_titles)
     {
       CopyTextToClipboard(FSUI_STR("Game path copied to clipboard."), s_settings_locals.game_settings_entry->path);
     }
-  }
-  else
-  {
-    MenuButton(FSUI_ICONVSTR(ICON_FA_BAN, "Details unavailable for game not scanned in game list."), "");
   }
 
   MenuHeading(FSUI_VSTR("Options"));
@@ -4754,14 +4774,18 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 
   if (!IsEditingGameSettings(bsi))
   {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Update Progress"),
+    MenuHeading(FSUI_VSTR("Operations"));
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_ARROWS_ROTATE, "Refresh Achievement Progress"),
                    FSUI_VSTR("Updates the progress database for achievements shown in the game list.")))
     {
-      Host::RunOnCPUThread([]() {
-        Error error;
-        if (!Achievements::RefreshAllProgressDatabase(&error))
-          ShowToast(OSDMessageType::Error, FSUI_STR("Failed to update progress database"), error.TakeDescription());
-      });
+      StartAchievementsProgressRefresh();
+    }
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Download Game Icons"),
+                   FSUI_VSTR("Downloads icons for all games from RetroAchievements.")))
+    {
+      StartAchievementsGameIconDownload();
     }
 
     if (bsi->ContainsValue("Cheevos", "Token"))
@@ -4888,6 +4912,44 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   EndMenuButtons();
 
   EndFixedPopupDialog();
+}
+
+void FullscreenUI::StartAchievementsProgressRefresh()
+{
+  auto progress = OpenModalProgressDialog(FSUI_STR("Refresh Achievement Progress"));
+
+  System::QueueAsyncTask([progress = progress.release()]() {
+    Error error;
+    const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
+    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+      GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
+        delete progress;
+        if (result)
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Progress database updated."));
+        else
+          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Update Progress"), error.TakeDescription());
+      });
+    });
+  });
+}
+
+void FullscreenUI::StartAchievementsGameIconDownload()
+{
+  auto progress = OpenModalProgressDialog(FSUI_STR("Download Game Icons"));
+
+  System::QueueAsyncTask([progress = progress.release()]() {
+    Error error;
+    const bool result = Achievements::DownloadGameIcons(progress, &error);
+    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+      GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
+        delete progress;
+        if (result)
+          ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game icons downloaded."));
+        else
+          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Download Game Icons"), error.TakeDescription());
+      });
+    });
+  });
 }
 
 void FullscreenUI::DrawAdvancedSettingsPage()

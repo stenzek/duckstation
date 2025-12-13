@@ -745,8 +745,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const bool show_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowGridTitles", true);
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
-  const float title_font_size = UIStyle.MediumFontSize;
-  const float title_font_weight = UIStyle.BoldFontWeight;
+  const float title_font_size = UIStyle.MediumLargeFontSize;
+  const float title_font_weight = UIStyle.NormalFontWeight;
   const float avail_width = ImGui::GetContentRegionAvail().x;
   const float title_spacing = LayoutScale(10.0f);
   const float item_width_with_spacing = std::floor(avail_width / 5.0f);
@@ -1065,12 +1065,12 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
   }
 
   // because memcard icons are crap res
-  if (fallback_to_icon && cover_it->second.empty())
+  if (fallback_to_icon && cover_it->second.empty() && !entry->serial.empty() && entry->IsDiscOrDiscSet())
   {
     cover_it = s_game_list_locals.icon_image_map.find(entry->serial);
     if (cover_it == s_game_list_locals.icon_image_map.end())
     {
-      std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+      std::string icon_path = GameList::GetGameIconPath(entry);
       cover_it = s_game_list_locals.icon_image_map.emplace(entry->serial, std::move(icon_path)).first;
     }
   }

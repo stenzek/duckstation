@@ -1275,7 +1275,7 @@ void FullscreenUI::DrawLandingWindow()
     ImGui::SetItemDefaultFocus();
 
     if (UserThemeableHorizontalButton(
-          "fullscreenui/cdrom.png", "fullscreenui/start-disc.svg", FSUI_VSTR("Start Game"),
+          "fullscreenui/start-disc.png", "fullscreenui/start-disc.svg", FSUI_VSTR("Start Game"),
           FSUI_VSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
     {
       BeginTransition([]() { SwitchToMainWindow(MainWindowType::StartGame); });
@@ -1604,8 +1604,9 @@ void FullscreenUI::DrawPauseMenu()
           DoToggleAnalogMode();
         }
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
-                                     has_game && !GPUThread::GetGameSerial().empty()))
+        if (MenuButtonWithoutSummary(
+              FSUI_ICONVSTR(ICON_FA_WRENCH, "Game Properties"),
+              has_game && GameList::CanEditGameSettingsForPath(GPUThread::GetGameSerial(), GPUThread::GetGamePath())))
         {
           BeginTransition([]() { SwitchToGameSettings(); });
         }

@@ -25,7 +25,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: "deps-mac b6917842237694f5531dbe2443fc573d2c8fb25df5ddfd11505d0b6c8640e4f8"
+        key: deps-mac ${{ hashFiles('scripts/deps/build-dependencies-mac.sh', 'scripts/deps/versions') }}
 
     - name: Build Dependencies
       if: steps.cache-deps-mac.outputs.cache-hit != 'true'

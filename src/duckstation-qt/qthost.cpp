@@ -101,13 +101,14 @@ static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 /// Interval at which the controllers are polled when the system is not active.
-static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
+static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES = 100;
+static constexpr int BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES = 1000;
 
 /// Poll at half the vsync rate for FSUI to reduce the chance of getting a press+release in the same frame.
-static constexpr u32 FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
+static constexpr int FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL = 8;
 
 /// Poll at 1ms when running GDB server. We can get rid of this once we move networking to its own thread.
-static constexpr u32 GDB_SERVER_POLLING_INTERVAL = 1;
+static constexpr int GDB_SERVER_POLLING_INTERVAL = 1;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function declarations
@@ -137,6 +138,10 @@ static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
 static bool ParseCommandLineParametersAndInitializeConfig(QApplication& app,
                                                           std::shared_ptr<SystemBootParameters>& boot_params);
+
+#ifdef __linux__
+static void ApplyWaylandWorkarounds();
+#endif
 } // namespace QtHost
 
 namespace {
@@ -158,6 +163,10 @@ struct State
   bool start_fullscreen_ui_fullscreen = false;
   bool run_setup_wizard = false;
   bool cleanup_after_update = false;
+
+#ifdef __linux__
+  bool display_container_needed = false;
+#endif
 };
 } // namespace
 
@@ -233,12 +242,8 @@ bool QtHost::VeryEarlyProcessStartup()
 
 bool QtHost::EarlyProcessStartup()
 {
-#if !defined(_WIN32) && !defined(__APPLE__)
-  // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
-  // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
-  // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
-  if (QtHost::IsRunningOnWayland())
-    QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+#ifdef __linux__
+  ApplyWaylandWorkarounds();
 #endif
 
   // redirect qt errors
@@ -305,15 +310,49 @@ bool QtHost::InNoGUIMode()
   return s_state.nogui_mode;
 }
 
-bool QtHost::IsRunningOnWayland()
+bool QtHost::IsDisplayWidgetContainerNeeded()
 {
-#if defined(_WIN32) || defined(__APPLE__)
-  return false;
+#ifdef __linux__
+  return s_state.display_container_needed;
 #else
-  const QString platform_name = QGuiApplication::platformName();
-  return (platform_name == QStringLiteral("wayland"));
+  return false;
 #endif
 }
+
+#ifdef __linux__
+
+void QtHost::ApplyWaylandWorkarounds()
+{
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name != QStringLiteral("wayland"))
+  {
+    std::fputs("Wayland not detected, not applying workarounds.\n", stderr);
+    return;
+  }
+
+  if (const char* desktop = std::getenv("XDG_SESSION_DESKTOP"); desktop && std::strcmp(desktop, "KDE") == 0)
+  {
+    std::fputs("Wayland with KDE detected, not applying Wayland workarounds.\n", stderr);
+  }
+  else
+  {
+    std::fputs("Wayland with non-KDE desktop detected, applying Wayland workarounds.\n"
+               "Don't complain when things break.\n",
+               stderr);
+
+    // When rendering fullscreen or to a separate window on Wayland, because we take over the surface we need
+    // to wrap the widget in a container because GNOME is stupid and refuses to ever support server-side
+    // decorations. There's no sign of this ever changing. Fuck Wayland.
+    s_state.display_container_needed = true;
+
+    // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
+    // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
+    // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
+    QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+  }
+}
+
+#endif
 
 QString QtHost::GetAppNameAndVersion()
 {
@@ -408,7 +447,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
     fmt::format(TRANSLATE_FS("QtHost", "Downloading {}..."),
                 std::string_view(url).substr((url_file_part_pos >= 0) ? (url_file_part_pos + 1) : 0));
 
-  QtAsyncTaskWithProgress::create(
+  QtAsyncTaskWithProgressDialog::create(
     parent, TRANSLATE_SV("QtHost", "File Download"), status_text, true, 0, 0, 0.0f,
     [url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
@@ -440,7 +479,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
         http->WaitForAllRequests();
       }
 
-      QtAsyncTaskWithProgress::CompletionCallback ret;
+      QtAsyncTaskWithProgressDialog::CompletionCallback ret;
       if (completion_callback)
       {
         ret = [path = std::move(path), completion_callback = std::move(completion_callback), error = std::move(error),
@@ -1167,13 +1206,11 @@ void EmuThread::resetSystem(bool check_memcard_busy)
   System::ResetSystem();
 }
 
-void EmuThread::setSystemPaused(bool paused, bool wait_until_paused /* = false */)
+void EmuThread::setSystemPaused(bool paused)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, &EmuThread::setSystemPaused,
-                              wait_until_paused ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, paused,
-                              wait_until_paused);
+    QMetaObject::invokeMethod(this, &EmuThread::setSystemPaused, Qt::QueuedConnection, paused);
     return;
   }
 
@@ -1317,7 +1354,8 @@ void EmuThread::captureGPUFrameDump()
 
 void EmuThread::startControllerTest()
 {
-  static constexpr const char* PADTEST_URL = "https://downloads.duckstation.org/runtime-resources/padtest.psexe";
+  static constexpr const char* PADTEST_URL =
+    "https://github.com/stenzek/duckstation/raw/refs/heads/master/extras/padtest/padtest.psexe";
 
   if (!isCurrentThread())
   {
@@ -1360,6 +1398,29 @@ void EmuThread::startControllerTest()
     });
     msgbox->open();
   });
+}
+
+void EmuThread::openGamePropertiesForCurrentGame(const QString& category)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::openGamePropertiesForCurrentGame, Qt::QueuedConnection, category);
+    return;
+  }
+
+  Error error;
+  GameList::Entry dynamic_entry;
+  if (System::PopulateGameListEntryFromCurrentGame(&dynamic_entry, &error))
+  {
+    Host::RunOnUIThread([dynamic_entry = std::move(dynamic_entry), category]() {
+      SettingsWindow::openGamePropertiesDialog(&dynamic_entry,
+                                               category.isEmpty() ? nullptr : category.toUtf8().constData());
+    });
+  }
+  else
+  {
+    emit errorReported(tr("Error"), QString::fromStdString(error.GetDescription()));
+  }
 }
 
 void EmuThread::runOnEmuThread(const std::function<void()>& callback)
@@ -1454,13 +1515,12 @@ void EmuThread::loadState(bool global, qint32 slot)
                            System::GetGameSaveStatePath(System::GetGameSerial(), slot));
 }
 
-void EmuThread::saveState(const QString& path, bool block_until_done /* = false */)
+void EmuThread::saveState(const QString& path)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(const QString&, bool)>(&EmuThread::saveState),
-                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, path,
-                              block_until_done);
+    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(const QString&)>(&EmuThread::saveState),
+                              Qt::QueuedConnection, path);
     return;
   }
 
@@ -1474,13 +1534,12 @@ void EmuThread::saveState(const QString& path, bool block_until_done /* = false 
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
-void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
+void EmuThread::saveState(bool global, qint32 slot)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(bool, qint32, bool)>(&EmuThread::saveState),
-                              block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, global, slot,
-                              block_until_done);
+    QMetaObject::invokeMethod(this, static_cast<void (EmuThread::*)(bool, qint32)>(&EmuThread::saveState),
+                              Qt::QueuedConnection, global, slot);
     return;
   }
 
@@ -1615,22 +1674,6 @@ void EmuThread::saveScreenshot()
   System::SaveScreenshot();
 }
 
-void EmuThread::refreshAchievementsAllProgress()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::refreshAchievementsAllProgress, Qt::QueuedConnection);
-    return;
-  }
-
-  Error error;
-  if (!Achievements::RefreshAllProgressDatabase(&error))
-  {
-    emit errorReported(tr("Error"), QString::fromStdString(error.GetDescription()));
-    return;
-  }
-}
-
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 {
   emit g_emu_thread->achievementsLoginRequested(reason);
@@ -1677,11 +1720,6 @@ void Host::OnAchievementsActiveChanged(bool active)
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 {
   emit g_emu_thread->achievementsHardcoreModeChanged(enabled);
-}
-
-void Host::OnAchievementsAllProgressRefreshed()
-{
-  emit g_emu_thread->achievementsAllProgressRefreshed();
 }
 
 bool Host::ShouldPreferHostFileSelector()
@@ -1833,15 +1871,14 @@ void EmuThread::destroyBackgroundControllerPollTimer()
 void EmuThread::startBackgroundControllerPollTimer()
 {
   if (m_background_controller_polling_timer->isActive())
+  {
+    updateBackgroundControllerPollInterval();
     return;
+  }
 
-  u32 poll_interval = BACKGROUND_CONTROLLER_POLLING_INTERVAL;
-  if (m_gpu_thread_run_idle)
-    poll_interval = FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
-  if (GDBServer::HasAnyClients())
-    poll_interval = GDB_SERVER_POLLING_INTERVAL;
-
-  m_background_controller_polling_timer->start(poll_interval);
+  const int interval = getBackgroundControllerPollInterval();
+  DEV_LOG("Starting background controller polling timer with interval {} ms", interval);
+  m_background_controller_polling_timer->start(interval);
 }
 
 void EmuThread::stopBackgroundControllerPollTimer()
@@ -1849,7 +1886,40 @@ void EmuThread::stopBackgroundControllerPollTimer()
   if (!m_background_controller_polling_timer->isActive())
     return;
 
+  DEV_LOG("Stopping background controller polling timer");
   m_background_controller_polling_timer->stop();
+}
+
+void EmuThread::updateBackgroundControllerPollInterval()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateBackgroundControllerPollInterval, Qt::QueuedConnection);
+    return;
+  }
+
+  if (!m_background_controller_polling_timer || !m_background_controller_polling_timer->isActive())
+    return;
+
+  const int current_interval = m_background_controller_polling_timer->interval();
+  const int new_interval = getBackgroundControllerPollInterval();
+  if (current_interval != new_interval)
+  {
+    WARNING_LOG("Changed background polling interval from {} ms to {} ms", current_interval, new_interval);
+    m_background_controller_polling_timer->setInterval(new_interval);
+  }
+}
+
+int EmuThread::getBackgroundControllerPollInterval() const
+{
+  if (GDBServer::HasAnyClients())
+    return GDB_SERVER_POLLING_INTERVAL;
+  else if (m_gpu_thread_run_idle)
+    return FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
+  else if (InputManager::GetPollableDeviceCount() > 0)
+    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITH_DEVICES;
+  else
+    return BACKGROUND_CONTROLLER_POLLING_INTERVAL_WITHOUT_DEVICES;
 }
 
 void EmuThread::setGPUThreadRunIdle(bool active)
@@ -1870,8 +1940,7 @@ void EmuThread::setGPUThreadRunIdle(bool active)
   if (!m_background_controller_polling_timer->isActive())
     return;
 
-  g_emu_thread->stopBackgroundControllerPollTimer();
-  g_emu_thread->startBackgroundControllerPollTimer();
+  g_emu_thread->updateBackgroundControllerPollInterval();
 }
 
 void EmuThread::updateFullscreenUITheme()
@@ -2104,14 +2173,15 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                          no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
+      QWidget* const dialog_parent = lock.getDialogParent();
       QMessageBox* const msgbox =
-        QtUtils::NewMessageBox(lock.getDialogParent(), QMessageBox::Question, title, message, QMessageBox::NoButton);
+        QtUtils::NewMessageBox(dialog_parent, QMessageBox::Question, title, message, QMessageBox::NoButton);
 
       QPushButton* const yes_button = msgbox->addButton(yes_text, QMessageBox::AcceptRole);
       msgbox->addButton(no_text, QMessageBox::RejectRole);
 
-      QObject::connect(msgbox, &QMessageBox::finished, lock.getDialogParent(),
-                       [msgbox, yes_button, callback = std::move(callback), needs_pause]() {
+      QObject::connect(msgbox, &QMessageBox::finished, dialog_parent,
+                       [msgbox, yes_button, callback = std::move(callback), lock = std::move(lock), needs_pause]() {
                          const bool result = (msgbox->clickedButton() == yes_button);
                          callback(result);
 
@@ -2657,6 +2727,7 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceConnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier),
                             QtUtils::StringViewToQString(device_name), qeffect_list);
+  g_emu_thread->updateBackgroundControllerPollInterval();
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
@@ -2669,6 +2740,7 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
 {
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceDisconnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier));
+  g_emu_thread->updateBackgroundControllerPollInterval();
 
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
       InputManager::HasAnyBindingsForSource(key))
@@ -2812,7 +2884,7 @@ void Host::ReleaseRenderWindow()
 bool Host::CanChangeFullscreenMode(bool new_fullscreen_state)
 {
   // Don't mess with fullscreen while locked.
-  return !QtHost::IsSystemLocked();
+  return (!new_fullscreen_state || !QtHost::IsSystemLocked());
 }
 
 void EmuThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
@@ -3367,14 +3439,12 @@ int main(int argc, char* argv[])
   }
 
   // When running in batch mode, ensure game list is loaded, but don't scan for any new files.
-  if (!autoboot)
+  if (!s_state.batch_mode)
     g_main_window->refreshGameList(false);
-  else
-    GameList::Refresh(false, true);
 
   // Don't bother showing the window in no-gui mode.
   if (!s_state.nogui_mode)
-    g_main_window->show();
+    QtUtils::ShowOrRaiseWindow(g_main_window, nullptr, true);
 
   // Initialize big picture mode if requested.
   if (s_state.start_fullscreen_ui)

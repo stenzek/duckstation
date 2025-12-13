@@ -2751,12 +2751,27 @@ void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
   // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
-  if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable && cmd->x >= 0 &&
-      cmd->y >= 0 && cmd->width >= TEXTURE_PAGE_WIDTH && cmd->height >= TEXTURE_PAGE_HEIGHT &&
+  bool draw_with_software_renderer = m_draw_with_software_renderer;
+  if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable &&
+      !cmd->check_mask_before_draw && cmd->x >= 0 && cmd->y >= 0 &&
       (static_cast<u32>(cmd->x) + cmd->width) <= VRAM_WIDTH && (static_cast<u32>(cmd->y) + cmd->height) <= VRAM_HEIGHT)
   {
-    FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
-    return;
+    // For small fills, we don't go down the FillVRAM() path as that will wipe out the drawn state on the pages, as this
+    // has the potential to cause false positives. Instead we just throw the draw down the software path in addition.
+    // Test case: Wild Arms 2 player sprites.
+    if (cmd->width <= TEXTURE_PAGE_WIDTH && cmd->height <= TEXTURE_PAGE_HEIGHT)
+    {
+      GL_INS_FMT("Also drawing non-textured sprite with software at {},{} size {}x{}", cmd->x, cmd->y, cmd->width,
+                 cmd->height);
+      draw_with_software_renderer = true;
+    }
+    else
+    {
+      GL_INS_FMT("Treating non-textured sprite as VRAM fill at {},{} size {}x{}", cmd->x, cmd->y, cmd->width,
+                 cmd->height);
+      FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
+      return;
+    }
   }
 
   const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
@@ -2845,7 +2860,7 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 
   AddDrawnRectangle(clamped_rect);
 
-  if (m_draw_with_software_renderer)
+  if (draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawRectangleFunction(
       cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);

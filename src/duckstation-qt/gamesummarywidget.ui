@@ -259,20 +259,7 @@
     </widget>
    </item>
    <item row="12" column="1" colspan="2">
-    <layout class="QHBoxLayout" name="verifyLayout" stretch="0,1,0">
-     <item>
-      <spacer name="verifySpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
+    <layout class="QHBoxLayout" name="verifyLayout" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="revision">
        <property name="minimumSize">
@@ -340,6 +327,19 @@
       </property>
      </column>
     </widget>
+   </item>
+   <item row="14" column="0" colspan="3">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

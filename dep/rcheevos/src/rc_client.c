@@ -1726,10 +1726,13 @@ static void rc_client_activate_game(rc_client_load_state_t* load_state, rc_api_s
 
     /* make the loaded game active if another game is not aleady being loaded. */
     rc_mutex_lock(&client->state.mutex);
-    if (client->state.load == load_state)
+    if (client->state.load == load_state) {
       client->game = load_state->game;
-    else
+      client->state.frames_processed = client->state.frames_at_last_ping = 0;
+    }
+    else {
       load_state->progress = RC_CLIENT_LOAD_GAME_STATE_ABORTED;
+    }
     rc_mutex_unlock(&client->state.mutex);
 
     if (load_state->progress != RC_CLIENT_LOAD_GAME_STATE_ABORTED) {
@@ -2358,6 +2361,7 @@ static int rc_client_attach_load_state(rc_client_t* client, rc_client_load_state
 
     rc_mutex_lock(&client->state.mutex);
     client->state.load = load_state;
+    client->state.frames_processed = client->state.frames_at_last_ping = 0;
     rc_mutex_unlock(&client->state.mutex);
   }
   else if (client->state.load != load_state) {
@@ -5192,30 +5196,37 @@ static void rc_client_ping(rc_client_scheduled_callback_data_t* callback_data, r
   char buffer[256];
   int result;
 
-  if (!client->callbacks.rich_presence_override ||
-      !client->callbacks.rich_presence_override(client, buffer, sizeof(buffer))) {
-    rc_mutex_lock(&client->state.mutex);
+  /* if no frames have been processed since the last ping, the emulator is idle. let the
+   * server session expire. it will be resumed/restarted once frames start getting
+   * processed again. */
+  if (client->state.frames_processed != client->state.frames_at_last_ping) {
+    client->state.frames_at_last_ping = client->state.frames_processed;
 
-    rc_runtime_get_richpresence(&client->game->runtime, buffer, sizeof(buffer),
-        client->state.legacy_peek, client, NULL);
+    if (!client->callbacks.rich_presence_override ||
+        !client->callbacks.rich_presence_override(client, buffer, sizeof(buffer))) {
+      rc_mutex_lock(&client->state.mutex);
 
-    rc_mutex_unlock(&client->state.mutex);
-  }
+      rc_runtime_get_richpresence(&client->game->runtime, buffer, sizeof(buffer),
+          client->state.legacy_peek, client, NULL);
 
-  memset(&api_params, 0, sizeof(api_params));
-  api_params.username = client->user.username;
-  api_params.api_token = client->user.token;
-  api_params.game_id = client->game->public_.id;
-  api_params.rich_presence = buffer;
-  api_params.game_hash = client->game->public_.hash;
-  api_params.hardcore = client->state.hardcore;
+      rc_mutex_unlock(&client->state.mutex);
+    }
 
-  result = rc_api_init_ping_request_hosted(&request, &api_params, &client->state.host);
-  if (result != RC_OK) {
-    RC_CLIENT_LOG_WARN_FORMATTED(client, "Error generating ping request: %s", rc_error_str(result));
-  }
-  else {
-    client->callbacks.server_call(&request, rc_client_ping_callback, client, client);
+    memset(&api_params, 0, sizeof(api_params));
+    api_params.username = client->user.username;
+    api_params.api_token = client->user.token;
+    api_params.game_id = client->game->public_.id;
+    api_params.rich_presence = buffer;
+    api_params.game_hash = client->game->public_.hash;
+    api_params.hardcore = client->state.hardcore;
+
+    result = rc_api_init_ping_request_hosted(&request, &api_params, &client->state.host);
+    if (result != RC_OK) {
+      RC_CLIENT_LOG_WARN_FORMATTED(client, "Error generating ping request: %s", rc_error_str(result));
+    }
+    else {
+      client->callbacks.server_call(&request, rc_client_ping_callback, client, client);
+    }
   }
 
   callback_data->when = now + 120 * 1000;
@@ -5929,6 +5940,8 @@ void rc_client_do_frame(rc_client_t* client)
     rc_mutex_unlock(&client->state.mutex);
 
     rc_client_raise_pending_events(client, client->game);
+
+    ++client->state.frames_processed;
   }
 
   /* we've processed a frame. if there's a pause delay in effect, process it */

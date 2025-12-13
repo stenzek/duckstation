@@ -640,10 +640,7 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
   s_state.platform_window_updated.Wait();
 
   // reload input sources, since it might use the window handle
-  {
-    auto lock = Host::GetSettingsLock();
-    InputManager::ReloadSources(*Host::GetSettingsInterface(), lock);
-  }
+  Host::RunOnCPUThread(&System::ReloadInputSources);
 
   return wi;
 }
@@ -1101,11 +1098,6 @@ void Host::OnAchievementsActiveChanged(bool active)
 }
 
 void Host::OnAchievementsHardcoreModeChanged(bool enabled)
-{
-  // noop
-}
-
-void Host::OnAchievementsAllProgressRefreshed()
 {
   // noop
 }

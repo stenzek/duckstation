@@ -16,6 +16,7 @@
 #include <vector>
 
 class Error;
+class ProgressCallback;
 class StateWrapper;
 class CDImage;
 
@@ -80,7 +81,7 @@ void UpdateSettings(const Settings& old_config);
 void Shutdown();
 
 /// Call to refresh the all-progress database.
-bool RefreshAllProgressDatabase(Error* error);
+bool RefreshAllProgressDatabase(ProgressCallback* progress, Error* error);
 
 /// Called when the system is start. Engages hardcore mode if enabled.
 void OnSystemStarting(CDImage* image, bool disable_hardcore_mode);
@@ -184,6 +185,10 @@ SmallString GetLoggedInUserPointsSummary();
 /// Returns the path to the local cache for the specified badge name.
 std::string GetGameBadgePath(std::string_view badge_name);
 
+/// Downloads game icons from RetroAchievements for all games that have an achievements_game_id.
+/// This fetches the game badge images that are normally downloaded when a game is opened.
+bool DownloadGameIcons(ProgressCallback* progress, Error* error);
+
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();
 
@@ -213,9 +218,6 @@ void OnAchievementsActiveChanged(bool active);
 
 /// Called whenever hardcore mode is toggled.
 void OnAchievementsHardcoreModeChanged(bool enabled);
-
-/// Called whenever all progress is manually refreshed and completed.
-void OnAchievementsAllProgressRefreshed();
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 

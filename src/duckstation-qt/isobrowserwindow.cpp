@@ -188,7 +188,7 @@ void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode
 
   const std::string status_text =
     fmt::format(TRANSLATE_FS("ISOBrowserWindow", "Extracting {}..."), Path::GetFileName(spath));
-  QtAsyncTaskWithProgress::create(
+  QtAsyncTaskWithProgressDialog::create(
     this, windowTitle().toStdString(), status_text, true, 0, 0, 0.15f,
     [this, spath = std::move(spath), save_path = std::move(save_path), mode](ProgressCallback* const progress) mutable {
       Error error;

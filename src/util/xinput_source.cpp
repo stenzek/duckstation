@@ -399,6 +399,11 @@ InputManager::DeviceEffectList XInputSource::EnumerateEffects(std::optional<Inpu
   return ret;
 }
 
+u32 XInputSource::GetPollableDeviceCount() const
+{
+  return static_cast<u32>(std::ranges::count_if(m_controllers, [](const ControllerData& cd) { return cd.connected; }));
+}
+
 bool XInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   if (!device.starts_with("XInput-"))

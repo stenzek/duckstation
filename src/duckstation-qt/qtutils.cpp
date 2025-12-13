@@ -501,15 +501,6 @@ QSize QtUtils::GetDeviceIndependentSize(const QSize& size, qreal device_pixel_ra
                std::max(static_cast<int>(std::ceil(static_cast<qreal>(size.height()) / device_pixel_ratio)), 1));
 }
 
-qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
-{
-  const QScreen* screen_for_ratio = widget->screen();
-  if (!screen_for_ratio)
-    screen_for_ratio = QGuiApplication::primaryScreen();
-
-  return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
-}
-
 std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
 {
   // Why this nonsense? Qt's device independent sizes are integer, and fractional scaling is lossy.
@@ -517,7 +508,7 @@ std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
 #if defined(_WIN32)
   if (RECT rc; GetClientRect(reinterpret_cast<HWND>(widget->winId()), &rc))
   {
-    const qreal device_pixel_ratio = GetDevicePixelRatioForWidget(widget);
+    const qreal device_pixel_ratio = widget->devicePixelRatio();
     return std::make_pair(QSize(static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top)),
                           device_pixel_ratio);
   }
@@ -536,7 +527,7 @@ std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
     if (std::optional<std::pair<int, int>> size =
           CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
     {
-      const qreal device_pixel_ratio = GetDevicePixelRatioForWidget(widget);
+      const qreal device_pixel_ratio = widget->devicePixelRatio();
       return std::make_pair(QSize(size->first, size->second), device_pixel_ratio);
     }
   }
@@ -544,7 +535,7 @@ std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
 
   // On Linux, fuck you, enjoy round trip to the X server, and on Wayland you can't query it in the first place...
   // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
-  const qreal device_pixel_ratio = GetDevicePixelRatioForWidget(widget);
+  const qreal device_pixel_ratio = widget->devicePixelRatio();
   return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
 }
 
@@ -613,7 +604,9 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
   }
 
   wi.surface_refresh_rate = surface_refresh_rate.value();
-  INFO_LOG("Surface refresh rate: {} hz", wi.surface_refresh_rate);
+
+  INFO_LOG("Window size: {}x{} (Qt {}x{}), scale: {}, refresh rate {} hz", wi.surface_width, wi.surface_height,
+           widget->width(), widget->height(), wi.surface_scale, wi.surface_refresh_rate);
 
   return wi;
 }

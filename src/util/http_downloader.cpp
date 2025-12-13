@@ -225,10 +225,16 @@ void HTTPDownloader::WaitForAllRequestsWithYield(std::function<void()> before_sl
   {
     // Don't burn too much CPU.
     if (before_sleep_cb)
+    {
+      lock.unlock();
       before_sleep_cb();
+    }
     Timer::NanoSleep(1000000);
     if (after_sleep_cb)
+    {
       after_sleep_cb();
+      lock.lock();
+    }
     LockedPollRequests(lock);
   }
 }
@@ -254,6 +260,52 @@ bool HTTPDownloader::HasAnyRequests()
 {
   std::unique_lock lock(m_pending_http_request_lock);
   return !m_pending_http_requests.empty();
+}
+
+void HTTPDownloader::CancelAllRequests()
+{
+  std::unique_lock lock(m_pending_http_request_lock);
+
+  bool has_pending_requests = false;
+  do
+  {
+    has_pending_requests = false;
+
+    LockedPollRequests(lock);
+
+    for (size_t index = 0; index < m_pending_http_requests.size();)
+    {
+      Request* req = m_pending_http_requests[index];
+      const Request::State req_state = req->state.load(std::memory_order_acquire);
+
+      // can't cancel a request in pending stage
+      if (req_state == Request::State::Pending)
+      {
+        has_pending_requests = true;
+        index++;
+        continue;
+      }
+      else if (req_state == Request::State::Started || req_state == Request::State::Receiving)
+      {
+        // request timed out
+        ERROR_LOG("Request for '{}' cancelled", req->url);
+
+        req->state.store(Request::State::Cancelled, std::memory_order_release);
+        m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
+        lock.unlock();
+
+        req->error.SetStringView("Request was cancelled.");
+        req->callback(HTTP_STATUS_CANCELLED, req->error, std::string(), Request::Data());
+
+        CloseRequest(req);
+
+        lock.lock();
+        continue;
+      }
+
+      index++;
+    }
+  } while (has_pending_requests);
 }
 
 std::string HTTPDownloader::GetExtensionForContentType(const std::string& content_type)

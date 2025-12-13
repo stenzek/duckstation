@@ -62,6 +62,9 @@ public:
   virtual InputManager::DeviceEffectList EnumerateEffects(std::optional<InputBindingInfo::Type> type,
                                                           std::optional<InputBindingKey> for_device) = 0;
 
+  /// Returns the number of pollable devices managed by this source.
+  virtual u32 GetPollableDeviceCount() const = 0;
+
   /// Retrieves bindings that match the generic bindings for the specified device.
   /// Returns false if it's not one of our devices.
   virtual bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping) = 0;

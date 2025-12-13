@@ -13,6 +13,7 @@
 #include <curl/curl.h>
 #include <deque>
 #include <functional>
+#include <limits>
 #include <pthread.h>
 #include <signal.h>
 #include <thread>
@@ -184,15 +185,16 @@ void HTTPDownloaderCurl::WorkerThreadEntryPoint()
   while (!m_worker_thread_shutdown.load(std::memory_order_acquire))
   {
     // Wait for activity with curl_multi_poll
-    int numfds = 0;
-    curl_multi_poll(m_multi_handle, nullptr, 0, 1000, &numfds);
+    CURLMcode err = curl_multi_poll(m_multi_handle, nullptr, 0, std::numeric_limits<int>::max(), nullptr);
+    if (err != CURLM_OK)
+      ERROR_LOG("curl_multi_poll() returned {}", static_cast<int>(err));
 
     // Process any queued actions
     ProcessQueuedActions();
 
     // Perform curl operations
     int running_handles;
-    const CURLMcode err = curl_multi_perform(m_multi_handle, &running_handles);
+    err = curl_multi_perform(m_multi_handle, &running_handles);
     if (err != CURLM_OK)
       ERROR_LOG("curl_multi_perform() returned {}", static_cast<int>(err));
 

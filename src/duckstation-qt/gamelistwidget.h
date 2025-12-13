@@ -125,6 +125,7 @@ public:
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
 
   const QPixmap& getCoverForEntry(const GameList::Entry* ge) const;
+  void invalidateCoverCacheForPath(const std::string& path);
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
@@ -143,6 +144,7 @@ private:
   void loadCommonImages();
   void loadSizeDependentPixmaps();
   void updateCoverScale();
+  void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);

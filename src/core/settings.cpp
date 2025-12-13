@@ -1080,6 +1080,8 @@ void Settings::ApplySettingRestrictions()
     gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     gpu_dithering_mode = GPUDitheringMode::Unscaled;
     gpu_line_detect_mode = GPULineDetectMode::Disabled;
+    gpu_downsample_mode = GPUDownsampleMode::Disabled;
+    gpu_wireframe_mode = GPUWireframeMode::Disabled;
     gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     gpu_widescreen_rendering = false;
     gpu_widescreen_hack = false;

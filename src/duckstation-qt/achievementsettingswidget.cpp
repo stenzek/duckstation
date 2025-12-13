@@ -96,7 +96,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   {
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
-    connect(m_ui.refreshProgress, &QPushButton::clicked, g_emu_thread, &EmuThread::refreshAchievementsAllProgress);
+    connect(m_ui.refreshProgress, &QPushButton::clicked, g_main_window, &MainWindow::refreshAchievementProgress);
     connect(g_emu_thread, &EmuThread::achievementsRefreshed, this, &AchievementSettingsWidget::onAchievementsRefreshed);
     updateLoginState();
 

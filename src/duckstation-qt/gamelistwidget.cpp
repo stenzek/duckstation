@@ -5,9 +5,11 @@
 #include "gamelistrefreshthread.h"
 #include "mainwindow.h"
 #include "qthost.h"
+#include "qtprogresscallback.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 
+#include "core/achievements.h"
 #include "core/fullscreenui.h"
 #include "core/game_list.h"
 #include "core/host.h"
@@ -222,7 +224,7 @@ const char* GameListModel::getColumnName(Column col)
 }
 
 GameListModel::GameListModel(GameListWidget* parent)
-  : QAbstractTableModel(parent), m_device_pixel_ratio(QtUtils::GetDevicePixelRatioForWidget(parent)),
+  : QAbstractTableModel(parent), m_device_pixel_ratio(parent->devicePixelRatio()),
     m_icon_pixmap_cache(MIN_COVER_CACHE_SIZE)
 {
   m_cover_scale = Host::GetBaseFloatSettingValue("UI", "GameListCoverArtScale", DEFAULT_COVER_SCALE);
@@ -232,7 +234,7 @@ GameListModel::GameListModel(GameListWidget* parent)
   m_show_game_icons = Host::GetBaseBoolSettingValue("UI", "GameListShowGameIcons", true);
 
   loadCommonImages();
-  updateCoverScale();
+  loadCoverScaleDependentPixmaps();
 
   if (m_show_game_icons)
     GameList::ReloadMemcardTimestampCache();
@@ -332,7 +334,7 @@ void GameListModel::setCoverScale(float scale)
   updateCoverScale();
 }
 
-void GameListModel::updateCoverScale()
+void GameListModel::loadCoverScaleDependentPixmaps()
 {
   QImage loading_image;
   if (loading_image.load(QtHost::GetResourceQPath("images/placeholder.png", true)))
@@ -360,7 +362,11 @@ void GameListModel::updateCoverScale()
     m_placeholder_image.setDevicePixelRatio(m_device_pixel_ratio);
     m_placeholder_image.fill(QColor(0, 0, 0, 0));
   }
+}
 
+void GameListModel::updateCoverScale()
+{
+  loadCoverScaleDependentPixmaps();
   emit coverScaleChanged(m_cover_scale);
   emit dataChanged(index(0, Column_Cover), index(rowCount() - 1, Column_Cover),
                    {Qt::DecorationRole, Qt::FontRole, Qt::SizeHintRole});
@@ -415,6 +421,7 @@ void GameListModel::setDevicePixelRatio(qreal dpr)
   m_loading_pixmap.setDevicePixelRatio(dpr);
   m_flag_pixmap_cache.clear();
   loadCommonImages();
+  loadCoverScaleDependentPixmaps();
   refreshCovers();
   refreshIcons();
 }
@@ -569,6 +576,12 @@ void GameListModel::invalidateCoverForPath(const std::string& path)
   emit dataChanged(mi, mi, {Qt::DecorationRole});
 }
 
+void GameListModel::invalidateCoverCacheForPath(const std::string& path)
+{
+  m_cover_pixmap_cache.Remove(path);
+  invalidateCoverForPath(path);
+}
+
 const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 {
   CoverPixmapCacheEntry* pm = m_cover_pixmap_cache.Lookup(ge->path);
@@ -599,7 +612,7 @@ const QPixmap& GameListModel::getCoverForEntry(const GameList::Entry* ge) const
 const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge) const
 {
   // We only do this for discs/disc sets for now.
-  if (m_show_game_icons && (!ge->serial.empty() && (ge->IsDisc() || ge->IsDiscSet())))
+  if (m_show_game_icons && !ge->serial.empty() && ge->IsDiscOrDiscSet())
   {
     QPixmap* item = m_icon_pixmap_cache.Lookup(ge->serial);
     if (item)
@@ -610,7 +623,7 @@ const QPixmap* GameListModel::lookupIconPixmapForEntry(const GameList::Entry* ge
     else
     {
       // Assumes game list lock is held.
-      const std::string path = GameList::GetGameIconPath(ge->serial, ge->path, ge->achievements_game_id);
+      const std::string path = GameList::GetGameIconPath(ge);
       QPixmap pm;
       if (!path.empty() && pm.load(QString::fromStdString(path)))
       {
@@ -671,7 +684,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
 
   const auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path.toStdString());
-  if (!entry || entry->serial.empty() || (!entry->IsDisc() && !entry->IsDiscSet()))
+  if (!entry || entry->serial.empty() || !entry->IsDiscOrDiscSet())
     return ret;
 
   // Only use the cache if we're not using larger icons. Otherwise they'll get double scaled.
@@ -686,7 +699,7 @@ QIcon GameListModel::getIconForGame(const QString& path)
     }
   }
 
-  const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+  const std::string icon_path = GameList::GetGameIconPath(entry);
   if (!icon_path.empty())
     ret = QIcon(QString::fromStdString(icon_path));
 
@@ -1524,7 +1537,7 @@ public:
   {
     DebugAssert(source_row >= 0);
 
-    const std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path, entry->achievements_game_id);
+    const std::string icon_path = GameList::GetGameIconPath(entry);
     if (icon_path.empty())
     {
       clearEntry();
@@ -2256,7 +2269,7 @@ bool GameListWidget::event(QEvent* e)
   if (type == QEvent::Resize)
     updateBackground(false);
   else if (type == QEvent::DevicePixelRatioChange)
-    m_model->setDevicePixelRatio(QtUtils::GetDevicePixelRatioForWidget(this));
+    m_model->setDevicePixelRatio(devicePixelRatio());
 
   return QWidget::event(e);
 }

@@ -34,6 +34,9 @@ class MediaCapture;
 namespace GameDatabase {
 struct Entry;
 }
+namespace GameList {
+struct Entry;
+}
 
 struct SystemBootParameters
 {
@@ -186,7 +189,6 @@ void CancelPendingStartup();
 void InterruptExecution();
 
 ConsoleRegion GetRegion();
-DiscRegion GetDiscRegion();
 bool IsPALRegion();
 
 /// Taints - flags that are set on the system and only cleared on reset.
@@ -235,8 +237,14 @@ bool IsRunningUnknownGame();
 bool IsUsingKnownPS1BIOS();
 BootMode GetBootMode();
 
+/// Returns a path to the game icon, if any.
+std::string GetGameIconPath(bool allow_achievements_badge);
+
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
+
+/// Populates a game list entry struct with information from the currently-running game.
+bool PopulateGameListEntryFromCurrentGame(GameList::Entry* entry, Error* error);
 
 void FormatLatencyStats(SmallStringBase& str);
 
@@ -323,8 +331,6 @@ bool DumpVRAM(std::string path, Error* error);
 /// Dumps sound RAM to a file.
 bool DumpSPURAM(std::string path, Error* error);
 
-bool HasMedia();
-std::string GetMediaPath();
 bool InsertMedia(const char* path);
 void RemoveMedia();
 
@@ -401,7 +407,7 @@ std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path);
 void DeleteSaveStates(std::string_view serial, bool resume);
 
 /// Returns the path to the memory card for the specified game, considering game settings.
-std::string GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot,
+std::string GetGameMemoryCardPath(std::string_view save_title, std::string_view serial, std::string_view path, u32 slot,
                                   MemoryCardType* out_type = nullptr);
 
 /// Returns intended output volume considering fast forwarding.

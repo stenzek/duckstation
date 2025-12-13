@@ -80,6 +80,7 @@ public:
   void WaitForAllRequests();
   void WaitForAllRequestsWithYield(std::function<void()> before_sleep_cb, std::function<void()> after_sleep_cb);
   bool HasAnyRequests();
+  void CancelAllRequests();
 
 protected:
   virtual Request* InternalCreateRequest() = 0;

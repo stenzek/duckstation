@@ -140,6 +140,11 @@ InputManager::DeviceEffectList Win32RawInputSource::EnumerateEffects(std::option
   return {};
 }
 
+u32 Win32RawInputSource::GetPollableDeviceCount() const
+{
+  return static_cast<u32>(m_mice.size());
+}
+
 bool Win32RawInputSource::GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping)
 {
   return {};

@@ -27,6 +27,7 @@
 #include "common/log.h"
 #include "common/md5_digest.h"
 #include "common/path.h"
+#include "common/progress_callback.h"
 #include "common/ryml_helpers.h"
 #include "common/scoped_guard.h"
 #include "common/sha256_digest.h"
@@ -46,6 +47,7 @@
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "rc_api_info.h"
 #include "rc_api_runtime.h"
 #include "rc_client.h"
 #include "rc_consoles.h"
@@ -128,7 +130,7 @@ static void ClearGameInfo();
 static void ClearGameHash();
 static bool HasSavedCredentials();
 static bool TryLoggingInWithToken();
-static void EnableHardcodeMode(bool display_message, bool display_game_summary);
+static void EnableHardcoreMode(bool display_message, bool display_game_summary);
 static void OnHardcoreModeChanged(bool enabled, bool display_message, bool display_game_summary);
 static bool IsRAIntegrationInitializing();
 static void FinishInitialize();
@@ -151,6 +153,8 @@ static void ClientMessageCallback(const char* message, const rc_client_t* client
 static uint32_t ClientReadMemory(uint32_t address, uint8_t* buffer, uint32_t num_bytes, rc_client_t* client);
 static void ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data,
                              rc_client_t* client);
+static rc_api_server_response_t MakeRCAPIServerResponse(s32 status_code, const std::vector<u8>& data);
+static void WaitForHTTPRequestsWithYield(std::unique_lock<std::recursive_mutex>& lock);
 
 static void ClientEventHandler(const rc_client_event_t* event, rc_client_t* client);
 static void HandleResetEvent(const rc_client_event_t* event);
@@ -795,14 +799,7 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       ERROR_LOG("Server call failed: {}", error.GetDescription());
 
-    rc_api_server_response_t rr;
-    rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-                                                  RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-                                                  RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
-                                               status_code;
-    rr.body_length = data.size();
-    rr.body = data.empty() ? nullptr : reinterpret_cast<const char*>(data.data());
-
+    const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
     callback(&rr, callback_data);
   };
 
@@ -819,6 +816,24 @@ void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_s
   {
     http->CreateRequest(request->url, std::move(hd_callback));
   }
+}
+
+rc_api_server_response_t Achievements::MakeRCAPIServerResponse(s32 status_code, const std::vector<u8>& data)
+{
+  return rc_api_server_response_t{
+    .body = data.empty() ? nullptr : reinterpret_cast<const char*>(data.data()),
+    .body_length = data.size(),
+    .http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
+                                                RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+                                                RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
+                                             status_code,
+  };
+}
+
+void Achievements::WaitForHTTPRequestsWithYield(std::unique_lock<std::recursive_mutex>& lock)
+{
+  DebugAssert(s_state.http_downloader);
+  s_state.http_downloader->WaitForAllRequestsWithYield([&lock]() { lock.unlock(); }, [&lock]() { lock.lock(); });
 }
 
 void Achievements::IdleUpdate()
@@ -1001,8 +1016,8 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
   else
   {
     // only enable hardcore mode if we're logged in, or waiting for a login response
-    if (!disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
-      EnableHardcodeMode(false, false);
+    if (image && !disable_hardcore_mode && g_settings.achievements_hardcore_mode && IsLoggedInOrLoggingIn())
+      EnableHardcoreMode(false, false);
   }
 
   // now we can finally identify the game
@@ -1012,6 +1027,7 @@ void Achievements::OnSystemStarting(CDImage* image, bool disable_hardcore_mode)
 
 void Achievements::OnSystemDestroyed()
 {
+  const auto lock = GetLock();
   ClearGameInfo();
   ClearGameHash();
   DisableHardcoreMode(false, false);
@@ -1024,11 +1040,12 @@ void Achievements::OnSystemReset()
     return;
 
   // Do we need to enable hardcore mode?
-  if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client))
+  if (System::IsValid() && g_settings.achievements_hardcore_mode && !rc_client_get_hardcore_enabled(s_state.client) &&
+      (s_state.load_game_request || s_state.has_achievements || s_state.has_leaderboards))
   {
     // This will raise the silly reset event, but we can safely ignore that since we're immediately resetting the client
     DEV_LOG("Enabling hardcore mode after reset");
-    EnableHardcodeMode(true, true);
+    EnableHardcoreMode(true, true);
   }
 
   DEV_LOG("Reset client");
@@ -1062,14 +1079,16 @@ bool Achievements::IdentifyGame(CDImage* image)
 {
   std::optional<GameHash> game_hash;
   if (image)
+  {
     game_hash = GetGameHash(image);
 
-  if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
-  {
-    // If we are starting with this game and it's bad, notify the user that this is why.
-    Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
-                            TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
-                            TRANSLATE_STR("Achievements", "Achievements have been disabled."));
+    if (!game_hash.has_value() && !rc_client_is_game_loaded(s_state.client))
+    {
+      // If we are starting with this game and it's bad, notify the user that this is why.
+      Host::AddIconOSDMessage(OSDMessageType::Error, "AchievementsHashFailed", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("Achievements", "Failed to read executable from disc."),
+                              TRANSLATE_STR("Achievements", "Achievements have been disabled."));
+    }
   }
 
   s_state.game_path = image ? image->GetPath() : std::string();
@@ -1375,16 +1394,7 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
   if (g_settings.achievements_notifications && event->subset->badge_name[0] != '\0')
   {
     // Need to grab the icon for the subset.
-    std::string badge_path = GetLocalImagePath(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
-    if (!FileSystem::FileExists(badge_path.c_str()))
-    {
-      std::string url;
-      if (IsUsingRAIntegration() || !event->subset->badge_url)
-        url = GetImageURL(event->subset->badge_name, RC_IMAGE_TYPE_GAME);
-      else
-        url = event->subset->badge_url;
-      DownloadImage(std::move(url), badge_path);
-    }
+    std::string badge_path = GetSubsetBadgePath(event->subset);
 
     std::string message = fmt::format(
       TRANSLATE_FS("Achievements", "Subset complete.\n{0}, {1}."),
@@ -1547,7 +1557,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   if (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::Notification)
   {
     FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
-                                  CHALLENGE_STARTED_NOTIFICATION_TIME, std::move(badge_path),
+                                  CHALLENGE_STARTED_NOTIFICATION_TIME, badge_path,
                                   fmt::format(TRANSLATE_FS("Achievements", "Challenge Started: {}"),
                                               event->achievement->title ? event->achievement->title : ""),
                                   event->achievement->description, {});
@@ -1576,8 +1586,7 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
       event->achievement->state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
   {
     FullscreenUI::AddNotification(fmt::format("AchievementChallenge{}", event->achievement->id),
-                                  CHALLENGE_FAILED_NOTIFICATION_TIME,
-                                  GetAchievementBadgePath(event->achievement, false),
+                                  CHALLENGE_FAILED_NOTIFICATION_TIME, it->badge_path,
                                   fmt::format(TRANSLATE_FS("Achievements", "Challenge Failed: {}"),
                                               event->achievement->title ? event->achievement->title : ""),
                                   event->achievement->description, {});
@@ -1669,7 +1678,7 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
                           TRANSLATE_STR("Achievements", "All pending unlock requests have completed."));
 }
 
-void Achievements::EnableHardcodeMode(bool display_message, bool display_game_summary)
+void Achievements::EnableHardcoreMode(bool display_message, bool display_game_summary)
 {
   DebugAssert(IsActive());
   if (rc_client_get_hardcore_enabled(s_state.client))
@@ -1853,6 +1862,22 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
   }
 
   return path;
+}
+
+std::string Achievements::GetSubsetBadgePath(const rc_client_subset_t* subset)
+{
+  std::string badge_path = GetLocalImagePath(subset->badge_name, RC_IMAGE_TYPE_GAME);
+  if (!FileSystem::FileExists(badge_path.c_str()))
+  {
+    std::string url;
+    if (IsUsingRAIntegration() || !subset->badge_url)
+      url = GetImageURL(subset->badge_name, RC_IMAGE_TYPE_GAME);
+    else
+      url = subset->badge_url;
+    DownloadImage(std::move(url), badge_path);
+  }
+
+  return badge_path;
 }
 
 bool Achievements::IsLoggedIn()
@@ -2054,6 +2079,141 @@ SmallString Achievements::GetLoggedInUserPointsSummary()
 std::string Achievements::GetGameBadgePath(std::string_view badge_name)
 {
   return GetLocalImagePath(badge_name, RC_IMAGE_TYPE_GAME);
+}
+
+bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
+{
+  // Collect all unique game IDs that don't have icons yet
+  std::vector<u32> game_ids;
+  {
+    const auto lock = GameList::GetLock();
+    for (const GameList::Entry& entry : GameList::GetEntries())
+    {
+      if (entry.achievements_game_id != 0)
+      {
+        // Check if we already have this badge
+        const std::string existing_badge = GameList::GetAchievementGameBadgePath(entry.achievements_game_id);
+        if (existing_badge.empty() &&
+            std::find(game_ids.begin(), game_ids.end(), entry.achievements_game_id) == game_ids.end())
+        {
+          game_ids.push_back(entry.achievements_game_id);
+        }
+      }
+    }
+  }
+
+  if (game_ids.empty())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "All available icons have already been downloaded."));
+    return false;
+  }
+
+  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Fetching icon info for {} games..."), game_ids.size());
+
+  // Fetch game titles (includes badge names) from RetroAchievements
+  const rc_api_fetch_game_titles_request_t titles_request = {
+    .game_ids = game_ids.data(),
+    .num_game_ids = static_cast<u32>(game_ids.size()),
+  };
+
+  rc_api_request_t request;
+  if (rc_api_init_fetch_game_titles_request(&request, &titles_request) != RC_OK)
+  {
+    Error::SetStringView(error, "Failed to create API request.");
+    return false;
+  }
+
+  auto lock = GetLock();
+  if (!IsActive())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "Achievements are not enabled."));
+    return false;
+  }
+
+  std::optional<rc_api_fetch_game_titles_response_t> titles_response;
+  s_state.http_downloader->CreatePostRequest(
+    request.url, request.post_data,
+    [&titles_response, error](s32 status_code, const Error&, const std::string&, HTTPDownloader::Request::Data data) {
+      const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
+      const int parse_result = rc_api_process_fetch_game_titles_server_response(&titles_response.emplace(), &rr);
+      if (parse_result != RC_OK)
+      {
+        Error::SetStringFmt(error, "rc_api_process_fetch_game_titles_server_response() failed: {}",
+                            rc_error_str(parse_result));
+        titles_response.reset();
+      }
+    },
+    progress);
+
+  rc_api_destroy_request(&request);
+  WaitForHTTPRequestsWithYield(lock);
+
+  if (!titles_response.has_value())
+    return false;
+
+  const ScopedGuard response_guard(
+    [&titles_response]() { rc_api_destroy_fetch_game_titles_response(&titles_response.value()); });
+  if (titles_response->num_entries == 0)
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "No image names returned."));
+    return false;
+  }
+
+  // Create all download requests in parallel
+  u32 badges_to_download = 0;
+  for (u32 i = 0; i < titles_response->num_entries; i++)
+  {
+    const rc_api_game_title_entry_t& entry = titles_response->entries[i];
+
+    if (!entry.image_name || entry.image_name[0] == '\0')
+      continue;
+
+    std::string path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      // Already have this icon, just update the cache
+      GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+      continue;
+    }
+
+    std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
+    if (url.empty())
+      continue;
+
+    badges_to_download++;
+    s_state.http_downloader->CreateRequest(
+      std::move(url), [path = std::move(path), progress](s32 status_code, const Error& http_error, const std::string&,
+                                                         HTTPDownloader::Request::Data data) {
+        if (status_code == HTTPDownloader::HTTP_STATUS_OK)
+        {
+          INFO_LOG("Writing badge to {}...", Path::GetFileName(path));
+
+          Error write_error;
+          if (!FileSystem::FileExists(path.c_str()) && !FileSystem::WriteBinaryFile(path.c_str(), data, &write_error))
+          {
+            ERROR_LOG("Failed to write badge to {}: {}", Path::GetFileName(path), write_error.GetDescription());
+            FileSystem::DeleteFile(path.c_str());
+          }
+        }
+        else
+        {
+          ERROR_LOG("Failed to download badge: HTTP {}: {}", status_code, http_error.GetDescription());
+        }
+
+        progress->IncrementProgressValue();
+      });
+  }
+
+  if (badges_to_download == 0)
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "All icons have already been downloaded."));
+    return false;
+  }
+
+  progress->SetProgressRange(badges_to_download);
+  progress->FormatStatusText(TRANSLATE_FS("Achievements", "Downloading {} game icons..."), badges_to_download);
+  WaitForHTTPRequestsWithYield(lock);
+  return true;
 }
 
 u32 Achievements::GetPauseThrottleFrames()
@@ -2551,12 +2711,11 @@ void Achievements::FinishRefreshHashDatabase()
 
   // update game list, we might have some new games that weren't in the seed database
   GameList::UpdateAllAchievementData();
-
-  Host::OnAchievementsAllProgressRefreshed();
 }
 
-bool Achievements::RefreshAllProgressDatabase(Error* error)
+bool Achievements::RefreshAllProgressDatabase(ProgressCallback* progress, Error* error)
 {
+  auto lock = GetLock();
   if (!IsLoggedIn())
   {
     Error::SetStringView(error, TRANSLATE_SV("Achievements", "User is not logged in."));
@@ -2570,8 +2729,15 @@ bool Achievements::RefreshAllProgressDatabase(Error* error)
   }
 
   // refresh in progress
+  progress->SetStatusText(TRANSLATE_SV("Achievements", "Refreshing achievement progress..."));
+  progress->SetProgressRange(0);
+  progress->SetProgressValue(0);
+
+  std::pair<bool, Error*> result = {false, error};
   s_state.refresh_all_progress_request = rc_client_begin_fetch_all_user_progress(s_state.client, RC_CONSOLE_PLAYSTATION,
-                                                                                 RefreshAllProgressCallback, nullptr);
+                                                                                 RefreshAllProgressCallback, &result);
+  while (s_state.refresh_all_progress_request)
+    WaitForHTTPRequestsWithYield(lock);
 
   return true;
 }
@@ -2582,11 +2748,16 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
 {
   s_state.refresh_all_progress_request = nullptr;
 
+  std::pair<bool, Error*>* result_ud = static_cast<std::pair<bool, Error*>*>(callback_userdata);
   if (result != RC_OK)
   {
-    Host::ReportErrorAsync(TRANSLATE_SV("Achievements", "Error"),
-                           fmt::format("{}: {}\n{}", TRANSLATE_SV("Achievements", "Refresh all progress failed"),
-                                       rc_error_str(result), error_message));
+    if (result_ud)
+    {
+      result_ud->first = false;
+      result_ud->second->SetStringFmt("{}: {}\n{}", TRANSLATE_SV("Achievements", "Refresh all progress failed"),
+                                      rc_error_str(result), error_message);
+    }
+
     return;
   }
 
@@ -2595,10 +2766,8 @@ void Achievements::RefreshAllProgressCallback(int result, const char* error_mess
 
   GameList::UpdateAllAchievementData();
 
-  Host::OnAchievementsAllProgressRefreshed();
-
-  FullscreenUI::ShowToast(OSDMessageType::Quick, {},
-                          TRANSLATE_STR("Achievements", "Updated achievement progress database."));
+  if (result_ud)
+    result_ud->first = true;
 }
 
 void Achievements::BuildHashDatabase(const rc_client_hash_library_t* hashlib,

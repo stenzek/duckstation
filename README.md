@@ -126,8 +126,6 @@ You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 
 
 Download from Google Play: https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
 
-APK and Beta Downloads: https://www.duckstation.org/android/
-
 **No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, or ask for help, you will be ignored.
 
 To use:

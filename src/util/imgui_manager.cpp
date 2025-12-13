@@ -1027,30 +1027,29 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     const ImVec2 text_size = msg.text.empty() ? ImVec2() :
                                                 font->CalcTextSizeA(font_size, text_font_weight, max_text_width,
                                                                     max_text_width, IMSTR_START_END(msg.text));
-    float box_width = icon_size_with_margin + std::max(text_size.x, title_size.x) + padding + padding;
+    const float box_width = icon_size_with_margin + std::max(text_size.x, title_size.x) + padding + padding;
     const float box_height = std::max(icon_size.y, title_size.y + text_size.y) + padding + padding;
 
     float opacity;
-    bool clip_box = false;
+    float actual_x;
     if (time_passed < OSD_FADE_IN_TIME)
     {
       const float pct = time_passed / OSD_FADE_IN_TIME;
       const float eased_pct = std::clamp(Easing::OutExpo(pct), 0.0f, 1.0f);
-      box_width = box_width * eased_pct;
+      actual_x = ImFloor(position_x - (box_width * 0.2f * (1.0f - eased_pct)));
       opacity = pct;
-      clip_box = true;
     }
     else if (time_passed > (msg.duration - OSD_FADE_OUT_TIME))
     {
       const float pct = (msg.duration - time_passed) / OSD_FADE_OUT_TIME;
       const float eased_pct = std::clamp(Easing::InExpo(pct), 0.0f, 1.0f);
-      box_width = box_width * eased_pct;
+      actual_x = ImFloor(position_x - (box_width * 0.2f * (1.0f - eased_pct)));
       opacity = eased_pct;
-      clip_box = true;
     }
     else
     {
       opacity = 1.0f;
+      actual_x = position_x;
     }
 
     const float expected_y = position_y;
@@ -1093,13 +1092,10 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages))
       break;
 
-    const ImVec2 pos = ImVec2(position_x, actual_y);
+    const ImVec2 pos = ImVec2(actual_x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
-
-    if (clip_box)
-      dl->PushClipRect(pos, pos_max);
 
     dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
                       rounding);
@@ -1135,9 +1131,6 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
                                 msg.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
     }
 
-    if (clip_box)
-      dl->PopClipRect();
-
     position_y += box_height + spacing;
   }
 
@@ -1170,6 +1163,12 @@ void Host::AddIconOSDMessage(OSDMessageType type, std::string key, const char* i
                              std::string message)
 {
   ImGuiManager::AddOSDMessage(type, std::move(key), std::string(icon), std::move(title), std::move(message));
+}
+
+void Host::AddIconOSDMessage(OSDMessageType type, std::string key, std::string icon, std::string title,
+                             std::string message)
+{
+  ImGuiManager::AddOSDMessage(type, std::move(key), std::move(icon), std::move(title), std::move(message));
 }
 
 void Host::RemoveKeyedOSDMessage(std::string key)

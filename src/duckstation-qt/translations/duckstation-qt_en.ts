@@ -4,8 +4,8 @@
 <context>
     <name>AchievementSettingsWidget</name>
     <message numerus="yes">
-        <location filename="../achievementsettingswidget.cpp" line="197"/>
-        <location filename="../achievementsettingswidget.cpp" line="204"/>
+        <location filename="../achievementsettingswidget.cpp" line="194"/>
+        <location filename="../achievementsettingswidget.cpp" line="201"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n second</numerusform>
@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1240"/>
+        <location filename="../../core/achievements.cpp" line="1272"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1243"/>
+        <location filename="../../core/achievements.cpp" line="1275"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1273"/>
+        <location filename="../../core/achievements.cpp" line="1305"/>
         <source>%n achievements are not supported by DuckStation.</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1336"/>
-        <location filename="../../core/achievements.cpp" line="1367"/>
+        <location filename="../../core/achievements.cpp" line="1379"/>
+        <location filename="../../core/achievements.cpp" line="1401"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -53,9 +53,9 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1338"/>
-        <location filename="../../core/achievements.cpp" line="1369"/>
-        <location filename="../../core/fullscreenui_achievements.cpp" line="889"/>
+        <location filename="../../core/achievements.cpp" line="1381"/>
+        <location filename="../../core/achievements.cpp" line="1403"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1161"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -64,7 +64,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="311"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="354"/>
         <source>%n unlocks have not been confirmed by the server.</source>
         <comment>Pause Menu</comment>
         <translation>
@@ -73,7 +73,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="652"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="888"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -82,7 +82,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="678"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="915"/>
         <source>%n achievements are not supported by DuckStation and cannot be unlocked.</source>
         <comment>Unsupported achievement count</comment>
         <translation>
@@ -91,12 +91,21 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_achievements.cpp" line="1160"/>
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1405"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
             <numerusform>This game has %n leaderboard.</numerusform>
             <numerusform>This game has %n leaderboards.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/fullscreenui_achievements.cpp" line="1407"/>
+        <source>This subset has %n leaderboards.</source>
+        <comment>Leaderboard count</comment>
+        <translation>
+            <numerusform>This subset has %n leaderboard.</numerusform>
+            <numerusform>This subset has %n leaderboards.</numerusform>
         </translation>
     </message>
 </context>
@@ -112,16 +121,16 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1106"/>
+        <location filename="../../core/cheats.cpp" line="1105"/>
         <source>%n cheats are enabled.</source>
         <comment>OSD Message</comment>
-        <translation type="unfinished">
+        <translation>
             <numerusform>%n cheat is enabled.</numerusform>
             <numerusform>%n cheats are enabled.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1133"/>
+        <location filename="../../core/cheats.cpp" line="1131"/>
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
@@ -130,7 +139,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1135"/>
+        <location filename="../../core/cheats.cpp" line="1133"/>
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
@@ -142,18 +151,26 @@
 <context>
     <name>EmulationSettingsWidget</name>
     <message numerus="yes">
-        <location filename="../emulationsettingswidget.cpp" line="260"/>
-        <source>Rewind for %n frame(s), lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</source>
+        <location filename="../emulationsettingswidget.cpp" line="278"/>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</source>
         <translation>
-            <numerusform>Rewind for %n frame, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
-            <numerusform>Rewind for %n frames, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
+            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</numerusform>
+            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2MB of RAM and %3MB of VRAM.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../emulationsettingswidget.cpp" line="282"/>
+        <source>Rewind for %n frame(s), lasting %1 second(s) will require %2MB of RAM.</source>
+        <translation>
+            <numerusform>Rewind for %n frame, lasting %1 second(s) will require %2MB of RAM.</numerusform>
+            <numerusform>Rewind for %n frames, lasting %1 second(s) will require %2MB of RAM.</numerusform>
         </translation>
     </message>
 </context>
 <context>
     <name>FullscreenUI</name>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4427"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4597"/>
         <source>%n seconds remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -162,7 +179,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/fullscreenui_widgets.cpp" line="4432"/>
+        <location filename="../../core/fullscreenui_widgets.cpp" line="4602"/>
         <source>%n minutes remaining</source>
         <comment>Loading time</comment>
         <translation>
@@ -174,7 +191,7 @@
 <context>
     <name>GPU_HW</name>
     <message numerus="yes">
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3711"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3710"/>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
@@ -186,7 +203,7 @@
 <context>
     <name>GameList</name>
     <message numerus="yes">
-        <location filename="../../core/game_list.cpp" line="1640"/>
+        <location filename="../../core/game_list.cpp" line="1646"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n second</numerusform>
@@ -194,7 +211,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/game_list.cpp" line="1636"/>
+        <location filename="../../core/game_list.cpp" line="1642"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n hour</numerusform>
@@ -202,7 +219,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/game_list.cpp" line="1638"/>
+        <location filename="../../core/game_list.cpp" line="1644"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n minute</numerusform>
@@ -213,7 +230,7 @@
 <context>
     <name>InputBindingWidget</name>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="77"/>
+        <location filename="../inputbindingwidgets.cpp" line="101"/>
         <source>%n bindings</source>
         <translation>
             <numerusform>%n binding</numerusform>
@@ -224,18 +241,18 @@
 <context>
     <name>MemoryCardEditorWindow</name>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="470"/>
-        <source>%n block(s) free%1</source>
+        <location filename="../memorycardeditorwindow.cpp" line="482"/>
+        <source>%n block(s) free</source>
         <translation>
-            <numerusform>%n block free%1</numerusform>
-            <numerusform>%n blocks free%1</numerusform>
+            <numerusform>%n block free</numerusform>
+            <numerusform>%n blocks free</numerusform>
         </translation>
     </message>
 </context>
 <context>
     <name>System</name>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="1697"/>
+        <location filename="../../core/system.cpp" line="1701"/>
         <source>You cannot pause until another %n second(s) have passed.</source>
         <translation>
             <numerusform>You cannot pause until another %n second has passed.</numerusform>

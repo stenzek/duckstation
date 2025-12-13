@@ -108,6 +108,13 @@ if [ "$ONLY_DOWNLOAD" == true ]; then
 	exit 0
 fi
 
+# Prefer local deps for pkg-config search path.
+if [[ -z "$PKG_CONFIG_PATH" ]]; then
+	export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig"
+else
+	export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$INSTALLDIR/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+fi
+
 # Build zlib first because of the things that depend on it.
 echo "Building zlib-ng..."
 rm -fr "zlib-ng-$ZLIBNG"
@@ -229,7 +236,7 @@ patch -p1 < "$SCRIPTDIR/qtbase-disable-pcre2-jit.patch"
 patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -release -dbus-linked -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -gtk -- -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+../configure -prefix "$INSTALLDIR" -release -dbus-linked -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_gtk3=OFF
 cmake --build . --parallel
 ninja install
 cd ../../
