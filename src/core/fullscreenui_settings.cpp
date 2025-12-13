@@ -1467,7 +1467,8 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
                        SetSettingsChanged(bsi);
 
                        Host::RunOnCPUThread(&EmuFolders::Update);
-                       ClearCoverCache();
+                       if (key == "Covers")
+                         RemoveCoverCacheEntry({});
                      });
   }
 }

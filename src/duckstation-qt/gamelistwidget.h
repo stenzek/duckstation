@@ -102,7 +102,6 @@ public:
 
   int getIconSize() const;
   int getIconSizeWithPadding() const;
-  void refreshIcons();
   void setIconSize(int size);
 
   bool getShowGameIcons() const;
@@ -116,7 +115,6 @@ public:
   QSize getDeviceScaledCoverArtSize() const;
   int getCoverArtSpacing() const;
   QFont getCoverCaptionFont() const;
-  void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 
   qreal getDevicePixelRatio() const;
@@ -125,7 +123,9 @@ public:
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
 
   const QPixmap& getCoverForEntry(const GameList::Entry* ge) const;
-  void invalidateCoverCacheForPath(const std::string& path);
+
+  void invalidateColumn(int column, bool invalidate_cache = true);
+  void invalidateColumnForPath(const std::string& path, int column, bool invalidate_cache = true);
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
@@ -146,7 +146,6 @@ private:
   void updateCoverScale();
   void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
-  void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
@@ -154,6 +153,8 @@ private:
                                   const std::string& save_title, const QString& display_title, bool is_custom_title);
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                      const QString& title);
+
+  static Qt::ItemDataRole getRoleToInvalidate(int column);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
@@ -284,7 +285,6 @@ public:
   void setAnimateGameIcons(bool enabled);
   void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
-  void refreshGridCovers();
   void focusSearchWidget();
 
 Q_SIGNALS:

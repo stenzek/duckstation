@@ -106,6 +106,7 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+  ALWAYS_INLINE GameListWidget* getGameListWidget() const { return m_game_list_widget; }
   ALWAYS_INLINE DebuggerWindow* getDebuggerWindow() const { return m_debugger_window; }
 
   /// Opens the editor for a specific input profile.
@@ -120,11 +121,8 @@ public:
   void updateDebugMenuVisibility();
 
   void refreshGameList(bool invalidate_cache);
-  void refreshGameListModel();
   void cancelGameListRefresh();
   QIcon getIconForGame(const QString& path);
-  void invalidateCoverCacheForPath(const std::string& path);
-  void refreshGameGridCovers();
   void refreshAchievementProgress();
 
   void runOnUIThread(const std::function<void()>& func);

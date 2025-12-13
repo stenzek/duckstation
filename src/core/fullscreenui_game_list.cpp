@@ -1140,17 +1140,20 @@ void FullscreenUI::SetCoverCacheEntry(std::string path, std::string cover_path)
   s_game_list_locals.cover_image_map.emplace(std::move(path), std::move(cover_path));
 }
 
-void FullscreenUI::ClearCoverCache()
+void FullscreenUI::RemoveCoverCacheEntry(const std::string& path)
 {
-  s_game_list_locals.cover_image_map.clear();
+  if (path.empty())
+    s_game_list_locals.cover_image_map.clear();
+  else
+    s_game_list_locals.cover_image_map.erase(path);
 }
 
-void FullscreenUI::InvalidateCoverCache()
+void FullscreenUI::InvalidateCoverCache(std::string path)
 {
   if (!GPUThread::IsFullscreenUIRequested())
     return;
 
-  GPUThread::RunOnThread(&FullscreenUI::ClearCoverCache);
+  GPUThread::RunOnThread([path = std::move(path)]() { RemoveCoverCacheEntry(path); });
 }
 
 void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,

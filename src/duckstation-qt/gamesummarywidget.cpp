@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamesummarywidget.h"
+#include "gamelistwidget.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
@@ -270,7 +271,7 @@ void GameSummaryWidget::setCustomTitle(const std::string& text)
     }
   }
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Title);
 }
 
 void GameSummaryWidget::setCustomRegion(int region)
@@ -289,7 +290,7 @@ void GameSummaryWidget::setCustomRegion(int region)
     }
   }
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Region);
 }
 
 void GameSummaryWidget::onCustomLanguageChanged(int language)
@@ -298,7 +299,7 @@ void GameSummaryWidget::onCustomLanguageChanged(int language)
     m_path, (language > 0) ? std::optional<GameDatabase::Language>(static_cast<GameDatabase::Language>(language - 1)) :
                              std::optional<GameDatabase::Language>());
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Region);
 }
 
 static QString MSFToString(const CDImage::Position& position)

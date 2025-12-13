@@ -1753,7 +1753,8 @@ void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
                              tr("Failed to remove '%1'").arg(old_filename));
     return;
   }
-  m_game_list_widget->refreshGridCovers();
+
+  m_game_list_widget->getModel()->invalidateColumnForPath(entry->path, GameListModel::Column_Cover);
 }
 
 void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
@@ -2501,8 +2502,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
   connect(m_ui.actionViewZoomIn, &QAction::triggered, this, &MainWindow::onViewZoomInActionTriggered);
   connect(m_ui.actionViewZoomOut, &QAction::triggered, this, &MainWindow::onViewZoomOutActionTriggered);
-  connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
-          &GameListWidget::refreshGridCovers);
+  connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, this,
+          [this]() { m_game_list_widget->getModel()->invalidateColumn(GameListModel::Column_Cover); });
   connect(m_ui.actionChangeGameListBackground, &QAction::triggered, this,
           &MainWindow::onViewChangeGameListBackgroundTriggered);
   connect(m_ui.actionClearGameListBackground, &QAction::triggered, this,
@@ -2944,11 +2945,6 @@ void MainWindow::refreshGameList(bool invalidate_cache)
   m_game_list_widget->refresh(invalidate_cache);
 }
 
-void MainWindow::refreshGameListModel()
-{
-  m_game_list_widget->getModel()->refresh();
-}
-
 void MainWindow::cancelGameListRefresh()
 {
   m_game_list_widget->cancelRefresh();
@@ -2957,16 +2953,6 @@ void MainWindow::cancelGameListRefresh()
 QIcon MainWindow::getIconForGame(const QString& path)
 {
   return m_game_list_widget->getModel()->getIconForGame(path);
-}
-
-void MainWindow::invalidateCoverCacheForPath(const std::string& path)
-{
-  m_game_list_widget->getModel()->invalidateCoverCacheForPath(path);
-}
-
-void MainWindow::refreshGameGridCovers()
-{
-  m_game_list_widget->getModel()->refreshCovers();
 }
 
 void MainWindow::runOnUIThread(const std::function<void()>& func)
@@ -3293,11 +3279,9 @@ void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
       const bool result = Achievements::DownloadGameIcons(progress, &error);
       return [error = std::move(error), result]() {
         if (!result)
-        {
           g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
-        }
 
-        g_main_window->refreshGameListModel();
+        g_main_window->m_game_list_widget->getModel()->invalidateColumn(GameListModel::Column_Icon);
       };
     });
 }
@@ -3311,12 +3295,10 @@ void MainWindow::refreshAchievementProgress()
       const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
       return [error = std::move(error), result]() {
         if (!result)
-        {
           g_main_window->reportError(tr("Error"), QString::fromStdString(error.GetDescription()));
-        }
 
         g_main_window->m_ui.statusBar->showMessage(tr("RA: Updated achievement progress database."));
-        g_main_window->refreshGameListModel();
+        g_main_window->m_game_list_widget->getModel()->invalidateColumn(GameListModel::Column_Achievements);
       };
     });
 }
