@@ -1931,7 +1931,7 @@ void GPU::ClearDisplay()
 void GPU::UpdateDisplay(bool submit_frame)
 {
   const bool interlaced = IsInterlacedDisplayEnabled();
-  const u8 interlaced_field = GetInterlacedDisplayField();
+  const u8 interlaced_field = m_crtc_state.interlaced_field;
   const bool line_skip = (interlaced && m_GPUSTAT.vertical_resolution);
 
   // NOTE: Must be split out, since this can push commands itself (e.g. media capture).
