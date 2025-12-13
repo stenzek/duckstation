@@ -319,6 +319,16 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
     ParseDisplayAspectRatio(si.GetStringValue("Display", "AspectRatio")).value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_fine_crop_mode = ParseDisplayFineCropMode(si.GetStringValue("Display", "FineCropMode").c_str())
+                             .value_or(DEFAULT_DISPLAY_FINE_CROP_MODE);
+  display_fine_crop_amount[0] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropLeft", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[1] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropTop", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[2] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropRight", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[3] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropBottom", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
@@ -695,6 +705,11 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
+  si.SetStringValue("Display", "FineCropMode", GetDisplayFineCropModeName(display_fine_crop_mode));
+  si.SetIntValue("Display", "FineCropLeft", display_fine_crop_amount[0]);
+  si.SetIntValue("Display", "FineCropTop", display_fine_crop_amount[1]);
+  si.SetIntValue("Display", "FineCropRight", display_fine_crop_amount[2]);
+  si.SetIntValue("Display", "FineCropBottom", display_fine_crop_amount[3]);
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
@@ -1908,6 +1923,46 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 {
   return Host::TranslateToCString("Settings", s_display_crop_mode_display_names[static_cast<size_t>(crop_mode)],
                                   "DisplayCropMode");
+}
+
+static constexpr const std::array s_display_fine_crop_mode_names = {
+  "None",
+  "VideoResolution",
+  "InternalResolution",
+  "WindowResolution",
+};
+static constexpr const std::array s_display_fine_crop_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "None", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Video Resolution", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Internal Resolution", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Window Resolution", "DisplayFineCropMode"),
+};
+static_assert(s_display_fine_crop_mode_names.size() == static_cast<size_t>(DisplayFineCropMode::MaxCount));
+static_assert(s_display_fine_crop_mode_display_names.size() == static_cast<size_t>(DisplayFineCropMode::MaxCount));
+
+std::optional<DisplayFineCropMode> Settings::ParseDisplayFineCropMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_fine_crop_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayFineCropMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayFineCropModeName(DisplayFineCropMode mode)
+{
+  return s_display_fine_crop_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode)
+{
+  return Host::TranslateToCString("Settings", s_display_fine_crop_mode_display_names[static_cast<size_t>(mode)],
+                                  "DisplayFineCropMode");
 }
 
 static constexpr const std::string_view s_auto_aspect_ratio_name =

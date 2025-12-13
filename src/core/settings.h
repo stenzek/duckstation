@@ -43,6 +43,7 @@ struct GPUSettings
   DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
+  DisplayFineCropMode display_fine_crop_mode = DEFAULT_DISPLAY_FINE_CROP_MODE;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayRotation display_rotation = DEFAULT_DISPLAY_ROTATION;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
@@ -118,6 +119,8 @@ struct GPUSettings
 
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 0.0f;
+
+  std::array<s16, 4> display_fine_crop_amount = {};
 
   float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
@@ -218,6 +221,7 @@ struct GPUSettings
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Progressive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto();
+  static constexpr DisplayFineCropMode DEFAULT_DISPLAY_FINE_CROP_MODE = DisplayFineCropMode::None;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayRotation DEFAULT_DISPLAY_ROTATION = DisplayRotation::Normal;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
@@ -505,6 +509,10 @@ struct Settings : public GPUSettings
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
+
+  static std::optional<DisplayFineCropMode> ParseDisplayFineCropMode(const char* str);
+  static const char* GetDisplayFineCropModeName(DisplayFineCropMode mode);
+  static const char* GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode);
 
   static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(std::string_view str);
   static TinyString GetDisplayAspectRatioName(DisplayAspectRatio ar);

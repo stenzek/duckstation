@@ -54,7 +54,7 @@ public:
   bool ApplyChromaSmoothing();
 
   /// Helper function for computing the draw rectangle in a larger window.
-  void CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale,
+  void CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale, bool apply_crop,
                          bool apply_alignment, GSVector4i* source_rect, GSVector4i* display_rect,
                          GSVector4i* draw_rect) const;
 

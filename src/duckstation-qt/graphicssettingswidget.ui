@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
+    <width>734</width>
     <height>511</height>
    </rect>
   </property>
@@ -351,7 +351,128 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="2" column="0">
+           <widget class="QLabel" name="displayFineCropModeLabel">
+            <property name="text">
+             <string>Fine Crop Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+            <item>
+             <widget class="QComboBox" name="displayFineCropMode"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="displayFineCropReset">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>Reset Fine Cropping</string>
+              </property>
+              <property name="icon">
+               <iconset theme="delete-back-2-line"/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="displayFineCropLabel">
+            <property name="text">
+             <string>Fine Crop Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0,1,0,1,0,1">
+            <item>
+             <widget class="QLabel" name="displayFineCropLeftLabel">
+              <property name="text">
+               <string>Left:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropLeft">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropTopLabel">
+              <property name="text">
+               <string>Top:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropTop">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropRightLabel">
+              <property name="text">
+               <string>Right:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropRight">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropBottomLabel">
+              <property name="text">
+               <string>Bottom:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropBottom">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
             <item row="0" column="0">
              <widget class="QCheckBox" name="automaticallyResizeWindow">

@@ -48,6 +48,8 @@ private:
 
   void updateResolutionDependentOptions();
   void onDownsampleModeChanged();
+  void onFineCropModeChanged();
+  void onFineCropResetClicked();
 
   void onOSDShowMessagesChanged();
 

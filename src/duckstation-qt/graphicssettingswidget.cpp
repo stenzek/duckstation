@@ -139,6 +139,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &Settings::ParseDisplayRotation, &Settings::GetDisplayRotationName,
                                                &Settings::GetDisplayRotationDisplayName,
                                                Settings::DEFAULT_DISPLAY_ROTATION, DisplayRotation::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.displayFineCropMode, "Display", "FineCropMode", &Settings::ParseDisplayFineCropMode,
+    &Settings::GetDisplayFineCropModeName, &Settings::GetDisplayFineCropModeDisplayName,
+    Settings::DEFAULT_DISPLAY_FINE_CROP_MODE, DisplayFineCropMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropLeft, "Display", "FineCropLeft", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropTop, "Display", "FineCropTop", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropRight, "Display", "FineCropRight", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayFineCropBottom, "Display", "FineCropBottom", 0);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
                                                "DisableMailboxPresentation", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
@@ -159,6 +167,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
 
+  connect(m_ui.displayFineCropMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GraphicsSettingsWidget::onFineCropModeChanged);
+  connect(m_ui.displayFineCropReset, &QPushButton::clicked, this, &GraphicsSettingsWidget::onFineCropResetClicked);
   connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
 
   SettingWidgetBinder::SetAvailability(m_ui.scaledInterlacing,
@@ -377,6 +388,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // Init all dependent options.
   updateRendererDependentOptions();
   onDownsampleModeChanged();
+  onFineCropModeChanged();
   updateResolutionDependentOptions();
   onOSDShowMessagesChanged();
   onMediaCaptureBackendChanged();
@@ -478,6 +490,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.displayAlignment, tr("Position"),
     QString::fromUtf8(Settings::GetDisplayAlignmentDisplayName(Settings::DEFAULT_DISPLAY_ALIGNMENT)),
     tr("Determines the position on the screen when black borders must be added."));
+  dialog->registerWidgetHelp(m_ui.displayFineCropMode, tr("Fine Crop Mode"), tr("None"),
+                             tr("Enables manual fine cropping of the display area, while preserving the aspect ratio "
+                                "of the image. Useful for removing black borders in certain games."));
   dialog->registerWidgetHelp(
     m_ui.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
     tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
@@ -1159,6 +1174,54 @@ void GraphicsSettingsWidget::onDownsampleModeChanged()
   {
     m_ui.gpuDownsampleScale->setVisible(false);
     m_ui.gpuDownsampleLayout->removeWidget(m_ui.gpuDownsampleScale);
+  }
+}
+
+void GraphicsSettingsWidget::onFineCropModeChanged()
+{
+  const DisplayFineCropMode mode =
+    Settings::ParseDisplayFineCropMode(m_dialog->getEffectiveStringValue("Display", "FineCropMode", "").c_str())
+      .value_or(Settings::DEFAULT_DISPLAY_FINE_CROP_MODE);
+  const bool enabled = (mode != DisplayFineCropMode::None);
+  m_ui.displayFineCropLabel->setEnabled(enabled);
+  m_ui.displayFineCropLeftLabel->setEnabled(enabled);
+  m_ui.displayFineCropLeft->setEnabled(enabled);
+  m_ui.displayFineCropTopLabel->setEnabled(enabled);
+  m_ui.displayFineCropTop->setEnabled(enabled);
+  m_ui.displayFineCropRightLabel->setEnabled(enabled);
+  m_ui.displayFineCropRight->setEnabled(enabled);
+  m_ui.displayFineCropBottomLabel->setEnabled(enabled);
+  m_ui.displayFineCropBottom->setEnabled(enabled);
+}
+
+void GraphicsSettingsWidget::onFineCropResetClicked()
+{
+  if (m_dialog->isPerGameSettings())
+  {
+    // Super nasty.. need to set the default without the signal firing and writing the global value to the ini...
+    const auto reset = [this]<typename T>(T* widget, const char* key) {
+      const QSignalBlocker sb(widget);
+      if constexpr (std::is_same_v<T, QComboBox>)
+        SettingWidgetBinder::SettingAccessor<T>::setNullableStringValue(widget, std::nullopt);
+      else
+        SettingWidgetBinder::SettingAccessor<QSpinBox>::setNullableIntValue(widget, std::nullopt);
+
+      m_dialog->removeSettingValue("Display", key);
+    };
+
+    reset(m_ui.displayFineCropMode, "FineCropMode");
+    reset(m_ui.displayFineCropLeft, "FineCropLeft");
+    reset(m_ui.displayFineCropTop, "FineCropTop");
+    reset(m_ui.displayFineCropRight, "FineCropRight");
+    reset(m_ui.displayFineCropBottom, "FineCropBottom");
+  }
+  else
+  {
+    m_ui.displayFineCropMode->setCurrentIndex(0);
+    m_ui.displayFineCropLeft->setValue(0);
+    m_ui.displayFineCropTop->setValue(0);
+    m_ui.displayFineCropRight->setValue(0);
+    m_ui.displayFineCropBottom->setValue(0);
   }
 }
 

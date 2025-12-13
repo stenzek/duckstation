@@ -457,8 +457,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
 
     // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
-    CalculateDrawRect(overlay_display_rect.rsize(), apply_aspect_ratio, integer_scale, false, &source_rect,
-                      &display_rect_without_overlay, &draw_rect_without_overlay);
+    CalculateDrawRect(overlay_display_rect.rsize(), apply_aspect_ratio, integer_scale, !is_vram_view, false,
+                      &source_rect, &display_rect_without_overlay, &draw_rect_without_overlay);
 
     // Apply overlay area offset.
     display_rect = display_rect_without_overlay.add32(overlay_display_rect.xyxy());
@@ -466,8 +466,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   }
   else
   {
-    CalculateDrawRect(target_size, apply_aspect_ratio, integer_scale, true, &source_rect, &display_rect_without_overlay,
-                      &draw_rect_without_overlay);
+    CalculateDrawRect(target_size, apply_aspect_ratio, integer_scale, !is_vram_view, true, &source_rect,
+                      &display_rect_without_overlay, &draw_rect_without_overlay);
     display_rect = display_rect_without_overlay;
     draw_rect = draw_rect_without_overlay;
   }
@@ -738,7 +738,7 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
       const GSVector2 region_range =
         (GSVector2(display_rect.rsize()) / GSVector2(display_source_rect)).floor().max(GSVector2::cxpr(1.0f));
       GSVector2::store<true>(&uniforms.params[0], region_range);
-      GSVector2::store<true>(&uniforms.params[1], GSVector2::cxpr(0.5f) - (GSVector2::cxpr(0.5f) / region_range));
+      GSVector2::store<true>(&uniforms.params[2], GSVector2::cxpr(0.5f) - (GSVector2::cxpr(0.5f) / region_range));
       texture_filter_linear = true;
     }
     break;
@@ -1175,13 +1175,15 @@ bool GPUPresenter::ApplyChromaSmoothing()
 }
 
 void GPUPresenter::CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale,
-                                     bool apply_alignment, GSVector4i* source_rect, GSVector4i* display_rect,
-                                     GSVector4i* draw_rect) const
+                                     bool apply_crop, bool apply_alignment, GSVector4i* source_rect,
+                                     GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
-  GPU::CalculateDrawRect(
-    window_size, m_video_size, m_video_active_rect, m_display_texture_rect, g_gpu_settings.display_rotation,
-    apply_alignment ? g_gpu_settings.display_alignment : DisplayAlignment::Center,
-    apply_aspect_ratio ? m_display_pixel_aspect_ratio : 1.0f, integer_scale, source_rect, display_rect, draw_rect);
+  GPU::CalculateDrawRect(window_size, m_video_size, m_video_active_rect, m_display_texture_rect,
+                         g_gpu_settings.display_rotation,
+                         apply_alignment ? g_gpu_settings.display_alignment : DisplayAlignment::Center,
+                         apply_aspect_ratio ? m_display_pixel_aspect_ratio : 1.0f, integer_scale,
+                         apply_crop ? g_gpu_settings.display_fine_crop_mode : DisplayFineCropMode::None,
+                         g_gpu_settings.display_fine_crop_amount, source_rect, display_rect, draw_rect);
 }
 
 bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time)
@@ -1362,6 +1364,8 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, 
 
 GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) const
 {
+  const GSVector2i window_size =
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i::cxpr(1, 1);
   if (m_display_texture)
   {
     if (g_gpu_settings.gpu_show_vram)
@@ -1370,10 +1374,15 @@ GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) con
     }
     else if (mode != DisplayScreenshotMode::ScreenResolution)
     {
-      GSVector2 f_size =
-        GSVector2(m_video_size) * (GSVector2(m_display_texture_rect.rsize()) / GSVector2(m_video_active_rect.rsize()));
-      if (mode != DisplayScreenshotMode::UncorrectedInternalResolution)
-        f_size = GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, f_size);
+      const GSVector2 fvideo_size = GSVector2(m_video_size);
+      const GSVector2 fsource_size = GSVector2(m_display_texture_rect.rsize());
+      const GSVector2 factive_size = GSVector2(m_video_active_rect.rsize());
+      const GSVector2 fscale = (fsource_size / factive_size);
+      GSVector2 f_size = GPU::CalculateDisplayWindowSize(
+        g_gpu_settings.display_fine_crop_mode, g_gpu_settings.display_fine_crop_amount,
+        (mode != DisplayScreenshotMode::UncorrectedInternalResolution) ? m_display_pixel_aspect_ratio : 1.0f,
+        fvideo_size, fsource_size, GSVector2(window_size));
+      f_size *= fscale;
 
       // DX11 won't go past 16K texture size.
       const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
@@ -1392,7 +1401,7 @@ GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) con
     }
   }
 
-  return g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i(1, 1);
+  return window_size;
 }
 
 void GPUPresenter::LoadPostProcessingSettings(bool force_load)

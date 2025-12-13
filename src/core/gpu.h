@@ -197,12 +197,13 @@ public:
   float ComputeAspectRatioCorrection() const;
 
   /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
-  static GSVector2 ApplyPixelAspectRatioToSize(float par, GSVector2 size);
+  static GSVector2 CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                              float pixel_aspect_ratio, const GSVector2 video_size,
+                                              const GSVector2 source_size, const GSVector2 window_size);
 
-  // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
-  void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
-                                                    float* display_y) const;
-  bool ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
+  // Converts window coordinates into horizontal ticks and scanlines. Returns -1 if out of range. Used for lightguns.
+  GSVector2 ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const;
+  bool ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
                                                     u32* out_line) const;
 
   // Returns the current beam position.
@@ -244,8 +245,10 @@ public:
   static void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
                                 const GSVector4i& video_active_rect, const GSVector4i& source_rect,
                                 DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
-                                bool integer_scale, GSVector4i* out_source_rect, GSVector4i* out_display_rect,
-                                GSVector4i* out_draw_rect);
+                                bool integer_scale, DisplayFineCropMode fine_crop,
+                                const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
+                                GSVector4i* out_display_rect, GSVector4i* out_draw_rect,
+                                GSVector4* out_crop_amount = nullptr);
 
 private:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;

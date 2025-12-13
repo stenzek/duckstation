@@ -41,6 +41,7 @@
 		<file>icons/black/svg/debugger-go-to-address.svg</file>
 		<file>icons/black/svg/debugger-go-to-cursor.svg</file>
 		<file>icons/black/svg/debugger-go-to-pc.svg</file>
+		<file>icons/black/svg/delete-back-2-line.svg</file>
 		<file>icons/black/svg/disc-eject-line.svg</file>
 		<file>icons/black/svg/disc-line.svg</file>
 		<file>icons/black/svg/door-open-line.svg</file>
@@ -200,6 +201,7 @@
 		<file>icons/white/svg/debugger-go-to-address.svg</file>
 		<file>icons/white/svg/debugger-go-to-cursor.svg</file>
 		<file>icons/white/svg/debugger-go-to-pc.svg</file>
+		<file>icons/white/svg/delete-back-2-line.svg</file>
 		<file>icons/white/svg/disc-eject-line.svg</file>
 		<file>icons/white/svg/disc-line.svg</file>
 		<file>icons/white/svg/door-open-line.svg</file>

@@ -735,18 +735,44 @@ float GPU::ComputeAspectRatioCorrection() const
   return (relative_width / relative_height);
 }
 
-GSVector2 GPU::ApplyPixelAspectRatioToSize(float par, GSVector2 size)
+GSVector2 GPU::CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                          float pixel_aspect_ratio, const GSVector2 video_size,
+                                          const GSVector2 source_size, const GSVector2 window_size)
 {
-  if (par < 1.0f)
+  GSVector2 size = video_size;
+  if (pixel_aspect_ratio < 1.0f)
   {
     // stretch height, preserve width
-    size.y = std::ceil(size.y / par);
+    size.y = size.y / pixel_aspect_ratio;
   }
   else
   {
     // stretch width, preserve height
-    size.x = std::ceil(size.x * par);
+    size.x = size.x * pixel_aspect_ratio;
   }
+
+  if (mode != DisplayFineCropMode::None)
+  {
+    GSVector4 crop_amount = GSVector4(GSVector4i::loadl<false>(amount.data()).s16to32());
+    switch (mode)
+    {
+      case DisplayFineCropMode::VideoResolution:
+        break;
+
+      case DisplayFineCropMode::InternalResolution:
+        crop_amount *= GSVector4::xyxy(size / source_size);
+        break;
+
+      case DisplayFineCropMode::WindowResolution:
+        crop_amount *= GSVector4::xyxy(size / window_size);
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    size = (size - crop_amount.xy() - crop_amount.zw()).max(GSVector2::cxpr(1.0f));
+  }
+
   return size;
 }
 
@@ -1342,45 +1368,44 @@ u8 GPU::UpdateOrGetGPUBusyPct()
   return m_last_gpu_busy_pct;
 }
 
-void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
-                                                       float* display_y) const
+GSVector2 GPU::ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const
 {
   const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
   if (wi.IsSurfaceless())
-  {
-    *display_x = *display_y = -1.0f;
-    return;
-  }
+    return GSVector2::cxpr(-1.0f);
 
+  GSVector4 crop_amount = GSVector4::zero();
   GSVector4i source_rc, display_rc, draw_rc;
-  CalculateDrawRect(GSVector2i(wi.surface_width, wi.surface_height), GetCRTCVideoSize(), GetCRTCVideoActiveRect(),
+  const GSVector2i crtc_video_size = GetCRTCVideoSize();
+  CalculateDrawRect(GSVector2i(wi.surface_width, wi.surface_height), crtc_video_size, GetCRTCVideoActiveRect(),
                     GetCRTCVRAMSourceRect(), g_settings.display_rotation, g_settings.display_alignment,
                     ComputePixelAspectRatio(),
                     (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                      g_settings.display_scaling == DisplayScalingMode::BilinearInteger),
-                    &source_rc, &display_rc, &draw_rc);
+                    g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, &source_rc, &display_rc,
+                    &draw_rc, &crop_amount);
 
   // convert coordinates to active display region, then to full display region
-  const float scaled_display_x =
-    (window_x - static_cast<float>(display_rc.left)) / static_cast<float>(display_rc.width());
-  const float scaled_display_y =
-    (window_y - static_cast<float>(display_rc.top)) / static_cast<float>(display_rc.height());
+  const GSVector2 local_pos = window_pos - GSVector2(display_rc.xy());
+  GSVector2 scaled_display_pos = local_pos / GSVector2(display_rc.rsize());
 
   // scale back to internal resolution
-  *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
-  *display_y = scaled_display_y * static_cast<float>(m_crtc_state.display_height);
+  const GSVector2 cropped_video_size = GSVector2(crtc_video_size) - crop_amount.xy() - crop_amount.zw();
+  const GSVector2 display_pos = scaled_display_pos * cropped_video_size + crop_amount.xy();
 
   // TODO: apply rotation matrix
 
-  DEV_LOG("win {:.0f},{:.0f} -> local {:.0f},{:.0f}, disp {:.2f},{:.2f} (size {},{} frac {},{})", window_x, window_y,
-          window_x - display_rc.left, window_y - display_rc.top, *display_x, *display_y, m_crtc_state.display_width,
-          m_crtc_state.display_height, *display_x / static_cast<float>(m_crtc_state.display_width),
-          *display_y / static_cast<float>(m_crtc_state.display_height));
+  DEV_LOG("win {} -> local {}, disp {} (size {} frac {})", window_pos, local_pos, display_pos, cropped_video_size,
+          display_pos / cropped_video_size);
+
+  return display_pos;
 }
 
-bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
+bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
                                                        u32* out_line) const
 {
+  float display_x = display_pos.x;
+  float display_y = display_pos.y;
   if (x_scale != 1.0f)
   {
     const float dw = static_cast<float>(m_crtc_state.display_width);
@@ -1803,12 +1828,14 @@ static bool IntegerScalePreferWidth(float display_width, float display_height, f
 void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
                             const GSVector4i& video_active_rect, const GSVector4i& source_rect,
                             DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
-                            bool integer_scale, GSVector4i* out_source_rect, GSVector4i* out_display_rect,
-                            GSVector4i* out_draw_rect)
+                            bool integer_scale, DisplayFineCropMode fine_crop,
+                            const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
+                            GSVector4i* out_display_rect, GSVector4i* out_draw_rect, GSVector4* out_crop_amount)
 {
   GSVector2 fwindow_size = GSVector2(window_size);
   GSVector2 fvideo_size = GSVector2(video_size);
   GSVector4 fvideo_active_rect = GSVector4(video_active_rect);
+  GSVector4 fsource_rect = GSVector4(source_rect);
 
   // for integer scale, use whichever gets us a greater effective display size
   // this is needed for games like crash where the framebuffer is wide to not lose detail
@@ -1823,6 +1850,51 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
   {
     fvideo_size.y /= pixel_aspect_ratio;
     fvideo_active_rect = fvideo_active_rect.blend32<10>(fvideo_active_rect / pixel_aspect_ratio);
+  }
+
+  if (fine_crop != DisplayFineCropMode::None)
+  {
+    GSVector4 crop_amount = GSVector4(GSVector4i::loadl<false>(fine_crop_amount.data()).s16to32());
+    switch (fine_crop)
+    {
+      case DisplayFineCropMode::VideoResolution:
+        break;
+
+      case DisplayFineCropMode::InternalResolution:
+        crop_amount *= GSVector4::xyxy(fvideo_size / fsource_rect.rsize());
+        break;
+
+      case DisplayFineCropMode::WindowResolution:
+        crop_amount *= GSVector4::xyxy(fvideo_size / fwindow_size);
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    if (out_crop_amount)
+      *out_crop_amount = crop_amount;
+
+    // apply crop to padding first
+    const GSVector2 crop_padding_left_top = fvideo_active_rect.xy().min(crop_amount.xy());
+    const GSVector2 crop_padding_right_bottom = (fvideo_size - fvideo_active_rect.zw()).min(crop_amount.zw());
+    fvideo_active_rect = fvideo_active_rect - GSVector4::xyxy(crop_padding_left_top);
+    fvideo_size = fvideo_size - crop_padding_left_top - crop_padding_right_bottom;
+    crop_amount = crop_amount - GSVector4::xyxy(crop_padding_left_top, crop_padding_right_bottom);
+
+    // apply remaining crop to active area
+    const GSVector2 crop_size = crop_amount.xy() + crop_amount.zw();
+    fvideo_active_rect -= GSVector4::loadh(crop_size);
+    fvideo_size -= crop_size;
+
+    // need to take it off the source too
+    const GSVector2 video_to_source = fsource_rect.rsize() / fvideo_active_rect.rsize();
+    const GSVector4 source_crop_amount = crop_amount * GSVector4::xyxy(video_to_source);
+    fsource_rect = (fsource_rect + source_crop_amount).blend32<12>(fsource_rect - source_crop_amount);
+
+    // ensure we haven't cropped everything away
+    fvideo_active_rect = fvideo_active_rect.sat(GSVector4::zero(), fvideo_active_rect);
+    fvideo_size -= crop_size.sat(GSVector2::zero(), GSVector2::cxpr(1.0f, 1.0f));
+    fsource_rect = fsource_rect.sat(GSVector4::zero(), fsource_rect);
   }
 
   // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
@@ -1901,7 +1973,7 @@ void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& vid
   const GSVector4 padding4 = GSVector4::xyxy(padding);
   fvideo_size *= scale;
   fvideo_active_rect *= scale;
-  *out_source_rect = source_rect;
+  *out_source_rect = GSVector4i(fsource_rect);
   *out_draw_rect = GSVector4i(fvideo_active_rect + padding4);
   *out_display_rect = GSVector4i(GSVector4::loadh(fvideo_size) + padding4);
 }
@@ -2044,7 +2116,8 @@ u8 GPU::CalculateAutomaticResolutionScale() const
     CalculateDrawRect(GSVector2i(main_window_info.surface_width, main_window_info.surface_height), GetCRTCVideoSize(),
                       GetCRTCVideoActiveRect(), GetCRTCVRAMSourceRect(), g_settings.display_rotation,
                       g_settings.display_alignment, g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
-                      g_settings.IsUsingIntegerDisplayScaling(false), &source_rect, &display_rect, &draw_rect);
+                      g_settings.IsUsingIntegerDisplayScaling(false), g_settings.display_fine_crop_mode,
+                      g_settings.display_fine_crop_amount, &source_rect, &display_rect, &draw_rect);
 
     // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
     // anamorphic aspect ratio.

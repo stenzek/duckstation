@@ -4603,6 +4603,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
              g_settings.display_scaling != old_settings.display_scaling ||
              g_settings.display_scaling_24bit != old_settings.display_scaling_24bit ||
+             g_settings.display_fine_crop_mode != old_settings.display_fine_crop_mode ||
+             g_settings.display_fine_crop_amount != old_settings.display_fine_crop_amount ||
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
@@ -6070,12 +6072,15 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   GSVector2 requested_size;
   if (g_settings.gpu_show_vram)
   {
-    requested_size = GSVector2::cxpr(static_cast<s32>(VRAM_WIDTH), static_cast<s32>(VRAM_HEIGHT)) * scale;
+    requested_size = GSVector2::cxpr(static_cast<s32>(VRAM_WIDTH), static_cast<s32>(VRAM_HEIGHT));
   }
   else
   {
-    requested_size =
-      g_gpu.ApplyPixelAspectRatioToSize(g_gpu.ComputePixelAspectRatio(), GSVector2(g_gpu.GetCRTCVideoSize()) * scale);
+    const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
+    requested_size = GPU::CalculateDisplayWindowSize(
+      g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, g_gpu.ComputePixelAspectRatio(),
+      GSVector2(g_gpu.GetCRTCVideoSize()), GSVector2(g_gpu.GetCRTCVRAMSourceRect().rsize()) * scale,
+      GSVector2(GSVector2i(wi.surface_width, wi.surface_height)));
   }
 
   if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
@@ -6083,6 +6088,8 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   {
     requested_size = requested_size.yx();
   }
+
+  requested_size *= scale;
 
   const GSVector2i requested_sizei = GSVector2i(requested_size.ceil());
   Host::RequestResizeHostDisplay(requested_sizei.x, requested_sizei.y);

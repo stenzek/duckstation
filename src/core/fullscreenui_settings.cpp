@@ -1064,25 +1064,33 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
 
   const float midpoint = LayoutScale(150.0f);
   const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Left: ")));
+  ImGui::PopFont();
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool left_modified =
     ImGui::SliderInt("##left", &dlg_left_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Top: ")));
+  ImGui::PopFont();
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool top_modified =
     ImGui::SliderInt("##top", &dlg_top_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Right: ")));
+  ImGui::PopFont();
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool right_modified =
     ImGui::SliderInt("##right", &dlg_right_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::PushFont(nullptr, 0.0f, UIStyle.BoldFontWeight);
   ImGui::TextUnformatted(IMSTR_START_END(FSUI_VSTR("Bottom: ")));
+  ImGui::PopFont();
   ImGui::SameLine(midpoint);
   ImGui::SetNextItemWidth(end);
   const bool bottom_modified =
@@ -3873,6 +3881,21 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                   FSUI_VSTR("Determines the rotation of the simulated TV screen."), "Display", "Rotation",
                   Settings::DEFAULT_DISPLAY_ROTATION, &Settings::ParseDisplayRotation,
                   &Settings::GetDisplayRotationName, &Settings::GetDisplayRotationDisplayName, DisplayRotation::Count);
+
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_CROP_SIMPLE, "Fine Crop Mode"),
+                  FSUI_VSTR("Enables manual fine cropping of the display area, while preserving the aspect ratio of "
+                            "the image. Useful for removing black borders in certain games."),
+                  "Display", "FineCropMode", Settings::DEFAULT_DISPLAY_FINE_CROP_MODE,
+                  &Settings::ParseDisplayFineCropMode, &Settings::GetDisplayFineCropModeName,
+                  &Settings::GetDisplayFineCropModeDisplayName, DisplayFineCropMode::MaxCount);
+  if (Settings::ParseDisplayFineCropMode(GetEffectiveTinyStringSetting(bsi, "Display", "FineCropMode", "").c_str())
+        .value_or(Settings::DEFAULT_DISPLAY_FINE_CROP_MODE) != DisplayFineCropMode::None)
+  {
+    DrawIntRectSetting(bsi, FSUI_ICONVSTR(ICON_FA_CROP_SIMPLE, "Fine Crop Amount"),
+                       FSUI_VSTR("Determines how much to crop the display area."), "Display", "FineCropLeft", 0,
+                       "FineCropTop", 0, "FineCropRight", 0, "FineCropBottom", 0, std::numeric_limits<s16>::min(),
+                       std::numeric_limits<s16>::max(), "%dpx");
+  }
 
   if (is_hardware)
   {
