@@ -176,6 +176,12 @@ ALWAYS_INLINE static u32 Truncate32To16(u32 color)
     .rgba32();
 }
 
+/// Returns true if two given spans overlap.
+ALWAYS_INLINE static bool SpansOverlap(s32 start1, s32 end1, s32 start2, s32 end2)
+{
+  return (start1 <= end2 && start2 <= end1);
+}
+
 /// Computes the clamped average Z for the given polygon Z values.
 template<typename... Args>
 ALWAYS_INLINE static float ComputePolygonAverageZ(Args... args)
@@ -3598,6 +3604,26 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   else if (m_draw_with_software_renderer)
   {
     GPU_SW_Rasterizer::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, set_mask, check_mask);
+  }
+
+  if (overlaps_with_self && src_x != dst_x && src_y != dst_y &&
+      SpansOverlap(src_x, src_x + width, dst_x, dst_x + width) &&
+      SpansOverlap(src_y, src_y + height, dst_y, dst_y + height))
+  {
+    const u32 chunk_size = std::min(std::max(src_y, dst_y) - std::min(src_y, dst_y), height);
+    if (chunk_size < height)
+    {
+      WARNING_LOG("Breaking {}x{} copy into {} high chunks ({},{} => {},{})", width, height, chunk_size, src_x, src_y,
+                  dst_x, dst_y);
+      for (u32 chunk_dst_y = dst_y; chunk_dst_y < dst_y + height; chunk_dst_y += chunk_size)
+      {
+        const u32 chunk_src_y = src_y + (chunk_dst_y - dst_y);
+        const u32 current_chunk_height = std::min(chunk_size, (dst_y + height) - chunk_dst_y);
+        CopyVRAM(src_x, chunk_src_y, dst_x, chunk_dst_y, width, current_chunk_height, set_mask, check_mask);
+      }
+    }
+
+    return;
   }
 
   if (use_shader || IsUsingMultisampling())
