@@ -105,6 +105,11 @@ static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
 
 static u32 GetMetalMaxTextureSize(id<MTLDevice> device)
 {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   // https://gist.github.com/kylehowells/63d0723abc9588eb734cade4b7df660d
   if ([device supportsFamily:MTLGPUFamilyMacCatalyst1] || [device supportsFamily:MTLGPUFamilyMac1] ||
       [device supportsFamily:MTLGPUFamilyApple3])
@@ -115,6 +120,10 @@ static u32 GetMetalMaxTextureSize(id<MTLDevice> device)
   {
     return 8192;
   }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 static u32 GetMetalMaxMultisamples(id<MTLDevice> device)
@@ -275,7 +284,7 @@ void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
     // has to be encoding, we don't "begin" a render pass here, so the inline encoder won't get flushed otherwise.
     EndAnyEncoding();
 
-    id<MTLDrawable> drawable = [[swap_chain->GetLayer() nextDrawable] retain];
+    id<CAMetalDrawable> drawable = [[swap_chain->GetLayer() nextDrawable] retain];
     MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
     desc.colorAttachments[0].loadAction = MTLLoadActionClear;
     desc.colorAttachments[0].storeAction = MTLStoreActionStore;
@@ -374,12 +383,21 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   // Framebuffer fetch requires MSL 2.3 and an Apple GPU family.
   const bool supports_fbfetch = [m_device supportsFamily:MTLGPUFamilyApple1];
 
   // If fbfetch is disabled, barriers aren't supported on Apple GPUs.
   const bool supports_barriers =
     ([m_device supportsFamily:MTLGPUFamilyMac1] && ![m_device supportsFamily:MTLGPUFamilyApple3]);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
   m_features.dual_source_blend = !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend);
   m_features.framebuffer_fetch = !HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch) && supports_fbfetch;
@@ -419,7 +437,8 @@ bool MetalDevice::LoadShaders()
           return nil;
       }
 
-      id<MTLLibrary> lib = [m_device newLibraryWithFile:path error:nil];
+      NSURL* url = [NSURL fileURLWithPath:path];
+      id<MTLLibrary> lib = [m_device newLibraryWithURL:url error:nil];
       if (lib == nil)
         return nil;
 
@@ -2435,7 +2454,6 @@ void MetalDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, 
         {3, 1}, // MTLPrimitiveTypeTriangleStrip
       };
 
-      const u32 first_step = vertices_per_primitive[static_cast<size_t>(primitive)][0] * sizeof(u16);
       const u32 index_step = vertices_per_primitive[static_cast<size_t>(primitive)][1] * sizeof(u16);
       const u32 end_offset = (base_index + index_count) * sizeof(u16);
       for (; index_offset < end_offset; index_offset += index_step)

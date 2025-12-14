@@ -464,5 +464,5 @@ private:
   double m_accumulated_gpu_time = 0;
   double m_last_gpu_time_end = 0;
 
-  id<MTLDrawable> m_layer_drawable = nil;
+  id<CAMetalDrawable> m_layer_drawable = nil;
 };
