@@ -2002,7 +2002,8 @@ void Achievements::FetchGameTitlesCallback(int result, const char* error_message
     if (error_message)
       Error::SetString(params->error, error_message);
     else
-      Error::SetStringFmt(params->error, TRANSLATE_FS("Achievements", "Failed to fetch game titles (code {})."), result);
+      Error::SetStringFmt(params->error, TRANSLATE_FS("Achievements", "Failed to fetch game titles (code {})."),
+                          result);
     params->success = false;
     return;
   }
@@ -2149,8 +2150,8 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   // Fetch game titles (includes badge names) from RetroAchievements
   FetchGameTitlesParameters params = {error, nullptr, nullptr, false};
-  params.request = rc_client_begin_fetch_game_titles(s_state.client, game_ids.data(),
-                                                     static_cast<u32>(game_ids.size()), FetchGameTitlesCallback, &params);
+  params.request = rc_client_begin_fetch_game_titles(s_state.client, game_ids.data(), static_cast<u32>(game_ids.size()),
+                                                     FetchGameTitlesCallback, &params);
   if (!params.request)
   {
     Error::SetStringView(error, TRANSLATE_SV("Achievements", "Failed to create game titles request."));
@@ -2186,7 +2187,8 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
       continue;
     }
 
-    std::string url = GetImageURL(entry.badge_name, RC_IMAGE_TYPE_GAME);
+    std::string url =
+      entry.badge_url ? std::string(entry.badge_url) : GetImageURL(entry.badge_name, RC_IMAGE_TYPE_GAME);
     if (url.empty())
       continue;
 
