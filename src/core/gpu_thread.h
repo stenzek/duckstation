@@ -47,8 +47,7 @@ void StopFullscreenUI();
 
 /// Backend control.
 std::optional<GPURenderer> GetRequestedRenderer();
-bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
-                      Error* error);
+bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error);
 void DestroyGPUBackend();
 bool HasGPUBackend();
 bool IsGPUBackendRequested();

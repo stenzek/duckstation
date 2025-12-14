@@ -597,11 +597,9 @@ std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
   return s_state.requested_renderer;
 }
 
-bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
-                                 Error* error)
+bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error)
 {
-  return Reconfigure(renderer, upload_vram, fullscreen ? std::optional<bool>(true) : std::nullopt, std::nullopt,
-                     force_recreate_device, error);
+  return Reconfigure(renderer, upload_vram, fullscreen, std::nullopt, false, error);
 }
 
 void GPUThread::DestroyGPUBackend()

@@ -1219,7 +1219,7 @@ void System::RecreateGPU(GPURenderer renderer)
   StopMediaCapture();
 
   Error error;
-  if (!GPUThread::CreateGPUBackend(renderer, true, false, false, &error))
+  if (!GPUThread::CreateGPUBackend(renderer, true, std::nullopt, &error))
   {
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
@@ -2007,7 +2007,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   // This can fail due to the application being closed during startup.
   if (!GPUThread::CreateGPUBackend(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false,
-                                   fullscreen, false, error))
+                                   fullscreen, error))
   {
     // Game info has to be manually cleared since the backend won't shutdown naturally.
     GPUThread::ClearGameInfo();
