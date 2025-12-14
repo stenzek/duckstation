@@ -194,24 +194,12 @@ TEST(GSVector2iTest, UnpackOperations)
   EXPECT_EQ(upl8_result.U8[5], 0);
   EXPECT_EQ(upl8_result.U8[6], 0);
   EXPECT_EQ(upl8_result.U8[7], 0);
-  EXPECT_EQ(upl8_result.U8[8], 0x56);
-  EXPECT_EQ(upl8_result.U8[9], 0);
-  EXPECT_EQ(upl8_result.U8[10], 0);
-  EXPECT_EQ(upl8_result.U8[11], 0);
-  EXPECT_EQ(upl8_result.U8[12], 0x78);
-  EXPECT_EQ(upl8_result.U8[13], 0);
-  EXPECT_EQ(upl8_result.U8[14], 0);
-  EXPECT_EQ(upl8_result.U8[15], 0);
 
   auto upl16_result = v1.upl16();
   EXPECT_EQ(upl16_result.U16[0], 0x12);
   EXPECT_EQ(upl16_result.U16[1], 0);
   EXPECT_EQ(upl16_result.U16[2], 0x34);
   EXPECT_EQ(upl16_result.U16[3], 0);
-  EXPECT_EQ(upl16_result.U16[4], 0x56);
-  EXPECT_EQ(upl16_result.U16[5], 0);
-  EXPECT_EQ(upl16_result.U16[6], 0x78);
-  EXPECT_EQ(upl16_result.U16[7], 0);
 }
 
 TEST(GSVector2iTest, TypeConversions)
@@ -806,20 +794,28 @@ TEST(GSVector4iTest, Shift64BitOperations)
 #ifdef GSVECTOR_HAS_SRLV
 TEST(GSVector4iTest, VariableShifts)
 {
-  GSVector4i v1(0x1000, 0x2000, 0x4000, 0x8000);
-  GSVector4i shift_amounts(1, 2, 3, 4);
+  GSVector4i v1(0x1000, 0x2000, 0x4000, 0x8000, 0x1000, 0x2000, 0x4000, 0x8000);
+  GSVector4i shift_amounts(1, 2, 3, 4, 1, 2, 3, 4);
 
   auto sllv16_result = v1.sllv16(shift_amounts);
   EXPECT_EQ(sllv16_result.U16[0], 0x2000); // 0x1000 << 1
   EXPECT_EQ(sllv16_result.U16[1], 0x8000); // 0x2000 << 2
   EXPECT_EQ(sllv16_result.U16[2], 0x0000); // 0x4000 << 3 (overflow)
   EXPECT_EQ(sllv16_result.U16[3], 0x0000); // 0x8000 << 4 (overflow)
+  EXPECT_EQ(sllv16_result.U16[4], 0x2000); // 0x1000 << 1
+  EXPECT_EQ(sllv16_result.U16[5], 0x8000); // 0x2000 << 2
+  EXPECT_EQ(sllv16_result.U16[6], 0x0000); // 0x4000 << 3 (overflow)
+  EXPECT_EQ(sllv16_result.U16[7], 0x0000); // 0x8000 << 4 (overflow)
 
   auto srlv16_result = v1.srlv16(shift_amounts);
   EXPECT_EQ(srlv16_result.U16[0], 0x0800); // 0x1000 >> 1
   EXPECT_EQ(srlv16_result.U16[1], 0x0800); // 0x2000 >> 2
   EXPECT_EQ(srlv16_result.U16[2], 0x0800); // 0x4000 >> 3
   EXPECT_EQ(srlv16_result.U16[3], 0x0800); // 0x8000 >> 4
+  EXPECT_EQ(srlv16_result.U16[4], 0x0800); // 0x1000 >> 1
+  EXPECT_EQ(srlv16_result.U16[5], 0x0800); // 0x2000 >> 2
+  EXPECT_EQ(srlv16_result.U16[6], 0x0800); // 0x4000 >> 3
+  EXPECT_EQ(srlv16_result.U16[7], 0x0800); // 0x8000 >> 4
 }
 #endif
 
