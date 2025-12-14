@@ -983,9 +983,14 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float normal_icon_margin = std::ceil(4.0f * scale);
   const float large_icon_margin = std::ceil(8.0f * scale);
   const float max_width = (s_state.window_width * 0.6f) - (margin + padding) * 2.0f;
+  const float max_width_for_color = std::ceil(400.0f * scale);
+  const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
   float position_y = margin;
+
+  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
 
   auto iter = s_state.osd_active_messages.begin();
   while (iter != s_state.osd_active_messages.end())
@@ -1097,8 +1102,20 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
-    dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
-                      rounding);
+    const float background_opacity = opacity * 0.95f;
+    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
+    const u32 right_background_color32 = ImGui::GetColorU32(
+      ModAlpha(ImLerp(left_background_color, right_background_color,
+                      std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
+               background_opacity));
+
+    dl->AddRectFilled(pos, ImVec2(pos.x + rounding, pos_max.y), left_background_color32, rounding,
+                      ImDrawFlags_RoundCornersLeft);
+    dl->AddRectFilledMultiColor(ImVec2(pos.x + rounding, pos.y), ImVec2(pos_max.x - rounding, pos_max.y),
+                                left_background_color32, right_background_color32, right_background_color32,
+                                left_background_color32);
+    dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos.y), pos_max, right_background_color32, rounding,
+                      ImDrawFlags_RoundCornersRight);
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
