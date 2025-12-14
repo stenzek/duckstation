@@ -9,6 +9,10 @@
 
 #include <dlfcn.h>
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 LOG_CHANNEL(GPUDevice);
 
 OpenGLContextAGL::OpenGLContextAGL() : OpenGLContext()

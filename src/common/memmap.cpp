@@ -447,6 +447,11 @@ void MemMap::UnmapSharedMemory(void* baseaddr, size_t size)
 
 const void* MemMap::GetBaseAddress()
 {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   u32 name_buffer_size = 0;
   _NSGetExecutablePath(nullptr, &name_buffer_size);
   if (name_buffer_size > 0) [[likely]]
@@ -471,6 +476,10 @@ const void* MemMap::GetBaseAddress()
   }
 
   return reinterpret_cast<const void*>(&GetBaseAddress);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 void* MemMap::AllocateJITMemoryAt(const void* addr, size_t size)
