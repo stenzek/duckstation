@@ -520,12 +520,16 @@ void GameListModel::rowsChanged(const QList<int>& rows)
   }
 }
 
-Qt::ItemDataRole GameListModel::getRoleToInvalidate(int column)
+QList<int> GameListModel::getRolesToInvalidate(int column)
 {
+  QList<int> ret;
+
   if (column == Column_Icon || column == Column_Cover || column == Column_Region)
-    return Qt::DecorationRole;
+    ret = {Qt::DecorationRole};
   else
-    return Qt::DisplayRole;
+    ret = {Qt::DisplayRole, Qt::ToolTipRole};
+
+  return ret;
 }
 
 void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true */)
@@ -544,7 +548,7 @@ void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true
     }
   }
 
-  emit dataChanged(index(0, column), index(rowCount() - 1, column), {getRoleToInvalidate(column)});
+  emit dataChanged(index(0, column), index(rowCount() - 1, column), getRolesToInvalidate(column));
 }
 
 void GameListModel::invalidateColumnForPath(const std::string& path, int column, bool invalidate_cache /* = true */)
@@ -569,7 +573,7 @@ void GameListModel::invalidateColumnForPath(const std::string& path, int column,
 
   const auto remove_entry = [this, &column](const GameList::Entry* ge, int row) {
     const QModelIndex mi(index(row, column));
-    emit dataChanged(mi, mi, {getRoleToInvalidate(column)});
+    emit dataChanged(mi, mi, getRolesToInvalidate(column));
   };
 
   if (hasTakenGameList())

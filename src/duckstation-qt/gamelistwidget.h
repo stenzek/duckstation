@@ -154,7 +154,7 @@ private:
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                      const QString& title);
 
-  static Qt::ItemDataRole getRoleToInvalidate(int column);
+  static QList<int> getRolesToInvalidate(int column);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
