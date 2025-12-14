@@ -68,7 +68,7 @@ static bool IsCoreSubsetOpen();
 static void SetCurrentSubsetID(u32 subset_id);
 static void DrawSubsetSelector();
 template<typename T>
-static void CollectSubsetsFromList(const T* list);
+static void CollectSubsetsFromList(const T* list, bool include_achievements, bool include_leaderboards);
 template<typename T>
 static bool IsBucketVisibleInCurrentSubset(const T& bucket);
 
@@ -727,12 +727,31 @@ void FullscreenUI::SetCurrentSubsetID(u32 subset_id)
 }
 
 template<typename T>
-void FullscreenUI::CollectSubsetsFromList(const T* list)
+void FullscreenUI::CollectSubsetsFromList(const T* list, bool include_achievements, bool include_leaderboards)
 {
   s_achievements_locals.open_subset = nullptr;
   s_achievements_locals.subset_info_list.clear();
-  if (std::any_of(list->buckets, list->buckets + list->num_buckets,
-                  [&list](const auto& it) { return it.subset_id != list->buckets[0].subset_id; }))
+
+  // Prefer rc_client grabbing subsets if possible. Old external clients won't support this.
+  rc_client_subset_list_t* subset_list = rc_client_create_subset_list(Achievements::GetClient());
+  if (subset_list && subset_list->num_subsets > 0)
+  {
+    // If there is only a single subset, we don't want to show a selector.
+    if (subset_list->num_subsets > 1)
+    {
+      for (u32 i = 0; i < subset_list->num_subsets; i++)
+      {
+        const rc_client_subset_t* subset = subset_list->subsets[i];
+        if ((include_achievements && subset->num_achievements > 0) ||
+            (include_leaderboards && subset->num_leaderboards > 0))
+        {
+          AddSubsetInfo(subset);
+        }
+      }
+    }
+  }
+  else if (std::any_of(list->buckets, list->buckets + list->num_buckets,
+                       [&list](const auto& it) { return it.subset_id != list->buckets[0].subset_id; }))
   {
     for (u32 bucket_idx = 0; bucket_idx < list->num_buckets; bucket_idx++)
     {
@@ -745,9 +764,14 @@ void FullscreenUI::CollectSubsetsFromList(const T* list)
           AddSubsetInfo(subset);
       }
     }
+  }
 
-    // hopefully the first will be core...
-    Assert(s_achievements_locals.subset_info_list.size() > 1);
+  if (subset_list)
+    rc_client_destroy_subset_list(subset_list);
+
+  // hopefully the first will be core...
+  if (!s_achievements_locals.subset_info_list.empty())
+  {
     const auto it = std::ranges::find_if(s_achievements_locals.subset_info_list, [](const SubsetInfo& info) {
       return info.subset_id == s_achievements_locals.last_open_subset_id;
     });
@@ -807,7 +831,7 @@ void FullscreenUI::SwitchToAchievements()
     }
   }
 
-  CollectSubsetsFromList(s_achievements_locals.achievement_list);
+  CollectSubsetsFromList(s_achievements_locals.achievement_list, true, false);
   SwitchToMainWindow(MainWindowType::Achievements);
 }
 
@@ -1314,7 +1338,7 @@ void FullscreenUI::SwitchToLeaderboards()
     return;
   }
 
-  CollectSubsetsFromList(s_achievements_locals.leaderboard_list);
+  CollectSubsetsFromList(s_achievements_locals.leaderboard_list, false, true);
   SwitchToMainWindow(MainWindowType::Leaderboards);
 }
 
