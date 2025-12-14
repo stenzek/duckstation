@@ -101,6 +101,14 @@ struct LoginWithPasswordParameters
   bool result;
 };
 
+struct FetchGameTitlesParameters
+{
+  Error* error;
+  rc_client_async_handle_t* request;
+  rc_client_game_title_list_t* list;
+  bool success;
+};
+
 struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
@@ -179,6 +187,8 @@ static void HandleServerReconnectedEvent(const rc_client_event_t* event);
 
 static void ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
+static void FetchGameTitlesCallback(int result, const char* error_message, rc_client_game_title_list_t* list,
+                                    rc_client_t* client, void* userdata);
 static void ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 
 static void DisplayHardcoreDeferredMessage();
@@ -1981,6 +1991,26 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
     FinishLogin();
 }
 
+void Achievements::FetchGameTitlesCallback(int result, const char* error_message, rc_client_game_title_list_t* list,
+                                           rc_client_t* client, void* userdata)
+{
+  FetchGameTitlesParameters* params = static_cast<FetchGameTitlesParameters*>(userdata);
+  params->request = nullptr;
+
+  if (result != RC_OK || !list)
+  {
+    if (error_message)
+      Error::SetString(params->error, error_message);
+    else
+      Error::SetStringFmt(params->error, TRANSLATE_FS("Achievements", "Failed to fetch game titles (code {})."), result);
+    params->success = false;
+    return;
+  }
+
+  params->list = list;
+  params->success = true;
+}
+
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
                                                 void* userdata)
 {
@@ -2110,19 +2140,6 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   progress->FormatStatusText(TRANSLATE_FS("Achievements", "Fetching icon info for {} games..."), game_ids.size());
 
-  // Fetch game titles (includes badge names) from RetroAchievements
-  const rc_api_fetch_game_titles_request_t titles_request = {
-    .game_ids = game_ids.data(),
-    .num_game_ids = static_cast<u32>(game_ids.size()),
-  };
-
-  rc_api_request_t request;
-  if (rc_api_init_fetch_game_titles_request(&request, &titles_request) != RC_OK)
-  {
-    Error::SetStringView(error, "Failed to create API request.");
-    return false;
-  }
-
   auto lock = GetLock();
   if (!IsActive())
   {
@@ -2130,30 +2147,23 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
     return false;
   }
 
-  std::optional<rc_api_fetch_game_titles_response_t> titles_response;
-  s_state.http_downloader->CreatePostRequest(
-    request.url, request.post_data,
-    [&titles_response, error](s32 status_code, const Error&, const std::string&, HTTPDownloader::Request::Data data) {
-      const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
-      const int parse_result = rc_api_process_fetch_game_titles_server_response(&titles_response.emplace(), &rr);
-      if (parse_result != RC_OK)
-      {
-        Error::SetStringFmt(error, "rc_api_process_fetch_game_titles_server_response() failed: {}",
-                            rc_error_str(parse_result));
-        titles_response.reset();
-      }
-    },
-    progress);
+  // Fetch game titles (includes badge names) from RetroAchievements
+  FetchGameTitlesParameters params = {error, nullptr, nullptr, false};
+  params.request = rc_client_begin_fetch_game_titles(s_state.client, game_ids.data(),
+                                                     static_cast<u32>(game_ids.size()), FetchGameTitlesCallback, &params);
+  if (!params.request)
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "Failed to create game titles request."));
+    return false;
+  }
 
-  rc_api_destroy_request(&request);
   WaitForHTTPRequestsWithYield(lock);
 
-  if (!titles_response.has_value())
+  if (!params.success || !params.list)
     return false;
 
-  const ScopedGuard response_guard(
-    [&titles_response]() { rc_api_destroy_fetch_game_titles_response(&titles_response.value()); });
-  if (titles_response->num_entries == 0)
+  const ScopedGuard list_guard([&params]() { rc_client_destroy_game_title_list(params.list); });
+  if (params.list->num_entries == 0)
   {
     Error::SetStringView(error, TRANSLATE_SV("Achievements", "No image names returned."));
     return false;
@@ -2161,22 +2171,22 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   // Create all download requests in parallel
   u32 badges_to_download = 0;
-  for (u32 i = 0; i < titles_response->num_entries; i++)
+  for (u32 i = 0; i < params.list->num_entries; i++)
   {
-    const rc_api_game_title_entry_t& entry = titles_response->entries[i];
+    const rc_client_game_title_entry_t& entry = params.list->entries[i];
 
-    if (!entry.image_name || entry.image_name[0] == '\0')
+    if (entry.badge_name[0] == '\0')
       continue;
 
-    std::string path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string path = GetLocalImagePath(entry.badge_name, RC_IMAGE_TYPE_GAME);
     if (FileSystem::FileExists(path.c_str()))
     {
       // Already have this icon, just update the cache
-      GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+      GameList::UpdateAchievementBadgeName(entry.game_id, entry.badge_name);
       continue;
     }
 
-    std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string url = GetImageURL(entry.badge_name, RC_IMAGE_TYPE_GAME);
     if (url.empty())
       continue;
 

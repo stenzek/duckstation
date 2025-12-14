@@ -3605,6 +3605,146 @@ void rc_client_destroy_hash_library(rc_client_hash_library_t* list)
   free(list);
 }
 
+/* ===== Fetch Game Titles ===== */
+
+typedef struct rc_client_fetch_game_titles_callback_data_t {
+  rc_client_t* client;
+  rc_client_fetch_game_titles_callback_t callback;
+  void* callback_userdata;
+  rc_client_async_handle_t async_handle;
+} rc_client_fetch_game_titles_callback_data_t;
+
+static void rc_client_fetch_game_titles_callback(const rc_api_server_response_t* server_response, void* callback_data)
+{
+  rc_client_fetch_game_titles_callback_data_t* titles_callback_data =
+    (rc_client_fetch_game_titles_callback_data_t*)callback_data;
+  rc_client_t* client = titles_callback_data->client;
+  rc_api_fetch_game_titles_response_t titles_response;
+  const char* error_message;
+  int result;
+
+  result = rc_client_end_async(client, &titles_callback_data->async_handle);
+  if (result) {
+    if (result != RC_CLIENT_ASYNC_DESTROYED)
+      RC_CLIENT_LOG_VERBOSE(client, "Fetch game titles aborted");
+
+    free(titles_callback_data);
+    return;
+  }
+
+  result = rc_api_process_fetch_game_titles_server_response(&titles_response, server_response);
+  error_message =
+    rc_client_server_error_message(&result, server_response->http_status_code, &titles_response.response);
+  if (error_message) {
+    RC_CLIENT_LOG_ERR_FORMATTED(client, "Fetch game titles failed: %s", error_message);
+    titles_callback_data->callback(result, error_message, NULL, client, titles_callback_data->callback_userdata);
+  } else {
+    rc_client_game_title_list_t* list;
+    size_t strings_size = 0;
+    const rc_api_game_title_entry_t* src;
+    const rc_api_game_title_entry_t* stop;
+    size_t list_size;
+
+    /* calculate string buffer size */
+    for (src = titles_response.entries, stop = src + titles_response.num_entries; src < stop; ++src) {
+      if (src->title)
+        strings_size += strlen(src->title) + 1;
+    }
+
+    list_size = sizeof(*list) + sizeof(rc_client_game_title_entry_t) * titles_response.num_entries + strings_size;
+    list = (rc_client_game_title_list_t*)malloc(list_size);
+    if (!list) {
+      titles_callback_data->callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), NULL, client,
+                                     titles_callback_data->callback_userdata);
+    } else {
+      rc_client_game_title_entry_t* entry = list->entries =
+        (rc_client_game_title_entry_t*)((uint8_t*)list + sizeof(*list));
+      char* strings = (char*)((uint8_t*)list + sizeof(*list) +
+                              sizeof(rc_client_game_title_entry_t) * titles_response.num_entries);
+
+      for (src = titles_response.entries, stop = src + titles_response.num_entries; src < stop; ++src, ++entry) {
+        entry->game_id = src->id;
+
+        if (src->title) {
+          const size_t len = strlen(src->title) + 1;
+          entry->title = strings;
+          memcpy(strings, src->title, len);
+          strings += len;
+        } else {
+          entry->title = NULL;
+        }
+
+        if (src->image_name)
+          snprintf(entry->badge_name, sizeof(entry->badge_name), "%s", src->image_name);
+        else
+          entry->badge_name[0] = '\0';
+      }
+
+      list->num_entries = titles_response.num_entries;
+
+      titles_callback_data->callback(RC_OK, NULL, list, client, titles_callback_data->callback_userdata);
+    }
+  }
+
+  rc_api_destroy_fetch_game_titles_response(&titles_response);
+  free(titles_callback_data);
+}
+
+rc_client_async_handle_t* rc_client_begin_fetch_game_titles(rc_client_t* client, const uint32_t* game_ids,
+                                                            uint32_t num_game_ids,
+                                                            rc_client_fetch_game_titles_callback_t callback,
+                                                            void* callback_userdata)
+{
+  rc_api_fetch_game_titles_request_t api_params;
+  rc_client_fetch_game_titles_callback_data_t* callback_data;
+  rc_client_async_handle_t* async_handle;
+  rc_api_request_t request;
+  int result;
+  const char* error_message;
+
+  if (!client) {
+    callback(RC_INVALID_STATE, "client is required", NULL, client, callback_userdata);
+    return NULL;
+  }
+
+  if (!game_ids || num_game_ids == 0) {
+    callback(RC_INVALID_STATE, "game_ids is required", NULL, client, callback_userdata);
+    return NULL;
+  }
+
+  api_params.game_ids = game_ids;
+  api_params.num_game_ids = num_game_ids;
+  result = rc_api_init_fetch_game_titles_request_hosted(&request, &api_params, &client->state.host);
+
+  if (result != RC_OK) {
+    error_message = rc_error_str(result);
+    callback(result, error_message, NULL, client, callback_userdata);
+    return NULL;
+  }
+
+  callback_data = (rc_client_fetch_game_titles_callback_data_t*)calloc(1, sizeof(*callback_data));
+  if (!callback_data) {
+    callback(RC_OUT_OF_MEMORY, rc_error_str(RC_OUT_OF_MEMORY), NULL, client, callback_userdata);
+    return NULL;
+  }
+
+  callback_data->client = client;
+  callback_data->callback = callback;
+  callback_data->callback_userdata = callback_userdata;
+
+  async_handle = &callback_data->async_handle;
+  rc_client_begin_async(client, async_handle);
+  client->callbacks.server_call(&request, rc_client_fetch_game_titles_callback, callback_data, client);
+  rc_api_destroy_request(&request);
+
+  return rc_client_async_handle_valid(client, async_handle) ? async_handle : NULL;
+}
+
+void rc_client_destroy_game_title_list(rc_client_game_title_list_t* list)
+{
+  free(list);
+}
+
 /* ===== Achievements ===== */
 
 static void rc_client_update_achievement_display_information(rc_client_t* client, rc_client_achievement_info_t* achievement, time_t recent_unlock_time)

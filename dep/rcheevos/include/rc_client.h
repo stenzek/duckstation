@@ -404,6 +404,41 @@ RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_hash_library(
 RC_EXPORT void RC_CCONV rc_client_destroy_hash_library(rc_client_hash_library_t* list);
 
 /*****************************************************************************\
+| Fetch Game Titles                                                           |
+\*****************************************************************************/
+
+typedef struct rc_client_game_title_entry_t {
+  uint32_t game_id;
+  const char* title;
+  char badge_name[16];
+} rc_client_game_title_entry_t;
+
+typedef struct rc_client_game_title_list_t {
+  rc_client_game_title_entry_t* entries;
+  uint32_t num_entries;
+} rc_client_game_title_list_t;
+
+/**
+ * Callback that is fired when a game titles request completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_game_titles_callback_t)(int result, const char* error_message,
+                                                               rc_client_game_title_list_t* list, rc_client_t* client,
+                                                               void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for titles and badge names for the specified games.
+ * The caller must provide an array of game IDs and the number of IDs in the array.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_game_titles(
+  rc_client_t* client, const uint32_t* game_ids, uint32_t num_game_ids,
+  rc_client_fetch_game_titles_callback_t callback, void* callback_userdata);
+
+/**
+ * Destroys a previously-allocated result from the rc_client_begin_fetch_game_titles() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_game_title_list(rc_client_game_title_list_t* list);
+
+/*****************************************************************************\
 | Achievements                                                                |
 \*****************************************************************************/
 
