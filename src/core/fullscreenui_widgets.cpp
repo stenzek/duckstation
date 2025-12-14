@@ -4933,7 +4933,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float& note_font_weight = UIStyle.BoldFontWeight;
 
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
-  const ImVec4& right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
 
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
@@ -5012,7 +5012,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
     const u32 right_background_color32 =
       ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
-                                         (box_width - min_rounded_width) / (box_width - min_rounded_width)),
+                                         (box_width - min_rounded_width) / (max_width - min_rounded_width)),
                                   background_opacity));
 
     dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
