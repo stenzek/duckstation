@@ -467,7 +467,8 @@ void SDLInputSource::SetHints()
     ERROR_LOG("Controller DB not found, it should be named '{}'", CONTROLLER_DB_FILENAME);
   }
 
-  SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_controller_enhanced_mode ? "1" : "0");
+  INFO_LOG("Enhanced controller reports are {}.", m_controller_enhanced_mode ? "enabled" : "disabled");
+  SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, m_controller_enhanced_mode ? "auto" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, m_controller_ps5_player_led ? "1" : "0");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
   SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS3, "1");
