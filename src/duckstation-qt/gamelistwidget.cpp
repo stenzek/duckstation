@@ -546,6 +546,11 @@ void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true
       if (QtHost::IsFullscreenUIStarted())
         Host::RunOnCPUThread([]() { FullscreenUI::InvalidateCoverCache(); });
     }
+    else if (column == Column_Title)
+    {
+      // if we're changing the title, the generated cover could change
+      invalidateColumn(Column_Cover, invalidate_cache);
+    }
   }
 
   emit dataChanged(index(0, column), index(rowCount() - 1, column), getRolesToInvalidate(column));
