@@ -477,5 +477,47 @@
 		<file>qdarkstyle/window_undock_focus@2x.png</file>
 		<file>qdarkstyle/window_undock_pressed.png</file>
 		<file>qdarkstyle/window_undock_pressed@2x.png</file>
+		<file>standard-icons/black/index.theme</file>
+		<file>standard-icons/black/svg/computer.svg</file>
+		<file>standard-icons/black/svg/dialog-cancel.svg</file>
+		<file>standard-icons/black/svg/dialog-ok.svg</file>
+		<file>standard-icons/black/svg/document-save.svg</file>
+		<file>standard-icons/black/svg/edit-clear.svg</file>
+		<file>standard-icons/black/svg/edit-delete.svg</file>
+		<file>standard-icons/black/svg/folder-new.svg</file>
+		<file>standard-icons/black/svg/folder-open.svg</file>
+		<file>standard-icons/black/svg/folder.svg</file>
+		<file>standard-icons/black/svg/go-down.svg</file>
+		<file>standard-icons/black/svg/go-next.svg</file>
+		<file>standard-icons/black/svg/go-previous.svg</file>
+		<file>standard-icons/black/svg/go-up.svg</file>
+		<file>standard-icons/black/svg/media-optical.svg</file>
+		<file>standard-icons/black/svg/text-x-generic.svg</file>
+		<file>standard-icons/black/svg/user-home.svg</file>
+		<file>standard-icons/black/svg/view-list-details.svg</file>
+		<file>standard-icons/black/svg/view-list-icons.svg</file>
+		<file>standard-icons/black/svg/view-refresh.svg</file>
+		<file>standard-icons/black/svg/window-close.svg</file>
+		<file>standard-icons/white/index.theme</file>
+		<file>standard-icons/white/svg/computer.svg</file>
+		<file>standard-icons/white/svg/dialog-cancel.svg</file>
+		<file>standard-icons/white/svg/dialog-ok.svg</file>
+		<file>standard-icons/white/svg/document-save.svg</file>
+		<file>standard-icons/white/svg/edit-clear.svg</file>
+		<file>standard-icons/white/svg/edit-delete.svg</file>
+		<file>standard-icons/white/svg/folder-new.svg</file>
+		<file>standard-icons/white/svg/folder-open.svg</file>
+		<file>standard-icons/white/svg/folder.svg</file>
+		<file>standard-icons/white/svg/go-down.svg</file>
+		<file>standard-icons/white/svg/go-next.svg</file>
+		<file>standard-icons/white/svg/go-previous.svg</file>
+		<file>standard-icons/white/svg/go-up.svg</file>
+		<file>standard-icons/white/svg/media-optical.svg</file>
+		<file>standard-icons/white/svg/text-x-generic.svg</file>
+		<file>standard-icons/white/svg/user-home.svg</file>
+		<file>standard-icons/white/svg/view-list-details.svg</file>
+		<file>standard-icons/white/svg/view-list-icons.svg</file>
+		<file>standard-icons/white/svg/view-refresh.svg</file>
+		<file>standard-icons/white/svg/window-close.svg</file>
 	</qresource>
 </RCC>
