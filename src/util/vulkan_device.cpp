@@ -653,6 +653,12 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
       "Disabling VK_EXT_fragment_shader_interlock and VK_KHR_dynamic_rendering_local_read on broken AMD driver.");
 #endif
   }
+  else if (m_driver_type == GPUDriverType::LLVMPipe)
+  {
+    // Rendering behaviour with llvmpipe + fbfetch is very strange, it fails to read push constants sometimes??
+    m_optional_extensions.vk_ext_rasterization_order_attachment_access = false;
+    WARNING_LOG("Disabling VK_EXT_rasterization_order_attachment_access on llvmpipe driver.");
+  }
 
   // Actually enable the extensions. See above for VK1.1 reasoning.
   if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
