@@ -215,8 +215,8 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   gpb.SetRasterizationState(VK_POLYGON_MODE_FILL,
                             cull_mapping[static_cast<u8>(config.rasterization.cull_mode.GetValue())],
                             VK_FRONT_FACE_CLOCKWISE);
-  if (config.samples > 1)
-    gpb.SetMultisamples(config.samples, config.per_sample_shading);
+  if (config.rasterization.multisamples > 1)
+    gpb.SetMultisamples(config.rasterization.multisamples, config.rasterization.per_sample_shading);
   gpb.SetDepthState(config.depth.depth_test != GPUPipeline::DepthFunc::Always || config.depth.depth_write,
                     config.depth.depth_write, compare_mapping[static_cast<u8>(config.depth.depth_test.GetValue())]);
   gpb.SetNoStencilState();

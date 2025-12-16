@@ -871,8 +871,6 @@ bool GPUTextureCache::CompilePipelines(Error* error)
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.geometry_shader = nullptr;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.SetTargetFormats(REPLACEMENT_TEXTURE_FORMAT);
 

@@ -370,12 +370,13 @@ public:
     MaxCount
   };
 
-  // TODO: purge this?
   union RasterizationState
   {
-    u8 key;
+    u16 key;
 
-    BitField<u8, CullMode, 0, 2> cull_mode;
+    BitField<u16, CullMode, 0, 2> cull_mode;
+    BitField<u16, u8, 2, 6> multisamples;
+    BitField<u16, bool, 8, 1> per_sample_shading;
 
     // clang-format off
     ALWAYS_INLINE bool operator==(const RasterizationState& rhs) const { return key == rhs.key; }
@@ -383,7 +384,7 @@ public:
     ALWAYS_INLINE bool operator<(const RasterizationState& rhs) const { return key < rhs.key; }
     // clang-format on
 
-    static RasterizationState GetNoCullState();
+    static RasterizationState GetNoCullState(u8 multisamples = 1, bool per_sample_shading = false);
   };
 
   union DepthState
@@ -447,23 +448,20 @@ public:
 
   struct GraphicsConfig
   {
-    Layout layout;
-
-    Primitive primitive;
     InputLayout input_layout;
-
-    RasterizationState rasterization;
-    DepthState depth;
-    BlendState blend;
-
     GPUShader* vertex_shader;
     GPUShader* geometry_shader;
     GPUShader* fragment_shader;
 
+    BlendState blend;
+    RasterizationState rasterization;
+    DepthState depth;
+
+    Layout layout;
+    Primitive primitive;
+
     GPUTexture::Format color_formats[4];
     GPUTexture::Format depth_format;
-    u8 samples;
-    bool per_sample_shading;
     RenderPassFlag render_pass_flags;
 
     void SetTargetFormats(GPUTexture::Format color_format,

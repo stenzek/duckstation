@@ -105,8 +105,6 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.geometry_shader = nullptr;
   plconfig.depth_format = GPUTexture::Format::Unknown;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   if (display)

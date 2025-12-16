@@ -1482,8 +1482,6 @@ bool PostProcessing::SlangShader::CompilePass(Pass& pass, Error* error)
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
@@ -1779,8 +1777,6 @@ std::unique_ptr<GPUPipeline> PostProcessing::SlangShader::CreateBlitPipeline(GPU
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();

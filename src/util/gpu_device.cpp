@@ -121,10 +121,13 @@ bool GPUPipeline::InputLayout::operator!=(const InputLayout& rhs) const
                       sizeof(VertexAttribute) * rhs.vertex_attributes.size()) != 0);
 }
 
-GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState()
+GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState(u8 multisamples /* = 1 */,
+                                                                                bool per_sample_shading /* = false */)
 {
   RasterizationState ret = {};
   ret.cull_mode = CullMode::None;
+  ret.multisamples = multisamples;
+  ret.per_sample_shading = per_sample_shading;
   return ret;
 }
 
@@ -1310,7 +1313,10 @@ void GPUDevice::SetDriverType(GPUDriverType type)
 {
   m_driver_type = type;
 
-#define NTENTRY(n) {GPUDriverType::n, #n}
+#define NTENTRY(n)                                                                                                     \
+  {                                                                                                                    \
+    GPUDriverType::n, #n                                                                                               \
+  }
   static constexpr const std::pair<GPUDriverType, const char*> name_table[] = {
     NTENTRY(Unknown),
     NTENTRY(AMDProprietary),

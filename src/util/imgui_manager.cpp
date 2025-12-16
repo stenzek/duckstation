@@ -406,8 +406,6 @@ bool ImGuiManager::CompilePipelines(Error* error)
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
   plconfig.blend.write_mask = 0x7;
   plconfig.SetTargetFormats(s_state.window_format);
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = imgui_vs.get();
   plconfig.geometry_shader = nullptr;

@@ -1355,11 +1355,9 @@ bool GPU_HW::CompilePipelines(Error* error)
   GPUPipeline::GraphicsConfig plconfig = {};
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndUBO;
   plconfig.input_layout.vertex_stride = sizeof(BatchVertex);
-  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState(m_multisamples, per_sample_shading);
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.geometry_shader = nullptr;
-  plconfig.samples = m_multisamples;
-  plconfig.per_sample_shading = per_sample_shading;
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
 
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
@@ -1585,7 +1583,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   SetScreenQuadInputLayout(plconfig);
   plconfig.vertex_shader = m_screen_quad_vertex_shader.get();
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-  plconfig.per_sample_shading = false;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState(m_multisamples, false);
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
 
@@ -1729,8 +1727,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
     plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
     plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-    plconfig.samples = m_multisamples;
-    plconfig.per_sample_shading = true;
+    plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState(m_multisamples, true);
     plconfig.SetTargetFormats(VRAM_DS_COLOR_FORMAT);
     if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
@@ -1743,7 +1740,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     SetScreenQuadInputLayout(plconfig);
     plconfig.vertex_shader = m_screen_quad_vertex_shader.get();
     plconfig.fragment_shader = fs.get();
-    plconfig.per_sample_shading = false;
+    plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState(m_multisamples, false);
     if (!m_use_rov_for_shader_blend)
     {
       plconfig.SetTargetFormats(VRAM_RT_FORMAT, depth_buffer_format);
@@ -1791,8 +1788,6 @@ bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.geometry_shader = nullptr;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
@@ -1871,8 +1866,6 @@ bool GPU_HW::CompileDownsamplePipelines(Error* error)
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.geometry_shader = nullptr;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();

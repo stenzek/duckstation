@@ -1214,7 +1214,7 @@ VkRenderPass VulkanDevice::GetRenderPass(const GPUPipeline::GraphicsConfig& conf
     key.stencil_store_op = stencil ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
   }
 
-  key.samples = static_cast<u8>(config.samples);
+  key.samples = config.rasterization.multisamples;
   key.feedback_loop = config.render_pass_flags;
 
   const auto it = m_render_pass_cache.find(key);

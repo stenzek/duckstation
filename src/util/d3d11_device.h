@@ -132,7 +132,7 @@ private:
   {
     size_t operator()(const BlendStateMapKey& key) const;
   };
-  using RasterizationStateMap = std::unordered_map<u8, ComPtr<ID3D11RasterizerState>>;
+  using RasterizationStateMap = std::unordered_map<u16, ComPtr<ID3D11RasterizerState>>;
   using DepthStateMap = std::unordered_map<u8, ComPtr<ID3D11DepthStencilState>>;
   using BlendStateMap = std::unordered_map<BlendStateMapKey, ComPtr<ID3D11BlendState>, BlendStateMapHash>;
   using InputLayoutMap =

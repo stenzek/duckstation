@@ -872,7 +872,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     // General
     const MTLPrimitiveType primitive = primitives[static_cast<u8>(config.primitive)];
-    desc.rasterSampleCount = config.samples;
+    desc.rasterSampleCount = config.rasterization.multisamples;
 
     // Metal-specific stuff
     desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
