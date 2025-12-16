@@ -15,7 +15,9 @@ if(NOT WIN32 AND NOT APPLE)
 endif()
 
 # libpng relies on zlib, which we need the system version for on Mac.
-find_package(ZLIB REQUIRED)
+if(APPLE OR CPU_ARCH_ARM32 OR CPU_ARCH_ARM64)
+  find_package(ZLIB REQUIRED)
+endif()
 
 # Enforce use of bundled dependencies to avoid conflicts with system libraries.
 set(FIND_ROOT_PATH_BACKUP ${CMAKE_FIND_ROOT_PATH})
@@ -29,12 +31,17 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
 
+# Search for local zlib version outside of Mac.
+if(NOT APPLE AND NOT CPU_ARCH_ARM32 AND NOT CPU_ARCH_ARM64)
+  find_package(ZLIB 1.3.1 REQUIRED)
+endif()
+
 # Bundled dependencies.
-find_package(SDL3 3.2.26 REQUIRED)
 find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(PNG 1.6.50 REQUIRED)
 find_package(JPEG REQUIRED)
+find_package(SDL3 3.2.26 REQUIRED)
 find_package(Freetype 2.13.3 REQUIRED)
 find_package(harfbuzz REQUIRED)
 find_package(plutosvg 0.0.6 REQUIRED)
