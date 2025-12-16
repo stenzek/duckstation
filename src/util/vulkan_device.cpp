@@ -4146,6 +4146,8 @@ void VulkanDevice::DrawIndexedWithBarrierWithPushConstants(u32 index_count, u32 
 
 void VulkanDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
+  DebugAssert(m_current_pipeline->GetRenderPassFlags() & GPUPipeline::ColorFeedbackLoopActive);
+
   switch (type)
   {
     case GPUDevice::DrawBarrier::None:

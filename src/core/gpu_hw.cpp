@@ -1464,9 +1464,22 @@ bool GPU_HW::CompilePipelines(Error* error)
                 plconfig.SetTargetFormats(use_rov ? GPUTexture::Format::Unknown : VRAM_RT_FORMAT,
                                           needs_rov_depth ? GPUTexture::Format::Unknown : depth_buffer_format);
                 plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
-                plconfig.render_pass_flags =
-                  use_rov ? GPUPipeline::BindRenderTargetsAsImages :
-                            (needs_feedback_loop ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags);
+
+                // Don't enable feedback loop bit if it's not needed.
+                if (use_rov)
+                {
+                  plconfig.render_pass_flags = GPUPipeline::BindRenderTargetsAsImages;
+                }
+                else if (needs_feedback_loop)
+                {
+                  plconfig.render_pass_flags = static_cast<GPUPipeline::RenderPassFlag>(
+                    use_shader_blending ? (GPUPipeline::ColorFeedbackLoop | GPUPipeline::ColorFeedbackLoopActive) :
+                                          GPUPipeline::ColorFeedbackLoop);
+                }
+                else
+                {
+                  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+                }
 
                 plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
 

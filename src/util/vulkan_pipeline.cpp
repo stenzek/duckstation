@@ -244,6 +244,13 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(GetPipelineLayoutType(config.render_pass_flags))]
                                           [static_cast<size_t>(config.layout)]);
 
+  if ((config.render_pass_flags & GPUPipeline::ColorFeedbackLoopActive) &&
+      m_optional_extensions.vk_ext_rasterization_order_attachment_access)
+  {
+    DebugAssert(config.render_pass_flags & GPUPipeline::ColorFeedbackLoop);
+    gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
+  }
+
   if (m_optional_extensions.vk_khr_dynamic_rendering && (m_optional_extensions.vk_khr_dynamic_rendering_local_read ||
                                                          !(config.render_pass_flags & GPUPipeline::ColorFeedbackLoop)))
   {

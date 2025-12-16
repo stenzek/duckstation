@@ -229,8 +229,9 @@ public:
   {
     NoRenderPassFlags = 0,
     ColorFeedbackLoop = (1 << 0),
-    SampleDepthBuffer = (1 << 1),
-    BindRenderTargetsAsImages = (1 << 2),
+    ColorFeedbackLoopActive = (1 << 1),
+    SampleDepthBuffer = (1 << 2),
+    BindRenderTargetsAsImages = (1 << 3),
   };
 
   enum class Primitive : u8

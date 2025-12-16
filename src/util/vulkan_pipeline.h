@@ -35,6 +35,7 @@ public:
   ALWAYS_INLINE VkPipeline GetPipeline() const { return m_pipeline; }
   ALWAYS_INLINE Layout GetLayout() const { return m_layout; }
   ALWAYS_INLINE u8 GetVerticesPerPrimitive() const { return m_vertices_per_primitive; }
+  ALWAYS_INLINE RenderPassFlag GetRenderPassFlags() const { return m_render_pass_flags; }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
