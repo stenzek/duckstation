@@ -566,6 +566,8 @@ void MemoryScannerWindow::updateResultsValues()
 {
   QSignalBlocker sb(m_ui.scanTable);
 
+  const QBrush changed_color(QtHost::IsDarkApplicationTheme() ? QColor(255, 80, 80) : QColor(191, 121, 20));
+
   int row = 0;
   for (const MemoryScan::Result& res : m_scanner.GetResults())
   {
@@ -576,7 +578,7 @@ void MemoryScannerWindow::updateResultsValues()
         item->setText(formatValue(res.value, m_scanner.GetValueSigned()));
       else
         item->setText(formatHexValue(res.value, m_scanner.GetSize()));
-      item->setForeground(Qt::red);
+      item->setForeground(changed_color);
     }
 
     row++;
