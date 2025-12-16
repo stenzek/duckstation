@@ -706,28 +706,25 @@ void Achievements::UpdateSettings(const Settings& old_config)
       DisableHardcoreMode(true, true);
   }
 
-  // These cannot be modified while a game is loaded, so just toss state and reload.
   auto lock = GetLock();
-  if (HasActiveGame())
+  const bool encore_mode_changed = (g_settings.achievements_encore_mode != old_config.achievements_encore_mode);
+  const bool spectator_mode_changed = (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode);
+  const bool unofficial_test_mode_changed = (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode);
+
+  if (encore_mode_changed)
+    rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
+  if (spectator_mode_changed)
+    rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  if (unofficial_test_mode_changed)
+    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+
+  // If a game is active and these settings changed, reload the game to apply them.
+  // Just unload and reload without destroying the client to preserve hardcore mode.
+  if (HasActiveGame() && (encore_mode_changed || spectator_mode_changed || unofficial_test_mode_changed))
   {
-    lock.unlock();
-    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
-        g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
-        g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-    {
-      Shutdown();
-      Initialize();
-      return;
-    }
-  }
-  else
-  {
-    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
-      rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
-    if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
-      rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
-    if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-      rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+    ClearGameInfo();
+    BeginLoadGame();
+    return;
   }
 
   if (!g_settings.achievements_leaderboard_trackers)
