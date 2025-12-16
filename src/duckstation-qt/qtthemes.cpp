@@ -18,6 +18,7 @@ namespace QtHost {
 static void SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color_theme, bool is_dark_theme);
 static bool NativeThemeStylesheetNeedsUpdate();
 static void SetStyleFromSettings();
+static void SetStyleSheet(const QString& stylesheet);
 static QString GetNativeThemeStylesheet();
 
 namespace {
@@ -70,12 +71,24 @@ void QtHost::SetThemeAttributes(bool is_stylesheet_theme, bool is_variable_color
     qApp->styleHints()->setColorScheme(is_dark_theme ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 }
 
+void QtHost::SetStyleSheet(const QString& stylesheet)
+{
+#ifdef __linux__
+  // Fonts on Linux are ugly and too large. Unfortunately QApplication::setFont() doesn't seem to apply to
+  // all widgets, so instead we have to jankily prefix it to all stylesheets.
+  qApp->setStyleSheet(QStringLiteral("QMenu, QMenuBar { font-family: \"Roboto\"; font-size: 12px; }\n") + stylesheet);
+#else
+  qApp->setStyleSheet(stylesheet);
+#endif
+}
+
 void QtHost::SetStyleFromSettings()
 {
   const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
-  // Clear any existing stylesheet before applying new.
-  qApp->setStyleSheet(QString());
+  // Clear any existing stylesheet before applying new. Avoids half-painted windows when changing themes.
+  if (s_state.is_stylesheet_theme)
+    SetStyleSheet(QString());
 
   if (theme == "qdarkstyle")
   {
@@ -85,7 +98,7 @@ void QtHost::SetStyleFromSettings()
 
     QFile f(QStringLiteral(":qdarkstyle/style.qss"));
     if (f.open(QFile::ReadOnly | QFile::Text))
-      qApp->setStyleSheet(f.readAll());
+      SetStyleSheet(f.readAll());
   }
   else if (theme == "fusion")
   {
@@ -583,7 +596,7 @@ QTextBrowser {
 }
     )");
 
-    qApp->setStyleSheet(stylesheet);
+    SetStyleSheet(stylesheet);
   }
   else if (theme == "cobaltsky")
   {
@@ -838,7 +851,7 @@ QTextBrowser {
 
     // Cleared above.
     if (!stylesheet.isEmpty())
-      qApp->setStyleSheet(stylesheet);
+      SetStyleSheet(stylesheet);
   }
 }
 
