@@ -260,6 +260,8 @@ struct State
   rc_client_async_handle_t* login_request = nullptr;
   rc_client_async_handle_t* load_game_request = nullptr;
 
+  std::vector<u8> pending_progress_restore;
+
   bool hashdb_loaded = false;
   std::vector<HashDatabaseEntry> hashdb_entries;
 
@@ -722,6 +724,18 @@ void Achievements::UpdateSettings(const Settings& old_config)
   // Just unload and reload without destroying the client to preserve hardcore mode.
   if (HasActiveGame() && (encore_mode_changed || spectator_mode_changed || unofficial_test_mode_changed))
   {
+    // Save achievement progress before reloading the game.
+    const size_t progress_size = rc_client_progress_size(s_state.client);
+    if (progress_size > 0)
+    {
+      s_state.pending_progress_restore.resize(progress_size);
+      if (rc_client_serialize_progress_sized(s_state.client, s_state.pending_progress_restore.data(), progress_size) != RC_OK)
+      {
+        WARNING_LOG("Failed to serialize achievement progress before settings reload.");
+        s_state.pending_progress_restore.clear();
+      }
+    }
+
     ClearGameInfo();
     BeginLoadGame();
     return;
@@ -1147,6 +1161,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   s_state.load_game_request = nullptr;
 
+  // Move out pending progress to restore (if any) so it's cleared regardless of success/failure.
+  std::vector<u8> progress_to_restore = std::move(s_state.pending_progress_restore);
+
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
@@ -1223,6 +1240,15 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
       DownloadImage(s_state.game_icon_url, s_state.game_icon);
 
     GameList::UpdateAchievementBadgeName(info->id, info->badge_name);
+  }
+
+  // Restore pending progress if any (e.g. after changing settings).
+  if (!progress_to_restore.empty())
+  {
+    const int restore_result = rc_client_deserialize_progress_sized(s_state.client, progress_to_restore.data(),
+                                                                    progress_to_restore.size());
+    if (restore_result != RC_OK)
+      WARNING_LOG("Failed to restore achievement progress: {}", rc_error_str(restore_result));
   }
 
   // update progress database on first load, in case it was played on another PC
