@@ -537,6 +537,7 @@ void FullscreenUI::DestroyResources()
 {
   s_locals.app_background_texture.reset();
   s_locals.app_background_shader.reset();
+  s_locals.background_loaded = false;
 }
 
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
