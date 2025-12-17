@@ -1106,17 +1106,6 @@ void Host::OnGPUThreadRunIdleChanged(bool is_active)
   g_emu_thread->setGPUThreadRunIdle(is_active);
 }
 
-void EmuThread::reloadInputSources()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::reloadInputSources, Qt::QueuedConnection);
-    return;
-  }
-
-  System::ReloadInputSources();
-}
-
 void EmuThread::reloadInputBindings()
 {
   if (!isCurrentThread())
@@ -1126,28 +1115,6 @@ void EmuThread::reloadInputBindings()
   }
 
   System::ReloadInputBindings();
-}
-
-void EmuThread::reloadInputDevices()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::QueuedConnection);
-    return;
-  }
-
-  InputManager::ReloadDevices();
-}
-
-void EmuThread::closeInputSources()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::BlockingQueuedConnection);
-    return;
-  }
-
-  InputManager::CloseSources();
 }
 
 void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,

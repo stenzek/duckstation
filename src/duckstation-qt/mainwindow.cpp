@@ -723,7 +723,7 @@ void MainWindow::recreate()
     show();
 
   // We need to close input sources, because e.g. DInput uses our window handle.
-  g_emu_thread->closeInputSources();
+  Host::RunOnCPUThread(&InputManager::CloseSources, true);
 
   // Ensure we don't get a display widget creation sent to us.
   const bool was_display_created = hasDisplayWidget();
@@ -760,7 +760,7 @@ void MainWindow::recreate()
   deleteLater();
 
   // Reload the sources we just closed.
-  g_emu_thread->reloadInputSources();
+  Host::RunOnCPUThread(&System::ReloadInputSources);
 
   if (controller_settings_window_pos.has_value())
   {

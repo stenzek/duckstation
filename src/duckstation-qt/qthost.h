@@ -141,10 +141,7 @@ public:
   void reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
   void updateEmuFolders();
   void updateControllerSettings();
-  void reloadInputSources();
   void reloadInputBindings();
-  void reloadInputDevices();
-  void closeInputSources();
   void startFullscreenUI();
   void stopFullscreenUI();
   void exitFullscreenUI();

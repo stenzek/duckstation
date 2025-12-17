@@ -151,7 +151,10 @@ static void AddPadBindings(const SettingsInterface& si, const std::string& secti
 static void InternalReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si);
 static void SynchronizePadEffectBindings(InputBindingKey key);
 static void UpdateContinuedVibration();
+static void InternalPauseVibration();
+static void InternalClearEffects();
 static void GenerateRelativeMouseEvents();
+static void ReloadDevices();
 
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
@@ -1889,7 +1892,7 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float
   }
 }
 
-void InputManager::PauseVibration()
+void InputManager::InternalPauseVibration()
 {
   for (PadVibrationBinding& binding : s_state.pad_vibration_array)
   {
@@ -1966,10 +1969,8 @@ void InputManager::SetPadLEDState(u32 pad_index, float intensity)
   }
 }
 
-void InputManager::ClearEffects()
+void InputManager::InternalClearEffects()
 {
-  PauseVibration();
-
   for (PadLEDBinding& pad : s_state.pad_led_array)
   {
     if (pad.last_intensity == 0.0f)
@@ -2212,9 +2213,9 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
 {
-  PauseVibration();
-
   std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+  InternalClearEffects();
   InternalReloadBindings(binding_si, hotkey_binding_si);
 
   UpdateRelativeMouseMode();
@@ -2224,12 +2225,23 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 // Source Management
 // ------------------------------------------------------------------------
 
-bool InputManager::ReloadDevices()
+void InputManager::ClearEffects()
 {
   std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+  InternalClearEffects();
+}
 
+void InputManager::PauseVibration()
+{
+  std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+}
+
+void InputManager::ReloadDevices()
+{
   bool changed = false;
-
+  std::unique_lock lock(s_state.mutex);
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2237,8 +2249,12 @@ bool InputManager::ReloadDevices()
   }
 
   UpdatePointerCount();
+  if (!changed)
+    return;
 
-  return changed;
+  // need to release the lock, since otherwise we would risk a lock ordering issue
+  lock.unlock();
+  System::ReloadInputBindings();
 }
 
 void InputManager::CloseSources()

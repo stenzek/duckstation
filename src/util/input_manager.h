@@ -300,10 +300,6 @@ void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey
 void ReloadSourcesAndBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si,
                               std::unique_lock<std::mutex>& settings_lock);
 
-/// Called when a device change is triggered by the system (DBT_DEVNODES_CHANGED on Windows).
-/// Returns true if any device changes are detected.
-bool ReloadDevices();
-
 /// Shuts down any enabled input sources.
 void CloseSources();
 
