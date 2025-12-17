@@ -88,13 +88,13 @@ private:
   std::atomic_bool m_ts_cancelled{false};
 };
 
-class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCallback
+class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCallbackWithPrompt
 {
   Q_OBJECT
 
 public:
   using CompletionCallback = std::function<void()>;
-  using WorkCallback = std::function<CompletionCallback(ProgressCallback*)>;
+  using WorkCallback = std::function<CompletionCallback(ProgressCallbackWithPrompt*)>;
 
   static QtAsyncTaskWithProgressDialog* create(QWidget* parent, std::string_view initial_title,
                                                std::string_view initial_status_text, bool cancellable, int range,
@@ -152,13 +152,20 @@ private:
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
 
+  void AlertPrompt(PromptIcon icon, std::string_view message) override;
+  bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                     std::string_view no_text = {}) override;
+
   void CheckForDelayedShow();
+  void EnsureShown();
 
   std::variant<WorkCallback, CompletionCallback> m_callback;
   ProgressDialog* m_dialog = nullptr;
 
   Timer m_show_timer;
   float m_show_delay;
-  std::atomic_bool m_ts_cancelled{false};
   bool m_shown = false;
+  std::atomic_bool m_ts_cancelled{false};
+  std::atomic_bool m_prompt_result{false};
+  std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
 };

@@ -263,12 +263,12 @@ public:
   ProgressDialog();
   ~ProgressDialog();
 
-  std::unique_ptr<ProgressCallback> GetProgressCallback(std::string title, float window_unscaled_width);
+  std::unique_ptr<ProgressCallbackWithPrompt> GetProgressCallback(std::string title, float window_unscaled_width);
 
   void Draw();
 
 private:
-  class ProgressCallbackImpl : public ProgressCallback
+  class ProgressCallbackImpl : public ProgressCallbackWithPrompt
   {
   public:
     ProgressCallbackImpl();
@@ -279,6 +279,10 @@ private:
     void SetProgressValue(u32 value) override;
     void SetCancellable(bool cancellable) override;
     bool IsCancelled() const override;
+
+    void AlertPrompt(PromptIcon icon, std::string_view message) override;
+    bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                       std::string_view no_text = {}) override;
   };
 
   std::string m_status_text;
@@ -287,6 +291,8 @@ private:
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
   std::atomic_bool m_cancelled{false};
+  std::atomic_bool m_prompt_result{false};
+  std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
 };
 
 class FixedPopupDialog : public PopupDialog
@@ -337,12 +343,12 @@ struct WidgetsState
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
 
-  MessageDialog message_dialog;
   ChoiceDialog choice_dialog;
   FileSelectorDialog file_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
   ProgressDialog progress_dialog;
+  MessageDialog message_dialog;
 
   ImAnimatedVec2 menu_button_frame_min_animated;
   ImAnimatedVec2 menu_button_frame_max_animated;
@@ -1000,11 +1006,11 @@ void FullscreenUI::BeginLayout()
 
 void FullscreenUI::EndLayout()
 {
-  s_state.message_dialog.Draw();
   s_state.choice_dialog.Draw();
   s_state.file_selector_dialog.Draw();
   s_state.input_string_dialog.Draw();
   s_state.progress_dialog.Draw();
+  s_state.message_dialog.Draw();
 
   DrawFullscreenFooter();
 
@@ -4106,14 +4112,14 @@ void FullscreenUI::ProgressDialog::Draw()
   EndRender();
 }
 
-std::unique_ptr<ProgressCallback> FullscreenUI::ProgressDialog::GetProgressCallback(std::string title,
-                                                                                    float window_unscaled_width)
+std::unique_ptr<ProgressCallbackWithPrompt>
+FullscreenUI::ProgressDialog::GetProgressCallback(std::string title, float window_unscaled_width)
 {
   if (m_state == PopupDialog::State::Open)
   {
     // return dummy callback so the op can still go through
     ERROR_LOG("Progress dialog is already open, cannot create dialog for '{}'.", std::move(title));
-    return std::make_unique<ProgressCallback>();
+    return std::make_unique<ProgressCallbackWithPrompt>();
   }
 
   SetTitleAndOpen(std::move(title));
@@ -4200,7 +4206,96 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
-std::unique_ptr<ProgressCallback> FullscreenUI::OpenModalProgressDialog(std::string title, float window_unscaled_width)
+void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnCPUThread([message = std::string(message)]() mutable {
+    GPUThread::RunOnThread([message = std::move(message)]() mutable {
+      if (!s_state.progress_dialog.IsOpen())
+      {
+        s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+        s_state.progress_dialog.m_prompt_waiting.notify_one();
+        return;
+      }
+
+      // need to save state, since opening the next dialog will close this one
+      std::string existing_title = s_state.progress_dialog.GetTitle();
+      u32 progress_range = s_state.progress_dialog.m_progress_range;
+      u32 progress_value = s_state.progress_dialog.m_progress_value;
+      float last_frac = s_state.progress_dialog.m_last_frac;
+      float width = s_state.progress_dialog.m_width;
+      s_state.progress_dialog.CloseImmediately();
+
+      OpenInfoMessageDialog(
+        s_state.progress_dialog.GetTitle(), std::move(message),
+        [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
+          s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
+          s_state.progress_dialog.m_progress_range = progress_range;
+          s_state.progress_dialog.m_progress_value = progress_value;
+          s_state.progress_dialog.m_last_frac = last_frac;
+          s_state.progress_dialog.m_width = width;
+          s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+          s_state.progress_dialog.m_prompt_waiting.notify_one();
+        });
+    });
+  });
+
+  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
+}
+
+bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                                                       std::string_view yes_text /* =  */,
+                                                                       std::string_view no_text /* = */)
+{
+  s_state.progress_dialog.m_prompt_result.store(false, std::memory_order_relaxed);
+  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnCPUThread(
+    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+      GPUThread::RunOnThread(
+        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {
+          if (!s_state.progress_dialog.IsOpen())
+          {
+            s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+            s_state.progress_dialog.m_prompt_waiting.notify_one();
+            return;
+          }
+
+          // need to save state, since opening the next dialog will close this one
+          std::string existing_title = s_state.progress_dialog.GetTitle();
+          u32 progress_range = s_state.progress_dialog.m_progress_range;
+          u32 progress_value = s_state.progress_dialog.m_progress_value;
+          float last_frac = s_state.progress_dialog.m_last_frac;
+          float width = s_state.progress_dialog.m_width;
+          s_state.progress_dialog.CloseImmediately();
+
+          if (yes_text.empty())
+            yes_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes");
+          if (no_text.empty())
+            no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
+
+          OpenConfirmMessageDialog(s_state.progress_dialog.GetTitle(), std::move(message),
+                                   [existing_title = std::move(existing_title), progress_range, progress_value,
+                                    last_frac, width](bool result) mutable {
+                                     s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
+                                     s_state.progress_dialog.m_progress_range = progress_range;
+                                     s_state.progress_dialog.m_progress_value = progress_value;
+                                     s_state.progress_dialog.m_last_frac = last_frac;
+                                     s_state.progress_dialog.m_width = width;
+                                     s_state.progress_dialog.m_prompt_result.store(result, std::memory_order_relaxed);
+                                     s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+                                     s_state.progress_dialog.m_prompt_waiting.notify_one();
+                                   });
+        });
+    });
+
+  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
+  return s_state.progress_dialog.m_prompt_result.load(std::memory_order_relaxed);
+}
+
+std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialog(std::string title,
+                                                                                  float window_unscaled_width)
 {
   return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
 }

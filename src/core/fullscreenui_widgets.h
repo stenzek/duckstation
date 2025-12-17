@@ -27,7 +27,7 @@ class Error;
 class Image;
 class GPUTexture;
 class GPUSwapChain;
-class ProgressCallback;
+class ProgressCallbackWithPrompt;
 
 enum class OSDMessageType : u8;
 
@@ -484,7 +484,8 @@ void OpenMessageDialog(std::string_view title, std::string message, MessageDialo
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();
 
-std::unique_ptr<ProgressCallback> OpenModalProgressDialog(std::string title, float window_unscaled_width = 500.0f);
+std::unique_ptr<ProgressCallbackWithPrompt> OpenModalProgressDialog(std::string title,
+                                                                    float window_unscaled_width = 500.0f);
 
 float GetNotificationVerticalPosition();
 float GetNotificationVerticalDirection();

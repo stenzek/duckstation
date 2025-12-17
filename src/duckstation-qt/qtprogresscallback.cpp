@@ -191,6 +191,9 @@ QtAsyncTaskWithProgressDialog::QtAsyncTaskWithProgressDialog(const QString& init
   : m_callback(std::move(callback)), m_show_delay(show_delay)
 {
   m_dialog = new ProgressDialog(initial_title, initial_status_text, cancellable, range, value, *this, dialog_parent);
+  m_cancellable = cancellable;
+  m_progress_range = range;
+  m_progress_value = value;
 
   if (show_delay <= 0.0f)
   {
@@ -397,11 +400,94 @@ void QtAsyncTaskWithProgressDialog::SetProgressValue(u32 value)
   }
 }
 
-void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
+static QMessageBox::Icon ConvertPromptIcon(ProgressCallbackWithPrompt::PromptIcon icon)
 {
-  DebugAssert(!m_shown);
+  switch (icon)
+  {
+    case ProgressCallbackWithPrompt::PromptIcon::Error:
+      return QMessageBox::Critical;
+    case ProgressCallbackWithPrompt::PromptIcon::Warning:
+      return QMessageBox::Warning;
+    case ProgressCallbackWithPrompt::PromptIcon::Question:
+      return QMessageBox::Question;
+    case ProgressCallbackWithPrompt::PromptIcon::Information:
+    default:
+      return QMessageBox::Information;
+  }
+}
 
-  if (m_show_timer.GetTimeSeconds() < m_show_delay)
+void QtAsyncTaskWithProgressDialog::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+  m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnUIThread([this, icon, message = QtUtils::StringViewToQString(message)]() {
+    if (!m_dialog)
+    {
+      // dialog closed :(
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+      return;
+    }
+
+    EnsureShown();
+
+    QMessageBox* msgbox =
+      QtUtils::NewMessageBox(m_dialog, ConvertPromptIcon(icon), m_dialog->windowTitle(), message, QMessageBox::Ok);
+    connect(msgbox, &QMessageBox::finished, [this]() {
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+    });
+    msgbox->open();
+  });
+
+  m_prompt_waiting.wait(true, std::memory_order_acquire);
+}
+
+bool QtAsyncTaskWithProgressDialog::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                                  std::string_view yes_text /*= {}*/, std::string_view no_text /*= {}*/)
+{
+  m_prompt_result.store(false, std::memory_order_relaxed);
+  m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnUIThread([this, icon, message = QtUtils::StringViewToQString(message),
+                       yes_text = QtUtils::StringViewToQString(yes_text),
+                       no_text = QtUtils::StringViewToQString(no_text)]() {
+    if (!m_dialog)
+    {
+      // dialog closed :(
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+      return;
+    }
+
+    EnsureShown();
+
+    QMessageBox* msgbox = QtUtils::NewMessageBox(m_dialog, ConvertPromptIcon(icon), m_dialog->windowTitle(), message,
+                                                 QMessageBox::NoButton);
+    QAbstractButton* yes_button;
+    if (!yes_text.isEmpty())
+      yes_button = msgbox->addButton(yes_text, QMessageBox::YesRole);
+    else
+      yes_button = msgbox->addButton(QMessageBox::Yes);
+    if (!no_text.isEmpty())
+      msgbox->addButton(no_text, QMessageBox::NoRole);
+    else
+      msgbox->addButton(QMessageBox::No);
+    connect(msgbox, &QMessageBox::finished, [this, msgbox, yes_button]() {
+      m_prompt_result.store((msgbox->clickedButton() == yes_button), std::memory_order_relaxed);
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+    });
+    msgbox->open();
+  });
+
+  m_prompt_waiting.wait(true, std::memory_order_acquire);
+  return m_prompt_result.load(std::memory_order_relaxed);
+}
+
+void QtAsyncTaskWithProgressDialog::EnsureShown()
+{
+  if (!m_shown)
     return;
 
   m_shown = true;
@@ -419,4 +505,14 @@ void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
     m_dialog->setCancellable(cancellable);
     m_dialog->open();
   });
+}
+
+void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
+{
+  DebugAssert(!m_shown);
+
+  if (m_show_timer.GetTimeSeconds() < m_show_delay)
+    return;
+
+  EnsureShown();
 }

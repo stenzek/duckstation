@@ -101,3 +101,15 @@ void ProgressCallback::IncrementProgressValue()
 {
   SetProgressValue((m_progress_value - m_base_progress_value) + 1);
 }
+
+ProgressCallbackWithPrompt::~ProgressCallbackWithPrompt() = default;
+
+void ProgressCallbackWithPrompt::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+}
+
+bool ProgressCallbackWithPrompt::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                               std::string_view yes_text /*= {}*/, std::string_view no_text /*= {}*/)
+{
+  return false;
+}

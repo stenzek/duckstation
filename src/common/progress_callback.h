@@ -68,3 +68,21 @@ protected:
 public:
   static ProgressCallback* NullProgressCallback;
 };
+
+class ProgressCallbackWithPrompt : public ProgressCallback
+{
+public:
+  virtual ~ProgressCallbackWithPrompt() override;
+
+  enum class PromptIcon
+  {
+    Error,
+    Warning,
+    Question,
+    Information,
+  };
+
+  virtual void AlertPrompt(PromptIcon icon, std::string_view message);
+  virtual bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                             std::string_view no_text = {});
+};
