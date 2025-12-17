@@ -153,10 +153,6 @@ protected:
   void moveEvent(QMoveEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;
 
-#ifdef _WIN32
-  bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
-#endif
-
 private:
   /// Initializes the window. Call once at startup.
   void initialize();
@@ -205,8 +201,6 @@ private:
   void destroySubWindows();
   void showAutoUpdaterWindow();
 
-  void registerForDeviceNotifications();
-  void unregisterForDeviceNotifications();
   void notifyRAIntegrationOfWindowChange();
 
   /// Fills menu with save state info and handlers.
@@ -358,10 +352,6 @@ private:
   bool m_was_paused_on_game_list_switch = false;
   bool m_was_disc_change_request = false;
   bool m_is_closing = false;
-
-#ifdef _WIN32
-  void* m_device_notification_handle = nullptr;
-#endif
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   QMenu* m_raintegration_menu = nullptr;

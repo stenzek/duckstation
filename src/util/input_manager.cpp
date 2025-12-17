@@ -34,6 +34,11 @@
 #include <variant>
 #include <vector>
 
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#include <cfgmgr32.h>
+#endif
+
 LOG_CHANNEL(InputManager);
 
 namespace InputManager {
@@ -162,6 +167,13 @@ static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
 
+#ifdef _WIN32
+static DWORD WINAPI DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action,
+                                               PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
+static void RegisterDeviceNotificationHandle();
+static void UnregisterDeviceNotificationHandle();
+#endif
+
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
 // 4 axes: pointer left/right, wheel vertical/horizontal. Last/Next/Normalized.
@@ -209,6 +221,12 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
+
+#ifdef _WIN32
+  // Device notification handle for Windows.
+  HCMNOTIFICATION device_notification_handle = nullptr;
+  std::atomic_flag device_notification_reload_pending = ATOMIC_FLAG_INIT;
+#endif
 
   ALIGN_TO_CACHE_LINE
   std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
@@ -267,6 +285,8 @@ static constexpr const std::array s_legacy_key_names = {
 };
 
 } // namespace InputManager
+
+ForceFeedbackDevice::~ForceFeedbackDevice() = default;
 
 // ------------------------------------------------------------------------
 // Binding Parsing
@@ -2233,6 +2253,10 @@ void InputManager::CloseSources()
       s_state.input_sources[i].reset();
     }
   }
+
+#ifdef _WIN32
+  UnregisterDeviceNotificationHandle();
+#endif
 }
 
 void InputManager::PollSources()
@@ -2428,6 +2452,19 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
+
+  // Request device notifications when using raw input or dinput, as we need to manually handle device changes
+  if (s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)] ||
+      s_state.input_sources[static_cast<u32>(InputSourceType::DInput)])
+  {
+    if (!s_state.device_notification_handle)
+      RegisterDeviceNotificationHandle();
+  }
+  else
+  {
+    if (s_state.device_notification_handle)
+      UnregisterDeviceNotificationHandle();
+  }
 #endif
 #ifdef ENABLE_SDL
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
@@ -2442,6 +2479,52 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   UpdateRelativeMouseMode();
 }
 
-ForceFeedbackDevice::~ForceFeedbackDevice()
+#ifdef _WIN32
+
+DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action,
+                                               PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize)
 {
+  if (Action != CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL && Action != CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL)
+    return ERROR_SUCCESS;
+
+  // This comes through on a thread pool worker, so we need to queue the reload on the core thread.
+  // We tend to get a few of these in quick succession, so try to batch the reloads together.
+  if (!s_state.device_notification_reload_pending.test_and_set(std::memory_order_acq_rel))
+  {
+    Host::RunOnCPUThread([]() {
+      DEV_LOG("Reloading input devices due to device notification.");
+      s_state.device_notification_reload_pending.clear(std::memory_order_release);
+      ReloadDevices();
+    });
+  }
+
+  return ERROR_SUCCESS;
 }
+
+void InputManager::RegisterDeviceNotificationHandle()
+{
+  DebugAssert(!s_state.device_notification_handle);
+  s_state.device_notification_reload_pending.clear(std::memory_order_release);
+
+  // We use these notifications to detect when a controller is connected or disconnected.
+  CM_NOTIFY_FILTER filter = {};
+  filter.cbSize = sizeof(CM_NOTIFY_FILTER);
+  filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+  filter.Flags = CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES;
+
+  const CONFIGRET cr = CM_Register_Notification(&filter, nullptr, &InputManager::DeviceNotificationCallback,
+                                                &s_state.device_notification_handle);
+  if (cr != CR_SUCCESS)
+    ERROR_LOG("CM_Register_Notification() failed: {}", cr);
+}
+
+void InputManager::UnregisterDeviceNotificationHandle()
+{
+  if (!s_state.device_notification_handle)
+    return;
+
+  CM_Unregister_Notification(s_state.device_notification_handle);
+  s_state.device_notification_handle = nullptr;
+}
+
+#endif

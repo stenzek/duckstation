@@ -58,12 +58,6 @@
 
 #include "moc_mainwindow.cpp"
 
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#include <Dbt.h>
-#include <VersionHelpers.h>
-#endif
-
 LOG_CHANNEL(Host);
 
 static constexpr std::array<std::pair<Qt::ToolBarArea, const char*>, 4> s_toolbar_areas = {{
@@ -191,10 +185,6 @@ MainWindow::~MainWindow()
   // we compare here, since recreate destroys the window later
   if (g_main_window == this)
     g_main_window = nullptr;
-
-#ifdef _WIN32
-  unregisterForDeviceNotifications();
-#endif
 }
 
 void MainWindow::initialize()
@@ -210,10 +200,6 @@ void MainWindow::initialize()
   connectSignals();
 
   switchToGameListView();
-
-#ifdef _WIN32
-  registerForDeviceNotifications();
-#endif
 }
 
 QMenu* MainWindow::createPopupMenu()
@@ -230,49 +216,6 @@ void MainWindow::onStatusMessage(const QString& message)
 {
   m_ui.statusBar->showMessage(message);
 }
-
-void MainWindow::registerForDeviceNotifications()
-{
-#ifdef _WIN32
-  // We use these notifications to detect when a controller is connected or disconnected.
-  DEV_BROADCAST_DEVICEINTERFACE_W filter = {
-    sizeof(DEV_BROADCAST_DEVICEINTERFACE_W), DBT_DEVTYP_DEVICEINTERFACE, 0u, {}, {}};
-  m_device_notification_handle = RegisterDeviceNotificationW(
-    (HANDLE)winId(), &filter, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
-#endif
-}
-
-void MainWindow::unregisterForDeviceNotifications()
-{
-#ifdef _WIN32
-  if (!m_device_notification_handle)
-    return;
-
-  UnregisterDeviceNotification(static_cast<HDEVNOTIFY>(m_device_notification_handle));
-  m_device_notification_handle = nullptr;
-#endif
-}
-
-#ifdef _WIN32
-
-bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
-{
-  static constexpr const char win_type[] = "windows_generic_MSG";
-  if (eventType == QByteArray(win_type, sizeof(win_type) - 1))
-  {
-    const MSG* msg = static_cast<const MSG*>(message);
-    if (msg->message == WM_DEVICECHANGE && msg->wParam == DBT_DEVNODES_CHANGED)
-    {
-      g_emu_thread->reloadInputDevices();
-      *result = 1;
-      return true;
-    }
-  }
-
-  return QMainWindow::nativeEvent(eventType, message, result);
-}
-
-#endif
 
 std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, bool fullscreen,
                                                           bool exclusive_fullscreen, Error* error)
