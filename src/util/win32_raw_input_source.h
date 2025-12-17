@@ -55,17 +55,21 @@ private:
 
   static bool RegisterDummyClass();
   static LRESULT CALLBACK DummyWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  static bool IsAcceptableRawInputMouse(const RAWINPUTDEVICELIST& rid);
 
   static std::string GetMouseDeviceName(u32 index);
 
   bool CreateDummyWindow();
   void DestroyDummyWindow();
-  bool OpenDevices();
   void CloseDevices();
+  void EnsureRawInputRegistered();
+  void UnregisterRawInput();
 
   bool ProcessRawInputEvent(const RAWINPUT* event);
 
   HWND m_dummy_window = {};
 
   std::vector<MouseState> m_mice;
+
+  bool m_raw_input_registered = false;
 };
