@@ -570,7 +570,7 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
   QString text;
 
   if (!found_revision.empty())
-    text = tr("Revision: %1").arg(found_revision.empty() ? tr("N/A") : QString::fromStdString(found_revision));
+    text = tr("Revision: %1").arg(QString::fromStdString(found_revision));
 
   if (found_serial != m_dialog->getGameSerial())
   {
@@ -590,7 +590,8 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     }
   }
 
-  m_ui.revision->setText(text);
+  if (!text.isEmpty())
+    m_ui.revision->setText(text);
 
   // update in ui
   for (size_t i = 0; i < track_hashes.size(); i++)
