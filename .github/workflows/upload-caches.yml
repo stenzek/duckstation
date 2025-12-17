@@ -19,7 +19,7 @@ jobs:
         path: |
           dep/msvc/deps-arm64
           dep/msvc/deps-x64
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat') }}
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat', 'scripts/deps/versions') }}
 
     - name: Zip Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
