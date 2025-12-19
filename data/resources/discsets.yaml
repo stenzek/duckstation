@@ -1069,7 +1069,7 @@
     - SLUS-01296
     - SLUS-01297
 - name: "Final Fantasy VII"
-  sortName: "Final Fantasy 9"
+  sortName: "Final Fantasy 7"
   saveName: "Final Fantasy VII (Europe)"
   serials:
     - SCES-00867
