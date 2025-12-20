@@ -4,6 +4,7 @@
 #include "input_manager.h"
 #include "imgui_manager.h"
 #include "input_source.h"
+#include "translation.h"
 
 #include "core/controller.h"
 #include "core/host.h"

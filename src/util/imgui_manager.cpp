@@ -3,12 +3,13 @@
 
 #include "imgui_manager.h"
 #include "gpu_device.h"
-#include "host.h"
 #include "image.h"
 #include "input_manager.h"
 #include "shadergen.h"
+#include "translation.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
+#include "core/core.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/gpu_thread.h"
@@ -1716,14 +1717,14 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   u32 height = default_height;
   if (config_prefix)
   {
-    pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+    pos_x = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
                                          DEFAULT_POSITION);
-    pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+    pos_y = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
                                          DEFAULT_POSITION);
     width =
-      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), default_width);
+      Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), default_width);
     height =
-      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), default_height);
+      Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), default_height);
   }
 
   WindowInfo wi;
@@ -1769,12 +1770,12 @@ void ImGuiManager::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowState* stat
   u32 old_width = 0, old_height = 0;
   if (config_section)
   {
-    old_pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+    old_pos_x = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
                                              DEFAULT_POSITION);
-    old_pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+    old_pos_y = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
                                              DEFAULT_POSITION);
-    old_width = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), 0);
-    old_height = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), 0);
+    old_width = Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), 0);
+    old_height = Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), 0);
   }
 
   ImGui::DestroyContext(state->imgui_context);
@@ -1793,10 +1794,10 @@ void ImGuiManager::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowState* stat
     // update config if the window was moved
     if (old_pos_x != new_pos_x || old_pos_y != new_pos_y || old_width != new_width || old_height != new_height)
     {
-      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix), new_pos_x);
-      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix), new_pos_y);
-      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), new_width);
-      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), new_height);
+      Core::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix), new_pos_x);
+      Core::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix), new_pos_y);
+      Core::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), new_width);
+      Core::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), new_height);
       Host::CommitBaseSettingChanges();
     }
   }

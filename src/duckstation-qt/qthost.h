@@ -54,6 +54,10 @@ class MainWindow;
 class DisplayWidget;
 class InputDeviceListModel;
 
+namespace Host {
+enum class NumberFormatType : u8;
+}
+
 namespace Achievements {
 enum class LoginRequestReason;
 }
@@ -315,7 +319,7 @@ void UpdateThemeOnStyleChange();
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 
-/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
+/// Sets NoGUI mode (implies batch mode, does not display main window, exits on shutdown).
 bool InNoGUIMode();
 
 /// Returns true if display widgets need to wrapped in a container, thanks to Wayland stupidity.

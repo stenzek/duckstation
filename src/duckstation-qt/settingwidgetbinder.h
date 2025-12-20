@@ -6,6 +6,7 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
 #include "core/host.h"
 #include "core/settings.h"
 
@@ -739,7 +740,7 @@ inline void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  const bool value = Host::GetBaseBoolSettingValue(section.c_str(), key.c_str(), default_value);
+  const bool value = Core::GetBaseBoolSettingValue(section.c_str(), key.c_str(), default_value);
 
   if (sif)
   {
@@ -767,7 +768,7 @@ inline void BindWidgetToBoolSetting(SettingsInterface* sif, WidgetType* widget, 
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
       const bool new_value = Accessor::getBoolValue(widget);
-      Host::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
+      Core::SetBaseBoolSettingValue(section.c_str(), key.c_str(), new_value);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -781,7 +782,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
   using Accessor = SettingAccessor<WidgetType>;
 
   const s32 value =
-    Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
+    Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
 
   if (sif)
   {
@@ -811,7 +812,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
     Accessor::connectValueChanged(
       widget, [widget, section = std::move(section), key = std::move(key), option_offset]() {
         const int new_value = Accessor::getIntValue(widget);
-        Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
+        Core::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
@@ -834,7 +835,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
     return -1;
   };
 
-  const s32 value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value));
+  const s32 value = Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value));
 
   if (sif)
   {
@@ -862,7 +863,7 @@ inline void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), values]() {
       const int new_value = Accessor::getIntValue(widget);
-      Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), values[new_value]);
+      Core::SetBaseIntSettingValue(section.c_str(), key.c_str(), values[new_value]);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -877,7 +878,7 @@ inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* w
   using Accessor = SettingAccessor<WidgetType>;
 
   const s32 global_value =
-    Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
+    Core::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value)) - option_offset;
 
   if (sif)
   {
@@ -940,7 +941,7 @@ inline void BindWidgetAndLabelToIntSetting(SettingsInterface* sif, WidgetType* w
     Accessor::connectValueChanged(
       widget, [widget, label, label_suffix, section = std::move(section), key = std::move(key), option_offset]() {
         const int new_value = Accessor::getIntValue(widget);
-        Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
+        Core::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
 
@@ -956,7 +957,7 @@ inline void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
+  const float value = Core::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
 
   if (sif)
   {
@@ -984,7 +985,7 @@ inline void BindWidgetToFloatSetting(SettingsInterface* sif, WidgetType* widget,
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
       const float new_value = Accessor::getFloatValue(widget);
-      Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+      Core::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -997,7 +998,7 @@ inline void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  const float value = Host::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
+  const float value = Core::GetBaseFloatSettingValue(section.c_str(), key.c_str(), default_value);
 
   if (sif)
   {
@@ -1025,7 +1026,7 @@ inline void BindWidgetToNormalizedSetting(SettingsInterface* sif, WidgetType* wi
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), range]() {
       const float new_value = (static_cast<float>(Accessor::getIntValue(widget)) / range);
-      Host::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
+      Core::SetBaseFloatSettingValue(section.c_str(), key.c_str(), new_value);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -1039,7 +1040,7 @@ inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
   using Accessor = SettingAccessor<WidgetType>;
 
   const QString value(
-    QString::fromStdString(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
+    QString::fromStdString(Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str())));
 
   if (sif)
   {
@@ -1066,7 +1067,7 @@ inline void BindWidgetToStringSetting(SettingsInterface* sif, WidgetType* widget
     Accessor::setStringValue(widget, value);
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
-      Host::SetBaseStringSettingValue(section.c_str(), key.c_str(),
+      Core::SetBaseStringSettingValue(section.c_str(), key.c_str(),
                                       Accessor::getStringValue(widget).toUtf8().constData());
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
@@ -1083,7 +1084,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
   using UnderlyingType = std::underlying_type_t<DataType>;
 
   const std::string value(
-    Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
+    Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
   const std::optional<DataType> typed_value = from_string_function(value.c_str());
 
   if (sif)
@@ -1133,7 +1134,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
       widget, [widget, section = std::move(section), key = std::move(key), to_string_function]() {
         const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
         const char* string_value = to_string_function(value);
-        Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
+        Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
@@ -1165,7 +1166,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
   }
 
   const std::string value(
-    Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
+    Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
   const std::optional<DataType> typed_value = from_string_function(value.c_str());
 
   if (sif)
@@ -1215,7 +1216,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
       widget, [widget, section = std::move(section), key = std::move(key), to_string_function]() {
         const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
         const char* string_value = to_string_function(value);
-        Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
+        Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
@@ -1232,7 +1233,7 @@ inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string 
   QActionGroup* group = new QActionGroup(menu);
 
   const std::optional<DataType> typed_value = from_string_function(
-    Host::GetBaseSmallStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)).c_str());
+    Core::GetBaseSmallStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)).c_str());
 
   // need a shared pointer, otherwise we dupe it a ton...
   struct CallbackData
@@ -1251,7 +1252,7 @@ inline void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string 
     action->setChecked(typed_value.has_value() && typed_value.value() == static_cast<DataType>(i));
     menu->addAction(action);
     QObject::connect(action, &QAction::triggered, menu, [data, to_string_function, i]() {
-      Host::SetBaseStringSettingValue(data->section.c_str(), data->key.c_str(),
+      Core::SetBaseStringSettingValue(data->section.c_str(), data->key.c_str(),
                                       to_string_function(static_cast<DataType>(i)));
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
@@ -1266,7 +1267,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
   using Accessor = SettingAccessor<WidgetType>;
   using UnderlyingType = std::underlying_type_t<DataType>;
 
-  const std::string value(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(),
+  const std::string value(Core::GetBaseStringSettingValue(section.c_str(), key.c_str(),
                                                           enum_names[static_cast<UnderlyingType>(default_value)]));
 
   UnderlyingType enum_index = static_cast<UnderlyingType>(default_value);
@@ -1315,7 +1316,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), enum_names]() {
       const UnderlyingType value = static_cast<UnderlyingType>(Accessor::getIntValue(widget));
-      Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_names[value]);
+      Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_names[value]);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -1329,7 +1330,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 {
   using Accessor = SettingAccessor<WidgetType>;
 
-  const std::string value = Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value);
+  const std::string value = Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value);
 
   for (int i = 0; enum_names[i] != nullptr; i++)
   {
@@ -1384,7 +1385,7 @@ inline void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), enum_values]() {
       const int value = Accessor::getIntValue(widget);
-      Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_values[value]);
+      Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), enum_values[value]);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
@@ -1398,7 +1399,7 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
 {
   using Accessor = SettingAccessor<QLineEdit>;
 
-  std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+  std::string current_path(Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
   if (current_path.empty())
     current_path = default_value;
   else if (use_relative && !Path::IsAbsolute(current_path))
@@ -1442,11 +1443,11 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
         if (use_relative)
         {
           const std::string relative_path(Path::MakeRelative(new_value, EmuFolders::DataRoot));
-          Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
+          Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), relative_path.c_str());
         }
         else
         {
-          Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
+          Core::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.c_str());
         }
 
         Host::CommitBaseSettingChanges();
@@ -1461,7 +1462,7 @@ inline void BindWidgetToFolderSetting(SettingsInterface* sif, QLineEdit* widget,
     }
 
     // reset to old value
-    std::string current_path(Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
+    std::string current_path(Core::GetBaseStringSettingValue(section.c_str(), key.c_str(), default_value.c_str()));
     if (current_path.empty())
       current_path = default_value;
     else if (use_relative && !Path::IsAbsolute(current_path))

@@ -1,0 +1,71 @@
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
+#pragma once
+
+#include "common/small_string.h"
+#include "common/types.h"
+
+#include <functional>
+#include <mutex>
+#include <string>
+#include <string_view>
+#include <vector>
+
+class SettingsInterface;
+
+namespace Core {
+
+// Base setting retrieval, bypasses layers.
+std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
+SmallString GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+TinyString GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
+bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
+s32 GetBaseIntSettingValue(const char* section, const char* key, s32 default_value = 0);
+u32 GetBaseUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
+float GetBaseFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+double GetBaseDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
+std::vector<std::string> GetBaseStringListSetting(const char* section, const char* key);
+
+// Allows the emucore to write settings back to the frontend. Use with care.
+// You should call CommitBaseSettingChanges() if you directly write to the layer (i.e. not these functions), or it may
+// not be written to disk.
+void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
+void SetBaseIntSettingValue(const char* section, const char* key, s32 value);
+void SetBaseUIntSettingValue(const char* section, const char* key, u32 value);
+void SetBaseFloatSettingValue(const char* section, const char* key, float value);
+void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
+void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
+bool AddValueToBaseStringListSetting(const char* section, const char* key, const char* value);
+bool RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value);
+bool ContainsBaseSettingValue(const char* section, const char* key);
+void DeleteBaseSettingValue(const char* section, const char* key);
+
+// Settings access, thread-safe.
+std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
+SmallString GetSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
+TinyString GetTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
+bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
+int GetIntSettingValue(const char* section, const char* key, s32 default_value = 0);
+u32 GetUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
+float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
+double GetDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
+std::vector<std::string> GetStringListSetting(const char* section, const char* key);
+
+/// Direct access to settings interface. Must hold the lock when calling GetSettingsInterface() and while using it.
+std::unique_lock<std::mutex> GetSettingsLock();
+SettingsInterface* GetSettingsInterface();
+
+/// Retrieves the base settings layer. Must call with lock held.
+SettingsInterface* GetBaseSettingsLayer();
+
+/// Retrieves the game settings layer, if present. Must call with lock held.
+SettingsInterface* GetGameSettingsLayer();
+
+/// Retrieves the input settings layer, if present. Must call with lock held.
+SettingsInterface* GetInputSettingsLayer();
+
+/// Returns the user agent to use for HTTP requests.
+std::string GetHTTPUserAgent();
+
+} // namespace Core

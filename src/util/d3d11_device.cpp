@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "d3d11_device.h"
-#include "core/host.h" // TODO: Remove me
 #include "d3d11_pipeline.h"
 #include "d3d11_texture.h"
 #include "d3d_common.h"
+
+#include "core/core.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -274,7 +275,7 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
   }
 
   m_using_flip_model_swap_chain =
-    !Host::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
+    !Core::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
 
   IDXGIFactory5* const dxgi_factory = D3D11Device::GetDXGIFactory();
   ID3D11Device1* const d3d_device = D3D11Device::GetD3DDevice();

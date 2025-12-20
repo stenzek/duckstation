@@ -6,6 +6,7 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/controller.h"
+#include "core/core_private.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
@@ -25,6 +26,7 @@
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
 #include "util/sdl_input_source.h"
+#include "util/translation.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -237,7 +239,7 @@ void MiniHost::SetResourcesDirectory()
 
 bool MiniHost::SetDataDirectory()
 {
-  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
+  EmuFolders::DataRoot = Core::ComputeDataDirectory();
 
   // make sure it exists
   if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
@@ -268,7 +270,7 @@ bool MiniHost::InitializeConfig()
   const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
   INFO_LOG("Loading config from {}.", settings_path);
   s_state.base_settings_interface.SetPath(std::move(settings_path));
-  Host::Internal::SetBaseSettingsLayer(&s_state.base_settings_interface);
+  Core::SetBaseSettingsLayer(&s_state.base_settings_interface);
 
   u32 settings_version;
   if (!settings_exists || !s_state.base_settings_interface.Load() ||
@@ -447,7 +449,7 @@ void Host::CheckForSettingsChanges(const Settings& old_settings)
 
 void Host::CommitBaseSettingChanges()
 {
-  auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   Error error;
   if (!MiniHost::s_state.base_settings_interface.Save(&error))
     ERROR_LOG("Failed to save settings: {}", error.GetDescription());
@@ -706,7 +708,7 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 
 bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* height)
 {
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
 
   bool result = s_state.base_settings_interface.GetIntValue("UI", "MainWindowX", x);
   result = result && s_state.base_settings_interface.GetIntValue("UI", "MainWindowY", y);
@@ -717,7 +719,7 @@ bool MiniHost::GetSavedPlatformWindowGeometry(s32* x, s32* y, s32* width, s32* h
 
 void MiniHost::SavePlatformWindowGeometry(s32 x, s32 y, s32 width, s32 height)
 {
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   s_state.base_settings_interface.SetIntValue("UI", "MainWindowX", x);
   s_state.base_settings_interface.SetIntValue("UI", "MainWindowY", y);
   s_state.base_settings_interface.SetIntValue("UI", "MainWindowWidth", width);
@@ -1247,7 +1249,7 @@ void Host::RequestResetSettings(bool system, bool controller)
 {
   using namespace MiniHost;
 
-  auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   {
     SettingsInterface& si = s_state.base_settings_interface;
 

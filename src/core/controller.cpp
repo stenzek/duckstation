@@ -8,7 +8,6 @@
 #include "digital_controller.h"
 #include "game_database.h"
 #include "guncon.h"
-#include "host.h"
 #include "jogcon.h"
 #include "justifier.h"
 #include "negcon.h"
@@ -17,6 +16,7 @@
 #include "system.h"
 
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
@@ -220,7 +220,6 @@ bool Controller::InCircularDeadzone(float deadzone, float pos_x, float pos_y)
   // Calculate the actual distance from center, and compare to deadzone radius.
   const float distance = std::sqrt(pos_x * pos_x + pos_y * pos_y);
   return (distance <= deadzone);
-
 }
 
 bool Controller::CanStartInAnalogMode(ControllerType ctype)

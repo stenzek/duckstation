@@ -3,7 +3,7 @@
 
 #include "media_capture.h"
 #include "gpu_device.h"
-#include "host.h"
+#include "translation.h"
 
 #include "common/align.h"
 #include "common/assert.h"

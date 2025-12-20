@@ -4,7 +4,6 @@
 #include "spu.h"
 #include "cdrom.h"
 #include "dma.h"
-#include "host.h"
 #include "imgui_overlays.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -14,6 +13,7 @@
 #include "util/imgui_manager.h"
 #include "util/media_capture.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 #include "util/wav_reader_writer.h"
 
 #include "common/bitfield.h"

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_thread.h"
+#include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
@@ -21,6 +22,7 @@
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"
@@ -635,7 +637,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (fullscreen && g_gpu_device && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
   }
   std::optional<bool> exclusive_fullscreen_control;
   if (g_gpu_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
@@ -682,7 +684,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
+        Core::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
         SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
         fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {
@@ -1326,7 +1328,7 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusiv
   if (allow_exclusive_fullscreen && fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
     exclusive_fullscreen_requested = fullscreen_mode.has_value();
   }
   std::optional<bool> exclusive_fullscreen_control;

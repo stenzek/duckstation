@@ -6,6 +6,7 @@
 #include "system.h"
 
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"

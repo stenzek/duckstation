@@ -29,7 +29,6 @@
     <ClInclude Include="gpu_framebuffer_manager.h" />
     <ClInclude Include="gpu_shader_cache.h" />
     <ClInclude Include="gpu_texture.h" />
-    <ClInclude Include="host.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="imgui_gsvector.h" />
     <ClInclude Include="imgui_manager.h" />
@@ -98,6 +97,7 @@
     <ClInclude Include="spirv_module.h" />
     <ClInclude Include="state_wrapper.h" />
     <ClInclude Include="texture_decompress.h" />
+    <ClInclude Include="translation.h" />
     <ClInclude Include="vulkan_builders.h" />
     <ClInclude Include="vulkan_device.h" />
     <ClInclude Include="vulkan_entry_points.h" />
@@ -146,7 +146,6 @@
     <ClCompile Include="gpu_device.cpp" />
     <ClCompile Include="gpu_shader_cache.cpp" />
     <ClCompile Include="gpu_texture.cpp" />
-    <ClCompile Include="host.cpp" />
     <ClCompile Include="http_downloader.cpp" />
     <ClCompile Include="http_downloader_curl.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -210,6 +209,7 @@
     <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
     <ClCompile Include="texture_decompress.cpp" />
+    <ClCompile Include="translation.cpp" />
     <ClCompile Include="vulkan_builders.cpp" />
     <ClCompile Include="vulkan_device.cpp" />
     <ClCompile Include="vulkan_loader.cpp" />

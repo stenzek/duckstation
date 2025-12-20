@@ -4,10 +4,12 @@
 #include "fullscreenui.h"
 #include "achievements_private.h"
 #include "controller.h"
+#include "core.h"
 #include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"
+#include "host.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
@@ -976,7 +978,7 @@ void FullscreenUI::UpdateBackground()
   s_locals.background_loaded = true;
 
   const TinyString background_name =
-    Host::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+    Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
   if (background_name.empty() || background_name == "None")
     return;
 
@@ -1174,7 +1176,7 @@ ImVec4 FullscreenUI::GetTransparentBackgroundColor(const ImVec4& no_background_c
 
 bool FullscreenUI::ShouldOpenToGameList()
 {
-  return Host::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
+  return Core::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
 }
 
 void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)

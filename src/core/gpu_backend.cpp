@@ -6,7 +6,6 @@
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "gpu_thread.h"
-#include "host.h"
 #include "performance_counters.h"
 #include "save_state_version.h"
 #include "settings.h"
@@ -16,6 +15,7 @@
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/file_system.h"

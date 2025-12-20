@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_joystick.h"
-#include "host.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/bitutils.h"
 #include "common/log.h"
@@ -64,8 +64,8 @@ bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
 
   if (sw.IsReading() && (old_analog_mode != m_analog_mode))
   {
-    Host::AddIconOSDMessage(OSDMessageType::Quick,
-      fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
+    Host::AddIconOSDMessage(
+      OSDMessageType::Quick, fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
       m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
                       fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
   }
@@ -237,8 +237,8 @@ void AnalogJoystick::ToggleAnalogMode()
   InputManager::SetPadLEDState(m_index, BoolToFloat(m_analog_mode));
 
   INFO_LOG("Joystick {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
-  Host::AddIconOSDMessage(OSDMessageType::Quick,
-    fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
+  Host::AddIconOSDMessage(
+    OSDMessageType::Quick, fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
     m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
                     fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
 }

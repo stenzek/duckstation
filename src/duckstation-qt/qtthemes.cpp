@@ -3,6 +3,7 @@
 
 #include "qthost.h"
 
+#include "core/core.h"
 #include "core/fullscreenui_widgets.h"
 
 #include "common/path.h"
@@ -84,7 +85,7 @@ void QtHost::SetStyleSheet(const QString& stylesheet)
 
 void QtHost::SetStyleFromSettings()
 {
-  const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
+  const TinyString theme = Core::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   // Clear any existing stylesheet before applying new. Avoids half-painted windows when changing themes.
   if (s_state.is_stylesheet_theme)
@@ -891,7 +892,7 @@ const char* Host::GetDefaultFullscreenUITheme()
 {
   using namespace QtHost;
 
-  const TinyString theme = Host::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
+  const TinyString theme = Core::GetBaseTinyStringSettingValue("UI", "Theme", QtHost::GetDefaultThemeName());
 
   if (theme == "cobaltsky")
     return "CobaltSky";

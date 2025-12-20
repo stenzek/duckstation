@@ -7,6 +7,7 @@
 #include "settingwidgetbinder.h"
 #include "ui_texturereplacementsettingsdialog.h"
 
+#include "core/core.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
 #include "core/gpu.h"
@@ -1013,7 +1014,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   {
     cb->addItem(qApp->translate("SettingsDialog", "Use Global Setting [%1]")
                   .arg(QtUtils::StringViewToQString(Settings::GetDisplayAspectRatioDisplayName(
-                    Settings::ParseDisplayAspectRatio(Host::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
+                    Settings::ParseDisplayAspectRatio(Core::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
                       .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)))));
   }
   for (const DisplayAspectRatio& ratio : Settings::GetPredefinedDisplayAspectRatios())
@@ -1032,7 +1033,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   {
     const DisplayAspectRatio ar =
       Settings::ParseDisplayAspectRatio(sif ? sif->GetStringValue(CONFIG_SECTION, CONFIG_KEY) :
-                                              Host::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
+                                              Core::GetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY))
         .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
     if ((is_custom_ar = std::ranges::none_of(Settings::GetPredefinedDisplayAspectRatios(),
                                              [&ar](const auto& it) { return (it == ar); })))
@@ -1090,12 +1091,12 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
     {
       if (value_to_save.has_value())
       {
-        Host::SetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY,
+        Core::SetBaseStringSettingValue(CONFIG_SECTION, CONFIG_KEY,
                                         Settings::GetDisplayAspectRatioName(value_to_save.value()).c_str());
       }
       else
       {
-        Host::DeleteBaseSettingValue(CONFIG_SECTION, CONFIG_KEY);
+        Core::DeleteBaseSettingValue(CONFIG_SECTION, CONFIG_KEY);
       }
 
       Host::CommitBaseSettingChanges();

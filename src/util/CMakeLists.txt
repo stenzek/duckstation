@@ -30,8 +30,6 @@ add_library(util
   gpu_shader_cache.h
   gpu_texture.cpp
   gpu_texture.h
-  host.cpp
-  host.h
   http_downloader.cpp
   http_downloader.h
   image.cpp
@@ -74,6 +72,8 @@ add_library(util
   state_wrapper.h
   texture_decompress.cpp
   texture_decompress.h
+  translation.cpp
+  translation.h
   wav_reader_writer.cpp
   wav_reader_writer.h
   window_info.cpp

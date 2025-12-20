@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_hw.h"
+#include "core.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
 #include "fullscreenui_widgets.h"
@@ -4375,7 +4376,7 @@ void GPU_HW::LoadInternalPostProcessing()
 {
   static constexpr const char* section = PostProcessing::Config::INTERNAL_CHAIN_SECTION;
 
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = GPUPresenter::GetPostProcessingSettingsInterface(section);
 
   if (PostProcessing::Config::GetStageCount(si, section) == 0 || !PostProcessing::Config::IsEnabled(si, section))
@@ -4389,8 +4390,8 @@ void GPU_HW::UpdatePostProcessingSettings(bool force_reload)
 {
   static constexpr const char* section = PostProcessing::Config::INTERNAL_CHAIN_SECTION;
 
-  auto lock = Host::GetSettingsLock();
-  const SettingsInterface& si = *Host::GetSettingsInterface();
+  auto lock = Core::GetSettingsLock();
+  const SettingsInterface& si = *Core::GetSettingsInterface();
 
   // Don't delete the chain if we're just temporarily disabling.
   if (PostProcessing::Config::GetStageCount(si, section) == 0)

@@ -4,8 +4,9 @@
 #include "sdl_input_source.h"
 #include "input_manager.h"
 
-#include "core/host.h"
 #include "core/settings.h"
+
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"

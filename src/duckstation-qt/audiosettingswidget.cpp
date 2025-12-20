@@ -7,6 +7,7 @@
 #include "settingwidgetbinder.h"
 #include "ui_audiostretchsettingsdialog.h"
 
+#include "core/core.h"
 #include "core/spu.h"
 
 #include "util/audio_stream.h"
@@ -250,7 +251,7 @@ void AudioSettingsWidget::onOutputVolumeChanged(int new_value)
 {
   // only called for base settings
   DebugAssert(!m_dialog->isPerGameSettings());
-  Host::SetBaseIntSettingValue("Audio", "OutputVolume", new_value);
+  Core::SetBaseIntSettingValue("Audio", "OutputVolume", new_value);
   Host::CommitBaseSettingChanges();
   g_emu_thread->setAudioOutputVolume(new_value, m_ui.fastForwardVolume->value());
 
@@ -261,7 +262,7 @@ void AudioSettingsWidget::onFastForwardVolumeChanged(int new_value)
 {
   // only called for base settings
   DebugAssert(!m_dialog->isPerGameSettings());
-  Host::SetBaseIntSettingValue("Audio", "FastForwardVolume", new_value);
+  Core::SetBaseIntSettingValue("Audio", "FastForwardVolume", new_value);
   Host::CommitBaseSettingChanges();
   g_emu_thread->setAudioOutputVolume(m_ui.volume->value(), new_value);
 
@@ -274,7 +275,7 @@ void AudioSettingsWidget::onOutputMutedChanged(int new_state)
   DebugAssert(!m_dialog->isPerGameSettings());
 
   const bool muted = (new_state != 0);
-  Host::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
+  Core::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
   Host::CommitBaseSettingChanges();
   g_emu_thread->setAudioOutputMuted(muted);
 }

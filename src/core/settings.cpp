@@ -4,8 +4,8 @@
 #include "settings.h"
 #include "achievements.h"
 #include "controller.h"
+#include "core.h"
 #include "gte_types.h"
-#include "host.h"
 #include "imgui_overlays.h"
 #include "system.h"
 
@@ -13,6 +13,7 @@
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -2712,8 +2713,8 @@ void EmuFolders::Update()
 
   // have to manually grab the lock here, because of the ReloadGameSettings() below.
   {
-    auto lock = Host::GetSettingsLock();
-    LoadConfig(*Host::Internal::GetBaseSettingsLayer());
+    const auto lock = Core::GetSettingsLock();
+    LoadConfig(*Core::GetBaseSettingsLayer());
     EnsureFoldersExist();
   }
 

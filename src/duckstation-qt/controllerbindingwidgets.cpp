@@ -252,7 +252,7 @@ void ControllerBindingWidget::onTypeChanged()
   }
   else
   {
-    Host::SetBaseStringSettingValue(m_config_section.c_str(), "Type", m_controller_info->name);
+    Core::SetBaseStringSettingValue(m_config_section.c_str(), "Type", m_controller_info->name);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
@@ -300,8 +300,8 @@ void ControllerBindingWidget::onClearBindingsClicked()
 
   if (m_dialog->isEditingGlobalSettings())
   {
-    auto lock = Host::GetSettingsLock();
-    InputManager::ClearPortBindings(*Host::Internal::GetBaseSettingsLayer(), m_port_number);
+    const auto lock = Core::GetSettingsLock();
+    InputManager::ClearPortBindings(*Core::GetBaseSettingsLayer(), m_port_number);
   }
   else
   {
@@ -351,8 +351,8 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   bool result;
   if (m_dialog->isEditingGlobalSettings())
   {
-    auto lock = Host::GetSettingsLock();
-    result = InputManager::MapController(*Host::Internal::GetBaseSettingsLayer(), m_port_number, mapping, true);
+    const auto lock = Core::GetSettingsLock();
+    result = InputManager::MapController(*Core::GetBaseSettingsLayer(), m_port_number, mapping, true);
   }
   else
   {
@@ -1024,10 +1024,9 @@ MultipleDeviceAutobindDialog::~MultipleDeviceAutobindDialog() = default;
 
 void MultipleDeviceAutobindDialog::doAutomaticBinding()
 {
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   const bool global = (!m_settings_window || m_settings_window->isEditingGlobalSettings());
-  SettingsInterface* si =
-    global ? Host::Internal::GetBaseSettingsLayer() : m_settings_window->getEditingSettingsInterface();
+  SettingsInterface* si = global ? Core::GetBaseSettingsLayer() : m_settings_window->getEditingSettingsInterface();
 
   // first device should clear mappings
   bool tried_any = false;

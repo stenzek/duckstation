@@ -16,8 +16,10 @@
 #include "core/achievements.h"
 #include "core/bios.h"
 #include "core/controller.h"
+#include "core/core.h"
 
 #include "util/input_manager.h"
+#include "util/translation.h"
 
 #include "common/file_system.h"
 #include "common/string_util.h"
@@ -232,9 +234,9 @@ void SetupWizardDialog::refreshBiosList()
   BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion::NTSC_J, m_ui.imageNTSCJ, list, false);
   BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion::PAL, m_ui.imagePAL, list, false);
 
-  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCU, Host::GetBaseStringSettingValue("BIOS", "PathNTSCU"), false);
-  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCJ, Host::GetBaseStringSettingValue("BIOS", "PathNTSCJ"), false);
-  BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL, Host::GetBaseStringSettingValue("BIOS", "PathPAL"), false);
+  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCU, Core::GetBaseStringSettingValue("BIOS", "PathNTSCU"), false);
+  BIOSSettingsWidget::setDropDownValue(m_ui.imageNTSCJ, Core::GetBaseStringSettingValue("BIOS", "PathNTSCJ"), false);
+  BIOSSettingsWidget::setDropDownValue(m_ui.imagePAL, Core::GetBaseStringSettingValue("BIOS", "PathPAL"), false);
 }
 
 void SetupWizardDialog::setupGameListPage()
@@ -294,8 +296,8 @@ void SetupWizardDialog::onAddSearchDirectoryButtonClicked()
 
   const bool recursive = (selection == QMessageBox::Yes);
   const std::string spath = dir.toStdString();
-  Host::RemoveValueFromBaseStringListSetting("GameList", recursive ? "Paths" : "RecursivePaths", spath.c_str());
-  Host::AddValueToBaseStringListSetting("GameList", recursive ? "RecursivePaths" : "Paths", spath.c_str());
+  Core::RemoveValueFromBaseStringListSetting("GameList", recursive ? "Paths" : "RecursivePaths", spath.c_str());
+  Core::AddValueToBaseStringListSetting("GameList", recursive ? "RecursivePaths" : "Paths", spath.c_str());
   Host::CommitBaseSettingChanges();
   refreshDirectoryList();
 }
@@ -310,8 +312,8 @@ void SetupWizardDialog::onRemoveSearchDirectoryButtonClicked()
   const std::string spath = item->text(0).toStdString();
   delete item;
 
-  if (!Host::RemoveValueFromBaseStringListSetting("GameList", "Paths", spath.c_str()) &&
-      !Host::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", spath.c_str()))
+  if (!Core::RemoveValueFromBaseStringListSetting("GameList", "Paths", spath.c_str()) &&
+      !Core::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", spath.c_str()))
   {
     return;
   }
@@ -333,13 +335,13 @@ void SetupWizardDialog::onSearchDirectoryListItemChanged(QTreeWidgetItem* item, 
   const std::string path = item->text(0).toStdString();
   if (item->checkState(1) == Qt::Checked)
   {
-    Host::RemoveValueFromBaseStringListSetting("GameList", "Paths", path.c_str());
-    Host::AddValueToBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
+    Core::RemoveValueFromBaseStringListSetting("GameList", "Paths", path.c_str());
+    Core::AddValueToBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
   }
   else
   {
-    Host::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
-    Host::AddValueToBaseStringListSetting("GameList", "Paths", path.c_str());
+    Core::RemoveValueFromBaseStringListSetting("GameList", "RecursivePaths", path.c_str());
+    Core::AddValueToBaseStringListSetting("GameList", "Paths", path.c_str());
   }
 
   Host::CommitBaseSettingChanges();
@@ -359,11 +361,11 @@ void SetupWizardDialog::refreshDirectoryList()
   QSignalBlocker sb(m_ui.searchDirectoryList);
   m_ui.searchDirectoryList->clear();
 
-  std::vector<std::string> path_list = Host::GetBaseStringListSetting("GameList", "Paths");
+  std::vector<std::string> path_list = Core::GetBaseStringListSetting("GameList", "Paths");
   for (const std::string& entry : path_list)
     addPathToTable(entry, false);
 
-  path_list = Host::GetBaseStringListSetting("GameList", "RecursivePaths");
+  path_list = Core::GetBaseStringListSetting("GameList", "RecursivePaths");
   for (const std::string& entry : path_list)
     addPathToTable(entry, true);
 
@@ -429,9 +431,8 @@ void SetupWizardDialog::updateStylesheets()
 
 QString SetupWizardDialog::findCurrentDeviceForPort(u32 port) const
 {
-  auto lock = Host::GetSettingsLock();
-  return QString::fromStdString(
-    InputManager::GetPhysicalDeviceForController(*Host::Internal::GetBaseSettingsLayer(), port));
+  const auto lock = Core::GetSettingsLock();
+  return QString::fromStdString(InputManager::GetPhysicalDeviceForController(*Core::GetBaseSettingsLayer(), port));
 }
 
 void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
@@ -477,8 +478,8 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
 
   bool result;
   {
-    auto lock = Host::GetSettingsLock();
-    result = InputManager::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping, true);
+    const auto lock = Core::GetSettingsLock();
+    result = InputManager::MapController(*Core::GetBaseSettingsLayer(), port, mapping, true);
   }
   if (!result)
     return;
@@ -586,19 +587,19 @@ void SetupWizardDialog::setupAchievementsPage(bool initial)
 
 void SetupWizardDialog::updateAchievementsEnableState()
 {
-  const bool enabled = Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false);
+  const bool enabled = Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false);
   m_ui.hardcoreMode->setEnabled(enabled);
 }
 
 void SetupWizardDialog::updateAchievementsLoginState()
 {
-  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
   const bool logged_in = !username.empty();
 
   if (logged_in)
   {
     const u64 login_unix_timestamp =
-      StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
+      StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
     m_ui.loginStatus->setText(
@@ -616,7 +617,7 @@ void SetupWizardDialog::updateAchievementsLoginState()
 
 void SetupWizardDialog::onAchievementsLoginLogoutClicked()
 {
-  if (!Host::GetBaseStringSettingValue("Cheevos", "Username").empty())
+  if (!Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
   {
     Host::RunOnCPUThread([]() { Achievements::Logout(); }, true);
     updateAchievementsLoginState();
@@ -634,18 +635,18 @@ void SetupWizardDialog::onAchievementsLoginCompleted()
   updateAchievementsLoginState();
 
   // Login can enable achievements/hardcore.
-  if (!m_ui.enable->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
   {
     m_ui.enable->setChecked(true);
     updateAchievementsLoginState();
   }
-  if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
 }
 
 void SetupWizardDialog::onAchievementsViewProfileClicked()
 {
-  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
   if (username.empty())
     return;
 

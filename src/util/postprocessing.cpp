@@ -1,19 +1,20 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "postprocessing.h"
 #include "gpu_device.h"
-#include "host.h"
 #include "imgui_manager.h"
 #include "postprocessing_shader.h"
 #include "postprocessing_shader_fx.h"
 #include "postprocessing_shader_glsl.h"
 #include "postprocessing_shader_slang.h"
 #include "shadergen.h"
+#include "translation.h"
 
 // TODO: Remove me
-#include "core/fullscreenui.h"
+#include "core/core.h"
 #include "core/host.h"
+#include "core/fullscreenui.h"
 #include "core/settings.h"
 
 #include "IconsEmoji.h"
@@ -367,7 +368,7 @@ void PostProcessing::Config::RemoveStage(SettingsInterface& si, const char* sect
   si.ClearSection(GetStageConfigSection(section, new_stage_count));
 
   // if game settings, wipe the field out so we can potentially remove the file
-  if (&si != Host::Internal::GetBaseSettingsLayer())
+  if (&si != Core::GetBaseSettingsLayer())
     si.DeleteValue(section, "StageCount");
   else
     si.SetUIntValue(section, "StageCount", new_stage_count);
@@ -412,7 +413,7 @@ void PostProcessing::Config::ClearStages(SettingsInterface& si, const char* sect
     si.ClearSection(GetStageConfigSection(section, static_cast<u32>(i)));
 
   // if game settings, wipe the field out so we can potentially remove the file
-  if (&si != Host::Internal::GetBaseSettingsLayer())
+  if (&si != Core::GetBaseSettingsLayer())
     si.SetUIntValue(section, "StageCount", 0);
   else
     si.DeleteValue(section, "StageCount");

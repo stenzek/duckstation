@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "bios.h"
+#include "core.h"
 #include "cpu_disasm.h"
-#include "host.h"
 #include "mips_encoder.h"
 #include "settings.h"
+
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -352,16 +354,16 @@ std::optional<BIOS::Image> BIOS::GetBIOSImage(ConsoleRegion region, Error* error
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      bios_name = Host::GetStringSettingValue("BIOS", "PathNTSCJ", "");
+      bios_name = Core::GetStringSettingValue("BIOS", "PathNTSCJ", "");
       break;
 
     case ConsoleRegion::PAL:
-      bios_name = Host::GetStringSettingValue("BIOS", "PathPAL", "");
+      bios_name = Core::GetStringSettingValue("BIOS", "PathPAL", "");
       break;
 
     case ConsoleRegion::NTSC_U:
     default:
-      bios_name = Host::GetStringSettingValue("BIOS", "PathNTSCU", "");
+      bios_name = Core::GetStringSettingValue("BIOS", "PathNTSCU", "");
       break;
   }
 

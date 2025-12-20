@@ -3,7 +3,7 @@
 
 #include "cd_image_hasher.h"
 #include "cd_image.h"
-#include "host.h"
+#include "translation.h"
 
 #include "common/error.h"
 #include "common/md5_digest.h"

@@ -4,8 +4,8 @@
 #include "game_list.h"
 #include "achievements.h"
 #include "bios.h"
+#include "core.h"
 #include "fullscreenui.h"
-#include "host.h"
 #include "memory_card_image.h"
 #include "psf_loader.h"
 #include "settings.h"
@@ -17,6 +17,7 @@
 #include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
@@ -191,18 +192,18 @@ bool GameList::IsGameListLoaded()
 
 bool GameList::ShouldShowLocalizedTitles()
 {
-  return Host::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
+  return Core::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
 }
 
 bool GameList::ShouldLoadAchievementsProgress()
 {
-  return Host::ContainsBaseSettingValue("Cheevos", "Token");
+  return Core::ContainsBaseSettingValue("Cheevos", "Token");
 }
 
 bool GameList::PreferAchievementGameBadgesForIcons()
 {
   return (ShouldLoadAchievementsProgress() &&
-          Host::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
+          Core::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
 }
 
 bool GameList::IsScannableFilename(std::string_view path)
@@ -710,7 +711,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
 
   {
     // cancel if excluded
-    const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+    const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
     if (IsPathExcluded(excluded_paths, path))
       return false;
   }
@@ -1059,9 +1060,9 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
     old_entries.swap(s_state.entries);
   }
 
-  const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
-  std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
-  std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
+  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  std::vector<std::string> dirs(Core::GetBaseStringListSetting("GameList", "Paths"));
+  std::vector<std::string> recursive_dirs(Core::GetBaseStringListSetting("GameList", "RecursivePaths"));
   const PlayedTimeMap played_time = LoadPlayedTimeMap();
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
@@ -1763,7 +1764,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     return false;
   }
 
-  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent(), error));
+  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Core::GetHTTPUserAgent(), error));
   if (!downloader)
   {
     Error::AddPrefix(error, "Failed to create HTTP downloader: ");
