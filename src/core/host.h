@@ -32,7 +32,7 @@ std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, b
 
 /// Reports a fatal error on the main thread. This does not assume that the main window exists,
 /// unlike ReportErrorAsync(), and will exit the application after the popup is closed.
-void ReportFatalError(std::string_view title, std::string_view message);
+[[noreturn]] void ReportFatalError(std::string_view title, std::string_view message);
 
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(std::string_view title, std::string_view message);
