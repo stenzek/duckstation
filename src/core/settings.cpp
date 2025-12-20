@@ -1272,13 +1272,10 @@ void Settings::UpdateLogConfig(const SettingsInterface& si)
   const bool log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
   const bool log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
   const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
-  const bool log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
   const bool log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
   const bool log_file_timestamps = si.GetBoolValue("Logging", "LogFileTimestamps", false);
 
-  const bool any_logs_enabled = (log_to_console || log_to_debug || log_to_window || log_to_file);
-  Log::SetLogLevel(any_logs_enabled ? log_level : Log::Level::None);
-
+  Log::SetLogLevel(log_level);
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
   Log::SetDebugOutputParams(log_to_debug);
 

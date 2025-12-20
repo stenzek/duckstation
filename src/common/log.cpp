@@ -42,6 +42,7 @@ static void RegisterCallback(CallbackFunctionType callbackFunction, void* pUserP
                              const std::unique_lock<std::mutex>& lock);
 static void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam,
                                const std::unique_lock<std::mutex>& lock);
+static void UpdateEffectiveLevel();
 
 static bool FilterTest(Channel channel, Level level);
 static void ExecuteCallbacks(MessageCategory cat, const char* functionName, std::string_view message);
@@ -75,7 +76,8 @@ namespace {
 
 struct State
 {
-  Level log_level = Level::Trace;
+  Level effective_log_level = Level::None;
+  Level requested_log_level = Level::Trace;
   ChannelBitSet log_channels_enabled = ChannelBitSet().set();
 
   std::vector<RegisteredCallback> callbacks;
@@ -118,6 +120,7 @@ void Log::RegisterCallback(CallbackFunctionType callbackFunction, void* pUserPar
   Callback.Parameter = pUserParam;
 
   s_state.callbacks.push_back(std::move(Callback));
+  UpdateEffectiveLevel();
 }
 
 void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
@@ -134,9 +137,15 @@ void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserP
     if (iter->Function == callbackFunction && iter->Parameter == pUserParam)
     {
       s_state.callbacks.erase(iter);
+      UpdateEffectiveLevel();
       break;
     }
   }
+}
+
+void Log::UpdateEffectiveLevel()
+{
+  s_state.effective_log_level = s_state.callbacks.empty() ? Level::None : s_state.requested_log_level;
 }
 
 const std::array<const char*, static_cast<size_t>(Log::Channel::MaxCount)>& Log::GetChannelNames()
@@ -530,7 +539,7 @@ void Log::SetFileOutputParams(bool enabled, const char* filename, bool timestamp
 
 Log::Level Log::GetLogLevel()
 {
-  return s_state.log_level;
+  return s_state.effective_log_level;
 }
 
 bool Log::IsLogVisible(Level level, Channel channel)
@@ -542,7 +551,8 @@ void Log::SetLogLevel(Level level)
 {
   std::unique_lock lock(s_state.callbacks_mutex);
   DebugAssert(level < Level::MaxCount);
-  s_state.log_level = level;
+  s_state.requested_log_level = level;
+  UpdateEffectiveLevel();
 }
 
 void Log::SetLogChannelEnabled(Channel channel, bool enabled)
@@ -559,7 +569,7 @@ const char* Log::GetChannelName(Channel channel)
 
 ALWAYS_INLINE_RELEASE bool Log::FilterTest(Channel channel, Level level)
 {
-  return (level <= s_state.log_level && s_state.log_channels_enabled[static_cast<size_t>(channel)]);
+  return (level <= s_state.effective_log_level && s_state.log_channels_enabled[static_cast<size_t>(channel)]);
 }
 
 void Log::Write(MessageCategory cat, std::string_view message)
