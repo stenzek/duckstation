@@ -73,6 +73,17 @@ inline void CloseAndDeleteWindow(T*& window)
   window = nullptr;
 }
 
+/// Safely deletes a widget and nulls the reference.
+template<typename T>
+inline void SafeDeleteWidget(T*& widget)
+{
+  if (!widget)
+    return;
+
+  delete widget;
+  widget = nullptr;
+}
+
 /// For any positive values, sets the corresponding column width to the specified value.
 /// Any values of 0 will set the column's width based on the content.
 /// Any values of -1 will stretch the column to use the remaining space.

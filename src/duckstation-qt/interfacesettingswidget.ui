@@ -116,23 +116,30 @@
        </widget>
       </item>
       <item row="1" column="1">
+       <widget class="QCheckBox" name="hideMouseCursor">
+        <property name="text">
+         <string>Hide Cursor In Fullscreen</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QCheckBox" name="hideMainWindow">
         <property name="text">
          <string>Hide Main Window When Running</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="disableWindowResizing">
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="automaticallyResizeWindow">
         <property name="text">
-         <string>Disable Window Resizing</string>
+         <string>Automatically Resize Window</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="hideMouseCursor">
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="disableWindowResizing">
         <property name="text">
-         <string>Hide Cursor In Fullscreen</string>
+         <string>Disable Window Resizing</string>
         </property>
        </widget>
       </item>
@@ -164,6 +171,20 @@
       </item>
       <item row="0" column="3">
        <widget class="QComboBox" name="theme"/>
+      </item>
+      <item row="1" column="0" colspan="4">
+       <widget class="QCheckBox" name="disableWindowRoundedCorners">
+        <property name="text">
+         <string>Disable Window Rounded Corners</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
+       <widget class="QCheckBox" name="useFractionalWindowScale">
+        <property name="text">
+         <string>Use Fractional Window Scale</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

@@ -112,7 +112,7 @@ static u32 GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, 
 static float GetEffectiveFloatSetting(SettingsInterface* bsi, const char* section, const char* key,
                                       float default_value);
 static TinyString GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
-                                                const char* default_value);
+                                                const char* default_value = "");
 static void BeginResetSettings();
 static void DoCopyGameSettings();
 static void DoClearGameSettings();
@@ -2223,6 +2223,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROW_POINTER, "Hide Cursor In Fullscreen"),
                     FSUI_VSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "Main",
                     "HideCursorInFullscreen", true);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_MINIMIZE, "Disable Window Resizing"),
+                    FSUI_VSTR("Prevents resizing of the window while a game is running."), "Main",
+                    "DisableWindowResize", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_MAXIMIZE, "Automatically Resize Window"),
+                    FSUI_VSTR("Automatically resizes the window to match the internal resolution."), "Display",
+                    "AutoResizeWindow", false);
 
   MenuHeading(FSUI_VSTR("On-Screen Display"));
   DrawIntSpinBoxSetting(bsi, FSUI_ICONVSTR(ICON_FA_MAGNIFYING_GLASS, "OSD Scale"),
@@ -3792,6 +3798,21 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SITEMAP, "PGXP Depth Buffer"),
                       FSUI_VSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."),
                       "GPU", "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
+
+    const GPUTextureFilter texture_filtering =
+      Settings::ParseTextureFilterName(GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter"))
+        .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
+    const GPUTextureFilter sprite_texture_filtering =
+      Settings::ParseTextureFilterName(GetEffectiveTinyStringSetting(bsi, "GPU", "SpriteTextureFilter"))
+        .value_or(texture_filtering);
+
+    DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_EYE_DROPPER, "Round Upscaled Texture Coordinates"),
+      FSUI_VSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
+                "textures in some games, but break others, and is incompatible with texture filtering."),
+      "GPU", "ForceRoundTextureCoordinates", false,
+      resolution_scale != 1 &&
+        (texture_filtering == GPUTextureFilter::Nearest || sprite_texture_filtering == GPUTextureFilter::Nearest));
   }
 
   DrawToggleSetting(
@@ -3803,7 +3824,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     FSUI_VSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
-  MenuHeading(FSUI_VSTR("Advanced"));
+  MenuHeading(FSUI_VSTR("Advanced Display Options"));
 
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
@@ -3897,49 +3918,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                        std::numeric_limits<s16>::max(), "%dpx");
   }
 
-  if (is_hardware)
-  {
-    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES_VERTICAL, "Line Detection"),
-                    FSUI_VSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
-                              "behavior, filling in gaps introduced by upscaling."),
-                    "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
-                    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
-                    resolution_scale > 1);
-
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_DROPLET_SLASH, "Scaled Interlacing"),
-                      FSUI_VSTR("Scales line skipping in interlaced rendering to the internal resolution, making it "
-                                "less noticeable. Usually safe to enable."),
-                      "GPU", "ScaledInterlacing", true, resolution_scale > 1);
-
-    const GPUTextureFilter texture_filtering =
-      Settings::ParseTextureFilterName(
-        GetEffectiveTinyStringSetting(bsi, "GPU", "TextureFilter",
-                                      Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER)))
-        .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-
-    DrawToggleSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_EYE_DROPPER, "Round Upscaled Texture Coordinates"),
-      FSUI_VSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
-                "textures in some games, but break others, and is incompatible with texture filtering."),
-      "GPU", "ForceRoundTextureCoordinates", false,
-      resolution_scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
-
-    DrawToggleSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
-      FSUI_VSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in "
-                "greater performance when using graphical enhancements with the hardware renderer."),
-      "GPU", "UseSoftwareRendererForReadbacks", false);
-  }
-
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Threaded Rendering"),
-                    FSUI_VSTR("Uses a second thread for drawing graphics. Provides a significant speed improvement "
-                              "particularly with the software renderer, and is safe to use."),
-                    "GPU", "UseThread", true);
-
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Automatically Resize Window"),
-                    FSUI_VSTR("Automatically resizes the window to match the internal resolution."), "Display",
-                    "AutoResizeWindow", false);
-
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_ENVELOPE, "Disable Mailbox Presentation"),
     FSUI_VSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
@@ -3955,6 +3933,34 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       "UseBlitSwapChain", false);
   }
 #endif
+
+  MenuHeading(FSUI_VSTR("Advanced Rendering Options"));
+
+  if (is_hardware)
+  {
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES_VERTICAL, "Line Detection"),
+                    FSUI_VSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+                              "behavior, filling in gaps introduced by upscaling."),
+                    "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
+                    &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
+                    resolution_scale > 1);
+
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_DROPLET_SLASH, "Scaled Interlacing"),
+                      FSUI_VSTR("Scales line skipping in interlaced rendering to the internal resolution, making it "
+                                "less noticeable. Usually safe to enable."),
+                      "GPU", "ScaledInterlacing", true, resolution_scale > 1);
+
+    DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
+      FSUI_VSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in "
+                "greater performance when using graphical enhancements with the hardware renderer."),
+      "GPU", "UseSoftwareRendererForReadbacks", false);
+  }
+
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Threaded Rendering"),
+                    FSUI_VSTR("Uses a second thread for drawing graphics. Provides a significant speed improvement "
+                              "particularly with the software renderer, and is safe to use."),
+                    "GPU", "UseThread", true);
 
   if (is_hardware && pgxp_enabled)
   {

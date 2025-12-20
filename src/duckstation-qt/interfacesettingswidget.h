@@ -23,9 +23,7 @@ Q_SIGNALS:
   void themeChanged();
 
 private:
-  void setupAdditionalUi();
-
-  void onRenderToSeparateWindowChanged();
+  void updateRenderToSeparateWindowOptions();
   void onLanguageChanged();
 
   Ui::InterfaceSettingsWidget m_ui;

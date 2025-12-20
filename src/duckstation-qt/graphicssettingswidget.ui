@@ -274,6 +274,13 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="forceRoundedTexcoords">
+              <property name="text">
+               <string>Round Upscaled Texture Coordinates</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -475,30 +482,16 @@
           <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
             <item row="0" column="0">
-             <widget class="QCheckBox" name="automaticallyResizeWindow">
-              <property name="text">
-               <string>Automatically Resize Window</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
              <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
                <string>Disable Mailbox Presentation</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="1">
              <widget class="QCheckBox" name="blitSwapChain">
               <property name="text">
                <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
-              <property name="text">
-               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>
@@ -535,20 +528,6 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="scaledInterlacing">
-              <property name="text">
-               <string>Scaled Interlacing</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="forceRoundedTexcoords">
-              <property name="text">
-               <string>Round Upscaled Texture Coordinates</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="gpuThread">
               <property name="text">
@@ -573,6 +552,20 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="scaledInterlacing">
+              <property name="text">
+               <string>Scaled Interlacing</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

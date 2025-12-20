@@ -81,8 +81,25 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
                                                Settings::DEFAULT_SAVE_STATE_BACKUPS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
+                                               false);
   connect(m_ui.renderToSeparateWindow, &QCheckBox::checkStateChanged, this,
-          &InterfaceSettingsWidget::onRenderToSeparateWindowChanged);
+          &InterfaceSettingsWidget::updateRenderToSeparateWindowOptions);
+  connect(m_ui.hideMainWindow, &QCheckBox::checkStateChanged, this,
+          &InterfaceSettingsWidget::updateRenderToSeparateWindowOptions);
+
+#ifdef _WIN32
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowRoundedCorners, "Main",
+                                               "DisableWindowRoundedCorners", false);
+#else
+  QtUtils::SafeDeleteWidget(m_ui.disableWindowRoundedCorners);
+#endif
+#ifdef __APPLE__
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFractionalWindowScale, "Main", "UseFractionalWindowScale",
+                                               true);
+#else
+  QtUtils::SafeDeleteWidget(m_ui.useFractionalWindowScale);
+#endif
 
   if (!m_dialog->isPerGameSettings())
   {
@@ -110,12 +127,15 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   }
   else
   {
-    delete m_ui.appearanceGroup;
-    m_ui.appearanceGroup = nullptr;
-    m_ui.languageLabel = nullptr;
-    m_ui.language = nullptr;
-    m_ui.themeLabel = nullptr;
-    m_ui.theme = nullptr;
+    QtUtils::SafeDeleteWidget(m_ui.languageLabel);
+    QtUtils::SafeDeleteWidget(m_ui.language);
+    QtUtils::SafeDeleteWidget(m_ui.themeLabel);
+    QtUtils::SafeDeleteWidget(m_ui.theme);
+
+    // On Linux, we don't have any rounded corner or fractional scaling options.
+#if !defined(_WIN32) && !defined(__APPLE__)
+    QtUtils::SafeDeleteWidget(m_ui.appearanceGroup);
+#endif
 
     delete m_ui.updatesGroup;
     m_ui.autoUpdateTagLabel = nullptr;
@@ -127,7 +147,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.checkForUpdates = nullptr;
   }
 
-  onRenderToSeparateWindowChanged();
+  updateRenderToSeparateWindowOptions();
 
   dialog->registerWidgetHelp(m_ui.confirmGameClose, tr("Confirm Game Close"), tr("Checked"),
                              tr("Determines whether a prompt will be displayed to confirm closing the game."));
@@ -159,13 +179,27 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.renderToSeparateWindow, tr("Render To Separate Window"), tr("Checked"),
     tr("Renders the display of the simulated console to the main window of the application, over "
        "the game list. If checked, the display will render in a separate window."));
+  dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Checked"),
+                             tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
   dialog->registerWidgetHelp(
     m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
     tr("Hides the main window of the application while the game is displayed in a separate window."));
   dialog->registerWidgetHelp(m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
                              tr("Prevents resizing of the window while a game is running."));
-  dialog->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Checked"),
-                             tr("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."));
+  dialog->registerWidgetHelp(m_ui.automaticallyResizeWindow, tr("Automatically Resize Window"), tr("Unchecked"),
+                             tr("Automatically resizes the window to match the internal resolution. <strong>For high "
+                                "internal resolutions, this will create very large windows.</strong>"));
+
+#if defined(_WIN32)
+  dialog->registerWidgetHelp(
+    m_ui.disableWindowRoundedCorners, tr("Disable Window Rounded Corners"), tr("Unchecked"),
+    tr(
+      "Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content."));
+#elif defined(__APPLE__)
+  dialog->registerWidgetHelp(
+    m_ui.useFractionalWindowScale, tr("Use Fractional Window Scale"), tr("Checked"),
+    tr("Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS."));
+#endif
 
   if (!m_dialog->isPerGameSettings())
   {
@@ -222,9 +256,10 @@ void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
   }
 }
 
-void InterfaceSettingsWidget::onRenderToSeparateWindowChanged()
+void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()
 {
-  m_ui.hideMainWindow->setEnabled(m_ui.renderToSeparateWindow->isChecked());
+  const bool render_to_separate_window = m_dialog->getEffectiveBoolValue("Main", "RenderToSeparateWindow", false);
+  m_ui.hideMainWindow->setEnabled(render_to_separate_window);
 }
 
 void InterfaceSettingsWidget::onLanguageChanged()
