@@ -147,6 +147,9 @@ static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
 static void BeginLoadGame();
 static void UpdateGameSummary(bool update_progress_database);
+static DynamicHeapArray<u8> SaveStateToBuffer();
+static void LoadStateFromBuffer(std::span<const u8> data);
+static bool SaveStateToBuffer(std::span<u8> data);
 static std::string GetImageURL(const char* image_name, u32 type);
 static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
@@ -708,8 +711,10 @@ void Achievements::UpdateSettings(const Settings& old_config)
 
   auto lock = GetLock();
   const bool encore_mode_changed = (g_settings.achievements_encore_mode != old_config.achievements_encore_mode);
-  const bool spectator_mode_changed = (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode);
-  const bool unofficial_test_mode_changed = (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode);
+  const bool spectator_mode_changed =
+    (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode);
+  const bool unofficial_test_mode_changed =
+    (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode);
 
   if (encore_mode_changed)
     rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
@@ -722,8 +727,11 @@ void Achievements::UpdateSettings(const Settings& old_config)
   // Just unload and reload without destroying the client to preserve hardcore mode.
   if (HasActiveGame() && (encore_mode_changed || spectator_mode_changed || unofficial_test_mode_changed))
   {
+    // Save and restore state to preserve progress.
+    const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
     ClearGameInfo();
     BeginLoadGame();
+    LoadStateFromBuffer(state_data.cspan());
     return;
   }
 
@@ -1750,6 +1758,59 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
   Host::OnAchievementsHardcoreModeChanged(enabled);
 }
 
+void Achievements::LoadStateFromBuffer(std::span<const u8> data)
+{
+  // if we're active, make sure we've downloaded and activated all the achievements
+  // before deserializing, otherwise that state's going to get lost.
+  if (s_state.load_game_request)
+  {
+    FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
+                                            TRANSLATE_SV("Achievements", "Downloading achievements data..."));
+
+    s_state.http_downloader->WaitForAllRequests();
+
+    FullscreenUI::CloseLoadingScreen();
+  }
+
+  if (data.empty())
+  {
+    // reset runtime, no data (state might've been created without cheevos)
+    WARNING_LOG("State is missing cheevos data, resetting runtime");
+    rc_client_reset(s_state.client);
+    return;
+  }
+
+  const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data.size());
+  if (result != RC_OK)
+    ERROR_LOG("Failed to deserialize cheevos state ({}/{}), runtime was reset", rc_error_str(result), result);
+}
+
+bool Achievements::SaveStateToBuffer(std::span<u8> data)
+{
+  const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data.size());
+  if (result != RC_OK)
+  {
+    // set data to zero, effectively serializing nothing
+    ERROR_LOG("Failed to serialize cheevos state ({}/{})", rc_error_str(result), result);
+    return false;
+  }
+
+  return true;
+}
+
+DynamicHeapArray<u8> Achievements::SaveStateToBuffer()
+{
+  DynamicHeapArray<u8> ret;
+  if (const size_t data_size = rc_client_progress_size(s_state.client); data_size > 0)
+  {
+    ret.resize(data_size);
+    if (!SaveStateToBuffer(ret))
+      ret.deallocate();
+  }
+
+  return ret;
+}
+
 bool Achievements::DoState(StateWrapper& sw)
 {
   static constexpr u32 REQUIRED_VERSION = 56;
@@ -1769,40 +1830,14 @@ bool Achievements::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    // if we're active, make sure we've downloaded and activated all the achievements
-    // before deserializing, otherwise that state's going to get lost.
-    if (s_state.load_game_request)
-    {
-      FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
-                                              TRANSLATE_SV("Achievements", "Downloading achievements data..."));
-
-      s_state.http_downloader->WaitForAllRequests();
-
-      FullscreenUI::CloseLoadingScreen();
-    }
-
     u32 data_size = 0;
     sw.DoEx(&data_size, REQUIRED_VERSION, 0u);
-    if (data_size == 0)
-    {
-      // reset runtime, no data (state might've been created without cheevos)
-      WARNING_LOG("State is missing cheevos data, resetting runtime");
-      rc_client_reset(s_state.client);
-
-      return !sw.HasError();
-    }
 
     const std::span<u8> data = sw.GetDeferredBytes(data_size);
     if (sw.HasError())
       return false;
 
-    const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
-    if (result != RC_OK)
-    {
-      WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
-      rc_client_reset(s_state.client);
-    }
-
+    LoadStateFromBuffer(data);
     return true;
   }
   else
@@ -1817,11 +1852,9 @@ bool Achievements::DoState(StateWrapper& sw)
       const std::span<u8> data = sw.GetDeferredBytes(data_size);
       if (!sw.HasError()) [[likely]]
       {
-        const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data_size);
-        if (result != RC_OK)
+        if (!SaveStateToBuffer(data))
         {
           // set data to zero, effectively serializing nothing
-          WARNING_LOG("Failed to serialize cheevos state ({})", result);
           data_size = 0;
           sw.SetPosition(size_pos);
           sw.Do(&data_size);
