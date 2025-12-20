@@ -28,7 +28,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;_CRT_INTERNAL_NONSTDC_NAMES;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="!$(Configuration.Contains(Clang))">/Zc:__cplusplus /Zo /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And !$(Configuration.Contains(SSE2)) And '$(Platform)'=='x64'"> -msse4.1 %(AdditionalOptions)</AdditionalOptions>
