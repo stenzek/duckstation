@@ -70,6 +70,10 @@ void RunOnCoreThread(std::function<void()> function, bool block = false);
 /// Safely executes a function on the main/UI thread.
 void RunOnUIThread(std::function<void()> function, bool block = false);
 
+/// Asynchronous work tasks, complete on worker thread.
+void QueueAsyncTask(std::function<void()> function);
+void WaitForAllAsyncTasks();
+
 /// Commits any changes made to the base settings layer to the host.
 void CommitBaseSettingChanges();
 

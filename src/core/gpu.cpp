@@ -10,6 +10,7 @@
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
 #include "gpu_thread.h"
+#include "host.h"
 #include "interrupt_controller.h"
 #include "performance_counters.h"
 #include "settings.h"
@@ -2314,7 +2315,7 @@ void GPU::StopRecordingGPUDump()
   Host::AddIconOSDMessage(
     OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
     fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)));
-  System::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
+  Host::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
     Error error;
     if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
     {

@@ -621,7 +621,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
     tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
 
     // queue the actual load
-    System::QueueAsyncTask([path = std::string(name)]() mutable {
+    Host::QueueAsyncTask([path = std::string(name)]() mutable {
       std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
 
       // don't bother queuing back if it doesn't exist
@@ -653,7 +653,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
     tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
 
     // queue the actual load
-    System::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
+    Host::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
       std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
 
       // don't bother queuing back if it doesn't exist

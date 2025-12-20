@@ -39,6 +39,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
 #include "common/threading.h"
 #include "common/time_helpers.h"
 
@@ -131,6 +132,8 @@ struct SDLHostState
 };
 
 static SDLHostState s_state;
+ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
+
 } // namespace MiniHost
 
 //////////////////////////////////////////////////////////////////////////
@@ -962,11 +965,14 @@ void MiniHost::CoreThreadEntryPoint()
 
   // input source setup must happen on emu thread
   Error error;
-  if (!System::CoreThreadInitialize(&error, NUM_ASYNC_WORKER_THREADS))
+  if (!System::CoreThreadInitialize(&error))
   {
     Host::ReportFatalError("CPU Thread Initialization Failed", error.GetDescription());
     return;
   }
+
+  // startup worker threads
+  s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
 
   // start up GPU thread
   s_state.gpu_thread.Start(&GPUThreadEntryPoint);
@@ -998,6 +1004,9 @@ void MiniHost::CoreThreadEntryPoint()
   GPUThread::StopFullscreenUI();
   GPUThread::Internal::RequestShutdown();
   s_state.gpu_thread.Join();
+
+  // join worker threads
+  s_async_task_queue.SetWorkerCount(0);
 
   System::CoreThreadShutdown();
 
@@ -1197,6 +1206,16 @@ void Host::RunOnUIThread(std::function<void()> function, bool block /* = false *
   SDL_PushEvent(&ev);
 }
 
+void Host::QueueAsyncTask(std::function<void()> function)
+{
+  MiniHost::s_async_task_queue.SubmitTask(std::move(function));
+}
+
+void Host::WaitForAllAsyncTasks()
+{
+  MiniHost::s_async_task_queue.WaitForAll();
+}
+
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
   using namespace MiniHost;
@@ -1211,7 +1230,7 @@ void Host::RefreshGameListAsync(bool invalidate_cache)
   }
 
   s_state.game_list_refresh_progress = new FullscreenUI::BackgroundProgressCallback("glrefresh");
-  System::QueueAsyncTask([invalidate_cache]() {
+  Host::QueueAsyncTask([invalidate_cache]() {
     GameList::Refresh(invalidate_cache, false, s_state.game_list_refresh_progress);
 
     std::unique_lock lock(s_state.state_mutex);
@@ -1232,7 +1251,7 @@ void Host::CancelGameListRefresh()
     s_state.game_list_refresh_progress->SetCancelled();
   }
 
-  System::WaitForAllAsyncTasks();
+  Host::WaitForAllAsyncTasks();
 }
 
 void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
@@ -1407,7 +1426,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                                std::string_view no_text /* = std::string_view() */)
 {
   Host::RunOnCoreThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                        yes_text = std::string(yes_text), no_text = std::move(no_text)]() mutable {
+                         yes_text = std::string(yes_text), no_text = std::move(no_text)]() mutable {
     // in case we haven't started yet...
     if (!FullscreenUI::IsInitialized())
     {

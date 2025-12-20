@@ -2886,7 +2886,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   GPUTextureCache::DecodeTexture(mode, &g_vram[rect.top * VRAM_WIDTH + rect.left], palette_data, image.GetPixels(),
                                  image.GetPitch(), width, height, GPUTexture::Format::RGBA8);
 
-  System::QueueAsyncTask([path = std::move(path), image = std::move(image), width, height, semitransparent]() mutable {
+  Host::QueueAsyncTask([path = std::move(path), image = std::move(image), width, height, semitransparent]() mutable {
     // TODO: Vectorize this.
     u32* image_pixels = reinterpret_cast<u32*>(image.GetPixels());
     const u32* image_pixels_end = image_pixels + (width * height);

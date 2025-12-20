@@ -35,6 +35,7 @@
 #include "common/path.h"
 #include "common/sha256_digest.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
 #include "common/threading.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
@@ -71,6 +72,7 @@ struct RegTestHostState
 };
 
 static RegTestHostState s_state;
+ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace RegTestHost
 
@@ -394,6 +396,16 @@ void Host::RunOnUIThread(std::function<void()> function, bool block /* = false *
   RunOnCoreThread(std::move(function), block);
 }
 
+void Host::QueueAsyncTask(std::function<void()> function)
+{
+  RegTestHost::s_async_task_queue.SubmitTask(std::move(function));
+}
+
+void Host::WaitForAllAsyncTasks()
+{
+  RegTestHost::s_async_task_queue.WaitForAll();
+}
+
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
 {
   //
@@ -512,7 +524,7 @@ void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
     return;
   }
 
-  System::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
+  Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
     Error error;
 
     if (image.GetFormat() != ImageFormat::RGBA8)
@@ -1022,12 +1034,14 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
-  // Only one async worker.
-  if (!System::CoreThreadInitialize(&startup_error, 1))
+  if (!System::CoreThreadInitialize(&startup_error))
   {
     ERROR_LOG("CoreThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
   }
+
+  // Only one async worker, keep the CPU usage down so we can parallelize execution of regtest itself.
+  RegTestHost::s_async_task_queue.SetWorkerCount(1);
 
   RegTestHost::HookSignals();
   s_gpu_thread.Start(&RegTestHost::GPUThreadEntryPoint);
@@ -1083,6 +1097,8 @@ cleanup:
     GPUThread::Internal::RequestShutdown();
     s_gpu_thread.Join();
   }
+
+  RegTestHost::s_async_task_queue.SetWorkerCount(0);
 
   RegTestHost::ProcessCoreThreadEvents();
   System::CoreThreadShutdown();

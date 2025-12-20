@@ -164,7 +164,7 @@ void QtAsyncTaskWithProgress::start()
   // Disconnect from the calling thread, so it can be pulled by the async task.
   moveToThread(nullptr);
 
-  System::QueueAsyncTask([this]() mutable {
+  Host::QueueAsyncTask([this]() mutable {
     QThread* const worker_thread = QThread::currentThread();
     moveToThread(worker_thread);
 
@@ -290,7 +290,7 @@ QtAsyncTaskWithProgressDialog* QtAsyncTaskWithProgressDialog::create(QWidget* pa
   connect(task, &QtAsyncTaskWithProgressDialog::completed, parent,
           [task]() { std::get<CompletionCallback>(task->m_callback)(); });
 
-  System::QueueAsyncTask([task]() {
+  Host::QueueAsyncTask([task]() {
     task->m_callback = std::get<WorkCallback>(task->m_callback)(task);
     Host::RunOnUIThread([task]() {
       emit task->completed(task);
