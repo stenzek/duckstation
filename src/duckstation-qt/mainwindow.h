@@ -25,6 +25,7 @@ class EmuThread;
 class GameListWidget;
 class DisplayWidget;
 class DisplayContainer;
+class LogWidget;
 class SettingsWindow;
 class ControllerSettingsWindow;
 class AutoUpdaterDialog;
@@ -177,16 +178,26 @@ private:
   bool shouldHideMouseCursor() const;
   bool shouldHideMainWindow() const;
 
-  void switchToGameListView();
+  void switchToGameListView(bool pause_system = true);
   void switchToEmulationView();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
+
+  /// Returns true if rendering to the main window should be allowed.
+  bool canRenderToMainWindow() const;
+
+  /// Returns true if the separate-window display widget should use the main window coordinates.
+  bool useMainWindowGeometryForDisplayWindow() const;
+
+  bool wantsLogWidget() const;
   bool wantsDisplayWidget() const;
+
   void createDisplayWidget(bool fullscreen, bool render_to_main);
   void destroyDisplayWidget();
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions();
   void updateGameListRelatedActions();
+  void updateLogWidget();
 
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
@@ -312,6 +323,8 @@ private:
 
   DisplayWidget* m_display_widget = nullptr;
   DisplayContainer* m_display_container = nullptr;
+
+  LogWidget* m_log_widget = nullptr;
 
   QProgressBar* m_status_progress_widget = nullptr;
   QLabel* m_status_renderer_widget = nullptr;

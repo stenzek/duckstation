@@ -78,6 +78,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMainWindow, "Main", "HideMainWindowWhenRunning", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableWindowResizing, "Main", "DisableWindowResize", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.hideMouseCursor, "Main", "HideCursorInFullscreen", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.displayLogInMainWindow, "Main", "DisplayLogInMainWindow",
+                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.createSaveStateBackups, "Main", "CreateSaveStateBackups",
                                                Settings::DEFAULT_SAVE_STATE_BACKUPS);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDiscordPresence, "Main", "EnableDiscordPresence", false);
@@ -184,6 +186,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(
     m_ui.hideMainWindow, tr("Hide Main Window When Running"), tr("Unchecked"),
     tr("Hides the main window of the application while the game is displayed in a separate window."));
+  dialog->registerWidgetHelp(m_ui.displayLogInMainWindow, tr("Display System Log In Main Window"), tr("Unchecked"),
+                             tr("Displays the log in the main window of the application while a game is running."));
   dialog->registerWidgetHelp(m_ui.disableWindowResizing, tr("Disable Window Resizing"), tr("Unchecked"),
                              tr("Prevents resizing of the window while a game is running."));
   dialog->registerWidgetHelp(m_ui.automaticallyResizeWindow, tr("Automatically Resize Window"), tr("Unchecked"),
@@ -259,7 +263,9 @@ void InterfaceSettingsWidget::populateLanguageDropdown(QComboBox* cb)
 void InterfaceSettingsWidget::updateRenderToSeparateWindowOptions()
 {
   const bool render_to_separate_window = m_dialog->getEffectiveBoolValue("Main", "RenderToSeparateWindow", false);
+  const bool hide_main_window = m_dialog->getEffectiveBoolValue("Main", "HideMainWindowWhenRunning", false);
   m_ui.hideMainWindow->setEnabled(render_to_separate_window);
+  m_ui.displayLogInMainWindow->setEnabled(render_to_separate_window && !hide_main_window);
 }
 
 void InterfaceSettingsWidget::onLanguageChanged()

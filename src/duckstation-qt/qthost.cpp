@@ -695,17 +695,6 @@ void QtHost::SetDefaultSettings(SettingsInterface& si, bool system, bool control
   }
 }
 
-bool QtHost::CanRenderToMainWindow()
-{
-  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !InNoGUIMode();
-}
-
-bool QtHost::UseMainWindowGeometryForDisplayWindow()
-{
-  // nogui _or_ main window mode, since we want to use it for temporary unfullscreens
-  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || InNoGUIMode();
-}
-
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
 {
   emit g_emu_thread->onResizeRenderWindowRequested(new_window_width, new_window_height);

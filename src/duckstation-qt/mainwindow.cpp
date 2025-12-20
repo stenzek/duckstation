@@ -222,7 +222,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
                                                           bool exclusive_fullscreen, Error* error)
 {
   const bool render_to_main =
-    QtHost::CanRenderToMainWindow() && !fullscreen && (s_locals.system_locked.load(std::memory_order_relaxed) == 0);
+    canRenderToMainWindow() && !fullscreen && (s_locals.system_locked.load(std::memory_order_relaxed) == 0);
 
   DEV_LOG("acquireRenderWindow() fullscreen={} exclusive_fullscreen={}, render_to_main={}", fullscreen,
           exclusive_fullscreen, render_to_main);
@@ -283,8 +283,27 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
 
   updateWindowTitle();
   updateWindowState();
+  updateLogWidget();
 
   return wi;
+}
+
+bool MainWindow::canRenderToMainWindow() const
+{
+  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+}
+
+bool MainWindow::useMainWindowGeometryForDisplayWindow() const
+{
+  // nogui _or_ main window mode, since we want to use it for temporary unfullscreens
+  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || QtHost::InNoGUIMode();
+}
+
+bool MainWindow::wantsLogWidget() const
+{
+  return (wantsDisplayWidget() && Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
+          !Host::GetBaseBoolSettingValue("Main", "HideMainWindowWhenRunning", false) &&
+          Host::GetBoolSettingValue("Main", "DisplayLogInMainWindow", false));
 }
 
 bool MainWindow::wantsDisplayWidget() const
@@ -295,7 +314,7 @@ bool MainWindow::wantsDisplayWidget() const
 
 bool MainWindow::hasDisplayWidget() const
 {
-  return m_display_widget != nullptr;
+  return (m_display_widget != nullptr);
 }
 
 void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
@@ -327,7 +346,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 
   if (fullscreen)
   {
-    if (isVisible() && QtHost::CanRenderToMainWindow())
+    if (isVisible() && canRenderToMainWindow())
       container->move(pos());
     else
       restoreDisplayWindowGeometryFromConfig();
@@ -346,9 +365,9 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
   }
   else
   {
-    AssertMsg(m_ui.mainContainer->count() == 1, "Has no display widget");
-    m_ui.mainContainer->addWidget(container);
-    m_ui.mainContainer->setCurrentIndex(1);
+    AssertMsg(m_ui.mainContainer->indexOf(m_display_widget) < 0, "Has no display widget");
+    m_ui.mainContainer->addWidget(m_display_widget);
+    m_ui.mainContainer->setCurrentWidget(m_display_widget);
     m_ui.actionViewSystemDisplay->setChecked(true);
   }
 
@@ -389,6 +408,7 @@ void MainWindow::releaseRenderWindow()
   destroyDisplayWidget();
   updateWindowTitle();
   updateWindowState();
+  updateLogWidget();
 }
 
 void MainWindow::destroyDisplayWidget()
@@ -403,9 +423,9 @@ void MainWindow::destroyDisplayWidget()
 
     if (isRenderingToMain())
     {
-      AssertMsg(m_ui.mainContainer->indexOf(m_display_widget) == 1, "Display widget in stack");
+      AssertMsg(m_ui.mainContainer->indexOf(m_display_widget) >= 0, "Display widget in stack");
       m_ui.mainContainer->removeWidget(m_display_widget);
-      m_ui.mainContainer->setCurrentIndex(0);
+      m_ui.mainContainer->setCurrentWidget(m_game_list_widget);
       if (m_game_list_widget->isShowingGameGrid())
         m_ui.actionViewGameGrid->setChecked(true);
       else
@@ -447,8 +467,8 @@ void MainWindow::updateDisplayRelatedActions()
   const bool fullscreen = isRenderingFullscreen();
 
   // rendering to main, or switched to gamelist/grid
-  m_ui.actionViewSystemDisplay->setEnabled(wantsDisplayWidget() && QtHost::CanRenderToMainWindow() &&
-                                           !s_locals.system_starting);
+  m_ui.actionViewSystemDisplay->setEnabled(isRenderingToMain());
+  m_ui.actionViewSystemLog->setEnabled(m_log_widget != nullptr);
   m_ui.menuWindowSize->setEnabled(s_locals.system_valid && !s_locals.system_starting && m_display_widget &&
                                   !fullscreen);
   m_ui.actionFullscreen->setEnabled(m_display_widget && !s_locals.system_starting);
@@ -480,6 +500,35 @@ void MainWindow::updateGameListRelatedActions()
   m_ui.actionClearGameListBackground->setDisabled(disable || !has_background);
 }
 
+void MainWindow::updateLogWidget()
+{
+  const bool has_log_widget = (m_log_widget != nullptr);
+  const bool wants_log_widget = wantsLogWidget();
+  if (has_log_widget == wants_log_widget)
+    return;
+
+  m_ui.actionViewSystemLog->setEnabled(wants_log_widget);
+
+  if (has_log_widget && !wants_log_widget)
+  {
+    // avoid focusing log widget
+    if (!isRenderingToMain())
+      switchToGameListView(false);
+
+    DEV_COLOR_LOG(StrongMagenta, "Removing main window log widget");
+    m_ui.mainContainer->removeWidget(m_log_widget);
+    QtUtils::SafeDeleteWidget(m_log_widget);
+  }
+  else if (!has_log_widget && wants_log_widget)
+  {
+    DEV_COLOR_LOG(StrongMagenta, "Creating main window log widget");
+    m_log_widget = new LogWidget(this);
+    m_ui.mainContainer->addWidget(m_log_widget);
+    DebugAssert(m_ui.mainContainer->indexOf(m_log_widget) >= 0);
+    switchToEmulationView();
+  }
+}
+
 QWidget* MainWindow::getDisplayContainer() const
 {
   return (m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget));
@@ -498,6 +547,7 @@ void MainWindow::onSystemStarting()
   s_locals.system_valid = false;
   s_locals.system_paused = false;
 
+  updateLogWidget();
   switchToEmulationView();
   updateEmulationActions();
   updateDisplayRelatedActions();
@@ -553,6 +603,7 @@ void MainWindow::onSystemStopping()
 void MainWindow::onSystemDestroyed()
 {
   Assert(!QtHost::IsSystemValidOrStarting());
+  updateLogWidget();
 
   // If we're closing or in batch mode, quit the whole application now.
   if (m_is_closing || QtHost::InBatchMode())
@@ -1739,6 +1790,7 @@ void MainWindow::setupAdditionalUi()
   group->addAction(m_ui.actionViewGameList);
   group->addAction(m_ui.actionViewGameGrid);
   group->addAction(m_ui.actionViewSystemDisplay);
+  group->addAction(m_ui.actionViewSystemLog);
 
   m_game_list_widget =
     new GameListWidget(m_ui.mainContainer, m_ui.actionViewGameList, m_ui.actionViewGameGrid, m_ui.actionMergeDiscSets,
@@ -2265,7 +2317,7 @@ void MainWindow::clearProgressBar()
 
 bool MainWindow::isShowingGameList() const
 {
-  return (m_ui.mainContainer->currentIndex() == 0);
+  return (m_ui.mainContainer->currentWidget() == m_game_list_widget);
 }
 
 bool MainWindow::isRenderingFullscreen() const
@@ -2275,7 +2327,7 @@ bool MainWindow::isRenderingFullscreen() const
 
 bool MainWindow::isRenderingToMain() const
 {
-  return (m_display_widget && m_ui.mainContainer->indexOf(m_display_widget) == 1);
+  return (m_display_widget && m_ui.mainContainer->indexOf(m_display_widget) >= 0);
 }
 
 bool MainWindow::shouldHideMouseCursor() const
@@ -2290,15 +2342,15 @@ bool MainWindow::shouldHideMainWindow() const
   return (!isRenderingToMain() && wantsDisplayWidget() &&
           ((Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
             Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
-           (QtHost::CanRenderToMainWindow() &&
+           (canRenderToMainWindow() &&
             (isRenderingFullscreen() || s_locals.system_locked.load(std::memory_order_relaxed))))) ||
          QtHost::InNoGUIMode();
 }
 
-void MainWindow::switchToGameListView()
+void MainWindow::switchToGameListView(bool pause_system /* = true */)
 {
   // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
-  if (QtHost::CanRenderToMainWindow() && isRenderingFullscreen())
+  if (canRenderToMainWindow() && isRenderingFullscreen())
   {
     g_emu_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->switchToGameListView(); });
     return;
@@ -2308,10 +2360,10 @@ void MainWindow::switchToGameListView()
     return;
 
   m_was_paused_on_game_list_switch = s_locals.system_paused;
-  if (!s_locals.system_paused)
+  if (!s_locals.system_paused && pause_system)
     g_emu_thread->setSystemPaused(true);
 
-  m_ui.mainContainer->setCurrentIndex(0);
+  m_ui.mainContainer->setCurrentWidget(m_game_list_widget);
   if (m_game_list_widget->isShowingGameGrid())
     m_ui.actionViewGameGrid->setChecked(true);
   else
@@ -2323,15 +2375,28 @@ void MainWindow::switchToGameListView()
 
 void MainWindow::switchToEmulationView()
 {
-  if (!isRenderingToMain() || m_ui.mainContainer->currentWidget() == m_display_widget)
-    return;
+  if (isRenderingToMain())
+  {
+    if (!m_display_widget || m_ui.mainContainer->currentWidget() == m_display_widget)
+      return;
 
-  m_ui.mainContainer->setCurrentIndex(1);
-  m_ui.actionViewSystemDisplay->setChecked(true);
+    m_ui.mainContainer->setCurrentWidget(m_display_widget);
+    m_ui.actionViewSystemDisplay->setChecked(true);
 
-  // size of the widget might have changed, let it check itself
-  m_display_widget->checkForSizeChange();
-  m_display_widget->setFocus();
+    // size of the widget might have changed, let it check itself
+    m_display_widget->checkForSizeChange();
+    m_display_widget->setFocus();
+  }
+  else
+  {
+    if (!m_log_widget || m_ui.mainContainer->currentWidget() == m_log_widget)
+      return;
+
+    m_ui.mainContainer->setCurrentWidget(m_log_widget);
+    m_ui.actionViewSystemLog->setChecked(true);
+
+    m_log_widget->setFocus();
+  }
 
   // resume if we weren't paused at switch time
   if (s_locals.system_paused && !m_was_paused_on_game_list_switch)
@@ -2408,6 +2473,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
+  connect(m_ui.actionViewSystemLog, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
   connect(m_ui.actionViewGameProperties, &QAction::triggered, this, [this]() { openGamePropertiesForCurrentGame(); });
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
@@ -2635,7 +2701,7 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
   DebugAssert(m_display_widget);
 
   // just sync it with the main window if we're not using nogui modem, config will be stale
-  if (QtHost::CanRenderToMainWindow())
+  if (canRenderToMainWindow())
   {
     container->setGeometry(geometry());
     return;
@@ -2643,7 +2709,7 @@ void MainWindow::restoreDisplayWindowGeometryFromConfig()
 
   // we don't want the temporary windowed window to be positioned on a different monitor, so use the main window
   // coordinates... unless you're on wayland, too fucking bad, broken by design.
-  const bool use_main_window_pos = QtHost::UseMainWindowGeometryForDisplayWindow();
+  const bool use_main_window_pos = useMainWindowGeometryForDisplayWindow();
   m_display_widget->setWindowPositionKey(use_main_window_pos ? "MainWindow" : "DisplayWindow");
 
   if (!QtUtils::RestoreWindowGeometry(m_display_widget->windowPositionKey(), container))
@@ -3018,8 +3084,15 @@ void MainWindow::checkForSettingChanges()
   // don't change state if temporary unfullscreened
   if (m_display_widget && !QtHost::IsSystemLocked() && !isRenderingFullscreen())
   {
-    if (QtHost::CanRenderToMainWindow() != isRenderingToMain())
+    if (canRenderToMainWindow() != isRenderingToMain())
       g_emu_thread->updateDisplayWindow();
+    else
+      updateLogWidget();
+  }
+  else
+  {
+    // log widget update must be deferred because updateDisplayWindow() is asynchronous
+    updateLogWidget();
   }
 
   LogWindow::updateSettings();

@@ -321,12 +321,6 @@ bool InNoGUIMode();
 /// Returns true if display widgets need to wrapped in a container, thanks to Wayland stupidity.
 bool IsDisplayWidgetContainerNeeded();
 
-/// Returns true if rendering to the main window should be allowed.
-bool CanRenderToMainWindow();
-
-/// Returns true if the separate-window display widget should use the main window coordinates.
-bool UseMainWindowGeometryForDisplayWindow();
-
 /// Call when the language changes.
 void UpdateApplicationLanguage(QWidget* dialog_parent);
 

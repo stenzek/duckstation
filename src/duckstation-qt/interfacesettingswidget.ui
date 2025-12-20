@@ -130,9 +130,9 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QCheckBox" name="automaticallyResizeWindow">
+       <widget class="QCheckBox" name="displayLogInMainWindow">
         <property name="text">
-         <string>Automatically Resize Window</string>
+         <string>Display System Log In Main Window</string>
         </property>
        </widget>
       </item>
@@ -140,6 +140,13 @@
        <widget class="QCheckBox" name="disableWindowResizing">
         <property name="text">
          <string>Disable Window Resizing</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="automaticallyResizeWindow">
+        <property name="text">
+         <string>Automatically Resize Window</string>
         </property>
        </widget>
       </item>
