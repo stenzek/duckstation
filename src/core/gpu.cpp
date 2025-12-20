@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu.h"
+#include "core.h"
 #include "dma.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
@@ -9,7 +10,6 @@
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
 #include "gpu_thread.h"
-#include "host.h"
 #include "interrupt_controller.h"
 #include "performance_counters.h"
 #include "settings.h"
@@ -25,6 +25,7 @@
 #include "util/postprocessing.h"
 #include "util/shadergen.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"
@@ -2295,7 +2296,7 @@ void GPU::StopRecordingGPUDump()
 
   // Are we compressing the dump?
   const GPUDumpCompressionMode compress_mode =
-    Settings::ParseGPUDumpCompressionMode(Host::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
+    Settings::ParseGPUDumpCompressionMode(Core::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
       .value_or(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE);
   std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(m_gpu_dump->GetPath()));
   if (compress_mode == GPUDumpCompressionMode::Disabled)

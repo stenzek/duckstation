@@ -53,7 +53,6 @@
     <ClInclude Include="d3d11_pipeline.h" />
     <ClInclude Include="d3d11_stream_buffer.h" />
     <ClInclude Include="d3d11_texture.h" />
-    <ClInclude Include="host.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="http_downloader.h" />
@@ -80,6 +79,7 @@
     <ClInclude Include="spirv_module.h" />
     <ClInclude Include="postprocessing_shader_slang.h" />
     <ClInclude Include="imgui_gsvector.h" />
+    <ClInclude Include="translation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -139,7 +139,6 @@
     <ClCompile Include="d3d11_pipeline.cpp" />
     <ClCompile Include="d3d11_stream_buffer.cpp" />
     <ClCompile Include="d3d11_texture.cpp" />
-    <ClCompile Include="host.cpp" />
     <ClCompile Include="postprocessing_shader_fx.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="http_downloader_curl.cpp" />
@@ -165,6 +164,7 @@
     <ClCompile Include="animated_image.cpp" />
     <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="postprocessing_shader_slang.cpp" />
+    <ClCompile Include="translation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

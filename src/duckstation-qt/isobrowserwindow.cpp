@@ -7,7 +7,7 @@
 #include "qtutils.h"
 
 #include "util/cd_image.h"
-#include "util/host.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"

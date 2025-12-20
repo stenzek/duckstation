@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "ddgo_controller.h"
-#include "host.h"
 #include "system.h"
 
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "IconsPromptFont.h"
 

@@ -9,9 +9,10 @@
 
 #include "core/bus.h"
 #include "core/cpu_core.h"
-#include "core/host.h"
 #include "core/settings.h"
 #include "core/system.h"
+
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"

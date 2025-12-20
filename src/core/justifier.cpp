@@ -3,13 +3,13 @@
 
 #include "justifier.h"
 #include "gpu.h"
-#include "host.h"
 #include "interrupt_controller.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/gsvector_formatter.h"

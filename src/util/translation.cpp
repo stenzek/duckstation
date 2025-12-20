@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "host.h"
+#include "translation.h"
 
 #include "common/assert.h"
 #include "common/heterogeneous_containers.h"
@@ -22,7 +22,7 @@ static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
 using TranslationStringMap = PreferUnorderedStringMap<std::pair<u32, u32>>;
 using TranslationStringContextMap = PreferUnorderedStringMap<TranslationStringMap>;
 
-struct Locals
+struct TranslationLocals
 {
   std::shared_mutex translation_string_mutex;
   TranslationStringContextMap translation_string_map;
@@ -30,7 +30,7 @@ struct Locals
   u32 translation_string_cache_pos;
 };
 
-static Locals s_locals;
+ALIGN_TO_CACHE_LINE static TranslationLocals s_locals;
 
 } // namespace Host
 

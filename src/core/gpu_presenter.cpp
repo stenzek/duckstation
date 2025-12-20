@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_presenter.h"
+#include "core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
@@ -1406,7 +1407,7 @@ void GPUPresenter::LoadPostProcessingSettings(bool force_load)
 {
   static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
 
   // This is the initial load, defer creating the chain until it's actually enabled if disabled.
@@ -1434,7 +1435,7 @@ bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
   {
     static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
 
     // Don't delete the chain if we're just temporarily disabling.
@@ -1465,11 +1466,11 @@ SettingsInterface& GPUPresenter::GetPostProcessingSettingsInterface(const char* 
   // If PostProcessing/Enable is set in the game settings interface, use that.
   // Otherwise, use the base settings.
 
-  SettingsInterface* game_si = Host::Internal::GetGameSettingsLayer();
+  SettingsInterface* game_si = Core::GetGameSettingsLayer();
   if (game_si && game_si->ContainsValue(section, "Enabled"))
     return *game_si;
   else
-    return *Host::Internal::GetBaseSettingsLayer();
+    return *Core::GetBaseSettingsLayer();
 }
 
 void GPUPresenter::TogglePostProcessing()
@@ -1533,20 +1534,20 @@ void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, boo
 
 bool GPUPresenter::LoadOverlaySettings()
 {
-  std::string preset_name = Host::GetStringSettingValue("BorderOverlay", "PresetName");
+  std::string preset_name = Core::GetStringSettingValue("BorderOverlay", "PresetName");
   std::string image_path;
   GSVector4i display_rect = m_border_overlay_display_rect;
   bool alpha_blend = m_border_overlay_alpha_blend;
   bool destination_alpha_blend = m_border_overlay_destination_alpha_blend;
   if (preset_name == "Custom")
   {
-    image_path = Host::GetStringSettingValue("BorderOverlay", "ImagePath");
-    display_rect = GSVector4i(Host::GetIntSettingValue("BorderOverlay", "DisplayStartX", 0),
-                              Host::GetIntSettingValue("BorderOverlay", "DisplayStartY", 0),
-                              Host::GetIntSettingValue("BorderOverlay", "DisplayEndX", 0),
-                              Host::GetIntSettingValue("BorderOverlay", "DisplayEndY", 0));
-    alpha_blend = Host::GetBoolSettingValue("BorderOverlay", "AlphaBlend", false);
-    destination_alpha_blend = Host::GetBoolSettingValue("BorderOverlay", "DestinationAlphaBlend", false);
+    image_path = Core::GetStringSettingValue("BorderOverlay", "ImagePath");
+    display_rect = GSVector4i(Core::GetIntSettingValue("BorderOverlay", "DisplayStartX", 0),
+                              Core::GetIntSettingValue("BorderOverlay", "DisplayStartY", 0),
+                              Core::GetIntSettingValue("BorderOverlay", "DisplayEndX", 0),
+                              Core::GetIntSettingValue("BorderOverlay", "DisplayEndY", 0));
+    alpha_blend = Core::GetBoolSettingValue("BorderOverlay", "AlphaBlend", false);
+    destination_alpha_blend = Core::GetBoolSettingValue("BorderOverlay", "DestinationAlphaBlend", false);
   }
 
   // check rect validity.. ignore everything if it's bogus

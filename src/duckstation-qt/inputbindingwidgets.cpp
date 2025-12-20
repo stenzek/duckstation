@@ -7,6 +7,7 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
 #include "core/host.h"
 
 #include "common/bitutils.h"
@@ -46,7 +47,7 @@ InputBindingWidget::~InputBindingWidget()
 bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
 {
   return (sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) :
-                Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
+                Core::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
          !InputManager::IsUsingRawInput();
 }
 
@@ -252,7 +253,7 @@ void InputBindingWidget::setNewBinding()
     }
     else
     {
-      Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
+      Core::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
       Host::CommitBaseSettingChanges();
       if (m_bind_type == InputBindingInfo::Type::Pointer)
         g_emu_thread->updateControllerSettings();
@@ -275,7 +276,7 @@ void InputBindingWidget::clearBinding()
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
       g_emu_thread->updateControllerSettings();
@@ -287,7 +288,7 @@ void InputBindingWidget::clearBinding()
 void InputBindingWidget::reloadBinding()
 {
   m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
-                       Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+                       Core::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
   updateTextAndToolTip();
 }
 
@@ -536,7 +537,7 @@ void InputBindingWidget::showEffectBindingDialog()
   }
   else
   {
-    Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+    Core::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
       g_emu_thread->updateControllerSettings();

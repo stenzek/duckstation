@@ -6,7 +6,6 @@
 #include "qthost.h"
 #include "settingwidgetbinder.h"
 
-#include "util/host.h"
 #include "util/ini_settings_interface.h"
 
 #include <QtCore/QLatin1StringView>
@@ -219,8 +218,8 @@ LogWindow::~LogWindow() = default;
 
 void LogWindow::updateSettings()
 {
-  const bool new_enabled = Host::GetBoolSettingValue("Logging", "LogToWindow", false);
-  const bool attach_to_main = Host::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
+  const bool new_enabled = Core::GetBoolSettingValue("Logging", "LogToWindow", false);
+  const bool attach_to_main = Core::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
   const bool curr_enabled = (g_log_window != nullptr);
   if (new_enabled == curr_enabled)
   {
@@ -364,7 +363,7 @@ void LogWindow::createUi()
 void LogWindow::updateLogLevelUi()
 {
   const Log::Level level =
-    Settings::ParseLogLevelName(Host::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
+    Settings::ParseLogLevelName(Core::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
       .value_or(Log::DEFAULT_LOG_LEVEL);
 
   const QList<QAction*> actions = m_level_menu->actions();
@@ -374,21 +373,21 @@ void LogWindow::updateLogLevelUi()
 
 void LogWindow::setLogLevel(Log::Level level)
 {
-  Host::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
+  Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
   Host::CommitBaseSettingChanges();
   g_emu_thread->applySettings(false);
 }
 
 void LogWindow::populateFilterMenu(QMenu* filter_menu)
 {
-  const auto settings_Lock = Host::GetSettingsLock();
+  const auto settings_Lock = Core::GetSettingsLock();
   const INISettingsInterface* si = QtHost::GetBaseSettingsInterface();
 
   for (const char* channel_name : Log::GetChannelNames())
   {
     const bool enabled = si->GetBoolValue("Logging", channel_name, true);
     QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
-      Host::SetBaseBoolSettingValue("Logging", channel_name, checked);
+      Core::SetBaseBoolSettingValue("Logging", channel_name, checked);
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings(false);
     });
@@ -433,19 +432,19 @@ void LogWindow::closeEvent(QCloseEvent* event)
 
 void LogWindow::saveSize()
 {
-  const int current_width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int current_height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int current_width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int current_height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
   const QSize wsize = size();
 
   bool changed = false;
   if (current_width != wsize.width())
   {
-    Host::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
+    Core::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
     changed = true;
   }
   if (current_height != wsize.height())
   {
-    Host::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
+    Core::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
     changed = true;
   }
 
@@ -455,7 +454,7 @@ void LogWindow::saveSize()
 
 void LogWindow::restoreSize()
 {
-  const int width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
   resize(width, height);
 }

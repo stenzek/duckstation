@@ -3,71 +3,57 @@
 
 #pragma once
 
-#include "util/host.h"
-
-#include "common/small_string.h"
+#include "common/heap_array.h"
 #include "common/types.h"
 
+#include <ctime>
 #include <functional>
-#include <mutex>
 #include <span>
-#include <string>
 #include <string_view>
-#include <vector>
 
 class Error;
-class SettingsInterface;
-struct WindowInfo;
-enum class AudioBackend : u8;
-enum class AudioStretchMode : u8;
-enum class RenderAPI : u8;
-class AudioStream;
-class CDImage;
 
 namespace Host {
-// Base setting retrieval, bypasses layers.
-std::string GetBaseStringSettingValue(const char* section, const char* key, const char* default_value = "");
-SmallString GetBaseSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
-TinyString GetBaseTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
-bool GetBaseBoolSettingValue(const char* section, const char* key, bool default_value = false);
-s32 GetBaseIntSettingValue(const char* section, const char* key, s32 default_value = 0);
-u32 GetBaseUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
-float GetBaseFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
-double GetBaseDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
-std::vector<std::string> GetBaseStringListSetting(const char* section, const char* key);
 
-// Allows the emucore to write settings back to the frontend. Use with care.
-// You should call CommitBaseSettingChanges() if you directly write to the layer (i.e. not these functions), or it may
-// not be written to disk.
-void SetBaseBoolSettingValue(const char* section, const char* key, bool value);
-void SetBaseIntSettingValue(const char* section, const char* key, s32 value);
-void SetBaseUIntSettingValue(const char* section, const char* key, u32 value);
-void SetBaseFloatSettingValue(const char* section, const char* key, float value);
-void SetBaseStringSettingValue(const char* section, const char* key, const char* value);
-void SetBaseStringListSettingValue(const char* section, const char* key, const std::vector<std::string>& values);
-bool AddValueToBaseStringListSetting(const char* section, const char* key, const char* value);
-bool RemoveValueFromBaseStringListSetting(const char* section, const char* key, const char* value);
-bool ContainsBaseSettingValue(const char* section, const char* key);
-void DeleteBaseSettingValue(const char* section, const char* key);
-void CommitBaseSettingChanges();
+/// Returns true if the specified resource file exists.
+bool ResourceFileExists(std::string_view filename, bool allow_override);
 
-// Settings access, thread-safe.
-std::string GetStringSettingValue(const char* section, const char* key, const char* default_value = "");
-SmallString GetSmallStringSettingValue(const char* section, const char* key, const char* default_value = "");
-TinyString GetTinyStringSettingValue(const char* section, const char* key, const char* default_value = "");
-bool GetBoolSettingValue(const char* section, const char* key, bool default_value = false);
-int GetIntSettingValue(const char* section, const char* key, s32 default_value = 0);
-u32 GetUIntSettingValue(const char* section, const char* key, u32 default_value = 0);
-float GetFloatSettingValue(const char* section, const char* key, float default_value = 0.0f);
-double GetDoubleSettingValue(const char* section, const char* key, double default_value = 0.0);
-std::vector<std::string> GetStringListSetting(const char* section, const char* key);
+/// Reads a file from the resources directory of the application.
+/// This may be outside of the "normal" filesystem on platforms such as Mac.
+std::optional<DynamicHeapArray<u8>> ReadResourceFile(std::string_view filename, bool allow_override,
+                                                     Error* error = nullptr);
 
-/// Direct access to settings interface. Must hold the lock when calling GetSettingsInterface() and while using it.
-std::unique_lock<std::mutex> GetSettingsLock();
-SettingsInterface* GetSettingsInterface();
+/// Reads a resource file file from the resources directory as a string.
+std::optional<std::string> ReadResourceFileToString(std::string_view filename, bool allow_override,
+                                                    Error* error = nullptr);
+
+/// Returns the modified time of a resource.
+std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, bool allow_override);
+
+/// Reports a fatal error on the main thread. This does not assume that the main window exists,
+/// unlike ReportErrorAsync(), and will exit the application after the popup is closed.
+void ReportFatalError(std::string_view title, std::string_view message);
+
+/// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
+void ReportErrorAsync(std::string_view title, std::string_view message);
 
 /// Debugger feedback.
 void ReportDebuggerMessage(std::string_view message);
+
+/// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
+/// The callback may be executed on a different thread. Use RunOnCPUThread() in the callback to ensure safety.
+using ConfirmMessageAsyncCallback = std::function<void(bool)>;
+void ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
+                         std::string_view yes_text = std::string_view(), std::string_view no_text = std::string_view());
+
+/// Opens a URL, using the default application.
+void OpenURL(std::string_view url);
+
+/// Returns the current contents of the clipboard as UTF-8 text, if any.
+std::string GetClipboardText();
+
+/// Copies the provided UTF-8 text to the host's clipboard, if present.
+bool CopyTextToClipboard(std::string_view text);
 
 /// Returns a list of supported languages and codes (suffixes for translation files).
 std::span<const std::pair<const char*, const char*>> GetAvailableLanguageList();
@@ -84,29 +70,7 @@ void RunOnCPUThread(std::function<void()> function, bool block = false);
 /// Safely executes a function on the main/UI thread.
 void RunOnUIThread(std::function<void()> function, bool block = false);
 
-namespace Internal {
-
-/// Based on the current configuration, determines what the data directory is.
-std::string ComputeDataDirectory();
-
-/// Retrieves the base settings layer. Must call with lock held.
-SettingsInterface* GetBaseSettingsLayer();
-
-/// Retrieves the game settings layer, if present. Must call with lock held.
-SettingsInterface* GetGameSettingsLayer();
-
-/// Retrieves the input settings layer, if present. Must call with lock held.
-SettingsInterface* GetInputSettingsLayer();
-
-/// Sets the base settings layer. Should be called by the host at initialization time.
-void SetBaseSettingsLayer(SettingsInterface* sif);
-
-/// Sets the game settings layer. Called by VMManager when the game changes.
-void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
-
-/// Sets the input profile settings layer. Called by VMManager when the game changes.
-void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
-
-} // namespace Internal
+/// Commits any changes made to the base settings layer to the host.
+void CommitBaseSettingChanges();
 
 } // namespace Host

@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements.h"
+#include "core.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
@@ -20,6 +21,7 @@
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -68,17 +70,17 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
 static void HotkeyToggleOSD()
 {
-  g_settings.display_show_fps ^= Host::GetBoolSettingValue("Display", "ShowFPS", false);
-  g_settings.display_show_speed ^= Host::GetBoolSettingValue("Display", "ShowSpeed", false);
-  g_settings.display_show_gpu_stats ^= Host::GetBoolSettingValue("Display", "ShowGPUStatistics", false);
-  g_settings.display_show_resolution ^= Host::GetBoolSettingValue("Display", "ShowResolution", false);
-  g_settings.display_show_latency_stats ^= Host::GetBoolSettingValue("Display", "ShowLatencyStatistics", false);
-  g_settings.display_show_cpu_usage ^= Host::GetBoolSettingValue("Display", "ShowCPU", false);
-  g_settings.display_show_gpu_usage ^= Host::GetBoolSettingValue("Display", "ShowGPU", false);
-  g_settings.display_show_frame_times ^= Host::GetBoolSettingValue("Display", "ShowFrameTimes", false);
-  g_settings.display_show_status_indicators ^= Host::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
-  g_settings.display_show_inputs ^= Host::GetBoolSettingValue("Display", "ShowInputs", false);
-  g_settings.display_show_enhancements ^= Host::GetBoolSettingValue("Display", "ShowEnhancements", false);
+  g_settings.display_show_fps ^= Core::GetBoolSettingValue("Display", "ShowFPS", false);
+  g_settings.display_show_speed ^= Core::GetBoolSettingValue("Display", "ShowSpeed", false);
+  g_settings.display_show_gpu_stats ^= Core::GetBoolSettingValue("Display", "ShowGPUStatistics", false);
+  g_settings.display_show_resolution ^= Core::GetBoolSettingValue("Display", "ShowResolution", false);
+  g_settings.display_show_latency_stats ^= Core::GetBoolSettingValue("Display", "ShowLatencyStatistics", false);
+  g_settings.display_show_cpu_usage ^= Core::GetBoolSettingValue("Display", "ShowCPU", false);
+  g_settings.display_show_gpu_usage ^= Core::GetBoolSettingValue("Display", "ShowGPU", false);
+  g_settings.display_show_frame_times ^= Core::GetBoolSettingValue("Display", "ShowFrameTimes", false);
+  g_settings.display_show_status_indicators ^= Core::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
+  g_settings.display_show_inputs ^= Core::GetBoolSettingValue("Display", "ShowInputs", false);
+  g_settings.display_show_enhancements ^= Core::GetBoolSettingValue("Display", "ShowEnhancements", false);
 
   GPUThread::UpdateSettings(true, false, false);
 }
@@ -282,7 +284,7 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Reset Emulation Speed"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  g_settings.emulation_speed = std::max(Host::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
+                  g_settings.emulation_speed = std::max(Core::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
                                                         Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
@@ -336,8 +338,8 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   // This is pretty yikes, if PGXP was off we'll have already disabled all the dependent settings.
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   {
-                    const auto lock = Host::GetSettingsLock();
-                    const SettingsInterface& si = *Host::GetSettingsInterface();
+                    const auto lock = Core::GetSettingsLock();
+                    const SettingsInterface& si = *Core::GetSettingsInterface();
                     if (g_settings.gpu_pgxp_enable)
                       g_settings.LoadPGXPSettings(si);
                     g_settings.FixIncompatibleSettings(si, false);

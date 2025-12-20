@@ -4,6 +4,7 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/controller.h"
+#include "core/core_private.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
@@ -23,6 +24,7 @@
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
@@ -86,7 +88,7 @@ bool RegTestHost::SetFolders()
   DEV_LOG("Program Path: {}", program_path);
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
+  EmuFolders::DataRoot = Core::ComputeDataDirectory();
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 
   DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
@@ -116,7 +118,7 @@ bool RegTestHost::InitializeConfig()
 {
   SetFolders();
 
-  Host::Internal::SetBaseSettingsLayer(&s_base_settings_interface);
+  Core::SetBaseSettingsLayer(&s_base_settings_interface);
 
   // default settings for runner
   SettingsInterface& si = s_base_settings_interface;

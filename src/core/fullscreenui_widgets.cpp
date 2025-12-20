@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui_widgets.h"
+#include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_presenter.h"
@@ -451,11 +452,11 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
 
 void FullscreenUI::UpdateWidgetsSettings()
 {
-  UIStyle.Animations = Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
-  UIStyle.SmoothScrolling = Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
-  UIStyle.MenuBorders = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
+  UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
+  UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
+  UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
 
-  s_state.fullscreen_footer_icon_mapping = Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
+  s_state.fullscreen_footer_icon_mapping = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
                                              s_ps_button_mapping :
                                              std::span<const std::pair<const char*, const char*>>{};
 }
@@ -5264,7 +5265,7 @@ std::vector<std::string_view> FullscreenUI::GetLocalizedThemeDisplayNames()
 void FullscreenUI::UpdateTheme()
 {
   TinyString theme =
-    Host::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
+    Core::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
   if (theme.empty())
     theme = Host::GetDefaultFullscreenUITheme();
 

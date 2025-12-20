@@ -11,6 +11,7 @@
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cdrom_subq_replacement.cpp" />
     <ClCompile Include="cheats.cpp" />
+    <ClCompile Include="core.cpp" />
     <ClCompile Include="cpu_core.cpp" />
     <ClCompile Include="cpu_disasm.cpp" />
     <ClCompile Include="cpu_code_cache.cpp" />
@@ -52,7 +53,6 @@
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />
     <ClCompile Include="gpu_hw.cpp" />
-    <ClCompile Include="host.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
@@ -95,6 +95,8 @@
     <ClInclude Include="cdrom_subq_replacement.h" />
     <ClInclude Include="cheats.h" />
     <ClInclude Include="achievements.h" />
+    <ClInclude Include="core.h" />
+    <ClInclude Include="core_private.h" />
     <ClInclude Include="cpu_code_cache_private.h" />
     <ClInclude Include="cpu_core.h" />
     <ClInclude Include="cpu_core_private.h" />

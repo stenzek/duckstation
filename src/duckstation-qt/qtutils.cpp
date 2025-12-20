@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qtutils.h"
 #include "qthost.h"
 
+#include "core/core.h"
 #include "core/game_list.h"
 #include "core/system.h"
 
@@ -513,7 +514,7 @@ std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
                           device_pixel_ratio);
   }
 #elif defined(__APPLE__)
-  if (Host::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
+  if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
   {
     if (const std::optional<double> real_device_pixel_ratio =
           CocoaTools::GetViewRealScalingFactor(reinterpret_cast<void*>(widget->winId())))
@@ -632,8 +633,8 @@ void QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, 
   const TinyString wkey = TinyString::from_format("{}Width", window_name);
   const TinyString hkey = TinyString::from_format("{}Height", window_name);
 
-  const auto lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::Internal::GetBaseSettingsLayer();
+  const auto lock = Core::GetSettingsLock();
+  SettingsInterface* si = Core::GetBaseSettingsLayer();
 
   bool changed = false;
   if (si->GetBoolValue(WINDOW_GEOMETRY_CONFIG_SECTION, maxkey.c_str(), false) != maximized)
@@ -681,8 +682,8 @@ bool QtUtils::RestoreWindowGeometry(QWidget* widget)
 
 bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widget)
 {
-  const auto lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::Internal::GetBaseSettingsLayer();
+  const auto lock = Core::GetSettingsLock();
+  SettingsInterface* si = Core::GetBaseSettingsLayer();
 
   s32 x = 0, y = 0, w = 0, h = 0;
   const bool maximized = si->GetBoolValue(WINDOW_GEOMETRY_CONFIG_SECTION,

@@ -4,9 +4,11 @@
 #include "achievements_private.h"
 #include "fullscreenui_private.h"
 #include "gpu_thread.h"
+#include "host.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/log.h"

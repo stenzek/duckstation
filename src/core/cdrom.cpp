@@ -18,6 +18,7 @@
 #include "util/imgui_manager.h"
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/bitfield.h"

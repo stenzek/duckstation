@@ -5,6 +5,7 @@
 #include "bios.h"
 #include "cheats.h"
 #include "controller.h"
+#include "core.h"
 #include "fullscreenui_private.h"
 #include "game_database.h"
 #include "game_list.h"
@@ -220,7 +221,7 @@ ALIGN_TO_CACHE_LINE static SettingsLocals s_settings_locals;
 
 bool FullscreenUI::ShouldShowAdvancedSettings()
 {
-  return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+  return Core::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
 bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
@@ -231,14 +232,14 @@ bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
 SettingsInterface* FullscreenUI::GetEditingSettingsInterface()
 {
   return s_settings_locals.game_settings_interface ? s_settings_locals.game_settings_interface.get() :
-                                                     Host::Internal::GetBaseSettingsLayer();
+                                                     Core::GetBaseSettingsLayer();
 }
 
 SettingsInterface* FullscreenUI::GetEditingSettingsInterface(bool game_settings)
 {
   return (game_settings && s_settings_locals.game_settings_interface) ?
            s_settings_locals.game_settings_interface.get() :
-           Host::Internal::GetBaseSettingsLayer();
+           Core::GetBaseSettingsLayer();
 }
 
 void FullscreenUI::SetSettingsChanged(SettingsInterface* bsi)
@@ -259,7 +260,7 @@ bool FullscreenUI::GetEffectiveBoolSetting(SettingsInterface* bsi, const char* s
       return value.value();
   }
 
-  return Host::Internal::GetBaseSettingsLayer()->GetBoolValue(section, key, default_value);
+  return Core::GetBaseSettingsLayer()->GetBoolValue(section, key, default_value);
 }
 
 s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key,
@@ -272,7 +273,7 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
       return value.value();
   }
 
-  return Host::Internal::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
+  return Core::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
 }
 
 u32 FullscreenUI::GetEffectiveUIntSetting(SettingsInterface* bsi, const char* section, const char* key,
@@ -285,7 +286,7 @@ u32 FullscreenUI::GetEffectiveUIntSetting(SettingsInterface* bsi, const char* se
       return value.value();
   }
 
-  return Host::Internal::GetBaseSettingsLayer()->GetUIntValue(section, key, default_value);
+  return Core::GetBaseSettingsLayer()->GetUIntValue(section, key, default_value);
 }
 
 float FullscreenUI::GetEffectiveFloatSetting(SettingsInterface* bsi, const char* section, const char* key,
@@ -298,7 +299,7 @@ float FullscreenUI::GetEffectiveFloatSetting(SettingsInterface* bsi, const char*
       return value.value();
   }
 
-  return Host::Internal::GetBaseSettingsLayer()->GetFloatValue(section, key, default_value);
+  return Core::GetBaseSettingsLayer()->GetFloatValue(section, key, default_value);
 }
 
 TinyString FullscreenUI::GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
@@ -313,7 +314,7 @@ TinyString FullscreenUI::GetEffectiveTinyStringSetting(SettingsInterface* bsi, c
   if (value.has_value())
     ret = std::move(value.value());
   else
-    ret = Host::Internal::GetBaseSettingsLayer()->GetTinyStringValue(section, key, default_value);
+    ret = Core::GetBaseSettingsLayer()->GetTinyStringValue(section, key, default_value);
 
   return ret;
 }
@@ -425,7 +426,7 @@ void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindin
 
   InputManager::SetHook([this, game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
     // holding the settings lock here will protect the input binding list
-    auto lock = Host::GetSettingsLock();
+    const auto lock = Core::GetSettingsLock();
 
     // shouldn't happen, just in case
     if (m_binding_type == InputBindingInfo::Type::Unknown)
@@ -588,7 +589,7 @@ void FullscreenUI::BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::
                      if (index < 0)
                        return;
 
-                     auto lock = Host::GetSettingsLock();
+                     const auto lock = Core::GetSettingsLock();
                      SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                      if (static_cast<size_t>(index) == effects.size())
                        bsi->DeleteValue(section.c_str(), key.c_str());
@@ -664,7 +665,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings)
                        {
@@ -731,7 +732,7 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, std::string_view t
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings)
                        {
@@ -1309,7 +1310,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings)
                        {
@@ -1319,7 +1320,7 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, std::string_vie
                            bsi->SetStringValue(section, key, option_values[index - 1]);
 
                          if (changed_callback)
-                           changed_callback(Host::GetStringSettingValue(section, key, default_value));
+                           changed_callback(Core::GetStringSettingValue(section, key, default_value));
                        }
                        else
                        {
@@ -1366,7 +1367,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, std::string_view titl
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings)
                        {
@@ -1438,7 +1439,7 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, std::string_view
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings)
                        {
@@ -1468,7 +1469,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
                        if (dir.empty())
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        std::string relative_path(Path::MakeRelative(dir, EmuFolders::DataRoot));
                        bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
@@ -1505,7 +1506,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
                        return;
 
                      const std::string& name = names[index];
-                     auto lock = Host::GetSettingsLock();
+                     const auto lock = Core::GetSettingsLock();
                      SettingsInterface* bsi = GetEditingSettingsInterface();
                      const bool result =
                        InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name), true);
@@ -1527,7 +1528,7 @@ void FullscreenUI::StartClearBindingsForPort(u32 port)
       if (!result)
         return;
 
-      auto lock = Host::GetSettingsLock();
+      const auto lock = Core::GetSettingsLock();
       SettingsInterface* bsi = GetEditingSettingsInterface();
       InputManager::ClearPortBindings(*bsi, port);
       ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Controller mapping cleared."));
@@ -1603,7 +1604,7 @@ void FullscreenUI::SwitchToSettings()
   PopulateGraphicsAdapterList();
   PopulateHotkeyList();
 
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   const SettingsInterface* const sif = GetEditingSettingsInterface();
   PopulateGameListDirectoryCache(*sif);
   PopulatePostProcessingChain(*sif, PostProcessing::Config::DISPLAY_CHAIN_SECTION);
@@ -1659,7 +1660,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
-  auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   const GPURenderer renderer =
     Settings::ParseRendererName(GetEffectiveTinyStringSetting(GetEditingSettingsInterface(false), "GPU", "Renderer",
                                                               Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
@@ -1873,7 +1874,7 @@ void FullscreenUI::DrawSettingsWindow()
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
       ReturnToPreviousWindow();
 
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
 
     switch (s_settings_locals.settings_page)
     {
@@ -2378,8 +2379,8 @@ void FullscreenUI::DrawGameListSettingsPage()
     OpenFileSelector(FSUI_ICONVSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"), true, [](const std::string& dir) {
       if (!dir.empty())
       {
-        auto lock = Host::GetSettingsLock();
-        SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* bsi = Core::GetBaseSettingsLayer();
 
         bsi->AddToStringList("GameList", "RecursivePaths", dir.c_str());
         bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
@@ -2415,8 +2416,8 @@ void FullscreenUI::DrawGameListSettingsPage()
                          {
                            // toggle subdirectory scanning
                            {
-                             auto lock = Host::GetSettingsLock();
-                             SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+                             const auto lock = Core::GetSettingsLock();
+                             SettingsInterface* bsi = Core::GetBaseSettingsLayer();
                              if (!recursive)
                              {
                                bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
@@ -2437,8 +2438,8 @@ void FullscreenUI::DrawGameListSettingsPage()
                          else if (index == 2)
                          {
                            // remove from list
-                           auto lock = Host::GetSettingsLock();
-                           SettingsInterface* bsi = Host::Internal::GetBaseSettingsLayer();
+                           const auto lock = Core::GetSettingsLock();
+                           SettingsInterface* bsi = Core::GetBaseSettingsLayer();
                            bsi->RemoveFromStringList("GameList", "Paths", dir.c_str());
                            bsi->RemoveFromStringList("GameList", "RecursivePaths", dir.c_str());
                            SetSettingsChanged(bsi);
@@ -2615,7 +2616,7 @@ void FullscreenUI::DrawBIOSSettingsPage()
           if (index < 0)
             return;
 
-          auto lock = Host::GetSettingsLock();
+          const auto lock = Core::GetSettingsLock();
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
           if (game_settings && index == 0)
           {
@@ -2982,7 +2983,7 @@ void FullscreenUI::DoLoadInputProfile()
                        return;
                      }
 
-                     auto lock = Host::GetSettingsLock();
+                     const auto lock = Core::GetSettingsLock();
                      SettingsInterface* dsi = GetEditingSettingsInterface();
                      InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
@@ -2995,7 +2996,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 {
   INISettingsInterface dsi(System::GetInputProfilePath(name));
 
-  auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   SettingsInterface* ssi = GetEditingSettingsInterface();
   InputManager::CopyConfiguration(&dsi, *ssi, true, true, true, IsEditingGameSettings(ssi));
   if (dsi.Save())
@@ -3193,7 +3194,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                          if (index < 0)
                            return;
 
-                         auto lock = Host::GetSettingsLock();
+                         const auto lock = Core::GetSettingsLock();
                          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                          bsi->SetStringValue(section.c_str(), "Type", infos[index]->name);
                          SetSettingsChanged(bsi);
@@ -3306,7 +3307,7 @@ void FullscreenUI::DrawControllerSettingsPage()
               return;
             }
 
-            auto lock = Host::GetSettingsLock();
+            const auto lock = Core::GetSettingsLock();
             SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
             const TinyString key = TinyString::from_format("Macro{}Binds", macro_index + 1);
 
@@ -3557,7 +3558,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
           if (index < 0)
             return;
 
-          auto lock = Host::GetSettingsLock();
+          const auto lock = Core::GetSettingsLock();
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
           if (game_settings && index == 0)
           {
@@ -3740,7 +3741,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                        if (index < 0)
                          return;
 
-                       auto lock = Host::GetSettingsLock();
+                       const auto lock = Core::GetSettingsLock();
                        SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                        if (game_settings && index == 0)
                        {
@@ -4480,7 +4481,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                          if (index < 0)
                            return;
 
-                         auto lock = Host::GetSettingsLock();
+                         const auto lock = Core::GetSettingsLock();
                          SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
                          const s32 offset = static_cast<s32>(BoolToUInt32(game_settings));
                          if (game_settings && index == 0)

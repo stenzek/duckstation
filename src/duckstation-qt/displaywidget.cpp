@@ -6,6 +6,7 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
 #include "core/fullscreenui.h"
 
 #include "util/imgui_manager.h"
@@ -339,7 +340,7 @@ bool DisplayWidget::event(QEvent* event)
           ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled &&
             !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
-          Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
+          Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
         g_emu_thread->toggleFullscreen();
       }

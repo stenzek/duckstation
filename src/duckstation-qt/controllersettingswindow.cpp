@@ -9,7 +9,7 @@
 #include "qthost.h"
 
 #include "core/controller.h"
-#include "core/host.h"
+#include "core/core.h"
 
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -207,9 +207,8 @@ void ControllerSettingsWindow::onNewProfileClicked()
         temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", true);
 
       // from global
-      auto lock = Host::GetSettingsLock();
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, true,
-                                      copy_hotkey_bindings);
+      const auto lock = Core::GetSettingsLock();
+      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), true, true, true, copy_hotkey_bindings);
     }
     else
     {
@@ -224,7 +223,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
   {
     // still need to copy the source config
     if (!m_editing_settings_interface)
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), false, true, false, false);
+      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), false, true, false, false);
     else
       InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, false, true, false, false);
   }
@@ -255,9 +254,9 @@ void ControllerSettingsWindow::onApplyProfileClicked()
   {
     const bool copy_hotkey_bindings =
       m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-    auto lock = Host::GetSettingsLock();
-    InputManager::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true,
-                                    true, copy_hotkey_bindings);
+    const auto lock = Core::GetSettingsLock();
+    InputManager::CopyConfiguration(Core::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true, true,
+                                    copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
   g_emu_thread->applySettings();
@@ -311,9 +310,9 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   DebugAssert(!isEditingGlobalSettings());
 
   {
-    const auto lock = Host::GetSettingsLock();
-    InputManager::CopyConfiguration(m_editing_settings_interface, *Host::Internal::GetBaseSettingsLayer(), true, true,
-                                    true, false);
+    const auto lock = Core::GetSettingsLock();
+    InputManager::CopyConfiguration(m_editing_settings_interface, *Core::GetBaseSettingsLayer(), true, true, true,
+                                    false);
   }
 
   m_editing_settings_interface->Save();
@@ -330,7 +329,7 @@ bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key
   if (m_editing_settings_interface)
     return m_editing_settings_interface->GetBoolValue(section, key, default_value);
   else
-    return Host::GetBaseBoolSettingValue(section, key, default_value);
+    return Core::GetBaseBoolSettingValue(section, key, default_value);
 }
 
 s32 ControllerSettingsWindow::getIntValue(const char* section, const char* key, s32 default_value) const
@@ -338,7 +337,7 @@ s32 ControllerSettingsWindow::getIntValue(const char* section, const char* key, 
   if (m_editing_settings_interface)
     return m_editing_settings_interface->GetIntValue(section, key, default_value);
   else
-    return Host::GetBaseIntSettingValue(section, key, default_value);
+    return Core::GetBaseIntSettingValue(section, key, default_value);
 }
 
 std::string ControllerSettingsWindow::getStringValue(const char* section, const char* key,
@@ -348,7 +347,7 @@ std::string ControllerSettingsWindow::getStringValue(const char* section, const 
   if (m_editing_settings_interface)
     value = m_editing_settings_interface->GetStringValue(section, key, default_value);
   else
-    value = Host::GetBaseStringSettingValue(section, key, default_value);
+    value = Core::GetBaseStringSettingValue(section, key, default_value);
   return value;
 }
 
@@ -361,7 +360,7 @@ void ControllerSettingsWindow::setBoolValue(const char* section, const char* key
   }
   else
   {
-    Host::SetBaseBoolSettingValue(section, key, value);
+    Core::SetBaseBoolSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
@@ -376,7 +375,7 @@ void ControllerSettingsWindow::setIntValue(const char* section, const char* key,
   }
   else
   {
-    Host::SetBaseIntSettingValue(section, key, value);
+    Core::SetBaseIntSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
@@ -391,7 +390,7 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   }
   else
   {
-    Host::SetBaseStringSettingValue(section, key, value);
+    Core::SetBaseStringSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }
@@ -414,7 +413,7 @@ void ControllerSettingsWindow::clearSettingValue(const char* section, const char
   }
   else
   {
-    Host::DeleteBaseSettingValue(section, key);
+    Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings();
   }

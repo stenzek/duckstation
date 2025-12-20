@@ -8,6 +8,7 @@
 #include "bios.h"
 #include "bus.h"
 #include "cheats.h"
+#include "core.h"
 #include "cpu_core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
@@ -599,7 +600,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
 
   char rc_client_user_agent[128];
   rc_client_get_user_agent_clause(new_client, rc_client_user_agent, std::size(rc_client_user_agent));
-  *http = HTTPDownloader::Create(fmt::format("{} {}", Host::GetHTTPUserAgent(), rc_client_user_agent));
+  *http = HTTPDownloader::Create(fmt::format("{} {}", Core::GetHTTPUserAgent(), rc_client_user_agent));
   if (!*http)
   {
     Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -613,7 +614,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
   rc_client_set_userdata(new_client, http->get());
 
   // Allow custom host to be overridden through config.
-  if (std::string host = Host::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
+  if (std::string host = Core::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
   {
     // drop trailing hash, rc_client appends its own
     while (!host.empty() && host.back() == '/')
@@ -641,15 +642,15 @@ void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownl
 
 bool Achievements::HasSavedCredentials()
 {
-  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
+  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
   return (!username.empty() && !api_token.empty());
 }
 
 bool Achievements::TryLoggingInWithToken()
 {
-  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
+  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
   if (username.empty() || api_token.empty())
     return false;
 
@@ -2011,9 +2012,9 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   params->result = true;
 
   // Store configuration.
-  Host::SetBaseStringSettingValue("Cheevos", "Username", params->username);
-  Host::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
-  Host::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
+  Core::SetBaseStringSettingValue("Cheevos", "Username", params->username);
+  Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
+  Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
 
   // Will be using temporary client if achievements are not enabled.
@@ -2286,9 +2287,9 @@ void Achievements::Logout()
   }
 
   INFO_LOG("Clearing credentials...");
-  Host::DeleteBaseSettingValue("Cheevos", "Username");
-  Host::DeleteBaseSettingValue("Cheevos", "Token");
-  Host::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
+  Core::DeleteBaseSettingValue("Cheevos", "Username");
+  Core::DeleteBaseSettingValue("Cheevos", "Token");
+  Core::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
   Host::CommitBaseSettingChanges();
   ClearProgressDatabase();
 }

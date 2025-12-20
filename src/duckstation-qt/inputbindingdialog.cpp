@@ -7,6 +7,8 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
+
 #include "common/bitutils.h"
 #include "common/log.h"
 
@@ -292,9 +294,9 @@ void InputBindingDialog::saveListToSettings()
   else
   {
     if (!m_bindings.empty())
-      Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+      Core::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     else
-      Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+      Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
       g_emu_thread->updateControllerSettings();
@@ -378,7 +380,7 @@ void InputBindingDialog::onResetDeadzoneClicked()
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), key);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings(false);
   }
@@ -403,7 +405,7 @@ void InputBindingDialog::onResetSensitivityClicked()
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), key);
     Host::CommitBaseSettingChanges();
     g_emu_thread->applySettings(false);
   }

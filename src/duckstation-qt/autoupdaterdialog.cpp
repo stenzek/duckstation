@@ -9,7 +9,10 @@
 #include "scmversion/scmversion.h"
 #include "unzip.h"
 
+#include "core/core.h"
+
 #include "util/http_downloader.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -119,7 +122,7 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) 
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
 
-  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), error);
+  m_http = HTTPDownloader::Create(Core::GetHTTPUserAgent(), error);
 
   m_http_poll_timer = new QTimer(this);
   m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
@@ -167,7 +170,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
 #if !defined(_WIN32) && !defined(__APPLE__)
     EmuFolders::AppRoot.starts_with("/home") && // Devbuilds should be in home directory.
 #endif
-    Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+    Core::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
   {
     return;
   }
@@ -227,7 +230,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   }
 
   if (cb->isChecked())
-    Host::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+    Core::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
 #endif
 }
 
@@ -247,7 +250,7 @@ std::string AutoUpdaterDialog::getDefaultTag()
 
 std::string AutoUpdaterDialog::getCurrentUpdateTag()
 {
-  return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
+  return Core::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
 }
 
 void AutoUpdaterDialog::setDownloadSectionVisibility(bool visible)
@@ -590,7 +593,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
 bool AutoUpdaterDialog::updateNeeded() const
 {
-  QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
+  QString last_checked_sha = QString::fromStdString(Core::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
   INFO_LOG("Current SHA: {}", g_scm_hash_str);
   INFO_LOG("Latest SHA: {}", m_latest_sha.toUtf8().constData());
@@ -607,7 +610,7 @@ bool AutoUpdaterDialog::updateNeeded() const
 
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
-  Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
+  Core::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   close();
 }

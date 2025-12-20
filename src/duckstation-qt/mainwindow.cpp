@@ -26,6 +26,7 @@
 
 #include "core/achievements.h"
 #include "core/cheats.h"
+#include "core/core.h"
 #include "core/game_list.h"
 #include "core/host.h"
 #include "core/memory_card.h"
@@ -35,6 +36,7 @@
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
 #include "util/platform_misc.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -290,20 +292,20 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
 
 bool MainWindow::canRenderToMainWindow() const
 {
-  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+  return !Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
 }
 
 bool MainWindow::useMainWindowGeometryForDisplayWindow() const
 {
   // nogui _or_ main window mode, since we want to use it for temporary unfullscreens
-  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || QtHost::InNoGUIMode();
+  return !Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) || QtHost::InNoGUIMode();
 }
 
 bool MainWindow::wantsLogWidget() const
 {
-  return (wantsDisplayWidget() && Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
-          !Host::GetBaseBoolSettingValue("Main", "HideMainWindowWhenRunning", false) &&
-          Host::GetBoolSettingValue("Main", "DisplayLogInMainWindow", false));
+  return (wantsDisplayWidget() && Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
+          !Core::GetBaseBoolSettingValue("Main", "HideMainWindowWhenRunning", false) &&
+          Core::GetBoolSettingValue("Main", "DisplayLogInMainWindow", false));
 }
 
 bool MainWindow::wantsDisplayWidget() const
@@ -1403,7 +1405,7 @@ void MainWindow::onScanForNewGamesTriggered()
 
 void MainWindow::onViewToolbarActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
+  Core::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
   Host::CommitBaseSettingChanges();
   m_ui.toolBar->setVisible(checked);
   updateToolbarIconStyle();
@@ -1411,7 +1413,7 @@ void MainWindow::onViewToolbarActionTriggered(bool checked)
 
 void MainWindow::onViewToolbarLockActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
+  Core::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
   Host::CommitBaseSettingChanges();
   m_ui.toolBar->setMovable(!checked);
 
@@ -1421,7 +1423,7 @@ void MainWindow::onViewToolbarLockActionTriggered(bool checked)
 
 void MainWindow::onViewToolbarSmallIconsActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "ToolbarSmallIcons", checked);
+  Core::SetBaseBoolSettingValue("UI", "ToolbarSmallIcons", checked);
   Host::CommitBaseSettingChanges();
   updateToolbarIconStyle();
 
@@ -1431,7 +1433,7 @@ void MainWindow::onViewToolbarSmallIconsActionTriggered(bool checked)
 
 void MainWindow::onViewToolbarLabelsActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "ToolbarLabels", checked);
+  Core::SetBaseBoolSettingValue("UI", "ToolbarLabels", checked);
   Host::CommitBaseSettingChanges();
   updateToolbarIconStyle();
 
@@ -1441,7 +1443,7 @@ void MainWindow::onViewToolbarLabelsActionTriggered(bool checked)
 
 void MainWindow::onViewToolbarLabelsBesideIconsActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", checked);
+  Core::SetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", checked);
   Host::CommitBaseSettingChanges();
   updateToolbarIconStyle();
 
@@ -1451,7 +1453,7 @@ void MainWindow::onViewToolbarLabelsBesideIconsActionTriggered(bool checked)
 
 void MainWindow::onViewStatusBarActionTriggered(bool checked)
 {
-  Host::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
+  Core::SetBaseBoolSettingValue("UI", "ShowStatusBar", checked);
   Host::CommitBaseSettingChanges();
   m_ui.statusBar->setVisible(checked);
 }
@@ -1768,22 +1770,22 @@ void MainWindow::clearGameListEntryPlayTime(const GameList::Entry* entry)
 
 void MainWindow::setupAdditionalUi()
 {
-  const bool status_bar_visible = Host::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
+  const bool status_bar_visible = Core::GetBaseBoolSettingValue("UI", "ShowStatusBar", true);
   m_ui.actionViewStatusBar->setChecked(status_bar_visible);
   m_ui.statusBar->setVisible(status_bar_visible);
 
-  const bool toolbar_visible = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
+  const bool toolbar_visible = Core::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
   m_ui.actionViewToolbar->setChecked(toolbar_visible);
   m_ui.toolBar->setVisible(toolbar_visible);
 
-  const bool toolbars_locked = Host::GetBaseBoolSettingValue("UI", "LockToolbar", false);
+  const bool toolbars_locked = Core::GetBaseBoolSettingValue("UI", "LockToolbar", false);
   m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
   m_ui.toolBar->setMovable(!toolbars_locked);
 
-  m_ui.actionViewSmallToolbarIcons->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
-  m_ui.actionViewToolbarLabels->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
+  m_ui.actionViewSmallToolbarIcons->setChecked(Core::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
+  m_ui.actionViewToolbarLabels->setChecked(Core::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
   m_ui.actionViewToolbarLabelsBesideIcons->setChecked(
-    Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
+    Core::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
 
   // mutually exclusive actions
   QActionGroup* group = new QActionGroup(this);
@@ -1893,7 +1895,7 @@ void MainWindow::setupAdditionalUi()
   m_shortcuts.settings = new QShortcut(QKeySequence::Preferences, this, [this] { doSettings(); });
 
 #ifdef _WIN32
-  s_locals.disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
+  s_locals.disable_window_rounded_corners = Core::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
   if (s_locals.disable_window_rounded_corners)
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
 #endif
@@ -1946,7 +1948,7 @@ void MainWindow::onViewSortOrderActionTriggered()
 void MainWindow::updateToolbarActions()
 {
   const std::string active_buttons_str =
-    Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+    Core::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
   const std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
 
   m_ui.toolBar->clear();
@@ -1982,10 +1984,10 @@ void MainWindow::updateToolbarActions()
 
 void MainWindow::updateToolbarIconStyle()
 {
-  const bool show_toolbar = Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
-  const bool show_labels = Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
-  const bool small_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false);
-  const bool labels_beside_icons = Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false);
+  const bool show_toolbar = Core::GetBaseBoolSettingValue("UI", "ShowToolbar", false);
+  const bool show_labels = Core::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
+  const bool small_icons = Core::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false);
+  const bool labels_beside_icons = Core::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false);
 
   Qt::ToolButtonStyle style;
   if (!show_labels)
@@ -2009,7 +2011,7 @@ void MainWindow::updateToolbarIconStyle()
 
 void MainWindow::updateToolbarArea()
 {
-  const TinyString cfg_name = Host::GetBaseTinyStringSettingValue("UI", "ToolbarArea", "Top");
+  const TinyString cfg_name = Core::GetBaseTinyStringSettingValue("UI", "ToolbarArea", "Top");
   Qt::ToolBarArea cfg_area = Qt::TopToolBarArea;
   for (const auto& [area, name] : s_toolbar_areas)
   {
@@ -2027,17 +2029,17 @@ void MainWindow::updateToolbarArea()
   addToolBar(cfg_area, m_ui.toolBar);
 
   // need to explicitly make it visible again
-  if (Host::GetBaseBoolSettingValue("UI", "ShowToolbar", false))
+  if (Core::GetBaseBoolSettingValue("UI", "ShowToolbar", false))
     m_ui.toolBar->show();
 }
 
 void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 {
   {
-    const bool show_labels = Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
+    const bool show_labels = Core::GetBaseBoolSettingValue("UI", "ToolbarLabels", true);
 
     const std::string active_buttons_str =
-      Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+      Core::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
     std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
 
     QMenu* const menu = QtUtils::NewPopupMenu(this);
@@ -2049,17 +2051,17 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
 
     action = menu->addAction(tr("Small Icons"));
     action->setCheckable(true);
-    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
+    action->setChecked(Core::GetBaseBoolSettingValue("UI", "ToolbarSmallIcons", false));
     connect(action, &QAction::triggered, this, &MainWindow::onViewToolbarSmallIconsActionTriggered);
 
     action = menu->addAction(tr("Show Labels"));
     action->setCheckable(true);
-    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
+    action->setChecked(Core::GetBaseBoolSettingValue("UI", "ToolbarLabels", true));
     connect(action, &QAction::triggered, this, &MainWindow::onViewToolbarLabelsActionTriggered);
 
     action = menu->addAction(tr("Labels Beside Icons"));
     action->setCheckable(true);
-    action->setChecked(Host::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
+    action->setChecked(Core::GetBaseBoolSettingValue("UI", "ToolbarLabelsBesideIcons", false));
     action->setEnabled(show_labels);
     connect(action, &QAction::triggered, this, &MainWindow::onViewToolbarLabelsBesideIconsActionTriggered);
 
@@ -2068,7 +2070,7 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
     for (const auto& [area, name] : s_toolbar_areas)
     {
       QAction* const position_action = position_menu->addAction(tr(name), [this, name]() {
-        Host::SetBaseStringSettingValue("UI", "ToolbarArea", name);
+        Core::SetBaseStringSettingValue("UI", "ToolbarArea", name);
         Host::CommitBaseSettingChanges();
         updateToolbarArea();
       });
@@ -2091,12 +2093,12 @@ void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
       menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
       connect(menu_action, &QAction::triggered, this, [this, name](bool checked) {
         const std::string active_buttons_str =
-          Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+          Core::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
         std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
         if (checked ? StringUtil::AddToStringList(active_buttons, name) :
                       StringUtil::RemoveFromStringList(active_buttons, name))
         {
-          Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
+          Core::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
           Host::CommitBaseSettingChanges();
           updateToolbarActions();
         }
@@ -2119,7 +2121,7 @@ void MainWindow::onToolbarTopLevelChanged(bool top_level)
   {
     if (current_area == area)
     {
-      Host::SetBaseStringSettingValue("UI", "ToolbarArea", name);
+      Core::SetBaseStringSettingValue("UI", "ToolbarArea", name);
       Host::CommitBaseSettingChanges();
       break;
     }
@@ -2274,7 +2276,7 @@ void MainWindow::updateWindowState()
     return;
 
   const bool visible = !shouldHideMainWindow();
-  const bool resizeable = (!Host::GetBoolSettingValue("Main", "DisableWindowResize", false) || !wantsDisplayWidget() ||
+  const bool resizeable = (!Core::GetBoolSettingValue("Main", "DisableWindowResize", false) || !wantsDisplayWidget() ||
                            isRenderingFullscreen());
 
   if (isVisible() != visible)
@@ -2333,15 +2335,15 @@ bool MainWindow::isRenderingToMain() const
 bool MainWindow::shouldHideMouseCursor() const
 {
   return m_hide_mouse_cursor ||
-         (isRenderingFullscreen() && Host::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
+         (isRenderingFullscreen() && Core::GetBoolSettingValue("Main", "HideCursorInFullscreen", true));
 }
 
 bool MainWindow::shouldHideMainWindow() const
 {
   // CanRenderToMain check is for temporary unfullscreens.
   return (!isRenderingToMain() && wantsDisplayWidget() &&
-          ((Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
-            Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
+          ((Core::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) &&
+            Core::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false)) ||
            (canRenderToMainWindow() &&
             (isRenderingFullscreen() || s_locals.system_locked.load(std::memory_order_relaxed))))) ||
          QtHost::InNoGUIMode();
@@ -2935,7 +2937,7 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::startupUpdateCheck()
 {
-  if (!Host::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
+  if (!Core::GetBaseBoolSettingValue("AutoUpdater", "CheckAtStartup", true))
     return;
 
   checkForUpdates(false);
@@ -2987,7 +2989,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
   // Only confirm on UI thread because we need to display a msgbox.
   if (!m_is_closing && s_locals.system_valid && allow_confirm &&
-      Host::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
+      Core::GetBoolSettingValue("Main", "ConfirmPowerOff", true))
   {
     // Hardcore mode restrictions.
     if (check_pause && !s_locals.system_paused && s_locals.achievements_hardcore_mode && allow_confirm)
@@ -3066,7 +3068,7 @@ void MainWindow::checkForSettingChanges()
 {
 #ifdef _WIN32
   if (const bool disable_window_rounded_corners =
-        Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
+        Core::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
       disable_window_rounded_corners != s_locals.disable_window_rounded_corners)
   {
     s_locals.disable_window_rounded_corners = disable_window_rounded_corners;
@@ -3115,7 +3117,7 @@ std::optional<WindowInfo> MainWindow::getWindowInfo()
 void MainWindow::onCheckForUpdatesActionTriggered()
 {
   // Wipe out the last version, that way it displays the update if we've previously skipped it.
-  Host::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
+  Core::DeleteBaseSettingValue("AutoUpdater", "LastVersion");
   Host::CommitBaseSettingChanges();
   checkForUpdates(true);
 }
@@ -3203,9 +3205,9 @@ void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 poi
 
   // Automatically show the achievements column after first login. If the user has manually hidden it,
   // it will not be automatically shown again.
-  if (!Host::GetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", false))
+  if (!Core::GetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", false))
   {
-    Host::SetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", true);
+    Core::SetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", true);
     m_game_list_widget->getListView()->setAndSaveColumnHidden(GameListModel::Column_Achievements, false);
   }
 }
@@ -3332,7 +3334,7 @@ void MainWindow::onToolsMediaCaptureTriggered(bool checked)
   }
 
   const std::string container =
-    Host::GetStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
+    Core::GetStringSettingValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
   const QString qcontainer = QString::fromStdString(container);
   const QString filter(tr("%1 Files (*.%2)").arg(qcontainer.toUpper()).arg(qcontainer));
 

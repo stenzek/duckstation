@@ -10,8 +10,11 @@
 #include "settingswindow.h"
 
 #include "core/controller.h"
+#include "core/core.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
+
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/string_util.h"
@@ -402,8 +405,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
       sif->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
 
       {
-        const auto lock = Host::GetSettingsLock();
-        SettingsInterface* base_sif = Host::Internal::GetBaseSettingsLayer();
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* base_sif = Core::GetBaseSettingsLayer();
         InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
         QtUtils::AsyncMessageBox(this, QMessageBox::Information, QtUtils::GetRootWidget(this)->windowTitle(),

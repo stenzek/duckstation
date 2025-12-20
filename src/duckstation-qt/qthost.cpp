@@ -15,6 +15,8 @@
 #include "core/bus.h"
 #include "core/cheats.h"
 #include "core/controller.h"
+#include "core/core.h"
+#include "core/core_private.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_database.h"
@@ -52,6 +54,7 @@
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
 #include "util/postprocessing.h"
+#include "util/translation.h"
 
 #include "scmversion/scmversion.h"
 
@@ -410,7 +413,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 
     // grab the settings lock while we're writing the file, that way the CPU thread doesn't try
     // to read it at the same time.
-    const auto lock = Host::GetSettingsLock();
+    const auto lock = Core::GetSettingsLock();
 
     if (FileSystem::FileExists(ini->GetPath().c_str()) && !FileSystem::DeleteFile(ini->GetPath().c_str(), &error))
     {
@@ -428,7 +431,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   sif->RemoveEmptySections();
 
   // see above
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
 
   if (!ini->Save(&error))
   {
@@ -468,7 +471,7 @@ void QtHost::DownloadFile(QWidget* parent, std::string url, std::string path,
     [url = std::move(url), path = std::move(path),
      completion_callback = std::move(completion_callback)](ProgressCallback* const progress) mutable {
       Error error;
-      std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
+      std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Core::GetHTTPUserAgent(), &error);
       bool result;
       if ((result = static_cast<bool>(http)))
       {
@@ -519,7 +522,7 @@ bool QtHost::InitializeConfig()
   const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
   INFO_LOG("Loading config from {}.", settings_path);
   s_state.base_settings_interface.SetPath(std::move(settings_path));
-  Host::Internal::SetBaseSettingsLayer(&s_state.base_settings_interface);
+  Core::SetBaseSettingsLayer(&s_state.base_settings_interface);
 
   uint settings_version;
   if (!settings_exists || !s_state.base_settings_interface.Load() ||
@@ -618,7 +621,7 @@ void QtHost::SetResourcesDirectory()
 
 bool QtHost::SetDataDirectory()
 {
-  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
+  EmuFolders::DataRoot = Core::ComputeDataDirectory();
 
   // make sure it exists
   if (!FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
@@ -667,7 +670,7 @@ void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* 
   }
 
   {
-    auto lock = Host::GetSettingsLock();
+    const auto lock = Core::GetSettingsLock();
     QtHost::SetDefaultSettings(s_state.base_settings_interface, system, controller);
     QtHost::QueueSettingsSave();
   }
@@ -775,7 +778,7 @@ void EmuThread::startFullscreenUI()
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
-    (s_state.start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
+    (s_state.start_fullscreen_ui_fullscreen || Core::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
 
   m_is_fullscreen_ui_started = true;
   emit fullscreenUIStartedOrStopped(true);
@@ -2283,7 +2286,7 @@ void QtHost::UpdateApplicationLanguage(QWidget* dialog_parent)
   s_state.translators.clear();
 
   // Fixup automatic language.
-  std::string language = Host::GetBaseStringSettingValue("Main", "Language", "");
+  std::string language = Core::GetBaseStringSettingValue("Main", "Language", "");
   if (language.empty())
     language = GetSystemLanguage();
   QString qlanguage = QString::fromStdString(language);
@@ -2458,7 +2461,7 @@ std::string_view QtHost::GetSystemLanguage()
 bool Host::ChangeLanguage(const char* new_language)
 {
   Host::RunOnUIThread([new_language = std::string(new_language)]() {
-    Host::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
+    Core::SetBaseStringSettingValue("Main", "Language", new_language.c_str());
     Host::CommitBaseSettingChanges();
     QtHost::UpdateApplicationLanguage(g_main_window);
     g_main_window->recreate();
@@ -2971,7 +2974,7 @@ void QtHost::SaveSettings()
 
   {
     Error error;
-    auto lock = Host::GetSettingsLock();
+    const auto lock = Core::GetSettingsLock();
     if (s_state.base_settings_interface.IsDirty() && !s_state.base_settings_interface.Save(&error))
       ERROR_LOG("Failed to save settings: {}", error.GetDescription());
   }
@@ -3002,7 +3005,7 @@ void QtHost::QueueSettingsSave()
 
 bool QtHost::ShouldShowDebugOptions()
 {
-  return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+  return Core::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
 void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check_memcard_busy)
@@ -3356,7 +3359,7 @@ bool QtHost::RunSetupWizard()
     return false;
 
   // Remove the flag.
-  Host::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
+  Core::SetBaseBoolSettingValue("Main", "SetupWizardIncomplete", false);
   Host::CommitBaseSettingChanges();
   return true;
 }

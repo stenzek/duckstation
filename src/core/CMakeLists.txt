@@ -20,6 +20,8 @@ add_library(core
   cheats.h
   controller.cpp
   controller.h
+  core.cpp
+  core.h
   cpu_code_cache.cpp
   cpu_code_cache.h
   cpu_code_cache_private.h
@@ -82,7 +84,6 @@ add_library(core
   gte.cpp
   gte.h
   gte_types.h
-  host.cpp
   host.h
   hotkeys.cpp
   input_types.h
