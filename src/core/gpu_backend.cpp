@@ -6,6 +6,7 @@
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "gpu_thread.h"
+#include "host.h"
 #include "performance_counters.h"
 #include "save_state_version.h"
 #include "settings.h"
@@ -777,9 +778,9 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
           fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
       }
 
-      System::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
-                              flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                              osd_key = std::move(osd_key)]() mutable {
+      Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
+                            flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                            osd_key = std::move(osd_key)]() mutable {
         Error error;
 
         if (flip_y)

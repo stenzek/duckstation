@@ -454,10 +454,6 @@ void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u32 multisa
 void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
 void SetRunaheadReplayFlag(bool is_analog_input);
 
-/// Asynchronous work tasks, complete on worker thread.
-void QueueAsyncTask(std::function<void()> function);
-void WaitForAllAsyncTasks();
-
 /// Shared socket multiplexer.
 SocketMultiplexer* GetSocketMultiplexer();
 void ReleaseSocketMultiplexer();

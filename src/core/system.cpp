@@ -69,7 +69,6 @@
 #include "common/path.h"
 #include "common/ryml_helpers.h"
 #include "common/string_util.h"
-#include "common/task_queue.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
 
@@ -335,9 +334,6 @@ struct ALIGN_TO_CACHE_LINE StateVars
   // internal async task counters
   std::atomic_uint32_t outstanding_save_state_tasks{0};
 
-  // async task pool
-  TaskQueue async_task_queue;
-
 #ifdef ENABLE_SOCKET_MULTIPLEXER
   std::unique_ptr<SocketMultiplexer> socket_multiplexer;
 #endif
@@ -519,7 +515,7 @@ void System::ProcessShutdown()
   CPU::CodeCache::ProcessShutdown();
 }
 
-bool System::CoreThreadInitialize(Error* error, u32 async_worker_thread_count)
+bool System::CoreThreadInitialize(Error* error)
 {
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
@@ -534,7 +530,6 @@ bool System::CoreThreadInitialize(Error* error, u32 async_worker_thread_count)
 #endif
 
   s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
-  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
@@ -564,7 +559,6 @@ void System::CoreThreadShutdown()
 
   InputManager::CloseSources();
 
-  s_state.async_task_queue.SetWorkerCount(0);
   s_state.core_thread_handle = {};
 
 #ifdef _WIN32
@@ -3265,9 +3259,9 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
   FlushSaveStates();
 
   s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
-  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer),
-                                       completion_callback = std::move(completion_callback), backup_existing_save,
-                                       compression = g_settings.save_state_compression]() {
+  Host::QueueAsyncTask([path = std::move(path), buffer = std::move(buffer),
+                        completion_callback = std::move(completion_callback), backup_existing_save,
+                        compression = g_settings.save_state_compression]() {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;
@@ -3417,7 +3411,7 @@ void System::SaveStateToSlot(bool global, s32 slot)
 void System::FlushSaveStates()
 {
   while (s_state.outstanding_save_state_tasks.load(std::memory_order_acquire) > 0)
-    WaitForAllAsyncTasks();
+    Host::WaitForAllAsyncTasks();
 }
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
@@ -6216,16 +6210,6 @@ u64 System::GetSessionPlayedTime()
 {
   const Timer::Value ctime = Timer::GetCurrentValue();
   return static_cast<u64>(std::round(Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
-}
-
-void System::QueueAsyncTask(std::function<void()> function)
-{
-  s_state.async_task_queue.SubmitTask(std::move(function));
-}
-
-void System::WaitForAllAsyncTasks()
-{
-  s_state.async_task_queue.WaitForAll();
 }
 
 SocketMultiplexer* System::GetSocketMultiplexer()

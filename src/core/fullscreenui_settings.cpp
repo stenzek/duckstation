@@ -2526,7 +2526,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   {
     // TODO: Remove release once using move_only_function
     std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
-    System::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
+    Host::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
                             use_serial_names = use_serial_names]() {
       Error error;
       if (!GameList::DownloadCovers(
@@ -4943,7 +4943,7 @@ void FullscreenUI::StartAchievementsProgressRefresh()
 {
   auto progress = OpenModalProgressDialog(FSUI_STR("Refresh Achievement Progress"));
 
-  System::QueueAsyncTask([progress = progress.release()]() {
+  Host::QueueAsyncTask([progress = progress.release()]() {
     Error error;
     const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
     Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {
@@ -4962,7 +4962,7 @@ void FullscreenUI::StartAchievementsGameIconDownload()
 {
   auto progress = OpenModalProgressDialog(FSUI_STR("Download Game Icons"));
 
-  System::QueueAsyncTask([progress = progress.release()]() {
+  Host::QueueAsyncTask([progress = progress.release()]() {
     Error error;
     const bool result = Achievements::DownloadGameIcons(progress, &error);
     Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {

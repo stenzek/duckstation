@@ -3224,7 +3224,7 @@ void Achievements::UpdateProgressDatabase()
   }
 
   // done asynchronously so we don't hitch on disk I/O
-  System::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore]() {
+  Host::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore]() {
     // no point storing it in memory, just write directly to the file
     Error error;
     FileSystem::ManagedCFilePtr fp = OpenProgressDatabase(true, false, &error);

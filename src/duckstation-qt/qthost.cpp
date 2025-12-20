@@ -44,6 +44,7 @@
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
 #include "common/threading.h"
 
 #include "util/audio_stream.h"
@@ -175,6 +176,7 @@ struct State
 } // namespace
 
 ALIGN_TO_CACHE_LINE static State s_state;
+ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 CoreThread* g_core_thread;
 
@@ -1419,6 +1421,16 @@ void Host::RunOnUIThread(std::function<void()> function, bool block /* = false*/
                             block ? Qt::BlockingQueuedConnection : Qt::QueuedConnection, std::move(function));
 }
 
+void Host::QueueAsyncTask(std::function<void()> function)
+{
+  s_async_task_queue.SubmitTask(std::move(function));
+}
+
+void Host::WaitForAllAsyncTasks()
+{
+  s_async_task_queue.WaitForAll();
+}
+
 QtAsyncTask::QtAsyncTask(WorkCallback callback)
 {
   m_callback = std::move(callback);
@@ -1431,7 +1443,7 @@ void QtAsyncTask::create(QObject* owner, WorkCallback callback)
   // NOTE: Must get connected before queuing, because otherwise you risk a race.
   QtAsyncTask* task = new QtAsyncTask(std::move(callback));
   connect(task, &QtAsyncTask::completed, owner, [task]() { std::get<CompletionCallback>(task->m_callback)(); });
-  System::QueueAsyncTask([task]() {
+  Host::QueueAsyncTask([task]() {
     task->m_callback = std::get<WorkCallback>(task->m_callback)();
     Host::RunOnUIThread([task]() {
       emit task->completed(task);
@@ -1971,13 +1983,17 @@ void CoreThread::run()
   // input source setup must happen on emu thread
   {
     Error startup_error;
-    if (!System::CoreThreadInitialize(&startup_error, NUM_ASYNC_WORKER_THREADS))
+    if (!System::CoreThreadInitialize(&startup_error))
     {
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
       return;
     }
   }
+
+  // start up worker threads
+  // TODO: Replace this with QThreads
+  s_async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
 
   // enumerate all devices, even those which were added early
   m_input_device_list_model->enumerateDevices();
@@ -2018,6 +2034,9 @@ void CoreThread::run()
   // tell GPU thread to exit
   GPUThread::Internal::RequestShutdown();
   gpu_thread.Join();
+
+  // join worker threads
+  s_async_task_queue.SetWorkerCount(0);
 
   // and tidy up everything left
   System::CoreThreadShutdown();
