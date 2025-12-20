@@ -40,7 +40,7 @@ endif()
 
 # Release build optimizations for MSVC.
 if(MSVC)
-  add_definitions("/D_CRT_SECURE_NO_WARNINGS")
+  add_compile_definitions("_UNICODE" "UNICODE" "_CRT_NONSTDC_NO_DEPRECATE" "_CRT_SECURE_NO_WARNINGS")
   foreach(config CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     # Set warning level 3 instead of 4.
     string(REPLACE "/W3" "/W4" ${config} "${${config}}")
