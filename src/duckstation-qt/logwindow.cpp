@@ -7,6 +7,7 @@
 #include "settingwidgetbinder.h"
 
 #include "util/host.h"
+#include "util/ini_settings_interface.h"
 
 #include <QtCore/QLatin1StringView>
 #include <QtCore/QUtf8StringView>

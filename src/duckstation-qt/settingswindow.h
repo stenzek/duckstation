@@ -57,8 +57,6 @@ public:
   // Helper for externally setting fields in game settings ini.
   static bool setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key, bool value);
 
-  int getCategoryRow() const;
-
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
   ALWAYS_INLINE const std::string& getGameTitle() const { return m_title; }
@@ -109,8 +107,9 @@ public:
   bool hasGameTrait(GameDatabase::Trait trait);
   bool isGameHashStable() const;
 
-  void setCategory(const char* category);
+  int getCategoryRow() const;
   void setCategoryRow(int index);
+  void setCategory(const char* category);
 
 Q_SIGNALS:
   void settingsResetToDefaults();

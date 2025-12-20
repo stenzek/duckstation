@@ -8,6 +8,7 @@
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "settingswindow.h"
 #include "setupwizarddialog.h"
 
 #include "core/achievements.h"

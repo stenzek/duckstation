@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "controllersettingswindow.h"
-#include "displaywidget.h"
-#include "settingswindow.h"
 #include "ui_mainwindow.h"
 
 #include "core/types.h"
@@ -13,22 +10,23 @@
 #include "util/imgui_manager.h"
 #include "util/window_info.h"
 
-#include <QtCore/QThread>
+#include <QtGui/QShortcut>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QStackedWidget>
 #include <memory>
 #include <optional>
 
 class QLabel;
-class QThread;
 class QProgressBar;
 class QShortcut;
 
-class MainWindow;
-class GameListWidget;
 class EmuThread;
+class GameListWidget;
+class DisplayWidget;
+class DisplayContainer;
+class SettingsWindow;
+class ControllerSettingsWindow;
 class AutoUpdaterDialog;
 class MemoryCardEditorWindow;
 class DebuggerWindow;
@@ -192,7 +190,7 @@ private:
 
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
-  void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
+  void doControllerSettings(u32 category = 0);
 
   void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);

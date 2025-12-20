@@ -123,30 +123,29 @@ int ControllerSettingsWindow::getHotkeyCategoryIndex() const
   return 1 + (mtap_enabled[0] ? 4 : 1) + (mtap_enabled[1] ? 4 : 1);
 }
 
-ControllerSettingsWindow::Category ControllerSettingsWindow::getCurrentCategory() const
+int ControllerSettingsWindow::getCategoryRow() const
 {
-  const int index = m_ui.settingsCategory->currentRow();
-  if (index == 0)
-    return Category::GlobalSettings;
-  else if (index >= getHotkeyCategoryIndex())
-    return Category::HotkeySettings;
-  else
-    return Category::FirstControllerSettings;
+  return m_ui.settingsCategory->currentRow();
 }
 
-void ControllerSettingsWindow::setCategory(Category category)
+void ControllerSettingsWindow::setCategoryRow(int row)
+{
+  m_ui.settingsCategory->setCurrentRow(row);
+}
+
+void ControllerSettingsWindow::setCategory(u32 category)
 {
   switch (category)
   {
-    case Category::GlobalSettings:
+    case CATEGORY_GLOBAL_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(0);
       break;
 
-    case Category::FirstControllerSettings:
+    case CATEGORY_FIRST_CONTROLLER_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(1);
       break;
 
-    case Category::HotkeySettings:
+    case CATEGORY_HOTKEY_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(getHotkeyCategoryIndex());
       break;
 

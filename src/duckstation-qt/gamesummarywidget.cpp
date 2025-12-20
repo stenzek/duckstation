@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamesummarywidget.h"
+#include "controllersettingswindow.h"
 #include "gamelistwidget.h"
 #include "mainwindow.h"
 #include "qthost.h"

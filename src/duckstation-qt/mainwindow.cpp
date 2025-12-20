@@ -5,6 +5,7 @@
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
 #include "autoupdaterdialog.h"
+#include "controllersettingswindow.h"
 #include "coverdownloadwindow.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
@@ -702,8 +703,7 @@ void MainWindow::recreate()
   std::optional<QPoint> settings_window_pos;
   int settings_window_row = 0;
   std::optional<QPoint> controller_settings_window_pos;
-  ControllerSettingsWindow::Category controller_settings_window_row =
-    ControllerSettingsWindow::Category::GlobalSettings;
+  int controller_settings_window_row = 0;
   if (m_settings_window && m_settings_window->isVisible())
   {
     settings_window_pos = m_settings_window->pos();
@@ -712,7 +712,7 @@ void MainWindow::recreate()
   if (m_controller_settings_window && m_controller_settings_window->isVisible())
   {
     controller_settings_window_pos = m_controller_settings_window->pos();
-    controller_settings_window_row = m_controller_settings_window->getCurrentCategory();
+    controller_settings_window_row = m_controller_settings_window->getCategoryRow();
   }
 
   // Remove subwindows before switching to surfaceless, because otherwise e.g. the debugger can cause funkyness.
@@ -766,7 +766,7 @@ void MainWindow::recreate()
   {
     ControllerSettingsWindow* dlg = g_main_window->getControllerSettingsWindow();
     dlg->move(controller_settings_window_pos.value());
-    dlg->setCategory(controller_settings_window_row);
+    dlg->setCategoryRow(controller_settings_window_row);
     dlg->show();
   }
   if (settings_window_pos.has_value())
@@ -2386,9 +2386,9 @@ void MainWindow::connectSignals()
   connect(m_ui.actionEmulationSettings, &QAction::triggered, [this]() { doSettings("Emulation"); });
   connect(m_ui.actionGameListSettings, &QAction::triggered, [this]() { doSettings("Game List"); });
   connect(m_ui.actionHotkeySettings, &QAction::triggered,
-          [this]() { doControllerSettings(ControllerSettingsWindow::Category::HotkeySettings); });
+          [this]() { doControllerSettings(ControllerSettingsWindow::CATEGORY_HOTKEY_SETTINGS); });
   connect(m_ui.actionControllerSettings, &QAction::triggered,
-          [this]() { doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings); });
+          [this]() { doControllerSettings(ControllerSettingsWindow::CATEGORY_GLOBAL_SETTINGS); });
   connect(m_ui.actionMemoryCardSettings, &QAction::triggered, [this]() { doSettings("Memory Cards"); });
   connect(m_ui.actionGraphicsSettings, &QAction::triggered, [this]() { doSettings("Graphics"); });
   connect(m_ui.actionPostProcessingSettings, &QAction::triggered, [this]() { doSettings("Post-Processing"); });
@@ -2609,7 +2609,7 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
     m_controller_settings_window = nullptr;
 
     if (had_controller_settings_window)
-      doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings);
+      doControllerSettings(0);
   }
 
   updateDebugMenuVisibility();
@@ -2715,13 +2715,11 @@ MemoryEditorWindow* MainWindow::getMemoryEditorWindow()
   return m_memory_editor_window;
 }
 
-void MainWindow::doControllerSettings(
-  ControllerSettingsWindow::Category category /*= ControllerSettingsDialog::Category::Count*/)
+void MainWindow::doControllerSettings(u32 category /* = 0 */)
 {
   ControllerSettingsWindow* window = getControllerSettingsWindow();
   QtUtils::ShowOrRaiseWindow(window, this, true);
-  if (category != ControllerSettingsWindow::Category::Count)
-    window->setCategory(category);
+  window->setCategory(category);
 }
 
 void MainWindow::onViewChangeGameListBackgroundTriggered()
