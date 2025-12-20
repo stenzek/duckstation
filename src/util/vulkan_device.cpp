@@ -583,7 +583,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     (m_optional_extensions.vk_khr_dynamic_rendering &&
      fragment_shader_interlock_feature.fragmentShaderPixelInterlock == VK_TRUE);
   m_optional_extensions.vk_khr_maintenance4 &= (maintenance4_features.maintenance4 == VK_TRUE);
-  m_optional_extensions.vk_khr_maintenance5 &= (maintenance5_features.maintenance5 == VK_TRUE);
+  m_optional_extensions.vk_khr_maintenance5 &=
+    (m_optional_extensions.vk_khr_dynamic_rendering && maintenance5_features.maintenance5 == VK_TRUE);
 
   VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, nullptr, {}};
   VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_properties = {
@@ -633,6 +634,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
       m_optional_extensions.vk_khr_dynamic_rendering = false;
       m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
       m_optional_extensions.vk_ext_fragment_shader_interlock = false;
+      m_optional_extensions.vk_khr_maintenance5 = false;
       WARNING_LOG("Disabling VK_KHR_dynamic_rendering on broken mobile driver.");
     }
     if (m_optional_extensions.vk_khr_push_descriptor)
