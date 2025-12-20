@@ -916,7 +916,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.resolutionScale->clear();
 
     const int max_scale =
-      static_cast<int>(current_adapter ? std::max<u32>(current_adapter->max_texture_size / 1024, 1) : 16);
+      static_cast<int>(current_adapter ? std::clamp<u32>(current_adapter->max_texture_size / 1024u, 1u, 32u) : 16);
     populateUpscalingModes(m_ui.resolutionScale, max_scale);
 
     SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
