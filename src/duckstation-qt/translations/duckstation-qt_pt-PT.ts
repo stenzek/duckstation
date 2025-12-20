@@ -5132,7 +5132,7 @@ Este ficheiro pode ter vários gigabytes, portanto, têm em atenção o desgaste
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="564"/>
         <source>Error</source>

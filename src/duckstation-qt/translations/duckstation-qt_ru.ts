@@ -5234,7 +5234,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="851"/>
         <location filename="../qthost.cpp" line="865"/>
@@ -8827,7 +8827,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="463"/>
         <source>Memory Card Busy</source>
-        <translatorcomment>EmuThread</translatorcomment>
+        <translatorcomment>CoreThread</translatorcomment>
         <translation>Карта памяти занята</translation>
     </message>
     <message>
@@ -10056,7 +10056,7 @@ Please check your username and password, and try again.</source>
         <source>WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
 
 Do you want to {0} anyway?</source>
-        <translatorcomment>EmuThread</translatorcomment>
+        <translatorcomment>CoreThread</translatorcomment>
         <translation>ВНИМАНИЕ: ваша игра все еще сохраняется на карту памяти. Продолжение {0} может НЕОБРАТИМО УНИЧТОЖИТЬ ВАШУ КАРТУ ПАМЯТИ. Мы рекомендуем продолжить игру и подождать 5 секунд, пока она не завершит сохранение.
 
 Вы все равно хотите {0}?</translation>
@@ -10137,19 +10137,19 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="824"/>
         <source>change disc</source>
-        <translatorcomment>EmuThread</translatorcomment>
+        <translatorcomment>CoreThread</translatorcomment>
         <translation>смена диска</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="825"/>
         <source>reset</source>
-        <translatorcomment>EmuThread</translatorcomment>
+        <translatorcomment>CoreThread</translatorcomment>
         <translation>перезагрузка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreenui_strings.h" line="826"/>
         <source>shut down</source>
-        <translatorcomment>EmuThread</translatorcomment>
+        <translatorcomment>CoreThread</translatorcomment>
         <translation>выключение</translation>
     </message>
     <message>

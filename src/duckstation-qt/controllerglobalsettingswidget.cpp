@@ -84,7 +84,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.profileSettings = nullptr;
   }
 
-  m_ui.deviceList->setModel(g_emu_thread->getInputDeviceListModel());
+  m_ui.deviceList->setModel(g_core_thread->getInputDeviceListModel());
 
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
 
@@ -132,7 +132,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
   };
 
   if (std::ranges::none_of(
-        g_emu_thread->getInputDeviceListModel()->getDeviceList(),
+        g_core_thread->getInputDeviceListModel()->getDeviceList(),
         [](const InputDeviceListModel::Device& dev) { return (dev.key.source_type == InputSourceType::SDL); }))
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"), tr("No SDL devices are currently connected."));
@@ -169,7 +169,7 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
   QVBoxLayout* const scroll_area_layout = new QVBoxLayout(scroll_area_widget);
   scroll_area_layout->setContentsMargins(10, 10, 10, 10);
 
-  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  for (const InputDeviceListModel::Device& dev : g_core_thread->getInputDeviceListModel()->getDeviceList())
   {
     if (dev.key.source_type != InputSourceType::SDL)
       continue;

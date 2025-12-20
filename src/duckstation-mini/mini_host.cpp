@@ -66,7 +66,7 @@ static constexpr u32 DEFAULT_WINDOW_WIDTH = 1920;
 static constexpr u32 DEFAULT_WINDOW_HEIGHT = 1080;
 
 static constexpr u32 SETTINGS_VERSION = 3;
-static constexpr auto CPU_THREAD_POLL_INTERVAL =
+static constexpr auto CORE_THREAD_POLL_INTERVAL =
   std::chrono::milliseconds(8); // how often we'll poll controllers when paused
 
 static bool ParseCommandLineParametersAndInitializeConfig(int argc, char* argv[],
@@ -85,12 +85,12 @@ static std::string GetResourcePath(std::string_view name, bool allow_override);
 static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
 static void WarnAboutInterface();
-static void StartCPUThread();
-static void StopCPUThread();
-static void ProcessCPUThreadEvents(bool block);
-static void ProcessCPUThreadPlatformMessages();
-static void CPUThreadEntryPoint();
-static void CPUThreadMainLoop();
+static void StartCoreThread();
+static void StopCoreThread();
+static void ProcessCoreThreadEvents(bool block);
+static void ProcessCoreThreadPlatformMessages();
+static void CoreThreadEntryPoint();
+static void CoreThreadMainLoop();
 static void GPUThreadEntryPoint();
 static void UIThreadMainLoop();
 static void ProcessSDLEvent(const SDL_Event* ev);
@@ -114,7 +114,7 @@ struct SDLHostState
   float sdl_window_scale = 0.0f;
   WindowInfo::PreRotation force_prerotation = WindowInfo::PreRotation::Identity;
 
-  Threading::Thread cpu_thread;
+  Threading::Thread core_thread;
   Threading::Thread gpu_thread;
   Threading::KernelSemaphore platform_window_updated;
 
@@ -122,12 +122,12 @@ struct SDLHostState
   FullscreenUI::BackgroundProgressCallback* game_list_refresh_progress = nullptr;
 
   // CPU thread state.
-  ALIGN_TO_CACHE_LINE std::atomic_bool cpu_thread_running{false};
-  std::mutex cpu_thread_events_mutex;
-  std::condition_variable cpu_thread_event_done;
-  std::condition_variable cpu_thread_event_posted;
-  std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
-  u32 blocking_cpu_events_pending = 0;
+  ALIGN_TO_CACHE_LINE std::atomic_bool core_thread_running{false};
+  std::mutex core_thread_events_mutex;
+  std::condition_variable core_thread_event_done;
+  std::condition_variable core_thread_event_posted;
+  std::deque<std::pair<std::function<void()>, bool>> core_thread_events;
+  u32 blocking_core_events_pending = 0;
 };
 
 static SDLHostState s_state;
@@ -642,7 +642,7 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
   s_state.platform_window_updated.Wait();
 
   // reload input sources, since it might use the window handle
-  Host::RunOnCPUThread(&System::ReloadInputSources);
+  Host::RunOnCoreThread(&System::ReloadInputSources);
 
   return wi;
 }
@@ -744,7 +744,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
   {
     case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
     {
-      Host::RunOnCPUThread(
+      Host::RunOnCoreThread(
         [window_width = ev->window.data1, window_height = ev->window.data2, window_scale = s_state.sdl_window_scale]() {
           GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale);
         });
@@ -761,7 +761,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
         int window_width = 1, window_height = 1;
         SDL_GetWindowSizeInPixels(s_state.sdl_window, &window_width, &window_height);
-        Host::RunOnCPUThread([window_width, window_height, window_scale = s_state.sdl_window_scale]() {
+        Host::RunOnCoreThread([window_width, window_height, window_scale = s_state.sdl_window_scale]() {
           GPUThread::ResizeDisplayWindow(window_width, window_height, window_scale);
         });
       }
@@ -770,13 +770,13 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
     {
-      Host::RunOnCPUThread([]() { Host::RequestExitApplication(false); });
+      Host::RunOnCoreThread([]() { Host::RequestExitApplication(false); });
     }
     break;
 
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
     {
-      Host::RunOnCPUThread([]() {
+      Host::RunOnCoreThread([]() {
         if (!System::IsValid() || !s_state.was_paused_by_focus_loss)
           return;
 
@@ -788,7 +788,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
     case SDL_EVENT_WINDOW_FOCUS_LOST:
     {
-      Host::RunOnCPUThread([]() {
+      Host::RunOnCoreThread([]() {
         if (!System::IsRunning() || !g_settings.pause_on_focus_loss)
           return;
 
@@ -803,7 +803,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
     {
       if (const std::optional<u32> key = InputManager::ConvertHostNativeKeyCodeToKeyCode(ev->key.raw))
       {
-        Host::RunOnCPUThread([key_code = key.value(), pressed = (ev->type == SDL_EVENT_KEY_DOWN)]() {
+        Host::RunOnCoreThread([key_code = key.value(), pressed = (ev->type == SDL_EVENT_KEY_DOWN)]() {
           InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key_code), pressed ? 1.0f : 0.0f,
                                      GenericInputBinding::Unknown);
         });
@@ -814,13 +814,13 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
     case SDL_EVENT_TEXT_INPUT:
     {
       if (ImGuiManager::WantsTextInput())
-        Host::RunOnCPUThread([text = std::string(ev->text.text)]() { ImGuiManager::AddTextInput(std::move(text)); });
+        Host::RunOnCoreThread([text = std::string(ev->text.text)]() { ImGuiManager::AddTextInput(std::move(text)); });
     }
     break;
 
     case SDL_EVENT_MOUSE_MOTION:
     {
-      Host::RunOnCPUThread([x = static_cast<float>(ev->motion.x), y = static_cast<float>(ev->motion.y)]() {
+      Host::RunOnCoreThread([x = static_cast<float>(ev->motion.x), y = static_cast<float>(ev->motion.y)]() {
         InputManager::UpdatePointerAbsolutePosition(0, x, y);
         ImGuiManager::UpdateMousePosition(x, y);
       });
@@ -834,7 +834,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
       {
         // swap middle/right because sdl orders them differently
         const u8 button = (ev->button.button == 3) ? 1 : ((ev->button.button == 2) ? 2 : (ev->button.button - 1));
-        Host::RunOnCPUThread([button, pressed = (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN)]() {
+        Host::RunOnCoreThread([button, pressed = (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN)]() {
           InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button), pressed ? 1.0f : 0.0f,
                                      GenericInputBinding::Unknown);
         });
@@ -844,7 +844,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
     case SDL_EVENT_MOUSE_WHEEL:
     {
-      Host::RunOnCPUThread([x = ev->wheel.x, y = ev->wheel.y]() {
+      Host::RunOnCoreThread([x = ev->wheel.x, y = ev->wheel.y]() {
         if (x != 0.0f)
           InputManager::UpdatePointerRelativeDelta(0, InputPointerAxis::WheelX, x);
         if (y != 0.0f)
@@ -855,7 +855,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
 
     case SDL_EVENT_QUIT:
     {
-      Host::RunOnCPUThread([]() { Host::RequestExitApplication(false); });
+      Host::RunOnCoreThread([]() { Host::RequestExitApplication(false); });
     }
     break;
 
@@ -872,7 +872,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
       }
       else if (SDLInputSource::IsHandledInputEvent(ev))
       {
-        Host::RunOnCPUThread([event_copy = *ev]() {
+        Host::RunOnCoreThread([event_copy = *ev]() {
           SDLInputSource* is =
             static_cast<SDLInputSource*>(InputManager::GetInputSourceInterface(InputSourceType::SDL));
           if (is)
@@ -884,7 +884,7 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
   }
 }
 
-void MiniHost::ProcessCPUThreadPlatformMessages()
+void MiniHost::ProcessCoreThreadPlatformMessages()
 {
   // This is lame. On Win32, we need to pump messages, even though *we* don't have any windows
   // on the CPU thread, because SDL creates a hidden window for raw input for some game controllers.
@@ -899,70 +899,70 @@ void MiniHost::ProcessCPUThreadPlatformMessages()
 #endif
 }
 
-void MiniHost::ProcessCPUThreadEvents(bool block)
+void MiniHost::ProcessCoreThreadEvents(bool block)
 {
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  std::unique_lock lock(s_state.core_thread_events_mutex);
 
   for (;;)
   {
-    if (s_state.cpu_thread_events.empty())
+    if (s_state.core_thread_events.empty())
     {
-      if (!block || !s_state.cpu_thread_running.load(std::memory_order_acquire))
+      if (!block || !s_state.core_thread_running.load(std::memory_order_acquire))
         return;
 
       // we still need to keep polling the controllers when we're paused
       do
       {
-        ProcessCPUThreadPlatformMessages();
+        ProcessCoreThreadPlatformMessages();
         InputManager::PollSources();
-      } while (!s_state.cpu_thread_event_posted.wait_for(lock, CPU_THREAD_POLL_INTERVAL,
-                                                         []() { return !s_state.cpu_thread_events.empty(); }));
+      } while (!s_state.core_thread_event_posted.wait_for(lock, CORE_THREAD_POLL_INTERVAL,
+                                                         []() { return !s_state.core_thread_events.empty(); }));
     }
 
     // return after processing all events if we had one
     block = false;
 
-    auto event = std::move(s_state.cpu_thread_events.front());
-    s_state.cpu_thread_events.pop_front();
+    auto event = std::move(s_state.core_thread_events.front());
+    s_state.core_thread_events.pop_front();
     lock.unlock();
     event.first();
     lock.lock();
 
     if (event.second)
     {
-      s_state.blocking_cpu_events_pending--;
-      s_state.cpu_thread_event_done.notify_one();
+      s_state.blocking_core_events_pending--;
+      s_state.core_thread_event_done.notify_one();
     }
   }
 }
 
-void MiniHost::StartCPUThread()
+void MiniHost::StartCoreThread()
 {
-  s_state.cpu_thread_running.store(true, std::memory_order_release);
-  s_state.cpu_thread.Start(CPUThreadEntryPoint);
+  s_state.core_thread_running.store(true, std::memory_order_release);
+  s_state.core_thread.Start(CoreThreadEntryPoint);
 }
 
-void MiniHost::StopCPUThread()
+void MiniHost::StopCoreThread()
 {
-  if (!s_state.cpu_thread.Joinable())
+  if (!s_state.core_thread.Joinable())
     return;
 
   {
-    std::unique_lock lock(s_state.cpu_thread_events_mutex);
-    s_state.cpu_thread_running.store(false, std::memory_order_release);
-    s_state.cpu_thread_event_posted.notify_one();
+    std::unique_lock lock(s_state.core_thread_events_mutex);
+    s_state.core_thread_running.store(false, std::memory_order_release);
+    s_state.core_thread_event_posted.notify_one();
   }
 
-  s_state.cpu_thread.Join();
+  s_state.core_thread.Join();
 }
 
-void MiniHost::CPUThreadEntryPoint()
+void MiniHost::CoreThreadEntryPoint()
 {
   Threading::SetNameOfCurrentThread("CPU Thread");
 
   // input source setup must happen on emu thread
   Error error;
-  if (!System::CPUThreadInitialize(&error, NUM_ASYNC_WORKER_THREADS))
+  if (!System::CoreThreadInitialize(&error, NUM_ASYNC_WORKER_THREADS))
   {
     Host::ReportFatalError("CPU Thread Initialization Failed", error.GetDescription());
     return;
@@ -980,7 +980,7 @@ void MiniHost::CPUThreadEntryPoint()
     if (!s_state.batch_mode)
       Host::RefreshGameListAsync(false);
 
-    CPUThreadMainLoop();
+    CoreThreadMainLoop();
 
     Host::CancelGameListRefresh();
   }
@@ -990,7 +990,7 @@ void MiniHost::CPUThreadEntryPoint()
   }
 
   // finish any events off (e.g. shutdown system with save)
-  ProcessCPUThreadEvents(false);
+  ProcessCoreThreadEvents(false);
 
   if (System::IsValid())
     System::ShutdownSystem(false);
@@ -999,15 +999,15 @@ void MiniHost::CPUThreadEntryPoint()
   GPUThread::Internal::RequestShutdown();
   s_state.gpu_thread.Join();
 
-  System::CPUThreadShutdown();
+  System::CoreThreadShutdown();
 
   // Tell the UI thread to shut down.
   Host::RunOnUIThread([]() { s_state.ui_thread_running = false; });
 }
 
-void MiniHost::CPUThreadMainLoop()
+void MiniHost::CoreThreadMainLoop()
 {
-  while (s_state.cpu_thread_running.load(std::memory_order_acquire))
+  while (s_state.core_thread_running.load(std::memory_order_acquire))
   {
     if (System::IsRunning())
     {
@@ -1016,12 +1016,12 @@ void MiniHost::CPUThreadMainLoop()
     }
     else if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
     {
-      ProcessCPUThreadEvents(false);
+      ProcessCoreThreadEvents(false);
       if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
         GPUThread::Internal::DoRunIdle();
     }
 
-    ProcessCPUThreadEvents(true);
+    ProcessCoreThreadEvents(true);
   }
 }
 
@@ -1128,9 +1128,9 @@ void Host::OnMediaCaptureStopped()
   // noop
 }
 
-void Host::PumpMessagesOnCPUThread()
+void Host::PumpMessagesOnCoreThread()
 {
-  MiniHost::ProcessCPUThreadEvents(false);
+  MiniHost::ProcessCoreThreadEvents(false);
 }
 
 std::string MiniHost::GetWindowTitle(const std::string& game_title)
@@ -1172,16 +1172,16 @@ void Host::OnSystemUndoStateAvailabilityChanged(bool available, u64 timestamp)
   //
 }
 
-void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
 {
   using namespace MiniHost;
 
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
-  s_state.cpu_thread_events.emplace_back(std::move(function), block);
-  s_state.blocking_cpu_events_pending += BoolToUInt32(block);
-  s_state.cpu_thread_event_posted.notify_one();
+  std::unique_lock lock(s_state.core_thread_events_mutex);
+  s_state.core_thread_events.emplace_back(std::move(function), block);
+  s_state.blocking_core_events_pending += BoolToUInt32(block);
+  s_state.core_thread_event_posted.notify_one();
   if (block)
-    s_state.cpu_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+    s_state.core_thread_event_done.wait(lock, []() { return s_state.blocking_core_events_pending == 0; });
 }
 
 void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
@@ -1273,11 +1273,11 @@ void Host::RequestResetSettings(bool system, bool controller)
 
 void Host::RequestExitApplication(bool allow_confirm)
 {
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     System::ShutdownSystem(g_settings.save_state_on_exit);
 
     // clear the running flag, this'll break out of the main CPU loop once the VM is shutdown.
-    MiniHost::s_state.cpu_thread_running.store(false, std::memory_order_release);
+    MiniHost::s_state.core_thread_running.store(false, std::memory_order_release);
   });
 }
 
@@ -1291,7 +1291,7 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state, bool check
   // TODO: Confirm
   if (System::IsValid())
   {
-    Host::RunOnCPUThread([save_state]() { System::ShutdownSystem(save_state); });
+    Host::RunOnCoreThread([save_state]() { System::ShutdownSystem(save_state); });
   }
 }
 
@@ -1406,7 +1406,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
                                std::string_view yes_text /* = std::string_view() */,
                                std::string_view no_text /* = std::string_view() */)
 {
-  Host::RunOnCPUThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
+  Host::RunOnCoreThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
                         yes_text = std::string(yes_text), no_text = std::move(no_text)]() mutable {
     // in case we haven't started yet...
     if (!FullscreenUI::IsInitialized())
@@ -1430,7 +1430,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
 
         if (needs_pause)
         {
-          Host::RunOnCPUThread([]() {
+          Host::RunOnCoreThread([]() {
             if (System::IsValid())
               System::PauseSystem(false);
           });
@@ -1811,14 +1811,14 @@ int main(int argc, char* argv[])
   // prevent input source polling on CPU thread...
   SDLInputSource::ALLOW_EVENT_POLLING = false;
   s_state.ui_thread_running = true;
-  StartCPUThread();
+  StartCoreThread();
 
   // process autoboot early, that way we can set the fullscreen flag
   if (autoboot)
   {
     s_state.start_fullscreen_ui_fullscreen =
       s_state.start_fullscreen_ui_fullscreen || autoboot->override_fullscreen.value_or(false);
-    Host::RunOnCPUThread([params = std::move(autoboot.value())]() mutable {
+    Host::RunOnCoreThread([params = std::move(autoboot.value())]() mutable {
       Error error;
       if (!System::BootSystem(std::move(params), &error))
         Host::ReportErrorAsync("Failed to boot system", error.GetDescription());
@@ -1827,7 +1827,7 @@ int main(int argc, char* argv[])
 
   UIThreadMainLoop();
 
-  StopCPUThread();
+  StopCoreThread();
 
   System::ProcessShutdown();
 

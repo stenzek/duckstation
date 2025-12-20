@@ -404,7 +404,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("PCDrv", "EnableWrites");
   sif->DeleteValue("PCDrv", "Root");
   QtHost::SaveGameSettings(sif, true);
-  g_emu_thread->reloadGameSettings();
+  g_core_thread->reloadGameSettings();
   while (m_ui.tweakOptionTable->rowCount() > 0)
     m_ui.tweakOptionTable->removeRow(m_ui.tweakOptionTable->rowCount() - 1);
   addTweakOptions();

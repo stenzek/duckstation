@@ -1475,7 +1475,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, std::string_view ti
                        bsi->SetStringValue(section.c_str(), key.c_str(), relative_path.c_str());
                        SetSettingsChanged(bsi);
 
-                       Host::RunOnCPUThread(&EmuFolders::Update);
+                       Host::RunOnCoreThread(&EmuFolders::Update);
                        if (key == "Covers")
                          RemoveCoverCacheEntry({});
                      });
@@ -1625,7 +1625,7 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
   if (!entry || entry->serial.empty())
   {
-    Host::RunOnCPUThread([page]() {
+    Host::RunOnCoreThread([page]() {
       Error error;
       GameList::Entry dynamic_entry;
       if (System::PopulateGameListEntryFromCurrentGame(&dynamic_entry, &error))
@@ -1974,7 +1974,7 @@ void FullscreenUI::DrawSettingsWindow()
   if (s_settings_locals.settings_changed.load(std::memory_order_relaxed))
   {
     Host::CommitBaseSettingChanges();
-    Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+    Host::RunOnCoreThread([]() { System::ApplySettings(false); });
     s_settings_locals.settings_changed.store(false, std::memory_order_release);
   }
   if (s_settings_locals.game_settings_changed.load(std::memory_order_relaxed))
@@ -2008,7 +2008,7 @@ void FullscreenUI::DrawSettingsWindow()
       }
 
       if (GPUThread::HasGPUBackend())
-        Host::RunOnCPUThread([]() { System::ReloadGameSettings(false); });
+        Host::RunOnCoreThread([]() { System::ReloadGameSettings(false); });
     }
     s_settings_locals.game_settings_changed.store(false, std::memory_order_release);
   }
@@ -2122,7 +2122,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                          if (static_cast<u32>(index) >= language_list.size())
                            return;
 
-                         Host::RunOnCPUThread(
+                         Host::RunOnCoreThread(
                            [language = language_list[index].second]() { Host::ChangeLanguage(language); });
                        });
     }
@@ -2153,7 +2153,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
                        // Have to defer the reload, because we've already drawn the bg for this frame.
                        BeginTransition(LONG_TRANSITION_TIME, {});
-                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::UpdateBackground); });
+                       Host::RunOnCoreThread([]() { GPUThread::RunOnThread(&FullscreenUI::UpdateBackground); });
                      });
   }
 
@@ -2532,7 +2532,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
       if (!GameList::DownloadCovers(
             urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
               // cache the cover path on our side once it's saved
-              Host::RunOnCPUThread([path = entry->path, save_path = std::move(save_path)]() mutable {
+              Host::RunOnCoreThread([path = entry->path, save_path = std::move(save_path)]() mutable {
                 GPUThread::RunOnThread([path = std::move(path), save_path = std::move(save_path)]() mutable {
                   FullscreenUI::SetCoverCacheEntry(std::move(path), std::move(save_path));
                 });
@@ -2545,7 +2545,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
       // close the parent window if we weren't cancelled
       if (!progress->IsCancelled())
       {
-        Host::RunOnCPUThread([]() {
+        Host::RunOnCoreThread([]() {
           GPUThread::RunOnThread([]() {
             if (IsFixedPopupDialogOpen(COVER_DOWNLOADER_DIALOG_NAME))
               CloseFixedPopupDialog();
@@ -4108,7 +4108,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   static constexpr auto queue_reload = []() {
     if (GPUThread::HasGPUBackend())
     {
-      Host::RunOnCPUThread([]() {
+      Host::RunOnCoreThread([]() {
         if (System::IsValid())
           GPUPresenter::ReloadPostProcessingSettings(true, false, false);
       });
@@ -4134,7 +4134,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     // Have to defer because of the settings lock.
     if (GPUThread::HasGPUBackend())
     {
-      Host::RunOnCPUThread([]() { GPUPresenter::ReloadPostProcessingSettings(true, true, true); });
+      Host::RunOnCoreThread([]() { GPUPresenter::ReloadPostProcessingSettings(true, true, true); });
       ShowToast(OSDMessageType::Quick, {}, FSUI_STR("Post-processing shaders reloaded."));
     }
   }
@@ -4709,7 +4709,7 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
     if (clicked)
     {
       if (logged_in)
-        Host::RunOnCPUThread(&Achievements::Logout);
+        Host::RunOnCoreThread(&Achievements::Logout);
       else
         OpenFixedPopupDialog(ACHIEVEMENTS_LOGIN_DIALOG_NAME);
     }
@@ -4749,7 +4749,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
           FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
           [](bool result) {
             if (result)
-              Host::RunOnCPUThread(&System::ResetSystem);
+              Host::RunOnCoreThread(&System::ResetSystem);
           });
       }
       settings_lock.lock();
@@ -4912,7 +4912,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   {
     OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."), 0, 0, 0);
 
-    Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
+    Host::RunOnCoreThread([username = std::string(username), password = std::string(password)]() {
       Error error;
       const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
       GPUThread::RunOnThread([result, error = std::move(error)]() {
@@ -4946,7 +4946,7 @@ void FullscreenUI::StartAchievementsProgressRefresh()
   System::QueueAsyncTask([progress = progress.release()]() {
     Error error;
     const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);
-    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+    Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {
       GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
         delete progress;
         if (result)
@@ -4965,7 +4965,7 @@ void FullscreenUI::StartAchievementsGameIconDownload()
   System::QueueAsyncTask([progress = progress.release()]() {
     Error error;
     const bool result = Achievements::DownloadGameIcons(progress, &error);
-    Host::RunOnCPUThread([error = std::move(error), progress, result]() mutable {
+    Host::RunOnCoreThread([error = std::move(error), progress, result]() mutable {
       GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
         delete progress;
         if (result)

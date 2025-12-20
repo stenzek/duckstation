@@ -41,7 +41,7 @@ void ReportErrorAsync(std::string_view title, std::string_view message);
 void ReportDebuggerMessage(std::string_view message);
 
 /// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
-/// The callback may be executed on a different thread. Use RunOnCPUThread() in the callback to ensure safety.
+/// The callback may be executed on a different thread. Use RunOnCoreThread() in the callback to ensure safety.
 using ConfirmMessageAsyncCallback = std::function<void(bool)>;
 void ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
                          std::string_view yes_text = std::string_view(), std::string_view no_text = std::string_view());
@@ -65,7 +65,7 @@ const char* GetLanguageName(std::string_view language_code);
 bool ChangeLanguage(const char* new_language);
 
 /// Safely executes a function on the VM thread.
-void RunOnCPUThread(std::function<void()> function, bool block = false);
+void RunOnCoreThread(std::function<void()> function, bool block = false);
 
 /// Safely executes a function on the main/UI thread.
 void RunOnUIThread(std::function<void()> function, bool block = false);

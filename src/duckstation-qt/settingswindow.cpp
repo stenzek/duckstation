@@ -301,7 +301,7 @@ void SettingsWindow::onRestoreDefaultsClicked()
     return;
   }
 
-  g_emu_thread->setDefaultSettings(true, false);
+  g_core_thread->setDefaultSettings(true, false);
 }
 
 void SettingsWindow::onCopyGlobalSettingsClicked()
@@ -568,7 +568,7 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
     value.has_value() ? Core::SetBaseBoolSettingValue(section, key, value.value()) :
                         Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -584,7 +584,7 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
     value.has_value() ? Core::SetBaseIntSettingValue(section, key, value.value()) :
                         Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -600,7 +600,7 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
     value.has_value() ? Core::SetBaseFloatSettingValue(section, key, value.value()) :
                         Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -616,7 +616,7 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
     value.has_value() ? Core::SetBaseStringSettingValue(section, key, value.value()) :
                         Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -639,7 +639,7 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
   {
     Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -647,7 +647,7 @@ void SettingsWindow::saveAndReloadGameSettings()
 {
   DebugAssert(m_sif);
   QtHost::SaveGameSettings(m_sif.get(), true);
-  g_emu_thread->reloadGameSettings(false);
+  g_core_thread->reloadGameSettings(false);
 }
 
 void SettingsWindow::setGameTitle(std::string_view title)

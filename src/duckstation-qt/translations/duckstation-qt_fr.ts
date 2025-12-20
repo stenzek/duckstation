@@ -5130,7 +5130,7 @@ Ce fichier peut faire plusieurs gigaoctets, alors attention à l&apos;usure SSD.
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="564"/>
         <source>Error</source>

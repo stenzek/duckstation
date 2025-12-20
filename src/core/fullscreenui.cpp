@@ -84,7 +84,7 @@ static void DoToggleFastForward();
 static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestReset();
-static void BeginChangeDiscOnCPUThread(bool needs_pause);
+static void BeginChangeDiscOnCoreThread(bool needs_pause);
 static void StartChangeDiscFromFile();
 static void DoRequestExit();
 static void DoDesktopMode();
@@ -286,7 +286,7 @@ void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
   s_locals.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
   if (!s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(true); });
 
   s_locals.pause_menu_was_open |= set_pause_menu_open;
 }
@@ -338,7 +338,7 @@ void FullscreenUI::OpenDiscChangeMenu()
     return;
 
   DebugAssert(!GPUThread::IsOnThread());
-  BeginChangeDiscOnCPUThread(true);
+  BeginChangeDiscOnCoreThread(true);
 }
 
 void FullscreenUI::FixStateIfPaused()
@@ -356,7 +356,7 @@ void FullscreenUI::ClosePauseMenu()
     return;
 
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(SHORT_TRANSITION_TIME, []() {
     s_locals.current_pause_submenu = PauseSubMenu::None;
@@ -373,7 +373,7 @@ void FullscreenUI::ClosePauseMenuImmediately()
   CancelTransition();
 
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   s_locals.current_pause_submenu = PauseSubMenu::None;
   s_locals.pause_menu_was_open = false;
@@ -426,7 +426,7 @@ void FullscreenUI::ReturnToMainWindow()
 void FullscreenUI::ReturnToMainWindow(float transition_time)
 {
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(transition_time, []() {
     s_locals.previous_main_window = MainWindowType::None;
@@ -624,7 +624,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
   params.path = std::move(path);
   params.save_state = std::move(state);
   params.override_fast_boot = std::move(fast_boot);
-  Host::RunOnCPUThread([params = std::move(params)]() mutable {
+  Host::RunOnCoreThread([params = std::move(params)]() mutable {
     if (System::IsValid())
       return;
 
@@ -717,7 +717,7 @@ void FullscreenUI::DoStartDisc()
 
 void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback)
 {
-  Host::RunOnCPUThread([action = std::move(action), callback = std::move(callback)]() mutable {
+  Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback)]() mutable {
     const bool was_saving = System::IsSavingMemoryCards();
     GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), was_saving]() mutable {
       if (!was_saving)
@@ -748,7 +748,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
 
   ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
     if (result)
-      Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
+      Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
     else
       ClosePauseMenuImmediately();
   });
@@ -760,7 +760,7 @@ void FullscreenUI::RequestReset()
 
   ConfirmIfSavingMemoryCards(FSUI_STR("reset"), [](bool result) {
     if (result)
-      Host::RunOnCPUThread(System::ResetSystem);
+      Host::RunOnCoreThread(System::ResetSystem);
 
     BeginTransition(LONG_TRANSITION_TIME, &ClosePauseMenuImmediately);
   });
@@ -768,7 +768,7 @@ void FullscreenUI::RequestReset()
 
 void FullscreenUI::DoToggleFastForward()
 {
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     if (!System::IsValid())
       return;
 
@@ -795,7 +795,7 @@ void FullscreenUI::StartChangeDiscFromFile()
         }
         else
         {
-          Host::RunOnCPUThread([path]() { System::InsertMedia(path.c_str()); });
+          Host::RunOnCoreThread([path]() { System::InsertMedia(path.c_str()); });
         }
       }
 
@@ -807,7 +807,7 @@ void FullscreenUI::StartChangeDiscFromFile()
                    GetDiscImageFilters(), std::string(Path::GetDirectory(GPUThread::GetGamePath())));
 }
 
-void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
+void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
 {
   ChoiceDialogOptions options;
 
@@ -894,7 +894,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
           {
             ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [paths = std::move(paths), index](bool result) {
               if (result)
-                Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
+                Host::RunOnCoreThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
 
               ReturnToPreviousWindow();
             });
@@ -924,7 +924,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
 void FullscreenUI::DoToggleAnalogMode()
 {
   // hacky way to toggle analog mode
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
       Controller* const ctrl = System::GetController(i);
@@ -946,17 +946,17 @@ void FullscreenUI::DoToggleAnalogMode()
 
 void FullscreenUI::DoRequestExit()
 {
-  Host::RunOnCPUThread([]() { Host::RequestExitApplication(true); });
+  Host::RunOnCoreThread([]() { Host::RequestExitApplication(true); });
 }
 
 void FullscreenUI::DoDesktopMode()
 {
-  Host::RunOnCPUThread([]() { Host::RequestExitBigPicture(); });
+  Host::RunOnCoreThread([]() { Host::RequestExitBigPicture(); });
 }
 
 void FullscreenUI::DoToggleFullscreen()
 {
-  Host::RunOnCPUThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
+  Host::RunOnCoreThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1624,14 +1624,14 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_CAMERA, "Save Screenshot")))
         {
-          Host::RunOnCPUThread([]() { System::SaveScreenshot(); });
+          Host::RunOnCoreThread([]() { System::SaveScreenshot(); });
           ClosePauseMenu();
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
         {
           BeginTransition(SHORT_TRANSITION_TIME, []() { s_locals.current_main_window = MainWindowType::None; });
-          Host::RunOnCPUThread([]() { BeginChangeDiscOnCPUThread(false); });
+          Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(false); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings")))
@@ -1809,7 +1809,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   if (GPUThread::HasGPUBackend())
   {
     // need to get the undo state, if any
-    Host::RunOnCPUThread([serial = serial, is_loading]() {
+    Host::RunOnCoreThread([serial = serial, is_loading]() {
       std::optional<ExtendedSaveStateInfo> undo_state;
       if (is_loading)
         undo_state = System::GetUndoSaveStateInfo();
@@ -1853,9 +1853,9 @@ void FullscreenUI::DrawSaveStateSelector()
 
       // Loading undo state?
       if (is_undo)
-        Host::RunOnCPUThread(&System::UndoLoadState);
+        Host::RunOnCoreThread(&System::UndoLoadState);
       else
-        Host::RunOnCPUThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
+        Host::RunOnCoreThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
     }
     else
     {
@@ -1869,7 +1869,7 @@ void FullscreenUI::DrawSaveStateSelector()
     ClearSaveStateEntryList(); // entry no longer valid
     ReturnToMainWindow(LONG_TRANSITION_TIME);
 
-    Host::RunOnCPUThread([slot, global]() { System::SaveStateToSlot(global, slot); });
+    Host::RunOnCoreThread([slot, global]() { System::SaveStateToSlot(global, slot); });
   };
 
   ImGuiIO& io = ImGui::GetIO();
@@ -2209,7 +2209,7 @@ void FullscreenUI::DrawResumeStateSelector()
 
 void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
-  Host::RunOnCPUThread([url = std::string(url)]() {
+  Host::RunOnCoreThread([url = std::string(url)]() {
     GPUThread::SetFullscreen(false);
     Host::OpenURL(url);
   });

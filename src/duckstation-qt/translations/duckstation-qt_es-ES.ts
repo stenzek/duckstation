@@ -5239,7 +5239,7 @@ Este archivo puede llegar a ocupar varios gigabytes, así que ten cuidado con el
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="851"/>
         <location filename="../qthost.cpp" line="865"/>

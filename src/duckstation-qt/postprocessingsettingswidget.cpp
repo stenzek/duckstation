@@ -76,7 +76,7 @@ void PostProcessingChainConfigWidget::commitSettingsUpdate()
 
 void PostProcessingChainConfigWidget::triggerSettingsReload()
 {
-  g_emu_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
+  g_core_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
                                              m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
 }
 
@@ -279,7 +279,7 @@ void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 
 void PostProcessingChainConfigWidget::onReloadButtonClicked()
 {
-  g_emu_thread->reloadPostProcessingShaders();
+  g_core_thread->reloadPostProcessingShaders();
 }
 
 void PostProcessingChainConfigWidget::onOpenDirectoryButtonClicked()
@@ -610,7 +610,7 @@ PostProcessingOverlayConfigWidget::~PostProcessingOverlayConfigWidget() = defaul
 
 void PostProcessingOverlayConfigWidget::triggerSettingsReload()
 {
-  g_emu_thread->updatePostProcessingSettings(true, false, false);
+  g_core_thread->updatePostProcessingSettings(true, false, false);
 }
 
 void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int index)

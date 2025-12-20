@@ -21,7 +21,7 @@ class QLabel;
 class QProgressBar;
 class QShortcut;
 
-class EmuThread;
+class CoreThread;
 class GameListWidget;
 class DisplayWidget;
 class DisplayContainer;

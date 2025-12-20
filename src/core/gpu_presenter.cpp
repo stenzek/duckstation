@@ -406,7 +406,7 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, const GSVector4i& sour
   DebugAssert(texture);
 
   if (g_gpu_settings.display_auto_resize_window && !m_display_texture_rect.rsize().eq(source_rect.rsize()))
-    Host::RunOnCPUThread([]() { System::RequestDisplaySize(); });
+    Host::RunOnCoreThread([]() { System::RequestDisplaySize(); });
 
   m_display_texture = texture;
   m_display_texture_rect = source_rect;
@@ -942,7 +942,7 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
   if (!target) [[unlikely]]
   {
     WARNING_LOG("Failed to get video capture render texture.");
-    Host::RunOnCPUThread(&System::StopMediaCapture);
+    Host::RunOnCoreThread(&System::StopMediaCapture);
     return;
   }
 
@@ -956,7 +956,7 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
-    Host::RunOnCPUThread(&System::StopMediaCapture);
+    Host::RunOnCoreThread(&System::StopMediaCapture);
     return;
   }
 }

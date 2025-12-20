@@ -515,8 +515,8 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       {
         text.assign(BOLD("CPU:") " ");
       }
-      FormatProcessorStat(text, PerformanceCounters::GetCPUThreadUsage(),
-                          PerformanceCounters::GetCPUThreadAverageTime());
+      FormatProcessorStat(text, PerformanceCounters::GetCoreThreadUsage(),
+                          PerformanceCounters::GetCoreThreadAverageTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
       position_y += spacing;
@@ -1412,7 +1412,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 {
   DebugAssert(GPUThread::IsOnThread());
 
-  Host::RunOnCPUThread(
+  Host::RunOnCoreThread(
     [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::LoadStateFromSlot(global, slot); });
 
   Close();
@@ -1420,7 +1420,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  Host::RunOnCPUThread(
+  Host::RunOnCoreThread(
     [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::SaveStateToSlot(global, slot); });
 
   Close();

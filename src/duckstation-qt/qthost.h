@@ -65,13 +65,13 @@ enum class LoginRequestReason;
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(std::shared_ptr<SystemBootParameters>);
 
-class EmuThread : public QThread
+class CoreThread : public QThread
 {
   Q_OBJECT
 
 public:
-  EmuThread();
-  ~EmuThread();
+  CoreThread();
+  ~CoreThread();
 
   void start();
   void stop();
@@ -184,7 +184,7 @@ public:
   void openGamePropertiesForCurrentGame(const QString& category = {});
   void setGPUThreadRunIdle(bool active);
   void updateFullscreenUITheme();
-  void runOnEmuThread(const std::function<void()>& callback);
+  void runOnCoreThread(const std::function<void()>& callback);
 
 protected:
   void run() override;
@@ -258,7 +258,7 @@ public:
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-  // NOTE: Should only be called on EmuThread.
+  // NOTE: Should only be called on core thread.
   void enumerateDevices();
 
   void onDeviceConnected(const InputBindingKey& key, const QString& identifier, const QString& device_name,
@@ -295,7 +295,7 @@ private:
   std::variant<WorkCallback, CompletionCallback> m_callback;
 };
 
-extern EmuThread* g_emu_thread;
+extern CoreThread* g_core_thread;
 
 namespace QtHost {
 /// Returns the locale to use for date/time formatting, etc.

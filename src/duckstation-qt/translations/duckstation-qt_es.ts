@@ -5520,7 +5520,7 @@ Este archivo puede alcanzar varios gigabytes en tamaño, así que ten cuidado co
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="804"/>
         <location filename="../qthost.cpp" line="818"/>

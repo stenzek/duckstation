@@ -241,7 +241,7 @@ GameListModel::GameListModel(GameListWidget* parent)
   if (m_show_game_icons)
     GameList::ReloadMemcardTimestampCache();
 
-  connect(g_emu_thread, &EmuThread::gameListRowsChanged, this, &GameListModel::rowsChanged);
+  connect(g_core_thread, &CoreThread::gameListRowsChanged, this, &GameListModel::rowsChanged);
 }
 
 GameListModel::~GameListModel() = default;
@@ -546,7 +546,7 @@ void GameListModel::invalidateColumn(int column, bool invalidate_cache /* = true
     {
       m_cover_pixmap_cache.Clear();
       if (QtHost::IsFullscreenUIStarted())
-        Host::RunOnCPUThread([]() { FullscreenUI::InvalidateCoverCache(); });
+        Host::RunOnCoreThread([]() { FullscreenUI::InvalidateCoverCache(); });
     }
     else if (column == Column_Title)
     {
@@ -574,7 +574,7 @@ void GameListModel::invalidateColumnForPath(const std::string& path, int column,
     {
       m_cover_pixmap_cache.Remove(path);
       if (QtHost::IsFullscreenUIStarted())
-        Host::RunOnCPUThread([path]() mutable { FullscreenUI::InvalidateCoverCache(std::move(path)); });
+        Host::RunOnCoreThread([path]() mutable { FullscreenUI::InvalidateCoverCache(std::move(path)); });
     }
   }
 

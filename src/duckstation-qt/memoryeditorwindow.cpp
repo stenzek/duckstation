@@ -405,10 +405,10 @@ void MemoryEditorWindow::setupAdditionalUi()
 
 void MemoryEditorWindow::connectSignals()
 {
-  connect(g_emu_thread, &EmuThread::systemPaused, this, &MemoryEditorWindow::onSystemPaused);
-  connect(g_emu_thread, &EmuThread::systemResumed, this, &MemoryEditorWindow::onSystemResumed);
-  connect(g_emu_thread, &EmuThread::systemStarted, this, &MemoryEditorWindow::onSystemStarted);
-  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &MemoryEditorWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::systemPaused, this, &MemoryEditorWindow::onSystemPaused);
+  connect(g_core_thread, &CoreThread::systemResumed, this, &MemoryEditorWindow::onSystemResumed);
+  connect(g_core_thread, &CoreThread::systemStarted, this, &MemoryEditorWindow::onSystemStarted);
+  connect(g_core_thread, &CoreThread::systemDestroyed, this, &MemoryEditorWindow::onSystemDestroyed);
 
   connect(m_ui.address, &QLineEdit::editingFinished, this, &MemoryEditorWindow::onAddressEditingFinished);
 
@@ -500,7 +500,7 @@ void MemoryEditorWindow::updateMemoryViewRegion()
 
     const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
     const u32 end_page = static_cast<u32>(offset + count - 1) >> HOST_PAGE_SHIFT;
-    Host::RunOnCPUThread([start_page, end_page]() {
+    Host::RunOnCoreThread([start_page, end_page]() {
       for (u32 i = start_page; i <= end_page; i++)
       {
         if (Bus::g_ram_code_bits[i])

@@ -259,7 +259,7 @@ void ControllerSettingsWindow::onApplyProfileClicked()
                                     copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
-  g_emu_thread->applySettings();
+  g_core_thread->applySettings();
 
   // Recreate global widget on profile apply
   g_main_window->getControllerSettingsWindow()->createWidgets();
@@ -299,7 +299,7 @@ void ControllerSettingsWindow::onRestoreDefaultsClicked()
   }
 
   // actually restore it
-  g_emu_thread->setDefaultSettings(false, true);
+  g_core_thread->setDefaultSettings(false, true);
 
   // reload all settings
   createWidgets();
@@ -316,7 +316,7 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   }
 
   m_editing_settings_interface->Save();
-  g_emu_thread->reloadGameSettings();
+  g_core_thread->reloadGameSettings();
   createWidgets();
 
   QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Controller Settings"),
@@ -362,7 +362,7 @@ void ControllerSettingsWindow::setBoolValue(const char* section, const char* key
   {
     Core::SetBaseBoolSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -377,7 +377,7 @@ void ControllerSettingsWindow::setIntValue(const char* section, const char* key,
   {
     Core::SetBaseIntSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -392,7 +392,7 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   {
     Core::SetBaseStringSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -400,7 +400,7 @@ void ControllerSettingsWindow::saveAndReloadGameSettings()
 {
   DebugAssert(m_editing_settings_interface);
   QtHost::SaveGameSettings(m_editing_settings_interface, false);
-  g_emu_thread->reloadGameSettings(false);
+  g_core_thread->reloadGameSettings(false);
 }
 
 void ControllerSettingsWindow::clearSettingValue(const char* section, const char* key)
@@ -409,13 +409,13 @@ void ControllerSettingsWindow::clearSettingValue(const char* section, const char
   {
     m_editing_settings_interface->DeleteValue(section, key);
     m_editing_settings_interface->Save();
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
     Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 

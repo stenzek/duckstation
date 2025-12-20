@@ -375,7 +375,7 @@ void LogWindow::setLogLevel(Log::Level level)
 {
   Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
   Host::CommitBaseSettingChanges();
-  g_emu_thread->applySettings(false);
+  g_core_thread->applySettings(false);
 }
 
 void LogWindow::populateFilterMenu(QMenu* filter_menu)
@@ -389,7 +389,7 @@ void LogWindow::populateFilterMenu(QMenu* filter_menu)
     QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
       Core::SetBaseBoolSettingValue("Logging", channel_name, checked);
       Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings(false);
+      g_core_thread->applySettings(false);
     });
     action->setCheckable(true);
     action->setChecked(enabled);

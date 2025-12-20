@@ -4532,7 +4532,7 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <source>%1x%2</source>
         <translation>%1x%2</translation>

@@ -248,13 +248,13 @@ void ControllerBindingWidget::onTypeChanged()
   {
     sif->SetStringValue(m_config_section.c_str(), "Type", m_controller_info->name);
     QtHost::SaveGameSettings(sif, false);
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
     Core::SetBaseStringSettingValue(m_config_section.c_str(), "Type", m_controller_info->name);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 
   populateWidgets();
@@ -265,7 +265,7 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   QMenu* const menu = QtUtils::NewPopupMenu(this);
   bool added = false;
 
-  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  for (const InputDeviceListModel::Device& dev : g_core_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
     menu->addAction(InputDeviceListModel::getIconForKey(dev.key),
@@ -358,7 +358,7 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   {
     result = InputManager::MapController(*m_dialog->getEditingSettingsInterface(), m_port_number, mapping, true);
     QtHost::SaveGameSettings(m_dialog->getEditingSettingsInterface(), false);
-    g_emu_thread->reloadInputBindings();
+    g_core_thread->reloadInputBindings();
   }
 
   // force a refresh after mapping
@@ -381,7 +381,7 @@ void ControllerBindingWidget::saveAndRefresh()
 {
   onTypeChanged();
   QtHost::QueueSettingsSave();
-  g_emu_thread->applySettings();
+  g_core_thread->applySettings();
 }
 
 void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
@@ -1003,7 +1003,7 @@ MultipleDeviceAutobindDialog::MultipleDeviceAutobindDialog(QWidget* parent, Cont
   m_list->setSelectionMode(QListWidget::SingleSelection);
   layout->addWidget(m_list);
 
-  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  for (const InputDeviceListModel::Device& dev : g_core_thread->getInputDeviceListModel()->getDeviceList())
   {
     QListWidgetItem* item = new QListWidgetItem;
     item->setIcon(InputDeviceListModel::getIconForKey(dev.key));
@@ -1072,12 +1072,12 @@ void MultipleDeviceAutobindDialog::doAutomaticBinding()
     if (global)
     {
       QtHost::SaveGameSettings(si, false);
-      g_emu_thread->reloadGameSettings(false);
+      g_core_thread->reloadGameSettings(false);
     }
     else
     {
       QtHost::QueueSettingsSave();
-      g_emu_thread->reloadInputBindings();
+      g_core_thread->reloadInputBindings();
     }
     accept();
   }
