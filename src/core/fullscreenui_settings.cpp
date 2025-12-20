@@ -553,7 +553,7 @@ void FullscreenUI::BeginEffectBinding(SettingsInterface* bsi, InputBindingInfo::
 {
   // vibration motors use a list to select
   const bool game_settings = IsEditingGameSettings(bsi);
-  const InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
+  InputManager::DeviceEffectList effects = InputManager::EnumerateDeviceEffects(type);
   if (effects.empty())
   {
     ShowToast(OSDMessageType::Info, {}, FSUI_STR("No devices with vibration motors were detected."));

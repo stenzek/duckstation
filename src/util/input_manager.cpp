@@ -154,7 +154,7 @@ static void UpdateContinuedVibration();
 static void InternalPauseVibration();
 static void InternalClearEffects();
 static void GenerateRelativeMouseEvents();
-static void ReloadDevices();
+[[maybe_unused]] static void ReloadDevices();
 
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);

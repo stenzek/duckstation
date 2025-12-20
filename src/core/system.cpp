@@ -1835,9 +1835,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
     {
-      Achievements::ConfirmHardcoreModeDisableAsync(parameters.save_state.empty() ?
-                                                      TRANSLATE_SV("Achievements", "Resuming state") :
-                                                      TRANSLATE_SV("Achievements", "Overriding executable"),
+      const std::string_view message = !parameters.save_state.empty() ?
+                                         TRANSLATE_SV("Achievements", "Resuming state") :
+                                         TRANSLATE_SV("Achievements", "Overriding executable");
+      Achievements::ConfirmHardcoreModeDisableAsync(message,
                                                     [parameters = std::move(parameters)](bool approved) mutable {
                                                       if (approved)
                                                       {
@@ -2331,7 +2332,7 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
 
     if (cap->GetVideoFPS() != s_state.video_frame_rate) [[unlikely]]
     {
-      const std::string next_capture_path = cap->GetNextCapturePath();
+      std::string next_capture_path = cap->GetNextCapturePath();
       const u32 video_width = cap->GetVideoWidth();
       const u32 video_height = cap->GetVideoHeight();
       INFO_LOG("Video frame rate changed, switching to new capture file {}", Path::GetFileName(next_capture_path));

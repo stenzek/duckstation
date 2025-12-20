@@ -1050,7 +1050,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
   separator->setVisible(is_custom_ar);
   denominator->setVisible(is_custom_ar);
 
-  const auto value_changed = [cb, numerator, separator, denominator, sif]() {
+  auto value_changed = [cb, numerator, separator, denominator, sif]() {
     std::optional<DisplayAspectRatio> value_to_save;
     const int index = cb->currentIndex();
     bool is_custom = false;
