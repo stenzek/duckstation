@@ -11,7 +11,36 @@
 #include <atomic>
 #include <span>
 
-class ALIGN_TO_CACHE_LINE LogWindow : public QMainWindow
+class ALIGN_TO_CACHE_LINE LogWidget : public QPlainTextEdit
+{
+  Q_OBJECT
+
+public:
+  explicit LogWidget(QWidget* parent);
+  ~LogWidget();
+
+  void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
+
+protected:
+  void changeEvent(QEvent* event) override;
+
+private:
+  static constexpr int MAX_LINES = 1000;
+  static constexpr int BLOCK_UPDATES_THRESHOLD = 100;
+
+  void realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
+
+  static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
+                          std::string_view message);
+
+  int m_lines_to_skip = 0;
+
+  bool m_is_dark_theme = false;
+
+  ALIGN_TO_CACHE_LINE std::atomic_int m_lines_pending{0};
+};
+
+class LogWindow : public QMainWindow
 {
   Q_OBJECT
 
@@ -31,7 +60,6 @@ public:
 
 protected:
   void closeEvent(QCloseEvent* event) override;
-  void changeEvent(QEvent* event) override;
 
 private:
   static constexpr int DEFAULT_WIDTH = 750;
@@ -43,27 +71,16 @@ private:
   void updateLogLevelUi();
   void setLogLevel(Log::Level level);
 
-  void onClearTriggered();
   void onSaveTriggered();
-  void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
-  void realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
 
   void saveSize();
   void restoreSize();
 
-  static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
-                          std::string_view message);
-
-  QPlainTextEdit* m_text;
+  LogWidget* m_log_widget;
   QMenu* m_level_menu;
 
-  int m_lines_to_skip = 0;
-
-  bool m_is_dark_theme = false;
   bool m_attached_to_main_window = true;
   bool m_destroying = false;
-
-  ALIGN_TO_CACHE_LINE std::atomic_int m_lines_pending{0};
 };
 
 extern LogWindow* g_log_window;
