@@ -281,7 +281,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     return std::nullopt;
   }
 
-  g_emu_thread->connectDisplaySignals(m_display_widget);
+  g_core_thread->connectDisplaySignals(m_display_widget);
 
   updateWindowTitle();
   updateWindowState();
@@ -660,21 +660,21 @@ void MainWindow::onApplicationStateChanged(Qt::ApplicationState state)
   {
     if (g_settings.pause_on_focus_loss && !m_was_paused_by_focus_loss && !s_locals.system_paused)
     {
-      g_emu_thread->setSystemPaused(true);
+      g_core_thread->setSystemPaused(true);
       m_was_paused_by_focus_loss = true;
     }
 
     // Clear the state of all keyboard binds.
     // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
     // got the key release message, because it happened in another window which "stole" the event.
-    g_emu_thread->clearInputBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+    g_core_thread->clearInputBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
   }
   else
   {
     if (m_was_paused_by_focus_loss)
     {
       if (s_locals.system_paused)
-        g_emu_thread->setSystemPaused(false);
+        g_core_thread->setSystemPaused(false);
       m_was_paused_by_focus_loss = false;
     }
   }
@@ -737,13 +737,13 @@ void MainWindow::quit()
   // Make sure VM is gone. It really should be if we're here.
   if (QtHost::IsSystemValidOrStarting())
   {
-    g_emu_thread->shutdownSystem(false, false);
+    g_core_thread->shutdownSystem(false, false);
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, &QtHost::IsSystemValidOrStarting);
   }
 
   // Big picture might still be active.
   if (s_locals.fullscreen_ui_started)
-    g_emu_thread->stopFullscreenUI();
+    g_core_thread->stopFullscreenUI();
 
   // Ensure subwindows are removed before quitting. That way the log window cancelling
   // the close event won't cancel the quit process.
@@ -776,11 +776,11 @@ void MainWindow::recreate()
     show();
 
   // We need to close input sources, because e.g. DInput uses our window handle.
-  Host::RunOnCPUThread(&InputManager::CloseSources, true);
+  Host::RunOnCoreThread(&InputManager::CloseSources, true);
 
   // Ensure we don't get a display widget creation sent to us.
   const bool was_display_created = hasDisplayWidget();
-  QObject::disconnect(g_emu_thread, nullptr, this, nullptr);
+  QObject::disconnect(g_core_thread, nullptr, this, nullptr);
 
   // Create new window.
   g_main_window = nullptr;
@@ -800,7 +800,7 @@ void MainWindow::recreate()
 
   if (was_display_created)
   {
-    g_emu_thread->updateDisplayWindow();
+    g_core_thread->updateDisplayWindow();
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
                                     []() { return !g_main_window->hasDisplayWidget(); });
     g_main_window->updateEmulationActions();
@@ -813,7 +813,7 @@ void MainWindow::recreate()
   deleteLater();
 
   // Reload the sources we just closed.
-  Host::RunOnCPUThread(&System::ReloadInputSources);
+  Host::RunOnCoreThread(&System::ReloadInputSources);
 
   if (controller_settings_window_pos.has_value())
   {
@@ -948,7 +948,7 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
     if (ssi.has_value())
     {
       const QString path(QString::fromStdString(ssi->path));
-      connect(load_action, &QAction::triggered, this, [path]() { g_emu_thread->loadState(path); });
+      connect(load_action, &QAction::triggered, this, [path]() { g_core_thread->loadState(path); });
     }
   };
 
@@ -960,7 +960,7 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
     if (path.isEmpty())
       return;
 
-    g_emu_thread->loadState(path);
+    g_core_thread->loadState(path);
   });
   QAction* load_from_state =
     menu->addAction(s_locals.undo_state_timestamp.has_value() ?
@@ -969,7 +969,7 @@ void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu
                                                   static_cast<s64>(s_locals.undo_state_timestamp.value()))) :
                       tr("Undo Load State"));
   load_from_state->setEnabled(s_locals.undo_state_timestamp.has_value());
-  connect(load_from_state, &QAction::triggered, g_emu_thread, &EmuThread::undoLoadState);
+  connect(load_from_state, &QAction::triggered, g_core_thread, &CoreThread::undoLoadState);
   menu->addSeparator();
 
   if (!game_serial.empty())
@@ -997,7 +997,7 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
 
     QAction* save_action = menu->addAction(menu_title);
     connect(save_action, &QAction::triggered,
-            [global = serial.empty(), slot]() { g_emu_thread->saveState(global, slot); });
+            [global = serial.empty(), slot]() { g_core_thread->saveState(global, slot); });
   };
 
   menu->clear();
@@ -1011,7 +1011,7 @@ void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu
     if (path.isEmpty())
       return;
 
-    g_emu_thread->saveState(QDir::toNativeSeparators(path));
+    g_core_thread->saveState(QDir::toNativeSeparators(path));
   });
   menu->addSeparator();
 
@@ -1035,7 +1035,7 @@ void MainWindow::onCheatsMenuAboutToShow()
           [this]() { openGamePropertiesForCurrentGame("Cheats"); });
   m_ui.menuCheats->addSeparator();
 
-  Host::RunOnCPUThread([menu = m_ui.menuCheats]() {
+  Host::RunOnCoreThread([menu = m_ui.menuCheats]() {
     if (!System::IsValid())
       return;
 
@@ -1060,7 +1060,7 @@ void MainWindow::onCheatsMenuAboutToShow()
       for (const QString& name : names)
       {
         apply_submenu->addAction(name, [name]() {
-          Host::RunOnCPUThread([name = name.toStdString()]() {
+          Host::RunOnCoreThread([name = name.toStdString()]() {
             if (System::IsValid())
               Cheats::ApplyManualCode(name);
           });
@@ -1194,7 +1194,7 @@ void MainWindow::startFile(std::string path, std::optional<std::string> save_pat
   if (save_path.has_value())
     params->save_state = std::move(save_path.value());
 
-  g_emu_thread->bootSystem(std::move(params));
+  g_core_thread->bootSystem(std::move(params));
 }
 
 void MainWindow::startFileOrChangeDisc(const QString& qpath)
@@ -1222,7 +1222,7 @@ void MainWindow::promptForDiscChange(const QString& path)
   if (m_was_disc_change_request || System::IsGPUDumpPath(path.toStdString()))
   {
     switchToEmulationView();
-    g_emu_thread->changeDisc(path, false, true);
+    g_core_thread->changeDisc(path, false, true);
     return;
   }
 
@@ -1245,7 +1245,7 @@ void MainWindow::promptForDiscChange(const QString& path)
     const bool reset_system = (clicked_button == reset_button);
     switchToEmulationView();
 
-    g_emu_thread->changeDisc(path, reset_system, true);
+    g_core_thread->changeDisc(path, reset_system, true);
   });
 
   mb->open();
@@ -1254,13 +1254,13 @@ void MainWindow::promptForDiscChange(const QString& path)
 void MainWindow::onStartDiscActionTriggered()
 {
   openSelectDiscDialog(tr("Start Disc"), [](std::string path) mutable {
-    g_emu_thread->bootSystem(g_main_window->getSystemBootParameters(std::move(path)));
+    g_core_thread->bootSystem(g_main_window->getSystemBootParameters(std::move(path)));
   });
 }
 
 void MainWindow::onStartBIOSActionTriggered()
 {
-  g_emu_thread->bootSystem(getSystemBootParameters(std::string()));
+  g_core_thread->bootSystem(getSystemBootParameters(std::string()));
 }
 
 void MainWindow::onChangeDiscFromFileActionTriggered()
@@ -1270,7 +1270,7 @@ void MainWindow::onChangeDiscFromFileActionTriggered()
   if (filename.isEmpty())
     return;
 
-  g_emu_thread->changeDisc(filename, false, true);
+  g_core_thread->changeDisc(filename, false, true);
 }
 
 void MainWindow::onChangeDiscFromGameListActionTriggered()
@@ -1282,7 +1282,7 @@ void MainWindow::onChangeDiscFromGameListActionTriggered()
 void MainWindow::onChangeDiscFromDeviceActionTriggered()
 {
   openSelectDiscDialog(tr("Change Disc"),
-                       [](std::string path) { g_emu_thread->changeDisc(QString::fromStdString(path), false, true); });
+                       [](std::string path) { g_core_thread->changeDisc(QString::fromStdString(path), false, true); });
 }
 
 void MainWindow::onChangeDiscMenuAboutToShow()
@@ -1309,7 +1309,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
       QAction* action = m_ui.menuChangeDisc->addAction(QString::fromStdString(System::GetMediaSubImageTitle(i)));
       action->setCheckable(true);
       action->setChecked(i == current);
-      connect(action, &QAction::triggered, [i]() { g_emu_thread->changeDiscFromPlaylist(i); });
+      connect(action, &QAction::triggered, [i]() { g_core_thread->changeDiscFromPlaylist(i); });
     }
   }
   else if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && entry->disc_set)
@@ -1322,7 +1322,7 @@ void MainWindow::onChangeDiscMenuAboutToShow()
       QString path = QString::fromStdString(glentry->path);
       action->setCheckable(true);
       action->setChecked(path == s_locals.current_game_path);
-      connect(action, &QAction::triggered, [path = std::move(path)]() { g_emu_thread->changeDisc(path, false, true); });
+      connect(action, &QAction::triggered, [path = std::move(path)]() { g_core_thread->changeDisc(path, false, true); });
     }
   }
 }
@@ -1340,9 +1340,9 @@ void MainWindow::onSaveStateMenuAboutToShow()
 void MainWindow::onStartFullscreenUITriggered()
 {
   if (m_display_widget)
-    g_emu_thread->stopFullscreenUI();
+    g_core_thread->stopFullscreenUI();
   else
-    g_emu_thread->startFullscreenUI();
+    g_core_thread->startFullscreenUI();
 }
 
 void MainWindow::onFullscreenUIStartedOrStopped(bool running)
@@ -1364,7 +1364,7 @@ void MainWindow::onCloseGameWithoutSavingActionTriggered()
 
 void MainWindow::onResetGameActionTriggered()
 {
-  g_emu_thread->resetSystem(true);
+  g_core_thread->resetSystem(true);
 }
 
 void MainWindow::onPauseActionTriggered(bool checked)
@@ -1375,10 +1375,10 @@ void MainWindow::onPauseActionTriggered(bool checked)
   if (checked && s_locals.achievements_hardcore_mode)
   {
     // Need to check restrictions.
-    Host::RunOnCPUThread([]() {
+    Host::RunOnCoreThread([]() {
       if (System::CanPauseSystem(true))
       {
-        g_emu_thread->setSystemPaused(true);
+        g_core_thread->setSystemPaused(true);
       }
       else
       {
@@ -1389,13 +1389,13 @@ void MainWindow::onPauseActionTriggered(bool checked)
   }
   else
   {
-    g_emu_thread->setSystemPaused(checked);
+    g_core_thread->setSystemPaused(checked);
   }
 }
 
 void MainWindow::onRemoveDiscActionTriggered()
 {
-  g_emu_thread->changeDisc(QString(), false, true);
+  g_core_thread->changeDisc(QString(), false, true);
 }
 
 void MainWindow::onScanForNewGamesTriggered()
@@ -1614,19 +1614,19 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         menu->addSeparator();
 
         menu->addAction(tr("Default Boot"), [this, qpath]() mutable {
-          g_emu_thread->bootSystem(getSystemBootParameters(qpath.toStdString()));
+          g_core_thread->bootSystem(getSystemBootParameters(qpath.toStdString()));
         });
 
         menu->addAction(tr("Fast Boot"), [this, qpath]() mutable {
           std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
           boot_params->override_fast_boot = true;
-          g_emu_thread->bootSystem(std::move(boot_params));
+          g_core_thread->bootSystem(std::move(boot_params));
         });
 
         menu->addAction(tr("Full Boot"), [this, qpath]() mutable {
           std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
           boot_params->override_fast_boot = false;
-          g_emu_thread->bootSystem(std::move(boot_params));
+          g_core_thread->bootSystem(std::move(boot_params));
         });
 
         if (m_ui.menuDebug->menuAction()->isVisible())
@@ -1637,15 +1637,15 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
             std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(qpath.toStdString());
             boot_params->override_start_paused = true;
             boot_params->disable_achievements_hardcore_mode = true;
-            g_emu_thread->bootSystem(std::move(boot_params));
+            g_core_thread->bootSystem(std::move(boot_params));
           });
         }
       }
       else
       {
         menu->addAction(tr("Change Disc"), [this, qpath]() {
-          g_emu_thread->changeDisc(qpath, false, true);
-          g_emu_thread->setSystemPaused(false);
+          g_core_thread->changeDisc(qpath, false, true);
+          g_core_thread->setSystemPaused(false);
           switchToEmulationView();
         });
       }
@@ -1876,7 +1876,7 @@ void MainWindow::setupAdditionalUi()
   {
     QAction* const action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
     connect(action, &QAction::triggered,
-            [scale = static_cast<float>(scale)]() { g_emu_thread->requestDisplaySize(scale); });
+            [scale = static_cast<float>(scale)]() { g_core_thread->requestDisplaySize(scale); });
   }
 
   updateDebugMenuVisibility();
@@ -2354,7 +2354,7 @@ void MainWindow::switchToGameListView(bool pause_system /* = true */)
   // Normally, we'd never end up here. But on MacOS, the global menu is accessible while fullscreen.
   if (canRenderToMainWindow() && isRenderingFullscreen())
   {
-    g_emu_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->switchToGameListView(); });
+    g_core_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->switchToGameListView(); });
     return;
   }
 
@@ -2363,7 +2363,7 @@ void MainWindow::switchToGameListView(bool pause_system /* = true */)
 
   m_was_paused_on_game_list_switch = s_locals.system_paused;
   if (!s_locals.system_paused && pause_system)
-    g_emu_thread->setSystemPaused(true);
+    g_core_thread->setSystemPaused(true);
 
   m_ui.mainContainer->setCurrentWidget(m_game_list_widget);
   if (m_game_list_widget->isShowingGameGrid())
@@ -2402,7 +2402,7 @@ void MainWindow::switchToEmulationView()
 
   // resume if we weren't paused at switch time
   if (s_locals.system_paused && !m_was_paused_on_game_list_switch)
-    g_emu_thread->setSystemPaused(false);
+    g_core_thread->setSystemPaused(false);
 
   updateShortcutActions();
 }
@@ -2416,7 +2416,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
   connect(m_ui.actionStartBios, &QAction::triggered, this, &MainWindow::onStartBIOSActionTriggered);
-  connect(m_ui.actionResumeLastState, &QAction::triggered, g_emu_thread, &EmuThread::resumeSystemFromMostRecentState);
+  connect(m_ui.actionResumeLastState, &QAction::triggered, g_core_thread, &CoreThread::resumeSystemFromMostRecentState);
   connect(m_ui.actionChangeDisc, &QAction::triggered, [this] { m_ui.menuChangeDisc->popup(QCursor::pos()); });
   connect(m_ui.actionChangeDiscFromFile, &QAction::triggered, this, &MainWindow::onChangeDiscFromFileActionTriggered);
   connect(m_ui.actionChangeDiscFromDevice, &QAction::triggered, this,
@@ -2438,13 +2438,13 @@ void MainWindow::connectSignals()
           &MainWindow::onCloseGameWithoutSavingActionTriggered);
   connect(m_ui.actionResetGame, &QAction::triggered, this, &MainWindow::onResetGameActionTriggered);
   connect(m_ui.actionPause, &QAction::triggered, this, &MainWindow::onPauseActionTriggered);
-  connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
+  connect(m_ui.actionScreenshot, &QAction::triggered, g_core_thread, &CoreThread::saveScreenshot);
   connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
   connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->popup(QCursor::pos()); });
   connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->popup(QCursor::pos()); });
   connect(m_ui.actionExit, &QAction::triggered, this, &MainWindow::close);
-  connect(m_ui.actionFullscreen, &QAction::triggered, g_emu_thread, &EmuThread::toggleFullscreen);
+  connect(m_ui.actionFullscreen, &QAction::triggered, g_core_thread, &CoreThread::toggleFullscreen);
   connect(m_ui.actionSettings, &QAction::triggered, [this]() { doSettings(); });
   connect(m_ui.actionSettings2, &QAction::triggered, this, &MainWindow::onSettingsTriggeredFromToolbar);
   connect(m_ui.actionInterfaceSettings, &QAction::triggered, [this]() { doSettings("Interface"); });
@@ -2488,20 +2488,20 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMemoryEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
-  connect(m_ui.actionControllerTest, &QAction::triggered, g_emu_thread, &EmuThread::startControllerTest);
+  connect(m_ui.actionControllerTest, &QAction::triggered, g_core_thread, &CoreThread::startControllerTest);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionToolsDownloadAchievementGameIcons, &QAction::triggered, this,
           &MainWindow::onToolsDownloadAchievementGameIconsTriggered);
   connect(m_ui.actionToolsRefreshAchievementProgress, &QAction::triggered, g_main_window,
           &MainWindow::refreshAchievementProgress);
   connect(m_ui.actionMediaCapture, &QAction::triggered, this, &MainWindow::onToolsMediaCaptureTriggered);
-  connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
+  connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_core_thread, &CoreThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this,
           &MainWindow::onToolsOpenTextureDirectoryTriggered);
-  connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread,
-          &EmuThread::reloadTextureReplacements);
+  connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_core_thread,
+          &CoreThread::reloadTextureReplacements);
   connect(m_ui.actionMergeDiscSets, &QAction::triggered, m_game_list_widget, &GameListWidget::setMergeDiscSets);
   connect(m_ui.actionShowLocalizedTitles, &QAction::triggered, m_game_list_widget,
           &GameListWidget::setShowLocalizedTitles);
@@ -2520,38 +2520,38 @@ void MainWindow::connectSignals()
   connect(m_ui.actionClearGameListBackground, &QAction::triggered, this,
           &MainWindow::onViewClearGameListBackgroundTriggered);
 
-  connect(g_emu_thread, &EmuThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
+  connect(g_core_thread, &CoreThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
           Qt::QueuedConnection);
-  connect(g_emu_thread, &EmuThread::errorReported, this, &MainWindow::reportError);
-  connect(g_emu_thread, &EmuThread::statusMessage, this, &MainWindow::onStatusMessage);
-  connect(g_emu_thread, &EmuThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
+  connect(g_core_thread, &CoreThread::errorReported, this, &MainWindow::reportError);
+  connect(g_core_thread, &CoreThread::statusMessage, this, &MainWindow::onStatusMessage);
+  connect(g_core_thread, &CoreThread::onAcquireRenderWindowRequested, this, &MainWindow::acquireRenderWindow,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
-  connect(g_emu_thread, &EmuThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested,
+  connect(g_core_thread, &CoreThread::onReleaseRenderWindowRequested, this, &MainWindow::releaseRenderWindow);
+  connect(g_core_thread, &CoreThread::onResizeRenderWindowRequested, this, &MainWindow::displayResizeRequested,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::systemStarting, this, &MainWindow::onSystemStarting);
-  connect(g_emu_thread, &EmuThread::systemStarted, this, &MainWindow::onSystemStarted);
-  connect(g_emu_thread, &EmuThread::systemStopping, this, &MainWindow::onSystemStopping);
-  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &MainWindow::onSystemDestroyed);
-  connect(g_emu_thread, &EmuThread::systemPaused, this, &MainWindow::onSystemPaused);
-  connect(g_emu_thread, &EmuThread::systemResumed, this, &MainWindow::onSystemResumed);
-  connect(g_emu_thread, &EmuThread::systemGameChanged, this, &MainWindow::onSystemGameChanged);
-  connect(g_emu_thread, &EmuThread::systemUndoStateAvailabilityChanged, this,
+  connect(g_core_thread, &CoreThread::systemStarting, this, &MainWindow::onSystemStarting);
+  connect(g_core_thread, &CoreThread::systemStarted, this, &MainWindow::onSystemStarted);
+  connect(g_core_thread, &CoreThread::systemStopping, this, &MainWindow::onSystemStopping);
+  connect(g_core_thread, &CoreThread::systemDestroyed, this, &MainWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::systemPaused, this, &MainWindow::onSystemPaused);
+  connect(g_core_thread, &CoreThread::systemResumed, this, &MainWindow::onSystemResumed);
+  connect(g_core_thread, &CoreThread::systemGameChanged, this, &MainWindow::onSystemGameChanged);
+  connect(g_core_thread, &CoreThread::systemUndoStateAvailabilityChanged, this,
           &MainWindow::onSystemUndoStateAvailabilityChanged);
-  connect(g_emu_thread, &EmuThread::mediaCaptureStarted, this, &MainWindow::onMediaCaptureStarted);
-  connect(g_emu_thread, &EmuThread::mediaCaptureStopped, this, &MainWindow::onMediaCaptureStopped);
-  connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
-  connect(g_emu_thread, &EmuThread::fullscreenUIStartedOrStopped, this, &MainWindow::onFullscreenUIStartedOrStopped);
-  connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
-  connect(g_emu_thread, &EmuThread::achievementsLoginSuccess, this, &MainWindow::onAchievementsLoginSuccess);
-  connect(g_emu_thread, &EmuThread::achievementsActiveChanged, this, &MainWindow::onAchievementsActiveChanged);
-  connect(g_emu_thread, &EmuThread::achievementsHardcoreModeChanged, this,
+  connect(g_core_thread, &CoreThread::mediaCaptureStarted, this, &MainWindow::onMediaCaptureStarted);
+  connect(g_core_thread, &CoreThread::mediaCaptureStopped, this, &MainWindow::onMediaCaptureStopped);
+  connect(g_core_thread, &CoreThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
+  connect(g_core_thread, &CoreThread::fullscreenUIStartedOrStopped, this, &MainWindow::onFullscreenUIStartedOrStopped);
+  connect(g_core_thread, &CoreThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
+  connect(g_core_thread, &CoreThread::achievementsLoginSuccess, this, &MainWindow::onAchievementsLoginSuccess);
+  connect(g_core_thread, &CoreThread::achievementsActiveChanged, this, &MainWindow::onAchievementsActiveChanged);
+  connect(g_core_thread, &CoreThread::achievementsHardcoreModeChanged, this,
           &MainWindow::onAchievementsHardcoreModeChanged);
-  connect(g_emu_thread, &EmuThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
+  connect(g_core_thread, &CoreThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
-  connect(g_emu_thread, &EmuThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
+  connect(g_core_thread, &CoreThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
           Qt::BlockingQueuedConnection);
-  connect(this, &MainWindow::themeChanged, g_emu_thread, &EmuThread::updateFullscreenUITheme);
+  connect(this, &MainWindow::themeChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2601,7 +2601,7 @@ void MainWindow::connectSignals()
     if (filename.isEmpty())
       return;
 
-    g_emu_thread->dumpRAM(filename);
+    g_core_thread->dumpRAM(filename);
   });
   connect(m_ui.actionDumpVRAM, &QAction::triggered, [this]() {
     const QString filename = QDir::toNativeSeparators(QFileDialog::getSaveFileName(
@@ -2609,7 +2609,7 @@ void MainWindow::connectSignals()
     if (filename.isEmpty())
       return;
 
-    g_emu_thread->dumpVRAM(filename);
+    g_core_thread->dumpVRAM(filename);
   });
   connect(m_ui.actionDumpSPURAM, &QAction::triggered, [this]() {
     const QString filename = QDir::toNativeSeparators(
@@ -2617,7 +2617,7 @@ void MainWindow::connectSignals()
     if (filename.isEmpty())
       return;
 
-    g_emu_thread->dumpSPURAM(filename);
+    g_core_thread->dumpSPURAM(filename);
   });
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugShowVRAM, "Debug", "ShowVRAM", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionFreeCamera, "DebugWindows", "Freecam", false);
@@ -2758,7 +2758,7 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
   if (entry)
     SettingsWindow::openGamePropertiesDialog(entry, category);
   else
-    g_emu_thread->openGamePropertiesForCurrentGame(category ? QString::fromUtf8(category) : QString());
+    g_core_thread->openGamePropertiesForCurrentGame(category ? QString::fromUtf8(category) : QString());
 }
 
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
@@ -2841,7 +2841,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QtUtils::SaveWindowGeometry(this);
 
     if (s_locals.fullscreen_ui_started && g_main_window == this)
-      g_emu_thread->stopFullscreenUI();
+      g_core_thread->stopFullscreenUI();
 
     destroySubWindows();
     QMainWindow::closeEvent(event);
@@ -2862,7 +2862,7 @@ void MainWindow::changeEvent(QEvent* event)
   {
     // TODO: This should check the render-to-main option.
     if (isRenderingToMain())
-      g_emu_thread->redrawDisplayWindow();
+      g_core_thread->redrawDisplayWindow();
   }
 
   if (event->type() == QEvent::StyleChange)
@@ -2909,7 +2909,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 
   if (System::IsSaveStatePath(filename))
   {
-    g_emu_thread->loadState(qfilename);
+    g_core_thread->loadState(qfilename);
     return;
   }
 
@@ -2975,7 +2975,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
   if (!QtHost::IsSystemValidOrStarting())
   {
     if (exit_fullscreen_ui && s_locals.fullscreen_ui_started)
-      g_emu_thread->stopFullscreenUI();
+      g_core_thread->stopFullscreenUI();
 
     if (quit_afterwards)
       quit();
@@ -2994,7 +2994,7 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
     // Hardcore mode restrictions.
     if (check_pause && !s_locals.system_paused && s_locals.achievements_hardcore_mode && allow_confirm)
     {
-      Host::RunOnCPUThread(
+      Host::RunOnCoreThread(
         [allow_confirm, allow_save_to_state, save_state, check_safety, exit_fullscreen_ui, quit_afterwards]() {
           if (!System::CanPauseSystem(true))
             return;
@@ -3052,10 +3052,10 @@ void MainWindow::requestShutdown(bool allow_confirm, bool allow_save_to_state, b
 
   // Stop fullscreen UI from reopening if requested.
   if (exit_fullscreen_ui && s_locals.fullscreen_ui_started)
-    g_emu_thread->stopFullscreenUI();
+    g_core_thread->stopFullscreenUI();
 
   // Now we can actually shut down the VM.
-  g_emu_thread->shutdownSystem(save_state, check_safety);
+  g_core_thread->shutdownSystem(save_state, check_safety);
 }
 
 void MainWindow::requestExit(bool allow_confirm /* = true */)
@@ -3087,7 +3087,7 @@ void MainWindow::checkForSettingChanges()
   if (m_display_widget && !QtHost::IsSystemLocked() && !isRenderingFullscreen())
   {
     if (canRenderToMainWindow() != isRenderingToMain())
-      g_emu_thread->updateDisplayWindow();
+      g_core_thread->updateDisplayWindow();
     else
       updateLogWidget();
   }
@@ -3329,7 +3329,7 @@ void MainWindow::onToolsMediaCaptureTriggered(bool checked)
 
   if (!checked)
   {
-    Host::RunOnCPUThread(&System::StopMediaCapture);
+    Host::RunOnCoreThread(&System::StopMediaCapture);
     return;
   }
 
@@ -3347,7 +3347,7 @@ void MainWindow::onToolsMediaCaptureTriggered(bool checked)
     return;
   }
 
-  Host::RunOnCPUThread([path = path.toStdString()]() { System::StartMediaCapture(path); });
+  Host::RunOnCoreThread([path = path.toStdString()]() { System::StartMediaCapture(path); });
 }
 
 void MainWindow::onToolsMemoryEditorTriggered()
@@ -3481,7 +3481,7 @@ void MainWindow::showAutoUpdaterWindow()
   if (isRenderingFullscreen())
   {
     // Gotta get out of fullscreen first.
-    g_emu_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->showAutoUpdaterWindow(); });
+    g_core_thread->setFullscreenWithCompletionHandler(false, []() { g_main_window->showAutoUpdaterWindow(); });
     return;
   }
 
@@ -3533,7 +3533,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   // However, we do not want to switch back to render-to-main, the window might have generated this event.
   if (was_fullscreen)
   {
-    g_emu_thread->setFullscreen(false);
+    g_core_thread->setFullscreen(false);
 
     // Container could change... thanks Wayland.
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() { return isRenderingFullscreen(); });
@@ -3541,7 +3541,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 
   if (!was_paused)
   {
-    g_emu_thread->setSystemPaused(true);
+    g_core_thread->setSystemPaused(true);
 
     // Need to wait for the pause to go through, and make the main window visible if needed.
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return !s_locals.system_paused; });
@@ -3579,9 +3579,9 @@ MainWindow::SystemLock::~SystemLock()
   DebugAssert(s_locals.system_locked.load(std::memory_order_relaxed) > 0);
   s_locals.system_locked.fetch_sub(1, std::memory_order_release);
   if (m_was_fullscreen)
-    g_emu_thread->setFullscreen(true);
+    g_core_thread->setFullscreen(true);
   if (!m_was_paused)
-    g_emu_thread->setSystemPaused(false);
+    g_core_thread->setSystemPaused(false);
 }
 
 void MainWindow::SystemLock::cancelResume()

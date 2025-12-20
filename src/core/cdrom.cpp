@@ -2626,7 +2626,7 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
       DoStatSecondResponse();
 
       if (g_settings.cdrom_auto_disc_change)
-        Host::RunOnCPUThread([]() { System::SwitchToNextDisc(false); });
+        Host::RunOnCoreThread([]() { System::SwitchToNextDisc(false); });
     }
     break;
 

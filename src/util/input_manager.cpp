@@ -2508,7 +2508,7 @@ DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Co
   // We tend to get a few of these in quick succession, so try to batch the reloads together.
   if (!s_state.device_notification_reload_pending.test_and_set(std::memory_order_acq_rel))
   {
-    Host::RunOnCPUThread([]() {
+    Host::RunOnCoreThread([]() {
       DEV_LOG("Reloading input devices due to device notification.");
       s_state.device_notification_reload_pending.clear(std::memory_order_release);
       ReloadDevices();

@@ -440,7 +440,7 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
   QMenu* const menu = QtUtils::NewPopupMenu(this);
   bool added = false;
 
-  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  for (const InputDeviceListModel::Device& dev : g_core_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
     menu->addAction(
@@ -619,7 +619,7 @@ void SetupWizardDialog::onAchievementsLoginLogoutClicked()
 {
   if (!Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
   {
-    Host::RunOnCPUThread([]() { Achievements::Logout(); }, true);
+    Host::RunOnCoreThread([]() { Achievements::Logout(); }, true);
     updateAchievementsLoginState();
     return;
   }

@@ -1745,7 +1745,7 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
     Cheats::ReloadCheats(true, true, false, true, true);
 
     // Defer settings update in case something is using it.
-    Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+    Host::RunOnCoreThread([]() { System::ApplySettings(false); });
   }
   else if (System::GetState() == System::State::Starting)
   {
@@ -2303,7 +2303,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std
                 trigger),
     [callback = std::move(callback)](bool res) mutable {
       // don't run the callback in the middle of rendering the UI
-      Host::RunOnCPUThread([callback = std::move(callback), res]() {
+      Host::RunOnCoreThread([callback = std::move(callback), res]() {
         if (res)
           DisableHardcoreMode(true, true);
         callback(res);
@@ -3413,7 +3413,7 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
 namespace Achievements {
 
 static void FinishLoadRAIntegration();
-static void FinishLoadRAIntegrationOnCPUThread();
+static void FinishLoadRAIntegrationOnCoreThread();
 
 static void RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client);
@@ -3487,7 +3487,7 @@ void Achievements::FinishLoadRAIntegration()
     std::string message = fmt::format("Failed to initialize RAIntegration:\n{}", error_message ? error_message : "");
     Host::ReportErrorAsync("RAIntegration Error", message);
     s_state.using_raintegration = false;
-    Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
+    Host::RunOnCoreThread(&Achievements::FinishLoadRAIntegrationOnCoreThread);
     return;
   }
 
@@ -3498,10 +3498,10 @@ void Achievements::FinishLoadRAIntegration()
 
   Host::OnRAIntegrationMenuChanged();
 
-  Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
+  Host::RunOnCoreThread(&Achievements::FinishLoadRAIntegrationOnCoreThread);
 }
 
-void Achievements::FinishLoadRAIntegrationOnCPUThread()
+void Achievements::FinishLoadRAIntegrationOnCoreThread()
 {
   // note: this is executed even for the failure case.
   // we want to finish initializing with internal client if RAIntegration didn't load.
@@ -3547,7 +3547,7 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
     case RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED:
     {
       // Could get called from a different thread...
-      Host::RunOnCPUThread([]() {
+      Host::RunOnCoreThread([]() {
         const auto lock = GetLock();
         OnHardcoreModeChanged(rc_client_get_hardcore_enabled(s_state.client) != 0, false, false);
       });
@@ -3556,7 +3556,7 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
 
     case RC_CLIENT_RAINTEGRATION_EVENT_PAUSE:
     {
-      Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+      Host::RunOnCoreThread([]() { System::PauseSystem(true); });
     }
     break;
 
@@ -3574,7 +3574,7 @@ void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* b
 
   // This can be called on the UI thread, so always queue it.
   llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
-  Host::RunOnCPUThread([address, data = std::move(data)]() {
+  Host::RunOnCoreThread([address, data = std::move(data)]() {
     u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
     const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
 

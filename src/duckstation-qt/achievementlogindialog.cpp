@@ -47,7 +47,7 @@ void AchievementLoginDialog::loginClicked()
   m_ui.status->setText(tr("Logging in..."));
   enableUI(false);
 
-  Host::RunOnCPUThread([this, username, password]() {
+  Host::RunOnCoreThread([this, username, password]() {
     Error error;
     const bool result = Achievements::Login(username.toUtf8().constData(), password.toUtf8().constData(), &error);
     const QString message = QString::fromStdString(error.GetDescription());
@@ -60,7 +60,7 @@ void AchievementLoginDialog::cancelClicked()
   // Disable hardcore mode if we cancelled reauthentication.
   if (m_reason == Achievements::LoginRequestReason::TokenInvalid && QtHost::IsSystemValid())
   {
-    Host::RunOnCPUThread([]() {
+    Host::RunOnCoreThread([]() {
       if (System::IsValid() && !Achievements::HasActiveGame())
         Achievements::DisableHardcoreMode(false, false);
     });
@@ -107,7 +107,7 @@ void AchievementLoginDialog::askToEnableAchievementsAndAccept()
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
     Core::SetBaseBoolSettingValue("Cheevos", "Enabled", true);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
     askToEnableHardcoreModeAndAccept();
   });
   msgbox->connect(msgbox, &QMessageBox::rejected, this, &AchievementLoginDialog::accept);
@@ -131,7 +131,7 @@ void AchievementLoginDialog::askToEnableHardcoreModeAndAccept()
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
     Core::SetBaseBoolSettingValue("Cheevos", "ChallengeMode", true);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
     askToResetGameAndAccept();
   });
   msgbox->connect(msgbox, &QMessageBox::rejected, this, &AchievementLoginDialog::accept);
@@ -151,7 +151,7 @@ void AchievementLoginDialog::askToResetGameAndAccept()
     tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
   msgbox->connect(msgbox, &QMessageBox::accepted, this, [this]() {
-    g_emu_thread->resetSystem(true);
+    g_core_thread->resetSystem(true);
     accept();
   });
   msgbox->connect(msgbox, &QMessageBox::rejected, this, &AchievementLoginDialog::accept);

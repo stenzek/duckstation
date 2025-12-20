@@ -1238,7 +1238,7 @@ void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
   DebugAssert(IsOnThread());
 
   std::string message = fmt::format("GPU thread shut down with fatal error:\n\n{}", reason);
-  Host::RunOnCPUThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
+  Host::RunOnCoreThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
   ERROR_LOG("Switching to null renderer: {}", reason);
@@ -1409,7 +1409,7 @@ void GPUThread::DisplayWindowResizedOnThread()
 
   if (s_state.gpu_backend)
   {
-    Host::RunOnCPUThread(&System::DisplayWindowResized);
+    Host::RunOnCoreThread(&System::DisplayWindowResized);
 
     // If we're paused, re-present the current frame at the new window size.
     if (IsSystemPaused())

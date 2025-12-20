@@ -4145,12 +4145,12 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
     return;
   }
 
-  Host::RunOnCPUThread([]() { GPUThread::RunOnThread(close_cb); });
+  Host::RunOnCoreThread([]() { GPUThread::RunOnThread(close_cb); });
 }
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
 {
-  Host::RunOnCPUThread([text = std::string(text)]() mutable {
+  Host::RunOnCoreThread([text = std::string(text)]() mutable {
     GPUThread::RunOnThread([text = std::move(text)]() mutable {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4164,7 +4164,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressRange(u32 ra
 {
   ProgressCallback::SetProgressRange(range);
 
-  Host::RunOnCPUThread([range]() {
+  Host::RunOnCoreThread([range]() {
     GPUThread::RunOnThread([range]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4178,7 +4178,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressValue(u32 va
 {
   ProgressCallback::SetProgressValue(value);
 
-  Host::RunOnCPUThread([value]() {
+  Host::RunOnCoreThread([value]() {
     GPUThread::RunOnThread([value]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4192,7 +4192,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetCancellable(bool can
 {
   ProgressCallback::SetCancellable(cancellable);
 
-  Host::RunOnCPUThread([cancellable]() {
+  Host::RunOnCoreThread([cancellable]() {
     GPUThread::RunOnThread([cancellable]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4211,7 +4211,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
 {
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
-  Host::RunOnCPUThread([message = std::string(message)]() mutable {
+  Host::RunOnCoreThread([message = std::string(message)]() mutable {
     GPUThread::RunOnThread([message = std::move(message)]() mutable {
       if (!s_state.progress_dialog.IsOpen())
       {
@@ -4252,7 +4252,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
   s_state.progress_dialog.m_prompt_result.store(false, std::memory_order_relaxed);
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
-  Host::RunOnCPUThread(
+  Host::RunOnCoreThread(
     [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
       GPUThread::RunOnThread(
         [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {

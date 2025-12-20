@@ -254,8 +254,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     sif, m_ui.osdQuickDuration, "Display", "OSDQuickDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)]);
 
-  connect(m_ui.fullscreenUITheme, QOverload<int>::of(&QComboBox::currentIndexChanged), g_emu_thread,
-          &EmuThread::updateFullscreenUITheme);
+  connect(m_ui.fullscreenUITheme, QOverload<int>::of(&QComboBox::currentIndexChanged), g_core_thread,
+          &CoreThread::updateFullscreenUITheme);
   connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onOSDShowMessagesChanged);
 
   // Capture Tab
@@ -1085,7 +1085,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
       }
 
       QtHost::SaveGameSettings(sif, true);
-      g_emu_thread->reloadGameSettings();
+      g_core_thread->reloadGameSettings();
     }
     else
     {
@@ -1100,7 +1100,7 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
       }
 
       Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings();
+      g_core_thread->applySettings();
     }
   };
 

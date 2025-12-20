@@ -342,7 +342,7 @@ bool DisplayWidget::event(QEvent* event)
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
           Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
-        g_emu_thread->toggleFullscreen();
+        g_core_thread->toggleFullscreen();
       }
 
       return true;
@@ -399,7 +399,7 @@ bool DisplayWidget::event(QEvent* event)
 #ifdef __APPLE__
       // On MacOS, the user can "cancel" fullscreen by unmaximizing the window.
       if (ws_event->oldState() & Qt::WindowFullScreen && !(windowState() & Qt::WindowFullScreen))
-        g_emu_thread->setFullscreen(false);
+        g_core_thread->setFullscreen(false);
 #endif
 
       return true;
@@ -504,7 +504,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
           if (ch == QChar('\b'))
             break;
 
-          g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+          g_core_thread->queueAuxiliaryRenderWindowInputEvent(
             m_userdata, Host::AuxiliaryRenderWindowEvent::TextEntered,
             Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(ch.unicode())});
         }
@@ -513,7 +513,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       if (key_event->isAutoRepeat())
         return true;
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata,
         (type == QEvent::KeyPress) ? Host::AuxiliaryRenderWindowEvent::KeyPressed :
                                      Host::AuxiliaryRenderWindowEvent::KeyReleased,
@@ -528,7 +528,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * m_last_window_scale);
       const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * m_last_window_scale);
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata, Host::AuxiliaryRenderWindowEvent::MouseMoved,
         Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_x},
         Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_y});
@@ -541,7 +541,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonRelease:
     {
       const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata,
         (type == QEvent::MouseButtonRelease) ? Host::AuxiliaryRenderWindowEvent::MouseReleased :
                                                Host::AuxiliaryRenderWindowEvent::MousePressed,
@@ -557,7 +557,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       const QPoint delta = wheel_event->angleDelta();
       if (delta.x() != 0 || delta.y())
       {
-        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        g_core_thread->queueAuxiliaryRenderWindowInputEvent(
           m_userdata, Host::AuxiliaryRenderWindowEvent::MouseWheel,
           Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.x())},
           Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.y())});
@@ -571,7 +571,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       if (m_destroying)
         return QWidget::event(event);
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(m_userdata, Host::AuxiliaryRenderWindowEvent::CloseRequest);
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(m_userdata, Host::AuxiliaryRenderWindowEvent::CloseRequest);
       event->ignore();
       return true;
     }
@@ -590,7 +590,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
 
         m_last_window_size = size;
         m_last_window_scale = dpr;
-        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        g_core_thread->queueAuxiliaryRenderWindowInputEvent(
           m_userdata, Host::AuxiliaryRenderWindowEvent::Resized,
           Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(size.width())},
           Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(size.height())},

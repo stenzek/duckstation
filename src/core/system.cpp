@@ -324,7 +324,7 @@ struct ALIGN_TO_CACHE_LINE StateVars
   std::unique_ptr<INISettingsInterface> input_settings_interface;
   std::string input_profile_name;
 
-  Threading::ThreadHandle cpu_thread_handle;
+  Threading::ThreadHandle core_thread_handle;
 
   // temporary save state, created when loading, used to undo load state
   std::optional<UndoSaveStateBuffer> undo_load_state;
@@ -519,7 +519,7 @@ void System::ProcessShutdown()
   CPU::CodeCache::ProcessShutdown();
 }
 
-bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
+bool System::CoreThreadInitialize(Error* error, u32 async_worker_thread_count)
 {
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
@@ -533,7 +533,7 @@ bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
   }
 #endif
 
-  s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
+  s_state.core_thread_handle = Threading::ThreadHandle::GetForCallingThread();
   s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
 
   // This will call back to Host::LoadSettings() -> ReloadSources().
@@ -554,7 +554,7 @@ bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
   return true;
 }
 
-void System::CPUThreadShutdown()
+void System::CoreThreadShutdown()
 {
 #ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
@@ -565,21 +565,21 @@ void System::CPUThreadShutdown()
   InputManager::CloseSources();
 
   s_state.async_task_queue.SetWorkerCount(0);
-  s_state.cpu_thread_handle = {};
+  s_state.core_thread_handle = {};
 
 #ifdef _WIN32
   CoUninitialize();
 #endif
 }
 
-const Threading::ThreadHandle& System::GetCPUThreadHandle()
+const Threading::ThreadHandle& System::GetCoreThreadHandle()
 {
-  return s_state.cpu_thread_handle;
+  return s_state.core_thread_handle;
 }
 
-void System::SetCPUThreadHandle(Threading::ThreadHandle handle)
+void System::SetCoreThreadHandle(Threading::ThreadHandle handle)
 {
-  s_state.cpu_thread_handle = std::move(handle);
+  s_state.core_thread_handle = std::move(handle);
 }
 
 void System::IdlePollUpdate()
@@ -1889,7 +1889,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       [parameters = std::move(parameters)](bool result) mutable {
         if (result)
         {
-          Host::RunOnCPUThread([parameters = std::move(parameters)]() mutable {
+          Host::RunOnCoreThread([parameters = std::move(parameters)]() mutable {
             parameters.ignore_missing_subchannel = true;
             BootSystem(std::move(parameters), nullptr);
           });
@@ -2222,7 +2222,7 @@ void System::FrameDone()
       // For runahead, poll input early, that way we can use the remainder of this frame to replay.
       // *technically* this means higher input latency (by less than a frame), but runahead itself
       // counter-acts that.
-      Host::PumpMessagesOnCPUThread();
+      Host::PumpMessagesOnCoreThread();
       InputManager::PollSources();
       CheckForAndExitExecution();
     }
@@ -2290,7 +2290,7 @@ void System::FrameDone()
   // Input poll already done above
   if (s_state.runahead_frames == 0)
   {
-    Host::PumpMessagesOnCPUThread();
+    Host::PumpMessagesOnCoreThread();
     InputManager::PollSources();
   }
 
@@ -3751,10 +3751,10 @@ void System::UpdateSpeedLimiterState()
   const u64 new_scheduler_period = s_state.optimal_frame_pacing ? s_state.frame_period : 0;
   if (new_scheduler_period != last_scheduler_period)
   {
-    if (s_state.cpu_thread_handle)
+    if (s_state.core_thread_handle)
     {
-      s_state.cpu_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period,
-                                                   MAX_FRAME_TIME_NS, new_scheduler_period);
+      s_state.core_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period,
+                                                    MAX_FRAME_TIME_NS, new_scheduler_period);
     }
     const Threading::ThreadHandle& gpu_thread = GPUThread::Internal::GetThreadHandle();
     if (gpu_thread)
@@ -5211,7 +5211,7 @@ void System::DoRewind()
 
   GPUThread::PresentCurrentFrame();
 
-  Host::PumpMessagesOnCPUThread();
+  Host::PumpMessagesOnCoreThread();
   IdlePollUpdate();
 
   // get back into it straight away if we're no longer rewinding
@@ -5361,7 +5361,7 @@ void System::UndoLoadState()
   {
     Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE_SV("System", "Undo load state"), [](bool result) {
       if (result)
-        Host::RunOnCPUThread(&System::UndoLoadState);
+        Host::RunOnCoreThread(&System::UndoLoadState);
     });
     return;
   }
@@ -5546,7 +5546,7 @@ bool System::StartMediaCapture(std::string path)
         MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
         // fire back to the CPU thread to actually start the capture
-        Host::RunOnCPUThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
+        Host::RunOnCoreThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
           StartMediaCapture(std::move(path), true, capture_audio, video_width, video_height);
         });
       },

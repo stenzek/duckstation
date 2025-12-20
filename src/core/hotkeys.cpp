@@ -173,7 +173,7 @@ DEFINE_NON_ANDROID_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "System"),
 
 DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
   if (!pressed)
-    Host::RunOnCPUThread(System::ResetSystem);
+    Host::RunOnCoreThread(System::ResetSystem);
 })
 
 DEFINE_NON_ANDROID_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
@@ -186,14 +186,14 @@ DEFINE_HOTKEY("SwitchToPreviousDisc", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Switch to Previous Disc"), [](s32 pressed) {
                 // Defer because otherwise the hotkey might be invalidated by config change.
                 if (!pressed)
-                  Host::RunOnCPUThread([]() { System::SwitchToPreviousDisc(true); });
+                  Host::RunOnCoreThread([]() { System::SwitchToPreviousDisc(true); });
               })
 
 DEFINE_HOTKEY("SwitchToNextDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Next Disc"),
               [](s32 pressed) {
                 // Defer because otherwise the hotkey might be invalidated by config change.
                 if (!pressed)
-                  Host::RunOnCPUThread([]() { System::SwitchToNextDisc(true); });
+                  Host::RunOnCoreThread([]() { System::SwitchToNextDisc(true); });
               })
 
 DEFINE_HOTKEY("Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"), [](s32 pressed) {
@@ -631,20 +631,20 @@ DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save Stat
 DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
               [](s32 pressed) {
                 if (!pressed)
-                  Host::RunOnCPUThread(System::UndoLoadState);
+                  Host::RunOnCoreThread(System::UndoLoadState);
               })
 
 #define MAKE_LOAD_STATE_HOTKEY(global, slot, name)                                                                     \
   DEFINE_HOTKEY(global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { System::LoadStateFromSlot(global, slot); });                           \
+                    Host::RunOnCoreThread([]() { System::LoadStateFromSlot(global, slot); });                           \
                 })
 #define MAKE_SAVE_STATE_HOTKEY(global, slot, name)                                                                     \
   DEFINE_HOTKEY(global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { System::SaveStateToSlot(global, slot); });                             \
+                    Host::RunOnCoreThread([]() { System::SaveStateToSlot(global, slot); });                             \
                 })
 
 // clang-format off

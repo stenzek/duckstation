@@ -65,13 +65,13 @@ enum class LoginRequestReason;
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(std::shared_ptr<SystemBootParameters>);
 
-class EmuThread : public QThread
+class CoreThread : public QThread
 {
   Q_OBJECT
 
 public:
-  EmuThread();
-  ~EmuThread();
+  CoreThread();
+  ~CoreThread();
 
   void start();
   void stop();
@@ -295,7 +295,7 @@ private:
   std::variant<WorkCallback, CompletionCallback> m_callback;
 };
 
-extern EmuThread* g_emu_thread;
+extern CoreThread* g_core_thread;
 
 namespace QtHost {
 /// Returns the locale to use for date/time formatting, etc.

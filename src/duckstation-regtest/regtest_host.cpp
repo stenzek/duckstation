@@ -59,13 +59,13 @@ static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
-static void ProcessCPUThreadEvents();
+static void ProcessCoreThreadEvents();
 static void GPUThreadEntryPoint();
 
 struct RegTestHostState
 {
-  ALIGN_TO_CACHE_LINE std::mutex cpu_thread_events_mutex;
-  std::condition_variable cpu_thread_event_done;
+  ALIGN_TO_CACHE_LINE std::mutex core_thread_events_mutex;
+  std::condition_variable core_thread_event_done;
   std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
   u32 blocking_cpu_events_pending = 0;
 };
@@ -343,9 +343,9 @@ void Host::OnMediaCaptureStopped()
   //
 }
 
-void Host::PumpMessagesOnCPUThread()
+void Host::PumpMessagesOnCoreThread()
 {
-  RegTestHost::ProcessCPUThreadEvents();
+  RegTestHost::ProcessCoreThreadEvents();
 
   s_frames_remaining--;
   if (s_frames_remaining == 0)
@@ -355,20 +355,20 @@ void Host::PumpMessagesOnCPUThread()
   }
 }
 
-void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
 {
   using namespace RegTestHost;
 
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  std::unique_lock lock(s_state.core_thread_events_mutex);
   s_state.cpu_thread_events.emplace_back(std::move(function), block);
   s_state.blocking_cpu_events_pending += BoolToUInt32(block);
   if (block)
-    s_state.cpu_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+    s_state.core_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
 }
 
-void RegTestHost::ProcessCPUThreadEvents()
+void RegTestHost::ProcessCoreThreadEvents()
 {
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  std::unique_lock lock(s_state.core_thread_events_mutex);
 
   for (;;)
   {
@@ -384,14 +384,14 @@ void RegTestHost::ProcessCPUThreadEvents()
     if (event.second)
     {
       s_state.blocking_cpu_events_pending--;
-      s_state.cpu_thread_event_done.notify_one();
+      s_state.core_thread_event_done.notify_one();
     }
   }
 }
 
 void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
 {
-  RunOnCPUThread(std::move(function), block);
+  RunOnCoreThread(std::move(function), block);
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -1000,7 +1000,7 @@ int main(int argc, char* argv[])
   Error startup_error;
   if (!System::PerformEarlyHardwareChecks(&startup_error) || !System::ProcessStartup(&startup_error))
   {
-    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    ERROR_LOG("ProcessStartup() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
   }
 
@@ -1023,9 +1023,9 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   // Only one async worker.
-  if (!System::CPUThreadInitialize(&startup_error, 1))
+  if (!System::CoreThreadInitialize(&startup_error, 1))
   {
-    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    ERROR_LOG("CoreThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
   }
 
@@ -1084,8 +1084,8 @@ cleanup:
     s_gpu_thread.Join();
   }
 
-  RegTestHost::ProcessCPUThreadEvents();
-  System::CPUThreadShutdown();
+  RegTestHost::ProcessCoreThreadEvents();
+  System::CoreThreadShutdown();
   System::ProcessShutdown();
   return result;
 }

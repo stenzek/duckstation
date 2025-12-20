@@ -177,8 +177,8 @@ void MemoryScannerWindow::connectUi()
   m_update_timer = new QTimer(this);
   connect(m_update_timer, &QTimer::timeout, this, &MemoryScannerWindow::updateScanUi);
 
-  connect(g_emu_thread, &EmuThread::systemStarted, this, &MemoryScannerWindow::onSystemStarted);
-  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &MemoryScannerWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::systemStarted, this, &MemoryScannerWindow::onSystemStarted);
+  connect(g_core_thread, &CoreThread::systemDestroyed, this, &MemoryScannerWindow::onSystemDestroyed);
 
   if (QtHost::IsSystemValid())
     onSystemStarted();
