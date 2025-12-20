@@ -49,7 +49,6 @@
   X(PerfMon)                                                                                                           \
   X(PlatformMisc)                                                                                                      \
   X(PostProcessing)                                                                                                    \
-  X(ProgressCallback)                                                                                                  \
   X(PIO)                                                                                                               \
   X(ReShadeFXShader)                                                                                                   \
   X(Recompiler)                                                                                                        \

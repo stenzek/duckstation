@@ -1322,7 +1322,8 @@ void MainWindow::onChangeDiscMenuAboutToShow()
       QString path = QString::fromStdString(glentry->path);
       action->setCheckable(true);
       action->setChecked(path == s_locals.current_game_path);
-      connect(action, &QAction::triggered, [path = std::move(path)]() { g_core_thread->changeDisc(path, false, true); });
+      connect(action, &QAction::triggered,
+              [path = std::move(path)]() { g_core_thread->changeDisc(path, false, true); });
     }
   }
 }
@@ -3290,7 +3291,8 @@ void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
 {
   QtAsyncTaskWithProgressDialog::create(
     this, TRANSLATE_STR("GameListWidget", "Download Game Icons"),
-    TRANSLATE_STR("GameListWidget", "Downloading game icons..."), true, 0, 0, 0.0f, [](ProgressCallback* progress) {
+    TRANSLATE_STR("GameListWidget", "Downloading game icons..."), false, true, 0, 0, 0.0f, true,
+    [](ProgressCallback* progress) {
       Error error;
       const bool result = Achievements::DownloadGameIcons(progress, &error);
       return [error = std::move(error), result]() {
@@ -3305,7 +3307,7 @@ void MainWindow::onToolsDownloadAchievementGameIconsTriggered()
 void MainWindow::refreshAchievementProgress()
 {
   QtAsyncTaskWithProgressDialog::create(
-    this, TRANSLATE_STR("MainWindow", "Refresh Achievement Progress"), {}, true, 0, 0, 0.0f,
+    this, TRANSLATE_STR("MainWindow", "Refresh Achievement Progress"), {}, false, true, 0, 0, 0.0f, true,
     [](ProgressCallback* progress) {
       Error error;
       const bool result = Achievements::RefreshAllProgressDatabase(progress, &error);

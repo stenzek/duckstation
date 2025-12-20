@@ -453,8 +453,8 @@ void GameSummaryWidget::onComputeHashClicked()
 
   m_ui.computeHashes->setEnabled(false);
 
-  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0,
-                                        0.0f, [this, path = m_path](ProgressCallback* progress) {
+  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, false, true, 1,
+                                        0, 0.0f, true, [this, path = m_path](ProgressCallback* progress) {
                                           Error error;
                                           CDImageHasher::TrackHashes track_hashes;
                                           const bool result = computeImageHash(path, track_hashes, progress, &error);

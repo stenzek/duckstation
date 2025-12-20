@@ -189,7 +189,7 @@ void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode
   const std::string status_text =
     fmt::format(TRANSLATE_FS("ISOBrowserWindow", "Extracting {}..."), Path::GetFileName(spath));
   QtAsyncTaskWithProgressDialog::create(
-    this, windowTitle().toStdString(), status_text, true, 0, 0, 0.15f,
+    this, windowTitle().toStdString(), status_text, false, true, 0, 0, 0.15f, true,
     [this, spath = std::move(spath), save_path = std::move(save_path), mode](ProgressCallback* const progress) mutable {
       Error error;
       std::optional<IsoReader::ISODirectoryEntry> de = m_iso.LocateFile(spath, &error);
