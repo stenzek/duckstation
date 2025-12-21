@@ -365,7 +365,7 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
           if (!backend->AllocateMemorySaveState(states[i], error))
           {
             // Free anything that was allocated.
-            for (size_t j = 0; j <= i; i++)
+            for (size_t j = 0; j <= i; j++)
             {
               states[j].state_data.deallocate();
               states[j].vram_texture.reset();
