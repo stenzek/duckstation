@@ -41,7 +41,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang))">/clang:-fno-rtti %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="!$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/d1trimfile:&quot;$(SolutionDir)\&quot; %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/clang:-fmacro-prefix-map=&quot;$(SolutionDir)\&quot;=. /clang:-ffile-prefix-map=&quot;$(SolutionDir)\&quot;=. %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/clang:-ffile-prefix-map=&quot;$(SolutionDir)\&quot;= %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

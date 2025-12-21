@@ -99,8 +99,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT CMAKE_GENERATOR MATCHES "Xco
   file(RELATIVE_PATH source_dir_remap "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}")
   string(REGEX REPLACE "\/+$" "" source_dir_remap "${source_dir_remap}")
   set(source_dir_remap_str "\"${CMAKE_SOURCE_DIR}\"=\"${source_dir_remap}\"")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmacro-prefix-map=${source_dir_remap_str} -ffile-prefix-map=${source_dir_remap_str}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmacro-prefix-map=${source_dir_remap_str} -ffile-prefix-map=${source_dir_remap_str}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
 endif()
 
 # Write binaries to a seperate directory.
