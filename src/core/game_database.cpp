@@ -1467,10 +1467,10 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     GetStringFromObject(metadata, "developer", &entry->developer);
     GetStringFromObject(metadata, "publisher", &entry->publisher);
 
-    GetUIntFromObject(metadata, "minPlayers", &entry->min_players);
-    GetUIntFromObject(metadata, "maxPlayers", &entry->max_players);
-    GetUIntFromObject(metadata, "minBlocks", &entry->min_blocks);
-    GetUIntFromObject(metadata, "maxBlocks", &entry->max_blocks);
+    GetIntFromObject(metadata, "minPlayers", &entry->min_players);
+    GetIntFromObject(metadata, "maxPlayers", &entry->max_players);
+    GetIntFromObject(metadata, "minBlocks", &entry->min_blocks);
+    GetIntFromObject(metadata, "maxBlocks", &entry->max_blocks);
 
     if (const ryml::ConstNodeRef languages = metadata.find_child(to_csubstr("languages")); languages.valid())
     {

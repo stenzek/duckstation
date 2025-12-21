@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "log.h"
-#include "small_string.h"
 #include "string_util.h"
 #include "types.h"
+
+#include "common/small_string.h"
 
 #include "ryml.hpp"
 
@@ -56,8 +57,34 @@ inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_vi
   return true;
 }
 
+inline bool GetBoolFromObject(const ryml::ConstNodeRef& object, std::string_view key, bool* dest)
+{
+  *dest = 0;
+
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (!member.valid())
+    return false;
+
+  const c4::csubstr val = member.val();
+  if (val.empty())
+  {
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
+    return false;
+  }
+
+  const std::optional<bool> opt_value = StringUtil::FromChars<bool>(to_stringview(val));
+  if (!opt_value.has_value())
+  {
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-bool value in {}", key);
+    return false;
+  }
+
+  *dest = opt_value.value();
+  return true;
+}
+
 template<typename T>
-inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
+inline bool GetIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
 {
   *dest = 0;
 
@@ -76,6 +103,33 @@ inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view
   if (!opt_value.has_value())
   {
     GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-uint value in {}", key);
+    return false;
+  }
+
+  *dest = opt_value.value();
+  return true;
+}
+
+static inline bool GetFloatFromObject(const ryml::ConstNodeRef& object, std::string_view key, float* dest)
+{
+  *dest = 0;
+
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (!member.valid())
+    return false;
+
+  const c4::csubstr val = member.val();
+  if (val.empty())
+  {
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
+    return false;
+  }
+
+  const std::optional<float> opt_value = StringUtil::FromChars<float>(to_stringview(val));
+  if (!opt_value.has_value())
+  {
+    GENERIC_LOG(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-float value in {}",
+                key);
     return false;
   }
 

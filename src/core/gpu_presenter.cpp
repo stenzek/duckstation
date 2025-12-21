@@ -1670,12 +1670,12 @@ bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
   bool alpha_blend = false;
   bool destination_alpha_blend = false;
   if (!GetStringFromObject(root, "image", &image_filename) ||
-      !GetUIntFromObject(root, "displayStartX", &display_area.x) ||
-      !GetUIntFromObject(root, "displayStartY", &display_area.y) ||
-      !GetUIntFromObject(root, "displayEndX", &display_area.z) ||
-      !GetUIntFromObject(root, "displayEndY", &display_area.w) ||
-      !GetUIntFromObject(root, "alphaBlend", &alpha_blend) ||
-      !GetUIntFromObject(root, "destinationAlphaBlend", &destination_alpha_blend))
+      !GetIntFromObject(root, "displayStartX", &display_area.x) ||
+      !GetIntFromObject(root, "displayStartY", &display_area.y) ||
+      !GetIntFromObject(root, "displayEndX", &display_area.z) ||
+      !GetIntFromObject(root, "displayEndY", &display_area.w) ||
+      !GetIntFromObject(root, "alphaBlend", &alpha_blend) ||
+      !GetIntFromObject(root, "destinationAlphaBlend", &destination_alpha_blend))
   {
     Error::SetStringView(error, "One or more parameters is missing.");
     return false;
