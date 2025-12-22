@@ -18,7 +18,12 @@ void Shutdown();
 
 /// Asynchronously queues an audio effect.
 /// The path is assumed to be a resource name.
-bool EnqueueSoundEffect(std::string_view name);
+/// This effect will be cached to avoid disk I/O.
+void EnqueueSoundEffect(std::string_view name);
+
+/// Streams a WAV file for playback.
+/// This will bypass the cache and read directly from disk.
+void StreamSoundEffect(std::string path);
 
 /// Stops all currently playing sound effects.
 void StopAll();
