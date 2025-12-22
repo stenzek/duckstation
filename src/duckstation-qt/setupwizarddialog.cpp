@@ -502,7 +502,7 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
 {
   SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
   m_ui.resolutionScale->clear();
-  GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale, 16);
+  GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale);
   SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.textureFiltering);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "graphicssettingswidget.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
@@ -62,6 +63,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
                                                &Settings::GetRendererName, &Settings::GetRendererDisplayName,
                                                Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
+  if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
+    populateAndConnectUpscalingModes();
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.textureFiltering, "GPU", "TextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                &Settings::GetTextureFilterDisplayName,
@@ -831,7 +834,19 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   if (m_adapters_render_api != render_api)
   {
     m_adapters_render_api = render_api;
-    m_adapters = GPUDevice::GetAdapterListForAPI(render_api);
+
+    QtAsyncTask::create(this, [this, render_api]() {
+      GPUDevice::AdapterInfoList adapters = GPUDevice::GetAdapterListForAPI(render_api);
+      return [this, adapters = std::move(adapters), render_api]() mutable {
+        if (m_adapters_render_api != render_api)
+          return;
+
+        m_adapters = std::move(adapters);
+        populateGPUAdaptersAndResolutions(render_api);
+      };
+    });
+
+    return;
   }
 
   const GPUDevice::AdapterInfo* current_adapter = nullptr;
@@ -913,16 +928,9 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
 
   if (!m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling))
   {
-    SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
-    m_ui.resolutionScale->clear();
-
     const int max_scale =
       static_cast<int>(current_adapter ? std::clamp<u32>(current_adapter->max_texture_size / 1024u, 1u, 32u) : 16);
-    populateUpscalingModes(m_ui.resolutionScale, max_scale);
-
-    SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
-    connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            &GraphicsSettingsWidget::updateResolutionDependentOptions);
+    populateAndConnectUpscalingModes(max_scale);
   }
 
   {
@@ -970,6 +978,19 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
       }
     });
   }
+}
+
+void GraphicsSettingsWidget::populateAndConnectUpscalingModes(int max_scale)
+{
+  SettingWidgetBinder::DisconnectWidget(m_ui.resolutionScale);
+  m_ui.resolutionScale->clear();
+
+  populateUpscalingModes(m_ui.resolutionScale, max_scale);
+
+  SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.resolutionScale, "GPU",
+                                              "ResolutionScale", 1);
+  connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &GraphicsSettingsWidget::updateResolutionDependentOptions);
 }
 
 void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* const cb, int max_scale)
