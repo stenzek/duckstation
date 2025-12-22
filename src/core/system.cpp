@@ -37,6 +37,7 @@
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
+#include "sound_effect_manager.h"
 #include "spu.h"
 #include "system_private.h"
 #include "timers.h"
@@ -4504,7 +4505,13 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                             AudioStream::GetBackendDisplayName(g_settings.audio_backend)));
       }
 
+      const bool sound_effects_active = SoundEffectManager::IsInitialized();
+      if (sound_effects_active)
+        SoundEffectManager::Shutdown();
+
       SPU::CreateOutputStream();
+      if (sound_effects_active)
+        SoundEffectManager::EnsureInitialized();
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)
@@ -4807,6 +4814,15 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
       {
         UpdateDisplayVSync();
+      }
+
+      if ((g_settings.audio_backend != old_settings.audio_backend ||
+           g_settings.audio_driver != old_settings.audio_driver ||
+           g_settings.audio_output_device != old_settings.audio_output_device) &&
+          SoundEffectManager::IsInitialized())
+      {
+        SoundEffectManager::Shutdown();
+        SoundEffectManager::EnsureInitialized();
       }
     }
   }

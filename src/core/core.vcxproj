@@ -79,6 +79,7 @@
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="sio.cpp" />
+    <ClCompile Include="sound_effect_manager.cpp" />
     <ClCompile Include="spu.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="timers.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="settings.h" />
     <ClInclude Include="shader_cache_version.h" />
     <ClInclude Include="sio.h" />
+    <ClInclude Include="sound_effect_manager.h" />
     <ClInclude Include="spu.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="system_private.h" />

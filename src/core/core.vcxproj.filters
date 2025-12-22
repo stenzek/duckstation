@@ -72,6 +72,7 @@
     <ClCompile Include="fullscreenui_game_list.cpp" />
     <ClCompile Include="fullscreenui_achievements.cpp" />
     <ClCompile Include="core.cpp" />
+    <ClCompile Include="sound_effect_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="fullscreenui_strings.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="core_private.h" />
+    <ClInclude Include="sound_effect_manager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

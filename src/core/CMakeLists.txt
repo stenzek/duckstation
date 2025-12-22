@@ -128,6 +128,8 @@ add_library(core
   shader_cache_version.h
   sio.cpp
   sio.h
+  sound_effect_manager.cpp
+  sound_effect_manager.h
   spu.cpp
   spu.h
   system.cpp

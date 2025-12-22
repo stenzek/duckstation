@@ -57,6 +57,7 @@
   X(Settings)                                                                                                          \
   X(ShaderGen)                                                                                                         \
   X(Sockets)                                                                                                           \
+  X(SoundEffectManager)                                                                                                \
   X(StateWrapper)                                                                                                      \
   X(System)                                                                                                            \
   X(TTY)                                                                                                               \
