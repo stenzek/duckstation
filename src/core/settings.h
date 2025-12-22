@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-#include "util/audio_stream.h"
+#include "util/core_audio_stream.h"
 
 #include "common/small_string.h"
 

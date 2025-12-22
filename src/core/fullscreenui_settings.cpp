@@ -2527,7 +2527,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
     // TODO: Remove release once using move_only_function
     std::unique_ptr<ProgressCallback> progress = OpenModalProgressDialog(FSUI_STR("Cover Downloader"), 1000.0f);
     Host::QueueAsyncTask([progress = progress.release(), urls = StringUtil::SplitNewString(template_urls, '\n'),
-                            use_serial_names = use_serial_names]() {
+                          use_serial_names = use_serial_names]() {
       Error error;
       if (!GameList::DownloadCovers(
             urls, use_serial_names, progress, &error, [](const GameList::Entry* entry, std::string save_path) {
@@ -4573,8 +4573,9 @@ void FullscreenUI::DrawAudioSettingsPage()
     &AudioStream::GetBackendDisplayName, AudioBackend::Count);
   DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_PF_SFX_SOUND_EFFECT_NOISE, "Stretch Mode"),
                   FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
-                  AudioStreamParameters::DEFAULT_STRETCH_MODE, &AudioStream::ParseStretchMode,
-                  &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeDisplayName, AudioStretchMode::Count);
+                  AudioStreamParameters::DEFAULT_STRETCH_MODE, &CoreAudioStream::ParseStretchMode,
+                  &CoreAudioStream::GetStretchModeName, &CoreAudioStream::GetStretchModeDisplayName,
+                  AudioStretchMode::Count);
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_BUCKET, "Buffer Size"),
                       FSUI_VSTR("Determines the amount of audio buffered before being pulled by the host API."),
                       "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));

@@ -80,6 +80,7 @@
     <ClInclude Include="postprocessing_shader_slang.h" />
     <ClInclude Include="imgui_gsvector.h" />
     <ClInclude Include="translation.h" />
+    <ClInclude Include="core_audio_stream.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="spirv_module.cpp" />
     <ClCompile Include="postprocessing_shader_slang.cpp" />
     <ClCompile Include="translation.cpp" />
+    <ClCompile Include="core_audio_stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

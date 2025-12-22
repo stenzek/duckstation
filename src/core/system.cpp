@@ -1639,7 +1639,7 @@ void System::PauseSystem(bool paused)
     return;
 
   s_state.state = (paused ? State::Paused : State::Running);
-  SPU::GetOutputStream()->SetPaused(paused);
+  SPU::GetOutputStream().SetPaused(paused);
   GPUThread::RunOnThread([paused]() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::SystemPaused, paused); });
 
   if (paused)
@@ -1905,7 +1905,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Good to go.
   s_state.state = State::Running;
   std::atomic_thread_fence(std::memory_order_release);
-  SPU::GetOutputStream()->SetPaused(false);
+  SPU::GetOutputStream().SetPaused(false);
 
   // Immediately pausing?
   const bool start_paused = (ShouldStartPaused() || parameters.override_start_paused.value_or(false));
@@ -3666,9 +3666,9 @@ void System::AccumulatePreFrameSleepTime(Timer::Value current_time)
 
 void System::FormatLatencyStats(SmallStringBase& str)
 {
-  AudioStream* audio_stream = SPU::GetOutputStream();
+  CoreAudioStream& audio_stream = SPU::GetOutputStream();
   const u32 audio_latency =
-    AudioStream::GetMSForBufferSize(audio_stream->GetSampleRate(), audio_stream->GetBufferedFramesRelaxed());
+    CoreAudioStream::GetMSForBufferSize(audio_stream.GetSampleRate(), audio_stream.GetBufferedFramesRelaxed());
   const u32 queued_frame_count = GPUBackend::GetQueuedFrameCount();
 
   const double active_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
@@ -3725,13 +3725,13 @@ void System::UpdateSpeedLimiterState()
   VERBOSE_LOG("Preset timing: {}", s_state.optimal_frame_pacing ? "consistent" : "immediate");
 
   // Update audio output.
-  AudioStream* stream = SPU::GetOutputStream();
-  stream->SetOutputVolume(GetAudioOutputVolume());
-  stream->SetNominalRate(GetAudioNominalRate());
+  CoreAudioStream& stream = SPU::GetOutputStream();
+  stream.SetOutputVolume(GetAudioOutputVolume());
+  stream.SetNominalRate(GetAudioNominalRate());
 
   // Only empty stretch buffers when we're decreasing speed.
   if (s_state.target_speed != prev_speed && (prev_speed > s_state.target_speed || prev_speed == 0.0f))
-    stream->EmptyStretchBuffers();
+    stream.EmptyStretchBuffers();
 
   UpdateThrottlePeriod();
   ResetThrottler();
@@ -4494,7 +4494,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.audio_driver != old_settings.audio_driver ||
-        g_settings.audio_output_device != old_settings.audio_output_device)
+        g_settings.audio_output_device != old_settings.audio_output_device ||
+        g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
@@ -4503,14 +4504,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                                             AudioStream::GetBackendDisplayName(g_settings.audio_backend)));
       }
 
-      SPU::RecreateOutputStream();
-    }
-    if (g_settings.audio_stream_parameters.stretch_mode != old_settings.audio_stream_parameters.stretch_mode)
-      SPU::GetOutputStream()->SetStretchMode(g_settings.audio_stream_parameters.stretch_mode);
-    if (g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
-    {
-      SPU::RecreateOutputStream();
-      UpdateSpeedLimiterState();
+      SPU::CreateOutputStream();
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)
@@ -4553,7 +4547,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       InterruptExecution();
     }
 
-    SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
+    SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 
     // CPU side GPU settings
     if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
@@ -5432,7 +5426,7 @@ void System::UpdateVolume()
   if (!IsValid())
     return;
 
-  SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
+  SPU::GetOutputStream().SetOutputVolume(GetAudioOutputVolume());
 }
 
 std::string System::GetScreenshotPath(const char* extension)

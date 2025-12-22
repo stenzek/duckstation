@@ -17,6 +17,8 @@ add_library(util
   cd_image_ppf.cpp
   compress_helpers.cpp
   compress_helpers.h
+  core_audio_stream.cpp
+  core_audio_stream.h
   cue_parser.cpp
   cue_parser.h
   dyn_shaderc.h

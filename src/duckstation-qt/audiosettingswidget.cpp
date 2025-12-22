@@ -27,8 +27,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
     sif, m_ui.audioBackend, "Audio", "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioStream::DEFAULT_BACKEND, AudioBackend::Count);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.stretchMode, "Audio", "StretchMode", &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
-    &AudioStream::GetStretchModeDisplayName, AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
+    sif, m_ui.stretchMode, "Audio", "StretchMode", &CoreAudioStream::ParseStretchMode,
+    &CoreAudioStream::GetStretchModeName, &CoreAudioStream::GetStretchModeDisplayName,
+    AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "Audio", "BufferMS",
                                               AudioStreamParameters::DEFAULT_BUFFER_MS);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
@@ -116,10 +117,10 @@ AudioSettingsWidget::~AudioSettingsWidget() = default;
 void AudioSettingsWidget::onStretchModeChanged()
 {
   const AudioStretchMode stretch_mode =
-    AudioStream::ParseStretchMode(
+    CoreAudioStream::ParseStretchMode(
       m_dialog
         ->getEffectiveStringValue("Audio", "StretchMode",
-                                  AudioStream::GetStretchModeName(AudioStreamParameters::DEFAULT_STRETCH_MODE))
+                                  CoreAudioStream::GetStretchModeName(AudioStreamParameters::DEFAULT_STRETCH_MODE))
         .c_str())
       .value_or(AudioStreamParameters::DEFAULT_STRETCH_MODE);
   m_ui.stretchSettings->setEnabled(stretch_mode != AudioStretchMode::Off);
@@ -219,7 +220,7 @@ void AudioSettingsWidget::updateLatencyLabel()
   m_ui.bufferMSLabel->setText(tr("%1 ms").arg(config_buffer_ms));
 
   const u32 output_latency_ms = minimal_output ?
-                                  AudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, m_output_device_latency) :
+                                  CoreAudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, m_output_device_latency) :
                                   config_output_latency_ms;
   if (output_latency_ms > 0)
   {

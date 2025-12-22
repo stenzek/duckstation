@@ -365,10 +365,8 @@ static void ManualTransferWrite(u16 value);
 static void UpdateTransferEvent();
 static void UpdateDMARequest();
 
-static void CreateOutputStream();
-
 namespace {
-struct SPUState
+struct ALIGN_TO_CACHE_LINE SPUState
 {
   TimingEvent transfer_event{"SPU Transfer", TRANSFER_TICKS_PER_HALFWORD, TRANSFER_TICKS_PER_HALFWORD,
                              &SPU::ExecuteTransfer, nullptr};
@@ -416,15 +414,15 @@ struct SPUState
   std::array<std::array<s16, 64>, 2> reverb_upsample_buffer;
   s32 reverb_resample_buffer_position = 0;
 
+  s16 last_reverb_input[2];
+  s32 last_reverb_output[2];
+  bool audio_output_muted = false;
+
   ALIGN_TO_CACHE_LINE std::array<Voice, NUM_VOICES> voices{};
 
   InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> transfer_fifo;
 
-  std::unique_ptr<AudioStream> audio_stream;
-
-  s16 last_reverb_input[2];
-  s32 last_reverb_output[2];
-  bool audio_output_muted = false;
+  CoreAudioStream audio_stream;
 
 #ifdef SPU_DUMP_ALL_VOICES
   // +1 for reverb output
@@ -440,7 +438,7 @@ struct SPUState
 };
 } // namespace
 
-ALIGN_TO_CACHE_LINE static SPUState s_state;
+static SPUState s_state;
 ALIGN_TO_CACHE_LINE static std::array<u8, RAM_SIZE> s_ram{};
 ALIGN_TO_CACHE_LINE static std::array<s16, (44100 / 60) * 2> s_muted_output_buffer{};
 
@@ -503,13 +501,11 @@ void SPU::CreateOutputStream()
            AudioStream::GetBackendName(g_settings.audio_backend), static_cast<u32>(SAMPLE_RATE),
            g_settings.audio_stream_parameters.buffer_ms, g_settings.audio_stream_parameters.output_latency_ms,
            g_settings.audio_stream_parameters.output_latency_minimal ? " (or minimal)" : "",
-           AudioStream::GetStretchModeName(g_settings.audio_stream_parameters.stretch_mode));
+           CoreAudioStream::GetStretchModeName(g_settings.audio_stream_parameters.stretch_mode));
 
   Error error;
-  s_state.audio_stream =
-    AudioStream::CreateStream(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters,
-                              g_settings.audio_driver.c_str(), g_settings.audio_output_device.c_str(), &error);
-  if (!s_state.audio_stream)
+  if (!s_state.audio_stream.Initialize(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters,
+                                       g_settings.audio_driver.c_str(), g_settings.audio_output_device.c_str(), &error))
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Error, "SPUAudioStream", ICON_EMOJI_WARNING,
@@ -517,19 +513,13 @@ void SPU::CreateOutputStream()
         TRANSLATE_FS("SPU",
                      "Failed to create or configure audio stream, falling back to null output. The error was:\n{}"),
         error.GetDescription()));
-    s_state.audio_stream.reset();
-    s_state.audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
+    s_state.audio_stream.Initialize(AudioBackend::Null, SAMPLE_RATE, g_settings.audio_stream_parameters, nullptr,
+                                    nullptr, nullptr);
   }
 
-  s_state.audio_stream->SetOutputVolume(System::GetAudioOutputVolume());
-  s_state.audio_stream->SetNominalRate(System::GetAudioNominalRate());
-  s_state.audio_stream->SetPaused(System::IsPaused());
-}
-
-void SPU::RecreateOutputStream()
-{
-  s_state.audio_stream.reset();
-  CreateOutputStream();
+  s_state.audio_stream.SetOutputVolume(System::GetAudioOutputVolume());
+  s_state.audio_stream.SetNominalRate(System::GetAudioNominalRate());
+  s_state.audio_stream.SetPaused(System::IsPaused());
 }
 
 void SPU::CPUClockChanged()
@@ -550,7 +540,7 @@ void SPU::Shutdown()
 
   s_state.tick_event.Deactivate();
   s_state.transfer_event.Deactivate();
-  s_state.audio_stream.reset();
+  s_state.audio_stream.Destroy();
 }
 
 void SPU::Reset()
@@ -1674,9 +1664,9 @@ void SPU::SetAudioOutputMuted(bool muted)
   s_state.audio_output_muted = muted;
 }
 
-AudioStream* SPU::GetOutputStream()
+CoreAudioStream& SPU::GetOutputStream()
 {
-  return s_state.audio_stream.get();
+  return s_state.audio_stream;
 }
 
 void SPU::Voice::KeyOn()
@@ -2410,7 +2400,7 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
     if (!s_state.audio_output_muted) [[likely]]
     {
       output_frame_space = remaining_frames;
-      s_state.audio_stream->BeginWrite(&output_frame_start, &output_frame_space);
+      s_state.audio_stream.BeginWrite(&output_frame_start, &output_frame_space);
     }
     else
     {
@@ -2536,7 +2526,7 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
     }
 
 #ifndef __ANDROID__
-    if (MediaCapture* cap = System::GetMediaCapture(); cap && !s_state.audio_output_muted) [[unlikely]]
+    if (MediaCapture* cap = System::GetMediaCapture()) [[unlikely]]
     {
       if (!cap->DeliverAudioFrames(output_frame_start, frames_in_this_batch))
         System::StopMediaCapture();
@@ -2544,7 +2534,7 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
 #endif
 
     if (!s_state.audio_output_muted) [[likely]]
-      s_state.audio_stream->EndWrite(frames_in_this_batch);
+      s_state.audio_stream.EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
 }
@@ -2554,7 +2544,7 @@ void SPU::UpdateEventInterval()
   // Don't generate more than the audio buffer since in a single slice, otherwise we'll both overflow the buffers when
   // we do write it, and the audio thread will underflow since it won't have enough data it the game isn't messing with
   // the SPU state.
-  const u32 max_slice_frames = s_state.audio_stream->GetBufferSize();
+  const u32 max_slice_frames = s_state.audio_stream.GetBufferSize();
 
   // TODO: Make this predict how long until the interrupt will be hit instead...
   const u32 interval = (s_state.SPUCNT.enable && s_state.SPUCNT.irq9_enable) ? 1 : max_slice_frames;

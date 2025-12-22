@@ -540,7 +540,7 @@ DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("H
                 {
                   g_settings.audio_output_muted = !g_settings.audio_output_muted;
                   const s32 volume = System::GetAudioOutputVolume();
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   if (g_settings.audio_output_muted)
                   {
                     Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_MUTED_SPEAKER,
@@ -576,7 +576,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOO
                     Truncate8(std::min<s32>(static_cast<s32>(System::GetAudioOutputVolume()) + 10, 200));
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_HIGH_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume));
                 }
@@ -590,7 +590,7 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
                   const u8 volume = Truncate8(std::max<s32>(static_cast<s32>(System::GetAudioOutputVolume()) - 10, 0));
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume));
                 }

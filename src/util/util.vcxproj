@@ -4,6 +4,7 @@
   <ItemGroup>
     <ClInclude Include="animated_image.h" />
     <ClInclude Include="compress_helpers.h" />
+    <ClInclude Include="core_audio_stream.h" />
     <ClInclude Include="dyn_shaderc.h" />
     <ClInclude Include="dyn_spirv_cross.h" />
     <ClInclude Include="elf_file.h" />
@@ -127,6 +128,7 @@
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="compress_helpers.cpp" />
+    <ClCompile Include="core_audio_stream.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />
