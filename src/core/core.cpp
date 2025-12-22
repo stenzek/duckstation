@@ -26,7 +26,7 @@
 #include <ShlObj.h>
 #endif
 
-LOG_CHANNEL(Host);
+LOG_CHANNEL(Core);
 
 namespace Core {
 
