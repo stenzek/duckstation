@@ -34,6 +34,8 @@ public:
   std::FILE* TakeFile();
   u64 GetFileSize();
 
+  u32 GetRemainingFrames() const;
+
   bool SeekToFrame(u32 num, Error* error = nullptr);
 
   std::optional<u32> ReadFrames(void* samples, u32 num_frames, Error* error = nullptr);
@@ -43,10 +45,11 @@ private:
 
   std::FILE* m_file = nullptr;
   s64 m_frames_start = 0;
-  u32 m_bytes_per_frame = 0;
+  u16 m_bytes_per_frame = 0;
+  u16 m_num_channels = 0;
   u32 m_sample_rate = 0;
-  u32 m_num_channels = 0;
   u32 m_num_frames = 0;
+  u32 m_current_frame = 0;
 };
 
 class WAVWriter

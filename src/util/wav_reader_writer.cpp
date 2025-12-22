@@ -64,10 +64,11 @@ WAVReader::WAVReader(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
-  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
-  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_num_frames = std::exchange(move.m_num_frames, 0);
+  m_current_frame = std::exchange(move.m_current_frame, 0);
 }
 
 WAVReader::~WAVReader()
@@ -80,10 +81,11 @@ WAVReader& WAVReader::operator=(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
-  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
-  m_num_channels = std::exchange(move.m_num_channels, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
+  m_current_frame = std::exchange(move.m_current_frame, 0);
   return *this;
 }
 
@@ -187,6 +189,7 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
   m_bytes_per_frame = sizeof(s16) * format.num_channels;
   m_num_channels = format.num_channels;
   m_num_frames = num_frames;
+  m_current_frame = 0;
   return true;
 }
 
@@ -198,37 +201,59 @@ void WAVReader::Close()
   std::fclose(m_file);
   m_file = nullptr;
   m_frames_start = 0;
-  m_sample_rate = 0;
   m_bytes_per_frame = 0;
   m_num_channels = 0;
+  m_sample_rate = 0;
   m_num_frames = 0;
+  m_current_frame = 0;
 }
 
 std::FILE* WAVReader::TakeFile()
 {
   std::FILE* ret = std::exchange(m_file, nullptr);
-  m_sample_rate = 0;
   m_frames_start = 0;
   m_bytes_per_frame = 0;
   m_num_channels = 0;
+  m_sample_rate = 0;
   m_num_frames = 0;
+  m_current_frame = 0;
   return ret;
 }
 
 u64 WAVReader::GetFileSize()
 {
-  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file), 1));
+  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file), 0));
+}
+
+u32 WAVReader::GetRemainingFrames() const
+{
+  return (m_num_frames - m_current_frame);
 }
 
 bool WAVReader::SeekToFrame(u32 num, Error* error)
 {
+  if (num > m_num_frames)
+  {
+    Error::SetStringFmt(error, "Frame number {} out of range (max {})", num, m_num_frames);
+    return false;
+  }
+
   const s64 offset = m_frames_start + (static_cast<s64>(num) * (sizeof(s16) * m_num_channels));
-  return FileSystem::FSeek64(m_file, offset, SEEK_SET, error);
+  if (!FileSystem::FSeek64(m_file, offset, SEEK_SET, error))
+    return false;
+
+  m_current_frame = num;
+  return true;
 }
 
 std::optional<u32> WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
 {
-  const size_t read = std::fread(samples, m_bytes_per_frame, num_frames, m_file);
+  const u32 frames_remaining = m_num_frames - m_current_frame;
+  if (frames_remaining == 0)
+    return 0;
+
+  const u32 read =
+    static_cast<u32>(std::fread(samples, m_bytes_per_frame, std::min(num_frames, frames_remaining), m_file));
   if (read == 0)
   {
     if (std::ferror(m_file))
@@ -238,7 +263,8 @@ std::optional<u32> WAVReader::ReadFrames(void* samples, u32 num_frames, Error* e
     }
   }
 
-  return static_cast<u32>(read);
+  m_current_frame += read;
+  return read;
 }
 
 WAVWriter::WAVWriter() = default;
