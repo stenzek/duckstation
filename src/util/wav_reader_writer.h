@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <optional>
+#include <vector>
 
 class Error;
 
@@ -39,6 +40,17 @@ public:
   bool SeekToFrame(u32 num, Error* error = nullptr);
 
   std::optional<u32> ReadFrames(void* samples, u32 num_frames, Error* error = nullptr);
+
+  struct MemoryParseResult
+  {
+    u32 bytes_per_frame;
+    u32 sample_rate;
+    u32 num_channels;
+    u32 num_frames;
+    const void* sample_data;
+  };
+
+  static std::optional<MemoryParseResult> ParseMemory(const void* data, size_t size, Error* error = nullptr);
 
 private:
   using SampleType = s16;
