@@ -2064,6 +2064,8 @@ void System::DestroySystem()
 
   FreeMemoryStateStorage(true, true, false);
 
+  SoundEffectManager::Shutdown();
+
   GPUThread::DestroyGPUBackend();
 
   Cheats::UnloadAll();

@@ -16,6 +16,7 @@
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
@@ -1237,6 +1238,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
 
+  // needed for notifications
+  SoundEffectManager::EnsureInitialized();
+
   if (display_summary)
     DisplayAchievementSummary();
 
@@ -1326,7 +1330,7 @@ void Achievements::DisplayAchievementSummary()
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(INFO_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(INFO_SOUND_NAME);
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1380,7 +1384,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   }
 
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(UNLOCK_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(UNLOCK_SOUND_NAME);
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
@@ -1472,7 +1476,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
   }
 
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(LBSUBMIT_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(LBSUBMIT_SOUND_NAME);
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
