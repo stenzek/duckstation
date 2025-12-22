@@ -2069,7 +2069,11 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
   auto cb = [title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message)]() {
     QMessageBox::critical(g_main_window && g_main_window->isVisible() ? g_main_window : nullptr, title, message);
-    std::abort();
+#ifndef __APPLE__
+    std::quick_exit(EXIT_FAILURE);
+#else
+    _exit(EXIT_FAILURE);
+#endif
   };
 
   // https://stackoverflow.com/questions/34135624/how-to-properly-execute-gui-operations-in-qt-main-thread
@@ -2088,6 +2092,8 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
     QMetaObject::invokeMethod(timer, static_cast<void (QTimer::*)(int)>(&QTimer::start), Qt::BlockingQueuedConnection,
                               static_cast<int>(0));
   }
+
+  std::abort();
 }
 
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
