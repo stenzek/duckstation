@@ -15,7 +15,7 @@
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
 
-LOG_CHANNEL(CubebAudioStream);
+LOG_CHANNEL(AudioStream);
 
 namespace {
 

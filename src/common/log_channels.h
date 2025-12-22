@@ -15,7 +15,6 @@
   X(CompressHelpers)                                                                                                   \
   X(Controller)                                                                                                        \
   X(Core)                                                                                                              \
-  X(CubebAudioStream)                                                                                                  \
   X(CueParser)                                                                                                         \
   X(DInputSource)                                                                                                      \
   X(DMA)                                                                                                               \
