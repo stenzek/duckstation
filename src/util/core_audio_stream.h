@@ -90,8 +90,8 @@ public:
   u32 GetBufferedFramesRelaxed() const;
 
   /// Creation/destruction.
-  bool Initialize(AudioBackend backend, u32 sample_rate, const AudioStreamParameters& params, const char* driver_name,
-                  const char* device_name, Error* error);
+  bool Initialize(AudioBackend backend, u32 sample_rate, const AudioStreamParameters& params,
+                  std::string_view driver_name, std::string_view device_name, Error* error);
   void Destroy();
 
   /// Temporarily pauses the stream, preventing it from requesting data.

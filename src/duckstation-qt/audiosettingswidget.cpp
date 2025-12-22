@@ -26,10 +26,10 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.audioBackend, "Audio", "Backend", &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioStream::DEFAULT_BACKEND, AudioBackend::Count);
-  SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.stretchMode, "Audio", "StretchMode", &CoreAudioStream::ParseStretchMode,
-    &CoreAudioStream::GetStretchModeName, &CoreAudioStream::GetStretchModeDisplayName,
-    AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.stretchMode, "Audio", "StretchMode",
+                                               &CoreAudioStream::ParseStretchMode, &CoreAudioStream::GetStretchModeName,
+                                               &CoreAudioStream::GetStretchModeDisplayName,
+                                               AudioStreamParameters::DEFAULT_STRETCH_MODE, AudioStretchMode::Count);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.bufferMS, "Audio", "BufferMS",
                                               AudioStreamParameters::DEFAULT_BUFFER_MS);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.outputLatencyMS, "Audio", "OutputLatencyMS",
@@ -166,8 +166,7 @@ void AudioSettingsWidget::updateDeviceNames()
   const AudioBackend backend = getEffectiveBackend();
   const std::string driver_name = m_dialog->getEffectiveStringValue("Audio", "Driver", "");
   const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device", "");
-  std::vector<AudioStream::DeviceInfo> devices =
-    AudioStream::GetOutputDevices(backend, driver_name.c_str(), SPU::SAMPLE_RATE);
+  std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name, SPU::SAMPLE_RATE);
 
   SettingWidgetBinder::DisconnectWidget(m_ui.outputDevice);
   m_ui.outputDevice->clear();

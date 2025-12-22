@@ -85,7 +85,7 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetDriverNames(Aud
   return ret;
 }
 
-std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, const char* driver,
+std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend backend, std::string_view driver,
                                                                    u32 sample_rate)
 {
   std::vector<AudioStream::DeviceInfo> ret;
@@ -106,7 +106,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend 
 
 std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32 sample_rate, u32 channels,
                                                        u32 output_latency_frames, bool output_latency_minimal,
-                                                       const char* driver_name, const char* device_name,
+                                                       std::string_view driver_name, std::string_view device_name,
                                                        AudioStreamSource* source, bool auto_start, Error* error)
 {
   switch (backend)

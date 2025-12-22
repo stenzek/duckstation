@@ -94,7 +94,8 @@ CoreAudioStream::~CoreAudioStream()
 }
 
 bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const AudioStreamParameters& params,
-                                 const char* driver_name, const char* device_name, Error* error /* = nullptr */)
+                                 std::string_view driver_name, std::string_view device_name,
+                                 Error* error /* = nullptr */)
 {
   Destroy();
 

@@ -63,12 +63,12 @@ public:
   static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
 
   /// Returns a list of available output devices for the specified backend and driver.
-  static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver, u32 sample_rate);
+  static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, std::string_view driver, u32 sample_rate);
 
   /// Creates an audio stream with the specified parameters.
   static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate, u32 channels,
                                                    u32 output_latency_frames, bool output_latency_minimal,
-                                                   const char* driver_name, const char* device_name,
+                                                   std::string_view driver_name, std::string_view device_name,
                                                    AudioStreamSource* source, bool auto_start, Error* error);
 
   /// Starts the stream, allowing it to request data.
@@ -83,10 +83,10 @@ protected:
 private:
 #ifndef __ANDROID__
   static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
-  static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver, u32 sample_rate);
+  static std::vector<DeviceInfo> GetCubebOutputDevices(std::string_view driver, u32 sample_rate);
   static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
-                                                             bool output_latency_minimal, const char* driver_name,
-                                                             const char* device_name, AudioStreamSource* source,
+                                                             bool output_latency_minimal, std::string_view driver_name,
+                                                             std::string_view device_name, AudioStreamSource* source,
                                                              bool auto_start, Error* error);
   static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, u32 channels, u32 output_latency_frames,
                                                            bool output_latency_minimal, AudioStreamSource* source,

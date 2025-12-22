@@ -505,7 +505,7 @@ void SPU::CreateOutputStream()
 
   Error error;
   if (!s_state.audio_stream.Initialize(g_settings.audio_backend, SAMPLE_RATE, g_settings.audio_stream_parameters,
-                                       g_settings.audio_driver.c_str(), g_settings.audio_output_device.c_str(), &error))
+                                       g_settings.audio_driver, g_settings.audio_output_device, &error))
   {
     Host::AddIconOSDMessage(
       OSDMessageType::Error, "SPUAudioStream", ICON_EMOJI_WARNING,
@@ -513,8 +513,8 @@ void SPU::CreateOutputStream()
         TRANSLATE_FS("SPU",
                      "Failed to create or configure audio stream, falling back to null output. The error was:\n{}"),
         error.GetDescription()));
-    s_state.audio_stream.Initialize(AudioBackend::Null, SAMPLE_RATE, g_settings.audio_stream_parameters, nullptr,
-                                    nullptr, nullptr);
+    s_state.audio_stream.Initialize(AudioBackend::Null, SAMPLE_RATE, g_settings.audio_stream_parameters, {}, {},
+                                    nullptr);
   }
 
   s_state.audio_stream.SetOutputVolume(System::GetAudioOutputVolume());
