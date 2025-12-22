@@ -28,7 +28,7 @@ private:
   void onStretchModeChanged();
 
   void updateDriverNames();
-  void updateDeviceNames();
+  void queueUpdateDeviceNames();
   void updateLatencyLabel();
   void updateVolumeLabel();
   void onMinimalOutputLatencyChecked(Qt::CheckState state);

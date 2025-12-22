@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "audiosettingswidget.h"
+#include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
@@ -155,54 +156,63 @@ void AudioSettingsWidget::updateDriverNames()
 
     SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.driver, "Audio", "Driver",
                                                    std::move(names.front().first));
-    connect(m_ui.driver, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDeviceNames);
+    connect(m_ui.driver, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::queueUpdateDeviceNames);
   }
 
-  updateDeviceNames();
+  queueUpdateDeviceNames();
 }
 
-void AudioSettingsWidget::updateDeviceNames()
+void AudioSettingsWidget::queueUpdateDeviceNames()
 {
-  const AudioBackend backend = getEffectiveBackend();
-  const std::string driver_name = m_dialog->getEffectiveStringValue("Audio", "Driver", "");
-  const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device", "");
-  std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name, SPU::SAMPLE_RATE);
-
   SettingWidgetBinder::DisconnectWidget(m_ui.outputDevice);
   m_ui.outputDevice->clear();
+  m_ui.outputDevice->setEnabled(false);
   m_output_device_latency = 0;
 
-  if (devices.empty())
-  {
-    m_ui.outputDevice->addItem(tr("Default"));
-    m_ui.outputDevice->setEnabled(false);
-  }
-  else
-  {
-    m_ui.outputDevice->setEnabled(true);
+  const AudioBackend backend = getEffectiveBackend();
+  std::string driver_name = m_dialog->getEffectiveStringValue("Audio", "Driver");
+  QtAsyncTask::create(this, [this, driver_name = std::move(driver_name), backend]() {
+    std::vector<AudioStream::DeviceInfo> devices =
+      AudioStream::GetOutputDevices(backend, driver_name, SPU::SAMPLE_RATE);
+    return [this, devices = std::move(devices), driver_name = std::move(driver_name), backend]() {
+      // just in case we executed out of order...
+      if (backend != getEffectiveBackend() || driver_name != m_dialog->getEffectiveStringValue("Audio", "Driver"))
+        return;
 
-    bool is_known_device = false;
-    for (const AudioStream::DeviceInfo& di : devices)
-    {
-      m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
-      if (di.name == current_device)
+      if (devices.empty())
       {
-        m_output_device_latency = di.minimum_latency_frames;
-        is_known_device = true;
+        m_ui.outputDevice->addItem(tr("Default"));
       }
-    }
+      else
+      {
+        const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device");
 
-    if (!is_known_device)
-    {
-      m_ui.outputDevice->addItem(tr("Unknown Device \"%1\"").arg(QString::fromStdString(current_device)),
-                                 QString::fromStdString(current_device));
-    }
+        m_ui.outputDevice->setEnabled(true);
 
-    SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice, "Audio",
-                                                   "OutputDevice", std::move(devices.front().name));
-  }
+        bool is_known_device = false;
+        for (const AudioStream::DeviceInfo& di : devices)
+        {
+          m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
+          if (di.name == current_device)
+          {
+            m_output_device_latency = di.minimum_latency_frames;
+            is_known_device = true;
+          }
+        }
 
-  updateLatencyLabel();
+        if (!is_known_device)
+        {
+          m_ui.outputDevice->addItem(tr("Unknown Device \"%1\"").arg(QString::fromStdString(current_device)),
+                                     QString::fromStdString(current_device));
+        }
+
+        SettingWidgetBinder::BindWidgetToStringSetting(m_dialog->getSettingsInterface(), m_ui.outputDevice, "Audio",
+                                                       "OutputDevice", std::move(devices.front().name));
+      }
+
+      updateLatencyLabel();
+    };
+  });
 }
 
 void AudioSettingsWidget::updateLatencyLabel()
