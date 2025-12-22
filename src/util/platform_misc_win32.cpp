@@ -17,7 +17,6 @@
 #include <Psapi.h>
 #include <WinSock2.h>
 #include <dwmapi.h>
-#include <mmsystem.h>
 
 LOG_CHANNEL(PlatformMisc);
 
@@ -80,12 +79,6 @@ void PlatformMisc::ResumeScreensaver()
     ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
-}
-
-bool PlatformMisc::PlaySoundAsync(const char* path)
-{
-  const std::wstring wpath(FileSystem::GetWin32Path(path));
-  return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
 }
 
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error)

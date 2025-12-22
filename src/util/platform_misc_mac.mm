@@ -78,16 +78,6 @@ void PlatformMisc::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-bool PlatformMisc::PlaySoundAsync(const char* path)
-{
-  NSString* nspath = [[NSString alloc] initWithUTF8String:path];
-  NSSound* sound = [[NSSound alloc] initWithContentsOfFile:nspath byReference:YES];
-  const bool result = [sound play];
-  [sound release];
-  [nspath release];
-  return result;
-}
-
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)
 {
   Error::SetStringView(error, "Unsupported on this platform.");

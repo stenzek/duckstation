@@ -15,7 +15,6 @@
 #include <dbus/dbus.h>
 #include <mutex>
 #include <signal.h>
-#include <spawn.h>
 #include <unistd.h>
 
 LOG_CHANNEL(PlatformMisc);
@@ -195,44 +194,6 @@ void PlatformMisc::ResumeScreensaver()
     ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
-}
-
-bool PlatformMisc::PlaySoundAsync(const char* path)
-{
-#ifdef __linux__
-  // This is... pretty awful. But I can't think of a better way without linking to e.g. gstreamer.
-  const char* cmdname = "aplay";
-  const char* argv[] = {cmdname, path, nullptr};
-  pid_t pid;
-
-  // Since we set SA_NOCLDWAIT in Qt, we don't need to wait here.
-  int res = posix_spawnp(&pid, cmdname, nullptr, nullptr, const_cast<char**>(argv), environ);
-  if (res == 0)
-    return true;
-
-  // Try gst-play-1.0.
-  const char* gst_play_cmdname = "gst-play-1.0";
-  const char* gst_play_argv[] = {cmdname, path, nullptr};
-  res = posix_spawnp(&pid, gst_play_cmdname, nullptr, nullptr, const_cast<char**>(gst_play_argv), environ);
-  if (res == 0)
-    return true;
-
-  // gst-launch? Bit messier for sure.
-  TinyString location_str = TinyString::from_format("location={}", path);
-  TinyString parse_str = TinyString::from_format("{}parse", Path::GetExtension(path));
-  const char* gst_launch_cmdname = "gst-launch-1.0";
-  const char* gst_launch_argv[] = {gst_launch_cmdname, "filesrc", location_str.c_str(), "!",
-                                   parse_str.c_str(),  "!",       "alsasink",           nullptr};
-  res = posix_spawnp(&pid, gst_launch_cmdname, nullptr, nullptr, const_cast<char**>(gst_launch_argv), environ);
-  if (res == 0)
-    return true;
-
-  ERROR_LOG("Failed to play sound effect {}. Make sure you have aplay, gst-play-1.0, or gst-launch-1.0 available.",
-            path);
-  return false;
-#else
-  return false;
-#endif
 }
 
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)
