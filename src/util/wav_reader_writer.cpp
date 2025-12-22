@@ -64,6 +64,7 @@ WAVReader::WAVReader(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, 0);
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
   m_num_channels = std::exchange(move.m_num_channels, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
@@ -79,6 +80,7 @@ WAVReader& WAVReader::operator=(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, 0);
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
   m_num_channels = std::exchange(move.m_num_channels, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
@@ -182,6 +184,7 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
   m_file = fp.release();
   m_frames_start = FileSystem::FTell64(m_file);
   m_sample_rate = format.sample_rate;
+  m_bytes_per_frame = sizeof(s16) * format.num_channels;
   m_num_channels = format.num_channels;
   m_num_frames = num_frames;
   return true;
@@ -194,7 +197,9 @@ void WAVReader::Close()
 
   std::fclose(m_file);
   m_file = nullptr;
+  m_frames_start = 0;
   m_sample_rate = 0;
+  m_bytes_per_frame = 0;
   m_num_channels = 0;
   m_num_frames = 0;
 }
@@ -204,6 +209,7 @@ std::FILE* WAVReader::TakeFile()
   std::FILE* ret = std::exchange(m_file, nullptr);
   m_sample_rate = 0;
   m_frames_start = 0;
+  m_bytes_per_frame = 0;
   m_num_channels = 0;
   m_num_frames = 0;
   return ret;
@@ -220,15 +226,19 @@ bool WAVReader::SeekToFrame(u32 num, Error* error)
   return FileSystem::FSeek64(m_file, offset, SEEK_SET, error);
 }
 
-bool WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
+std::optional<u32> WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
 {
-  if (std::fread(samples, sizeof(s16) * m_num_channels, num_frames, m_file) != num_frames)
+  const size_t read = std::fread(samples, m_bytes_per_frame, num_frames, m_file);
+  if (read == 0)
   {
-    Error::SetErrno(error, "fread() failed: ", errno);
-    return false;
+    if (std::ferror(m_file))
+    {
+      Error::SetErrno(error, "fread() failed: ", errno);
+      return std::nullopt;
+    }
   }
 
-  return true;
+  return static_cast<u32>(read);
 }
 
 WAVWriter::WAVWriter() = default;

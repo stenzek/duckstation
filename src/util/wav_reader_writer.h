@@ -6,6 +6,7 @@
 #include "common/types.h"
 
 #include <cstdio>
+#include <optional>
 
 class Error;
 
@@ -23,6 +24,7 @@ public:
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
   ALWAYS_INLINE u32 GetNumChannels() const { return m_num_channels; }
   ALWAYS_INLINE u32 GetNumFrames() const { return m_num_frames; }
+  ALWAYS_INLINE u32 GetBytesPerFrame() const { return m_bytes_per_frame; }
   ALWAYS_INLINE u64 GetFramesStartOffset() const { return m_frames_start; }
   ALWAYS_INLINE bool IsOpen() const { return (m_file != nullptr); }
 
@@ -34,13 +36,14 @@ public:
 
   bool SeekToFrame(u32 num, Error* error = nullptr);
 
-  bool ReadFrames(void* samples, u32 num_frames, Error* error = nullptr);
+  std::optional<u32> ReadFrames(void* samples, u32 num_frames, Error* error = nullptr);
 
 private:
   using SampleType = s16;
 
   std::FILE* m_file = nullptr;
   s64 m_frames_start = 0;
+  u32 m_bytes_per_frame = 0;
   u32 m_sample_rate = 0;
   u32 m_num_channels = 0;
   u32 m_num_frames = 0;
