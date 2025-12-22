@@ -268,6 +268,9 @@ void UpdateTransitionState();
 void BeginLayout();
 void EndLayout();
 
+/// Enqueues a sound effect, and prevents any other sound effects from being started this frame.
+void EnqueueSoundEffect(std::string_view sound_effect);
+
 bool IsAnyFixedPopupDialogOpen();
 bool IsFixedPopupDialogOpen(std::string_view name);
 void OpenFixedPopupDialog(std::string_view name);

@@ -97,6 +97,12 @@ private:
   std::string m_title;
 };
 
+// Sound effect names.
+extern const char* SFX_NAV_ACTIVATE;
+extern const char* SFX_NAV_BACK;
+extern const char* SFX_NAV_MOVE;
+extern const char* SFX_CONTENT_START;
+
 } // namespace FullscreenUI
 
 // Host UI triggers from Big Picture mode.

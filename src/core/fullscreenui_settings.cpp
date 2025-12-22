@@ -1817,6 +1817,7 @@ void FullscreenUI::DrawSettingsWindow()
       if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
           ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
       {
+        EnqueueSoundEffect(SFX_NAV_MOVE);
         BeginTransition([page = pages[(index == 0) ? (count - 1) : (index - 1)]]() {
           s_settings_locals.settings_page = page;
           QueueResetFocus(FocusResetType::Other);
@@ -1826,6 +1827,7 @@ void FullscreenUI::DrawSettingsWindow()
                ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) ||
                ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
       {
+        EnqueueSoundEffect(SFX_NAV_MOVE);
         BeginTransition([page = pages[(index + 1) % count]]() {
           s_settings_locals.settings_page = page;
           QueueResetFocus(FocusResetType::Other);
@@ -2179,6 +2181,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
                       FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
                       "FullscreenUIMenuBorders", false);
+
+  widgets_settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_HIGH, "Sound Effects"),
+                                                FSUI_VSTR("Plays sound effects when navigating and activating menus."),
+                                                "Main", "FullscreenUISoundEffects", true);
 
   // use transition to work around double lock
   if (widgets_settings_changed)

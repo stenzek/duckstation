@@ -10,6 +10,7 @@
 #include "game_list.h"
 #include "gpu_thread.h"
 #include "host.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
@@ -123,6 +124,11 @@ static void DrawResumeStateSelector();
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 
+const char* SFX_NAV_ACTIVATE = "sounds/nav_activate.wav";
+const char* SFX_NAV_BACK = "sounds/nav_back.wav";
+const char* SFX_NAV_MOVE = "sounds/nav_move.wav";
+const char* SFX_CONTENT_START = "sounds/content_start.wav";
+
 //////////////////////////////////////////////////////////////////////////
 // State
 //////////////////////////////////////////////////////////////////////////
@@ -184,6 +190,7 @@ void FullscreenUI::Initialize()
     UpdateRunIdleState();
   }
 
+  SoundEffectManager::EnsureInitialized();
   INFO_LOG("Fullscreen UI initialized.");
 }
 
@@ -303,6 +310,7 @@ void FullscreenUI::OpenPauseMenu()
 
     PauseForMenuOpen(true);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     UpdateAchievementsRecentUnlockAndAlmostThere();
     BeginTransition(SHORT_TRANSITION_TIME, []() {
@@ -324,6 +332,7 @@ void FullscreenUI::OpenCheatsMenu()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, []() {
       if (!SwitchToGameSettings(SettingsPage::Cheats))
@@ -449,6 +458,8 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
 
 void FullscreenUI::Shutdown(bool clear_state)
 {
+  SoundEffectManager::Shutdown();
+
   if (clear_state)
   {
     s_locals.current_main_window = MainWindowType::None;
@@ -616,6 +627,8 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
 {
   if (GPUThread::HasGPUBackend())
     return;
+
+  EnqueueSoundEffect(SFX_CONTENT_START);
 
   // Stop running idle to prevent game list from being redrawn until we know if startup succeeded.
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
@@ -1302,11 +1315,19 @@ void FullscreenUI::DrawLandingWindow()
   if (!AreAnyDialogsOpen())
   {
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       OpenFixedPopupDialog(ABOUT_DIALOG_NAME);
+    }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       DoResume();
+    }
     else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
+    {
       DoToggleFullscreen();
+    }
   }
 
   if (IsGamepadInputSource())
@@ -1371,7 +1392,10 @@ void FullscreenUI::DrawStartGameWindow()
   if (!AreAnyDialogsOpen())
   {
     if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       OpenSaveStateSelector(std::string(), std::string(), true);
+    }
   }
 
   if (IsGamepadInputSource())

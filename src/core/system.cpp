@@ -2064,7 +2064,9 @@ void System::DestroySystem()
 
   FreeMemoryStateStorage(true, true, false);
 
-  SoundEffectManager::Shutdown();
+  // unless fsui is running, we don't need sound effects anymore
+  if (!GPUThread::IsFullscreenUIRequested())
+    SoundEffectManager::Shutdown();
 
   GPUThread::DestroyGPUBackend();
 

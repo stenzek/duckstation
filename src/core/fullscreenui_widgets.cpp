@@ -9,6 +9,7 @@
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -344,18 +345,22 @@ struct WidgetsState
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
 
+  bool had_hovered_menu_item = false;
+  bool has_hovered_menu_item = false;
+  bool rendered_menu_item_border = false;
+  bool had_focus_reset = false;
+  bool sound_effects_enabled = false;
+  bool had_sound_effect = false;
+
+  ImAnimatedVec2 menu_button_frame_min_animated;
+  ImAnimatedVec2 menu_button_frame_max_animated;
+
   ChoiceDialog choice_dialog;
   FileSelectorDialog file_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
   ProgressDialog progress_dialog;
   MessageDialog message_dialog;
-
-  ImAnimatedVec2 menu_button_frame_min_animated;
-  ImAnimatedVec2 menu_button_frame_max_animated;
-  bool had_hovered_menu_item = false;
-  bool has_hovered_menu_item = false;
-  bool rendered_menu_item_border = false;
 
   std::vector<Notification> notifications;
 
@@ -455,6 +460,7 @@ void FullscreenUI::UpdateWidgetsSettings()
   UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
   UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
   UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
+  s_state.sound_effects_enabled = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
   s_state.fullscreen_footer_icon_mapping = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
                                              s_ps_button_mapping :
@@ -1027,6 +1033,27 @@ void FullscreenUI::EndLayout()
 
   s_state.rendered_menu_item_border = false;
   s_state.had_hovered_menu_item = std::exchange(s_state.has_hovered_menu_item, false);
+
+  if (!s_state.had_sound_effect)
+  {
+    if (GImGui->NavActivateId != 0)
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+    else if (GImGui->NavJustMovedToId != 0)
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+  }
+
+  // Avoid playing the move sound on focus reset, since it'll also be an active previously.
+  s_state.had_sound_effect = s_state.had_focus_reset;
+  s_state.had_focus_reset = false;
+}
+
+void FullscreenUI::EnqueueSoundEffect(std::string_view sound_effect)
+{
+  if (s_state.had_sound_effect || !s_state.sound_effects_enabled)
+    return;
+
+  SoundEffectManager::EnqueueSoundEffect(sound_effect);
+  s_state.had_sound_effect = true;
 }
 
 FullscreenUI::FixedPopupDialog::FixedPopupDialog() = default;
@@ -1196,6 +1223,9 @@ bool FullscreenUI::ResetFocusHere()
   else
     ImGui::SetNavWindow(window);
 
+  // prevent any sound from playing on the nav change
+  s_state.had_focus_reset = true;
+
   s_state.focus_reset_queued = FocusResetType::None;
   ResetMenuButtonFrame();
 
@@ -1248,10 +1278,13 @@ bool FullscreenUI::WantsToCloseMenu()
       s_state.close_button_state = CloseButtonState::GamepadPressed;
   }
   else if ((s_state.close_button_state == CloseButtonState::KeyboardPressed && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
-           (s_state.close_button_state == CloseButtonState::MousePressed &&
-            ImGui::IsKeyReleased(ImGuiKey_MouseRight)) ||
            (s_state.close_button_state == CloseButtonState::GamepadPressed &&
             ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
+  {
+    EnqueueSoundEffect(SFX_NAV_BACK);
+    s_state.close_button_state = CloseButtonState::AnyReleased;
+  }
+  else if ((s_state.close_button_state == CloseButtonState::MousePressed && ImGui::IsKeyReleased(ImGuiKey_MouseRight)))
   {
     s_state.close_button_state = CloseButtonState::AnyReleased;
   }

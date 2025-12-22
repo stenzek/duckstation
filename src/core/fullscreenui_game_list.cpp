@@ -336,6 +336,7 @@ void FullscreenUI::DrawGameListWindow()
   {
     if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       BeginTransition([]() {
         s_game_list_locals.game_list_view =
           (s_game_list_locals.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
@@ -344,10 +345,12 @@ void FullscreenUI::DrawGameListWindow()
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
     {
+      EnqueueSoundEffect(SFX_NAV_BACK);
       BeginTransition(&SwitchToSettings);
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
     {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       DoResume();
     }
   }

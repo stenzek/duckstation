@@ -608,6 +608,7 @@ void FullscreenUI::OpenAchievementsWindow()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, &SwitchToAchievements);
   });
@@ -687,12 +688,14 @@ void FullscreenUI::DrawSubsetSelector()
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       new_subset_id = (i == 0) ? s_achievements_locals.subset_info_list.back().subset_id :
                                  s_achievements_locals.subset_info_list[i - 1].subset_id;
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
              ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       new_subset_id = ((i + 1) == s_achievements_locals.subset_info_list.size()) ?
                         s_achievements_locals.subset_info_list.front().subset_id :
                         s_achievements_locals.subset_info_list[i + 1].subset_id;
@@ -1313,6 +1316,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, &SwitchToLeaderboards);
   });
