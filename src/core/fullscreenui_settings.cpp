@@ -4617,6 +4617,9 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
   ImVec2 pos = bg_pos + ImVec2(panel_rounding, panel_rounding);
   const float max_content_width = bg_size.x - panel_rounding;
 
+  TinyString tstr;
+  SmallString sstr;
+
   const ImVec2 pos_backup = ImGui::GetCursorPos();
   const bool logged_in = (bsi->ContainsValue("Cheevos", "Token"));
   {
@@ -4628,34 +4631,33 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
       if (badge_path.empty())
         badge_path = "images/ra-generic-user.png";
 
-      TinyString username;
       if (Achievements::IsLoggedIn())
       {
         const char* username_ptr = Achievements::GetLoggedInUserName();
         if (username_ptr)
-          username = username_ptr;
+          tstr = username_ptr;
       }
       else if (Achievements::IsLoggedInOrLoggingIn())
       {
-        username = FSUI_VSTR("Logging In...");
+        tstr = FSUI_VSTR("Logging In...");
       }
       else if (!logged_in)
       {
-        username = FSUI_VSTR("Not Logged In");
+        tstr = FSUI_VSTR("Not Logged In");
       }
       else
       {
         // client not active
-        username = bsi->GetTinyStringValue("Cheevos", "Username");
+        tstr = bsi->GetTinyStringValue("Cheevos", "Username");
       }
 
-      SmallString score_summary = Achievements::GetLoggedInUserPointsSummary();
-      if (score_summary.empty())
+      sstr = Achievements::GetLoggedInUserPointsSummary();
+      if (sstr.empty())
       {
         if (logged_in)
-          score_summary = FSUI_VSTR("Enable Achievements to see your user summary.");
+          sstr = FSUI_VSTR("Enable Achievements to see your user summary.");
         else
-          score_summary = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
+          sstr = FSUI_VSTR("To use achievements, please log in with your retroachievements.org account.");
       }
 
       if (GPUTexture* badge_tex = GetCachedTextureAsync(badge_path))
@@ -4668,24 +4670,26 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
 
       RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, pos,
                                 pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
-                                ImGui::GetColorU32(ImGuiCol_Text), username);
+                                ImGui::GetColorU32(ImGuiCol_Text), tstr);
 
       pos.y += UIStyle.LargeFontSize + line_spacing;
 
       RenderAutoLabelText(dl, UIStyle.Font, UIStyle.MediumLargeFontSize, UIStyle.NormalFontWeight,
                           UIStyle.BoldFontWeight, pos, pos + ImVec2(max_content_width - pos.x, UIStyle.LargeFontSize),
-                          ImGui::GetColorU32(ImGuiCol_Text), score_summary, ':');
+                          ImGui::GetColorU32(ImGuiCol_Text), sstr, ':');
     }
     settings_lock.lock();
   }
 
   if (!IsEditingGameSettings(bsi))
   {
-    const auto login_logout_text =
-      logged_in ? FSUI_ICONVSTR(ICON_FA_KEY, "Logout") : FSUI_ICONVSTR(ICON_FA_KEY, "Login");
+    if (logged_in)
+      FormatIconString(tstr, ICON_FA_KEY, FSUI_VSTR("Logout"));
+    else
+      FormatIconString(tstr, ICON_FA_KEY, FSUI_VSTR("Login"));
+
     const ImVec2 login_logout_button_size =
-      UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f,
-                                  IMSTR_START_END(login_logout_text)) +
+      UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX, 0.0f, IMSTR_START_END(tstr)) +
       style.FramePadding * 2.0f;
     const ImVec2 login_logout_button_pos =
       ImVec2(bg_pos.x + bg_size.x - panel_rounding - login_logout_button_size.x - LayoutScale(10.0f),
@@ -4702,8 +4706,8 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
       const ImRect text_bb = ImRect(login_logout_button_pos + style.FramePadding,
                                     login_logout_button_pos + login_logout_button_size - style.FramePadding);
       RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, text_bb.Min,
-                                text_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), login_logout_text, nullptr,
-                                ImVec2(0.0f, 0.0f), 0.0f, &text_bb);
+                                text_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), tstr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                &text_bb);
     }
 
     if (clicked)

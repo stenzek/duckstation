@@ -925,6 +925,11 @@ FullscreenUI::IconStackString::IconStackString(std::string_view icon, std::strin
   SmallStackString::format("{} {}##{}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str), suffix);
 }
 
+void FullscreenUI::FormatIconString(SmallStringBase& str, std::string_view icon, std::string_view label)
+{
+  str.format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, label));
+}
+
 ImRect FullscreenUI::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)
 {
   const float fit_ar = fit_size.x / fit_size.y;

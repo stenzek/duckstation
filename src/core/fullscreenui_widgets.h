@@ -192,6 +192,7 @@ public:
   IconStackString(std::string_view icon, std::string_view str);
   IconStackString(std::string_view icon, std::string_view str, std::string_view suffix);
 };
+void FormatIconString(SmallStringBase& str, std::string_view icon, std::string_view label);
 
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str))
 #define FSUI_ICONVSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).view()
