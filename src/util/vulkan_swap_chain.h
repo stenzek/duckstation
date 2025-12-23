@@ -4,7 +4,7 @@
 #pragma once
 
 #include "gpu_device.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 #include "vulkan_texture.h"
 #include "window_info.h"
 
@@ -45,7 +45,7 @@ public:
     return &m_images[m_current_image].present_semaphore;
   }
 
-  bool CreateSurface(VkInstance instance, VkPhysicalDevice physical_device, Error* error);
+  bool CreateSurface(VkPhysicalDevice physical_device, Error* error);
   bool CreateSwapChain(VulkanDevice& dev, Error* error);
   bool CreateSwapChainImages(VulkanDevice& dev, Error* error);
   void Destroy(VulkanDevice& dev, bool wait_for_idle);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_device.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 
 class VulkanDevice;
 

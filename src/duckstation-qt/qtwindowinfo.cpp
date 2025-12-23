@@ -4,6 +4,8 @@
 #include "qtwindowinfo.h"
 #include "qtutils.h"
 
+#include "core/core.h"
+
 #include "util/gpu_device.h"
 
 #include "common/error.h"
@@ -59,6 +61,32 @@ std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
   // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
   const qreal device_pixel_ratio = widget->devicePixelRatio();
   return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
+}
+
+WindowInfoType QtUtils::GetWindowInfoType()
+{
+  // Windows and Apple are easy here since there's no display connection.
+#if defined(_WIN32)
+  return WindowInfoType::Win32;
+#elif defined(__APPLE__)
+  return WindowInfoType::MacOS;
+#else
+  const QString platform_name = QGuiApplication::platformName();
+  if (platform_name == QStringLiteral("xcb"))
+  {
+    // This is only used for determining the automatic Vulkan renderer, therefore XCB/XLib doesn't matter here.
+    // See the comment below for information about this bullshit.
+    return WindowInfoType::XCB;
+  }
+  else if (platform_name == QStringLiteral("wayland"))
+  {
+    return WindowInfoType::Wayland;
+  }
+  else
+  {
+    return WindowInfoType::Surfaceless;
+  }
+#endif
 }
 
 std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error)

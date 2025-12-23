@@ -8,6 +8,7 @@
 #include "mainwindow.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "qtwindowinfo.h"
 #include "settingswindow.h"
 #include "setupwizarddialog.h"
 
@@ -2870,6 +2871,11 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
                                                     Error* error)
 {
   return g_core_thread->acquireRenderWindow(render_api, fullscreen, exclusive_fullscreen, error);
+}
+
+WindowInfoType Host::GetRenderWindowInfoType()
+{
+  return QtUtils::GetWindowInfoType();
 }
 
 void Host::ReleaseRenderWindow()

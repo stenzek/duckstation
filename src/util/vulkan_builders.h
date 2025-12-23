@@ -4,7 +4,7 @@
 #pragma once
 
 #include "gpu_device.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 
 #include "common/small_string.h"
 #include "common/string_util.h"
@@ -27,6 +27,8 @@ void AddPointerToChain(void* head, const void* ptr);
 const char* VkResultToString(VkResult res);
 void LogVulkanResult(const char* func_name, VkResult res, std::string_view msg);
 void SetErrorObject(Error* errptr, std::string_view prefix, VkResult res);
+
+u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
 class DescriptorSetLayoutBuilder
 {

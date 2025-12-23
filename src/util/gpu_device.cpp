@@ -41,6 +41,7 @@ LOG_CHANNEL(GPUDevice);
 
 #ifdef ENABLE_VULKAN
 #include "vulkan_device.h"
+#include "vulkan_loader.h"
 #endif
 
 std::unique_ptr<GPUDevice> g_gpu_device;
@@ -328,7 +329,7 @@ GPUDevice::GPUDevice()
 
 GPUDevice::~GPUDevice() = default;
 
-RenderAPI GPUDevice::GetPreferredAPI()
+RenderAPI GPUDevice::GetPreferredAPI(WindowInfoType window_type)
 {
   static RenderAPI preferred_renderer = RenderAPI::None;
   if (preferred_renderer == RenderAPI::None) [[unlikely]]
@@ -343,7 +344,7 @@ RenderAPI GPUDevice::GetPreferredAPI()
     preferred_renderer = RenderAPI::Metal;
 #elif defined(ENABLE_OPENGL) && defined(ENABLE_VULKAN)
     // On Linux, if we have both GL and Vulkan, prefer VK if the driver isn't software.
-    preferred_renderer = VulkanDevice::IsSuitableDefaultRenderer() ? RenderAPI::Vulkan : RenderAPI::OpenGL;
+    preferred_renderer = VulkanLoader::IsSuitableDefaultRenderer(window_type) ? RenderAPI::Vulkan : RenderAPI::OpenGL;
 #elif defined(ENABLE_OPENGL)
     preferred_renderer = RenderAPI::OpenGL;
 #elif defined(ENABLE_VULKAN)
@@ -413,15 +414,16 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
                          (rhs == RenderAPI::OpenGL || rhs == RenderAPI::OpenGLES)));
 }
 
-GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
+std::optional<GPUDevice::AdapterInfoList> GPUDevice::GetAdapterListForAPI(RenderAPI api, WindowInfoType window_type,
+                                                                          Error* error)
 {
-  AdapterInfoList ret;
+  std::optional<AdapterInfoList> ret;
 
   switch (api)
   {
 #ifdef ENABLE_VULKAN
     case RenderAPI::Vulkan:
-      ret = VulkanDevice::GetAdapterList();
+      ret = VulkanLoader::GetAdapterList(window_type, error);
       break;
 #endif
 
@@ -429,13 +431,14 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
       // No way of querying.
+      ret = AdapterInfoList();
       break;
 #endif
 
 #ifdef _WIN32
     case RenderAPI::D3D11:
     case RenderAPI::D3D12:
-      ret = D3DCommon::GetAdapterInfoList();
+      ret = D3DCommon::GetAdapterInfoList(error);
       break;
 #endif
 

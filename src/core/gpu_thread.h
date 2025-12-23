@@ -18,6 +18,7 @@ class ThreadHandle;
 
 enum class RenderAPI : u8;
 enum class GPUVSyncMode : u8;
+enum class WindowInfoType : u8;
 
 enum class GPURenderer : u8;
 enum class GPUBackendCommandType : u8;
@@ -116,6 +117,9 @@ namespace Host {
 /// This could also be fullscreen transition.
 std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                               Error* error);
+
+/// Returns the window type for the host.
+WindowInfoType GetRenderWindowInfoType();
 
 /// Called when the core is finished with a render window.
 void ReleaseRenderWindow();

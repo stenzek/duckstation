@@ -17,6 +17,9 @@ namespace QtUtils {
 /// Also returns the "real" DPR scale for the widget, ignoring any operating-system level downsampling.
 std::pair<QSize, qreal> GetPixelSizeForWidget(const QWidget* widget);
 
+/// Returns the window type for the current Qt platform.
+WindowInfoType GetWindowInfoType();
+
 /// Returns the common window info structure for a Qt widget.
 std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);
 

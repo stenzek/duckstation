@@ -3,6 +3,7 @@
 
 #include "vulkan_device.h"
 #include "vulkan_builders.h"
+#include "vulkan_loader.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_stream_buffer.h"
 #include "vulkan_swap_chain.h"
@@ -23,11 +24,6 @@
 
 #include "fmt/format.h"
 #include "xxhash.h"
-
-#ifdef ENABLE_SDL
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#endif
 
 #include <cstdlib>
 #include <limits>
@@ -117,9 +113,6 @@ static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass) static
 static u32 s_debug_scope_depth = 0;
 #endif
 
-// We need to synchronize instance creation because of adapter enumeration from the UI thread.
-static std::mutex s_instance_mutex;
-
 VulkanDevice::VulkanDevice()
 {
   m_render_api = RenderAPI::Vulkan;
@@ -143,302 +136,6 @@ GPUTextureFormat VulkanDevice::GetFormatForVkFormat(VkFormat format)
   }
 
   return GPUTextureFormat::Unknown;
-}
-
-VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
-                                              bool enable_validation_layer)
-{
-  ExtensionList enabled_extensions;
-  if (!SelectInstanceExtensions(&enabled_extensions, wi, oe, enable_debug_utils))
-    return VK_NULL_HANDLE;
-
-  u32 maxApiVersion = VK_API_VERSION_1_0;
-  if (vkEnumerateInstanceVersion)
-  {
-    VkResult res = vkEnumerateInstanceVersion(&maxApiVersion);
-    if (res != VK_SUCCESS)
-    {
-      LOG_VULKAN_ERROR(res, "vkEnumerateInstanceVersion() failed: ");
-      maxApiVersion = VK_API_VERSION_1_0;
-    }
-  }
-  else
-  {
-    WARNING_LOG("Driver does not provide vkEnumerateInstanceVersion().");
-  }
-
-  // Cap out at 1.1 for consistency.
-  const u32 apiVersion = std::min(maxApiVersion, VK_API_VERSION_1_1);
-  INFO_LOG("Supported instance version: {}.{}.{}, requesting version {}.{}.{}", VK_API_VERSION_MAJOR(maxApiVersion),
-           VK_API_VERSION_MINOR(maxApiVersion), VK_API_VERSION_PATCH(maxApiVersion), VK_API_VERSION_MAJOR(apiVersion),
-           VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
-
-  // Remember to manually update this every release. We don't pull in svnrev.h here, because
-  // it's only the major/minor version, and rebuilding the file every time something else changes
-  // is unnecessary.
-  VkApplicationInfo app_info = {};
-  app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  app_info.pNext = nullptr;
-  app_info.pApplicationName = "DuckStation";
-  app_info.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
-  app_info.pEngineName = "DuckStation";
-  app_info.engineVersion = VK_MAKE_VERSION(0, 1, 0);
-  app_info.apiVersion = apiVersion;
-
-  VkInstanceCreateInfo instance_create_info = {};
-  instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  instance_create_info.pNext = nullptr;
-  instance_create_info.flags = 0;
-  instance_create_info.pApplicationInfo = &app_info;
-  instance_create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
-  instance_create_info.ppEnabledExtensionNames = enabled_extensions.data();
-  instance_create_info.enabledLayerCount = 0;
-  instance_create_info.ppEnabledLayerNames = nullptr;
-
-  // Enable debug layer on debug builds
-  if (enable_validation_layer)
-  {
-    static const char* layer_names[] = {"VK_LAYER_KHRONOS_validation"};
-    instance_create_info.enabledLayerCount = 1;
-    instance_create_info.ppEnabledLayerNames = layer_names;
-  }
-
-  VkInstance instance;
-  VkResult res = vkCreateInstance(&instance_create_info, nullptr, &instance);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkCreateInstance failed: ");
-    return nullptr;
-  }
-
-  return instance;
-}
-
-bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
-                                            bool enable_debug_utils)
-{
-  u32 extension_count = 0;
-  VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkEnumerateInstanceExtensionProperties failed: ");
-    return false;
-  }
-
-  if (extension_count == 0)
-  {
-    ERROR_LOG("Vulkan: No extensions supported by instance.");
-    return false;
-  }
-
-  std::vector<VkExtensionProperties> available_extension_list(extension_count);
-  res = vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, available_extension_list.data());
-  DebugAssert(res == VK_SUCCESS);
-
-  auto SupportsExtension = [&](const char* name, bool required) {
-    if (std::find_if(available_extension_list.begin(), available_extension_list.end(),
-                     [&](const VkExtensionProperties& properties) {
-                       return !strcmp(name, properties.extensionName);
-                     }) != available_extension_list.end())
-    {
-      DEV_LOG("Enabling extension: {}", name);
-      extension_list->push_back(name);
-      return true;
-    }
-
-    if (required)
-      ERROR_LOG("Vulkan: Missing required extension {}.", name);
-
-    return false;
-  };
-
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (wi.type == WindowInfoType::Win32 && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                           !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true)))
-    return false;
-#endif
-#if defined(VK_USE_PLATFORM_XCB_KHR)
-  if (wi.type == WindowInfoType::XCB && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                         !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true)))
-    return false;
-#endif
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (wi.type == WindowInfoType::Wayland && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                             !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true)))
-    return false;
-#endif
-#if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (wi.type == WindowInfoType::MacOS && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                           !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true)))
-  {
-    return false;
-  }
-#endif
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (wi.type == WindowInfoType::Android && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                             !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true)))
-  {
-    return false;
-  }
-#endif
-
-#if defined(ENABLE_SDL)
-  if (wi.type == WindowInfoType::SDL)
-  {
-    Uint32 sdl_extension_count = 0;
-    const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extension_count);
-    if (!sdl_extensions)
-    {
-      ERROR_LOG("SDL_Vulkan_GetInstanceExtensions() failed: {}", SDL_GetError());
-      return false;
-    }
-
-    for (unsigned int i = 0; i < sdl_extension_count; i++)
-    {
-      if (!SupportsExtension(sdl_extensions[i], true))
-        return false;
-    }
-  }
-#endif
-
-  // VK_EXT_debug_utils
-  if (enable_debug_utils && !SupportsExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false))
-    WARNING_LOG("Vulkan: Debug report requested, but extension is not available.");
-
-  // Needed for exclusive fullscreen control.
-  SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
-
-  oe->vk_khr_get_surface_capabilities2 = (wi.type != WindowInfoType::Surfaceless &&
-                                          SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false));
-  oe->vk_ext_surface_maintenance1 =
-    (wi.type != WindowInfoType::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
-  oe->vk_ext_swapchain_maintenance1 =
-    (wi.type != WindowInfoType::Surfaceless && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false));
-  oe->vk_khr_get_physical_device_properties2 =
-    SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
-
-  return true;
-}
-
-VulkanDevice::GPUList VulkanDevice::EnumerateGPUs(VkInstance instance)
-{
-  GPUList gpus;
-
-  u32 gpu_count = 0;
-  VkResult res = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
-  if ((res != VK_SUCCESS && res != VK_INCOMPLETE) || gpu_count == 0)
-  {
-    LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (1) failed: ");
-    return gpus;
-  }
-
-  std::vector<VkPhysicalDevice> physical_devices(gpu_count);
-  res = vkEnumeratePhysicalDevices(instance, &gpu_count, physical_devices.data());
-  if (res == VK_INCOMPLETE)
-  {
-    WARNING_LOG("First vkEnumeratePhysicalDevices() call returned {} devices, but second returned {}",
-                physical_devices.size(), gpu_count);
-  }
-  else if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices (2) failed: ");
-    return gpus;
-  }
-
-  // Maybe we lost a GPU?
-  if (gpu_count < physical_devices.size())
-    physical_devices.resize(gpu_count);
-
-  gpus.reserve(physical_devices.size());
-  for (VkPhysicalDevice device : physical_devices)
-  {
-    VkPhysicalDeviceProperties2 props = {};
-    VkPhysicalDeviceDriverProperties driver_props = {};
-
-    if (vkGetPhysicalDeviceProperties2)
-    {
-      props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-      driver_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
-      Vulkan::AddPointerToChain(&props, &driver_props);
-      vkGetPhysicalDeviceProperties2(device, &props);
-    }
-
-    // just in case the chained version fails
-    vkGetPhysicalDeviceProperties(device, &props.properties);
-
-    VkPhysicalDeviceFeatures available_features = {};
-    vkGetPhysicalDeviceFeatures(device, &available_features);
-
-    AdapterInfo ai;
-    ai.name = props.properties.deviceName;
-    ai.max_texture_size =
-      std::min(props.properties.limits.maxFramebufferWidth, props.properties.limits.maxImageDimension2D);
-    ai.max_multisamples = GetMaxMultisamples(device, props.properties);
-    ai.driver_type = GuessDriverType(props.properties, driver_props);
-    ai.supports_sample_shading = available_features.sampleRateShading;
-
-    // handle duplicate adapter names
-    if (std::any_of(gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }))
-    {
-      std::string original_adapter_name = std::move(ai.name);
-
-      u32 current_extra = 2;
-      do
-      {
-        ai.name = fmt::format("{} ({})", original_adapter_name, current_extra);
-        current_extra++;
-      } while (
-        std::any_of(gpus.begin(), gpus.end(), [&ai](const auto& other) { return (ai.name == other.second.name); }));
-    }
-
-    gpus.emplace_back(device, std::move(ai));
-  }
-
-  return gpus;
-}
-
-VulkanDevice::GPUList VulkanDevice::EnumerateGPUs()
-{
-  GPUList ret;
-  std::unique_lock lock(s_instance_mutex);
-
-  // Device shouldn't be torn down since we have the lock.
-  if (g_gpu_device && g_gpu_device->GetRenderAPI() == RenderAPI::Vulkan && Vulkan::IsVulkanLibraryLoaded())
-  {
-    ret = EnumerateGPUs(VulkanDevice::GetInstance().m_instance);
-  }
-  else
-  {
-    if (Vulkan::LoadVulkanLibrary(nullptr))
-    {
-      OptionalExtensions oe = {};
-      const VkInstance instance = CreateVulkanInstance(WindowInfo(), &oe, false, false);
-      if (instance != VK_NULL_HANDLE)
-      {
-        if (Vulkan::LoadVulkanInstanceFunctions(instance))
-          ret = EnumerateGPUs(instance);
-
-        if (vkDestroyInstance)
-          vkDestroyInstance(instance, nullptr);
-        else
-          ERROR_LOG("Vulkan instance was leaked because vkDestroyInstance() could not be loaded.");
-      }
-
-      Vulkan::UnloadVulkanLibrary();
-    }
-  }
-
-  return ret;
-}
-
-GPUDevice::AdapterInfoList VulkanDevice::GetAdapterList()
-{
-  AdapterInfoList ret;
-  GPUList gpus = EnumerateGPUs();
-  ret.reserve(gpus.size());
-  for (auto& [physical_device, adapter_info] : gpus)
-    ret.push_back(std::move(adapter_info));
-  return ret;
 }
 
 bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
@@ -544,26 +241,6 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     }
   }
 
-  // we might not have VK_KHR_get_physical_device_properties2...
-  if (!vkGetPhysicalDeviceFeatures2 || !vkGetPhysicalDeviceProperties2 || !vkGetPhysicalDeviceMemoryProperties2)
-  {
-    if (!vkGetPhysicalDeviceFeatures2KHR || !vkGetPhysicalDeviceProperties2KHR ||
-        !vkGetPhysicalDeviceMemoryProperties2KHR)
-    {
-      ERROR_LOG("One or more functions from VK_KHR_get_physical_device_properties2 is missing, disabling extension.");
-      m_optional_extensions.vk_khr_get_physical_device_properties2 = false;
-      vkGetPhysicalDeviceFeatures2 = nullptr;
-      vkGetPhysicalDeviceProperties2 = nullptr;
-      vkGetPhysicalDeviceMemoryProperties2 = nullptr;
-    }
-    else
-    {
-      vkGetPhysicalDeviceFeatures2 = vkGetPhysicalDeviceFeatures2KHR;
-      vkGetPhysicalDeviceProperties2 = vkGetPhysicalDeviceProperties2KHR;
-      vkGetPhysicalDeviceMemoryProperties2 = vkGetPhysicalDeviceMemoryProperties2KHR;
-    }
-  }
-
   // don't bother querying if we're not actually looking at any features
   if (vkGetPhysicalDeviceFeatures2 && features2.pNext)
     vkGetPhysicalDeviceFeatures2(physical_device, &features2);
@@ -613,7 +290,7 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     vkGetPhysicalDeviceProperties2(physical_device, &properties2);
 
   // set driver type
-  SetDriverType(GuessDriverType(m_device_properties, m_device_driver_properties));
+  SetDriverType(VulkanLoader::GuessDriverType(m_device_properties, m_device_driver_properties));
 
   // check we actually support enough
   m_optional_extensions.vk_khr_push_descriptor &= (push_descriptor_properties.maxPushDescriptors >= 1);
@@ -728,13 +405,10 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
   LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
   LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
-  LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
   LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
-  LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
   LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
-  LOG_EXT("VK_KHR_get_surface_capabilities2", vk_khr_get_surface_capabilities2);
   LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
   LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
@@ -750,8 +424,8 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   return true;
 }
 
-bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
-                                CreateFlags create_flags, Error* error)
+bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, CreateFlags create_flags,
+                                Error* error)
 {
   u32 queue_family_count;
   vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
@@ -911,7 +585,8 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
       Vulkan::AddPointerToChain(&device_info, &maintenance5_features);
   }
 
-  res = vkCreateDevice(physical_device, &device_info, nullptr, &m_device);
+  VkDevice device;
+  res = vkCreateDevice(physical_device, &device_info, nullptr, &device);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateDevice failed: ");
@@ -921,10 +596,19 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
 
   // With the device created, we can fill the remaining entry points.
   m_physical_device = physical_device;
-  if (!Vulkan::LoadVulkanDeviceFunctions(m_device))
+  if (!VulkanLoader::LoadDeviceFunctions(device, error))
+  {
+    if (vkDestroyDevice)
+      vkDestroyDevice(device, nullptr);
+    else
+      ERROR_LOG("Vulkan device leaked because vkDestroyDevice() function pointer was null.");
+
+    VulkanLoader::ResetDeviceFunctions();
     return false;
+  }
 
   // Grab the graphics and present queues.
+  m_device = device;
   vkGetDeviceQueue(m_device, m_graphics_queue_family_index, 0, &m_graphics_queue);
   if (surface)
     vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
@@ -955,7 +639,7 @@ bool VulkanDevice::CreateAllocator()
   ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
   ci.physicalDevice = m_physical_device;
   ci.device = m_device;
-  ci.instance = m_instance;
+  ci.instance = VulkanLoader::GetVulkanInstance();
 
   if (m_optional_extensions.vk_ext_memory_budget)
   {
@@ -1707,78 +1391,6 @@ void VulkanDevice::DeferSamplerDestruction(VkSampler object)
                                  [this, object]() { vkDestroySampler(m_device, object, nullptr); });
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-                                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                      void* pUserData)
-{
-  if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-  {
-    ERROR_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-              pCallbackData->pMessage);
-  }
-  else if (severity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
-  {
-    WARNING_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-                pCallbackData->pMessage);
-  }
-  else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-  {
-    INFO_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-             pCallbackData->pMessage);
-  }
-  else
-  {
-    DEV_LOG("Vulkan debug report: ({}) {}", pCallbackData->pMessageIdName ? pCallbackData->pMessageIdName : "",
-            pCallbackData->pMessage);
-  }
-
-  return VK_FALSE;
-}
-
-bool VulkanDevice::EnableDebugUtils()
-{
-  // Already enabled?
-  if (m_debug_messenger_callback != VK_NULL_HANDLE)
-    return true;
-
-  // Check for presence of the functions before calling
-  if (!vkCreateDebugUtilsMessengerEXT || !vkDestroyDebugUtilsMessengerEXT || !vkSubmitDebugUtilsMessageEXT)
-  {
-    return false;
-  }
-
-  VkDebugUtilsMessengerCreateInfoEXT messenger_info = {
-    VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-    nullptr,
-    0,
-    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-      VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,
-    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
-      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
-    DebugMessengerCallback,
-    nullptr};
-
-  const VkResult res =
-    vkCreateDebugUtilsMessengerEXT(m_instance, &messenger_info, nullptr, &m_debug_messenger_callback);
-  if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vkCreateDebugUtilsMessengerEXT failed: ");
-    return false;
-  }
-
-  return true;
-}
-
-void VulkanDevice::DisableDebugUtils()
-{
-  if (m_debug_messenger_callback != VK_NULL_HANDLE)
-  {
-    vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger_callback, nullptr);
-    m_debug_messenger_callback = VK_NULL_HANDLE;
-  }
-}
-
 VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 {
   std::array<VkAttachmentReference, MAX_RENDER_TARGETS> color_references;
@@ -1929,115 +1541,23 @@ void VulkanDevice::DestroyFramebuffer(VkFramebuffer fbo)
   VulkanDevice::GetInstance().DeferFramebufferDestruction(fbo);
 }
 
-bool VulkanDevice::IsSuitableDefaultRenderer()
-{
-#ifdef __ANDROID__
-  // No way in hell.
-  return false;
-#else
-  GPUList gpus = EnumerateGPUs();
-  if (gpus.empty())
-  {
-    // No adapters, not gonna be able to use VK.
-    return false;
-  }
-
-  // Check the first GPU, should be enough.
-  const AdapterInfo& ainfo = gpus.front().second;
-  INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", ainfo.name);
-
-  // Any software rendering (LLVMpipe, SwiftShader).
-  if ((ainfo.driver_type & GPUDriverType::SoftwareFlag) == GPUDriverType::SoftwareFlag)
-  {
-    INFO_LOG("Not using Vulkan for software renderer.");
-    return false;
-  }
-
-#ifdef __linux__
-  // Intel Ivy Bridge/Haswell/Broadwell drivers are incomplete.
-  if (ainfo.driver_type == GPUDriverType::IntelMesa &&
-      (ainfo.name.find("Ivy Bridge") != std::string::npos || ainfo.name.find("Haswell") != std::string::npos ||
-       ainfo.name.find("Broadwell") != std::string::npos || ainfo.name.find("(IVB") != std::string::npos ||
-       ainfo.name.find("(HSW") != std::string::npos || ainfo.name.find("(BDW") != std::string::npos))
-  {
-    INFO_LOG("Not using Vulkan for Intel GPU with incomplete driver.");
-    return false;
-  }
-#endif
-
-#if defined(__linux__) || defined(__ANDROID__)
-  // V3D is buggy, image copies with larger textures are broken.
-  if (ainfo.driver_type == GPUDriverType::BroadcomMesa)
-  {
-    INFO_LOG("Not using Vulkan for V3D GPU with buggy driver.");
-    return false;
-  }
-#endif
-
-  INFO_LOG("Allowing Vulkan as default renderer.");
-  return true;
-#endif
-}
-
 bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags,
                                                 const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                                 bool allow_present_throttle,
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  std::unique_lock lock(s_instance_mutex);
-  bool enable_debug_utils = m_debug_device;
-  bool enable_validation_layer = m_debug_device;
-
-#ifdef ENABLE_SDL
-  const bool library_loaded =
-    (wi.type == WindowInfoType::SDL) ? Vulkan::LoadVulkanLibraryFromSDL(error) : Vulkan::LoadVulkanLibrary(error);
-#else
-  const bool library_loaded = Vulkan::LoadVulkanLibrary(error);
-#endif
-  if (!library_loaded)
+  if (!VulkanLoader::CreateVulkanInstance(wi.type, &m_debug_device, error))
   {
-    Error::AddPrefix(error,
-                     "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?\nThe error was:");
+    Error::AddPrefix(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?\n");
     return false;
   }
 
-  m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
-  if (m_instance == VK_NULL_HANDLE)
-  {
-    if (enable_debug_utils || enable_validation_layer)
-    {
-      // Try again without the validation layer.
-      enable_debug_utils = false;
-      enable_validation_layer = false;
-      m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
-      if (m_instance == VK_NULL_HANDLE)
-      {
-        Error::SetStringView(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
-        return false;
-      }
-
-      ERROR_LOG("Vulkan validation/debug layers requested but are unavailable. Creating non-debug device.");
-    }
-  }
-
-  if (!Vulkan::LoadVulkanInstanceFunctions(m_instance))
-  {
-    ERROR_LOG("Failed to load Vulkan instance functions");
-    Error::SetStringView(error, "Failed to load Vulkan instance functions");
-
-    if (vkDestroyInstance)
-      vkDestroyInstance(std::exchange(m_instance, nullptr), nullptr);
-    else
-      ERROR_LOG("Vulkan instance was leaked because vkDestroyInstance() could not be loaded.");
-
-    return false;
-  }
-
-  GPUList gpus = EnumerateGPUs(m_instance);
+  const VulkanLoader::GPUList gpus = VulkanLoader::EnumerateGPUs(error);
   if (gpus.empty())
   {
-    Error::SetStringView(error, "No physical devices found. Does your GPU and/or driver support Vulkan?");
+    Error::AddPrefix(error, "No physical devices found. Does your GPU and/or driver support Vulkan?\n");
+    VulkanLoader::ReleaseVulkanInstance();
     return false;
   }
 
@@ -2067,25 +1587,23 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
     physical_device = gpus[0].first;
   }
 
-  if (enable_debug_utils)
-    EnableDebugUtils();
-
   std::unique_ptr<VulkanSwapChain> swap_chain;
   if (!wi.IsSurfaceless())
   {
     swap_chain =
       std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
-    if (!swap_chain->CreateSurface(m_instance, physical_device, error))
+    if (!swap_chain->CreateSurface(physical_device, error))
     {
       swap_chain->Destroy(*this, false);
+      VulkanLoader::ReleaseVulkanInstance();
       return false;
     }
   }
 
   // Attempt to create the device.
-  if (!CreateDevice(physical_device, swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, enable_validation_layer,
-                    create_flags, error))
+  if (!CreateDevice(physical_device, swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, create_flags, error))
   {
+    VulkanLoader::ReleaseVulkanInstance();
     return false;
   }
 
@@ -2119,8 +1637,6 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
 
 void VulkanDevice::DestroyDevice()
 {
-  std::unique_lock lock(s_instance_mutex);
-
   if (InRenderPass())
     EndRenderPass();
 
@@ -2160,18 +1676,9 @@ void VulkanDevice::DestroyDevice()
   {
     vkDestroyDevice(m_device, nullptr);
     m_device = VK_NULL_HANDLE;
+    VulkanLoader::ResetDeviceFunctions();
+    VulkanLoader::ReleaseVulkanInstance();
   }
-
-  if (m_debug_messenger_callback != VK_NULL_HANDLE)
-    DisableDebugUtils();
-
-  if (m_instance != VK_NULL_HANDLE)
-  {
-    vkDestroyInstance(m_instance, nullptr);
-    m_instance = VK_NULL_HANDLE;
-  }
-
-  Vulkan::UnloadVulkanLibrary();
 }
 
 bool VulkanDevice::ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header, Error* error)
@@ -2292,7 +1799,7 @@ std::unique_ptr<GPUSwapChain> VulkanDevice::CreateSwapChain(const WindowInfo& wi
 {
   std::unique_ptr<VulkanSwapChain> swap_chain =
     std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
-  if (swap_chain->CreateSurface(m_instance, m_physical_device, error) && swap_chain->CreateSwapChain(*this, error) &&
+  if (swap_chain->CreateSurface(m_physical_device, error) && swap_chain->CreateSwapChain(*this, error) &&
       swap_chain->CreateSwapChainImages(*this, error))
   {
     if (InRenderPass())
@@ -2457,35 +1964,6 @@ void VulkanDevice::InsertDebugMessage(const char* msg)
 
 #endif
 
-u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties)
-{
-  VkImageFormatProperties color_properties = {};
-  vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D,
-                                           VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 0,
-                                           &color_properties);
-  VkImageFormatProperties depth_properties = {};
-  vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_D32_SFLOAT, VK_IMAGE_TYPE_2D,
-                                           VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 0,
-                                           &depth_properties);
-  const VkSampleCountFlags combined_properties = properties.limits.framebufferColorSampleCounts &
-                                                 properties.limits.framebufferDepthSampleCounts &
-                                                 color_properties.sampleCounts & depth_properties.sampleCounts;
-  if (combined_properties & VK_SAMPLE_COUNT_64_BIT)
-    return 64;
-  else if (combined_properties & VK_SAMPLE_COUNT_32_BIT)
-    return 32;
-  else if (combined_properties & VK_SAMPLE_COUNT_16_BIT)
-    return 16;
-  else if (combined_properties & VK_SAMPLE_COUNT_8_BIT)
-    return 8;
-  else if (combined_properties & VK_SAMPLE_COUNT_4_BIT)
-    return 4;
-  else if (combined_properties & VK_SAMPLE_COUNT_2_BIT)
-    return 2;
-  else
-    return 1;
-}
-
 void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physical_device,
                                const VkPhysicalDeviceFeatures& vk_features)
 {
@@ -2494,7 +1972,7 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
                          (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =
     std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
-  m_max_multisamples = static_cast<u16>(GetMaxMultisamples(physical_device, m_device_properties));
+  m_max_multisamples = static_cast<u16>(Vulkan::GetMaxMultisamples(physical_device, m_device_properties));
 
   m_features.dual_source_blend =
     !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend) && vk_features.dualSrcBlend;
@@ -2545,51 +2023,6 @@ void VulkanDevice::SetFeatures(CreateFlags create_flags, VkPhysicalDevice physic
   // Same feature bit for both.
   m_features.dxt_textures = m_features.bptc_textures =
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) && vk_features.textureCompressionBC);
-}
-
-GPUDriverType VulkanDevice::GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
-                                            const VkPhysicalDeviceDriverProperties& driver_properties)
-{
-  static constexpr const std::pair<VkDriverId, GPUDriverType> table[] = {
-    {VK_DRIVER_ID_NVIDIA_PROPRIETARY, GPUDriverType::NVIDIAProprietary},
-    {VK_DRIVER_ID_AMD_PROPRIETARY, GPUDriverType::AMDProprietary},
-    {VK_DRIVER_ID_AMD_OPEN_SOURCE, GPUDriverType::AMDProprietary},
-    {VK_DRIVER_ID_MESA_RADV, GPUDriverType::AMDMesa},
-    {VK_DRIVER_ID_NVIDIA_PROPRIETARY, GPUDriverType::NVIDIAProprietary},
-    {VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS, GPUDriverType::IntelProprietary},
-    {VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA, GPUDriverType::IntelMesa},
-    {VK_DRIVER_ID_IMAGINATION_PROPRIETARY, GPUDriverType::ImaginationProprietary},
-    {VK_DRIVER_ID_QUALCOMM_PROPRIETARY, GPUDriverType::QualcommProprietary},
-    {VK_DRIVER_ID_ARM_PROPRIETARY, GPUDriverType::ARMProprietary},
-    {VK_DRIVER_ID_GOOGLE_SWIFTSHADER, GPUDriverType::SwiftShader},
-    {VK_DRIVER_ID_GGP_PROPRIETARY, GPUDriverType::Unknown},
-    {VK_DRIVER_ID_BROADCOM_PROPRIETARY, GPUDriverType::BroadcomProprietary},
-    {VK_DRIVER_ID_MESA_LLVMPIPE, GPUDriverType::LLVMPipe},
-    {VK_DRIVER_ID_MOLTENVK, GPUDriverType::AppleProprietary},
-    {VK_DRIVER_ID_COREAVI_PROPRIETARY, GPUDriverType::Unknown},
-    {VK_DRIVER_ID_JUICE_PROPRIETARY, GPUDriverType::Unknown},
-    {VK_DRIVER_ID_VERISILICON_PROPRIETARY, GPUDriverType::Unknown},
-    {VK_DRIVER_ID_MESA_TURNIP, GPUDriverType::QualcommMesa},
-    {VK_DRIVER_ID_MESA_V3DV, GPUDriverType::BroadcomMesa},
-    {VK_DRIVER_ID_MESA_PANVK, GPUDriverType::ARMMesa},
-    {VK_DRIVER_ID_SAMSUNG_PROPRIETARY, GPUDriverType::AMDProprietary},
-    {VK_DRIVER_ID_MESA_VENUS, GPUDriverType::Unknown},
-    {VK_DRIVER_ID_MESA_DOZEN, GPUDriverType::DozenMesa},
-    {VK_DRIVER_ID_MESA_NVK, GPUDriverType::NVIDIAMesa},
-    {VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA, GPUDriverType::ImaginationMesa},
-    {VK_DRIVER_ID_MESA_AGXV, GPUDriverType::AppleMesa},
-  };
-
-  const auto iter = std::find_if(std::begin(table), std::end(table), [&driver_properties](const auto& it) {
-    return (driver_properties.driverID == it.first);
-  });
-  if (iter != std::end(table))
-    return iter->second;
-
-  return GPUDevice::GuessDriverType(
-    device_properties.vendorID, {},
-    std::string_view(device_properties.deviceName,
-                     StringUtil::Strnlen(device_properties.deviceName, std::size(device_properties.deviceName))));
 }
 
 void VulkanDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,

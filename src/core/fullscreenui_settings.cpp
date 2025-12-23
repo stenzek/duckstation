@@ -1660,15 +1660,29 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
+  GPURenderer renderer;
   const auto lock = Core::GetSettingsLock();
-  const GPURenderer renderer =
-    Settings::ParseRendererName(GetEffectiveTinyStringSetting(GetEditingSettingsInterface(false), "GPU", "Renderer",
-                                                              Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
-                                  .c_str())
-      .value_or(Settings::DEFAULT_GPU_RENDERER);
+  {
+    renderer = Settings::ParseRendererName(
+                 GetEffectiveTinyStringSetting(GetEditingSettingsInterface(false), "GPU", "Renderer").c_str())
+                 .value_or(Settings::DEFAULT_GPU_RENDERER);
+  }
 
-  s_settings_locals.graphics_adapter_list_cache =
-    GPUDevice::GetAdapterListForAPI(Settings::GetRenderAPIForRenderer(renderer));
+  Error error;
+  std::optional<GPUDevice::AdapterInfoList> adapter_list = GPUDevice::GetAdapterListForAPI(
+    Settings::GetRenderAPIForRenderer(renderer),
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWindowInfo().type :
+                                       WindowInfoType::Surfaceless,
+    &error);
+  if (adapter_list.has_value())
+  {
+    s_settings_locals.graphics_adapter_list_cache = std::move(adapter_list.value());
+  }
+  else
+  {
+    ERROR_LOG("Failed to enumerate graphics adapters: {}", error.GetDescription());
+    s_settings_locals.graphics_adapter_list_cache = {};
+  }
 }
 
 void FullscreenUI::PopulateGameListDirectoryCache(const SettingsInterface& si)

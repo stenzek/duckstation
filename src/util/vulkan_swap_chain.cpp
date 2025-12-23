@@ -4,6 +4,7 @@
 #include "vulkan_swap_chain.h"
 #include "vulkan_builders.h"
 #include "vulkan_device.h"
+#include "vulkan_loader.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -82,7 +83,7 @@ VulkanSwapChain::~VulkanSwapChain()
   Destroy(VulkanDevice::GetInstance(), true);
 }
 
-bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physical_device, Error* error)
+bool VulkanSwapChain::CreateSurface(VkPhysicalDevice physical_device, Error* error)
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
   if (m_window_info.type == WindowInfoType::Win32)
@@ -92,7 +93,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
                                                              .flags = 0,
                                                              .hinstance = NULL,
                                                              .hwnd = static_cast<HWND>(m_window_info.window_handle)};
-    const VkResult res = vkCreateWin32SurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
+    const VkResult res =
+      vkCreateWin32SurfaceKHR(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateWin32SurfaceKHR() failed: ", res);
@@ -114,7 +116,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
                                                              .pNext = nullptr,
                                                              .flags = 0,
                                                              .pLayer = static_cast<const CAMetalLayer*>(m_metal_layer)};
-    const VkResult res = vkCreateMetalSurfaceEXT(instance, &surface_create_info, nullptr, &m_surface);
+    const VkResult res =
+      vkCreateMetalSurfaceEXT(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateMetalSurfaceEXT failed: ", res);
@@ -133,7 +136,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
       .pNext = nullptr,
       .flags = 0,
       .window = static_cast<ANativeWindow*>(m_window_info.window_handle)};
-    const VkResult res = vkCreateAndroidSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
+    const VkResult res =
+      vkCreateAndroidSurfaceKHR(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateAndroidSurfaceKHR failed: ", res);
@@ -153,7 +157,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
       .flags = 0,
       .connection = static_cast<xcb_connection_t*>(m_window_info.display_connection),
       .window = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(m_window_info.window_handle))};
-    const VkResult res = vkCreateXcbSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
+    const VkResult res =
+      vkCreateXcbSurfaceKHR(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateXcbSurfaceKHR failed: ", res);
@@ -173,7 +178,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
       .flags = 0,
       .display = static_cast<struct wl_display*>(m_window_info.display_connection),
       .surface = static_cast<struct wl_surface*>(m_window_info.window_handle)};
-    VkResult res = vkCreateWaylandSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
+    VkResult res =
+      vkCreateWaylandSurfaceKHR(VulkanLoader::GetVulkanInstance(), &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateWaylandSurfaceEXT failed: ", res);
@@ -187,7 +193,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #if defined(ENABLE_SDL)
   if (m_window_info.type == WindowInfoType::SDL)
   {
-    if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(m_window_info.window_handle), instance, nullptr, &m_surface))
+    if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(m_window_info.window_handle),
+                                  VulkanLoader::GetVulkanInstance(), nullptr, &m_surface))
     {
       Error::SetStringFmt(error, "SDL_Vulkan_CreateSurface() failed: {}", SDL_GetError());
       return false;
@@ -205,7 +212,7 @@ void VulkanSwapChain::DestroySurface()
 {
   if (m_surface != VK_NULL_HANDLE)
   {
-    vkDestroySurfaceKHR(VulkanDevice::GetInstance().GetVulkanInstance(), m_surface, nullptr);
+    vkDestroySurfaceKHR(VulkanLoader::GetVulkanInstance(), m_surface, nullptr);
     m_surface = VK_NULL_HANDLE;
   }
 
@@ -349,8 +356,8 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   VkResult res = VK_NOT_READY;
 
   // The present mode can alter the number of images required. Use VK_KHR_get_surface_capabilities2 to confirm it.
-  if (dev.GetOptionalExtensions().vk_khr_get_surface_capabilities2 &&
-      dev.GetOptionalExtensions().vk_ext_surface_maintenance1)
+  const VulkanLoader::OptionalExtensions& optional_extensions = VulkanLoader::GetOptionalExtensions();
+  if (optional_extensions.vk_khr_get_surface_capabilities2 && optional_extensions.vk_ext_surface_maintenance1)
   {
     VkPhysicalDeviceSurfaceInfo2KHR dsi = {
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, .pNext = nullptr, .surface = m_surface};
@@ -858,7 +865,7 @@ bool VulkanSwapChain::RecreateSurface(VulkanDevice& dev, Error* error)
   DestroySurface();
 
   // Re-create the surface with the new native handle
-  if (!CreateSurface(dev.GetVulkanInstance(), dev.GetVulkanPhysicalDevice(), error))
+  if (!CreateSurface(dev.GetVulkanPhysicalDevice(), error))
     return false;
 
   // The validation layers get angry at us if we don't call this before creating the swapchain.

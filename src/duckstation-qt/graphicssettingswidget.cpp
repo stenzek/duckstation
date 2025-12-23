@@ -4,6 +4,7 @@
 #include "graphicssettingswidget.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "qtwindowinfo.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 #include "ui_texturereplacementsettingsdialog.h"
@@ -19,6 +20,7 @@
 #include "util/media_capture.h"
 
 #include "common/error.h"
+#include "common/log.h"
 
 #include <QtCore/QDir>
 #include <QtWidgets/QDialog>
@@ -27,6 +29,8 @@
 #include <algorithm>
 
 #include "moc_graphicssettingswidget.cpp"
+
+LOG_CHANNEL(Host);
 
 static QVariant GetMSAAModeValue(uint multisamples, bool ssaa)
 {
@@ -836,8 +840,17 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_adapters_render_api = render_api;
 
     QtAsyncTask::create(this, [this, render_api]() {
-      GPUDevice::AdapterInfoList adapters = GPUDevice::GetAdapterListForAPI(render_api);
-      return [this, adapters = std::move(adapters), render_api]() mutable {
+      Error error;
+      std::optional<GPUDevice::AdapterInfoList> adapters =
+        GPUDevice::GetAdapterListForAPI(render_api, QtUtils::GetWindowInfoType(), &error);
+      if (!adapters.has_value())
+      {
+        ERROR_LOG("Failed to get adapter list for {} API: {}", GPUDevice::RenderAPIToString(render_api),
+                  error.GetDescription());
+        adapters.emplace();
+      }
+
+      return [this, adapters = std::move(adapters.value()), render_api]() mutable {
         if (m_adapters_render_api != render_api)
           return;
 

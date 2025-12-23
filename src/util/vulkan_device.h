@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -6,7 +6,7 @@
 #include "gpu_device.h"
 #include "gpu_framebuffer_manager.h"
 #include "gpu_texture.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 #include "vulkan_stream_buffer.h"
 
 #include "common/dimensional_array.h"
@@ -40,21 +40,14 @@ public:
     NUM_COMMAND_BUFFERS = 3,
   };
 
-  struct OptionalInstanceExtensions
-  {
-    bool vk_ext_surface_maintenance1 : 1;
-    bool vk_ext_swapchain_maintenance1 : 1;
-    bool vk_khr_get_surface_capabilities2 : 1;
-    bool vk_khr_get_physical_device_properties2 : 1;
-  };
-
-  struct OptionalExtensions : OptionalInstanceExtensions
+  struct OptionalExtensions
   {
     bool vk_ext_external_memory_host : 1;
     bool vk_ext_fragment_shader_interlock : 1;
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
+    bool vk_ext_swapchain_maintenance1 : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;
@@ -64,6 +57,8 @@ public:
     bool vk_khr_shader_non_semantic_info : 1;
   };
 
+  using ExtensionList = std::vector<const char*>;
+
   static GPUTextureFormat GetFormatForVkFormat(VkFormat format);
 
   static const std::array<VkFormat, static_cast<u32>(GPUTextureFormat::MaxCount)> TEXTURE_FORMAT_MAPPING;
@@ -71,12 +66,6 @@ public:
 public:
   VulkanDevice();
   ~VulkanDevice() override;
-
-  // Returns a list of Vulkan-compatible GPUs.
-  using GPUList = std::vector<std::pair<VkPhysicalDevice, AdapterInfo>>;
-  static GPUList EnumerateGPUs(VkInstance instance);
-  static GPUList EnumerateGPUs();
-  static AdapterInfoList GetAdapterList();
 
   std::string GetDriverInfo() const override;
 
@@ -163,16 +152,12 @@ public:
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }
-  ALWAYS_INLINE VkInstance GetVulkanInstance() const { return m_instance; }
   ALWAYS_INLINE VkDevice GetVulkanDevice() const { return m_device; }
   ALWAYS_INLINE VmaAllocator GetAllocator() const { return m_allocator; }
   ALWAYS_INLINE VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_physical_device; }
   ALWAYS_INLINE u32 GetGraphicsQueueFamilyIndex() const { return m_graphics_queue_family_index; }
   ALWAYS_INLINE u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }
   ALWAYS_INLINE const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
-
-  /// Returns true if Vulkan is suitable as a default for the devices in the system.
-  static bool IsSuitableDefaultRenderer();
 
   // Helpers for getting constants
   ALWAYS_INLINE u32 GetBufferCopyOffsetAlignment() const
@@ -326,32 +311,16 @@ private:
 
   using CleanupObjectFunction = void (*)(VulkanDevice& dev, void* obj);
 
-  // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
-                                         bool enable_validation_layer);
-
   bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header, Error* error);
   void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header);
 
-  // Enable/disable debug message runtime.
-  bool EnableDebugUtils();
-  void DisableDebugUtils();
-
-  using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
-                                       bool enable_debug_utils);
-  bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
-                    CreateFlags create_flags, Error* error);
+  bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, CreateFlags create_flags, Error* error);
   bool EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
                                       std::span<const VkExtensionProperties> available_extensions,
                                       ExtensionList& enabled_extensions, VkPhysicalDeviceFeatures& enabled_features,
                                       bool enable_surface, Error* error);
   void SetFeatures(CreateFlags create_flags, VkPhysicalDevice physical_device,
                    const VkPhysicalDeviceFeatures& vk_features);
-
-  static GPUDriverType GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
-                                       const VkPhysicalDeviceDriverProperties& driver_properties);
-  static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
   bool CreateAllocator();
   void DestroyAllocator();
@@ -403,8 +372,6 @@ private:
   void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present);
   void QueuePresent(VulkanSwapChain* present_swap_chain);
 
-  VkInstance m_instance = VK_NULL_HANDLE;
-  VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
   VkDevice m_device = VK_NULL_HANDLE;
   VmaAllocator m_allocator = VK_NULL_HANDLE;
 
@@ -475,7 +442,7 @@ private:
     m_pipeline_layouts = {};
 
   // Cold variables.
+  VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
   VkPhysicalDeviceProperties m_device_properties = {};
   VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
-  VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 };

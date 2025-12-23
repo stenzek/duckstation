@@ -5,7 +5,7 @@
 
 #include "gpu_device.h"
 #include "gpu_texture.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 #include "vulkan_stream_buffer.h"
 
 #include <limits>

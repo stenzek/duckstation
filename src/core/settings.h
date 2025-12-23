@@ -22,6 +22,7 @@ enum class Level : u32;
 }
 
 enum class RenderAPI : u8;
+enum class WindowInfoType : u8;
 enum class MediaCaptureBackend : u8;
 enum class OSDMessageType : u8;
 
@@ -476,7 +477,6 @@ struct Settings : public GPUSettings
   static const char* GetRendererDisplayName(GPURenderer renderer);
   static RenderAPI GetRenderAPIForRenderer(GPURenderer renderer);
   static GPURenderer GetRendererForRenderAPI(RenderAPI api);
-  static GPURenderer GetAutomaticRenderer();
 
   static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);

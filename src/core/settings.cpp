@@ -5,6 +5,7 @@
 #include "achievements.h"
 #include "controller.h"
 #include "core.h"
+#include "gpu_thread.h"
 #include "gte_types.h"
 #include "imgui_overlays.h"
 #include "system.h"
@@ -1585,7 +1586,7 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
     case GPURenderer::Software:
     case GPURenderer::Automatic:
     default:
-      return GPUDevice::GetPreferredAPI();
+      return GPUDevice::GetPreferredAPI(Host::GetRenderWindowInfoType());
   }
 }
 
@@ -1620,11 +1621,6 @@ GPURenderer Settings::GetRendererForRenderAPI(RenderAPI api)
     default:
       return GPURenderer::Automatic;
   }
-}
-
-GPURenderer Settings::GetAutomaticRenderer()
-{
-  return GetRendererForRenderAPI(GPUDevice::GetPreferredAPI());
 }
 
 static constexpr const std::array s_texture_filter_names = {

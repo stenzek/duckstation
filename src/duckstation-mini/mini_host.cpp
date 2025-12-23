@@ -650,6 +650,12 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
   return wi;
 }
 
+WindowInfoType Host::GetRenderWindowInfoType()
+{
+  // Assume SDL for GL/Vulkan.
+  return WindowInfoType::SDL;
+}
+
 void Host::ReleaseRenderWindow()
 {
   using namespace MiniHost;

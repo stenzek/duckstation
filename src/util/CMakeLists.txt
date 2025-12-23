@@ -173,8 +173,8 @@ if(ENABLE_VULKAN)
     vulkan_builders.h
     vulkan_device.cpp
     vulkan_device.h
-    vulkan_entry_points.h
     vulkan_entry_points.inl
+    vulkan_headers.h
     vulkan_loader.cpp
     vulkan_loader.h
     vulkan_pipeline.cpp

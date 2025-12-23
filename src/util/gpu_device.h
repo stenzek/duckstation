@@ -695,7 +695,7 @@ public:
   virtual ~GPUDevice();
 
   /// Returns the default/preferred API for the system.
-  static RenderAPI GetPreferredAPI();
+  static RenderAPI GetPreferredAPI(WindowInfoType window_type);
 
   /// Returns a string representing the specified API.
   static const char* RenderAPIToString(RenderAPI api);
@@ -713,7 +713,7 @@ public:
   static bool IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs);
 
   /// Returns a list of adapters for the given API.
-  static AdapterInfoList GetAdapterListForAPI(RenderAPI api);
+  static std::optional<AdapterInfoList> GetAdapterListForAPI(RenderAPI api, WindowInfoType window_type, Error* error);
 
   /// Dumps out a shader that failed compilation.
   static void DumpBadShader(std::string_view code, std::string_view errors);

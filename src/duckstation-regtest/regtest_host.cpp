@@ -437,6 +437,11 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
   return WindowInfo();
 }
 
+WindowInfoType Host::GetRenderWindowInfoType()
+{
+  return WindowInfoType::Surfaceless;
+}
+
 void Host::ReleaseRenderWindow()
 {
   //

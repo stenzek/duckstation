@@ -101,7 +101,7 @@
     <ClInclude Include="translation.h" />
     <ClInclude Include="vulkan_builders.h" />
     <ClInclude Include="vulkan_device.h" />
-    <ClInclude Include="vulkan_entry_points.h" />
+    <ClInclude Include="vulkan_headers.h" />
     <ClInclude Include="vulkan_loader.h" />
     <ClInclude Include="vulkan_pipeline.h" />
     <ClInclude Include="vulkan_stream_buffer.h" />
