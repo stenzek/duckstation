@@ -159,6 +159,24 @@ bool CubebAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_late
                                   std::string_view driver_name, std::string_view device_name, AudioStreamSource* source,
                                   bool auto_start, Error* error)
 {
+  static constexpr std::array channel_layout_mapping = {
+    CUBEB_LAYOUT_UNDEFINED,  // 0
+    CUBEB_LAYOUT_MONO,       // 1
+    CUBEB_LAYOUT_STEREO,     // 2
+    CUBEB_LAYOUT_STEREO_LFE, // 3
+    CUBEB_LAYOUT_QUAD,       // 4
+    CUBEB_LAYOUT_QUAD_LFE,   // 5
+    CUBEB_LAYOUT_3F2_BACK,   // 6
+    CUBEB_LAYOUT_3F3R_LFE,   // 7
+    CUBEB_LAYOUT_3F4_LFE,    // 8
+  };
+
+  if (channels >= channel_layout_mapping.size())
+  {
+    Error::SetStringFmt(error, "Unsupported channel count: {}", channels);
+    return false;
+  }
+
   m_context = GetCubebContext(driver_name, error);
   if (!m_context)
     return false;
@@ -167,7 +185,7 @@ bool CubebAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_late
   params.format = CUBEB_SAMPLE_S16LE;
   params.rate = sample_rate;
   params.channels = channels;
-  params.layout = CUBEB_LAYOUT_STEREO;
+  params.layout = channel_layout_mapping[channels];
   params.prefs = CUBEB_STREAM_PREF_NONE;
 
   u32 min_latency_frames = 0;
