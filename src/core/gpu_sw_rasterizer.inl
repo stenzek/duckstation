@@ -77,11 +77,13 @@ static u32 s_bad_counter = 0;
   return std::make_tuple(static_cast<u8>(rgb24), static_cast<u8>(rgb24 >> 8), static_cast<u8>(rgb24 >> 16));
 }
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<TextureModulationMode modulation_mode, bool transparency_enable>
 [[maybe_unused]] ALWAYS_INLINE_RELEASE static void ShadePixel(const GPUBackendDrawCommand* cmd, u32 x, u32 y,
                                                               u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x,
                                                               u8 texcoord_y)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
   u16 color;
   if constexpr (texture_enable)
   {
@@ -123,7 +125,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
     if (texture_color == 0)
       return;
 
-    if constexpr (raw_texture_enable)
+    if constexpr (modulation_mode == TextureModulationMode::NoModulation)
     {
       color = texture_color;
     }
@@ -133,12 +135,26 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
       const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
       const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
-      color =
-        (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16(texture_color & 0x1Fu) * u16(color_r)) >> 4]) << 0) |
-        (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 5) & 0x1Fu) * u16(color_g)) >> 4]) << 5) |
-        (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 10) & 0x1Fu) * u16(color_b)) >> 4])
-         << 10) |
-        (texture_color & 0x8000u);
+      if (modulation_mode == TextureModulationMode::Modulate8Bit)
+      {
+        color =
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16(texture_color & 0x1Fu) * u16(color_r)) >> 4]) << 0) |
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 5) & 0x1Fu) * u16(color_g)) >> 4])
+           << 5) |
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 10) & 0x1Fu) * u16(color_b)) >> 4])
+           << 10) |
+          (texture_color & 0x8000u);
+      }
+      else
+      {
+        color =
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16(texture_color & 0x1Fu) * u16(color_r >> 3)) >> 1]) << 0) |
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 5) & 0x1Fu) * u16(color_g >> 3)) >> 1])
+           << 5) |
+          (ZeroExtend16(g_dither_lut[dither_y][dither_x][(u16((texture_color >> 10) & 0x1Fu) * u16(color_b >> 3)) >> 1])
+           << 10) |
+          (texture_color & 0x8000u);
+      }
     }
   }
   else
@@ -225,7 +241,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 
 #ifndef USE_VECTOR
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<TextureModulationMode modulation_mode, bool transparency_enable>
 static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 {
   const s32 origin_x = cmd->x;
@@ -254,8 +270,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 
       const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
 
-      ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(cmd, static_cast<u32>(x), draw_y, r, g, b,
-                                                                          texcoord_x, texcoord_y);
+      ShadePixel<modulation_mode, transparency_enable>(cmd, static_cast<u32>(x), draw_y, r, g, b, texcoord_x,
+                                                       texcoord_y);
     }
   }
 }
@@ -505,13 +521,15 @@ struct PixelVectors
 };
 } // namespace
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>& RESTRICT pv,
-                                             GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
-                                             bool mask_bit_test, u32 start_x, u32 y, GSVectorNi vertex_color_rg,
-                                             GSVectorNi vertex_color_ba, GSVectorNi texcoord_x, GSVectorNi texcoord_y,
-                                             GSVectorNi preserve_mask, GSVectorNi dither)
+template<TextureModulationMode modulation_mode, bool transparency_enable>
+ALWAYS_INLINE_RELEASE static void
+ShadePixel(const PixelVectors<modulation_mode != TextureModulationMode::Disabled>& RESTRICT pv,
+           GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode, bool mask_bit_test, u32 start_x, u32 y,
+           GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba, GSVectorNi texcoord_x, GSVectorNi texcoord_y,
+           GSVectorNi preserve_mask, GSVectorNi dither)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
   static constexpr GSVectorNi coord_mask_x = GSVectorNi::cxpr(VRAM_WIDTH_MASK);
   static constexpr GSVectorNi coord_mask_y = GSVectorNi::cxpr(VRAM_HEIGHT_MASK);
 
@@ -568,7 +586,7 @@ ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>&
 
     preserve_mask = preserve_mask | texture_transparent_mask;
 
-    if constexpr (raw_texture_enable)
+    if constexpr (modulation_mode == TextureModulationMode::NoModulation)
     {
       color = texture_color;
     }
@@ -577,13 +595,27 @@ ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>&
       GSVectorNi trg, tba;
       RGB5A1ToRG_BA(texture_color, trg, tba);
 
-      // now we have both the texture and vertex color in RG/GA pairs, for 4 pixels, which we can multiply
-      GSVectorNi rg = trg.mul16l(vertex_color_rg);
-      GSVectorNi ba = tba.mul16l(vertex_color_ba);
+      GSVectorNi rg, ba;
+      if constexpr (modulation_mode == TextureModulationMode::Modulate8Bit)
+      {
+        // now we have both the texture and vertex color in RG/GA pairs, for 4 pixels, which we can multiply
+        rg = trg.mul16l(vertex_color_rg);
+        ba = tba.mul16l(vertex_color_ba);
 
-      // Convert to 5bit.
-      rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-      ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        // Convert to 5bit.
+        rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+      }
+      else
+      {
+        // now we have both the texture and vertex color in RG/GA pairs, for 4 pixels, which we can multiply
+        rg = trg.mul16l(vertex_color_rg.sra16<3>());
+        ba = tba.mul16l(vertex_color_ba.sra16<3>());
+
+        // Convert to 5bit.
+        rg = rg.sra16<1>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        ba = ba.sra16<1>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+      }
 
       // Bit15 gets passed through as-is.
       ba = ba.blend16<0xaa>(tba);
@@ -703,9 +735,11 @@ ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>&
   StoreVector(start_x, y, color);
 }
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<TextureModulationMode modulation_mode, bool transparency_enable>
 static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
   const s32 origin_x = cmd->x;
   const s32 origin_y = cmd->y;
 
@@ -752,9 +786,9 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
         preserve_mask = preserve_mask | xvec.gt32(pv.clip_right);
         if (!preserve_mask.alltrue())
         {
-          ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
-            pv, cmd->draw_mode.texture_mode, transparency_mode, mask_bit_test, x, draw_y, rg, ba, row_texcoord_x,
-            texcoord_y, preserve_mask, GSVectorNi::zero());
+          ShadePixel<modulation_mode, transparency_enable>(pv, cmd->draw_mode.texture_mode, transparency_mode,
+                                                           mask_bit_test, x, draw_y, rg, ba, row_texcoord_x, texcoord_y,
+                                                           preserve_mask, GSVectorNi::zero());
         }
 
         xvec = xvec.add32(PIXELS_PER_VEC_VEC);
@@ -770,7 +804,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
   }
 
 #ifdef CHECK_VECTOR
-  CHECK_VRAM(GPU_SW_Rasterizer::DrawRectangleFunctions[texture_enable][raw_texture_enable][transparency_enable](cmd));
+  CHECK_VRAM(GPU_SW_Rasterizer::DrawRectangleFunctions[u8(modulation_mode)][transparency_enable](cmd));
 #endif
 }
 
@@ -841,8 +875,8 @@ static void DrawLine(const GPUBackendDrawCommand* RESTRICT cmd, const GPUBackend
       const u8 g = shading_enable ? unfp_rgb(curg) : p0->g;
       const u8 b = shading_enable ? unfp_rgb(curb) : p0->b;
 
-      ShadePixel<false, false, transparency_enable>(cmd, static_cast<u32>(x), static_cast<u32>(y) & VRAM_HEIGHT_MASK, r,
-                                                    g, b, 0, 0);
+      ShadePixel<TextureModulationMode::Disabled, transparency_enable>(
+        cmd, static_cast<u32>(x), static_cast<u32>(y) & VRAM_HEIGHT_MASK, r, g, b, 0, 0);
     }
 
     curx += dxdk;
@@ -983,10 +1017,12 @@ struct TrianglePart
 
 #ifndef USE_VECTOR
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<bool shading_enable, TextureModulationMode modulation_mode, bool transparency_enable>
 static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
                      const UVSteps& RESTRICT uvstep, RGBStepper rgb, const RGBSteps& RESTRICT rgbstep)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
   s32 width = x_bound - x_start;
   s32 current_x = TruncateGPUVertexPosition(x_start);
 
@@ -1012,8 +1048,8 @@ static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_sta
 
   do
   {
-    ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
-      cmd, static_cast<u32>(current_x), static_cast<u32>(y), rgb.GetR(), rgb.GetG(), rgb.GetB(), uv.GetU(), uv.GetV());
+    ShadePixel<modulation_mode, transparency_enable>(cmd, static_cast<u32>(current_x), static_cast<u32>(y), rgb.GetR(),
+                                                     rgb.GetG(), rgb.GetB(), uv.GetU(), uv.GetV());
 
     current_x++;
     if constexpr (texture_enable)
@@ -1023,12 +1059,13 @@ static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_sta
   } while (--width > 0);
 }
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<bool shading_enable, TextureModulationMode modulation_mode, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* RESTRICT cmd,
                                                    const TrianglePart& RESTRICT tp, const UVStepper& RESTRICT uv,
                                                    const UVSteps& RESTRICT uvstep, const RGBStepper& RESTRICT rgb,
                                                    const RGBSteps& RESTRICT rgbstep)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
   static constexpr auto unfp_xy = [](s64 xfp) -> s32 { return static_cast<s32>(static_cast<u64>(xfp) >> 32); };
 
   const u64 left_x_step = tp.step_x[0];
@@ -1074,8 +1111,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
         continue;
       }
 
-      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
-        cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
+      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+                                                                     unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
     } while (current_y > end_y);
   }
   else
@@ -1103,8 +1140,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
           (!cmd->interlaced_rendering ||
            cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
-        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
-          cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
+        DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+                                                                       unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
       }
 
       current_y++;
@@ -1163,12 +1200,14 @@ struct TriangleVectors : PixelVectors<texture_enable>
 };
 } // namespace
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bound,
-                                           UVStepper uv, const UVSteps& RESTRICT uvstep, RGBStepper rgb,
-                                           const RGBSteps& RESTRICT rgbstep,
-                                           const TriangleVectors<shading_enable, texture_enable>& RESTRICT tv)
+template<bool shading_enable, TextureModulationMode modulation_mode, bool transparency_enable>
+ALWAYS_INLINE_RELEASE static void
+DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
+         const UVSteps& RESTRICT uvstep, RGBStepper rgb, const RGBSteps& RESTRICT rgbstep,
+         const TriangleVectors<shading_enable, modulation_mode != TextureModulationMode::Disabled>& RESTRICT tv)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
   s32 width = x_bound - x_start;
   s32 current_x = TruncateGPUVertexPosition(x_start);
 
@@ -1247,9 +1286,9 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT
     preserve_mask = preserve_mask | xvec.gt32(tv.clip_right);
     if (!preserve_mask.alltrue())
     {
-      ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
-        tv, cmd->draw_mode.texture_mode, transparency_mode, mask_bit_test, static_cast<u32>(current_x),
-        static_cast<u32>(y), rg, b, u, v, preserve_mask, dither);
+      ShadePixel<modulation_mode, transparency_enable>(tv, cmd->draw_mode.texture_mode, transparency_mode,
+                                                       mask_bit_test, static_cast<u32>(current_x), static_cast<u32>(y),
+                                                       rg, b, u, v, preserve_mask, dither);
     }
 
     current_x += PIXELS_PER_VEC;
@@ -1272,12 +1311,13 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT
   }
 }
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<bool shading_enable, TextureModulationMode modulation_mode, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* RESTRICT cmd,
                                                    const TrianglePart& RESTRICT tp, const UVStepper& RESTRICT uv,
                                                    const UVSteps& RESTRICT uvstep, const RGBStepper& RESTRICT rgb,
                                                    const RGBSteps& RESTRICT rgbstep)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
   static constexpr auto unfp_xy = [](s64 xfp) -> s32 { return static_cast<s32>(static_cast<u64>(xfp) >> 32); };
 
   const u64 left_x_step = tp.step_x[0];
@@ -1325,8 +1365,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
         continue;
       }
 
-      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
-        cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
+      DrawSpan<shading_enable, modulation_mode, transparency_enable>(cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x),
+                                                                     unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
     } while (current_y > end_y);
   }
   else
@@ -1356,7 +1396,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
           (!cmd->interlaced_rendering ||
            cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
-        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
+        DrawSpan<shading_enable, modulation_mode, transparency_enable>(
           cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
       }
 
@@ -1374,12 +1414,14 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
 
 #endif // USE_VECTOR
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
+template<bool shading_enable, TextureModulationMode modulation_mode, bool transparency_enable>
 static void DrawTriangle(const GPUBackendDrawCommand* RESTRICT cmd,
                          const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v0,
                          const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v1,
                          const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v2)
 {
+  static constexpr bool texture_enable = (modulation_mode != TextureModulationMode::Disabled);
+
 #ifdef CHECK_VECTOR
   const GPUBackendDrawPolygonCommand::Vertex* RESTRICT orig_v0 = v0;
   const GPUBackendDrawPolygonCommand::Vertex* RESTRICT orig_v1 = v1;
@@ -1514,35 +1556,85 @@ static void DrawTriangle(const GPUBackendDrawCommand* RESTRICT cmd,
 
   for (u32 i = 0; i < 2; i++)
   {
-    DrawTrianglePart<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(cmd, triparts[i], uv,
-                                                                                              uvstep, rgb, rgbstep);
+    DrawTrianglePart<shading_enable, modulation_mode, transparency_enable>(cmd, triparts[i], uv, uvstep, rgb, rgbstep);
   }
 
 #ifdef CHECK_VECTOR
-  CHECK_VRAM(
-    GPU_SW_Rasterizer::DrawTriangleFunctions[shading_enable][texture_enable][raw_texture_enable][transparency_enable](
-      cmd, orig_v0, orig_v1, orig_v2));
+  CHECK_VRAM(GPU_SW_Rasterizer::DrawTriangleFunctions[shading_enable][u8(modulation_mode)][transparency_enable](
+    cmd, orig_v0, orig_v1, orig_v2));
 #endif
 }
 
+// clang-format off
 constinit const DrawRectangleFunctionTable DrawRectangleFunctions = {
-  {{&DrawRectangle<false, false, false>, &DrawRectangle<false, false, true>},
-   {&DrawRectangle<false, false, false>, &DrawRectangle<false, false, true>}},
-  {{&DrawRectangle<true, false, false>, &DrawRectangle<true, false, true>},
-   {&DrawRectangle<true, true, false>, &DrawRectangle<true, true, true>}}};
+  {
+    &DrawRectangle<TextureModulationMode::Disabled, false>,
+    &DrawRectangle<TextureModulationMode::Disabled, true>,
+  },
+  {
+    &DrawRectangle<TextureModulationMode::NoModulation, false>,
+    &DrawRectangle<TextureModulationMode::NoModulation, true>,
+  },
+  {
+    &DrawRectangle<TextureModulationMode::Modulate8Bit, false>,
+    &DrawRectangle<TextureModulationMode::Modulate8Bit, true>,
+  },
+  {
+    &DrawRectangle<TextureModulationMode::Modulate5Bit, false>,
+    &DrawRectangle<TextureModulationMode::Modulate5Bit, true>,
+  },
+};
 
-constinit const DrawLineFunctionTable DrawLineFunctions = {{&DrawLine<false, false>, &DrawLine<false, true>},
-                                                           {&DrawLine<true, false>, &DrawLine<true, true>}};
+constinit const DrawLineFunctionTable DrawLineFunctions = {
+  {
+    &DrawLine<false, false>,
+    &DrawLine<false, true>
+  },
+  {
+    &DrawLine<true, false>,
+    &DrawLine<true, true>
+  }
+};
 
 constinit const DrawTriangleFunctionTable DrawTriangleFunctions = {
-  {{{&DrawTriangle<false, false, false, false>, &DrawTriangle<false, false, false, true>},
-    {&DrawTriangle<false, false, false, false>, &DrawTriangle<false, false, false, true>}},
-   {{&DrawTriangle<false, true, false, false>, &DrawTriangle<false, true, false, true>},
-    {&DrawTriangle<false, true, true, false>, &DrawTriangle<false, true, true, true>}}},
-  {{{&DrawTriangle<true, false, false, false>, &DrawTriangle<true, false, false, true>},
-    {&DrawTriangle<true, false, false, false>, &DrawTriangle<true, false, false, true>}},
-   {{&DrawTriangle<true, true, false, false>, &DrawTriangle<true, true, false, true>},
-    {&DrawTriangle<true, true, true, false>, &DrawTriangle<true, true, true, true>}}}};
+  {
+    {
+      &DrawTriangle<false, TextureModulationMode::Disabled, false>,
+      &DrawTriangle<false, TextureModulationMode::Disabled, true>
+    },
+    {
+      &DrawTriangle<false, TextureModulationMode::NoModulation, false>,
+      &DrawTriangle<false, TextureModulationMode::NoModulation, true>
+    },
+    {
+      &DrawTriangle<false, TextureModulationMode::Modulate8Bit, false>,
+      &DrawTriangle<false, TextureModulationMode::Modulate8Bit, true>
+    },
+    {
+      &DrawTriangle<false, TextureModulationMode::Modulate5Bit, false>,
+      &DrawTriangle<false, TextureModulationMode::Modulate5Bit, true>
+    }
+  },
+  {
+    {
+      &DrawTriangle<true, TextureModulationMode::Disabled, false>,
+      &DrawTriangle<true, TextureModulationMode::Disabled, true>
+    },
+    {
+      &DrawTriangle<true, TextureModulationMode::NoModulation, false>,
+      &DrawTriangle<true, TextureModulationMode::NoModulation, true>
+    },
+    {
+      &DrawTriangle<true, TextureModulationMode::Modulate8Bit, false>,
+      &DrawTriangle<true, TextureModulationMode::Modulate8Bit, true>
+    },
+    {
+      &DrawTriangle<true, TextureModulationMode::Modulate5Bit, false>,
+      &DrawTriangle<true, TextureModulationMode::Modulate5Bit, true>
+    }
+  }
+};
+// clang-format on
 
 static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced, u8 active_line_lsb)
 {

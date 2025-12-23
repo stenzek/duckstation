@@ -171,6 +171,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.modulationCrop, "GPU", "EnableModulationCrop", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
@@ -527,6 +528,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Provides a significant speed improvement "
                                 "particularly with the software renderer, and is safe to use."));
+  dialog->registerWidgetHelp(
+    m_ui.modulationCrop, tr("Texture Modulation Cropping (\"Old/v0\" GPU)"), tr("Unchecked"),
+    tr("Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more "
+       "visible banding. This is a characteristic of the \"old\" GPUs found in early model consoles."));
   dialog->registerWidgetHelp(m_ui.scaledInterlacing, tr("Scaled Interlacing"), tr("Checked"),
                              tr("Scales line skipping in interlaced rendering to the internal resolution. This makes "
                                 "the combing less obvious at higher resolutions. Usually safe to enable."));

@@ -215,6 +215,7 @@ TRANSLATE_NOOP("FullscreenUI", "Create");
 TRANSLATE_NOOP("FullscreenUI", "Create New...");
 TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
+TRANSLATE_NOOP("FullscreenUI", "Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Custom");
 TRANSLATE_NOOP("FullscreenUI", "Dark");
@@ -761,6 +762,7 @@ TRANSLATE_NOOP("FullscreenUI", "Synchronizes presentation of the console's frame
 TRANSLATE_NOOP("FullscreenUI", "Temporarily disables all enhancements, useful when testing.");
 TRANSLATE_NOOP("FullscreenUI", "Test Unofficial Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Texture Filtering");
+TRANSLATE_NOOP("FullscreenUI", "Texture Modulation Cropping (\"Old/v0\" GPU)");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacements");
 TRANSLATE_NOOP("FullscreenUI", "Textures Directory");
 TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers.");

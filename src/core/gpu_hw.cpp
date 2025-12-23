@@ -530,6 +530,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
                                g_gpu_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing)) ||
      (resolution_scale > 1 && g_gpu_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_gpu_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
+     g_gpu_settings.gpu_modulation_crop != old_settings.gpu_modulation_crop ||
      g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
      m_texture_filtering != g_gpu_settings.gpu_texture_filter ||
      m_sprite_texture_filtering != g_gpu_settings.gpu_sprite_texture_filter || m_clamp_uvs != clamp_uvs ||
@@ -1106,6 +1107,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool per_sample_shading = (msaa && g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading);
   const bool force_round_texcoords =
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_gpu_settings.gpu_force_round_texcoords);
+  const bool modulation_crop = g_gpu_settings.gpu_modulation_crop;
   const bool true_color = g_gpu_settings.IsUsingTrueColor();
   const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.IsUsingScaledDithering());
   const bool scaled_interlacing = (upscaled && g_gpu_settings.gpu_scaled_interlacing);
@@ -1315,10 +1317,10 @@ bool GPU_HW::CompilePipelines(Error* error)
                 const std::string fs = shadergen.GenerateBatchFragmentShader(
                   static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
                   shader_texmode, texture_filter, texture_filter_is_blended, upscaled, msaa, per_sample_shading,
-                  uv_limits, !sprite && force_round_texcoords, true_color, ConvertToBoolUnchecked(dithering),
-                  scaled_dithering, disable_color_perspective, ConvertToBoolUnchecked(interlacing), scaled_interlacing,
-                  ConvertToBoolUnchecked(check_mask), m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test,
-                  rov_depth_write);
+                  uv_limits, !sprite && force_round_texcoords, modulation_crop, true_color,
+                  ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
+                  ConvertToBoolUnchecked(interlacing), scaled_interlacing, ConvertToBoolUnchecked(check_mask),
+                  m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(
@@ -2876,7 +2878,9 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   if (draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawRectangleFunction(
-      cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+      GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                           g_gpu_settings.gpu_modulation_crop),
+      cmd->transparency_enable);
     DrawFunction(cmd);
   }
 }
@@ -2907,7 +2911,10 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
   if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-      cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+      cmd->shading_enable,
+      GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                           g_gpu_settings.gpu_modulation_crop),
+      cmd->transparency_enable);
     DrawFunction(cmd, &cmd->vertices[0], &cmd->vertices[1], &cmd->vertices[2]);
     if (cmd->num_vertices > 3)
       DrawFunction(cmd, &cmd->vertices[2], &cmd->vertices[1], &cmd->vertices[3]);
@@ -2951,7 +2958,10 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
   if (m_draw_with_software_renderer)
   {
     const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-      cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+      cmd->shading_enable,
+      GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                           g_gpu_settings.gpu_modulation_crop),
+      cmd->transparency_enable);
     GPUBackendDrawPolygonCommand::Vertex sw_vertices[4];
     for (u32 i = 0; i < cmd->num_vertices; i++)
     {

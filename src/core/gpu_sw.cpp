@@ -107,7 +107,10 @@ void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 void GPU_SW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
   const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-    cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+    cmd->shading_enable,
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   DrawFunction(cmd, &cmd->vertices[0], &cmd->vertices[1], &cmd->vertices[2]);
   if (cmd->num_vertices > 3)
@@ -117,7 +120,10 @@ void GPU_SW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 void GPU_SW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 {
   const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-    cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+    cmd->shading_enable,
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   // Need to cut out the irrelevant bits.
   // TODO: In _theory_ we could use the fixed-point parts here.
@@ -148,8 +154,10 @@ void GPU_SW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
     return;
   }
 
-  const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction =
-    GPU_SW_Rasterizer::GetDrawRectangleFunction(cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+  const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawRectangleFunction(
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   DrawFunction(cmd);
 }

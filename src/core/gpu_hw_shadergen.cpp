@@ -727,7 +727,8 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPX)
   {
-    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))\n";
+    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), "
+          "uv_limits))\n";
 
     /*
      * This part of the shader is from MMPX.glc from https://casual-effects.com/research/McGuire2021PixelArt/index.html
@@ -834,7 +835,8 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
   }
   else if (texture_filter == GPUTextureFilter::MMPXEnhanced)
   {
-    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), uv_limits))\n";
+    ss << "#define src(xoffs, yoffs) packUnorm4x8(SampleFromVRAM(texpage, bcoords + float2((xoffs), (yoffs)), "
+          "uv_limits))\n";
 
     /*
      * This part of the shader is from MMPX.glc from https://casual-effects.com/research/McGuire2021PixelArt/index.html
@@ -1180,9 +1182,10 @@ void FilteredSampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords, float4 uv_limi
 std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
   GPUTextureFilter texture_filtering, bool is_blended_texture_filtering, bool upscaled, bool msaa,
-  bool per_sample_shading, bool uv_limits, bool force_round_texcoords, bool true_color, bool dithering,
-  bool scaled_dithering, bool disable_color_perspective, bool interlacing, bool scaled_interlacing, bool check_mask,
-  bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test, bool rov_depth_write) const
+  bool per_sample_shading, bool uv_limits, bool force_round_texcoords, bool modulation_crop, bool true_color,
+  bool dithering, bool scaled_dithering, bool disable_color_perspective, bool interlacing, bool scaled_interlacing,
+  bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test,
+  bool rov_depth_write) const
 {
   DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
 
@@ -1216,6 +1219,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "DITHERING_SCALED", dithering && scaled_dithering);
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "INTERLACING_SCALED", interlacing && scaled_interlacing);
+  DefineMacro(ss, "MODULATION_CROP", modulation_crop);
   DefineMacro(ss, "TRUE_COLOR", true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
   DefineMacro(ss, "TEXTURE_ALPHA_BLENDING", is_blended_texture_filtering);
@@ -1498,7 +1502,11 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
     // If not using true color, truncate the framebuffer colors to 5-bit.
     #if !TRUE_COLOR
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0)) >> 3;
-      icolor = (icolor * vertcol) >> 4;
+      #if MODULATION_CROP
+        icolor = (icolor * (vertcol >> 3)) >> 1;
+      #else
+        icolor = (icolor * vertcol) >> 4;
+      #endif
       #if DITHERING
         icolor = ApplyDithering(fragpos, icolor);
       #else
@@ -1506,7 +1514,11 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, DECLARE_UV_LIMITS(float2 coords, fl
       #endif
     #else
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0));
-      icolor = (icolor * vertcol) >> 7;
+      #if MODULATION_CROP
+        icolor = (icolor * (vertcol >> 3)) >> 4;
+      #else
+        icolor = (icolor * vertcol) >> 7;
+      #endif
       icolor = min(icolor, uint3(255u, 255u, 255u));
     #endif
 

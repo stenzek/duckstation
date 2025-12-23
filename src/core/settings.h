@@ -80,6 +80,7 @@ struct GPUSettings
   bool gpu_force_round_texcoords : 1 = false;
   bool gpu_widescreen_rendering : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
+  bool gpu_modulation_crop : 1 = false;
   bool gpu_texture_cache : 1 = false;
   bool gpu_show_vram : 1 = false;
   bool gpu_dump_cpu_to_vram_copies : 1 = false;
