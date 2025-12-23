@@ -122,7 +122,7 @@ public:
   ALWAYS_INLINE id<MTLTexture> GetMTLTexture() const { return m_texture; }
 
   bool Create(id<MTLDevice> device, u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-              Format format, const void* initial_data = nullptr, u32 initial_data_stride = 0);
+              GPUTextureFormat format, const void* initial_data = nullptr, u32 initial_data_stride = 0);
 
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
@@ -140,7 +140,7 @@ public:
 
 private:
   MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
-               Format format, Flags flags);
+               GPUTextureFormat format, Flags flags);
 
   id<MTLTexture> m_texture;
 
@@ -161,7 +161,7 @@ class MetalDownloadTexture final : public GPUDownloadTexture
 public:
   ~MetalDownloadTexture() override;
 
-  static std::unique_ptr<MetalDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+  static std::unique_ptr<MetalDownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, void* memory,
                                                       size_t memory_size, u32 memory_stride, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
@@ -177,7 +177,7 @@ public:
 #endif
 
 private:
-  MetalDownloadTexture(u32 width, u32 height, GPUTexture::Format format, u8* import_buffer, size_t buffer_offset,
+  MetalDownloadTexture(u32 width, u32 height, GPUTextureFormat format, u8* import_buffer, size_t buffer_offset,
                        id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch);
 
   size_t m_buffer_offset = 0;
@@ -250,20 +250,20 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            GPUTexture::Type type, GPUTextureFormat format, GPUTexture::Flags flags,
                                             const void* data = nullptr, u32 data_stride = 0,
                                             Error* error = nullptr) override;
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
                                                         Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             Error* error = nullptr) override;
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             void* memory, size_t memory_size, u32 memory_stride,
                                                             Error* error = nullptr) override;
 
-  bool SupportsTextureFormat(GPUTexture::Format format) const override;
+  bool SupportsTextureFormat(GPUTextureFormat format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
   void ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -364,8 +364,8 @@ private:
 
   struct ClearPipelineConfig
   {
-    GPUTexture::Format color_formats[MAX_RENDER_TARGETS];
-    GPUTexture::Format depth_format;
+    GPUTextureFormat color_formats[MAX_RENDER_TARGETS];
+    GPUTextureFormat depth_format;
     u8 samples;
     u8 pad[2];
 
@@ -432,7 +432,7 @@ private:
   MetalStreamBuffer m_texture_upload_buffer;
 
   id<MTLLibrary> m_shaders = nil;
-  std::vector<std::pair<std::pair<GPUTexture::Format, GPUTexture::Format>, std::unique_ptr<GPUPipeline>>>
+  std::vector<std::pair<std::pair<GPUTextureFormat, GPUTextureFormat>, std::unique_ptr<GPUPipeline>>>
     m_resolve_pipelines;
   std::vector<std::pair<ClearPipelineConfig, id<MTLRenderPipelineState>>> m_clear_pipelines;
 

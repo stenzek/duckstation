@@ -19,6 +19,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMenu>
 
+#include <fmt/format.h>
+
 #include "moc_isobrowserwindow.cpp"
 
 LOG_CHANNEL(Host);

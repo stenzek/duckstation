@@ -19,7 +19,7 @@ public:
   bool LoadFromFile(std::string name, const char* filename, Error* error);
   bool LoadFromString(std::string name, std::string code, Error* error);
 
-  bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+  bool CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
 
   GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
@@ -57,7 +57,7 @@ private:
 
   std::unique_ptr<GPUPipeline> m_pipeline;
   std::unique_ptr<GPUSampler> m_sampler;
-  GPUTexture::Format m_output_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_output_format = GPUTextureFormat::Unknown;
 };
 
 } // namespace PostProcessing

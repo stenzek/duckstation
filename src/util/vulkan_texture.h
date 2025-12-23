@@ -38,7 +38,7 @@ public:
   ~VulkanTexture() override;
 
   static std::unique_ptr<VulkanTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                                               Format format, Flags flags, VkFormat vk_format, Error* error);
+                                               GPUTextureFormat format, Flags flags, VkFormat vk_format, Error* error);
   void Destroy(bool defer);
 
   ALWAYS_INLINE VkImage GetImage() const { return m_image; }
@@ -83,8 +83,8 @@ public:
   VkDescriptorSet GetDescriptorSetWithSampler(VkSampler sampler);
 
 private:
-  VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
-                VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format);
+  VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, GPUTextureFormat format,
+                Flags flags, VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format);
 
   VkCommandBuffer GetCommandBufferForUpdate();
   VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width, u32 height,
@@ -165,7 +165,7 @@ class VulkanDownloadTexture final : public GPUDownloadTexture
 public:
   ~VulkanDownloadTexture() override;
 
-  static std::unique_ptr<VulkanDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+  static std::unique_ptr<VulkanDownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, void* memory,
                                                        size_t memory_size, u32 memory_stride, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
@@ -181,9 +181,8 @@ public:
 #endif
 
 private:
-  VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,
-                        VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset,
-                        const u8* map_ptr, u32 map_pitch);
+  VulkanDownloadTexture(u32 width, u32 height, GPUTextureFormat format, VmaAllocation allocation, VkDeviceMemory memory,
+                        VkBuffer buffer, VkDeviceSize memory_offset, const u8* map_ptr, u32 map_pitch);
 
   VmaAllocation m_allocation = VK_NULL_HANDLE;
   VkDeviceMemory m_memory = VK_NULL_HANDLE;

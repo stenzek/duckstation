@@ -801,7 +801,7 @@ bool D3DCommon::LoadDXCompilerLibrary(Error* error)
   return true;
 }
 
-static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTexture::Format::MaxCount)>
+static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTextureFormat::MaxCount)>
   s_format_mapping = {{
     // clang-format off
   // d3d_format                    srv_format                           rtv_format                      dsv_format
@@ -839,19 +839,19 @@ static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTe
     // clang-format on
   }};
 
-const D3DCommon::DXGIFormatMapping& D3DCommon::GetFormatMapping(GPUTexture::Format format)
+const D3DCommon::DXGIFormatMapping& D3DCommon::GetFormatMapping(GPUTextureFormat format)
 {
   DebugAssert(static_cast<u8>(format) < s_format_mapping.size());
   return s_format_mapping[static_cast<u8>(format)];
 }
 
-GPUTexture::Format D3DCommon::GetFormatForDXGIFormat(DXGI_FORMAT format)
+GPUTextureFormat D3DCommon::GetFormatForDXGIFormat(DXGI_FORMAT format)
 {
-  for (u32 i = 0; i < static_cast<u32>(GPUTexture::Format::MaxCount); i++)
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFormat::MaxCount); i++)
   {
     if (s_format_mapping[i].resource_format == format)
-      return static_cast<GPUTexture::Format>(i);
+      return static_cast<GPUTextureFormat>(i);
   }
 
-  return GPUTexture::Format::Unknown;
+  return GPUTextureFormat::Unknown;
 }

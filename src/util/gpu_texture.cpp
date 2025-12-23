@@ -11,7 +11,8 @@
 #include "common/error.h"
 #include "common/string_util.h"
 
-GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags)
+GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, GPUTextureFormat format,
+                       Flags flags)
   : m_width(width), m_height(height), m_layers(layers), m_levels(levels), m_samples(samples), m_type(type),
     m_format(format), m_flags(flags)
 {
@@ -23,9 +24,9 @@ GPUTexture::~GPUTexture()
   GPUDevice::s_total_vram_usage -= GetVRAMUsage();
 }
 
-const char* GPUTexture::GetFormatName(Format format)
+const char* GPUTexture::GetFormatName(GPUTextureFormat format)
 {
-  static constexpr const std::array<const char*, static_cast<size_t>(Format::MaxCount)> format_names = {{
+  static constexpr const std::array<const char*, static_cast<size_t>(GPUTextureFormat::MaxCount)> format_names = {{
     "Unknown", // Unknown
     "RGBA8",   // RGBA8
     "BGRA8",   // BGRA8
@@ -67,18 +68,18 @@ u32 GPUTexture::GetBlockSize() const
   return GetBlockSize(m_format);
 }
 
-u32 GPUTexture::GetBlockSize(Format format)
+u32 GPUTexture::GetBlockSize(GPUTextureFormat format)
 {
-  if (format >= Format::BC1 && format <= Format::BC7)
+  if (format >= GPUTextureFormat::BC1 && format <= GPUTextureFormat::BC7)
     return COMPRESSED_TEXTURE_BLOCK_SIZE;
   else
     return 1;
 }
 
-u32 GPUTexture::CalcUploadPitch(Format format, u32 width)
+u32 GPUTexture::CalcUploadPitch(GPUTextureFormat format, u32 width)
 {
   // convert to blocks
-  if (format >= Format::BC1 && format <= Format::BC7)
+  if (format >= GPUTextureFormat::BC1 && format <= GPUTextureFormat::BC7)
     width = Common::AlignUpPow2(width, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE;
 
   return width * GetPixelSize(format);
@@ -94,7 +95,7 @@ u32 GPUTexture::CalcUploadRowLengthFromPitch(u32 pitch) const
   return CalcUploadRowLengthFromPitch(m_format, pitch);
 }
 
-u32 GPUTexture::CalcUploadRowLengthFromPitch(Format format, u32 pitch)
+u32 GPUTexture::CalcUploadRowLengthFromPitch(GPUTextureFormat format, u32 pitch)
 {
   const u32 pixel_size = GetPixelSize(format);
   if (IsCompressedFormat(format))
@@ -108,15 +109,15 @@ u32 GPUTexture::CalcUploadSize(u32 height, u32 pitch) const
   return CalcUploadSize(m_format, height, pitch);
 }
 
-u32 GPUTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
+u32 GPUTexture::CalcUploadSize(GPUTextureFormat format, u32 height, u32 pitch)
 {
   const u32 block_size = GetBlockSize(format);
   return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
-bool GPUTexture::IsCompressedFormat(Format format)
+bool GPUTexture::IsCompressedFormat(GPUTextureFormat format)
 {
-  return (format >= Format::BC1);
+  return (format >= GPUTextureFormat::BC1);
 }
 
 bool GPUTexture::IsCompressedFormat() const
@@ -130,7 +131,7 @@ u32 GPUTexture::GetFullMipmapCount(u32 width, u32 height)
   return (std::countr_zero(max_dim) + 1);
 }
 
-void GPUTexture::CopyTextureDataForUpload(u32 width, u32 height, Format format, void* dst, u32 dst_pitch,
+void GPUTexture::CopyTextureDataForUpload(u32 width, u32 height, GPUTextureFormat format, void* dst, u32 dst_pitch,
                                           const void* src, u32 src_pitch)
 {
   if (IsCompressedFormat(format))
@@ -146,27 +147,27 @@ void GPUTexture::CopyTextureDataForUpload(u32 width, u32 height, Format format, 
   }
 }
 
-GPUTexture::Format GPUTexture::GetTextureFormatForImageFormat(ImageFormat format)
+GPUTextureFormat GPUTexture::GetTextureFormatForImageFormat(ImageFormat format)
 {
   static constexpr const std::array mapping = {
-    Format::Unknown, // None
-    Format::RGBA8,   // RGBA8
-    Format::BGRA8,   // BGRA8
-    Format::RGB565,  // RGB565
-    Format::RGB5A1,  // RGB5A1
-    Format::A1BGR5,  // A1BGR5
-    Format::Unknown, // BGR8
-    Format::BC1,     // BC1
-    Format::BC2,     // BC2
-    Format::BC3,     // BC3
-    Format::BC7,     // BC7
+    GPUTextureFormat::Unknown, // None
+    GPUTextureFormat::RGBA8,   // RGBA8
+    GPUTextureFormat::BGRA8,   // BGRA8
+    GPUTextureFormat::RGB565,  // RGB565
+    GPUTextureFormat::RGB5A1,  // RGB5A1
+    GPUTextureFormat::A1BGR5,  // A1BGR5
+    GPUTextureFormat::Unknown, // BGR8
+    GPUTextureFormat::BC1,     // BC1
+    GPUTextureFormat::BC2,     // BC2
+    GPUTextureFormat::BC3,     // BC3
+    GPUTextureFormat::BC7,     // BC7
   };
   static_assert(mapping.size() == static_cast<size_t>(ImageFormat::MaxCount));
 
   return mapping[static_cast<size_t>(format)];
 }
 
-ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
+ImageFormat GPUTexture::GetImageFormatForTextureFormat(GPUTextureFormat format)
 {
   static constexpr const std::array mapping = {
     ImageFormat::None,   // Unknown
@@ -201,7 +202,7 @@ ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
     ImageFormat::BC3,    // BC3
     ImageFormat::BC7,    // BC7
   };
-  static_assert(mapping.size() == static_cast<size_t>(Format::MaxCount));
+  static_assert(mapping.size() == static_cast<size_t>(GPUTextureFormat::MaxCount));
 
   return mapping[static_cast<size_t>(format)];
 }
@@ -250,9 +251,9 @@ size_t GPUTexture::GetVRAMUsage() const
   return mem;
 }
 
-u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
+u32 GPUTexture::GetPixelSize(GPUTextureFormat format)
 {
-  static constexpr std::array<u8, static_cast<size_t>(Format::MaxCount)> sizes = {{
+  static constexpr std::array<u8, static_cast<size_t>(GPUTextureFormat::MaxCount)> sizes = {{
     0,  // Unknown
     4,  // RGBA8
     4,  // BGRA8
@@ -289,18 +290,18 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
   return sizes[static_cast<size_t>(format)];
 }
 
-bool GPUTexture::IsDepthFormat(Format format)
+bool GPUTexture::IsDepthFormat(GPUTextureFormat format)
 {
-  return (format >= Format::D16 && format <= Format::D32FS8);
+  return (format >= GPUTextureFormat::D16 && format <= GPUTextureFormat::D32FS8);
 }
 
-bool GPUTexture::IsDepthStencilFormat(Format format)
+bool GPUTexture::IsDepthStencilFormat(GPUTextureFormat format)
 {
-  return (format == Format::D24S8 || format == Format::D32FS8);
+  return (format == GPUTextureFormat::D24S8 || format == GPUTextureFormat::D32FS8);
 }
 
-bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                                Flags flags, Error* error)
+bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                                GPUTextureFormat format, Flags flags, Error* error)
 {
   if (width == 0 || width > MAX_WIDTH || height == 0 || height > MAX_HEIGHT || layers == 0 || layers > MAX_LAYERS ||
       levels == 0 || levels > MAX_LEVELS || samples == 0 || samples > MAX_SAMPLES)
@@ -383,14 +384,14 @@ void GPUTexture::MakeReadyForSampling()
 {
 }
 
-GPUDownloadTexture::GPUDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool is_imported)
+GPUDownloadTexture::GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported)
   : m_width(width), m_height(height), m_format(format), m_is_imported(is_imported)
 {
 }
 
 GPUDownloadTexture::~GPUDownloadTexture() = default;
 
-u32 GPUDownloadTexture::GetBufferSize(u32 width, u32 height, GPUTexture::Format format, u32 pitch_align /* = 1 */)
+u32 GPUDownloadTexture::GetBufferSize(u32 width, u32 height, GPUTextureFormat format, u32 pitch_align /* = 1 */)
 {
   DebugAssert(std::has_single_bit(pitch_align));
   const u32 bytes_per_pixel = GPUTexture::GetPixelSize(format);

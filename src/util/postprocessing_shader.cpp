@@ -111,7 +111,7 @@ const PostProcessing::ShaderOption* PostProcessing::Shader::GetOptionByName(std:
   return nullptr;
 }
 
-bool PostProcessing::Shader::ResizeTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format,
+bool PostProcessing::Shader::ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format,
                                            u32 target_width, u32 target_height, u32 viewport_width, u32 viewport_height,
                                            Error* error)
 {

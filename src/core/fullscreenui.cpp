@@ -1108,11 +1108,11 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.geometry_shader = nullptr;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.depth_format = GPUTextureFormat::Unknown;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
-                                                               GPUTexture::Format::RGBA8);
+                                                               GPUTextureFormat::RGBA8);
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
   s_locals.app_background_shader = g_gpu_device->CreatePipeline(plconfig, error);

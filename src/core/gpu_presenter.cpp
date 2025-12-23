@@ -54,7 +54,7 @@ bool GPUPresenter::Initialize(Error* error)
 {
   // we can't change the format after compiling shaders
   m_present_format =
-    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTextureFormat::RGBA8;
   VERBOSE_LOG("Presentation format is {}", GPUTexture::GetFormatName(m_present_format));
 
   // overlay has to come first, because it sets the alpha blending on the display pipeline
@@ -105,7 +105,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.geometry_shader = nullptr;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.depth_format = GPUTextureFormat::Unknown;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   if (display)
@@ -278,7 +278,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
 
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
     plconfig.vertex_shader = vso.get();
-    plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
+    plconfig.SetTargetFormats(GPUTextureFormat::RGBA8);
 
     switch (g_gpu_settings.display_deinterlacing_mode)
     {
@@ -356,7 +356,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     if (g_gpu_settings.display_24bit_chroma_smoothing)
     {
       plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-      plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
+      plconfig.SetTargetFormats(GPUTextureFormat::RGBA8);
 
       std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
                                                                   shadergen.GenerateScreenQuadVertexShader(), error);
@@ -1132,7 +1132,7 @@ bool GPUPresenter::Deinterlace(u32 field)
 bool GPUPresenter::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
 {
   if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
-                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
+                                   GPUTextureFormat::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
   {
     return false;
   }
@@ -1148,7 +1148,7 @@ bool GPUPresenter::ApplyChromaSmoothing()
   const u32 width = static_cast<u32>(m_display_texture_rect.width());
   const u32 height = static_cast<u32>(m_display_texture_rect.height());
   if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
-                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false))
+                                   GPUTextureFormat::RGBA8, GPUTexture::Flags::None, false))
   {
     ClearDisplayTexture();
     return false;
@@ -1673,8 +1673,7 @@ bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
       !GetIntFromObject(root, "displayStartX", &display_area.x) ||
       !GetIntFromObject(root, "displayStartY", &display_area.y) ||
       !GetIntFromObject(root, "displayEndX", &display_area.z) ||
-      !GetIntFromObject(root, "displayEndY", &display_area.w) ||
-      !GetIntFromObject(root, "alphaBlend", &alpha_blend) ||
+      !GetIntFromObject(root, "displayEndY", &display_area.w) || !GetIntFromObject(root, "alphaBlend", &alpha_blend) ||
       !GetIntFromObject(root, "destinationAlphaBlend", &destination_alpha_blend))
   {
     Error::SetStringView(error, "One or more parameters is missing.");

@@ -37,9 +37,9 @@ bool GPU_SW::Initialize(bool upload_vram, Error* error)
   if (!GPUBackend::Initialize(upload_vram, error))
     return false;
 
-  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB5A1, GPUTexture::Format::A1BGR5,
-                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGBA8};
-  for (const GPUTexture::Format format : formats_for_16bit)
+  static constexpr const std::array formats_for_16bit = {GPUTextureFormat::RGB5A1, GPUTextureFormat::A1BGR5,
+                                                         GPUTextureFormat::RGB565, GPUTextureFormat::RGBA8};
+  for (const GPUTextureFormat format : formats_for_16bit)
   {
     if (g_gpu_device->SupportsTextureFormat(format))
     {
@@ -50,7 +50,7 @@ bool GPU_SW::Initialize(bool upload_vram, Error* error)
 
   // RGBA8 will always be supported, hence we'll find one.
   INFO_LOG("Using {} format for 16-bit display", GPUTexture::GetFormatName(m_16bit_display_format));
-  Assert(m_16bit_display_format != GPUTexture::Format::Unknown);
+  Assert(m_16bit_display_format != GPUTextureFormat::Unknown);
 
   // if we're using "new" vram, clear it out here
   if (!upload_vram)
@@ -203,7 +203,7 @@ void GPU_SW::RestoreDeviceContext()
 {
 }
 
-GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format)
+GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format)
 {
   if (!m_upload_texture || m_upload_texture->GetWidth() != width || m_upload_texture->GetHeight() != height ||
       m_upload_texture->GetFormat() != format)
@@ -219,7 +219,7 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   return m_upload_texture.get();
 }
 
-template<GPUTexture::Format display_format>
+template<GPUTextureFormat display_format>
 ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip)
 {
   GPUTexture* texture = GetDisplayTexture(width, height, display_format);
@@ -356,20 +356,20 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
 
     switch (m_16bit_display_format)
     {
-      case GPUTexture::Format::RGB5A1:
-        return CopyOut15Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGB5A1:
+        return CopyOut15Bit<GPUTextureFormat::RGB5A1>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::A1BGR5:
-        return CopyOut15Bit<GPUTexture::Format::A1BGR5>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::A1BGR5:
+        return CopyOut15Bit<GPUTextureFormat::A1BGR5>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::RGB565:
-        return CopyOut15Bit<GPUTexture::Format::RGB565>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGB565:
+        return CopyOut15Bit<GPUTextureFormat::RGB565>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::RGBA8:
-        return CopyOut15Bit<GPUTexture::Format::RGBA8>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGBA8:
+        return CopyOut15Bit<GPUTextureFormat::RGBA8>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::BGRA8:
-        return CopyOut15Bit<GPUTexture::Format::BGRA8>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::BGRA8:
+        return CopyOut15Bit<GPUTextureFormat::BGRA8>(src_x, src_y, width, height, line_skip);
 
       default:
         UnreachableCode();

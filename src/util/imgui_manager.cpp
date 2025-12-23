@@ -142,7 +142,7 @@ struct ALIGN_TO_CACHE_LINE State
   float global_scale = 0.0f;
   float window_width = 0.0f;
   float window_height = 0.0f;
-  GPUTexture::Format window_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat window_format = GPUTextureFormat::Unknown;
   bool scale_changed = false;
 
   // we maintain a second copy of the stick state here so we can map it to the dpad
@@ -216,7 +216,7 @@ bool ImGuiManager::Initialize(Error* error)
   SetCommonIOOptions(io, s_state.imgui_context->PlatformIO);
 
   s_state.last_render_time = Timer::GetCurrentValue();
-  s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8;
+  s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTextureFormat::RGBA8;
   s_state.window_width = main_swap_chain ? static_cast<float>(main_swap_chain->GetWidth()) : 0.0f;
   s_state.window_height = main_swap_chain ? static_cast<float>(main_swap_chain->GetHeight()) : 0.0f;
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
@@ -283,7 +283,7 @@ float ImGuiManager::GetWindowHeight()
   return s_state.window_height;
 }
 
-void ImGuiManager::WindowResized(GPUTexture::Format format, float width, float height)
+void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float height)
 {
   if (s_state.window_format != format) [[unlikely]]
   {
@@ -522,8 +522,8 @@ void ImGuiManager::UpdateTextures()
 
         Error error;
         std::unique_ptr<GPUTexture> gtex = g_gpu_device->FetchTexture(
-          tex->Width, tex->Height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-          GPUTexture::Flags::None, tex->GetPixels(), tex->GetPitch(), &error);
+          tex->Width, tex->Height, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8, GPUTexture::Flags::None,
+          tex->GetPixels(), tex->GetPitch(), &error);
         if (!gtex) [[unlikely]]
         {
           ERROR_LOG("Failed to create {}x{} imgui texture: {}", tex->Width, tex->Height, error.GetDescription());
@@ -1472,7 +1472,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(SoftwareCursor& sc, const std::st
   }
   g_gpu_device->RecycleTexture(std::move(sc.texture));
   sc.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                          GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
+                                          GPUTextureFormat::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
                                           image.GetPitch(), &error);
   if (!sc.texture)
   {

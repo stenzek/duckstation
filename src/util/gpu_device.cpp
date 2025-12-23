@@ -167,12 +167,12 @@ GPUPipeline::BlendState GPUPipeline::BlendState::GetAlphaBlendingState()
   return ret;
 }
 
-void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTexture::Format color_format,
-                                                   GPUTexture::Format depth_format_ /* = GPUTexture::Format::Unknown */)
+void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTextureFormat color_format,
+                                                   GPUTextureFormat depth_format_ /* = GPUTexture::Format::Unknown */)
 {
   color_formats[0] = color_format;
   for (size_t i = 1; i < std::size(color_formats); i++)
-    color_formats[i] = GPUTexture::Format::Unknown;
+    color_formats[i] = GPUTextureFormat::Unknown;
   depth_format = depth_format_;
 }
 
@@ -181,7 +181,7 @@ u32 GPUPipeline::GraphicsConfig::GetRenderTargetCount() const
   u32 num_rts = 0;
   for (; num_rts < static_cast<u32>(std::size(color_formats)); num_rts++)
   {
-    if (color_formats[num_rts] == GPUTexture::Format::Unknown)
+    if (color_formats[num_rts] == GPUTextureFormat::Unknown)
       break;
   }
   return num_rts;
@@ -692,7 +692,7 @@ bool GPUDevice::CreateResources(Error* error)
 {
   // Backend may initialize null texture itself if it needs it.
   if (!m_empty_texture &&
-      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8,
                                         GPUTexture::Flags::None, nullptr, 0, error)))
   {
     Error::AddPrefix(error, "Failed to create null texture: ");
@@ -951,7 +951,7 @@ bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
 }
 
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                    GPUTexture::Type type, GPUTexture::Format format,
+                                                    GPUTexture::Type type, GPUTextureFormat format,
                                                     GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                     u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
@@ -1034,7 +1034,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
 
 GPUDevice::AutoRecycleTexture
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                                   GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                   GPUTextureFormat format, GPUTexture::Flags flags, const void* data /* = nullptr */,
                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret =
@@ -1047,17 +1047,17 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchAndUploadTextureImage(const Image& i
                                                                   Error* error /*= nullptr*/)
 {
   const Image* image_to_upload = &image;
-  GPUTexture::Format gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
+  GPUTextureFormat gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
   bool gpu_format_supported;
 
   // avoid device query for compressed formats that we've already pretested
-  if (gpu_format >= GPUTexture::Format::BC1 && gpu_format <= GPUTexture::Format::BC3)
+  if (gpu_format >= GPUTextureFormat::BC1 && gpu_format <= GPUTextureFormat::BC3)
     gpu_format_supported = m_features.dxt_textures;
-  else if (gpu_format == GPUTexture::Format::BC7)
+  else if (gpu_format == GPUTextureFormat::BC7)
     gpu_format_supported = m_features.bptc_textures;
-  else if (gpu_format == GPUTexture::Format::RGBA8) // always supported
+  else if (gpu_format == GPUTextureFormat::RGBA8) // always supported
     gpu_format_supported = true;
-  else if (gpu_format != GPUTexture::Format::Unknown)
+  else if (gpu_format != GPUTextureFormat::Unknown)
     gpu_format_supported = SupportsTextureFormat(gpu_format);
   else
     gpu_format_supported = false;
@@ -1163,7 +1163,7 @@ void GPUDevice::TrimTexturePool()
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */,
+                              GPUTextureFormat format, GPUTexture::Flags flags, bool preserve /* = true */,
                               Error* error /* = nullptr */)
 {
   GPUTexture* old_tex = tex->get();
@@ -1213,7 +1213,7 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, GPUTexture::Flags flags, const void* replace_data,
+                              GPUTextureFormat format, GPUTexture::Flags flags, const void* replace_data,
                               u32 replace_data_pitch, Error* error /* = nullptr */)
 {
   GPUTexture* old_tex = tex->get();

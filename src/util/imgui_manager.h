@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "util/gpu_texture.h"
-
 #include "common/types.h"
 
 #include <array>
@@ -18,6 +16,7 @@ struct WindowInfo;
 
 class GPUSwapChain;
 class GPUTexture;
+enum class GPUTextureFormat : u8;
 
 struct ImGuiContext;
 struct ImFont;
@@ -108,7 +107,7 @@ float GetWindowWidth();
 float GetWindowHeight();
 
 /// Updates internal state when the window is size.
-void WindowResized(GPUTexture::Format format, float width, float height);
+void WindowResized(GPUTextureFormat format, float width, float height);
 
 /// Updates scaling of the on-screen elements.
 void RequestScaleUpdate();

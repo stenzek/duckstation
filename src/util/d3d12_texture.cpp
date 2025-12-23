@@ -17,11 +17,12 @@
 
 LOG_CHANNEL(GPUDevice);
 
-D3D12Texture::D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                           Flags flags, DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource,
-                           ComPtr<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
-                           const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
-                           WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
+D3D12Texture::D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                           GPUTextureFormat format, Flags flags, DXGI_FORMAT dxgi_format,
+                           ComPtr<ID3D12Resource> resource, ComPtr<D3D12MA::Allocation> allocation,
+                           const D3D12DescriptorHandle& srv_descriptor, const D3D12DescriptorHandle& write_descriptor,
+                           const D3D12DescriptorHandle& uav_descriptor, WriteDescriptorType wdtype,
+                           D3D12_RESOURCE_STATES resource_state)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
                static_cast<u8>(samples), type, format, flags),
     m_resource(std::move(resource)), m_allocation(std::move(allocation)), m_srv_descriptor(srv_descriptor),
@@ -36,7 +37,7 @@ D3D12Texture::~D3D12Texture()
 }
 
 std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                       GPUTexture::Type type, GPUTexture::Format format,
+                                                       GPUTexture::Type type, GPUTextureFormat format,
                                                        GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                        u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
@@ -860,7 +861,7 @@ std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuf
   return tb;
 }
 
-D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+D3D12DownloadTexture::D3D12DownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                            ComPtr<D3D12MA::Allocation> allocation, ComPtr<ID3D12Resource> buffer)
   : GPUDownloadTexture(width, height, format, false), m_allocation(std::move(allocation)), m_buffer(std::move(buffer))
 {
@@ -875,7 +876,7 @@ D3D12DownloadTexture::~D3D12DownloadTexture()
     D3D12Device::GetInstance().DeferResourceDestruction(m_allocation.Get(), m_buffer.Get());
 }
 
-std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                    Error* error)
 {
   const u32 buffer_size = GetBufferSize(width, height, format, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
@@ -1037,13 +1038,13 @@ void D3D12DownloadTexture::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        Error* error /* = nullptr */)
 {
   return D3D12DownloadTexture::Create(width, height, format, error);
 }
 
-std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
                                                                        u32 memory_stride, Error* error /* = nullptr */)
 {

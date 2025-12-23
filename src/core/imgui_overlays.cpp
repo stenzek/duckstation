@@ -1196,7 +1196,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
     {
       li->preview_texture = g_gpu_device->FetchTexture(
         ssi->screenshot.GetWidth(), ssi->screenshot.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-        GPUTexture::Format::RGBA8, GPUTexture::Flags::None, ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
+        GPUTextureFormat::RGBA8, GPUTexture::Flags::None, ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
       if (!li->preview_texture) [[unlikely]]
         ERROR_LOG("Failed to upload save state image to GPU");
     }

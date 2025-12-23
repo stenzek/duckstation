@@ -3,6 +3,7 @@
 
 #include "opengl_context_wgl.h"
 #include "opengl_loader.h"
+#include "gpu_texture.h"
 
 #include "common/assert.h"
 #include "common/dynamic_library.h"
@@ -323,7 +324,7 @@ HDC OpenGLContextWGL::CreateDCAndSetPixelFormat(WindowInfo& wi, Error* error)
     return {};
   }
 
-  wi.surface_format = GPUTexture::Format::RGBA8;
+  wi.surface_format = GPUTextureFormat::RGBA8;
   return hDC;
 }
 
@@ -372,7 +373,9 @@ HDC OpenGLContextWGL::GetPBufferDC(Error* error)
 
   ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
 
-  WindowInfo wi = {.type = WindowInfo::Type::Win32, .window_handle = hwnd};
+  WindowInfo wi;
+  wi.type = WindowInfo::Type::Win32;
+  wi.window_handle = hwnd;
   HDC hdc = CreateDCAndSetPixelFormat(wi, error);
   if (!hdc)
     return NULL;

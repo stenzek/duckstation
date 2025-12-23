@@ -269,10 +269,10 @@ ALWAYS_INLINE GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
   return r | g.sll32<8>() | b.sll32<16>() | a;
 }
 
-template<GPUTexture::Format format>
+template<GPUTextureFormat format>
 ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
 {
-  if constexpr (format == GPUTexture::Format::RGBA8)
+  if constexpr (format == GPUTextureFormat::RGBA8)
   {
     const GSVector4i low = VRAMRGB5A1ToRGBA8888(c16.upl16());
     const GSVector4i high = VRAMRGB5A1ToRGBA8888(c16.uph16());
@@ -283,7 +283,7 @@ ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
     GSVector4i::store<false>(dest, high);
     dest += sizeof(GSVector4i);
   }
-  else if constexpr (format == GPUTexture::Format::RGB5A1)
+  else if constexpr (format == GPUTextureFormat::RGB5A1)
   {
     static constexpr GSVector4i cmask = GSVector4i::cxpr16(0x1F);
 
@@ -293,7 +293,7 @@ ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
     GSVector4i::store<false>(dest, repacked);
     dest += sizeof(GSVector4i);
   }
-  else if constexpr (format == GPUTexture::Format::A1BGR5)
+  else if constexpr (format == GPUTextureFormat::A1BGR5)
   {
     const GSVector4i repacked = (c16 & GSVector4i::cxpr16(static_cast<s16>(0x3E0))).sll16<1>() |
                                 (c16.srl16<9>() & GSVector4i::cxpr16(0x3E)) |
@@ -302,7 +302,7 @@ ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
     GSVector4i::store<false>(dest, repacked);
     dest += sizeof(GSVector4i);
   }
-  else if constexpr (format == GPUTexture::Format::RGB565)
+  else if constexpr (format == GPUTextureFormat::RGB565)
   {
     constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
     const GSVector4i a = (c16 & GSVector4i::cxpr16(0x3E0)).sll16<1>(); // (value & 0x3E0) << 1
@@ -316,28 +316,28 @@ ALWAYS_INLINE void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
 
 #endif
 
-template<GPUTexture::Format format>
+template<GPUTextureFormat format>
 ALWAYS_INLINE void ConvertVRAMPixel(u8*& dest, u16 c16)
 {
-  if constexpr (format == GPUTexture::Format::RGBA8)
+  if constexpr (format == GPUTextureFormat::RGBA8)
   {
     const u32 c32 = VRAMRGBA5551ToRGBA8888(c16);
     std::memcpy(std::assume_aligned<sizeof(c32)>(dest), &c32, sizeof(c32));
     dest += sizeof(c32);
   }
-  else if constexpr (format == GPUTexture::Format::RGB5A1)
+  else if constexpr (format == GPUTextureFormat::RGB5A1)
   {
     const u16 repacked = (c16 & 0x83E0) | ((c16 >> 10) & 0x1F) | ((c16 & 0x1F) << 10);
     std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
     dest += sizeof(repacked);
   }
-  else if constexpr (format == GPUTexture::Format::A1BGR5)
+  else if constexpr (format == GPUTextureFormat::A1BGR5)
   {
     const u16 repacked = ((c16 & 0x3E0) << 1) | ((c16 >> 9) & 0x3E) | ((c16 & 0x1F) << 11) | (c16 >> 15);
     std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
     dest += sizeof(repacked);
   }
-  else if constexpr (format == GPUTexture::Format::RGB565)
+  else if constexpr (format == GPUTextureFormat::RGB565)
   {
     const u16 repacked = ((c16 & 0x3E0) << 1) | ((c16 & 0x20) << 1) | ((c16 >> 10) & 0x1F) | ((c16 & 0x1F) << 11);
     std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));

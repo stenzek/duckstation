@@ -30,10 +30,10 @@ public:
   bool LoadFromFile(std::string name, std::string filename, bool only_config, Error* error);
   bool LoadFromString(std::string name, std::string filename, std::string code, bool only_config, Error* error);
 
-  bool ResizeTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format, u32 target_width,
+  bool ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format, u32 target_width,
                      u32 target_height, u32 viewport_width, u32 viewport_height, Error* error) override;
 
-  bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+  bool CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
 
   GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
@@ -104,7 +104,7 @@ private:
                     std::string code, Error* error);
   bool CreateOptions(const reshadefx::effect_module& mod, Error* error);
   bool GetSourceOption(const reshadefx::uniform& ui, SourceOptionType* si, Error* error);
-  bool CreatePasses(GPUTexture::Format backbuffer_format, const reshadefx::effect_module& mod, Error* error);
+  bool CreatePasses(GPUTextureFormat backbuffer_format, const reshadefx::effect_module& mod, Error* error);
 
   const char* GetTextureNameForID(TextureID id) const;
   GPUTexture* GetTextureByID(TextureID id, GPUTexture* input_color, GPUTexture* input_depth,
@@ -116,7 +116,7 @@ private:
   {
     std::unique_ptr<GPUTexture> texture;
     std::string reshade_name; // TODO: we might be able to drop this
-    GPUTexture::Format format;
+    GPUTextureFormat format;
     u32 render_target_width;
     u32 render_target_height;
     bool render_target;

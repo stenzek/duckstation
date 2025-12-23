@@ -551,7 +551,7 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   m_window_info.surface_height = static_cast<u16>(window_size.height);
   m_window_info.surface_format = VulkanDevice::GetFormatForVkFormat(surface_format->format);
   m_window_info.surface_prerotation = window_prerotation;
-  if (m_window_info.surface_format == GPUTexture::Format::Unknown)
+  if (m_window_info.surface_format == GPUTextureFormat::Unknown)
   {
     Error::SetStringFmt(error, "Unknown surface format {}", static_cast<u32>(surface_format->format));
     return false;

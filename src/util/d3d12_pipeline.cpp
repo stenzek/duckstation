@@ -252,11 +252,11 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (config.color_formats[i] != GPUTexture::Format::Unknown)
+    if (config.color_formats[i] != GPUTextureFormat::Unknown)
       gpb.SetRenderTarget(i, D3DCommon::GetFormatMapping(config.color_formats[i]).rtv_format);
   }
 
-  if (config.depth_format != GPUTexture::Format::Unknown)
+  if (config.depth_format != GPUTextureFormat::Unknown)
     gpb.SetDepthStencilFormat(D3DCommon::GetFormatMapping(config.depth_format).dsv_format);
 
   ComPtr<ID3D12PipelineState> pipeline;

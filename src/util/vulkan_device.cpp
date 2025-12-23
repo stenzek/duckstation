@@ -76,7 +76,7 @@ enum : u32
   MAX_UNIFORM_BUFFER_SIZE = 1024,
 };
 
-const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> VulkanDevice::TEXTURE_FORMAT_MAPPING = {
+const std::array<VkFormat, static_cast<u32>(GPUTextureFormat::MaxCount)> VulkanDevice::TEXTURE_FORMAT_MAPPING = {
   VK_FORMAT_UNDEFINED,                // Unknown
   VK_FORMAT_R8G8B8A8_UNORM,           // RGBA8
   VK_FORMAT_B8G8R8A8_UNORM,           // BGRA8
@@ -134,15 +134,15 @@ VulkanDevice::~VulkanDevice()
   Assert(m_device == VK_NULL_HANDLE);
 }
 
-GPUTexture::Format VulkanDevice::GetFormatForVkFormat(VkFormat format)
+GPUTextureFormat VulkanDevice::GetFormatForVkFormat(VkFormat format)
 {
   for (u32 i = 0; i < static_cast<u32>(std::size(TEXTURE_FORMAT_MAPPING)); i++)
   {
     if (TEXTURE_FORMAT_MAPPING[i] == format)
-      return static_cast<GPUTexture::Format>(i);
+      return static_cast<GPUTextureFormat>(i);
   }
 
-  return GPUTexture::Format::Unknown;
+  return GPUTextureFormat::Unknown;
 }
 
 VkInstance VulkanDevice::CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
@@ -1194,7 +1194,7 @@ VkRenderPass VulkanDevice::GetRenderPass(const GPUPipeline::GraphicsConfig& conf
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+    if (config.color_formats[i] == GPUTextureFormat::Unknown)
       break;
 
     key.color[i].format = static_cast<u8>(config.color_formats[i]);
@@ -1202,7 +1202,7 @@ VkRenderPass VulkanDevice::GetRenderPass(const GPUPipeline::GraphicsConfig& conf
     key.color[i].store_op = VK_ATTACHMENT_STORE_OP_STORE;
   }
 
-  if (config.depth_format != GPUTexture::Format::Unknown)
+  if (config.depth_format != GPUTextureFormat::Unknown)
   {
     key.depth_format = static_cast<u8>(config.depth_format);
     key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -1226,7 +1226,7 @@ VkRenderPass VulkanDevice::GetRenderPass(VulkanTexture* const* rts, u32 num_rts,
   RenderPassCacheKey key;
   std::memset(&key, 0, sizeof(key));
 
-  static_assert(static_cast<u8>(GPUTexture::Format::Unknown) == 0);
+  static_assert(static_cast<u8>(GPUTextureFormat::Unknown) == 0);
 
   for (u32 i = 0; i < num_rts; i++)
   {
@@ -1256,9 +1256,9 @@ VkRenderPass VulkanDevice::GetRenderPass(VulkanTexture* const* rts, u32 num_rts,
   return (it != m_render_pass_cache.end()) ? it->second : CreateCachedRenderPass(key);
 }
 
-VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTexture::Format format, VkAttachmentLoadOp load_op)
+VkRenderPass VulkanDevice::GetSwapChainRenderPass(GPUTextureFormat format, VkAttachmentLoadOp load_op)
 {
-  DebugAssert(format != GPUTexture::Format::Unknown);
+  DebugAssert(format != GPUTextureFormat::Unknown);
 
   RenderPassCacheKey key;
   std::memset(&key, 0, sizeof(key));
@@ -1794,7 +1794,7 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (key.color[i].format == static_cast<u8>(GPUTexture::Format::Unknown))
+    if (key.color[i].format == static_cast<u8>(GPUTextureFormat::Unknown))
       break;
 
     const VkImageLayout layout =
@@ -1843,7 +1843,7 @@ VkRenderPass VulkanDevice::CreateCachedRenderPass(RenderPassCacheKey key)
 
   const u32 num_rts = num_attachments;
 
-  if (key.depth_format != static_cast<u8>(GPUTexture::Format::Unknown))
+  if (key.depth_format != static_cast<u8>(GPUTextureFormat::Unknown))
   {
     const VkImageLayout layout = (key.feedback_loop & GPUPipeline::SampleDepthBuffer) ?
                                    VK_IMAGE_LAYOUT_GENERAL :
@@ -2307,7 +2307,7 @@ std::unique_ptr<GPUSwapChain> VulkanDevice::CreateSwapChain(const WindowInfo& wi
   return swap_chain;
 }
 
-bool VulkanDevice::SupportsTextureFormat(GPUTexture::Format format) const
+bool VulkanDevice::SupportsTextureFormat(GPUTextureFormat format) const
 {
   return (TEXTURE_FORMAT_MAPPING[static_cast<u8>(format)] != VK_FORMAT_UNDEFINED);
 }
@@ -2900,7 +2900,7 @@ void VulkanDevice::UnmapUniformBuffer(u32 size)
 bool VulkanDevice::CreateNullTexture(Error* error)
 {
   std::unique_ptr<VulkanTexture> null_texture =
-    VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+    VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8,
                           GPUTexture::Flags::AllowBindAsImage, VK_FORMAT_R8G8B8A8_UNORM, error);
   if (!null_texture)
   {

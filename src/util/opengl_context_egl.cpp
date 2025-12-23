@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "opengl_context_egl.h"
+#include "gpu_texture.h"
 
 #include "common/assert.h"
 #include "common/dynamic_library.h"
@@ -406,7 +407,7 @@ EGLSurface OpenGLContextEGL::GetPBufferSurface(Error* error)
   return m_pbuffer_surface;
 }
 
-bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format)
+bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTextureFormat format)
 {
   int red_size, green_size, blue_size, alpha_size;
   if (!eglGetConfigAttrib(m_display, config, EGL_RED_SIZE, &red_size) ||
@@ -419,16 +420,16 @@ bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Fo
 
   switch (format)
   {
-    case GPUTexture::Format::RGBA8:
+    case GPUTextureFormat::RGBA8:
       return (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8);
 
-    case GPUTexture::Format::RGB565:
+    case GPUTextureFormat::RGB565:
       return (red_size == 5 && green_size == 6 && blue_size == 5);
 
-    case GPUTexture::Format::RGB5A1:
+    case GPUTextureFormat::RGB5A1:
       return (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1);
 
-    case GPUTexture::Format::Unknown:
+    case GPUTextureFormat::Unknown:
       return true;
 
     default:
@@ -462,24 +463,24 @@ void OpenGLContextEGL::UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) 
 
   if (red_size == 5 && green_size == 6 && blue_size == 5)
   {
-    wi.surface_format = GPUTexture::Format::RGB565;
+    wi.surface_format = GPUTextureFormat::RGB565;
   }
   else if (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1)
   {
-    wi.surface_format = GPUTexture::Format::RGB5A1;
+    wi.surface_format = GPUTextureFormat::RGB5A1;
   }
   else if (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8)
   {
-    wi.surface_format = GPUTexture::Format::RGBA8;
+    wi.surface_format = GPUTextureFormat::RGBA8;
   }
   else
   {
     ERROR_LOG("Unknown surface format: R={}, G={}, B={}, A={}", red_size, green_size, blue_size, alpha_size);
-    wi.surface_format = GPUTexture::Format::RGBA8;
+    wi.surface_format = GPUTextureFormat::RGBA8;
   }
 }
 
-bool OpenGLContextEGL::CreateContext(bool surfaceless, GPUTexture::Format surface_format, const Version& version,
+bool OpenGLContextEGL::CreateContext(bool surfaceless, GPUTextureFormat surface_format, const Version& version,
                                      EGLContext share_context, Error* error)
 {
   DEV_LOG("Trying version {}.{} ({})", version.major_version, version.minor_version,
@@ -497,12 +498,12 @@ bool OpenGLContextEGL::CreateContext(bool surfaceless, GPUTexture::Format surfac
   };
   int nsurface_attribs = 4;
 
-  if (surface_format == GPUTexture::Format::Unknown)
-    surface_format = GPUTexture::Format::RGBA8;
+  if (surface_format == GPUTextureFormat::Unknown)
+    surface_format = GPUTextureFormat::RGBA8;
 
   switch (surface_format)
   {
-    case GPUTexture::Format::RGBA8:
+    case GPUTextureFormat::RGBA8:
       surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
       surface_attribs[nsurface_attribs++] = 8;
       surface_attribs[nsurface_attribs++] = EGL_GREEN_SIZE;
@@ -513,7 +514,7 @@ bool OpenGLContextEGL::CreateContext(bool surfaceless, GPUTexture::Format surfac
       surface_attribs[nsurface_attribs++] = 8;
       break;
 
-    case GPUTexture::Format::RGB565:
+    case GPUTextureFormat::RGB565:
       surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
       surface_attribs[nsurface_attribs++] = 5;
       surface_attribs[nsurface_attribs++] = EGL_GREEN_SIZE;

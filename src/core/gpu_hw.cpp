@@ -44,10 +44,10 @@ LOG_CHANNEL(GPU_HW);
 
 // TODO: instead of full state restore, only restore what changed
 
-static constexpr GPUTexture::Format VRAM_RT_FORMAT = GPUTexture::Format::RGBA8;
-static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
-static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
-static constexpr GPUTexture::Format VRAM_DS_COLOR_FORMAT = GPUTexture::Format::R32F;
+static constexpr GPUTextureFormat VRAM_RT_FORMAT = GPUTextureFormat::RGBA8;
+static constexpr GPUTextureFormat VRAM_DS_FORMAT = GPUTextureFormat::D16;
+static constexpr GPUTextureFormat VRAM_DS_DEPTH_FORMAT = GPUTextureFormat::D32F;
+static constexpr GPUTextureFormat VRAM_DS_COLOR_FORMAT = GPUTextureFormat::R32F;
 
 #if defined(_DEBUG) || defined(_DEVEL)
 
@@ -403,7 +403,7 @@ bool GPU_HW::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
     mss.vram_texture = g_gpu_device->FetchTexture(
       m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
       m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
-      GPUTexture::Format::RGBA8, GPUTexture::Flags::None, nullptr, 0, error);
+      GPUTextureFormat::RGBA8, GPUTexture::Flags::None, nullptr, 0, error);
     if (!mss.vram_texture) [[unlikely]]
     {
       Error::AddPrefix(error, "Failed to allocate VRAM texture for memory save state: ");
@@ -917,7 +917,7 @@ void GPU_HW::PrintSettingsToLog()
   INFO_LOG("Separate sprite shaders: {}", m_allow_sprite_mode ? "YES" : "NO");
 }
 
-GPUTexture::Format GPU_HW::GetDepthBufferFormat() const
+GPUTextureFormat GPU_HW::GetDepthBufferFormat() const
 {
   // Use 32-bit depth for PGXP depth buffer, otherwise 16-bit for mask bit.
   return m_pgxp_depth_buffer ? (m_use_rov_for_shader_blend ? VRAM_DS_COLOR_FORMAT : VRAM_DS_DEPTH_FORMAT) :
@@ -1135,8 +1135,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool needs_rov_depth = (m_pgxp_depth_buffer && m_use_rov_for_shader_blend);
   const bool needs_real_depth_buffer = (needs_depth_buffer && !needs_rov_depth);
   const bool needs_feedback_loop = (m_allow_shader_blend && features.feedback_loops && !m_use_rov_for_shader_blend);
-  const GPUTexture::Format depth_buffer_format =
-    needs_depth_buffer ? GetDepthBufferFormat() : GPUTexture::Format::Unknown;
+  const GPUTextureFormat depth_buffer_format = needs_depth_buffer ? GetDepthBufferFormat() : GPUTextureFormat::Unknown;
 
   // Logging in case something goes wrong.
   INFO_LOG("Shader blending allowed: {}", m_allow_shader_blend ? "YES" : "NO");
@@ -1462,9 +1461,9 @@ bool GPU_HW::CompilePipelines(Error* error)
                     (depth_test && transparency_mode == static_cast<u8>(GPUTransparencyMode::Disabled));
                 }
 
-                plconfig.SetTargetFormats(use_rov ? GPUTexture::Format::Unknown : VRAM_RT_FORMAT,
-                                          needs_rov_depth ? GPUTexture::Format::Unknown : depth_buffer_format);
-                plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
+                plconfig.SetTargetFormats(use_rov ? GPUTextureFormat::Unknown : VRAM_RT_FORMAT,
+                                          needs_rov_depth ? GPUTextureFormat::Unknown : depth_buffer_format);
+                plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTextureFormat::Unknown;
 
                 // Don't enable feedback loop bit if it's not needed.
                 if (use_rov)
@@ -1552,7 +1551,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     }
   }
 
-  plconfig.SetTargetFormats(VRAM_RT_FORMAT, needs_rov_depth ? GPUTexture::Format::Unknown : depth_buffer_format);
+  plconfig.SetTargetFormats(VRAM_RT_FORMAT, needs_rov_depth ? GPUTextureFormat::Unknown : depth_buffer_format);
   plconfig.render_pass_flags = needs_feedback_loop ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags;
 
   if (m_wireframe_mode != GPUWireframeMode::Disabled)
@@ -1599,7 +1598,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState(m_multisamples, false);
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
+  plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTextureFormat::Unknown;
 
   // VRAM fill
   for (u8 wrapped = 0; wrapped < 2; wrapped++)
@@ -1717,7 +1716,7 @@ bool GPU_HW::CompilePipelines(Error* error)
       return false;
 
     plconfig.fragment_shader = fs.get();
-    plconfig.SetTargetFormats(GPUTexture::Format::Unknown, depth_buffer_format);
+    plconfig.SetTargetFormats(GPUTextureFormat::Unknown, depth_buffer_format);
     plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
     plconfig.blend.write_mask = 0;
 
@@ -1845,7 +1844,7 @@ bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
 
       plconfig.layout = depth_extract ? GPUPipeline::Layout::MultiTextureAndPushConstants :
                                         GPUPipeline::Layout::SingleTextureAndPushConstants;
-      plconfig.color_formats[1] = depth_extract ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
+      plconfig.color_formats[1] = depth_extract ? VRAM_DS_COLOR_FORMAT : GPUTextureFormat::Unknown;
 
       if (!(m_vram_extract_pipeline[shader] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
@@ -1908,7 +1907,7 @@ bool GPU_HW::CompileDownsamplePipelines(Error* error)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Blur Fragment Shader");
     plconfig.fragment_shader = fs.get();
-    plconfig.SetTargetFormats(GPUTexture::Format::R8);
+    plconfig.SetTargetFormats(GPUTextureFormat::R8);
     if (!(m_downsample_blur_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME(m_downsample_blur_pipeline, "Downsample Blur Pass Pipeline");
@@ -3522,7 +3521,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   {
     map_index = 0;
     upload_texture =
-      g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::R16U,
+      g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::R16U,
                                             GPUTexture::Flags::None, data, data_pitch);
     if (!upload_texture)
     {
@@ -4069,8 +4068,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   else
   {
     if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, scaled_display_height,
-                                     GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
-                                     GPUTexture::Flags::None)) [[unlikely]]
+                                     GPUTexture::Type::RenderTarget, GPUTextureFormat::RGBA8, GPUTexture::Flags::None))
+      [[unlikely]]
     {
       m_presenter.ClearDisplayTexture();
       return;
@@ -4248,7 +4247,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, const GSVector4i&
   std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> weight_texture = g_gpu_device->FetchAutoRecycleTexture(
     std::max(width >> (m_downsample_scale_or_levels - 1), 1u),
     std::max(height >> (m_downsample_scale_or_levels - 1), 1u), 1, 1, 1, GPUTexture::Type::RenderTarget,
-    GPUTexture::Format::R8, GPUTexture::Flags::None);
+    GPUTextureFormat::R8, GPUTexture::Flags::None);
   if (!m_downsample_texture || !level_texture || !weight_texture)
   {
     ERROR_LOG("Failed to create {}x{} RTs for adaptive downsampling", width, height);

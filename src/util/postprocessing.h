@@ -146,7 +146,7 @@ public:
   /// Temporarily toggles post-processing on/off.
   void Toggle();
 
-  bool CheckTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format, u32 target_width,
+  bool CheckTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format, u32 target_width,
                     u32 target_height, u32 viewport_width, u32 viewport_height, ProgressCallback* progress = nullptr);
 
   GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
@@ -165,7 +165,7 @@ private:
   u32 m_target_height = 0;
   u32 m_viewport_width = 0;
   u32 m_viewport_height = 0;
-  GPUTexture::Format m_target_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_target_format = GPUTextureFormat::Unknown;
   bool m_enabled = false;
   bool m_wants_depth_buffer = false;
   bool m_needs_depth_buffer = false;

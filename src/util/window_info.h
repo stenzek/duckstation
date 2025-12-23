@@ -1,14 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "common/types.h"
-#include "gpu_texture.h"
 
 #include <optional>
 
 class Error;
+
+enum class GPUTextureFormat : u8;
 
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
@@ -33,15 +34,17 @@ struct WindowInfo
     Rotate270Clockwise,
   };
 
-  Type type = Type::Surfaceless;
-  GPUTexture::Format surface_format = GPUTexture::Format::Unknown;
-  PreRotation surface_prerotation = PreRotation::Identity;
-  u16 surface_width = 0;
-  u16 surface_height = 0;
-  float surface_refresh_rate = 0.0f;
-  float surface_scale = 1.0f;
-  void* display_connection = nullptr;
-  void* window_handle = nullptr;
+  WindowInfo();
+
+  Type type;
+  GPUTextureFormat surface_format;
+  PreRotation surface_prerotation;
+  u16 surface_width;
+  u16 surface_height;
+  float surface_refresh_rate;
+  float surface_scale;
+  void* display_connection;
+  void* window_handle;
 
   ALWAYS_INLINE bool IsSurfaceless() const { return type == Type::Surfaceless; }
 

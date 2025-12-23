@@ -93,7 +93,7 @@ struct DXGIFormatMapping
   DXGI_FORMAT rtv_format;
   DXGI_FORMAT dsv_format;
 };
-const DXGIFormatMapping& GetFormatMapping(GPUTexture::Format format);
-GPUTexture::Format GetFormatForDXGIFormat(DXGI_FORMAT format);
+const DXGIFormatMapping& GetFormatMapping(GPUTextureFormat format);
+GPUTextureFormat GetFormatForDXGIFormat(DXGI_FORMAT format);
 
 } // namespace D3DCommon

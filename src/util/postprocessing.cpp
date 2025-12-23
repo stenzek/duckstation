@@ -13,8 +13,8 @@
 
 // TODO: Remove me
 #include "core/core.h"
-#include "core/host.h"
 #include "core/fullscreenui.h"
+#include "core/host.h"
 #include "core/settings.h"
 
 #include "IconsEmoji.h"
@@ -563,7 +563,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   progress.SetTitle("Loading Post-Processing Shaders...");
   progress.SetProgressRange(stage_count);
 
-  const GPUTexture::Format prev_format = m_target_format;
+  const GPUTextureFormat prev_format = m_target_format;
   m_wants_depth_buffer = false;
 
   const u32 prev_enabled_stage_count = static_cast<u32>(std::ranges::count_if(
@@ -586,7 +586,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
         m_stages[i].reset();
 
       // Force recompile.
-      m_target_format = GPUTexture::Format::Unknown;
+      m_target_format = GPUTextureFormat::Unknown;
 
       settings_lock.unlock();
 
@@ -615,7 +615,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
       last_enabled_stage = i;
   }
 
-  if (prev_format != GPUTexture::Format::Unknown)
+  if (prev_format != GPUTextureFormat::Unknown)
   {
     // if the number of enabled stages changed, this will affect the target size for unscaled shaders
     const u32 prev_source_width = m_source_width;
@@ -674,7 +674,7 @@ void PostProcessing::Chain::Toggle()
     s_start_time = Timer::GetCurrentValue();
 }
 
-bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format,
+bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format,
                                          u32 target_width, u32 target_height, u32 viewport_width, u32 viewport_height,
                                          ProgressCallback* progress /* = nullptr */)
 {
@@ -807,7 +807,7 @@ bool PostProcessing::Chain::CheckTargets(u32 source_width, u32 source_height, GP
 
 void PostProcessing::Chain::DestroyTextures()
 {
-  m_target_format = GPUTexture::Format::Unknown;
+  m_target_format = GPUTextureFormat::Unknown;
   m_target_width = 0;
   m_target_height = 0;
 

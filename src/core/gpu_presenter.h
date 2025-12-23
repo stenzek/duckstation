@@ -144,7 +144,7 @@ private:
   GSVector4i m_display_texture_rect = GSVector4i::cxpr(0);
 
   u32 m_skipped_present_count = 0;
-  GPUTexture::Format m_present_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_present_format = GPUTextureFormat::Unknown;
   bool m_display_texture_24bit = false;
   bool m_border_overlay_alpha_blend = false;
   bool m_border_overlay_destination_alpha_blend = false;

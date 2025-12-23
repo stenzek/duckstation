@@ -59,14 +59,14 @@ void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum
 }
 
 std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                        GPUTexture::Type type, GPUTexture::Format format,
+                                                        GPUTexture::Type type, GPUTextureFormat format,
                                                         GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                         u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
 }
 
-bool OpenGLDevice::SupportsTextureFormat(GPUTexture::Format format) const
+bool OpenGLDevice::SupportsTextureFormat(GPUTextureFormat format) const
 {
   const auto [gl_internal_format, gl_format, gl_type] =
     OpenGLTexture::GetPixelFormatMapping(format, m_gl_context->IsGLES());

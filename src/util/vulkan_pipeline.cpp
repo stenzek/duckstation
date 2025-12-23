@@ -223,7 +223,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+    if (config.color_formats[i] == GPUTextureFormat::Unknown)
       break;
 
     gpb.SetBlendAttachment(i, config.blend.enable, blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())],
@@ -258,14 +258,14 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
 
     for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
     {
-      if (config.color_formats[i] == GPUTexture::Format::Unknown)
+      if (config.color_formats[i] == GPUTextureFormat::Unknown)
         break;
 
       gpb.AddDynamicRenderingColorAttachment(
         VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.color_formats[i])]);
     }
 
-    if (config.depth_format != GPUTexture::Format::Unknown)
+    if (config.depth_format != GPUTextureFormat::Unknown)
     {
       gpb.SetDynamicRenderingDepthAttachment(VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.depth_format)],
                                              VK_FORMAT_UNDEFINED);
@@ -274,7 +274,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     if (config.render_pass_flags & GPUPipeline::ColorFeedbackLoop)
     {
       DebugAssert(m_optional_extensions.vk_khr_dynamic_rendering_local_read &&
-                  config.color_formats[0] != GPUTexture::Format::Unknown);
+                  config.color_formats[0] != GPUTextureFormat::Unknown);
       gpb.AddDynamicRenderingInputAttachment(0);
     }
   }

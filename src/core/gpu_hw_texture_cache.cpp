@@ -52,7 +52,7 @@ namespace GPUTextureCache {
 static constexpr u32 MAX_CLUT_SIZE = 256;
 static constexpr u32 NUM_PAGE_DRAW_RECTS = 4;
 static constexpr const GSVector4i& INVALID_RECT = GPU_HW::INVALID_RECT;
-static constexpr const GPUTexture::Format REPLACEMENT_TEXTURE_FORMAT = GPUTexture::Format::RGBA8;
+static constexpr const GPUTextureFormat REPLACEMENT_TEXTURE_FORMAT = GPUTextureFormat::RGBA8;
 static constexpr const char LOCAL_CONFIG_FILENAME[] = "config.yaml";
 
 static constexpr u32 STATE_PALETTE_RECORD_SIZE =
@@ -262,9 +262,8 @@ static bool CompilePipelines(Error* error);
 static void DestroyPipelines();
 
 static std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                GPUTexture::Type type, GPUTexture::Format format,
-                                                GPUTexture::Flags flags, const void* data = nullptr,
-                                                u32 data_stride = 0);
+                                                GPUTexture::Type type, GPUTextureFormat format, GPUTexture::Flags flags,
+                                                const void* data = nullptr, u32 data_stride = 0);
 static const Source* ReturnSource(Source* source, const GSVector4i uv_rect, PaletteRecordFlags flags);
 static Source* CreateSource(SourceKey key);
 
@@ -302,12 +301,12 @@ static void DumpTexturesFromVRAMWrite(VRAMWrite* entry);
 static void DumpTextureFromPage(const Source* src);
 
 static void DecodeTexture(GPUTextureMode mode, const u16* page_ptr, const u16* palette, u8* dest, u32 dest_stride,
-                          u32 width, u32 height, GPUTexture::Format dest_format);
-template<GPUTexture::Format dest_format>
+                          u32 width, u32 height, GPUTextureFormat dest_format);
+template<GPUTextureFormat dest_format>
 static void DecodeTexture4(const u16* page, const u16* palette, u32 width, u32 height, u8* dest, u32 dest_stride);
-template<GPUTexture::Format dest_format>
+template<GPUTextureFormat dest_format>
 static void DecodeTexture8(const u16* page, const u16* palette, u32 width, u32 height, u8* dest, u32 dest_stride);
-template<GPUTexture::Format dest_format>
+template<GPUTextureFormat dest_format>
 static void DecodeTexture16(const u16* page, u32 width, u32 height, u8* dest, u32 dest_stride);
 static void DecodeTexture(u8 page, GPUTexturePaletteReg palette, GPUTextureMode mode, GPUTexture* texture);
 
@@ -537,7 +536,7 @@ struct GPUTextureCacheState
   VRAMWrite* last_vram_write = nullptr;
   bool track_vram_writes = false;
 
-  GPUTexture::Format hash_cache_texture_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat hash_cache_texture_format = GPUTextureFormat::Unknown;
   HashCache hash_cache;
   GPU_HW* hw_backend = nullptr; // TODO:FIXME: remove me
 
@@ -847,12 +846,12 @@ void GPUTextureCache::Shutdown()
 void GPUTextureCache::SetHashCacheTextureFormat()
 {
   // Prefer 16-bit texture formats where possible.
-  if (g_gpu_device->SupportsTextureFormat(GPUTexture::Format::RGB5A1))
-    s_state.hash_cache_texture_format = GPUTexture::Format::RGB5A1;
-  else if (g_gpu_device->SupportsTextureFormat(GPUTexture::Format::A1BGR5))
-    s_state.hash_cache_texture_format = GPUTexture::Format::A1BGR5;
+  if (g_gpu_device->SupportsTextureFormat(GPUTextureFormat::RGB5A1))
+    s_state.hash_cache_texture_format = GPUTextureFormat::RGB5A1;
+  else if (g_gpu_device->SupportsTextureFormat(GPUTextureFormat::A1BGR5))
+    s_state.hash_cache_texture_format = GPUTextureFormat::A1BGR5;
   else
-    s_state.hash_cache_texture_format = GPUTexture::Format::RGBA8;
+    s_state.hash_cache_texture_format = GPUTextureFormat::RGBA8;
 
   INFO_LOG("Using {} format for hash cache entries.", GPUTexture::GetFormatName(s_state.hash_cache_texture_format));
 }
@@ -1165,7 +1164,7 @@ ALWAYS_INLINE_RELEASE static const u16* VRAMPalettePointer(GPUTexturePaletteReg 
   return &g_vram[VRAM_WIDTH * palette.GetYBase() + palette.GetXBase()];
 }
 
-template<GPUTexture::Format format>
+template<GPUTextureFormat format>
 void GPUTextureCache::DecodeTexture4(const u16* page, const u16* palette, u32 width, u32 height, u8* dest,
                                      u32 dest_stride)
 {
@@ -1239,7 +1238,7 @@ void GPUTextureCache::DecodeTexture4(const u16* page, const u16* palette, u32 wi
   }
 }
 
-template<GPUTexture::Format format>
+template<GPUTextureFormat format>
 void GPUTextureCache::DecodeTexture8(const u16* page, const u16* palette, u32 width, u32 height, u8* dest,
                                      u32 dest_stride)
 {
@@ -1313,7 +1312,7 @@ void GPUTextureCache::DecodeTexture8(const u16* page, const u16* palette, u32 wi
   }
 }
 
-template<GPUTexture::Format format>
+template<GPUTextureFormat format>
 void GPUTextureCache::DecodeTexture16(const u16* page, u32 width, u32 height, u8* dest, u32 dest_stride)
 {
   [[maybe_unused]] constexpr u32 pixels_per_vec = 8;
@@ -1342,57 +1341,57 @@ void GPUTextureCache::DecodeTexture16(const u16* page, u32 width, u32 height, u8
 }
 
 void GPUTextureCache::DecodeTexture(GPUTextureMode mode, const u16* page_ptr, const u16* palette, u8* dest,
-                                    u32 dest_stride, u32 width, u32 height, GPUTexture::Format dest_format)
+                                    u32 dest_stride, u32 width, u32 height, GPUTextureFormat dest_format)
 {
-  if (dest_format == GPUTexture::Format::RGBA8)
+  if (dest_format == GPUTextureFormat::RGBA8)
   {
     switch (mode)
     {
       case GPUTextureMode::Palette4Bit:
-        DecodeTexture4<GPUTexture::Format::RGBA8>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture4<GPUTextureFormat::RGBA8>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Palette8Bit:
-        DecodeTexture8<GPUTexture::Format::RGBA8>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture8<GPUTextureFormat::RGBA8>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Direct16Bit:
       case GPUTextureMode::Reserved_Direct16Bit:
-        DecodeTexture16<GPUTexture::Format::RGBA8>(page_ptr, width, height, dest, dest_stride);
+        DecodeTexture16<GPUTextureFormat::RGBA8>(page_ptr, width, height, dest, dest_stride);
         break;
 
         DefaultCaseIsUnreachable()
     }
   }
-  else if (dest_format == GPUTexture::Format::RGB5A1)
+  else if (dest_format == GPUTextureFormat::RGB5A1)
   {
     switch (mode)
     {
       case GPUTextureMode::Palette4Bit:
-        DecodeTexture4<GPUTexture::Format::RGB5A1>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture4<GPUTextureFormat::RGB5A1>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Palette8Bit:
-        DecodeTexture8<GPUTexture::Format::RGB5A1>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture8<GPUTextureFormat::RGB5A1>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Direct16Bit:
       case GPUTextureMode::Reserved_Direct16Bit:
-        DecodeTexture16<GPUTexture::Format::RGB5A1>(page_ptr, width, height, dest, dest_stride);
+        DecodeTexture16<GPUTextureFormat::RGB5A1>(page_ptr, width, height, dest, dest_stride);
         break;
 
         DefaultCaseIsUnreachable()
     }
   }
-  else if (dest_format == GPUTexture::Format::A1BGR5)
+  else if (dest_format == GPUTextureFormat::A1BGR5)
   {
     switch (mode)
     {
       case GPUTextureMode::Palette4Bit:
-        DecodeTexture4<GPUTexture::Format::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture4<GPUTextureFormat::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Palette8Bit:
-        DecodeTexture8<GPUTexture::Format::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
+        DecodeTexture8<GPUTextureFormat::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
         break;
       case GPUTextureMode::Direct16Bit:
       case GPUTextureMode::Reserved_Direct16Bit:
-        DecodeTexture16<GPUTexture::Format::A1BGR5>(page_ptr, width, height, dest, dest_stride);
+        DecodeTexture16<GPUTextureFormat::A1BGR5>(page_ptr, width, height, dest, dest_stride);
         break;
 
         DefaultCaseIsUnreachable()
@@ -1431,7 +1430,7 @@ void GPUTextureCache::DecodeTexture(u8 page, GPUTexturePaletteReg palette, GPUTe
 }
 
 std::unique_ptr<GPUTexture> GPUTextureCache::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                          GPUTexture::Type type, GPUTexture::Format format,
+                                                          GPUTexture::Type type, GPUTextureFormat format,
                                                           GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                           u32 data_stride /* = 0 */)
 {
@@ -2884,7 +2883,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
 
   Image image(width, height, ImageFormat::RGBA8);
   GPUTextureCache::DecodeTexture(mode, &g_vram[rect.top * VRAM_WIDTH + rect.left], palette_data, image.GetPixels(),
-                                 image.GetPitch(), width, height, GPUTexture::Format::RGBA8);
+                                 image.GetPitch(), width, height, GPUTextureFormat::RGBA8);
 
   Host::QueueAsyncTask([path = std::move(path), image = std::move(image), width, height, semitransparent]() mutable {
     // TODO: Vectorize this.

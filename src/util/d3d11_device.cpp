@@ -29,7 +29,7 @@ LOG_CHANNEL(GPUDevice);
 static std::mutex s_instance_mutex;
 
 static constexpr std::array<float, 4> s_clear_color = {};
-static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
+static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
 
 void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 {
@@ -204,10 +204,10 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
 
   m_features.dxt_textures =
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-     (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
-      SupportsTextureFormat(GPUTexture::Format::BC3)));
+     (SupportsTextureFormat(GPUTextureFormat::BC1) && SupportsTextureFormat(GPUTextureFormat::BC2) &&
+      SupportsTextureFormat(GPUTextureFormat::BC3)));
   m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-                              SupportsTextureFormat(GPUTexture::Format::BC7));
+                              SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,

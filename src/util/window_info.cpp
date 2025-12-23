@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "window_info.h"
+#include "gpu_texture.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -13,6 +14,13 @@
 #include <utility>
 
 LOG_CHANNEL(WindowInfo);
+
+WindowInfo::WindowInfo()
+  : type(Type::Surfaceless), surface_format(GPUTextureFormat::Unknown), surface_prerotation(PreRotation::Identity),
+    surface_width(0), surface_height(0), surface_refresh_rate(0.0f), surface_scale(1.0f), display_connection(nullptr),
+    window_handle(nullptr)
+{
+}
 
 void WindowInfo::SetPreRotated(PreRotation prerotation)
 {

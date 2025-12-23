@@ -107,7 +107,7 @@ public:
   bool HasOptions() const { return !m_options.empty(); }
 
   bool HasOutputFormat() const { return m_output_format.has_value(); }
-  GPUTexture::Format GetOutputFormat() const { return m_output_format.value_or(GPUTexture::Format::RGBA8); }
+  GPUTextureFormat GetOutputFormat() const { return m_output_format.value_or(GPUTextureFormat::RGBA8); }
 
   std::string GetVertexShader() const;
   std::string GetFragmentShader() const;
@@ -153,7 +153,7 @@ private:
   std::string m_shader_code[SlangShaderStage::MaxCount];
   std::string m_shader_name;
   std::vector<ShaderOption> m_options;
-  std::optional<GPUTexture::Format> m_output_format;
+  std::optional<GPUTextureFormat> m_output_format;
 };
 
 namespace {
@@ -665,37 +665,37 @@ bool PostProcessing::SlangShaderPreprocessor::HandlePragmaFormat(std::span<const
     return false;
   }
 
-  static constexpr const std::pair<std::string_view, GPUTexture::Format> format_map[] = {
+  static constexpr const std::pair<std::string_view, GPUTextureFormat> format_map[] = {
     //{"A2B10G10R10_UINT_PACK32", GPUTexture::Format::RGB10A2UI},
-    {"A2B10G10R10_UNORM_PACK32", GPUTexture::Format::RGB10A2},
-    {"R16G16B16A16_SFLOAT", GPUTexture::Format::RGBA16F},
+    {"A2B10G10R10_UNORM_PACK32", GPUTextureFormat::RGB10A2},
+    {"R16G16B16A16_SFLOAT", GPUTextureFormat::RGBA16F},
     //{"R16G16B16A16_SINT", GPUTexture::Format::RGBA16I},
     //{"R16G16B16A16_UINT", GPUTexture::Format::RGBA16U},
-    {"R16G16_SFLOAT", GPUTexture::Format::RG16F},
+    {"R16G16_SFLOAT", GPUTextureFormat::RG16F},
     //{"R16G16_SINT", GPUTexture::Format::RG16I},
     //{"R16G16_UINT", GPUTexture::Format::RG16U},
-    {"R16_SFLOAT", GPUTexture::Format::R16F},
+    {"R16_SFLOAT", GPUTextureFormat::R16F},
     //{"R16_SINT", GPUTexture::Format::R16I},
     //{"R16_UINT", GPUTexture::Format::R16U},
-    {"R32G32B32A32_SFLOAT", GPUTexture::Format::RGBA32F},
+    {"R32G32B32A32_SFLOAT", GPUTextureFormat::RGBA32F},
     //{"R32G32B32A32_SINT", GPUTexture::Format::RGBA32I},
     //{"R32G32B32A32_UINT", GPUTexture::Format::RGBA32U},
-    {"R32G32_SFLOAT", GPUTexture::Format::RG32F},
+    {"R32G32_SFLOAT", GPUTextureFormat::RG32F},
     //{"R32G32_SINT", GPUTexture::Format::RG32I},
     //{"R32G32_UINT", GPUTexture::Format::RG32U},
-    {"R32_SFLOAT", GPUTexture::Format::R32F},
-    {"R32_SINT", GPUTexture::Format::R32I},
-    {"R32_UINT", GPUTexture::Format::R32U},
+    {"R32_SFLOAT", GPUTextureFormat::R32F},
+    {"R32_SINT", GPUTextureFormat::R32I},
+    {"R32_UINT", GPUTextureFormat::R32U},
     //{"R8G8B8A8_SINT", GPUTexture::Format::RGBA8I},
-    {"R8G8B8A8_SRGB", GPUTexture::Format::SRGBA8},
+    {"R8G8B8A8_SRGB", GPUTextureFormat::SRGBA8},
     //{"R8G8B8A8_UINT", GPUTexture::Format::RGBA8U},
-    {"R8G8B8A8_UNORM", GPUTexture::Format::RGBA8},
+    {"R8G8B8A8_UNORM", GPUTextureFormat::RGBA8},
     //{"R8G8_SINT", GPUTexture::Format::RG8I},
     //{"R8G8_UINT", GPUTexture::Format::RG8U},
-    {"R8G8_UNORM", GPUTexture::Format::RG8},
+    {"R8G8_UNORM", GPUTextureFormat::RG8},
     //{"R8_SINT", GPUTexture::Format::R8I},
     //{"R8_UINT", GPUTexture::Format::R8U},
-    {"R8_UNORM", GPUTexture::Format::R8},
+    {"R8_UNORM", GPUTextureFormat::R8},
   };
 
   static_assert(
@@ -964,9 +964,9 @@ bool PostProcessing::SlangShader::ParsePresetPass(std::string_view preset_path, 
   {
     // srgb > float apparently takes precedence
     if (parser.GetIndexedBoolValue("srgb_framebuffer", idx, false))
-      pass.output_format = GPUTexture::Format::SRGBA8;
+      pass.output_format = GPUTextureFormat::SRGBA8;
     else if (parser.GetIndexedBoolValue("float_framebuffer", idx, false))
-      pass.output_format = GPUTexture::Format::RGBA16F;
+      pass.output_format = GPUTextureFormat::RGBA16F;
   }
 
   // OUTPUT SCALE
@@ -1726,7 +1726,7 @@ std::optional<PostProcessing::SlangShader::Uniform> PostProcessing::SlangShader:
   return Uniform{BuiltinUniform::Zero, 0, push_constant, size, offset};
 }
 
-bool PostProcessing::SlangShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+bool PostProcessing::SlangShader::CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                                                   ProgressCallback* progress)
 {
   // skip if format hasn't changed
@@ -1756,7 +1756,7 @@ bool PostProcessing::SlangShader::CompilePipeline(GPUTexture::Format format, u32
   return true;
 }
 
-std::unique_ptr<GPUPipeline> PostProcessing::SlangShader::CreateBlitPipeline(GPUTexture::Format format, Error* error)
+std::unique_ptr<GPUPipeline> PostProcessing::SlangShader::CreateBlitPipeline(GPUTextureFormat format, Error* error)
 {
   const RenderAPI rapi = g_gpu_device->GetRenderAPI();
   const ShaderGen shadergen(rapi, ShaderGen::GetShaderLanguageForAPI(rapi), false, false);
@@ -1967,7 +1967,7 @@ GPUDevice::PresentResult PostProcessing::SlangShader::Apply(GPUTexture* original
   return GPUDevice::PresentResult::OK;
 }
 
-bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format,
+bool PostProcessing::SlangShader::ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format,
                                                 u32 target_width, u32 target_height, u32 viewport_width,
                                                 u32 viewport_height, Error* error)
 {

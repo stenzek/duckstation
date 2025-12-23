@@ -5581,8 +5581,8 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
     StopMediaCapture();
 
   const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo();
-  const GPUTexture::Format capture_format =
-    main_window_info.IsSurfaceless() ? GPUTexture::Format::RGBA8 : main_window_info.surface_format;
+  const GPUTextureFormat capture_format =
+    main_window_info.IsSurfaceless() ? GPUTextureFormat::RGBA8 : main_window_info.surface_format;
 
   // TODO: Render anamorphic capture instead?
   constexpr float aspect = 1.0f;

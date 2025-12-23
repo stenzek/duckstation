@@ -36,7 +36,7 @@ private:
   bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, bool share_context,
                   Error* error);
 
-  bool CreateVersionContext(const Version& version, SDL_Window* window, GPUTexture::Format surface_format,
+  bool CreateVersionContext(const Version& version, SDL_Window* window, GPUTextureFormat surface_format,
                             bool share_context, bool make_current);
 
   void UpdateWindowInfoSize(WindowInfo& wi, SDL_Window* window) const;
