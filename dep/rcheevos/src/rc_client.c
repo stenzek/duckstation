@@ -1692,6 +1692,67 @@ static void rc_client_free_pending_media(rc_client_pending_media_t* pending_medi
   free(pending_media);
 }
 
+static void rc_client_log_active_assets(rc_client_t* client)
+{
+  uint32_t num_achievements;
+  uint32_t num_active_achievements;
+  uint32_t num_unsupported_achievements;
+  uint32_t num_leaderboards;
+  uint32_t num_unsupported_leaderboards;
+  const rc_client_achievement_info_t* ach;
+  const rc_client_achievement_info_t* ach_stop;
+  const rc_client_leaderboard_info_t* lbd;
+  const rc_client_leaderboard_info_t* lbd_stop;
+
+  const rc_client_subset_info_t* subset = client->game->subsets;
+  for (; subset; subset = subset->next) {
+    num_achievements = 0;
+    num_active_achievements = 0;
+    num_unsupported_achievements = 0;
+    num_leaderboards = 0;
+    num_unsupported_leaderboards = 0;
+
+    ach = subset->achievements;
+    ach_stop = ach + subset->public_.num_achievements;
+    for (; ach < ach_stop; ++ach) {
+      if (ach->public_.category == RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE) {
+        ++num_achievements;
+        if (ach->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_ACTIVE)
+          ++num_active_achievements;
+        else if (ach->public_.state == RC_CLIENT_ACHIEVEMENT_STATE_DISABLED)
+          ++num_unsupported_achievements;
+      }
+    }
+
+    lbd = subset->leaderboards;
+    lbd_stop = lbd + subset->public_.num_leaderboards;
+    for (; lbd < lbd_stop; ++lbd) {
+      ++num_leaderboards;
+      if (lbd->public_.state == RC_CLIENT_LEADERBOARD_STATE_DISABLED)
+        ++num_unsupported_leaderboards;
+    }
+
+    if (num_unsupported_achievements) {
+      if (num_unsupported_leaderboards) {
+        RC_CLIENT_LOG_INFO_FORMATTED(client, "Set %u: %u/%u achievements active (%u unsupported), %u leaderboards (%u unsupported)",
+          subset->public_.id, num_active_achievements, num_achievements, num_unsupported_achievements, num_leaderboards, num_unsupported_leaderboards);
+      }
+      else {
+        RC_CLIENT_LOG_INFO_FORMATTED(client, "Set %u: %u/%u achievements active (%u unsupported), %u leaderboards",
+          subset->public_.id, num_active_achievements, num_achievements, num_unsupported_achievements, num_leaderboards);
+      }
+    }
+    else if (num_unsupported_leaderboards) {
+      RC_CLIENT_LOG_INFO_FORMATTED(client, "Set %u: %u/%u achievements active, %u leaderboards (%u unsupported)",
+        subset->public_.id, num_active_achievements, num_achievements, num_leaderboards, num_unsupported_leaderboards);
+    }
+    else {
+      RC_CLIENT_LOG_INFO_FORMATTED(client, "Set %u: %u/%u achievements active, %u leaderboards",
+        subset->public_.id, num_active_achievements, num_achievements, num_leaderboards);
+    }
+  }
+}
+
 /* NOTE: address validation uses the read_memory callback to make sure the client
  *       will return data for the requested address. As such, this function must
  *       respect the `client->state.allow_background_memory_reads setting. Use
@@ -1816,6 +1877,9 @@ static void rc_client_activate_game(rc_client_load_state_t* load_state, rc_api_s
         RC_CLIENT_LOG_INFO_FORMATTED(client, "Game %u loaded, hardcore %s%s", load_state->game->public_.id,
             client->state.hardcore ? "enabled" : "disabled",
             (client->state.spectator_mode != RC_CLIENT_SPECTATOR_MODE_OFF) ? ", spectating" : "");
+
+        if (client->state.log_level >= RC_CLIENT_LOG_LEVEL_INFO)
+          rc_client_log_active_assets(client);
       }
       else {
         RC_CLIENT_LOG_INFO_FORMATTED(client, "Subset %u loaded", load_state->subset->public_.id);

@@ -16,6 +16,7 @@ enum
 
   /* errors that prevent the achievement from functioning */
   RC_VALIDATION_ERR_ADDRESS_OUT_OF_RANGE,
+  RC_VALIDATION_ERR_RECALL_WITHOUT_REMEMBER,
   RC_VALIDATION_ERR_RECALL_BEFORE_REMEMBER,
   RC_VALIDATION_ERR_COMPARISON_NEVER_TRUE_WITH_MAX,
   RC_VALIDATION_ERR_COMPARISON_NEVER_TRUE_INTEGER_TO_FLOAT,
@@ -268,7 +269,14 @@ static int rc_validate_format_error(char buffer[], size_t buffer_size, const rc_
       break;
 
     case RC_VALIDATION_ERR_RECALL_BEFORE_REMEMBER:
-      snprintf(buffer, buffer_size, "Recall used before Remember");
+      if (error->data1 == RC_CONDITION_PAUSE_IF)
+        snprintf(buffer, buffer_size, "PauseIf cannot use Remembered value not associated to PauseIf chain");
+      else
+        snprintf(buffer, buffer_size, "Recall used before Remember");
+      break;
+
+    case RC_VALIDATION_ERR_RECALL_WITHOUT_REMEMBER:
+      snprintf(buffer, buffer_size, "Recall used without Remember");
       break;
 
     case RC_VALIDATION_ERR_RESET_HIT_TARGET_OF_ONE:
@@ -310,6 +318,53 @@ static void rc_validate_add_error(rc_validation_state_t* state, uint32_t error_c
   error->cond_index = state->cond_index;
   error->data1 = data1;
   error->data2 = data2;
+}
+
+/* rc_condition_is_combining doesn't look at conditions that build a memref (like AddSource) */
+static int rc_validate_is_combining_condition(const rc_condition_t* condition)
+{
+  switch (condition->type)
+  {
+    case RC_CONDITION_ADD_ADDRESS:
+    case RC_CONDITION_ADD_HITS:
+    case RC_CONDITION_ADD_SOURCE:
+    case RC_CONDITION_AND_NEXT:
+    case RC_CONDITION_OR_NEXT:
+    case RC_CONDITION_RESET_NEXT_IF:
+    case RC_CONDITION_SUB_HITS:
+    case RC_CONDITION_SUB_SOURCE:
+    case RC_CONDITION_REMEMBER:
+      return 1;
+
+    default:
+      return 0;
+  }
+}
+
+static const rc_condition_t* rc_validate_get_next_non_combining_condition(const rc_condition_t* cond)
+{
+  while (cond && rc_validate_is_combining_condition(cond))
+    cond = cond->next;
+
+  return cond;
+}
+
+static int rc_validate_has_condition(const rc_condition_t* cond, uint8_t type)
+{
+  for (; cond; cond = cond->next) {
+    if (cond->type == type)
+      return 1;
+  }
+
+  return 0;
+}
+
+static int rc_validate_is_invalid_recall(const rc_operand_t* operand)
+{
+  /* if operand is {recall}, but memref is null, that means the Remember wasn't found */
+  return rc_operand_is_recall(operand) &&
+    rc_operand_type_is_memref(operand->memref_access_type) &&
+    !operand->value.memref;
 }
 
 static void rc_validate_memref(const rc_memref_t* memref, rc_validation_state_t* state)
@@ -603,15 +658,15 @@ static int rc_validate_condset_internal(const rc_condset_t* condset, rc_validati
     }
 
     /* if operand is {recall}, but memref is null, that means the Remember wasn't found */
-    if (rc_operand_is_recall(operand1) &&
-        rc_operand_type_is_memref(operand1->memref_access_type) &&
-        !operand1->value.memref) {
-      rc_validate_add_error(state, RC_VALIDATION_ERR_RECALL_BEFORE_REMEMBER, 0, 0);
-    }
-    if (rc_operand_is_recall(&cond->operand2) &&
-        rc_operand_type_is_memref(cond->operand2.memref_access_type) &&
-        !cond->operand2.value.memref) {
-      rc_validate_add_error(state, RC_VALIDATION_ERR_RECALL_BEFORE_REMEMBER, 0, 0);
+    if (rc_validate_is_invalid_recall(operand1) || rc_validate_is_invalid_recall(&cond->operand2)) {
+      if (!rc_validate_has_condition(condset->conditions, RC_CONDITION_REMEMBER)) {
+        rc_validate_add_error(state, RC_VALIDATION_ERR_RECALL_WITHOUT_REMEMBER, 0, 0);
+      }
+      else {
+        const rc_condition_t* next_cond = rc_validate_get_next_non_combining_condition(cond);
+        const uint8_t next_cond_type = next_cond ? next_cond->type : RC_CONDITION_STANDARD;
+        rc_validate_add_error(state, RC_VALIDATION_ERR_RECALL_BEFORE_REMEMBER, next_cond_type, 0);
+      }
     }
 
     switch (cond->type) {
@@ -838,27 +893,6 @@ int rc_validate_condset_for_console(const rc_condset_t* condset, char result[], 
   }
 
   return 1;
-}
-
-/* rc_condition_is_combining doesn't look at conditions that build a memref (like AddSource) */
-static int rc_validate_is_combining_condition(const rc_condition_t* condition)
-{
-  switch (condition->type)
-  {
-    case RC_CONDITION_ADD_ADDRESS:
-    case RC_CONDITION_ADD_HITS:
-    case RC_CONDITION_ADD_SOURCE:
-    case RC_CONDITION_AND_NEXT:
-    case RC_CONDITION_OR_NEXT:
-    case RC_CONDITION_RESET_NEXT_IF:
-    case RC_CONDITION_SUB_HITS:
-    case RC_CONDITION_SUB_SOURCE:
-    case RC_CONDITION_REMEMBER:
-      return 1;
-
-    default:
-      return 0;
-  }
 }
 
 static int rc_validate_get_opposite_comparison(int oper)
