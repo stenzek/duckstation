@@ -153,20 +153,20 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   context = OpenGLContextEGLAndroid::Create(wi, surface, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
-  if (wi.type == WindowInfo::Type::Xlib)
+  if (wi.type == WindowInfoType::Xlib)
     context = OpenGLContextEGLXlib::Create(wi, surface, versions_to_try, error);
-  else if (wi.type == WindowInfo::Type::XCB)
+  else if (wi.type == WindowInfoType::XCB)
     context = OpenGLContextEGLXCB::Create(wi, surface, versions_to_try, error);
 #endif
 #if defined(ENABLE_WAYLAND)
-  if (wi.type == WindowInfo::Type::Wayland)
+  if (wi.type == WindowInfoType::Wayland)
     context = OpenGLContextEGLWayland::Create(wi, surface, versions_to_try, error);
 #endif
-  if (wi.type == WindowInfo::Type::Surfaceless)
+  if (wi.type == WindowInfoType::Surfaceless)
     context = OpenGLContextEGL::Create(wi, surface, versions_to_try, error);
 #endif
 #ifdef ENABLE_SDL
-  if (wi.type == WindowInfo::Type::SDL)
+  if (wi.type == WindowInfoType::SDL)
     context = OpenGLContextSDL::Create(wi, surface, versions_to_try, error);
 #endif
 

@@ -94,7 +94,7 @@ bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std:
   const std::optional<WindowInfo> toplevel_wi(Host::GetTopLevelWindowInfo());
   settings_lock.lock();
 
-  if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfo::Type::Win32)
+  if (!toplevel_wi.has_value() || toplevel_wi->type != WindowInfoType::Win32)
   {
     ERROR_LOG("Missing top level window, cannot add DInput devices.");
     return false;

@@ -514,7 +514,7 @@ std::optional<WindowInfo> MiniHost::TranslateSDLWindowInfo(SDL_Window* win, Erro
     }
 
 #if defined(SDL_PLATFORM_WINDOWS)
-    wi.type = WindowInfo::Type::Win32;
+    wi.type = WindowInfoType::Win32;
     wi.window_handle = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
     if (!wi.window_handle)
     {
@@ -522,7 +522,7 @@ std::optional<WindowInfo> MiniHost::TranslateSDLWindowInfo(SDL_Window* win, Erro
       return std::nullopt;
     }
 #elif defined(SDL_PLATFORM_MACOS)
-    wi.type = WindowInfo::Type::MacOS;
+    wi.type = WindowInfoType::MacOS;
     wi.window_handle = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
     if (!wi.window_handle)
     {
@@ -574,7 +574,7 @@ std::optional<WindowInfo> MiniHost::TranslateSDLWindowInfo(SDL_Window* win, Erro
   else
   {
     // nothing handled, fall back to SDL abstraction
-    wi.type = WindowInfo::Type::SDL;
+    wi.type = WindowInfoType::SDL;
     wi.window_handle = win;
   }
 
@@ -919,7 +919,7 @@ void MiniHost::ProcessCoreThreadEvents(bool block)
         ProcessCoreThreadPlatformMessages();
         InputManager::PollSources();
       } while (!s_state.core_thread_event_posted.wait_for(lock, CORE_THREAD_POLL_INTERVAL,
-                                                         []() { return !s_state.core_thread_events.empty(); }));
+                                                          []() { return !s_state.core_thread_events.empty(); }));
     }
 
     // return after processing all events if we had one

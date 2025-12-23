@@ -253,37 +253,37 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   };
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (wi.type == WindowInfo::Type::Win32 && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                             !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true)))
+  if (wi.type == WindowInfoType::Win32 && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                           !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_XCB_KHR)
-  if (wi.type == WindowInfo::Type::XCB && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                           !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true)))
+  if (wi.type == WindowInfoType::XCB && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                         !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (wi.type == WindowInfo::Type::Wayland && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                               !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true)))
+  if (wi.type == WindowInfoType::Wayland && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                             !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (wi.type == WindowInfo::Type::MacOS && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                             !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true)))
+  if (wi.type == WindowInfoType::MacOS && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                           !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
 #endif
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (wi.type == WindowInfo::Type::Android && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
-                                               !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true)))
+  if (wi.type == WindowInfoType::Android && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                             !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true)))
   {
     return false;
   }
 #endif
 
 #if defined(ENABLE_SDL)
-  if (wi.type == WindowInfo::Type::SDL)
+  if (wi.type == WindowInfoType::SDL)
   {
     Uint32 sdl_extension_count = 0;
     const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extension_count);
@@ -308,12 +308,12 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
 
-  oe->vk_khr_get_surface_capabilities2 = (wi.type != WindowInfo::Type::Surfaceless &&
+  oe->vk_khr_get_surface_capabilities2 = (wi.type != WindowInfoType::Surfaceless &&
                                           SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false));
   oe->vk_ext_surface_maintenance1 =
-    (wi.type != WindowInfo::Type::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
-  oe->vk_ext_swapchain_maintenance1 = (wi.type != WindowInfo::Type::Surfaceless &&
-                                       SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false));
+    (wi.type != WindowInfoType::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
+  oe->vk_ext_swapchain_maintenance1 =
+    (wi.type != WindowInfoType::Surfaceless && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false));
   oe->vk_khr_get_physical_device_properties2 =
     SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
@@ -1991,7 +1991,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Create
 
 #ifdef ENABLE_SDL
   const bool library_loaded =
-    (wi.type == WindowInfo::Type::SDL) ? Vulkan::LoadVulkanLibraryFromSDL(error) : Vulkan::LoadVulkanLibrary(error);
+    (wi.type == WindowInfoType::SDL) ? Vulkan::LoadVulkanLibraryFromSDL(error) : Vulkan::LoadVulkanLibrary(error);
 #else
   const bool library_loaded = Vulkan::LoadVulkanLibrary(error);
 #endif

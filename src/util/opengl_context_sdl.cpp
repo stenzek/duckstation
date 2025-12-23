@@ -55,7 +55,7 @@ bool OpenGLContextSDL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::s
     Error::SetStringView(error, "Surfaceless is not supported with OpenGLContextSDL.");
     return false;
   }
-  else if (wi.type != WindowInfo::Type::SDL)
+  else if (wi.type != WindowInfoType::SDL)
   {
     Error::SetStringView(error, "Incompatible window type.");
     return false;
@@ -92,7 +92,7 @@ OpenGLContext::SurfaceHandle OpenGLContextSDL::CreateSurface(WindowInfo& wi, Err
     Error::SetStringView(error, "Trying to create a surfaceless surface.");
     return nullptr;
   }
-  else if (wi.type != WindowInfo::Type::SDL)
+  else if (wi.type != WindowInfoType::SDL)
   {
     Error::SetStringView(error, "Incompatible window type.");
     return nullptr;

@@ -11,21 +11,21 @@ class Error;
 
 enum class GPUTextureFormat : u8;
 
+enum class WindowInfoType : u8
+{
+  Surfaceless,
+  Win32,
+  Xlib,
+  XCB,
+  Wayland,
+  MacOS,
+  Android,
+  SDL,
+};
+
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
 {
-  enum class Type : u8
-  {
-    Surfaceless,
-    Win32,
-    Xlib,
-    XCB,
-    Wayland,
-    MacOS,
-    Android,
-    SDL,
-  };
-
   enum class PreRotation : u8
   {
     Identity,
@@ -36,7 +36,7 @@ struct WindowInfo
 
   WindowInfo();
 
-  Type type;
+  WindowInfoType type;
   GPUTextureFormat surface_format;
   PreRotation surface_prerotation;
   u16 surface_width;
@@ -46,7 +46,7 @@ struct WindowInfo
   void* display_connection;
   void* window_handle;
 
-  ALWAYS_INLINE bool IsSurfaceless() const { return type == Type::Surfaceless; }
+  ALWAYS_INLINE bool IsSurfaceless() const { return type == WindowInfoType::Surfaceless; }
 
   ALWAYS_INLINE u32 GetPostRotatedWidth() const
   {

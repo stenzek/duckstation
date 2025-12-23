@@ -16,9 +16,9 @@
 LOG_CHANNEL(WindowInfo);
 
 WindowInfo::WindowInfo()
-  : type(Type::Surfaceless), surface_format(GPUTextureFormat::Unknown), surface_prerotation(PreRotation::Identity),
-    surface_width(0), surface_height(0), surface_refresh_rate(0.0f), surface_scale(1.0f), display_connection(nullptr),
-    window_handle(nullptr)
+  : type(WindowInfoType::Surfaceless), surface_format(GPUTextureFormat::Unknown),
+    surface_prerotation(PreRotation::Identity), surface_width(0), surface_height(0), surface_refresh_rate(0.0f),
+    surface_scale(1.0f), display_connection(nullptr), window_handle(nullptr)
 {
 }
 
@@ -181,7 +181,7 @@ static std::optional<float> GetRefreshRateFromMonitor(HWND hwnd, Error* error)
 std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
   std::optional<float> ret;
-  if (wi.type != Type::Win32 || !wi.window_handle)
+  if (wi.type != WindowInfoType::Win32 || !wi.window_handle)
   {
     Error::SetStringView(error, "Invalid window type.");
     return ret;
@@ -213,7 +213,7 @@ std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi,
 
 std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
-  if (wi.type == WindowInfo::Type::MacOS)
+  if (wi.type == WindowInfoType::MacOS)
     return CocoaTools::GetViewRefreshRate(wi, error);
 
   Error::SetStringView(error, "Invalid window type.");
@@ -229,7 +229,7 @@ std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi,
 std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
 #if defined(ENABLE_X11)
-  if (wi.type == WindowInfo::Type::Xlib || wi.type == WindowInfo::Type::XCB)
+  if (wi.type == WindowInfoType::Xlib || wi.type == WindowInfoType::XCB)
     return GetRefreshRateFromXRandR(wi, error);
 #endif
 

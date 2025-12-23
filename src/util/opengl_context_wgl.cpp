@@ -279,7 +279,7 @@ std::unique_ptr<OpenGLContext> OpenGLContextWGL::CreateSharedContext(WindowInfo&
 
 HDC OpenGLContextWGL::CreateDCAndSetPixelFormat(WindowInfo& wi, Error* error)
 {
-  if (wi.type != WindowInfo::Type::Win32)
+  if (wi.type != WindowInfoType::Win32)
   {
     Error::SetStringFmt(error, "Unknown window info type {}", static_cast<unsigned>(wi.type));
     return NULL;
@@ -374,7 +374,7 @@ HDC OpenGLContextWGL::GetPBufferDC(Error* error)
   ScopedGuard hwnd_guard([hwnd]() { DestroyWindow(hwnd); });
 
   WindowInfo wi;
-  wi.type = WindowInfo::Type::Win32;
+  wi.type = WindowInfoType::Win32;
   wi.window_handle = hwnd;
   HDC hdc = CreateDCAndSetPixelFormat(wi, error);
   if (!hdc)

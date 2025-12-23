@@ -67,10 +67,10 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
 
   // Windows and Apple are easy here since there's no display connection.
 #if defined(_WIN32)
-  wi.type = WindowInfo::Type::Win32;
+  wi.type = WindowInfoType::Win32;
   wi.window_handle = reinterpret_cast<void*>(widget->winId());
 #elif defined(__APPLE__)
-  wi.type = WindowInfo::Type::MacOS;
+  wi.type = WindowInfoType::MacOS;
   wi.window_handle = reinterpret_cast<void*>(widget->winId());
 #else
   QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
@@ -83,19 +83,19 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
     const bool is_running_on_xwayland = (xdg_session_type && std::strstr(xdg_session_type, "wayland"));
     if (is_running_on_xwayland || render_api == RenderAPI::Vulkan)
     {
-      wi.type = WindowInfo::Type::XCB;
+      wi.type = WindowInfoType::XCB;
       wi.display_connection = pni->nativeResourceForWindow("connection", widget->windowHandle());
     }
     else
     {
-      wi.type = WindowInfo::Type::Xlib;
+      wi.type = WindowInfoType::Xlib;
       wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
     }
     wi.window_handle = reinterpret_cast<void*>(widget->winId());
   }
   else if (platform_name == QStringLiteral("wayland"))
   {
-    wi.type = WindowInfo::Type::Wayland;
+    wi.type = WindowInfoType::Wayland;
     wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
     wi.window_handle = pni->nativeResourceForWindow("surface", widget->windowHandle());
   }

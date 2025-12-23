@@ -398,7 +398,7 @@ bool D3D11SwapChain::CreateRTV(Error* error)
   m_window_info.surface_format = s_swap_chain_format;
   VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
-  if (m_window_info.type == WindowInfo::Type::Win32)
+  if (m_window_info.type == WindowInfoType::Win32)
   {
     BOOL fullscreen = FALSE;
     DXGI_SWAP_CHAIN_DESC desc;
@@ -470,7 +470,7 @@ std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi,
                                                            Error* error)
 {
   std::unique_ptr<D3D11SwapChain> ret;
-  if (wi.type != WindowInfo::Type::Win32)
+  if (wi.type != WindowInfoType::Win32)
   {
     Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
     return ret;

@@ -85,7 +85,7 @@ VulkanSwapChain::~VulkanSwapChain()
 bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physical_device, Error* error)
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (m_window_info.type == WindowInfo::Type::Win32)
+  if (m_window_info.type == WindowInfoType::Win32)
   {
     const VkWin32SurfaceCreateInfoKHR surface_create_info = {.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
                                                              .pNext = nullptr,
@@ -104,7 +104,7 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #endif
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (m_window_info.type == WindowInfo::Type::MacOS)
+  if (m_window_info.type == WindowInfoType::MacOS)
   {
     m_metal_layer = CocoaTools::CreateMetalLayer(m_window_info, error);
     if (!m_metal_layer)
@@ -126,7 +126,7 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #endif
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (m_window_info.type == WindowInfo::Type::Android)
+  if (m_window_info.type == WindowInfoType::Android)
   {
     const VkAndroidSurfaceCreateInfoKHR surface_create_info = {
       .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
@@ -145,7 +145,7 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #endif
 
 #if defined(VK_USE_PLATFORM_XCB_KHR)
-  if (m_window_info.type == WindowInfo::Type::XCB)
+  if (m_window_info.type == WindowInfoType::XCB)
   {
     const VkXcbSurfaceCreateInfoKHR surface_create_info = {
       .sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
@@ -165,7 +165,7 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #endif
 
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (m_window_info.type == WindowInfo::Type::Wayland)
+  if (m_window_info.type == WindowInfoType::Wayland)
   {
     const VkWaylandSurfaceCreateInfoKHR surface_create_info = {
       .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
@@ -185,7 +185,7 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
 #endif
 
 #if defined(ENABLE_SDL)
-  if (m_window_info.type == WindowInfo::Type::SDL)
+  if (m_window_info.type == WindowInfoType::SDL)
   {
     if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(m_window_info.window_handle), instance, nullptr, &m_surface))
     {

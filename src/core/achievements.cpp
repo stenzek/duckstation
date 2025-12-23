@@ -3483,8 +3483,7 @@ void Achievements::FinishLoadRAIntegration()
 
   const char* error_message = nullptr;
   const int res = rc_client_finish_load_raintegration(
-    s_state.client,
-    (wi.has_value() && wi->type == WindowInfo::Type::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
+    s_state.client, (wi.has_value() && wi->type == WindowInfoType::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
     "DuckStation", g_scm_tag_str, &error_message);
   if (res != RC_OK)
   {

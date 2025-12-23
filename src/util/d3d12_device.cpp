@@ -1100,7 +1100,7 @@ std::unique_ptr<GPUSwapChain> D3D12Device::CreateSwapChain(const WindowInfo& wi,
                                                            Error* error)
 {
   std::unique_ptr<D3D12SwapChain> ret;
-  if (wi.type != WindowInfo::Type::Win32)
+  if (wi.type != WindowInfoType::Win32)
   {
     Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
     return ret;
