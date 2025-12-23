@@ -4,7 +4,6 @@
 #pragma once
 
 #include "gpu_device.h"
-#include "gpu_texture.h"
 #include "postprocessing.h"
 
 #include "common/gsvector.h"

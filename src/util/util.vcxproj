@@ -8,6 +8,7 @@
     <ClInclude Include="dyn_shaderc.h" />
     <ClInclude Include="dyn_spirv_cross.h" />
     <ClInclude Include="elf_file.h" />
+    <ClInclude Include="gpu_types.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="imgui_animated.h" />
     <ClInclude Include="audio_stream.h" />

@@ -489,7 +489,8 @@ bool OpenGLDevice::CheckFeatures(CreateFlags create_flags)
 
   // Mobile drivers prefer textures to not be updated mid-frame.
   m_features.prefer_unused_textures =
-    is_gles || ((m_driver_type & GPUDriverType::MobileFlag) == GPUDriverType::MobileFlag);
+    is_gles || ((static_cast<u16>(m_driver_type) & static_cast<u16>(GPUDriverType::MobileFlag)) ==
+                static_cast<u16>(GPUDriverType::MobileFlag));
 
   if (m_driver_type == GPUDriverType::IntelProprietary)
   {

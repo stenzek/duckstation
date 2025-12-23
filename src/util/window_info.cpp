@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "window_info.h"
-#include "gpu_texture.h"
+#include "gpu_types.h"
 
 #include "common/assert.h"
 #include "common/error.h"

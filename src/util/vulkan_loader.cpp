@@ -761,7 +761,8 @@ bool VulkanLoader::IsSuitableDefaultRenderer(WindowInfoType window_type)
   INFO_LOG("Using Vulkan GPU '{}' for automatic renderer check.", ainfo.name);
 
   // Any software rendering (LLVMpipe, SwiftShader).
-  if ((ainfo.driver_type & GPUDriverType::SoftwareFlag) == GPUDriverType::SoftwareFlag)
+  if ((static_cast<u16>(ainfo.driver_type) & static_cast<u16>(GPUDriverType::SoftwareFlag)) ==
+      static_cast<u32>(GPUDriverType::SoftwareFlag))
   {
     INFO_LOG("Not using Vulkan for software renderer.");
     return false;

@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
+#include "gpu_types.h"
+
 #include "common/gsvector.h"
 #include "common/small_string.h"
-#include "common/types.h"
 
 #include "fmt/format.h"
 
@@ -17,42 +18,6 @@
 class Error;
 
 enum class ImageFormat : u8;
-
-enum class GPUTextureFormat : u8
-{
-  Unknown,
-  RGBA8,
-  BGRA8,
-  RGB565,
-  RGB5A1,
-  A1BGR5,
-  R8,
-  D16,
-  D24S8,
-  D32F,
-  D32FS8,
-  R16,
-  R16I,
-  R16U,
-  R16F,
-  R32I,
-  R32U,
-  R32F,
-  RG8,
-  RG16,
-  RG16F,
-  RG32F,
-  RGBA16,
-  RGBA16F,
-  RGBA32F,
-  RGB10A2,
-  SRGBA8,
-  BC1, ///< BC1, aka DXT1 compressed texture
-  BC2, ///< BC2, aka DXT2/3 compressed texture
-  BC3, ///< BC3, aka DXT4/5 compressed texture
-  BC7, ///< BC7, aka BPTC compressed texture
-  MaxCount,
-};
 
 class GPUTexture
 {

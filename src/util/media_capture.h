@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "gpu_texture.h"
-
 #include <ctime>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
+enum class GPUTextureFormat : u8;
 
 class Error;
 class GPUTexture;

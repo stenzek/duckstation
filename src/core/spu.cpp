@@ -20,6 +20,7 @@
 #include "common/bitutils.h"
 #include "common/error.h"
 #include "common/fifo_queue.h"
+#include "common/gsvector.h"
 #include "common/log.h"
 #include "common/path.h"
 

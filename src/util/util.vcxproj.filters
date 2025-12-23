@@ -81,6 +81,7 @@
     <ClInclude Include="translation.h" />
     <ClInclude Include="core_audio_stream.h" />
     <ClInclude Include="vulkan_headers.h" />
+    <ClInclude Include="gpu_types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
