@@ -479,14 +479,11 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   vkGetPhysicalDeviceProperties(physical_device, &m_device_properties);
   m_device_properties.limits.minUniformBufferOffsetAlignment =
     std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(16));
-  m_device_properties.limits.minTexelBufferOffsetAlignment =
-    std::max(m_device_properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(1));
   m_device_properties.limits.optimalBufferCopyOffsetAlignment =
     std::max(m_device_properties.limits.optimalBufferCopyOffsetAlignment, static_cast<VkDeviceSize>(1));
   m_device_properties.limits.optimalBufferCopyRowPitchAlignment =
     std::max(m_device_properties.limits.optimalBufferCopyRowPitchAlignment, static_cast<VkDeviceSize>(1));
-  m_device_properties.limits.bufferImageGranularity =
-    std::max(m_device_properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(1));
+  m_uniform_buffer_alignment = static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment);
 
   // advanced feature checks
   VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, nullptr, {}};
@@ -2881,12 +2878,11 @@ void VulkanDevice::PushUniformBuffer(bool is_compute, const void* data, u32 data
 
 void* VulkanDevice::MapUniformBuffer(u32 size)
 {
-  const u32 align = static_cast<u32>(m_device_properties.limits.minUniformBufferOffsetAlignment);
-  const u32 used_space = Common::AlignUpPow2(size, align);
-  if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE, align))
+  const u32 used_space = Common::AlignUpPow2(size, m_uniform_buffer_alignment);
+  if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE, m_uniform_buffer_alignment))
   {
     SubmitCommandBufferAndRestartRenderPass("out of uniform space");
-    if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE, align))
+    if (!m_uniform_buffer.ReserveMemory(used_space + MAX_UNIFORM_BUFFER_SIZE, m_uniform_buffer_alignment))
       Panic("Failed to allocate uniform space.");
   }
 

@@ -40,20 +40,24 @@ public:
     NUM_COMMAND_BUFFERS = 3,
   };
 
-  struct OptionalExtensions
+  struct OptionalInstanceExtensions
+  {
+    bool vk_ext_surface_maintenance1 : 1;
+    bool vk_ext_swapchain_maintenance1 : 1;
+    bool vk_khr_get_surface_capabilities2 : 1;
+    bool vk_khr_get_physical_device_properties2 : 1;
+  };
+
+  struct OptionalExtensions : OptionalInstanceExtensions
   {
     bool vk_ext_external_memory_host : 1;
     bool vk_ext_fragment_shader_interlock : 1;
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
-    bool vk_ext_surface_maintenance1 : 1;
-    bool vk_ext_swapchain_maintenance1 : 1;
-    bool vk_khr_get_physical_device_properties2 : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;
-    bool vk_khr_get_surface_capabilities2 : 1;
     bool vk_khr_maintenance4 : 1;
     bool vk_khr_maintenance5 : 1;
     bool vk_khr_push_descriptor : 1;
@@ -404,37 +408,61 @@ private:
   VkDevice m_device = VK_NULL_HANDLE;
   VmaAllocator m_allocator = VK_NULL_HANDLE;
 
-  VkCommandBuffer m_current_command_buffer = VK_NULL_HANDLE;
-
-  VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
+  OptionalExtensions m_optional_extensions = {};
+  std::optional<bool> m_exclusive_fullscreen_control;
+  bool m_device_was_lost = false;
 
   VkQueue m_graphics_queue = VK_NULL_HANDLE;
   VkQueue m_present_queue = VK_NULL_HANDLE;
   u32 m_graphics_queue_family_index = 0;
   u32 m_present_queue_family_index = 0;
 
-  VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
-  float m_accumulated_gpu_time = 0.0f;
+  VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
 
+  VkCommandBuffer m_current_command_buffer = VK_NULL_HANDLE;
+
+  float m_accumulated_gpu_time = 0.0f;
+  u32 m_current_frame = 0;
   std::array<CommandBuffer, NUM_COMMAND_BUFFERS> m_frame_resources;
   std::deque<std::pair<u64, std::function<void()>>> m_cleanup_objects; // [fence_counter, callback]
   u64 m_next_fence_counter = 1;
   u64 m_completed_fence_counter = 0;
-  u32 m_current_frame = 0;
 
-  bool m_device_was_lost = false;
+  // Which bindings/state has to be updated before the next draw.
+  u32 m_dirty_flags = ALL_DIRTY_STATE;
+
+  VulkanPipeline* m_current_pipeline = nullptr;
+  GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+
+  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  u32 m_num_current_render_targets = 0;
+
+  std::array<VulkanTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  VulkanTexture* m_current_depth_target = nullptr;
+  VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
+  VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
+
+  std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
+  std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
+  VulkanTextureBuffer* m_current_texture_buffer = nullptr;
+  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
+  GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
+  VulkanSwapChain* m_current_swap_chain = nullptr;
+
+  VulkanStreamBuffer m_vertex_buffer;
+  VulkanStreamBuffer m_index_buffer;
+  VulkanStreamBuffer m_uniform_buffer;
+  VulkanStreamBuffer m_texture_upload_buffer;
+
+  VkDescriptorSet m_ubo_descriptor_set = VK_NULL_HANDLE;
+  u32 m_uniform_buffer_position = 0;
+  u32 m_uniform_buffer_alignment = 0;
+
+  VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
   VkPipelineCache m_pipeline_cache = VK_NULL_HANDLE;
-
-  // TODO: Move to static?
-  VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
-
-  VkPhysicalDeviceProperties m_device_properties = {};
-  VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
-  OptionalExtensions m_optional_extensions = {};
-  std::optional<bool> m_exclusive_fullscreen_control;
 
   VkDescriptorSetLayout m_ubo_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_ds_layout = VK_NULL_HANDLE;
@@ -446,31 +474,8 @@ private:
                    static_cast<size_t>(PipelineLayoutType::MaxCount)>
     m_pipeline_layouts = {};
 
-  VulkanStreamBuffer m_vertex_buffer;
-  VulkanStreamBuffer m_index_buffer;
-  VulkanStreamBuffer m_uniform_buffer;
-  VulkanStreamBuffer m_texture_upload_buffer;
-
-  VkDescriptorSet m_ubo_descriptor_set = VK_NULL_HANDLE;
-  u32 m_uniform_buffer_position = 0;
-
-  // Which bindings/state has to be updated before the next draw.
-  u32 m_dirty_flags = ALL_DIRTY_STATE;
-
-  u32 m_num_current_render_targets = 0;
-  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  std::array<VulkanTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
-  VulkanTexture* m_current_depth_target = nullptr;
-  VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
-  VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
-
-  VulkanPipeline* m_current_pipeline = nullptr;
-  GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-
-  std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
-  std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
-  VulkanTextureBuffer* m_current_texture_buffer = nullptr;
-  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
-  GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
-  VulkanSwapChain* m_current_swap_chain = nullptr;
+  // Cold variables.
+  VkPhysicalDeviceProperties m_device_properties = {};
+  VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
+  VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 };
