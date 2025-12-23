@@ -3,6 +3,7 @@
 
 #include "gpu_sw_rasterizer.h"
 #include "gpu.h"
+#include "gpu_helpers.h"
 
 #include "cpuinfo.h"
 

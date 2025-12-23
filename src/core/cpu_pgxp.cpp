@@ -10,7 +10,7 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
-#include "gpu_types.h"
+#include "gpu_helpers.h"
 #include "settings.h"
 
 #include "util/gpu_device.h"

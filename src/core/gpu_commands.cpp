@@ -5,6 +5,7 @@
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
+#include "gpu_helpers.h"
 #include "gpu_thread_commands.h"
 #include "interrupt_controller.h"
 #include "system.h"

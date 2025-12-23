@@ -4,11 +4,7 @@
 #pragma once
 
 #include "gpu_types.h"
-#include "timers.h"
 #include "types.h"
-
-#include "util/gpu_device.h"
-#include "util/gpu_texture.h"
 
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"

@@ -3,6 +3,7 @@
 
 #include "gpu_sw.h"
 #include "gpu.h"
+#include "gpu_helpers.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "settings.h"

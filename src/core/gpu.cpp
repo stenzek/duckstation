@@ -6,6 +6,7 @@
 #include "dma.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
+#include "gpu_helpers.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"

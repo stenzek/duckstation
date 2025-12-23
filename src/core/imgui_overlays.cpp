@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "timers.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"

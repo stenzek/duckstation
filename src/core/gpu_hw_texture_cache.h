@@ -5,6 +5,8 @@
 
 #include "gpu_types.h"
 
+#include "common/gsvector.h"
+
 class Error;
 class Image;
 class GPUTexture;

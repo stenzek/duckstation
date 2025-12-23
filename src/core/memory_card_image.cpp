@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memory_card_image.h"
-#include "gpu_types.h"
+#include "gpu_helpers.h"
 #include "system.h"
 
 #include "util/shiftjis.h"

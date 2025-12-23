@@ -97,7 +97,7 @@ namespace {
 struct ALIGN_TO_CACHE_LINE State
 {
   // Owned by CPU thread.
-  ALIGN_TO_CACHE_LINE Timer::Value thread_spin_time = 0;
+  Timer::Value thread_spin_time = 0;
   Threading::ThreadHandle gpu_thread;
   Common::unique_aligned_ptr<u8[]> command_fifo_data;
   WindowInfo render_window_info;

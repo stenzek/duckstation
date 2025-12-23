@@ -157,6 +157,7 @@
     <ClInclude Include="core.h" />
     <ClInclude Include="core_private.h" />
     <ClInclude Include="sound_effect_manager.h" />
+    <ClInclude Include="gpu_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

@@ -61,6 +61,7 @@ add_library(core
   gpu_commands.cpp
   gpu_dump.cpp
   gpu_dump.h
+  gpu_helpers.h
   gpu_hw.cpp
   gpu_hw.h
   gpu_hw_shadergen.cpp

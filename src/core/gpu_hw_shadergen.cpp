@@ -5,6 +5,7 @@
 //
 
 #include "gpu_hw_shadergen.h"
+#include "gpu_types.h"
 
 #include "common/assert.h"
 

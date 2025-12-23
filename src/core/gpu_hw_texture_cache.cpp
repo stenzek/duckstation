@@ -4,6 +4,7 @@
 #include "gpu_hw_texture_cache.h"
 #include "fullscreenui_widgets.h"
 #include "game_database.h"
+#include "gpu_helpers.h"
 #include "gpu_hw.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_rasterizer.h"

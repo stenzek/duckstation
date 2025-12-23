@@ -127,6 +127,7 @@
     <ClInclude Include="gdb_server.h" />
     <ClInclude Include="gpu_backend.h" />
     <ClInclude Include="gpu_dump.h" />
+    <ClInclude Include="gpu_helpers.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="gpu_hw_texture_cache.h" />
     <ClInclude Include="gpu_presenter.h" />

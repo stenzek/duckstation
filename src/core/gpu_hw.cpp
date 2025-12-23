@@ -7,6 +7,7 @@
 #include "cpu_pgxp.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
+#include "gpu_helpers.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
