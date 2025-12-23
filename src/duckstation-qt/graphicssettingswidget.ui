@@ -554,9 +554,9 @@
              </layout>
             </item>
             <item row="1" column="0">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+             <widget class="QCheckBox" name="modulationCrop">
               <property name="text">
-               <string>Software Renderer Readbacks</string>
+               <string>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</string>
               </property>
              </widget>
             </item>
@@ -564,6 +564,13 @@
              <widget class="QCheckBox" name="scaledInterlacing">
               <property name="text">
                <string>Scaled Interlacing</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>

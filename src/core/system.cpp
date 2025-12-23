@@ -4600,6 +4600,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
              g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
              g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
+             g_settings.gpu_modulation_crop != old_settings.gpu_modulation_crop ||
              g_settings.gpu_texture_cache != old_settings.gpu_texture_cache ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
@@ -4959,6 +4960,8 @@ void System::WarnAboutUnsafeSettings()
       append(TRANSLATE_SV("System", "Widescreen rendering disabled."));
     if (g_settings.gpu_pgxp_enable)
       append(TRANSLATE_SV("System", "PGXP disabled."));
+    if (g_settings.gpu_modulation_crop)
+      append(TRANSLATE_SV("System", "Texture modulation cropping disabled."));
     if (g_settings.gpu_texture_cache)
       append(TRANSLATE_SV("System", "GPU texture cache disabled."));
     if (g_settings.display_24bit_chroma_smoothing)

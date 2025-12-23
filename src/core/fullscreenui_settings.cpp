@@ -3957,6 +3957,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
   MenuHeading(FSUI_VSTR("Advanced Rendering Options"));
 
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Threaded Rendering"),
+                    FSUI_VSTR("Uses a second thread for drawing graphics. Provides a significant speed improvement "
+                              "particularly with the software renderer, and is safe to use."),
+                    "GPU", "UseThread", true);
+
   if (is_hardware)
   {
     DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_GRIP_LINES_VERTICAL, "Line Detection"),
@@ -3971,17 +3976,17 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                                 "less noticeable. Usually safe to enable."),
                       "GPU", "ScaledInterlacing", true, resolution_scale > 1);
 
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_SWATCHBOOK, "Texture Modulation Cropping (\"Old/v0\" GPU)"),
+                      FSUI_VSTR("Crops vertex colours to 5:5:5 before modulating with the texture colour, which "
+                                "typically results in more visible banding."),
+                      "GPU", "EnableModulationCrop", false);
+
     DrawToggleSetting(
       bsi, FSUI_ICONVSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
       FSUI_VSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in "
                 "greater performance when using graphical enhancements with the hardware renderer."),
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
-
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Threaded Rendering"),
-                    FSUI_VSTR("Uses a second thread for drawing graphics. Provides a significant speed improvement "
-                              "particularly with the software renderer, and is safe to use."),
-                    "GPU", "UseThread", true);
 
   if (is_hardware && pgxp_enabled)
   {
