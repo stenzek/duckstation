@@ -21,9 +21,9 @@ using GPUList = std::vector<std::pair<VkPhysicalDevice, GPUDevice::AdapterInfo>>
 /// @brief Optional extensions for an instance.
 struct OptionalExtensions
 {
-  bool vk_ext_surface_maintenance1 : 1;
   bool vk_khr_get_surface_capabilities2 : 1;
   bool vk_khr_get_physical_device_properties2 : 1;
+  bool vk_khr_surface_maintenance1 : 1;
 };
 
 /// Creates the shared Vulkan instance. If debug_instance is changed, the instance will be recreated.

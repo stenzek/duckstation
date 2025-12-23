@@ -315,7 +315,14 @@ bool VulkanLoader::LoadDeviceFunctions(VkDevice device, Error* error)
 #include "vulkan_entry_points.inl"
 #undef VULKAN_DEVICE_ENTRY_POINT
 
-  return !required_functions_missing;
+  if (required_functions_missing)
+    return false;
+
+  // Alias for swapchain maintenance.
+  if (!vkReleaseSwapchainImagesKHR)
+    vkReleaseSwapchainImagesKHR = vkReleaseSwapchainImagesEXT;
+
+  return true;
 }
 
 void VulkanLoader::ResetDeviceFunctions()
@@ -578,8 +585,9 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
   s_locals.optional_extensions.vk_khr_get_surface_capabilities2 =
     (wtype != WindowInfoType::Surfaceless &&
      SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false));
-  s_locals.optional_extensions.vk_ext_surface_maintenance1 =
-    (wtype != WindowInfoType::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
+  s_locals.optional_extensions.vk_khr_surface_maintenance1 =
+    (wtype != WindowInfoType::Surfaceless && (SupportsExtension(VK_KHR_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false) ||
+                                              SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false)));
   s_locals.optional_extensions.vk_khr_get_physical_device_properties2 =
     SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
@@ -588,9 +596,9 @@ bool VulkanLoader::SelectInstanceExtensions(VulkanDevice::ExtensionList* extensi
               s_locals.optional_extensions.field ? Log::Color::StrongGreen : Log::Color::StrongOrange, name " is {}",  \
               s_locals.optional_extensions.field ? "supported" : "NOT supported")
 
-  LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
   LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
   LOG_EXT("VK_KHR_get_surface_capabilities2", vk_khr_get_surface_capabilities2);
+  LOG_EXT("VK_KHR_surface_maintenance1", vk_khr_surface_maintenance1);
 
 #undef LOG_EXT
 

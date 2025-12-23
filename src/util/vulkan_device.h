@@ -47,7 +47,6 @@ public:
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
-    bool vk_ext_swapchain_maintenance1 : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;
@@ -55,6 +54,7 @@ public:
     bool vk_khr_maintenance5 : 1;
     bool vk_khr_push_descriptor : 1;
     bool vk_khr_shader_non_semantic_info : 1;
+    bool vk_khr_swapchain_maintenance1 : 1;
   };
 
   using ExtensionList = std::vector<const char*>;

@@ -357,11 +357,11 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
 
   // The present mode can alter the number of images required. Use VK_KHR_get_surface_capabilities2 to confirm it.
   const VulkanLoader::OptionalExtensions& optional_extensions = VulkanLoader::GetOptionalExtensions();
-  if (optional_extensions.vk_khr_get_surface_capabilities2 && optional_extensions.vk_ext_surface_maintenance1)
+  if (optional_extensions.vk_khr_get_surface_capabilities2 && optional_extensions.vk_khr_surface_maintenance1)
   {
     VkPhysicalDeviceSurfaceInfo2KHR dsi = {
       .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, .pNext = nullptr, .surface = m_surface};
-    VkSurfacePresentModeEXT dsi_pm = {
+    VkSurfacePresentModeKHR dsi_pm = {
       .sType = VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT, .pNext = nullptr, .presentMode = present_mode.value()};
     Vulkan::AddPointerToChain(&dsi, &dsi_pm);
     res = vkGetPhysicalDeviceSurfaceCapabilities2KHR(physdev, &dsi, &surface_caps);
@@ -816,18 +816,18 @@ void VulkanSwapChain::ReleaseCurrentImage()
     return;
 
   if ((m_image_acquire_result.value() == VK_SUCCESS || m_image_acquire_result.value() == VK_SUBOPTIMAL_KHR) &&
-      VulkanDevice::GetInstance().GetOptionalExtensions().vk_ext_swapchain_maintenance1)
+      VulkanDevice::GetInstance().GetOptionalExtensions().vk_khr_swapchain_maintenance1)
   {
     VulkanDevice::GetInstance().WaitForGPUIdle();
 
-    const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
+    const VkReleaseSwapchainImagesInfoKHR info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
                                                   .pNext = nullptr,
                                                   .swapchain = m_swap_chain,
                                                   .imageIndexCount = 1,
                                                   .pImageIndices = &m_current_image};
-    VkResult res = vkReleaseSwapchainImagesEXT(VulkanDevice::GetInstance().GetVulkanDevice(), &info);
+    VkResult res = vkReleaseSwapchainImagesKHR(VulkanDevice::GetInstance().GetVulkanDevice(), &info);
     if (res != VK_SUCCESS)
-      LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImagesEXT() failed: ");
+      LOG_VULKAN_ERROR(res, "vkReleaseSwapchainImagesKHR() failed: ");
   }
 
   m_image_acquire_result.reset();

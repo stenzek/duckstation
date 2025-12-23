@@ -382,8 +382,11 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
     if (m_optional_extensions.vk_khr_maintenance5)
       AddExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME);
 
-    m_optional_extensions.vk_ext_swapchain_maintenance1 =
-      enable_surface && SupportsAndAddExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);
+    // Driver support for swapchain maintenance is a mess... try KHR first, then EXT.
+    m_optional_extensions.vk_khr_swapchain_maintenance1 =
+      enable_surface && VulkanLoader::GetOptionalExtensions().vk_khr_surface_maintenance1 &&
+      (SupportsAndAddExtension(VK_KHR_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME) ||
+       SupportsAndAddExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME));
   }
 
   // Enable the features we use.
@@ -405,13 +408,13 @@ bool VulkanDevice::EnableOptionalDeviceExtensions(VkPhysicalDevice physical_devi
   LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
   LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
   LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
-  LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
   LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
   LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
   LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);
+  LOG_EXT("VK_KHR_swapchain_maintenance1", vk_khr_swapchain_maintenance1);
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -557,7 +560,7 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES, nullptr, VK_TRUE};
   VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR, nullptr, VK_TRUE};
-  VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchain_maintenance1_feature = {
+  VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR swapchain_maintenance1_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT, nullptr, VK_TRUE};
   VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT, nullptr, VK_FALSE, VK_TRUE, VK_FALSE};
@@ -568,7 +571,7 @@ bool VulkanDevice::CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR s
 
   if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
     Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
-  if (m_optional_extensions.vk_ext_swapchain_maintenance1)
+  if (m_optional_extensions.vk_khr_swapchain_maintenance1)
     Vulkan::AddPointerToChain(&device_info, &swapchain_maintenance1_feature);
   if (m_optional_extensions.vk_khr_dynamic_rendering)
   {
