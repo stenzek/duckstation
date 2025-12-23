@@ -390,6 +390,20 @@ DEFINE_HOTKEY("ToggleWidescreen", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLA
                   System::ToggleWidescreen();
               })
 
+DEFINE_HOTKEY("ToggleModulationCrop", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Texture Modulation Cropping"), [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                {
+                  g_settings.gpu_modulation_crop = !g_settings.gpu_modulation_crop;
+                  GPUThread::UpdateSettings(true, false, false);
+                  Host::AddIconOSDMessage(
+                    OSDMessageType::Quick, "ToggleModulationCrop", ICON_FA_SWATCHBOOK,
+                    g_settings.gpu_modulation_crop ?
+                      TRANSLATE_STR("OSDMessage", "Texture modulation cropping is now enabled.") :
+                      TRANSLATE_STR("OSDMessage", "Texture modulation cropping is now disabled."));
+                }
+              })
+
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
