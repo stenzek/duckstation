@@ -41,8 +41,8 @@ struct GPUSettings
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
   u8 gpu_downsample_scale = 1;
   GPUWireframeMode gpu_wireframe_mode = DEFAULT_GPU_WIREFRAME_MODE;
-  DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
+  DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
   DisplayFineCropMode display_fine_crop_mode = DEFAULT_DISPLAY_FINE_CROP_MODE;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
@@ -53,12 +53,12 @@ struct GPUSettings
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
   u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
+  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
 
-  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_software_renderer_for_memory_states : 1 = false;
