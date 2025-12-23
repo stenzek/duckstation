@@ -140,6 +140,8 @@ set(SRCS
   qttranslations.inl
   qtutils.cpp
   qtutils.h
+  qtwindowinfo.cpp
+  qtwindowinfo.h
   resource.h
   selectdiscdialog.cpp
   selectdiscdialog.h

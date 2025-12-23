@@ -50,6 +50,7 @@
     <ClCompile Include="debuggercodeview.cpp" />
     <ClCompile Include="togglebutton.cpp" />
     <ClCompile Include="memoryeditorwindow.cpp" />
+    <ClCompile Include="qtwindowinfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -57,6 +58,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="controllersettingwidgetbinder.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="qtwindowinfo.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="resources">

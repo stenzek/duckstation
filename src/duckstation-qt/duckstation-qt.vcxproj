@@ -48,6 +48,7 @@
     <ClCompile Include="qthost.cpp" />
     <ClCompile Include="qtprogresscallback.cpp" />
     <ClCompile Include="qtutils.cpp" />
+    <ClCompile Include="qtwindowinfo.cpp" />
     <ClCompile Include="selectdiscdialog.cpp" />
     <ClCompile Include="settingswindow.cpp" />
     <ClCompile Include="setupwizarddialog.cpp" />
@@ -90,6 +91,7 @@
     <QtMoc Include="isobrowserwindow.h" />
     <QtMoc Include="debuggercodeview.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="qtwindowinfo.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
     <ClInclude Include="settingwidgetbinder.h" />

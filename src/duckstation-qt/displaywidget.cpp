@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "qtwindowinfo.h"
 
 #include "core/core.h"
 #include "core/fullscreenui.h"

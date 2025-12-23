@@ -20,6 +20,7 @@
 #include "qthost.h"
 #include "qtprogresscallback.h"
 #include "qtutils.h"
+#include "qtwindowinfo.h"
 #include "selectdiscdialog.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"

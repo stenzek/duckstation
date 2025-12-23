@@ -8,7 +8,6 @@
 #include "core/game_list.h"
 #include "core/system.h"
 
-#include "util/gpu_device.h"
 #include "util/input_manager.h"
 
 #include "common/error.h"
@@ -18,6 +17,7 @@
 #include <QtGui/QDesktopServices>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QScreen>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
@@ -39,13 +39,8 @@
 #include <cstring>
 #include <map>
 
-#if defined(_WIN32)
-#include "common/windows_headers.h"
-#elif defined(__APPLE__)
-#include "common/cocoa_tools.h"
+#if defined(__APPLE__)
 #include "common/thirdparty/usb_key_code_data.h"
-#else
-#include <qpa/qplatformnativeinterface.h>
 #endif
 
 LOG_CHANNEL(Host);
@@ -500,116 +495,6 @@ QSize QtUtils::GetDeviceIndependentSize(const QSize& size, qreal device_pixel_ra
 {
   return QSize(std::max(static_cast<int>(std::ceil(static_cast<qreal>(size.width()) / device_pixel_ratio)), 1),
                std::max(static_cast<int>(std::ceil(static_cast<qreal>(size.height()) / device_pixel_ratio)), 1));
-}
-
-std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
-{
-  // Why this nonsense? Qt's device independent sizes are integer, and fractional scaling is lossy.
-  // We can't get back the "real" size of the window. So we have to platform natively query the actual client size.
-#if defined(_WIN32)
-  if (RECT rc; GetClientRect(reinterpret_cast<HWND>(widget->winId()), &rc))
-  {
-    const qreal device_pixel_ratio = widget->devicePixelRatio();
-    return std::make_pair(QSize(static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top)),
-                          device_pixel_ratio);
-  }
-#elif defined(__APPLE__)
-  if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
-  {
-    if (const std::optional<double> real_device_pixel_ratio =
-          CocoaTools::GetViewRealScalingFactor(reinterpret_cast<void*>(widget->winId())))
-    {
-      const qreal device_pixel_ratio = static_cast<qreal>(real_device_pixel_ratio.value());
-      return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
-    }
-  }
-  else
-  {
-    if (std::optional<std::pair<int, int>> size =
-          CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
-    {
-      const qreal device_pixel_ratio = widget->devicePixelRatio();
-      return std::make_pair(QSize(size->first, size->second), device_pixel_ratio);
-    }
-  }
-#endif
-
-  // On Linux, fuck you, enjoy round trip to the X server, and on Wayland you can't query it in the first place...
-  // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
-  const qreal device_pixel_ratio = widget->devicePixelRatio();
-  return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
-}
-
-std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error)
-{
-  WindowInfo wi;
-
-  // Windows and Apple are easy here since there's no display connection.
-#if defined(_WIN32)
-  wi.type = WindowInfo::Type::Win32;
-  wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#elif defined(__APPLE__)
-  wi.type = WindowInfo::Type::MacOS;
-  wi.window_handle = reinterpret_cast<void*>(widget->winId());
-#else
-  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
-  const QString platform_name = QGuiApplication::platformName();
-  if (platform_name == QStringLiteral("xcb"))
-  {
-    // This is fucking ridiculous. NVIDIA+XWayland doesn't support Xlib, and NVIDIA+Xorg doesn't support XCB.
-    // Use Xlib if we're not running under Wayland, or we're not requesting OpenGL. Vulkan+XCB seems fine.
-    const char* xdg_session_type = std::getenv("XDG_SESSION_TYPE");
-    const bool is_running_on_xwayland = (xdg_session_type && std::strstr(xdg_session_type, "wayland"));
-    if (is_running_on_xwayland || render_api == RenderAPI::Vulkan)
-    {
-      wi.type = WindowInfo::Type::XCB;
-      wi.display_connection = pni->nativeResourceForWindow("connection", widget->windowHandle());
-    }
-    else
-    {
-      wi.type = WindowInfo::Type::Xlib;
-      wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-    }
-    wi.window_handle = reinterpret_cast<void*>(widget->winId());
-  }
-  else if (platform_name == QStringLiteral("wayland"))
-  {
-    wi.type = WindowInfo::Type::Wayland;
-    wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
-    wi.window_handle = pni->nativeResourceForWindow("surface", widget->windowHandle());
-  }
-  else
-  {
-    Error::SetStringFmt(error, "Unknown PNI platform {}", platform_name.toStdString());
-    return std::nullopt;
-  }
-#endif
-
-  const auto& [size, dpr] = GetPixelSizeForWidget(widget);
-  wi.surface_width = static_cast<u16>(size.width());
-  wi.surface_height = static_cast<u16>(size.height());
-  wi.surface_scale = static_cast<float>(dpr);
-
-  // Query refresh rate, we need it for sync.
-  Error refresh_rate_error;
-  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi, &refresh_rate_error);
-  if (!surface_refresh_rate.has_value())
-  {
-    WARNING_LOG("Failed to get refresh rate for window, falling back to Qt: {}", refresh_rate_error.GetDescription());
-
-    // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
-    const QScreen* widget_screen = widget->screen();
-    if (!widget_screen)
-      widget_screen = QGuiApplication::primaryScreen();
-    surface_refresh_rate = widget_screen ? static_cast<float>(widget_screen->refreshRate()) : 0.0f;
-  }
-
-  wi.surface_refresh_rate = surface_refresh_rate.value();
-
-  INFO_LOG("Window size: {}x{} (Qt {}x{}), scale: {}, refresh rate {} hz", wi.surface_width, wi.surface_height,
-           widget->width(), widget->height(), wi.surface_scale, wi.surface_refresh_rate);
-
-  return wi;
 }
 
 void QtUtils::SaveWindowGeometry(QWidget* widget, bool auto_commit_changes /* = true */)
