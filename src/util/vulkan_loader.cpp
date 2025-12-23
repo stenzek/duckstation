@@ -815,7 +815,7 @@ GPUDriverType VulkanLoader::GuessDriverType(const VkPhysicalDeviceProperties& de
     {VK_DRIVER_ID_MESA_DOZEN, GPUDriverType::DozenMesa},
     {VK_DRIVER_ID_MESA_NVK, GPUDriverType::NVIDIAMesa},
     {VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA, GPUDriverType::ImaginationMesa},
-    {VK_DRIVER_ID_MESA_AGXV, GPUDriverType::AppleMesa},
+    {VK_DRIVER_ID_MESA_HONEYKRISP, GPUDriverType::AppleMesa},
   };
 
   const auto iter = std::find_if(std::begin(table), std::end(table), [&driver_properties](const auto& it) {
