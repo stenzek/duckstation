@@ -22,7 +22,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps-mac
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/deps
         key: deps-mac ${{ hashFiles('scripts/deps/build-dependencies-mac.sh', 'scripts/deps/versions') }}
@@ -65,7 +65,7 @@ jobs:
         zip -9 -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload MacOS .app
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"

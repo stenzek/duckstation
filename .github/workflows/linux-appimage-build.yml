@@ -30,7 +30,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/deps
         key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh', 'scripts/deps/versions') }}
@@ -75,7 +75,7 @@ jobs:
         scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps "${{ matrix.asset }}"
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "${{ matrix.artifact }}"
         path: "${{ matrix.asset }}"

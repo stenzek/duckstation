@@ -43,7 +43,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           dep/msvc/deps-arm64
@@ -116,7 +116,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -mx9 -r ${{ matrix.assetname }} ./bin/${{ matrix.bindir }}/*
 
     - name: Upload ${{ matrix.name }} Release Artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "windows-${{ matrix.arch }}"
         path: "duckstation-windows-${{ matrix.arch }}-*.zip"

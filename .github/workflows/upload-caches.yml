@@ -14,7 +14,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           dep/msvc/deps-arm64
@@ -30,7 +30,7 @@ jobs:
 
     - name: Upload Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "windows"
         path: "deps-*.zip"
