@@ -16,6 +16,9 @@ on:
       - 'data/resources/discdb.yaml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   gamedb-lint:
     runs-on: ubuntu-slim

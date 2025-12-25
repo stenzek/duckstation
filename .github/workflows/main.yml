@@ -6,8 +6,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
+      - 'extras/yamllint-config.yaml'
       - 'scripts/*'
-      - '.github/ISSUE_TEMPLATE/*'
   push:
     branches:
       - master
@@ -15,8 +15,11 @@ on:
     paths-ignore:
       - '**.md'
       - 'appveyor.yml'
+      - 'extras/yamllint-config.yaml'
       - 'scripts/*'
-      - '.github/ISSUE_TEMPLATE/*'
+
+permissions:
+  contents: write
 
 jobs:
   windows:

@@ -12,6 +12,9 @@ on:
       - 'src/duckstation-qt/translations/*.ts'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   translation-lint:
     runs-on: ubuntu-slim
