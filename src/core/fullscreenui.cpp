@@ -458,10 +458,10 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
 
 void FullscreenUI::Shutdown(bool clear_state)
 {
-  SoundEffectManager::Shutdown();
-
   if (clear_state)
   {
+    SoundEffectManager::Shutdown();
+
     s_locals.current_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.pause_menu_was_open = false;
