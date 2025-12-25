@@ -119,6 +119,9 @@ public:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
 
+  /// Returns true if rendering to the main window should be allowed.
+  bool canRenderToMainWindow() const;
+
   void refreshGameList(bool invalidate_cache);
   void cancelGameListRefresh();
   QIcon getIconForGame(const QString& path);
@@ -182,9 +185,6 @@ private:
   void switchToEmulationView();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
-
-  /// Returns true if rendering to the main window should be allowed.
-  bool canRenderToMainWindow() const;
 
   /// Returns true if the separate-window display widget should use the main window coordinates.
   bool useMainWindowGeometryForDisplayWindow() const;

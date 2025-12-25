@@ -1415,6 +1415,39 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
+void ImGuiManager::ClearMouseButtonState()
+{
+  if (!s_state.imgui_context)
+    return;
+
+  GPUThread::RunOnThread([]() {
+    if (!s_state.imgui_context)
+      return;
+
+    ImGuiIO& io = s_state.imgui_context->IO;
+    for (int i = 0; i < ImGuiMouseButton_COUNT; i++)
+    {
+      bool current_state = io.MouseDown[i];
+      for (int n = s_state.imgui_context->InputEventsQueue.Size - 1; n >= 0; n--)
+      {
+        const ImGuiInputEvent& event = s_state.imgui_context->InputEventsQueue[n];
+        if (event.Type == ImGuiInputEventType_MouseButton && event.MouseButton.Button == i)
+        {
+          current_state = event.MouseButton.Down;
+          break;
+        }
+      }
+
+      // not down?
+      if (!current_state)
+        continue;
+
+      // Queue a button up event.
+      s_state.imgui_context->IO.AddMouseButtonEvent(i, false);
+    }
+  });
+}
+
 const char* ImGuiManager::GetClipboardTextImpl(ImGuiContext* ctx)
 {
   const std::string text = Host::GetClipboardText();
