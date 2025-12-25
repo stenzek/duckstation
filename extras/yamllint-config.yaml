@@ -6,6 +6,7 @@ rules:
   indentation:
     spaces: 2
     indent-sequences: true
+    check-multi-line-strings: true
   document-start:
     present: false
   document-end:
@@ -13,4 +14,12 @@ rules:
   comments:
     require-starting-space: true
     min-spaces-from-content: 1
-
+  braces:
+    forbid: true
+  brackets:
+    forbid: true
+  empty-lines:
+    max: 0
+  empty-values: enable
+  octal-values:
+    forbid-implicit-octal: true
