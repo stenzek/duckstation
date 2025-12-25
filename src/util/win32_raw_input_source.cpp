@@ -291,11 +291,12 @@ bool Win32RawInputSource::ReloadDevices()
     {
       DEV_LOG("Detected raw input device {} removal", i);
 
+      ms = {};
+
       InputManager::OnInputDeviceDisconnected(
         MakeGenericControllerDeviceKey(InputSourceType::Pointer, static_cast<u32>(i)),
         InputManager::GetPointerDeviceName(static_cast<u32>(i)));
 
-      ms = {};
       any_changed = true;
     }
   }
@@ -343,12 +344,14 @@ void Win32RawInputSource::CloseDevices()
   if (m_mice.empty())
     return;
 
-  for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
+  m_mice.clear();
+
+  const u32 num_mice = static_cast<u32>(m_mice.size());
+  for (u32 i = 0; i < num_mice; i++)
   {
     InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
                                             InputManager::GetPointerDeviceName(i));
   }
-  m_mice.clear();
 }
 
 void Win32RawInputSource::EnsureRawInputRegistered()

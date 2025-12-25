@@ -238,11 +238,21 @@ InputManager::DeviceList XInputSource::EnumerateDevices()
     if (!m_controllers[i].connected)
       continue;
 
-    ret.emplace_back(MakeGenericControllerDeviceKey(InputSourceType::XInput, i), fmt::format("XInput-{}", i),
-                     fmt::format("XInput Controller {}", i));
+    ret.emplace_back(MakeGenericControllerDeviceKey(InputSourceType::XInput, i), GetDeviceIdentifier(i),
+                     GetDeviceName(i));
   }
 
   return ret;
+}
+
+std::string XInputSource::GetDeviceIdentifier(u32 index)
+{
+  return fmt::format("XInput-{}", index);
+}
+
+std::string XInputSource::GetDeviceName(u32 index)
+{
+  return fmt::format("XInput Controller {}", index);
 }
 
 bool XInputSource::ContainsDevice(std::string_view device) const
@@ -458,16 +468,17 @@ void XInputSource::HandleControllerConnection(u32 index, const XINPUT_STATE& sta
   cd.last_state = state;
 
   InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
-                                       fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
+                                       GetDeviceIdentifier(index), GetDeviceName(index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
   INFO_LOG("XInput controller {} disconnected.", index);
 
-  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
-                                          fmt::format("XInput-{}", index));
   m_controllers[index] = {};
+
+  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
+                                          GetDeviceIdentifier(index));
 }
 
 void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state)
