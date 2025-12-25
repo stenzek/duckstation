@@ -1871,29 +1871,34 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Check for required subchannel data.
   // Annoyingly we can't do this before initializing, because subchannel data can be loaded from outside the image.
-  if (!parameters.ignore_missing_subchannel && !CheckForRequiredSubQ(error) &&
-      Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
+  if (!parameters.ignore_missing_subchannel && !CheckForRequiredSubQ(error))
   {
-    Host::ConfirmMessageAsync(
-      "Confirm Unsupported Configuration",
-      fmt::format(TRANSLATE_FS("System",
-                               "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
-                               "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
-                               "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
-                  s_state.running_game_serial, s_state.running_game_title),
-      [parameters = std::move(parameters)](bool result) mutable {
-        if (result)
-        {
-          Host::RunOnCoreThread([parameters = std::move(parameters)]() mutable {
-            parameters.ignore_missing_subchannel = true;
-            BootSystem(std::move(parameters), nullptr);
-          });
-        }
-      });
+    bool result = false;
+    if (Core::GetBoolSettingValue("CDROM", "AllowBootingWithoutSBIFile", false))
+    {
+      Host::ConfirmMessageAsync(
+        "Confirm Unsupported Configuration",
+        fmt::format(TRANSLATE_FS("System",
+                                 "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
+                                 "{1}\n\nThe game will likely not run properly.\n\nPlease check the README for "
+                                 "instructions on how to add an SBI file.\n\nDo you wish to continue?"),
+                    s_state.running_game_serial, s_state.running_game_title),
+        [parameters = std::move(parameters)](bool result) mutable {
+          if (result)
+          {
+            Host::RunOnCoreThread([parameters = std::move(parameters)]() mutable {
+              parameters.ignore_missing_subchannel = true;
+              BootSystem(std::move(parameters), nullptr);
+            });
+          }
+        });
+
+      result = true;
+    }
 
     Host::OnSystemStopping();
     DestroySystem();
-    return true;
+    return result;
   }
 
   s_state.exe_override = std::move(exe_override);
