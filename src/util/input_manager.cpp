@@ -2470,9 +2470,10 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
 
-  // Request device notifications when using raw input or dinput, as we need to manually handle device changes
-  if (s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)] ||
-      s_state.input_sources[static_cast<u32>(InputSourceType::DInput)])
+  // Request device notifications when using raw input/xinput/dinput, as we need to manually handle device changes
+  if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
+      s_state.input_sources[static_cast<u32>(InputSourceType::XInput)] ||
+      s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)])
   {
     if (!s_state.device_notification_handle)
       RegisterDeviceNotificationHandle();
