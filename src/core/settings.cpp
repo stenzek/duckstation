@@ -1086,6 +1086,7 @@ void Settings::ApplySettingRestrictions()
 {
   if (disable_all_enhancements)
   {
+    region = ConsoleRegion::Auto;
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
     cpu_enable_8mb_ram = false;
@@ -1112,6 +1113,10 @@ void Settings::ApplySettingRestrictions()
     cdrom_read_speedup = 1;
     cdrom_seek_speedup = 1;
     cdrom_mute_cd_audio = false;
+    cdrom_region_check = false;
+    cdrom_subq_skew = false;
+    cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
+    apply_compatibility_settings = true;
     texture_replacements.enable_vram_write_replacements = false;
     mdec_use_old_routines = false;
     bios_patch_fast_boot = false;
@@ -1120,6 +1125,10 @@ void Settings::ApplySettingRestrictions()
     rewind_enable = false;
     pio_device_type = PIODeviceType::None;
     pcdrv_enable = false;
+    dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
+    dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
+    gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;
+    gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states
