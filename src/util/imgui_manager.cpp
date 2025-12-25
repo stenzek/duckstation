@@ -127,17 +127,23 @@ namespace {
 
 struct ALIGN_TO_CACHE_LINE State
 {
+  // Shared between both threads
+
   // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
   std::atomic_bool imgui_wants_text{false};
 
+  std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
+
   std::deque<PostedOSDMessage> osd_posted_messages;
   std::mutex osd_messages_lock;
 
-  // Owned by GPU thread
+  // Read by both threads
   ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
-  Timer::Value last_render_time = 0;
+
+  // Owned by GPU thread
+  ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
 
   float global_scale = 0.0f;
   float window_width = 0.0f;
@@ -155,8 +161,6 @@ struct ALIGN_TO_CACHE_LINE State
 
   std::deque<OSDMessage> osd_active_messages;
   float osd_messages_end_y = 0.0f;
-
-  std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
   TextFontOrder text_font_order = ImGuiManager::GetDefaultTextFontOrder();
 
