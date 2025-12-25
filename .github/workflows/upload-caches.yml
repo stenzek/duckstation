@@ -3,6 +3,9 @@ name: Upload Caches
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   upload-windows-cache:
     runs-on: windows-2022
