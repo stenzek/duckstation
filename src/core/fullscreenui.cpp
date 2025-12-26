@@ -1607,7 +1607,7 @@ void FullscreenUI::DrawPauseMenu()
           ClosePauseMenu();
         ImGui::SetItemDefaultFocus();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Toggle Fast Forward")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FORWARD, "Toggle Fast Forward")))
         {
           ClosePauseMenu();
           DoToggleFastForward();
