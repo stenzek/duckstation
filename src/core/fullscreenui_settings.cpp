@@ -4039,7 +4039,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                       FSUI_VSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
                       pgxp_enabled);
 
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VECTOR_SQUARE, "Vertex Cache"),
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_NODES, "Vertex Cache"),
                       FSUI_VSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."),
                       "GPU", "PGXPVertexCache", pgxp_enabled);
 

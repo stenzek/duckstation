@@ -33,7 +33,6 @@
 #include "imgui_internal.h"
 
 #include <atomic>
-#include <chrono>
 #include <cmath>
 #include <deque>
 #include <limits>
@@ -119,7 +118,7 @@ static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)
   "NotoSansKR-VariableFont_wght.ttf",  // Korean
 }};
 static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.ttf";
-static constexpr const char* FA_FONT_NAME = "fa-solid-900.ttf";
+static constexpr const char* FA_FONT_NAME = FONT_ICON_FILE_NAME_FAS;
 static constexpr const char* PF_FONT_NAME = "promptfont.otf";
 static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
 
