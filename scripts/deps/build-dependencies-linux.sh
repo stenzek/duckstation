@@ -42,7 +42,7 @@ source "$SCRIPTDIR/versions"
 mkdir -p deps-build
 cd deps-build
 
-if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; then
+if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz" ]]; then
 	curl -C - -L \
 		-o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download" \
 		-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
@@ -78,7 +78,6 @@ $ZLIBNG_GZ_HASH  zlib-ng-$ZLIBNG.tar.gz
 $ZSTD_GZ_HASH  zstd-$ZSTD.tar.gz
 $QTBASE_XZ_HASH  qtbase-everywhere-src-$QT.tar.xz
 $QTIMAGEFORMATS_XZ_HASH  qtimageformats-everywhere-src-$QT.tar.xz
-$QTSHADERTOOLS_XZ_HASH  qtshadertools-everywhere-src-$QT.tar.xz
 $QTSVG_XZ_HASH  qtsvg-everywhere-src-$QT.tar.xz
 $QTTOOLS_XZ_HASH  qttools-everywhere-src-$QT.tar.xz
 $QTTRANSLATIONS_XZ_HASH  qttranslations-everywhere-src-$QT.tar.xz
@@ -120,7 +119,7 @@ echo "Building zlib-ng..."
 rm -fr "zlib-ng-$ZLIBNG"
 tar xf "zlib-ng-$ZLIBNG.tar.gz"
 cd "zlib-ng-$ZLIBNG"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DBUILD_TESTING=OFF -DWITH_BENCHMARK_APPS=OFF -DWITH_GTEST=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -151,7 +150,7 @@ echo "Building libjpeg..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 cd "libjpeg-turbo-$LIBJPEGTURBO"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
