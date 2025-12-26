@@ -2169,7 +2169,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     }
   }
 
-  DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINTBRUSH, "Theme"),
+  DrawStringListSetting(bsi, FSUI_ICONVSTR(ICON_FA_PALETTE, "Theme"),
                         FSUI_VSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
                         "", FullscreenUI::GetThemeDisplayNames(), FullscreenUI::GetThemeNames(), true,
                         [](std::string_view) { BeginTransition(LONG_TRANSITION_TIME, &FullscreenUI::UpdateTheme); });
@@ -2213,11 +2213,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                       FSUI_VSTR("Animates windows opening/closing and changes between views in the Big Picture UI."),
                       "Main", "FullscreenUIAnimations", true);
 
-  widgets_settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST, "Smooth Scrolling"),
+  widgets_settings_changed |= DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_UP_DOWN, "Smooth Scrolling"),
                                                 FSUI_VSTR("Enables smooth scrolling of menus in the Big Picture UI."),
                                                 "Main", "FullscreenUISmoothScrolling", true);
   widgets_settings_changed |=
-    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_ALL, "Menu Borders"),
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BORDER_NONE, "Menu Borders"),
                       FSUI_VSTR("Draws a border around the currently-selected item for readability."), "Main",
                       "FullscreenUIMenuBorders", false);
 
@@ -2292,7 +2292,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_VSTR("Shows persistent icons when turbo is active or when paused."), "Display",
                     "ShowStatusIndicators", true);
   DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_GAUGE_HIGH, "Show Speed"),
+    bsi, FSUI_ICONVSTR(ICON_FA_GAUGE, "Show Speed"),
     FSUI_VSTR(
       "Shows the current emulation speed of the system in the top-right corner of the display as a percentage."),
     "Display", "ShowSpeed", false);
@@ -2315,7 +2315,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_GPU_GRAPHICS_CARD, "Show GPU Usage"),
                     FSUI_VSTR("Shows the host's GPU usage in the top-right corner of the display."), "Display",
                     "ShowGPU", false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_RULER_HORIZONTAL, "Show Frame Times"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WAVE_SQUARE, "Show Frame Times"),
                     FSUI_VSTR("Shows a visual history of frame times in the upper-left corner of the display."),
                     "Display", "ShowFrameTimes", false);
   DrawToggleSetting(
@@ -2446,7 +2446,7 @@ void FullscreenUI::DrawGameListSettingsPage()
         {it.second ? (FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Disable Subdirectory Scanning")) :
                      (FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Enable Subdirectory Scanning")),
          false},
-        {FSUI_ICONSTR(ICON_FA_XMARK, "Remove From List"), false},
+        {FSUI_ICONSTR(ICON_FA_DELETE_LEFT, "Remove From List"), false},
         {FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, "Close Menu"), false},
       };
 
@@ -2731,7 +2731,7 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Enable Fast Boot"),
                     FSUI_VSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Fast Forward Boot"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_FORWARD, "Fast Forward Boot"),
                     FSUI_VSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
                               "may vary between games."),
                     "BIOS", "FastForwardBoot", false,
@@ -2856,12 +2856,12 @@ void FullscreenUI::DrawEmulationSettingsPage()
 
   MenuHeading(FSUI_VSTR("Speed Control"));
   DrawFloatListSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_STOPWATCH, "Emulation Speed"),
+    bsi, FSUI_ICONVSTR(ICON_FA_GAUGE, "Emulation Speed"),
     FSUI_VSTR("Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "EmulationSpeed", 1.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size(), true);
   DrawFloatListSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_BOLT, "Fast Forward Speed"),
+    bsi, FSUI_ICONVSTR(ICON_FA_FORWARD, "Fast Forward Speed"),
     FSUI_VSTR("Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems."),
     "Main", "FastForwardSpeed", 0.0f, emulation_speed_titles.data(), emulation_speed_values.data(),
     emulation_speed_titles.size(), true);
@@ -3181,7 +3181,7 @@ void FullscreenUI::DrawControllerSettingsPage()
 #endif
 
   MenuHeading(FSUI_VSTR("Multitap"));
-  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SQUARE_PLUS, "Multitap Mode"),
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SITEMAP, "Multitap Mode"),
                   FSUI_VSTR("Enables an additional three controller slots on each port. Not supported in all games."),
                   "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE, &Settings::ParseMultitapModeName,
                   &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
@@ -3867,7 +3867,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     FSUI_VSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
     "Force4_3For24Bit", false);
 
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_BRUSH, "FMV Chroma Smoothing"),
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_PAINT_ROLLER, "FMV Chroma Smoothing"),
                     FSUI_VSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
@@ -4023,7 +4023,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       FSUI_VSTR("Uses perspective-correct interpolation for texture coordinates, straightening out warped textures."),
       "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
     DrawToggleSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_PAINT_ROLLER, "Perspective Correct Colors"),
+      bsi, FSUI_ICONVSTR(ICON_FA_BRUSH, "Perspective Correct Colors"),
       FSUI_VSTR("Uses perspective-correct interpolation for colors, which can improve visuals in some games."), "GPU",
       "PGXPColorCorrection", false, pgxp_enabled);
     DrawToggleSetting(
@@ -4055,7 +4055,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                       "GPU", "PGXPTransparentDepthTest", false, pgxp_enabled);
 
     DrawFloatRangeSetting(
-      bsi, FSUI_ICONVSTR(ICON_FA_STAR, "Geometry Tolerance"),
+      bsi, FSUI_ICONVSTR(ICON_FA_PENTAGON, "Geometry Tolerance"),
       FSUI_VSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
       "GPU", "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
 
@@ -4604,7 +4604,7 @@ void FullscreenUI::DrawAudioSettingsPage()
   DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_HIGH, "Output Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
                       0, 200, "%d%%");
-  DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Fast Forward Volume"),
+  DrawIntRangeSetting(bsi, FSUI_ICONVSTR(ICON_FA_FORWARD, "Fast Forward Volume"),
                       FSUI_VSTR("Controls the volume of the audio played on the host when fast forwarding."), "Audio",
                       "FastForwardVolume", 100, 0, 200, "%d%%");
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Mute All Sound"),
