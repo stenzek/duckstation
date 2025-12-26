@@ -758,13 +758,17 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
-  const SmallString value_text =
+  SmallString sstr =
     value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
-    OpenFixedPopupDialog(title);
+  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
 
-  if (!IsFixedPopupDialogOpen(title) ||
+  // use setting key to avoid id conflicts
+  sstr.format("{}##{}-intrange", title, key);
+  if (pressed)
+    OpenFixedPopupDialog(sstr);
+
+  if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                              LayoutScale(600.0f, 0.0f)))
   {
@@ -827,13 +831,17 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
-  const SmallString value_text = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
-                                                     SmallString(FSUI_VSTR("Use Global Setting"));
+  SmallString sstr = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
+                                         SmallString(FSUI_VSTR("Use Global Setting"));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
-    OpenFixedPopupDialog(title);
+  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
 
-  if (!IsFixedPopupDialogOpen(title) ||
+  // use setting key to avoid id conflicts
+  sstr.format("{}##{}-floatrange", title, key);
+  if (pressed)
+    OpenFixedPopupDialog(sstr);
+
+  if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                              LayoutScale(600.0f, 0.0f)))
   {
@@ -900,18 +908,22 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<float> value =
     bsi->GetOptionalFloatValue(section, key, game_settings ? std::nullopt : std::optional<float>(default_value));
-  const SmallString value_text = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
-                                                     SmallString(FSUI_VSTR("Use Global Setting"));
+  SmallString sstr = value.has_value() ? SmallString::from_sprintf(format, value.value() * multiplier) :
+                                         SmallString(FSUI_VSTR("Use Global Setting"));
 
   static bool manual_input = false;
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
+  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+
+  // use setting key to avoid id conflicts
+  sstr.format("{}##{}-floatspin", title, key);
+  if (pressed)
   {
-    OpenFixedPopupDialog(title);
+    OpenFixedPopupDialog(sstr);
     manual_input = false;
   }
 
-  if (!IsFixedPopupDialogOpen(title) ||
+  if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                              LayoutScale(650.0f, 0.0f)))
   {
@@ -1032,7 +1044,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
     bsi->GetOptionalIntValue(section, right_key, game_settings ? std::nullopt : std::optional<int>(default_right));
   const std::optional<int> bottom_value =
     bsi->GetOptionalIntValue(section, bottom_key, game_settings ? std::nullopt : std::optional<int>(default_bottom));
-  const SmallString value_text = SmallString::from_format(
+  SmallString sstr = SmallString::from_format(
     "{}/{}/{}/{}",
     left_value.has_value() ? TinyString::from_sprintf(format, left_value.value()) : TinyString(FSUI_VSTR("Default")),
     top_value.has_value() ? TinyString::from_sprintf(format, top_value.value()) : TinyString(FSUI_VSTR("Default")),
@@ -1040,10 +1052,14 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
     bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) :
                                TinyString(FSUI_VSTR("Default")));
 
-  if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled))
-    OpenFixedPopupDialog(title);
+  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
 
-  if (!IsFixedPopupDialogOpen(title) ||
+  // use setting key to avoid id conflicts
+  sstr.format("{}##{}-intrect", title, left_key);
+  if (pressed)
+    OpenFixedPopupDialog(sstr);
+
+  if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                              ImVec2(LayoutScale(500.0f), 0.0f)))
   {
@@ -1149,21 +1165,25 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<int> value =
     bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
-  TinyString value_text;
+  TinyString sstr;
   if (value.has_value())
-    value_text.sprintf(format, value.value());
+    sstr.sprintf(format, value.value());
   else
-    value_text = FSUI_VSTR("Use Global Setting");
+    sstr = FSUI_VSTR("Use Global Setting");
 
   static bool manual_input = false;
 
-  if (MenuButtonWithValue(title, summary, value_text, enabled))
+  const bool pressed = MenuButtonWithValue(title, summary, sstr, enabled);
+
+  // use setting key to avoid id conflicts
+  sstr.format("{}##{}-intspin", title, key);
+  if (pressed)
   {
-    OpenFixedPopupDialog(title);
+    OpenFixedPopupDialog(sstr);
     manual_input = false;
   }
 
-  if (!IsFixedPopupDialogOpen(title) ||
+  if (!IsFixedPopupDialogOpen(sstr) ||
       !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
                              LayoutScale(650.0f, 0.0f)))
   {
