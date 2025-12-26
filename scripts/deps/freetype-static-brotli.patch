@@ -1,0 +1,46 @@
+--- freetype-2.14.1/CMakeLists.txt	2025-09-11 04:12:24.000000000 -0700
++++ freetype-2.14.1/CMakeLists.txt	2025-12-25 21:49:45.733862900 -0800
+@@ -577,7 +577,7 @@
+   list(APPEND PKGCONFIG_REQUIRES_PRIVATE "harfbuzz >= ${HARFBUZZ_MIN_VERSION}")
+ endif ()
+ if (BROTLIDEC_FOUND)
+-  target_link_libraries(freetype PRIVATE ${BROTLIDEC_LIBRARIES})
++  target_link_libraries(freetype PRIVATE ${BROTLIDEC_LIBRARIES} ${BROTLICOMMON_LIBRARIES})
+   target_compile_definitions(freetype PRIVATE ${BROTLIDEC_DEFINITIONS})
+   target_include_directories(freetype PRIVATE ${BROTLIDEC_INCLUDE_DIRS})
+   list(APPEND PKGCONFIG_REQUIRES_PRIVATE "libbrotlidec")
+--- freetype-2.14.1/builds/cmake/FindBrotliDec.cmake	2025-09-07 19:48:18.000000000 -0700
++++ freetype-2.14.1/builds/cmake/FindBrotliDec.cmake	2025-12-25 21:48:38.433700400 -0800
+@@ -21,7 +21,7 @@
+ 
+ find_package(PkgConfig QUIET)
+ 
+-pkg_check_modules(PC_BROTLIDEC QUIET libbrotlidec)
++pkg_check_modules(PC_BROTLIDEC QUIET libbrotlidec libbrotlicommon)
+ 
+ if (PC_BROTLIDEC_VERSION)
+   set(BROTLIDEC_VERSION "${PC_BROTLIDEC_VERSION}")
+@@ -40,10 +40,22 @@
+         ${PC_BROTLIDEC_LIBRARY_DIRS})
+ 
+ 
++find_path(BROTLICOMMON_INCLUDE_DIRS
++  NAMES brotli/decode.h
++  HINTS ${PC_BROTLICOMMON_INCLUDEDIR}
++        ${PC_BROTLICOMMON_INCLUDE_DIRS}
++  PATH_SUFFIXES brotli)
++
++find_library(BROTLICOMMON_LIBRARIES
++  NAMES brotlicommon
++  HINTS ${PC_BROTLICOMMON_LIBDIR}
++        ${PC_BROTLICOMMON_LIBRARY_DIRS})
++
++
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(
+   BrotliDec
+-  REQUIRED_VARS BROTLIDEC_INCLUDE_DIRS BROTLIDEC_LIBRARIES
++  REQUIRED_VARS BROTLIDEC_INCLUDE_DIRS BROTLICOMMON_INCLUDE_DIRS BROTLIDEC_LIBRARIES BROTLICOMMON_LIBRARIES
+   FOUND_VAR BROTLIDEC_FOUND
+   VERSION_VAR BROTLIDEC_VERSION)
+ 

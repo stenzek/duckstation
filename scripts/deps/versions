@@ -5,6 +5,9 @@
 # packages or build recipes without explicit permission from the copyright holder.
 #
 
+BROTLI=1.2.0
+BROTLI_GZ_HASH=816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec
+
 FREETYPE=2.14.1
 FREETYPE_GZ_HASH=174d9e53402e1bf9ec7277e22ec199ba3e55a6be2c0740cb18c0ee9850fc8c34
 
