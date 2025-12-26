@@ -31,7 +31,7 @@
 #include "common/string_util.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 
 #include <limits>

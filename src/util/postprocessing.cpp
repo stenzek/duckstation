@@ -18,7 +18,7 @@
 #include "core/settings.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/error.h"

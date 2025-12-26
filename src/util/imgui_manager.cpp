@@ -26,7 +26,7 @@
 #include "common/thirdparty/usb_key_code_data.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_freetype.h"
