@@ -795,6 +795,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, std::string_view 
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -868,6 +869,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, std::string_vie
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -950,6 +952,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   float dlg_value = value.value_or(default_value) * multiplier;
   bool dlg_value_changed = false;
@@ -1073,6 +1076,7 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, std::string_view t
   bool changed = false;
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(LAYOUT_WIDGET_FRAME_ROUNDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -1210,6 +1214,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
   BeginMenuButtons();
+  ResetFocusHere();
 
   s32 dlg_value = static_cast<s32>(value.value_or(default_value));
   bool dlg_value_changed = false;
@@ -2561,6 +2566,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
   const bool download_enabled = (std::strlen(template_urls) > 0);
 
   BeginHorizontalMenuButtons(2, 200.0f);
+  ResetFocusHere();
 
   if (HorizontalMenuButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Start Download"), download_enabled))
   {
