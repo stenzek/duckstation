@@ -44,7 +44,7 @@
 #include "util/state_wrapper.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 #include "imgui.h"
