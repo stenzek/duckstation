@@ -7,6 +7,8 @@
 #include "common/error.h"
 #include "common/log.h"
 
+#include "util/gpu_types.h"
+
 #include <dlfcn.h>
 
 #ifdef __clang__
@@ -213,7 +215,7 @@ void OpenGLContextAGL::BindContextToView(WindowInfo& wi, NSOpenGLContext* contex
   wi.surface_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
   wi.surface_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
   wi.surface_scale = window_scale;
-  wi.surface_format = GPUTexture::Format::RGBA8;
+  wi.surface_format = GPUTextureFormat::RGBA8;
 }
 
 void OpenGLContextAGL::UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* context)
