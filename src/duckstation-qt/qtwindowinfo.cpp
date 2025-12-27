@@ -25,44 +25,6 @@
 
 LOG_CHANNEL(Host);
 
-std::pair<QSize, qreal> QtUtils::GetPixelSizeForWidget(const QWidget* widget)
-{
-  // Why this nonsense? Qt's device independent sizes are integer, and fractional scaling is lossy.
-  // We can't get back the "real" size of the window. So we have to platform natively query the actual client size.
-#if defined(_WIN32)
-  if (RECT rc; GetClientRect(reinterpret_cast<HWND>(widget->winId()), &rc))
-  {
-    const qreal device_pixel_ratio = widget->devicePixelRatio();
-    return std::make_pair(QSize(static_cast<int>(rc.right - rc.left), static_cast<int>(rc.bottom - rc.top)),
-                          device_pixel_ratio);
-  }
-#elif defined(__APPLE__)
-  if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
-  {
-    if (const std::optional<double> real_device_pixel_ratio =
-          CocoaTools::GetViewRealScalingFactor(reinterpret_cast<void*>(widget->winId())))
-    {
-      const qreal device_pixel_ratio = static_cast<qreal>(real_device_pixel_ratio.value());
-      return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
-    }
-  }
-  else
-  {
-    if (std::optional<std::pair<int, int>> size =
-          CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
-    {
-      const qreal device_pixel_ratio = widget->devicePixelRatio();
-      return std::make_pair(QSize(size->first, size->second), device_pixel_ratio);
-    }
-  }
-#endif
-
-  // On Linux, fuck you, enjoy round trip to the X server, and on Wayland you can't query it in the first place...
-  // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
-  const qreal device_pixel_ratio = widget->devicePixelRatio();
-  return std::make_pair(ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio), device_pixel_ratio);
-}
-
 WindowInfoType QtUtils::GetWindowInfoType()
 {
   // Windows and Apple are easy here since there's no display connection.
@@ -91,7 +53,7 @@ WindowInfoType QtUtils::GetWindowInfoType()
 
 std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error)
 {
-  WindowInfo wi;
+  WindowInfo wi = {};
 
   // Windows and Apple are easy here since there's no display connection.
 #if defined(_WIN32)
@@ -134,10 +96,7 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
   }
 #endif
 
-  const auto& [size, dpr] = GetPixelSizeForWidget(widget);
-  wi.surface_width = static_cast<u16>(size.width());
-  wi.surface_height = static_cast<u16>(size.height());
-  wi.surface_scale = static_cast<float>(dpr);
+  UpdateSurfaceSize(widget, &wi);
 
   // Query refresh rate, we need it for sync.
   Error refresh_rate_error;
@@ -159,4 +118,52 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Rende
            widget->width(), widget->height(), wi.surface_scale, wi.surface_refresh_rate);
 
   return wi;
+}
+
+void QtUtils::UpdateSurfaceSize(QWidget* widget, WindowInfo* wi)
+{
+  // Why this nonsense? Qt's device independent sizes are integer, and fractional scaling is lossy.
+  // We can't get back the "real" size of the window. So we have to platform natively query the actual client size.
+#if defined(_WIN32)
+  if (RECT rc; GetClientRect(static_cast<HWND>(wi->window_handle), &rc))
+  {
+    const qreal device_pixel_ratio = widget->devicePixelRatio();
+    wi->surface_width = static_cast<u16>(rc.right - rc.left);
+    wi->surface_height = static_cast<u16>(rc.bottom - rc.top);
+    wi->surface_scale = static_cast<float>(device_pixel_ratio);
+  }
+#elif defined(__APPLE__)
+  if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
+  {
+    if (const std::optional<double> real_device_pixel_ratio = CocoaTools::GetViewRealScalingFactor(wi->window_handle))
+    {
+      const qreal device_pixel_ratio = static_cast<qreal>(real_device_pixel_ratio.value());
+      const QSize scaled_size = ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio);
+      wi->surface_width = static_cast<u16>(scaled_size.width());
+      wi->surface_height = static_cast<u16>(scaled_size.height());
+      wi->surface_scale = static_cast<float>(device_pixel_ratio);
+      return;
+    }
+  }
+  else
+  {
+    if (std::optional<std::pair<int, int>> size =
+          CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
+    {
+      const qreal device_pixel_ratio = widget->devicePixelRatio();
+      wi->surface_width = static_cast<u16>(size->first);
+      wi->surface_height = static_cast<u16>(size->second);
+      wi->surface_scale = static_cast<float>(device_pixel_ratio);
+      return;
+    }
+  }
+#endif
+
+  // On Linux, fuck you, enjoy round trip to the X server, and on Wayland you can't query it in the first place...
+  // I ain't dealing with this crap OS. Enjoy your mismatched sizes and shit experience.
+  const qreal device_pixel_ratio = widget->devicePixelRatio();
+  const QSize scaled_size = ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio);
+  wi->surface_width = static_cast<u16>(scaled_size.width());
+  wi->surface_height = static_cast<u16>(scaled_size.height());
+  wi->surface_scale = static_cast<float>(device_pixel_ratio);
 }

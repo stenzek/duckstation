@@ -247,6 +247,9 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
     m_exclusive_fullscreen_requested = exclusive_fullscreen;
 
+    // in case it gets a new native handle
+    m_display_widget->clearWindowInfo();
+
     // ensure it's resizable when changing size, we'll fix it up later in updateWindowState()
     QtUtils::SetWindowResizeable(container, true);
 
@@ -295,7 +298,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 #endif
 
-  const std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(render_api, error);
+  const std::optional<WindowInfo>& wi = m_display_widget->getWindowInfo(render_api, error);
   if (!wi.has_value())
   {
     destroyDisplayWidget();
@@ -438,6 +441,8 @@ void MainWindow::destroyDisplayWidget()
 {
   if (m_display_widget)
   {
+    m_display_widget->clearWindowInfo();
+
     if (!isRenderingFullscreen() && !isRenderingToMain())
       saveDisplayWindowGeometryToConfig();
 
@@ -3267,7 +3272,7 @@ bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, q
     PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(widget->winId()), false);
 #endif
 
-  const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, render_api, error);
+  const std::optional<WindowInfo>& owi = widget->getWindowInfo(render_api, error);
   if (!owi.has_value())
   {
     widget->destroy();
