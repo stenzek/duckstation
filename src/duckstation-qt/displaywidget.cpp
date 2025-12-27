@@ -364,6 +364,7 @@ bool DisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::Show:
     case QEvent::Resize:
     case QEvent::DevicePixelRatioChange:
     {
@@ -581,6 +582,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::Show:
     case QEvent::Resize:
     case QEvent::DevicePixelRatioChange:
     {
@@ -590,7 +592,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
       if (m_last_window_size != size || m_last_window_scale != dpr)
       {
-        DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(),
+        DEV_LOG("Auxiliary widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(),
                 dpr);
 
         m_last_window_size = size;
