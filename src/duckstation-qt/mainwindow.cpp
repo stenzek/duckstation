@@ -52,6 +52,7 @@
 #include <QtCore/QUrl>
 #include <QtGui/QActionGroup>
 #include <QtGui/QCursor>
+#include <QtGui/QGuiApplication>
 #include <QtGui/QShortcut>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
@@ -259,9 +260,15 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     }
     else
     {
-      container->showNormal();
       restoreDisplayWindowGeometryFromConfig();
+      container->showNormal();
     }
+
+// See note below.
+#if !defined(_WIN32) && !defined(__APPLE__)
+    QGuiApplication::sync();
+    QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+#endif
 
     updateDisplayRelatedActions();
     updateDisplayWidgetCursor();
@@ -274,6 +281,19 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
   destroyDisplayWidget();
 
   createDisplayWidget(fullscreen, render_to_main);
+
+  // We want to avoid nested event loops as much as possible because it's problematic on MacOS.
+  // I removed the sync/processEvents() here for this reason, except of course fucking Linux throws
+  // a wrench in the plan. On Windows and MacOS, calling show() and showFullscreen() will send resize
+  // events with the correct size before returning. On Linux with X11 and Wankland, it doesn't.
+  // So we have to force a processEvents() here to ensure the display widget is the correct size,
+  // otherwise we'll see a glitched frame at the windowed size when starting fullscreen. Linux is
+  // the odd one out again, as usual. Note: QGuiApplication::sync() is supposed to pump events
+  // before and after syncing, but it seems this alone is not sufficient for getting the resize.
+#if !defined(_WIN32) && !defined(__APPLE__)
+  QGuiApplication::sync();
+  QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+#endif
 
   const std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(render_api, error);
   if (!wi.has_value())
