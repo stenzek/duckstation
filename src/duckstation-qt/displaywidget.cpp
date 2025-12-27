@@ -428,7 +428,6 @@ bool DisplayWidget::event(QEvent* event)
       {
         ERROR_LOG("Window ID changed while we had a valid WindowInfo. This is NOT expected, please report.");
         clearWindowInfo();
-        g_core_thread->updateDisplayWindow();
       }
 
       return true;
