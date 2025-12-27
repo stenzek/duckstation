@@ -39,6 +39,9 @@ VkInstance GetVulkanInstance();
 /// Releases the shared Vulkan instance.
 void ReleaseVulkanInstance();
 
+/// Destroys the instance, if any, and unloads the Vulkan library.
+void DestroyVulkanInstance();
+
 /// Returns optional extensions for the current instance.
 const OptionalExtensions& GetOptionalExtensions();
 

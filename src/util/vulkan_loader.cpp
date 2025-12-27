@@ -66,8 +66,6 @@ VKAPI_ATTR static VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessage
 namespace {
 struct Locals
 {
-  ~Locals();
-
   DynamicLibrary library;
   VkInstance instance = VK_NULL_HANDLE;
   VkDebugUtilsMessengerEXT debug_messenger_callback = VK_NULL_HANDLE;
@@ -87,20 +85,6 @@ struct Locals
 ALIGN_TO_CACHE_LINE static Locals s_locals;
 
 } // namespace VulkanLoader
-
-VulkanLoader::Locals::~Locals()
-{
-  // Called at process shutdown.
-  if (instance)
-    LockedDestroyVulkanInstance();
-
-#ifdef ENABLE_SDL
-  if (library_loaded_from_sdl)
-    SDL_Vulkan_UnloadLibrary();
-#endif
-
-  library.Close();
-}
 
 bool VulkanLoader::LoadVulkanLibrary(WindowInfoType wtype, Error* error)
 {
@@ -653,6 +637,14 @@ void VulkanLoader::ReleaseVulkanInstance()
 {
   const std::lock_guard lock(s_locals.mutex);
   LockedReleaseVulkanInstance();
+}
+
+void VulkanLoader::DestroyVulkanInstance()
+{
+  const std::lock_guard lock(s_locals.mutex);
+  if (s_locals.instance != VK_NULL_HANDLE)
+    LockedDestroyVulkanInstance();
+  UnloadVulkanLibrary();
 }
 
 const VulkanLoader::OptionalExtensions& VulkanLoader::GetOptionalExtensions()

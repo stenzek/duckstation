@@ -558,6 +558,8 @@ void System::CoreThreadShutdown()
 
   Achievements::Shutdown();
 
+  GPUDevice::UnloadDynamicLibraries();
+
   InputManager::CloseSources();
 
   s_state.core_thread_handle = {};

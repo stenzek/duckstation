@@ -868,6 +868,9 @@ public:
   ALWAYS_INLINE static Statistics& GetStatistics() { return s_stats; }
   static void ResetStatistics();
 
+  /// Releases dynamic libraries and other resources used by the GPU device system.
+  static void UnloadDynamicLibraries();
+
 protected:
   virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
                                             GPUVSyncMode vsync_mode, bool allow_present_throttle,

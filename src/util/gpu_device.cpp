@@ -1394,13 +1394,10 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 namespace dyn_libs {
 static void CloseShaderc();
 static void CloseSpirvCross();
-static void CloseAll();
 
 static std::mutex s_dyn_mutex;
 static DynamicLibrary s_shaderc_library;
 static DynamicLibrary s_spirv_cross_library;
-
-static bool s_close_registered = false;
 
 shaderc_compiler_t g_shaderc_compiler = nullptr;
 
@@ -1446,17 +1443,17 @@ bool dyn_libs::OpenShaderc(Error* error)
     return false;
   }
 
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
   return true;
 }
 
 void dyn_libs::CloseShaderc()
 {
+  if (!s_shaderc_library.IsOpen())
+  {
+    DebugAssert(!g_shaderc_compiler);
+    return;
+  }
+
   if (g_shaderc_compiler)
   {
     shaderc_compiler_release(g_shaderc_compiler);
@@ -1501,17 +1498,14 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   SPIRV_CROSS_MSL_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
   return true;
 }
 
 void dyn_libs::CloseSpirvCross()
 {
+  if (!s_spirv_cross_library.IsOpen())
+    return;
+
 #define UNLOAD_FUNC(F) F = nullptr;
   SPIRV_CROSS_FUNCTIONS(UNLOAD_FUNC)
   SPIRV_CROSS_HLSL_FUNCTIONS(UNLOAD_FUNC)
@@ -1519,12 +1513,6 @@ void dyn_libs::CloseSpirvCross()
 #undef UNLOAD_FUNC
 
   s_spirv_cross_library.Close();
-}
-
-void dyn_libs::CloseAll()
-{
-  CloseShaderc();
-  CloseSpirvCross();
 }
 
 #undef SPIRV_CROSS_HLSL_FUNCTIONS
@@ -2105,4 +2093,16 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
 #endif
 
   return CreateShaderFromSource(stage, target_language, dest_source, entry_point, out_binary, error);
+}
+
+void GPUDevice::UnloadDynamicLibraries()
+{
+  Assert(!g_gpu_device);
+
+  dyn_libs::CloseSpirvCross();
+  dyn_libs::CloseShaderc();
+
+#ifdef ENABLE_VULKAN
+  VulkanLoader::DestroyVulkanInstance();
+#endif
 }
