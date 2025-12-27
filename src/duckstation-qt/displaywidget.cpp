@@ -649,6 +649,20 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::WinIdChange:
+    {
+      QWidget::event(event);
+
+      if (m_window_info.has_value())
+      {
+        ERROR_LOG("Auxiliary display widget window ID changed while we had a valid WindowInfo. This is NOT expected, "
+                  "please report.");
+        m_window_info.reset();
+      }
+
+      return true;
+    }
+
     case QEvent::Paint:
       return true;
 

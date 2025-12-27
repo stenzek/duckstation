@@ -247,15 +247,15 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
     m_exclusive_fullscreen_requested = exclusive_fullscreen;
 
+    // in case it gets a new native handle
+    m_display_widget->clearWindowInfo();
+
     // ensure it's resizable when changing size, we'll fix it up later in updateWindowState()
     QtUtils::SetWindowResizeable(container, true);
 
     // since we don't destroy the display widget, we need to save it here
     if (!is_fullscreen && !is_rendering_to_main)
       saveDisplayWindowGeometryToConfig();
-
-    // in case it gets a new native handle
-    m_display_widget->clearWindowInfo();
 
     if (fullscreen)
     {
@@ -441,6 +441,8 @@ void MainWindow::destroyDisplayWidget()
 {
   if (m_display_widget)
   {
+    m_display_widget->clearWindowInfo();
+
     if (!isRenderingFullscreen() && !isRenderingToMain())
       saveDisplayWindowGeometryToConfig();
 
