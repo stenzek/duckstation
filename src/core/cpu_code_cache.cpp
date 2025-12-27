@@ -688,7 +688,7 @@ void CPU::CodeCache::ClearBlocks()
 PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exception_pc, void* fault_address,
                                                                   bool is_write)
 {
-  if (static_cast<const u8*>(fault_address) >= Bus::g_ram &&
+  if (Bus::g_ram && static_cast<const u8*>(fault_address) >= Bus::g_ram &&
       static_cast<const u8*>(fault_address) < (Bus::g_ram + Bus::RAM_8MB_SIZE))
   {
     // Writing to protected RAM.
@@ -1658,7 +1658,7 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
 #ifdef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
-    if (static_cast<u8*>(fault_address) < static_cast<u8*>(g_state.fastmem_base) ||
+    if (!g_state.fastmem_base || static_cast<u8*>(fault_address) < static_cast<u8*>(g_state.fastmem_base) ||
         (static_cast<u8*>(fault_address) - static_cast<u8*>(g_state.fastmem_base)) >=
           static_cast<ptrdiff_t>(Bus::FASTMEM_ARENA_SIZE))
     {
