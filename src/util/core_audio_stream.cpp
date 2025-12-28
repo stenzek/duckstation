@@ -136,9 +136,9 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
 
 void CoreAudioStream::Destroy()
 {
+  m_stream.reset();
   StretchDestroy();
   DestroyBuffer();
-  m_stream.reset();
   m_sample_rate = 0;
   m_parameters = AudioStreamParameters();
   m_volume = 0;
