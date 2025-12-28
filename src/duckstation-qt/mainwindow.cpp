@@ -263,8 +263,8 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, 
     }
     else
     {
-      restoreDisplayWindowGeometryFromConfig();
       container->showNormal();
+      restoreDisplayWindowGeometryFromConfig();
     }
 
 // See note below.
