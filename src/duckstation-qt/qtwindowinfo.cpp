@@ -131,31 +131,23 @@ void QtUtils::UpdateSurfaceSize(QWidget* widget, WindowInfo* wi)
     wi->surface_width = static_cast<u16>(rc.right - rc.left);
     wi->surface_height = static_cast<u16>(rc.bottom - rc.top);
     wi->surface_scale = static_cast<float>(device_pixel_ratio);
+    return;
   }
 #elif defined(__APPLE__)
-  if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
+  if (std::optional<std::pair<int, int>> size =
+        CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
   {
-    if (const std::optional<double> real_device_pixel_ratio = CocoaTools::GetViewRealScalingFactor(wi->window_handle))
+    qreal device_pixel_ratio = widget->devicePixelRatio();
+    if (Core::GetBaseBoolSettingValue("Main", "UseFractionalWindowScale", true))
     {
-      const qreal device_pixel_ratio = static_cast<qreal>(real_device_pixel_ratio.value());
-      const QSize scaled_size = ApplyDevicePixelRatioToSize(widget->size(), device_pixel_ratio);
-      wi->surface_width = static_cast<u16>(scaled_size.width());
-      wi->surface_height = static_cast<u16>(scaled_size.height());
-      wi->surface_scale = static_cast<float>(device_pixel_ratio);
-      return;
+      if (const std::optional<double> real_device_pixel_ratio = CocoaTools::GetViewRealScalingFactor(wi->window_handle))
+        device_pixel_ratio = static_cast<qreal>(real_device_pixel_ratio.value());
     }
-  }
-  else
-  {
-    if (std::optional<std::pair<int, int>> size =
-          CocoaTools::GetViewSizeInPixels(reinterpret_cast<void*>(widget->winId())))
-    {
-      const qreal device_pixel_ratio = widget->devicePixelRatio();
-      wi->surface_width = static_cast<u16>(size->first);
-      wi->surface_height = static_cast<u16>(size->second);
-      wi->surface_scale = static_cast<float>(device_pixel_ratio);
-      return;
-    }
+
+    wi->surface_width = static_cast<u16>(size->first);
+    wi->surface_height = static_cast<u16>(size->second);
+    wi->surface_scale = static_cast<float>(device_pixel_ratio);
+    return;
   }
 #endif
 
