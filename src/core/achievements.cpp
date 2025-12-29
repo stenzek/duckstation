@@ -617,7 +617,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
   // Allow custom host to be overridden through config.
   if (std::string host = Core::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
   {
-    // drop trailing hash, rc_client appends its own
+    // drop trailing slash, rc_client appends its own
     while (!host.empty() && host.back() == '/')
       host.pop_back();
     if (!host.empty())
@@ -672,7 +672,7 @@ bool Achievements::TryLoggingInWithToken()
   }
   else
   {
-    WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
+    WARNING_LOG("Invalid encrypted login token, requesting a new one.");
     Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
     return false;
   }
@@ -982,10 +982,10 @@ void Achievements::UpdateGameSummary(bool update_progress_database)
 
 void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock)
 {
-  // Limit rich presence updates to once per second, since it could change per frame.
   if (!s_state.has_rich_presence)
     return;
 
+  // Limit rich presence updates to once per second, since it could change per frame.
   const Timer::Value now = Timer::GetCurrentValue();
   if (Timer::ConvertValueToSeconds(now - s_state.rich_presence_poll_time) < 1)
     return;
@@ -1362,7 +1362,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   const rc_client_achievement_t* cheevo = event->achievement;
   DebugAssert(cheevo);
 
-  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_state.game_id);
+  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title, s_state.game_id);
   UpdateGameSummary(true);
 
   if (g_settings.achievements_notifications)
@@ -1389,7 +1389,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
-  INFO_LOG("Game {} complete", s_state.game_id);
+  INFO_LOG("Game {} ({}) complete", s_state.game_id, s_state.game_title);
   UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications)
@@ -1408,7 +1408,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
 void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
 {
-  INFO_LOG("Subset {} ({}) complete", event->subset->title, event->subset->id);
+  INFO_LOG("Subset {} ({}) complete", event->subset->id, event->subset->title);
   UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications && event->subset->badge_name[0] != '\0')
