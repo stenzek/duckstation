@@ -243,16 +243,16 @@ bool QtHost::VeryEarlyProcessStartup()
   }
 #endif
 
+#ifdef __linux__
+  ApplyWaylandWorkarounds();
+#endif
+
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   return true;
 }
 
 bool QtHost::EarlyProcessStartup()
 {
-#ifdef __linux__
-  ApplyWaylandWorkarounds();
-#endif
-
   // redirect qt errors
   qInstallMessageHandler(MessageOutputHandler);
 
