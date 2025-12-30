@@ -1838,7 +1838,7 @@ void FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (pressed)
   {
-    const SmallString url = SmallString::from_format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
+    const std::string url = fmt::format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
     INFO_LOG("Opening profile details: {}", url);
     Host::OpenURL(url);
   }
