@@ -125,6 +125,7 @@ void AudioSettingsWidget::onStretchModeChanged()
         .c_str())
       .value_or(AudioStreamParameters::DEFAULT_STRETCH_MODE);
   m_ui.stretchSettings->setEnabled(stretch_mode != AudioStretchMode::Off);
+  updateMinimumLatencyLabel();
 }
 
 AudioBackend AudioSettingsWidget::getEffectiveBackend() const
@@ -210,37 +211,84 @@ void AudioSettingsWidget::queueUpdateDeviceNames()
                                                        "OutputDevice", std::move(devices.front().name));
       }
 
-      updateLatencyLabel();
+      updateMinimumLatencyLabel();
     };
   });
 }
 
 void AudioSettingsWidget::updateLatencyLabel()
 {
-  const u32 config_buffer_ms =
+  const bool minimal_output_latency = m_dialog->getEffectiveBoolValue(
+    "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
+  const int config_buffer_ms =
     m_dialog->getEffectiveIntValue("Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS);
-  const u32 config_output_latency_ms =
-    m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-  const bool minimal_output = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal",
-                                                              AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
+  const int config_output_latency_ms =
+    minimal_output_latency ?
+      0 :
+      m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
 
-  //: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
-  m_ui.outputLatencyLabel->setText(minimal_output ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
+  m_ui.outputLatencyLabel->setText(minimal_output_latency ? tr("N/A") : tr("%1 ms").arg(config_output_latency_ms));
   m_ui.bufferMSLabel->setText(tr("%1 ms").arg(config_buffer_ms));
 
-  const u32 output_latency_ms = minimal_output ?
-                                  CoreAudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, m_output_device_latency) :
-                                  config_output_latency_ms;
+  updateMinimumLatencyLabel();
+}
+
+void AudioSettingsWidget::updateMinimumLatencyLabel()
+{
+  const AudioStretchMode stretch_mode =
+    CoreAudioStream::ParseStretchMode(m_dialog->getEffectiveStringValue("Audio", "StretchMode").c_str())
+      .value_or(AudioStreamParameters::DEFAULT_STRETCH_MODE);
+  const bool minimal_output_latency = m_dialog->getEffectiveBoolValue(
+    "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
+  const int config_buffer_ms =
+    m_dialog->getEffectiveIntValue("Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS);
+  const int config_output_latency_ms =
+    minimal_output_latency ?
+      0 :
+      m_dialog->getEffectiveIntValue("Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+  const int stretch_sequence_length_ms =
+    (stretch_mode == AudioStretchMode::TimeStretch) ?
+      m_dialog->getEffectiveIntValue("Audio", "StretchSequenceLengthMS",
+                                     AudioStreamParameters::DEFAULT_STRETCH_SEQUENCE_LENGTH) :
+      0;
+
+  const int output_latency_ms =
+    minimal_output_latency ?
+      static_cast<int>(CoreAudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, m_output_device_latency)) :
+      config_output_latency_ms;
+  const int total_latency_ms = stretch_sequence_length_ms + config_buffer_ms + output_latency_ms;
   if (output_latency_ms > 0)
   {
-    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
-                                   .arg(config_buffer_ms + output_latency_ms)
-                                   .arg(config_buffer_ms)
-                                   .arg(output_latency_ms));
+    if (stretch_sequence_length_ms > 0)
+    {
+      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer + %4 ms output)")
+                                     .arg(total_latency_ms)
+                                     .arg(stretch_sequence_length_ms)
+                                     .arg(config_buffer_ms)
+                                     .arg(output_latency_ms));
+    }
+    else
+    {
+      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
+                                     .arg(total_latency_ms)
+                                     .arg(config_buffer_ms)
+                                     .arg(output_latency_ms));
+    }
   }
   else
   {
-    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
+    if (stretch_sequence_length_ms > 0)
+    {
+      m_ui.bufferingLabel->setText(
+        tr("Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer, minimum output latency unknown)")
+          .arg(total_latency_ms)
+          .arg(stretch_sequence_length_ms)
+          .arg(config_buffer_ms));
+    }
+    else
+    {
+      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
+    }
   }
 }
 
@@ -341,6 +389,7 @@ void AudioSettingsWidget::onStretchSettingsClicked()
 
     QMetaObject::invokeMethod(this, &AudioSettingsWidget::onStretchSettingsClicked, Qt::QueuedConnection);
   });
+  connect(dlg, &QDialog::accepted, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
 
   dlg->open();
 }

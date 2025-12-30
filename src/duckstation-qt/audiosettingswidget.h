@@ -30,6 +30,7 @@ private:
   void updateDriverNames();
   void queueUpdateDeviceNames();
   void updateLatencyLabel();
+  void updateMinimumLatencyLabel();
   void updateVolumeLabel();
   void onMinimalOutputLatencyChecked(Qt::CheckState state);
   void onOutputVolumeChanged(int new_value);
