@@ -120,7 +120,7 @@ static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)
 static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.woff2";
 static constexpr const char* FA_FONT_NAME = FONT_ICON_FILE_NAME_FAS;
 static constexpr const char* PF_FONT_NAME = "promptfont.woff2";
-static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
+static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.woff2";
 
 namespace {
 
