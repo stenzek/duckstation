@@ -162,6 +162,20 @@ std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size
   return len;
 }
 
+std::string StringUtil::StripControlCharacters(std::string_view str)
+{
+  std::string out;
+  out.reserve(str.length());
+  for (size_t i = 0; i < str.length();)
+  {
+    char32_t ch;
+    i += StringUtil::DecodeUTF8(str, i, &ch);
+    ch = (ch < 0x20) ? '_' : ch;
+    StringUtil::EncodeAndAppendUTF8(out, ch);
+  }
+  return out;
+}
+
 u8 StringUtil::DecodeHexDigit(char ch)
 {
   if (ch >= '0' && ch <= '9')
@@ -319,6 +333,17 @@ std::string StringUtil::EncodeBase64(const std::span<u8> data)
   ret.resize(EncodedBase64Length(data));
   ret.resize(EncodeBase64(ret, data));
   return ret;
+}
+
+size_t StringUtil::CountChar(const std::string_view str, char ch)
+{
+  return std::count(str.begin(), str.end(), ch);
+}
+
+size_t StringUtil::CountCharNoCase(const std::string_view str, char ch)
+{
+  ch = ToLower(ch);
+  return std::count_if(str.begin(), str.end(), [ch](char och) { return (ch == ToLower(och)); });
 }
 
 std::string_view StringUtil::StripWhitespace(const std::string_view str)

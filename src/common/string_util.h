@@ -267,6 +267,9 @@ ALWAYS_INLINE bool IsWhitespace(char ch)
           ch == 0x20);                  // space
 }
 
+/// Removes control characters from the given string.
+std::string StripControlCharacters(std::string_view str);
+
 /// Encode/decode hexadecimal byte buffers
 u8 DecodeHexDigit(char ch);
 size_t DecodeHex(std::span<u8> dest, const std::string_view str);
@@ -346,6 +349,10 @@ ALWAYS_INLINE bool EndsWithNoCase(const std::string_view str, const std::string_
   return (str.length() >= suffix_length &&
           Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
 }
+
+/// Returns the number of occurrences of the given character in the string.
+size_t CountChar(const std::string_view str, char ch);
+size_t CountCharNoCase(const std::string_view str, char ch);
 
 /// Strip whitespace from the start/end of the string.
 std::string_view StripWhitespace(const std::string_view str);
