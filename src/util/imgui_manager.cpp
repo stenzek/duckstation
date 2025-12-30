@@ -112,14 +112,14 @@ static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
 static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)> TEXT_FONT_NAMES = {{
-  "Roboto-VariableFont_wdth,wght.ttf", // Default
-  "NotoSansSC-VariableFont_wght.ttf",  // Chinese
-  "NotoSansJP-VariableFont_wght.ttf",  // Japanese
-  "NotoSansKR-VariableFont_wght.ttf",  // Korean
+  "Roboto-VariableFont_wdth,wght.woff2", // Default
+  "NotoSansSC-VariableFont_wght.woff2",  // Chinese
+  "NotoSansJP-VariableFont_wght.woff2",  // Japanese
+  "NotoSansKR-VariableFont_wght.woff2",  // Korean
 }};
-static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.ttf";
+static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.woff2";
 static constexpr const char* FA_FONT_NAME = FONT_ICON_FILE_NAME_FAS;
-static constexpr const char* PF_FONT_NAME = "promptfont.otf";
+static constexpr const char* PF_FONT_NAME = "promptfont.woff2";
 static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
 
 namespace {
