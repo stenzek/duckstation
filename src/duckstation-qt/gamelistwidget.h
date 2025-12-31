@@ -231,12 +231,14 @@ public:
   GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;
 
+  ALWAYS_INLINE bool isLayoutUpdatedDeferred() const { return m_layout_update_deferred; }
+
   int horizontalOffset() const override;
   int verticalOffset() const override;
 
   void adjustZoom(float delta);
 
-  void updateLayout();
+  void updateLayout(bool disable_defer);
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
@@ -247,6 +249,7 @@ private:
   GameListSortModel* m_sort_model = nullptr;
   int m_horizontal_offset = 0;
   int m_vertical_offset = 0;
+  bool m_layout_update_deferred = true;
 };
 
 class GameListWidget final : public QWidget

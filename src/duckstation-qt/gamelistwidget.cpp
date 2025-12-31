@@ -2194,11 +2194,14 @@ void GameListWidget::setShowCoverTitles(bool enabled)
   Core::SetBaseBoolSettingValue("UI", "GameListShowCoverTitles", enabled);
   Host::CommitBaseSettingChanges();
   m_model->setShowCoverTitles(enabled);
-  m_grid_view->updateLayout();
+  m_grid_view->updateLayout(false);
 }
 
 void GameListWidget::setViewMode(int stack_index)
 {
+  if (stack_index == VIEW_MODE_GRID && m_grid_view->isLayoutUpdatedDeferred())
+    m_grid_view->updateLayout(true);
+
   const int prev_stack_index = m_ui.stack->currentIndex();
   m_ui.stack->setCurrentIndex(stack_index);
   setFocusProxy(m_ui.stack->currentWidget());
@@ -2628,7 +2631,6 @@ GameListGridView::GameListGridView(GameListModel* model, GameListSortModel* sort
   setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   verticalScrollBar()->setSingleStep(15);
   connect(m_model, &GameListModel::coverScaleChanged, this, &GameListGridView::updateLayout);
-  updateLayout();
 }
 
 GameListGridView::~GameListGridView() = default;
@@ -2655,7 +2657,7 @@ void GameListGridView::wheelEvent(QWheelEvent* e)
 void GameListGridView::resizeEvent(QResizeEvent* e)
 {
   QListView::resizeEvent(e);
-  updateLayout();
+  updateLayout(false);
 }
 
 void GameListGridView::adjustZoom(float delta)
@@ -2664,8 +2666,11 @@ void GameListGridView::adjustZoom(float delta)
   m_model->setCoverScale(new_scale);
 }
 
-void GameListGridView::updateLayout()
+void GameListGridView::updateLayout(bool disable_defer)
 {
+  if (!disable_defer && m_layout_update_deferred)
+    return;
+
   const QSize item_size = m_model->getCoverArtItemSize();
   const int item_spacing = m_model->getCoverArtSpacing();
   const int item_margin = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, this) * 2;
@@ -2686,6 +2691,7 @@ void GameListGridView::updateLayout()
 
   m_horizontal_offset = margin;
   m_vertical_offset = item_spacing;
+  m_layout_update_deferred = false;
 }
 
 int GameListGridView::horizontalOffset() const
