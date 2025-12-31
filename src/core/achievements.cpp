@@ -23,6 +23,7 @@
 
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
+#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
@@ -84,8 +85,10 @@ static constexpr float CHALLENGE_FAILED_NOTIFICATION_TIME = 5.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 
-static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
-static constexpr float INDICATOR_FADE_OUT_TIME = 0.3f;
+static constexpr float CHALLENGE_INDICATOR_FADE_IN_TIME = 0.1f;
+static constexpr float CHALLENGE_INDICATOR_FADE_OUT_TIME = 0.3f;
+static constexpr float INDICATOR_FADE_IN_TIME = 0.2f;
+static constexpr float INDICATOR_FADE_OUT_TIME = 0.4f;
 
 // Some API calls are really slow. Set a longer timeout.
 static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
@@ -115,7 +118,7 @@ struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
   std::string text;
-  float opacity;
+  float time;
   bool active;
 };
 
@@ -123,7 +126,7 @@ struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  float opacity;
+  float time;
   bool active;
 };
 
@@ -156,6 +159,7 @@ static std::string GetImageURL(const char* image_name, u32 type);
 static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
 static float IndicatorOpacity(float delta_time, bool active, float& opacity);
+static float IndicatorAnimation(bool active, float time, float width, float position_x, float* opacity);
 
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
 static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
@@ -1528,7 +1532,7 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
   s_state.active_leaderboard_trackers.push_back(LeaderboardTrackerIndicator{
     .tracker_id = id,
     .text = event->leaderboard_tracker->display,
-    .opacity = 0.0f,
+    .time = 0.0f,
     .active = true,
   });
 }
@@ -1544,6 +1548,7 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
     return;
 
   it->active = false;
+  it->time = std::min(it->time, INDICATOR_FADE_OUT_TIME);
 }
 
 void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* event)
@@ -1635,7 +1640,7 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
 
   s_state.active_progress_indicator->achievement = event->achievement;
   s_state.active_progress_indicator->badge_path = GetAchievementBadgePath(event->achievement, false);
-  s_state.active_progress_indicator->opacity = 0.0f;
+  s_state.active_progress_indicator->time = 0.0f;
   s_state.active_progress_indicator->active = true;
   FullscreenUI::UpdateAchievementsLastProgressUpdate(event->achievement);
 }
@@ -1654,6 +1659,7 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
   }
 
   s_state.active_progress_indicator->active = false;
+  s_state.active_progress_indicator->time = std::min(s_state.active_progress_indicator->time, INDICATOR_FADE_OUT_TIME);
 }
 
 void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client_event_t* event)
@@ -2321,12 +2327,12 @@ float Achievements::IndicatorOpacity(float delta_time, bool active, float& opaci
   if (active)
   {
     target = 1.0f;
-    rate = INDICATOR_FADE_IN_TIME;
+    rate = CHALLENGE_INDICATOR_FADE_IN_TIME;
   }
   else
   {
     target = 0.0f;
-    rate = -INDICATOR_FADE_OUT_TIME;
+    rate = -CHALLENGE_INDICATOR_FADE_OUT_TIME;
   }
 
   if (opacity != target)
@@ -2335,19 +2341,53 @@ float Achievements::IndicatorOpacity(float delta_time, bool active, float& opaci
   return opacity;
 }
 
+float Achievements::IndicatorAnimation(bool active, float time, float width, float position_x, float* opacity)
+{
+  static constexpr float MOVE_WIDTH = 0.3f;
+
+  if (active)
+  {
+    if (time < INDICATOR_FADE_IN_TIME)
+    {
+      const float pct = time / INDICATOR_FADE_IN_TIME;
+      const float eased_pct = std::clamp(Easing::OutExpo(pct), 0.0f, 1.0f);
+      *opacity = pct;
+      return ImFloor(position_x + (width * MOVE_WIDTH * (1.0f - eased_pct)));
+    }
+  }
+  else
+  {
+    if (time < INDICATOR_FADE_OUT_TIME)
+    {
+      const float pct = time / INDICATOR_FADE_OUT_TIME;
+      const float eased_pct = std::clamp(Easing::InExpo(pct), 0.0f, 1.0f);
+      *opacity = eased_pct;
+      return ImFloor(position_x + (width * MOVE_WIDTH * (1.0f - eased_pct)));
+    }
+  }
+
+  *opacity = 1.0f;
+  return position_x;
+}
+
 void Achievements::DrawGameOverlays()
 {
+  using FullscreenUI::DarkerColor;
+  using FullscreenUI::DrawRoundedGradientRect;
   using FullscreenUI::LayoutScale;
   using FullscreenUI::ModAlpha;
   using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
 
+  static constexpr const float& font_size = UIStyle.MediumFontSize;
+  static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+
+  static constexpr float bg_opacity = 0.8f;
+
   if (!HasActiveGame())
     return;
 
   const auto lock = GetLock();
-
-  constexpr float bg_opacity = 0.8f;
 
   const float margin =
     std::max(ImCeil(ImGuiManager::GetScreenMargin() * ImGuiManager::GetGlobalScale()), LayoutScale(10.0f));
@@ -2405,31 +2445,37 @@ void Achievements::DrawGameOverlays()
   if (s_state.active_progress_indicator.has_value())
   {
     AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
-    const float opacity = IndicatorOpacity(io.DeltaTime, indicator.active, indicator.opacity);
+    indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    const ImVec2 progress_image_size = LayoutScale(32.0f, 32.0f);
     const std::string_view text = s_state.active_progress_indicator->achievement->measured_progress;
-    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                         0.0f, IMSTR_START_END(text));
+    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+    const float box_width = progress_image_size.x + text_size.x + spacing + padding * 2.0f;
 
-    const ImVec2 box_min = ImVec2(position.x - image_size.x - text_size.x - spacing - padding * 2.0f,
-                                  position.y - image_size.y - padding * 2.0f);
+    float opacity;
+    const ImVec2 box_min =
+      ImVec2(IndicatorAnimation(indicator.active, indicator.time, box_width, position.x - box_width, &opacity),
+             position.y - progress_image_size.y - padding * 2.0f);
     const ImVec2 box_max = position;
 
-    dl->AddRectFilled(box_min, box_max,
-                      ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
+    DrawRoundedGradientRect(dl, box_min, box_max,
+                            ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                            ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
 
-    GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
+    GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
     if (badge)
     {
       const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
-      dl->AddImage(badge, badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+      dl->AddImage(badge, badge_pos, badge_pos + progress_image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                    ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
     const ImVec2 text_pos =
-      box_min + ImVec2(padding + image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+      box_min + ImVec2(padding + progress_image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
     const ImRect text_clip_rect(text_pos, box_max);
-    RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos, box_max,
+    RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
                               ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
 
@@ -2439,37 +2485,48 @@ void Achievements::DrawGameOverlays()
       s_state.active_progress_indicator.reset();
     }
 
-    position.y -= image_size.y + padding * 3.0f;
+    position.y -= progress_image_size.y + padding * 3.0f;
   }
 
   if (!s_state.active_leaderboard_trackers.empty())
   {
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    TinyString tstr;
+
     for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
       LeaderboardTrackerIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(io.DeltaTime, indicator.active, indicator.opacity);
+      indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
-      TinyString width_string;
-      width_string.append(ICON_FA_STOPWATCH);
+      tstr.assign(ICON_FA_STOPWATCH " ");
       for (u32 i = 0; i < indicator.text.length(); i++)
-        width_string.append('0');
-      const ImVec2 size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f,
-                                                      IMSTR_START_END(width_string));
+      {
+        // 8 is typically the widest digit
+        if (indicator.text[i] >= '0' && indicator.text[i] <= '9')
+          tstr.append('8');
+        else
+          tstr.append(indicator.text[i]);
+      }
 
-      const ImRect box(ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f), position);
-      dl->AddRectFilled(box.Min, box.Max,
-                        ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
+      const ImVec2 size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(tstr));
+      const float box_width = size.x + padding * 2.0f;
+      float opacity;
+      const ImRect box(
+        ImVec2(IndicatorAnimation(indicator.active, indicator.time, box_width, position.x - box_width, &opacity),
+               position.y - size.y - padding * 2.0f),
+        position);
+
+      DrawRoundedGradientRect(dl, box.Min, box.Max,
+                              ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                              ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+
+      tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
 
       const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
-      const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                           0.0f, IMSTR_START_END(indicator.text));
-      const ImVec2 text_pos = ImVec2(box.Max.x - padding - text_size.x, box.Min.y + padding);
-      RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos, box.Max,
-                                text_col, indicator.text, &text_size, ImVec2(0.0f, 0.0f), 0.0f, &box);
-
-      const ImVec2 icon_pos = ImVec2(box.Min.x + padding, box.Min.y + padding);
-      RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, icon_pos, box.Max,
-                                text_col, ICON_FA_STOPWATCH, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight,
+                                ImVec2(box.Min.x + padding, box.Min.y + padding), box.Max, text_col, tstr, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       if (!indicator.active && opacity <= 0.01f)
       {
