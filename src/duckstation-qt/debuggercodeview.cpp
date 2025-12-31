@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "debuggercodeview.h"
+#include "qtutils.h"
 
 #include "core/bus.h"
 #include "core/cpu_core.h"
@@ -344,6 +345,7 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
   x += ADDRESS_COLUMN_WIDTH;
 
   // Draw instruction bytes
+  SmallString str;
   if (u32 instruction_bits; CPU::SafeReadInstruction(address, &instruction_bits))
   {
     const QString bytes_text = QString::asprintf("%08X", instruction_bits);
@@ -351,9 +353,8 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
     painter.drawText(x, y, bytes_text);
     x += BYTES_COLUMN_WIDTH;
 
-    SmallString str;
     CPU::DisassembleInstruction(&str, address, instruction_bits);
-    const QString disasm_text = QString::fromUtf8(str.c_str(), static_cast<int>(str.length()));
+    const QString disasm_text = QtUtils::StringViewToQString(str);
     painter.setPen(instruction_color);
 
     // Highlight registers and immediates in the disassembly
@@ -378,6 +379,17 @@ void DebuggerCodeView::drawInstruction(QPainter& painter, VirtualMemoryAddress a
       x += font_metrics.horizontalAdvance(token);
 
       start_pos = end_pos;
+    }
+
+    if (is_pc)
+    {
+      str.clear();
+      CPU::DisassembleInstructionComment(&str, address, instruction_bits);
+      if (!str.empty())
+      {
+        painter.setPen(address_color);
+        painter.drawText(COMMENT_COLUMN_START, y, QtUtils::StringViewToQString(str));
+      }
     }
   }
   else
