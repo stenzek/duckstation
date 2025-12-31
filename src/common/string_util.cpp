@@ -140,12 +140,6 @@ std::size_t StringUtil::Strlcpy(char* dst, const char* src, std::size_t size)
   return len;
 }
 
-std::size_t StringUtil::Strnlen(const char* str, std::size_t max_size)
-{
-  const char* loc = static_cast<const char*>(std::memchr(str, 0, max_size));
-  return loc ? static_cast<size_t>(loc - str) : max_size;
-}
-
 std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size_t size)
 {
   std::size_t len = src.length();
@@ -160,6 +154,57 @@ std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size
     dst[size - 1] = '\0';
   }
   return len;
+}
+
+std::size_t StringUtil::Strnlen(const char* str, std::size_t max_size)
+{
+  const char* loc = static_cast<const char*>(std::memchr(str, 0, max_size));
+  return loc ? static_cast<size_t>(loc - str) : max_size;
+}
+
+int StringUtil::Strcasecmp(const char* s1, const char* s2)
+{
+#ifdef _MSC_VER
+  return _stricmp(s1, s2);
+#else
+  return strcasecmp(s1, s2);
+#endif
+}
+
+int StringUtil::Strncasecmp(const char* s1, const char* s2, std::size_t n)
+{
+#ifdef _MSC_VER
+  return _strnicmp(s1, s2, n);
+#else
+  return strncasecmp(s1, s2, n);
+#endif
+}
+
+bool StringUtil::EqualNoCase(std::string_view s1, std::string_view s2)
+{
+  const size_t s1_len = s1.length();
+  const size_t s2_len = s2.length();
+  if (s1_len != s2_len)
+    return false;
+  else if (s1_len == 0)
+    return true;
+
+  return (Strncasecmp(s1.data(), s2.data(), s1_len) == 0);
+}
+
+int StringUtil::CompareNoCase(std::string_view s1, std::string_view s2)
+{
+  const size_t s1_len = s1.length();
+  const size_t s2_len = s2.length();
+  const size_t compare_len = std::min(s1_len, s2_len);
+  const int compare_res = (compare_len > 0) ? Strncasecmp(s1.data(), s2.data(), compare_len) : 0;
+  return (compare_res != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
+}
+
+bool StringUtil::ContainsNoCase(std::string_view s1, std::string_view s2)
+{
+  return (std::search(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                      [](char lhs, char rhs) { return (ToLower(lhs) == ToLower(rhs)); }) != s1.end());
 }
 
 std::string StringUtil::StripControlCharacters(std::string_view str)
@@ -335,6 +380,18 @@ std::string StringUtil::EncodeBase64(const std::span<u8> data)
   return ret;
 }
 
+bool StringUtil::StartsWithNoCase(const std::string_view str, const std::string_view prefix)
+{
+  return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
+}
+
+bool StringUtil::EndsWithNoCase(const std::string_view str, const std::string_view suffix)
+{
+  const std::size_t suffix_length = suffix.length();
+  return (str.length() >= suffix_length &&
+          Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
+}
+
 size_t StringUtil::CountChar(const std::string_view str, char ch)
 {
   return std::count(str.begin(), str.end(), ch);
@@ -486,6 +543,18 @@ bool StringUtil::ParseAssignmentString(const std::string_view str, std::string_v
     *value = std::string_view();
 
   return true;
+}
+
+std::optional<std::string_view> StringUtil::GetNextToken(std::string_view& caret, char separator)
+{
+  std::optional<std::string_view> ret;
+  const std::string_view::size_type pos = caret.find(separator);
+  if (pos != std::string_view::npos)
+  {
+    ret = caret.substr(0, pos);
+    caret = caret.substr(pos + 1);
+  }
+  return ret;
 }
 
 size_t StringUtil::GetUTF8CharacterCount(const std::string_view str)
@@ -903,6 +972,45 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
     delete[] match_bytes;
 
   return ret;
+}
+
+void StringUtil::StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
+                              std::size_t copy_size, std::size_t count)
+{
+  if (src_stride == dst_stride && src_stride == copy_size)
+  {
+    std::memcpy(dst, src, src_stride * count);
+    return;
+  }
+
+  const u8* src_ptr = static_cast<const u8*>(src);
+  u8* dst_ptr = static_cast<u8*>(dst);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    std::memcpy(dst_ptr, src_ptr, copy_size);
+    src_ptr += src_stride;
+    dst_ptr += dst_stride;
+  }
+}
+
+int StringUtil::StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
+                             std::size_t copy_size, std::size_t count)
+{
+  if (p1_stride == p2_stride && p1_stride == copy_size)
+    return std::memcmp(p1, p2, p1_stride * count);
+
+  const u8* p1_ptr = static_cast<const u8*>(p1);
+  const u8* p2_ptr = static_cast<const u8*>(p2);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    int result = std::memcmp(p1_ptr, p2_ptr, copy_size);
+    if (result != 0)
+      return result;
+    p2_ptr += p2_stride;
+    p1_ptr += p1_stride;
+  }
+
+  return 0;
 }
 
 size_t StringUtil::DecodeUTF8(const std::string_view str, size_t offset, char32_t* ch)
