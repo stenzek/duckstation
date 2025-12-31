@@ -55,7 +55,7 @@ static bool SaveToCache();
 static bool LoadGameDBYaml();
 static bool ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value);
 static bool ParseYamlDiscSetEntry(DiscSetEntry* entry, const ryml::ConstNodeRef& value);
-static bool ParseYamlCodes(PreferUnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
+static bool ParseYamlCodes(UnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
                            std::string_view serial);
 static void BindDiscSetsToEntries();
 static bool LoadTrackHashes();
@@ -179,7 +179,7 @@ struct State
 
   std::vector<GameDatabase::Entry> entries;
   std::vector<GameDatabase::DiscSetEntry> disc_sets;
-  PreferUnorderedStringMap<u32> code_lookup;
+  UnorderedStringMap<u32> code_lookup;
 
   TrackHashesMap track_hashes_map;
 
@@ -1342,7 +1342,7 @@ bool GameDatabase::LoadGameDBYaml()
     return false;
   }
 
-  PreferUnorderedStringMap<std::string_view> code_lookup;
+  UnorderedStringMap<std::string_view> code_lookup;
   {
     const ryml::Tree tree = ryml::parse_in_place(
       to_csubstr(GAMEDB_YAML_FILENAME), c4::substr(reinterpret_cast<char*>(gamedb_data->data()), gamedb_data->size()));
@@ -1696,7 +1696,7 @@ void GameDatabase::BindDiscSetsToEntries()
   }
 }
 
-bool GameDatabase::ParseYamlCodes(PreferUnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
+bool GameDatabase::ParseYamlCodes(UnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
                                   std::string_view serial)
 {
   const ryml::ConstNodeRef& codes = value.find_child(to_csubstr("codes"));

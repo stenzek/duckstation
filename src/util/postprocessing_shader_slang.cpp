@@ -89,7 +89,7 @@ public:
 private:
   static bool GetLine(const std::string_view& contents, std::string_view* line, size_t& offset);
 
-  PreferUnorderedStringMap<std::string> m_options;
+  UnorderedStringMap<std::string> m_options;
 };
 
 class SlangShaderPreprocessor

@@ -87,8 +87,8 @@ struct MemcardTimestampCacheEntry
 
 } // namespace
 
-using CacheMap = PreferUnorderedStringMap<Entry>;
-using PlayedTimeMap = PreferUnorderedStringMap<PlayedTimeEntry>;
+using CacheMap = UnorderedStringMap<Entry>;
+using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
 
 static_assert(std::is_same_v<decltype(Entry::hash), GameHash>);
 

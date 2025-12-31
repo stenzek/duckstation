@@ -179,7 +179,7 @@ private:
   QPixmap m_has_achievements_pixmap;
   QPixmap m_mastered_achievements_pixmap;
 
-  mutable PreferUnorderedStringMap<QPixmap> m_flag_pixmap_cache;
+  mutable UnorderedStringMap<QPixmap> m_flag_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 

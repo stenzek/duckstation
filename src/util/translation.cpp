@@ -19,8 +19,8 @@ static std::pair<const char*, u32> LookupTranslationString(std::string_view cont
                                                            std::string_view disambiguation);
 
 static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
-using TranslationStringMap = PreferUnorderedStringMap<std::pair<u32, u32>>;
-using TranslationStringContextMap = PreferUnorderedStringMap<TranslationStringMap>;
+using TranslationStringMap = UnorderedStringMap<std::pair<u32, u32>>;
+using TranslationStringContextMap = UnorderedStringMap<TranslationStringMap>;
 
 struct TranslationLocals
 {

@@ -246,8 +246,8 @@ struct DumpedTextureKeyHash
 } // namespace
 
 using HashCache = std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash>;
-using ReplacementImageCache = PreferUnorderedStringMap<TextureReplacementImage>;
-using GPUReplacementImageCache = PreferUnorderedStringMap<std::pair<std::unique_ptr<GPUTexture>, u32>>;
+using ReplacementImageCache = UnorderedStringMap<TextureReplacementImage>;
+using GPUReplacementImageCache = UnorderedStringMap<std::pair<std::unique_ptr<GPUTexture>, u32>>;
 
 using VRAMReplacementMap = std::unordered_map<VRAMReplacementName, std::string, VRAMReplacementNameHash>;
 using TextureReplacementMap =
