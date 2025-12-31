@@ -469,6 +469,24 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
         if (ImportOldChtFile(serial))
           disk_patch_files = FindChtFilesOnDisk(serial, hash, cheats);
       }
+
+      if (disk_patch_files.empty())
+      {
+        // Is this game part of a disc set? Try codes for the other discs.
+        const GameDatabase::Entry* gentry = GameDatabase::GetEntryForSerial(serial);
+        if (gentry && gentry->disc_set)
+        {
+          for (const std::string_view& set_serial : gentry->disc_set->serials)
+          {
+            if (set_serial == serial)
+              continue;
+
+            disk_patch_files = FindChtFilesOnDisk(set_serial, std::nullopt, cheats);
+            if (!disk_patch_files.empty())
+              break;
+          }
+        }
+      }
     }
 
     Error error;
