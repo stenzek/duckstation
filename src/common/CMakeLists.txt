@@ -76,8 +76,8 @@ add_library(common
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_link_libraries(common PUBLIC fmt Threads::Threads fast_float)
-target_link_libraries(common PRIVATE "${CMAKE_DL_LIBS}")
+target_link_libraries(common PUBLIC fmt Threads::Threads)
+target_link_libraries(common PRIVATE fast_float "${CMAKE_DL_LIBS}")
 
 if(WIN32)
   target_sources(common PRIVATE

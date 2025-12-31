@@ -73,3 +73,4 @@ target_compile_definitions(rapidyaml PUBLIC
   "C4_NO_DEBUG_BREAK"
 )
 
+target_link_libraries(rapidyaml PUBLIC fast_float)

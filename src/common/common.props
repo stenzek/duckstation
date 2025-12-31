@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)src;%(AdditionalIncludeDirectories);$(SolutionDir)dep\fast_float\include;$(SolutionDir)dep\fmt\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)src;$(SolutionDir)dep\fmt\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);FMT_EXCEPTIONS=0;FMT_USE_RTTI=0;FMT_CPP_LIB_FILESYSTEM=0</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
