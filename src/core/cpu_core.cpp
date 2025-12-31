@@ -521,7 +521,7 @@ ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
   const u32 bpc = g_state.cop0_regs.BPC;
   const u32 bpcm = g_state.cop0_regs.BPCM;
   const u32 masked_bpc = bpc & bpcm;
-  for (const auto [range_start, range_end] : code_address_ranges)
+  for (const auto& [range_start, range_end] : code_address_ranges)
   {
     if (masked_bpc >= (range_start & bpcm) && masked_bpc <= (range_end & bpcm))
       return true;
@@ -816,7 +816,7 @@ const std::array<CPU::DebuggerRegisterListEntry, CPU::NUM_DEBUGGER_REGISTER_LIST
                                     {"ZSF4", &CPU::g_state.gte_regs.r32[62]},
                                     {"FLAG", &CPU::g_state.gte_regs.r32[63]}}};
 
-ALWAYS_INLINE static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32* new_value)
+ALWAYS_INLINE static bool AddOverflow(u32 old_value, u32 add_value, u32* new_value)
 {
 #if defined(__clang__) || defined(__GNUC__)
   return __builtin_add_overflow(static_cast<s32>(old_value), static_cast<s32>(add_value),
@@ -827,7 +827,7 @@ ALWAYS_INLINE static constexpr bool AddOverflow(u32 old_value, u32 add_value, u3
 #endif
 }
 
-ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32* new_value)
+ALWAYS_INLINE static bool SubOverflow(u32 old_value, u32 sub_value, u32* new_value)
 {
 #if defined(__clang__) || defined(__GNUC__)
   return __builtin_sub_overflow(static_cast<s32>(old_value), static_cast<s32>(sub_value),

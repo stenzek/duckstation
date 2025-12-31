@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#pragma once
+
 #include "log.h"
+#include "small_string.h"
 #include "string_util.h"
 #include "types.h"
 
-#include "common/small_string.h"
-
-#include "ryml.hpp"
+#include <fmt/format.h>
+#include <ryml.hpp>
 
 #include <string>
 #include <string_view>
