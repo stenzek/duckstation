@@ -85,6 +85,8 @@ static void HotkeyToggleOSD()
   GPUThread::UpdateSettings(true, false, false);
 }
 
+#define DEFINE_HOTKEY(name, category, display_name, handler) {(name), (category), (display_name), (handler)},
+
 #ifndef __ANDROID__
 
 #define DEFINE_NON_ANDROID_HOTKEY(name, category, display_name, handler)                                               \
@@ -96,7 +98,7 @@ static void HotkeyToggleOSD()
 
 #endif
 
-BEGIN_HOTKEY_LIST(g_common_hotkeys)
+static constexpr const HotkeyInfo s_hotkey_list[] = {
 
 DEFINE_NON_ANDROID_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"), [](s32 pressed) {
@@ -768,5 +770,10 @@ DEFINE_HOTKEY("ToggleVRAMView", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLAT
                                             TRANSLATE_STR("OSDMessage", "Now showing display."));
                 }
               })
+};
 
-END_HOTKEY_LIST()
+std::span<const HotkeyInfo> Core::GetHotkeyList()
+{
+  return s_hotkey_list;
+}
+

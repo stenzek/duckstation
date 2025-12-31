@@ -7,6 +7,7 @@
 #include "translation.h"
 
 #include "core/controller.h"
+#include "core/core.h"
 #include "core/host.h"
 #include "core/system.h"
 
@@ -187,11 +188,6 @@ static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis:
 static constexpr const std::array<const char*, 3> s_pointer_button_names = {
   {"LeftButton", "RightButton", "MiddleButton"}};
 static constexpr const std::array<const char*, 3> s_sensor_accelerometer_names = {{"Turn", "Tilt", "Rotate"}};
-
-// ------------------------------------------------------------------------
-// Hotkeys
-// ------------------------------------------------------------------------
-static const HotkeyInfo* const s_hotkey_list[] = {g_common_hotkeys, g_host_hotkeys};
 
 // ------------------------------------------------------------------------
 // Local Variables
@@ -950,29 +946,15 @@ float InputManager::ApplySingleBindingScale(float scale, float deadzone, float v
   return (deadzone > 0.0f && svalue < deadzone) ? 0.0f : svalue;
 }
 
-std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
-{
-  std::vector<const HotkeyInfo*> ret;
-  for (const HotkeyInfo* hotkey_list : s_hotkey_list)
-  {
-    for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
-      ret.push_back(hotkey);
-  }
-  return ret;
-}
-
 void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 {
-  for (const HotkeyInfo* hotkey_list : s_hotkey_list)
+  for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
-    for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
-    {
-      const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey->name));
-      if (bindings.empty())
-        continue;
+    const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey.name));
+    if (bindings.empty())
+      continue;
 
-      AddBindings(bindings, InputButtonEventHandler{hotkey->handler});
-    }
+    AddBindings(bindings, InputButtonEventHandler{hotkey.handler});
   }
 }
 
@@ -1721,9 +1703,8 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
   if (copy_hotkey_bindings)
   {
-    std::vector<const HotkeyInfo*> hotkeys(InputManager::GetHotkeyList());
-    for (const HotkeyInfo* hki : hotkeys)
-      dest_si->CopyStringListValue(src_si, "Hotkeys", hki->name);
+    for (const HotkeyInfo& hk : Core::GetHotkeyList())
+      dest_si->CopyStringListValue(src_si, "Hotkeys", hk.name);
   }
 }
 

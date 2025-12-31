@@ -3069,9 +3069,6 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
   return ret;
 }
 
-BEGIN_HOTKEY_LIST(g_host_hotkeys)
-END_HOTKEY_LIST()
-
 static void SignalHandler(int signal)
 {
   // First try the normal (graceful) shutdown/exit.

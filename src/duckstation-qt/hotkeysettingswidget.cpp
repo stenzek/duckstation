@@ -102,10 +102,9 @@ void HotkeySettingsWidget::createButtons()
 
   const QPalette label_palette = getLabelPalette(QtHost::IsDarkApplicationTheme());
   const QPalette row_palette = getRowPalette();
-  const std::vector<const HotkeyInfo*> hotkeys(InputManager::GetHotkeyList());
-  for (const HotkeyInfo* hotkey : hotkeys)
+  for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
-    const QString category(qApp->translate("Hotkeys", hotkey->category));
+    const QString category(qApp->translate("Hotkeys", hotkey.category));
 
     auto iter = m_categories.find(category);
     if (iter == m_categories.end())
@@ -146,10 +145,10 @@ void HotkeySettingsWidget::createButtons()
     QHBoxLayout* row_layout = new QHBoxLayout(row);
     row_layout->setContentsMargins(LR_MARGIN, TB_MARGIN, LR_MARGIN, TB_MARGIN);
 
-    row_layout->addWidget(new QLabel(qApp->translate("Hotkeys", hotkey->display_name), row));
+    row_layout->addWidget(new QLabel(qApp->translate("Hotkeys", hotkey.display_name), row));
 
     InputBindingWidget* const bind = new InputBindingWidget(row, m_dialog->getEditingSettingsInterface(),
-                                                            InputBindingInfo::Type::Button, "Hotkeys", hotkey->name);
+                                                            InputBindingInfo::Type::Button, "Hotkeys", hotkey.name);
     bind->setFixedWidth(300);
     row_layout->addWidget(bind);
   }

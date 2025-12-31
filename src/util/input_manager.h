@@ -142,18 +142,6 @@ struct HotkeyInfo
   const char* display_name;
   void (*handler)(s32 pressed);
 };
-#define DECLARE_HOTKEY_LIST(name) extern const HotkeyInfo name[]
-#define BEGIN_HOTKEY_LIST(name) const HotkeyInfo name[] = {
-#define DEFINE_HOTKEY(name, category, display_name, handler) {(name), (category), (display_name), (handler)},
-#define END_HOTKEY_LIST()                                                                                              \
-  {                                                                                                                    \
-    nullptr, nullptr, nullptr, nullptr                                                                                 \
-  }                                                                                                                    \
-  }                                                                                                                    \
-  ;
-
-DECLARE_HOTKEY_LIST(g_common_hotkeys);
-DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
 /// Generic input bindings. These roughly match a DualShock 4 or XBox One controller.
 /// They are used for automatic binding to PS2 controller types, and for big picture mode navigation.
@@ -268,9 +256,6 @@ SmallString ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
 /// Optionally maps icon fonts to a different style, e.g. xbox icons -> PS buttons.
 using BindingIconMappingFunction = std::string_view (*)(std::string_view);
 bool PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper = nullptr);
-
-/// Returns a list of all hotkeys.
-std::vector<const HotkeyInfo*> GetHotkeyList();
 
 /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
 using DeviceList = std::vector<std::tuple<InputBindingKey, std::string, std::string>>;
@@ -414,9 +399,18 @@ void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 
 /// Creates a force feedback device interface for the specified source and device.
 std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(const std::string_view device, Error* error = nullptr);
+
 } // namespace InputManager
 
+namespace Core {
+
+/// Returns a list of all hotkeys.
+std::span<const HotkeyInfo> GetHotkeyList();
+
+} // namespace Core
+
 namespace Host {
+
 /// Adds any fixed bindings from the host.
 void AddFixedInputBindings(const SettingsInterface& si);
 
@@ -428,4 +422,5 @@ void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 
 /// Enables "relative" mouse mode, locking the cursor position and returning relative coordinates.
 void SetMouseMode(bool relative, bool hide_cursor);
+
 } // namespace Host

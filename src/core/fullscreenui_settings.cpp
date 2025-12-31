@@ -1566,17 +1566,16 @@ void FullscreenUI::PopulateHotkeyList()
     return;
 
   // sort hotkeys by category so we don't duplicate the groups
-  const auto hotkeys = InputManager::GetHotkeyList();
+  const auto hotkeys = Core::GetHotkeyList();
   s_settings_locals.hotkey_list_cache.reserve(hotkeys.size());
 
   // this mess is needed to preserve the category order
-  for (size_t i = 0; i < hotkeys.size(); i++)
+  for (const HotkeyInfo& hk : hotkeys)
   {
-    const HotkeyInfo* hk = hotkeys[i];
     size_t j;
     for (j = 0; j < s_settings_locals.hotkey_list_cache.size(); j++)
     {
-      if (std::strcmp(hk->category, s_settings_locals.hotkey_list_cache[j]->category) == 0)
+      if (std::strcmp(hk.category, s_settings_locals.hotkey_list_cache[j]->category) == 0)
         break;
     }
     if (j != s_settings_locals.hotkey_list_cache.size())
@@ -1586,12 +1585,12 @@ void FullscreenUI::PopulateHotkeyList()
     }
 
     // add all hotkeys with this category
-    for (const HotkeyInfo* other_hk : hotkeys)
+    for (const HotkeyInfo& other_hk : hotkeys)
     {
-      if (std::strcmp(hk->category, other_hk->category) != 0)
+      if (std::strcmp(hk.category, other_hk.category) != 0)
         continue;
 
-      s_settings_locals.hotkey_list_cache.push_back(other_hk);
+      s_settings_locals.hotkey_list_cache.push_back(&other_hk);
     }
   }
 }

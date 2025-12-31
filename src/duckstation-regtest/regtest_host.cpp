@@ -721,9 +721,6 @@ void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
   // noop
 }
 
-BEGIN_HOTKEY_LIST(g_host_hotkeys)
-END_HOTKEY_LIST()
-
 static void SignalHandler(int signal)
 {
   std::signal(signal, SIG_DFL);

@@ -1490,9 +1490,6 @@ bool Host::ShouldPreferHostFileSelector()
   return false;
 }
 
-BEGIN_HOTKEY_LIST(g_host_hotkeys)
-END_HOTKEY_LIST()
-
 static void SignalHandler(int signal)
 {
   // First try the normal (graceful) shutdown/exit.
