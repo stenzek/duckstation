@@ -9,4 +9,5 @@ add_executable(common-tests
   string_tests.cpp
 )
 
+target_include_directories(common-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(common-tests PRIVATE common gtest gtest_main)
