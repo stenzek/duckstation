@@ -1,9 +1,15 @@
 set(_saved_CMAKE_MESSAGE_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL})
 set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
 
-set(FMT_INSTALL OFF CACHE BOOL "")
 add_subdirectory(fmt EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(fmt)
+# Prevent fmt from being built with exceptions, or being thrown at call sites.
+target_compile_definitions(fmt PUBLIC
+  "FMT_EXCEPTIONS=0"
+  "FMT_USE_RTTI=0"
+  "FMT_CPP_LIB_FILESYSTEM=0"
+)
+
 add_subdirectory(minizip EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(minizip)
 add_subdirectory(lzma EXCLUDE_FROM_ALL)

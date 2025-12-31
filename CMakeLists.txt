@@ -116,9 +116,6 @@ if(BUILD_TESTS)
   enable_testing()
 endif()
 
-# Prevent fmt from being built with exceptions, or being thrown at call sites.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
-
 # Recursively include the source tree.
 add_subdirectory(dep)
 add_subdirectory(src)
