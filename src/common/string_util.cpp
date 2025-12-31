@@ -11,13 +11,6 @@
 #include <iomanip>
 #include <memory>
 
-// Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
-// merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
-#if !defined(_MSC_VER)
-#include <locale>
-#include <sstream>
-#endif
-
 #ifndef __APPLE__
 #include <malloc.h> // alloca
 #else
@@ -339,8 +332,6 @@ template<typename T>
   requires std::is_floating_point_v<T>
 std::string StringUtil::ToChars(const T value)
 {
-  // No to_chars() in older versions of libstdc++/libc++.
-#ifdef _MSC_VER
   constexpr size_t MAX_SIZE = 64;
   char buf[MAX_SIZE];
   std::string ret;
@@ -348,12 +339,6 @@ std::string StringUtil::ToChars(const T value)
   if (result.ec == std::errc())
     ret.append(buf, result.ptr - buf);
   return ret;
-#else
-  std::ostringstream ss;
-  ss.imbue(std::locale::classic());
-  ss << value;
-  return std::move(ss).str();
-#endif
 }
 
 // Instantiating with known types
