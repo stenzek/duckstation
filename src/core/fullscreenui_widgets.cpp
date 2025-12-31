@@ -1317,6 +1317,16 @@ void FullscreenUI::PopPrimaryColor()
   ImGui::PopStyleColor(5);
 }
 
+void FullscreenUI::DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max,
+                                           ImU32 col_left, ImU32 col_right, float rounding)
+{
+  dl->AddRectFilled(pos_min, ImVec2(pos_min.x + rounding, pos_max.y), col_left, rounding, ImDrawFlags_RoundCornersLeft);
+  dl->AddRectFilledMultiColor(ImVec2(pos_min.x + rounding, pos_min.y), ImVec2(pos_max.x - rounding, pos_max.y),
+                              col_left, col_right, col_right, col_left);
+  dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos_min.y), pos_max, col_right, rounding,
+                    ImDrawFlags_RoundCornersRight);
+}
+
 bool FullscreenUI::BeginFullscreenColumns(const char* title, float pos_y, bool expand_to_screen_width, bool footer)
 {
   ImGui::SetNextWindowPos(ImVec2(expand_to_screen_width ? 0.0f : UIStyle.LayoutPaddingLeft, pos_y));

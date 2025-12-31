@@ -958,6 +958,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
   using FullscreenUI::DarkerColor;
+  using FullscreenUI::DrawRoundedGradientRect;
   using FullscreenUI::ModAlpha;
   using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
@@ -1105,19 +1106,13 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
     const float background_opacity = opacity * 0.95f;
-    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
-    const u32 right_background_color32 = ImGui::GetColorU32(
-      ModAlpha(ImLerp(left_background_color, right_background_color,
-                      std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
-               background_opacity));
-
-    dl->AddRectFilled(pos, ImVec2(pos.x + rounding, pos_max.y), left_background_color32, rounding,
-                      ImDrawFlags_RoundCornersLeft);
-    dl->AddRectFilledMultiColor(ImVec2(pos.x + rounding, pos.y), ImVec2(pos_max.x - rounding, pos_max.y),
-                                left_background_color32, right_background_color32, right_background_color32,
-                                left_background_color32);
-    dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos.y), pos_max, right_background_color32, rounding,
-                      ImDrawFlags_RoundCornersRight);
+    DrawRoundedGradientRect(
+      dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+      ImGui::GetColorU32(
+        ModAlpha(ImLerp(left_background_color, right_background_color,
+                        std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
+                 background_opacity)),
+      rounding);
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
