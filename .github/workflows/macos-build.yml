@@ -60,7 +60,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        export MACOSX_DEPLOYMENT_TARGET=13.0
+        export MACOSX_DEPLOYMENT_TARGET=13.3
         cmake -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENGL=OFF -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -G Ninja ..
         cmake --build . --parallel
         mv bin/DuckStation.app .

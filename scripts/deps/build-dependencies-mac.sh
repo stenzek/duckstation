@@ -27,7 +27,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-export MACOSX_DEPLOYMENT_TARGET=13.0
+export MACOSX_DEPLOYMENT_TARGET=13.3
 
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
