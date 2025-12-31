@@ -110,7 +110,7 @@ inline constexpr int ConstexprCompare(const char* s1, const char* s2)
 }
 
 /// Wrapper around std::from_chars
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+template<typename T> requires std::is_integral_v<T>
 inline std::optional<T> FromChars(const std::string_view str, int base = 10)
 {
   T value;
@@ -121,7 +121,7 @@ inline std::optional<T> FromChars(const std::string_view str, int base = 10)
 
   return value;
 }
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+template<typename T> requires std::is_integral_v<T>
 inline std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr)
 {
   T value;
@@ -141,7 +141,7 @@ inline std::optional<T> FromChars(const std::string_view str, int base, std::str
   return value;
 }
 
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+template<typename T> requires std::is_integral_v<T>
 inline std::optional<T> FromCharsWithOptionalBase(std::string_view str, std::string_view* endptr = nullptr)
 {
   int base = 10;
@@ -167,7 +167,7 @@ inline std::optional<T> FromCharsWithOptionalBase(std::string_view str, std::str
     return FromChars<T>(str, base);
 }
 
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+template<typename T> requires std::is_floating_point_v<T>
 inline std::optional<T> FromChars(const std::string_view str)
 {
   T value;
@@ -178,7 +178,7 @@ inline std::optional<T> FromChars(const std::string_view str)
 
   return value;
 }
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+template<typename T> requires std::is_floating_point_v<T>
 inline std::optional<T> FromChars(const std::string_view str, std::string_view* endptr)
 {
   T value;
@@ -199,7 +199,7 @@ inline std::optional<T> FromChars(const std::string_view str, std::string_view* 
 }
 
 /// Wrapper around std::to_chars
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+template<typename T> requires std::is_integral_v<T>
 inline std::string ToChars(T value, int base = 10)
 {
   constexpr size_t MAX_SIZE = 32;
@@ -213,7 +213,7 @@ inline std::string ToChars(T value, int base = 10)
   return ret;
 }
 
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
+template<typename T> requires std::is_floating_point_v<T>
 inline std::string ToChars(T value)
 {
   // No to_chars() in older versions of libstdc++/libc++.
