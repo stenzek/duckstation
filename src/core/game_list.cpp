@@ -1588,33 +1588,35 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 
 std::string GameList::FormatTimestamp(std::time_t timestamp)
 {
-  std::string ret;
-
   if (timestamp == 0)
   {
-    ret = TRANSLATE_STR("GameList", "Never");
+    return TRANSLATE_STR("GameList", "Never");
   }
   else
   {
-    const std::optional<std::tm> ctime = Common::LocalTime(std::time(nullptr));
-    const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
-    if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year && ctime->tm_yday == ttime->tm_yday)
-    {
-      ret = TRANSLATE_STR("GameList", "Today");
-    }
-    else if (ctime.has_value() && ttime.has_value() &&
-             ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
-              (ctime->tm_yday == 0 && (ctime->tm_year - 1) == ttime->tm_year)))
-    {
-      ret = TRANSLATE_STR("GameList", "Yesterday");
-    }
-    else
-    {
-      ret = Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
-    }
-  }
+    const std::time_t current_time = std::time(nullptr);
 
-  return ret;
+    // Avoid localtime call when more than two days have passed.
+    if (current_time < timestamp || (current_time - timestamp) <= (2 * 24 * 60 * 60))
+    {
+      const std::optional<std::tm> ctime = Common::LocalTime(current_time);
+      const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
+      if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year &&
+          ctime->tm_yday == ttime->tm_yday)
+      {
+        return TRANSLATE_STR("GameList", "Today");
+      }
+      else if (ctime.has_value() && ttime.has_value() &&
+               ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
+                (ctime->tm_yday == 0 && ctime->tm_mon == 0 && (ctime->tm_year - 1) == ttime->tm_year &&
+                 ttime->tm_mon == 11 && ttime->tm_mday == 31)))
+      {
+        return TRANSLATE_STR("GameList", "Yesterday");
+      }
+    }
+
+    return Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
+  }
 }
 
 TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
@@ -1623,31 +1625,30 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
   const u32 seconds = static_cast<u32>((timespan % 3600) % 60);
 
-  TinyString ret;
   if (!long_format)
   {
     if (hours >= 100)
-      ret.format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
     else if (hours > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
     else if (minutes > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
     else if (seconds > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}s"), seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}s"), seconds);
     else
-      ret = TRANSLATE_SV("GameList", "None");
+      return TinyString(TRANSLATE_SV("GameList", "None"));
   }
   else
   {
     if (hours > 0)
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n hours", "", hours));
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n hours", "", hours);
     else if (minutes > 0)
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n minutes", "", minutes));
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n minutes", "", minutes);
+    else if (seconds > 0)
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n seconds", "", seconds);
     else
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n seconds", "", seconds));
+      return TinyString(TRANSLATE_SV("GameList", "None"));
   }
-
-  return ret;
 }
 
 std::vector<std::pair<std::string_view, const GameList::Entry*>>
