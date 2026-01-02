@@ -1796,12 +1796,6 @@ restart_instruction:
               }
               break;
 
-              case Cop0Reg::JUMPDEST:
-              {
-                WARNING_LOG("Ignoring write to Cop0 JUMPDEST");
-              }
-              break;
-
               case Cop0Reg::DCIC:
               {
                 g_state.cop0_regs.dcic.bits = (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) |
@@ -1831,6 +1825,15 @@ restart_instruction:
                 DEBUG_LOG("COP0 CAUSE <- {:08X} (now {:08X})", value, g_state.cop0_regs.cause.bits);
                 value = g_state.cop0_regs.cause.bits;
                 CheckForPendingInterrupt();
+              }
+              break;
+
+              case Cop0Reg::JUMPDEST:
+              case Cop0Reg::BadVaddr:
+              case Cop0Reg::EPC:
+              {
+                WARNING_LOG("Ignoring write to COP0 register {} value 0x{:08X}",
+                            GetCop0RegisterName(static_cast<u8>(inst.r.rd.GetValue())), value);
               }
               break;
 

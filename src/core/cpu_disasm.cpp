@@ -385,7 +385,7 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
     }
     else if (std::strncmp(str, "cop", 3) == 0)
     {
-      dest->append_format("{}", static_cast<u8>(inst.op.GetValue()) & INSTRUCTION_COP_N_MASK);
+      dest->append_format("{}", inst.cop.cop_n.GetValue());
       str += 3;
     }
     else
