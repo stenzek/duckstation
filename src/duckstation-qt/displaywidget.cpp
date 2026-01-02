@@ -708,6 +708,7 @@ AuxiliaryDisplayWidget* AuxiliaryDisplayWidget::create(s32 pos_x, s32 pos_y, u32
 void AuxiliaryDisplayWidget::destroy()
 {
   m_destroying = true;
+  m_window_info.reset();
 
   QWidget* container = static_cast<QWidget*>(parent());
   if (!container)
