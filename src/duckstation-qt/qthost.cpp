@@ -243,10 +243,6 @@ bool QtHost::VeryEarlyProcessStartup()
   }
 #endif
 
-#ifdef __linux__
-  ApplyWaylandWorkarounds();
-#endif
-
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
   return true;
 }
@@ -3396,6 +3392,13 @@ int main(int argc, char* argv[])
   QApplication app(argc, argv);
   if (!QtHost::PerformEarlyHardwareChecks())
     return EXIT_FAILURE;
+
+#ifdef __linux__
+  // Normally we'd have this shitfuckery in VeryEarlyProcessStartup(), but QApplication needs to be
+  // created before the platform plugin is loaded. This is only here because GNOME plus Wankland
+  // and their implementation of it is fucking terrible.
+  QtHost::ApplyWaylandWorkarounds();
+#endif
 
   // Type registration has to happen after hardware checks, clang emits ptest instructions otherwise.
   QtHost::RegisterTypes();
