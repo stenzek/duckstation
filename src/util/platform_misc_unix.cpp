@@ -169,7 +169,7 @@ static bool SetScreensaverInhibit(bool inhibit)
   return SetScreensaverInhibitDBus(inhibit, "DuckStation", "DuckStation VM is running.");
 }
 
-static bool s_screensaver_suspended;
+static bool s_screensaver_suspended = false;
 
 void PlatformMisc::SuspendScreensaver()
 {
