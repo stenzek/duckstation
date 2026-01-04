@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
+    <width>734</width>
     <height>511</height>
    </rect>
   </property>
@@ -274,6 +274,13 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="forceRoundedTexcoords">
+              <property name="text">
+               <string>Round Upscaled Texture Coordinates</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -316,7 +323,7 @@
          <property name="title">
           <string>Display Options</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_11" columnstretch="0,1" columnminimumwidth="120,0">
           <item row="0" column="0">
            <widget class="QLabel" name="exclusiveFullscreenLabel">
             <property name="text">
@@ -351,33 +358,140 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0" colspan="2">
-           <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="automaticallyResizeWindow">
-              <property name="text">
-               <string>Automatically Resize Window</string>
+          <item row="2" column="0">
+           <widget class="QLabel" name="displayFineCropModeLabel">
+            <property name="text">
+             <string>Fine Crop Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+            <item>
+             <widget class="QComboBox" name="displayFineCropMode"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="displayFineCropReset">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>Reset Fine Cropping</string>
+              </property>
+              <property name="icon">
+               <iconset theme="delete-back-2-line"/>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+           </layout>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="displayFineCropLabel">
+            <property name="text">
+             <string>Fine Crop Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0,1,0,1,0,1">
+            <item>
+             <widget class="QLabel" name="displayFineCropLeftLabel">
+              <property name="text">
+               <string>Left:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropLeft">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropTopLabel">
+              <property name="text">
+               <string>Top:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropTop">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropRightLabel">
+              <property name="text">
+               <string>Right:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropRight">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="displayFineCropBottomLabel">
+              <property name="text">
+               <string>Bottom:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="displayFineCropBottom">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>-32768</number>
+              </property>
+              <property name="maximum">
+               <number>32767</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
+            <item row="0" column="0">
              <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
                <string>Disable Mailbox Presentation</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="0" column="1">
              <widget class="QCheckBox" name="blitSwapChain">
               <property name="text">
                <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
-              <property name="text">
-               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>
@@ -391,7 +505,7 @@
          <property name="title">
           <string>Rendering Options</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_12" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_12" columnstretch="0,1" columnminimumwidth="120,0">
           <item row="0" column="0">
            <widget class="QLabel" name="msaaModeLabel">
             <property name="text">
@@ -412,32 +526,8 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="gpuLineDetectMode"/>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="gpuWireframeModeLabel">
-            <property name="text">
-             <string>Wireframe Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="gpuWireframeMode"/>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="scaledInterlacing">
-              <property name="text">
-               <string>Scaled Interlacing</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="forceRoundedTexcoords">
-              <property name="text">
-               <string>Round Upscaled Texture Coordinates</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="gpuThread">
               <property name="text">
@@ -462,6 +552,27 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="modulationCrop">
+              <property name="text">
+               <string>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="scaledInterlacing">
+              <property name="text">
+               <string>Scaled Interlacing</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -1448,11 +1559,30 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
+          <string>Rendering Options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_22" columnstretch="0,1" columnminimumwidth="160,0">
+          <item row="0" column="0">
+           <widget class="QLabel" name="gpuWireframeModeLabel">
+            <property name="text">
+             <string>Wireframe Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="gpuWireframeMode"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="gpuDumpGroup">
          <property name="title">
           <string>GPU Dump Recording/Playback</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_17" columnstretch="0,1">
+         <layout class="QGridLayout" name="gridLayout_17" columnstretch="0,1" columnminimumwidth="160,0">
           <item row="0" column="0">
            <widget class="QLabel" name="groupDumpCompressionModeLabel">
             <property name="text">

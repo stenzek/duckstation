@@ -2,7 +2,7 @@
 
 [Features](#features) | [Downloading and Running](#downloading-and-running) | [Building](#building) | [Disclaimers](#disclaimers)
 
-**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage x64/ARM32/ARM64), and macOS (11.0+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
+**Latest Builds for Windows 10/11 (x64/ARM64), Linux (AppImage x64/ARM32/ARM64), and macOS (13.3+ Universal):** https://github.com/stenzek/duckstation/releases/tag/latest
 
 **Discord Server:** https://www.duckstation.org/discord.html
 
@@ -112,7 +112,7 @@ You will need to re-add your game directories after switching to the AppImage.
 
 Universal macOS builds are provided for both x86_64 (Intel) and ARM64 (Apple Silicon).
 
-macOS Ventura (13.0) is required, as this is also the minimum requirement for Qt.
+macOS Ventura (13.3) is required, as this is also the minimum requirement for Qt.
 
 To download:
  - Go to https://github.com/stenzek/duckstation/releases/tag/latest, and download `duckstation-mac-release.zip`.
@@ -212,6 +212,24 @@ This is located in the following places depending on the platform you're using:
 So, if you were using Linux, you would place your BIOS images in `~/.local/share/duckstation/bios`. This directory will be created upon running DuckStation for the first time.
 
 If you wish to use a "portable" build, where the user directory is the same as where the executable is located, create an empty file named `portable.txt` in the same directory as the DuckStation executable.
+
+A shortcut to open the user directory is available by selecting `Open Data Directory` from the `Tools` menu.
+
+## Resource Overrides
+
+DuckStation allows you to override certain resources by placing files in the `resources` subdirectory of the user directory. This includes images and sound effects (e.g. menu navigation/achievement unlock).
+
+Sound effects must be in WAV format with a sample rate of 44100Hz, 16-bit, and stereo.
+
+The directory structure for the overrides should follow the same structure as the `resources` directory in the program directory. For example, to override the achievement unlock sound:
+1. Select `Open Data Directory` from the `Tools` menu.
+2. Open the `resources` directory, then the `sounds` directory. You will likely have to create the `sounds` directory as the application does not create resource override subdirectories automatically.
+3. Name your replacement file `unlock.wav`.
+4. Relaunch the game (and Big Picture Mode) if it is running, as sound effects are cached.
+
+**Do not place resource override files in the program directory**, as these will be overwritten when updating DuckStation.
+
+Please note that not all resources are overridable for reliability reasons. This feature also will not work if DuckStation is configured in portable mode, as the user and program resources directory overlaps.
 
 ## Bindings for Qt frontend
 Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> Controllers`.

@@ -21,7 +21,7 @@ public:
   ~OpenGLTexture();
 
   static bool UseTextureStorage(bool multisampled);
-  static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(Format format, bool gles);
+  static const std::tuple<GLenum, GLenum, GLenum>& GetPixelFormatMapping(GPUTextureFormat format, bool gles);
 
   ALWAYS_INLINE GLuint GetGLId() const { return m_id; }
 
@@ -35,7 +35,7 @@ public:
 #endif
 
   static std::unique_ptr<OpenGLTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                                               Format format, Flags flags, const void* data, u32 data_pitch,
+                                               GPUTextureFormat format, Flags flags, const void* data, u32 data_pitch,
                                                Error* error);
 
   bool UseTextureStorage() const;
@@ -50,8 +50,8 @@ public:
   OpenGLTexture& operator=(const OpenGLTexture&) = delete;
 
 private:
-  OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
-                GLuint id);
+  OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, GPUTextureFormat format,
+                Flags flags, GLuint id);
 
   GLuint m_id = 0;
 
@@ -116,7 +116,7 @@ class OpenGLDownloadTexture final : public GPUDownloadTexture
 public:
   ~OpenGLDownloadTexture() override;
 
-  static std::unique_ptr<OpenGLDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
+  static std::unique_ptr<OpenGLDownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, void* memory,
                                                        size_t memory_size, u32 memory_pitch, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
@@ -132,8 +132,8 @@ public:
 #endif
 
 private:
-  OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported, GLuint buffer_id,
-                        u8* cpu_buffer, const u8* map_ptr, u32 map_pitch);
+  OpenGLDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool imported, GLuint buffer_id, u8* cpu_buffer,
+                        const u8* map_ptr, u32 map_pitch);
 
   GLuint m_buffer_id = 0;
 

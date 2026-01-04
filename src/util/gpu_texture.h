@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
+#include "gpu_types.h"
+
 #include "common/gsvector.h"
 #include "common/small_string.h"
-#include "common/types.h"
 
 #include "fmt/format.h"
 
@@ -37,42 +38,6 @@ public:
     DepthStencil,
   };
 
-  enum class Format : u8
-  {
-    Unknown,
-    RGBA8,
-    BGRA8,
-    RGB565,
-    RGB5A1,
-    A1BGR5,
-    R8,
-    D16,
-    D24S8,
-    D32F,
-    D32FS8,
-    R16,
-    R16I,
-    R16U,
-    R16F,
-    R32I,
-    R32U,
-    R32F,
-    RG8,
-    RG16,
-    RG16F,
-    RG32F,
-    RGBA16,
-    RGBA16F,
-    RGBA32F,
-    RGB10A2,
-    SRGBA8,
-    BC1, ///< BC1, aka DXT1 compressed texture
-    BC2, ///< BC2, aka DXT2/3 compressed texture
-    BC3, ///< BC3, aka DXT4/5 compressed texture
-    BC7, ///< BC7, aka BPTC compressed texture
-    MaxCount,
-  };
-
   enum class State : u8
   {
     Dirty,
@@ -99,24 +64,24 @@ public:
   GPUTexture(const GPUTexture&) = delete;
   virtual ~GPUTexture();
 
-  static const char* GetFormatName(Format format);
-  static u32 GetPixelSize(Format format);
-  static bool IsDepthFormat(Format format);
-  static bool IsDepthStencilFormat(Format format);
-  static bool IsCompressedFormat(Format format);
-  static u32 GetBlockSize(Format format);
-  static u32 CalcUploadPitch(Format format, u32 width);
-  static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
-  static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+  static const char* GetFormatName(GPUTextureFormat format);
+  static u32 GetPixelSize(GPUTextureFormat format);
+  static bool IsDepthFormat(GPUTextureFormat format);
+  static bool IsDepthStencilFormat(GPUTextureFormat format);
+  static bool IsCompressedFormat(GPUTextureFormat format);
+  static u32 GetBlockSize(GPUTextureFormat format);
+  static u32 CalcUploadPitch(GPUTextureFormat format, u32 width);
+  static u32 CalcUploadRowLengthFromPitch(GPUTextureFormat format, u32 pitch);
+  static u32 CalcUploadSize(GPUTextureFormat format, u32 height, u32 pitch);
   static u32 GetFullMipmapCount(u32 width, u32 height);
-  static void CopyTextureDataForUpload(u32 width, u32 height, Format format, void* dst, u32 dst_pitch, const void* src,
-                                       u32 src_pitch);
+  static void CopyTextureDataForUpload(u32 width, u32 height, GPUTextureFormat format, void* dst, u32 dst_pitch,
+                                       const void* src, u32 src_pitch);
 
-  static Format GetTextureFormatForImageFormat(ImageFormat format);
-  static ImageFormat GetImageFormatForTextureFormat(Format format);
+  static GPUTextureFormat GetTextureFormatForImageFormat(ImageFormat format);
+  static ImageFormat GetImageFormatForTextureFormat(GPUTextureFormat format);
 
-  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                             Flags flags, Error* error);
+  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                             GPUTextureFormat format, Flags flags, Error* error);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
@@ -124,7 +89,7 @@ public:
   ALWAYS_INLINE u32 GetLevels() const { return m_levels; }
   ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
   ALWAYS_INLINE Type GetType() const { return m_type; }
-  ALWAYS_INLINE Format GetFormat() const { return m_format; }
+  ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE Flags GetFlags() const { return m_flags; }
   ALWAYS_INLINE bool HasFlag(Flags flag) const { return ((static_cast<u8>(m_flags) & static_cast<u8>(flag)) != 0); }
   ALWAYS_INLINE GSVector2i GetSizeVec() const { return GSVector2i(m_width, m_height); }
@@ -199,7 +164,7 @@ public:
 #endif
 
 protected:
-  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags);
+  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, GPUTextureFormat format, Flags flags);
 
   static constexpr u32 COMPRESSED_TEXTURE_BLOCK_SIZE = 4;
 
@@ -209,7 +174,7 @@ protected:
   u8 m_levels = 0;
   u8 m_samples = 0;
   Type m_type = Type::Texture;
-  Format m_format = Format::Unknown;
+  GPUTextureFormat m_format = GPUTextureFormat::Unknown;
   Flags m_flags = Flags::None;
 
   State m_state = State::Dirty;
@@ -222,13 +187,13 @@ IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTexture::Flags);
 class GPUDownloadTexture
 {
 public:
-  GPUDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool is_imported);
+  GPUDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool is_imported);
   virtual ~GPUDownloadTexture();
 
   /// Basically, this has dimensions only because of DX11.
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
-  ALWAYS_INLINE GPUTexture::Format GetFormat() const { return m_format; }
+  ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE bool NeedsFlush() const { return m_needs_flush; }
   ALWAYS_INLINE bool IsMapped() const { return (m_map_pointer != nullptr); }
   ALWAYS_INLINE bool IsImported() const { return m_is_imported; }
@@ -280,12 +245,12 @@ public:
   bool ReadTexels(u32 x, u32 y, u32 width, u32 height, void* out_ptr, u32 out_stride);
 
   /// Returns what the size of the specified texture would be, in bytes.
-  static u32 GetBufferSize(u32 width, u32 height, GPUTexture::Format format, u32 pitch_align = 1);
+  static u32 GetBufferSize(u32 width, u32 height, GPUTextureFormat format, u32 pitch_align = 1);
 
 protected:
   u32 m_width;
   u32 m_height;
-  GPUTexture::Format m_format;
+  GPUTextureFormat m_format;
 
   const u8* m_map_pointer = nullptr;
   u32 m_current_pitch = 0;

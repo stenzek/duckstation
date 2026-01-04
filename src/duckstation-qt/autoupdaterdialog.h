@@ -16,7 +16,7 @@ class Error;
 class HTTPDownloader;
 class QtProgressCallback;
 
-class EmuThread;
+class CoreThread;
 
 class AutoUpdaterDialog final : public QDialog
 {

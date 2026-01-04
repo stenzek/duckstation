@@ -14,6 +14,8 @@ class QDialogButtonBox;
 class QLabel;
 class QProgressBar;
 class QPushButton;
+class QPlainTextEdit;
+class QVBoxLayout;
 
 class QtProgressCallback final : public QObject, public ProgressCallback
 {
@@ -88,17 +90,18 @@ private:
   std::atomic_bool m_ts_cancelled{false};
 };
 
-class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCallback
+class QtAsyncTaskWithProgressDialog final : public QObject, private ProgressCallbackWithPrompt
 {
   Q_OBJECT
 
 public:
   using CompletionCallback = std::function<void()>;
-  using WorkCallback = std::function<CompletionCallback(ProgressCallback*)>;
+  using WorkCallback = std::function<CompletionCallback(ProgressCallbackWithPrompt*)>;
 
   static QtAsyncTaskWithProgressDialog* create(QWidget* parent, std::string_view initial_title,
-                                               std::string_view initial_status_text, bool cancellable, int range,
-                                               int value, float show_delay, WorkCallback callback);
+                                               std::string_view initial_status_text, bool initial_message_log,
+                                               bool initial_cancellable, int initial_range, int initial_value,
+                                               float show_delay, bool auto_close, WorkCallback callback);
   static QtAsyncTaskWithProgressDialog* create(QWidget* parent, float show_delay, WorkCallback callback);
 
   /// Asynchronously cancel the task. Should only be called from the UI thread.
@@ -115,8 +118,9 @@ private:
     friend QtAsyncTaskWithProgressDialog;
 
   public:
-    ProgressDialog(const QString& initial_title, const QString& initial_status_text, bool cancellable, int range,
-                   int value, QtAsyncTaskWithProgressDialog& task, QWidget* parent);
+    ProgressDialog(const QString& initial_title, const QString& initial_status_text, bool initial_message_log,
+                   bool initial_cancellable, int initial_range, int initial_value, QtAsyncTaskWithProgressDialog* task,
+                   QWidget* parent);
     ~ProgressDialog() override;
 
     void setCancellable(bool cancellable);
@@ -128,20 +132,28 @@ private:
     static constexpr int MINIMUM_WIDTH = 500;
     static constexpr int MINIMUM_HEIGHT_WITHOUT_CANCEL = 70;
     static constexpr int MINIMUM_HEIGHT_WITH_CANCEL = 100;
+    static constexpr int MESSAGE_LOG_HEIGHT = 150;
 
+    void updateMinimumHeight();
     void cancelled();
+    void taskFinished();
+    void addMessageLog();
 
-    QtAsyncTaskWithProgressDialog& m_task;
+    QtAsyncTaskWithProgressDialog* m_task;
     QLabel* m_status_label = nullptr;
     QProgressBar* m_progress_bar = nullptr;
     QDialogButtonBox* m_button_box = nullptr;
+    QPlainTextEdit* m_message_log = nullptr;
+    QVBoxLayout* m_layout = nullptr;
   };
 
   friend ProgressDialog;
 
   // constructor hidden, clients should not be creating this directly
-  QtAsyncTaskWithProgressDialog(const QString& initial_title, const QString& initial_status_text, bool cancellable,
-                                int range, int value, float show_delay, QWidget* dialog_parent, WorkCallback callback);
+  QtAsyncTaskWithProgressDialog(const QString& initial_title, const QString& initial_status_text,
+                                bool initial_message_log, bool initial_cancellable, int initial_range,
+                                int initial_value, float show_delay, bool auto_close, QWidget* dialog_parent,
+                                WorkCallback callback);
   ~QtAsyncTaskWithProgressDialog();
 
   // progress callback overrides
@@ -152,13 +164,23 @@ private:
   void SetProgressRange(u32 range) override;
   void SetProgressValue(u32 value) override;
 
+  void AlertPrompt(PromptIcon icon, std::string_view message) override;
+  bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                     std::string_view no_text = {}) override;
+  void AppendMessage(std::string_view message) override;
+  void SetAutoClose(bool enabled) override;
+
   void CheckForDelayedShow();
+  void EnsureShown();
 
   std::variant<WorkCallback, CompletionCallback> m_callback;
   ProgressDialog* m_dialog = nullptr;
 
   Timer m_show_timer;
   float m_show_delay;
-  std::atomic_bool m_ts_cancelled{false};
   bool m_shown = false;
+  bool m_auto_close = true;
+  std::atomic_bool m_ts_cancelled{false};
+  std::atomic_bool m_prompt_result{false};
+  std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
 };

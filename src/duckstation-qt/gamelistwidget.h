@@ -102,7 +102,6 @@ public:
 
   int getIconSize() const;
   int getIconSizeWithPadding() const;
-  void refreshIcons();
   void setIconSize(int size);
 
   bool getShowGameIcons() const;
@@ -116,7 +115,6 @@ public:
   QSize getDeviceScaledCoverArtSize() const;
   int getCoverArtSpacing() const;
   QFont getCoverCaptionFont() const;
-  void refreshCovers();
   void updateCacheSize(int num_rows, int num_columns, QSortFilterProxyModel* const sort_model, int top_left_row);
 
   qreal getDevicePixelRatio() const;
@@ -125,7 +123,9 @@ public:
   const QPixmap* lookupIconPixmapForEntry(const GameList::Entry* ge) const;
 
   const QPixmap& getCoverForEntry(const GameList::Entry* ge) const;
-  void invalidateCoverCacheForPath(const std::string& path);
+
+  void invalidateColumn(int column, bool invalidate_cache = true);
+  void invalidateColumnForPath(const std::string& path, int column, bool invalidate_cache = true);
 
 Q_SIGNALS:
   void coverScaleChanged(float scale);
@@ -146,7 +146,6 @@ private:
   void updateCoverScale();
   void loadCoverScaleDependentPixmaps();
   void loadOrGenerateCover(const GameList::Entry* ge);
-  void invalidateCoverForPath(const std::string& path);
   void coverLoaded(const std::string& path, const QImage& image, float scale);
 
   static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
@@ -154,6 +153,8 @@ private:
                                   const std::string& save_title, const QString& display_title, bool is_custom_title);
   static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, const QSize& size, float scale,
                                      const QString& title);
+
+  static QList<int> getRolesToInvalidate(int column);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
@@ -178,7 +179,7 @@ private:
   QPixmap m_has_achievements_pixmap;
   QPixmap m_mastered_achievements_pixmap;
 
-  mutable PreferUnorderedStringMap<QPixmap> m_flag_pixmap_cache;
+  mutable UnorderedStringMap<QPixmap> m_flag_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_icon_pixmap_cache;
 
@@ -230,12 +231,14 @@ public:
   GameListGridView(GameListModel* model, GameListSortModel* sort_model, QWidget* parent);
   ~GameListGridView() override;
 
+  ALWAYS_INLINE bool isLayoutUpdatedDeferred() const { return m_layout_update_deferred; }
+
   int horizontalOffset() const override;
   int verticalOffset() const override;
 
   void adjustZoom(float delta);
 
-  void updateLayout();
+  void updateLayout(bool disable_defer);
 
 protected:
   void wheelEvent(QWheelEvent* e) override;
@@ -246,6 +249,7 @@ private:
   GameListSortModel* m_sort_model = nullptr;
   int m_horizontal_offset = 0;
   int m_vertical_offset = 0;
+  bool m_layout_update_deferred = true;
 };
 
 class GameListWidget final : public QWidget
@@ -284,7 +288,6 @@ public:
   void setAnimateGameIcons(bool enabled);
   void setPreferAchievementGameIcons(bool enabled);
   void setShowCoverTitles(bool enabled);
-  void refreshGridCovers();
   void focusSearchWidget();
 
 Q_SIGNALS:

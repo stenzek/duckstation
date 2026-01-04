@@ -7,7 +7,7 @@
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM' Or '$(Platform)'=='ARM64')">ENABLE_RECOMPILER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="('$(Platform)'=='x64' Or '$(Platform)'=='ARM64')">ENABLE_MMAP_FASTMEM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\rcheevos\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\zlib\include;$(SolutionDir)dep\rcheevos\include;$(SolutionDir)dep\cubeb\subprojects</AdditionalIncludeDirectories>
 
       <PreprocessorDefinitions>%(PreprocessorDefinitions);C4_NO_DEBUG_BREAK=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\rapidyaml\include</AdditionalIncludeDirectories>

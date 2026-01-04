@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreenui_widgets.h"
+#include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_presenter.h"
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -30,7 +32,7 @@
 #include "fmt/core.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "imgui_internal.h"
 #include "imgui_stdlib.h"
@@ -263,12 +265,12 @@ public:
   ProgressDialog();
   ~ProgressDialog();
 
-  std::unique_ptr<ProgressCallback> GetProgressCallback(std::string title, float window_unscaled_width);
+  std::unique_ptr<ProgressCallbackWithPrompt> GetProgressCallback(std::string title, float window_unscaled_width);
 
   void Draw();
 
 private:
-  class ProgressCallbackImpl : public ProgressCallback
+  class ProgressCallbackImpl : public ProgressCallbackWithPrompt
   {
   public:
     ProgressCallbackImpl();
@@ -279,6 +281,10 @@ private:
     void SetProgressValue(u32 value) override;
     void SetCancellable(bool cancellable) override;
     bool IsCancelled() const override;
+
+    void AlertPrompt(PromptIcon icon, std::string_view message) override;
+    bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                       std::string_view no_text = {}) override;
   };
 
   std::string m_status_text;
@@ -287,6 +293,8 @@ private:
   u32 m_progress_value = 0;
   u32 m_progress_range = 0;
   std::atomic_bool m_cancelled{false};
+  std::atomic_bool m_prompt_result{false};
+  std::atomic_flag m_prompt_waiting = ATOMIC_FLAG_INIT;
 };
 
 class FixedPopupDialog : public PopupDialog
@@ -337,18 +345,22 @@ struct WidgetsState
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
 
-  MessageDialog message_dialog;
+  bool had_hovered_menu_item = false;
+  bool has_hovered_menu_item = false;
+  bool rendered_menu_item_border = false;
+  bool had_focus_reset = false;
+  bool sound_effects_enabled = false;
+  bool had_sound_effect = false;
+
+  ImAnimatedVec2 menu_button_frame_min_animated;
+  ImAnimatedVec2 menu_button_frame_max_animated;
+
   ChoiceDialog choice_dialog;
   FileSelectorDialog file_selector_dialog;
   InputStringDialog input_string_dialog;
   FixedPopupDialog fixed_popup_dialog;
   ProgressDialog progress_dialog;
-
-  ImAnimatedVec2 menu_button_frame_min_animated;
-  ImAnimatedVec2 menu_button_frame_max_animated;
-  bool had_hovered_menu_item = false;
-  bool has_hovered_menu_item = false;
-  bool rendered_menu_item_border = false;
+  MessageDialog message_dialog;
 
   std::vector<Notification> notifications;
 
@@ -445,11 +457,12 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
 
 void FullscreenUI::UpdateWidgetsSettings()
 {
-  UIStyle.Animations = Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
-  UIStyle.SmoothScrolling = Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
-  UIStyle.MenuBorders = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
+  UIStyle.Animations = Core::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true);
+  UIStyle.SmoothScrolling = Core::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true);
+  UIStyle.MenuBorders = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMenuBorders", false);
+  s_state.sound_effects_enabled = Core::GetBaseBoolSettingValue("Main", "FullscreenUISoundEffects", true);
 
-  s_state.fullscreen_footer_icon_mapping = Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
+  s_state.fullscreen_footer_icon_mapping = Core::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false) ?
                                              s_ps_button_mapping :
                                              std::span<const std::pair<const char*, const char*>>{};
 }
@@ -614,7 +627,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name)
     tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
 
     // queue the actual load
-    System::QueueAsyncTask([path = std::string(name)]() mutable {
+    Host::QueueAsyncTask([path = std::string(name)]() mutable {
       std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
 
       // don't bother queuing back if it doesn't exist
@@ -646,7 +659,7 @@ GPUTexture* FullscreenUI::GetCachedTextureAsync(std::string_view name, u32 svg_w
     tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
 
     // queue the actual load
-    System::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
+    Host::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
       std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
 
       // don't bother queuing back if it doesn't exist
@@ -781,9 +794,7 @@ bool FullscreenUI::CompileTransitionPipelines(Error* error)
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.SetTargetFormats(swap_chain ? swap_chain->GetFormat() : GPUTexture::Format::RGBA8);
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
+  plconfig.SetTargetFormats(swap_chain ? swap_chain->GetFormat() : GPUTextureFormat::RGBA8);
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = vs.get();
   plconfig.geometry_shader = nullptr;
@@ -920,6 +931,11 @@ FullscreenUI::IconStackString::IconStackString(std::string_view icon, std::strin
   SmallStackString::format("{} {}##{}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str), suffix);
 }
 
+void FullscreenUI::FormatIconString(SmallStringBase& str, std::string_view icon, std::string_view label)
+{
+  str.format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, label));
+}
+
 ImRect FullscreenUI::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)
 {
   const float fit_ar = fit_size.x / fit_size.y;
@@ -1002,11 +1018,11 @@ void FullscreenUI::BeginLayout()
 
 void FullscreenUI::EndLayout()
 {
-  s_state.message_dialog.Draw();
   s_state.choice_dialog.Draw();
   s_state.file_selector_dialog.Draw();
   s_state.input_string_dialog.Draw();
   s_state.progress_dialog.Draw();
+  s_state.message_dialog.Draw();
 
   DrawFullscreenFooter();
 
@@ -1017,6 +1033,27 @@ void FullscreenUI::EndLayout()
 
   s_state.rendered_menu_item_border = false;
   s_state.had_hovered_menu_item = std::exchange(s_state.has_hovered_menu_item, false);
+
+  if (!s_state.had_sound_effect)
+  {
+    if (GImGui->NavActivateId != 0)
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
+    else if (GImGui->NavJustMovedToId != 0)
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+  }
+
+  // Avoid playing the move sound on focus reset, since it'll also be an active previously.
+  s_state.had_sound_effect = s_state.had_focus_reset;
+  s_state.had_focus_reset = false;
+}
+
+void FullscreenUI::EnqueueSoundEffect(std::string_view sound_effect)
+{
+  if (s_state.had_sound_effect || !s_state.sound_effects_enabled)
+    return;
+
+  SoundEffectManager::EnqueueSoundEffect(sound_effect);
+  s_state.had_sound_effect = true;
 }
 
 FullscreenUI::FixedPopupDialog::FixedPopupDialog() = default;
@@ -1186,6 +1223,9 @@ bool FullscreenUI::ResetFocusHere()
   else
     ImGui::SetNavWindow(window);
 
+  // prevent any sound from playing on the nav change
+  s_state.had_focus_reset = true;
+
   s_state.focus_reset_queued = FocusResetType::None;
   ResetMenuButtonFrame();
 
@@ -1238,10 +1278,13 @@ bool FullscreenUI::WantsToCloseMenu()
       s_state.close_button_state = CloseButtonState::GamepadPressed;
   }
   else if ((s_state.close_button_state == CloseButtonState::KeyboardPressed && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
-           (s_state.close_button_state == CloseButtonState::MousePressed &&
-            ImGui::IsKeyReleased(ImGuiKey_MouseRight)) ||
            (s_state.close_button_state == CloseButtonState::GamepadPressed &&
             ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
+  {
+    EnqueueSoundEffect(SFX_NAV_BACK);
+    s_state.close_button_state = CloseButtonState::AnyReleased;
+  }
+  else if ((s_state.close_button_state == CloseButtonState::MousePressed && ImGui::IsKeyReleased(ImGuiKey_MouseRight)))
   {
     s_state.close_button_state = CloseButtonState::AnyReleased;
   }
@@ -1272,6 +1315,16 @@ void FullscreenUI::PushPrimaryColor()
 void FullscreenUI::PopPrimaryColor()
 {
   ImGui::PopStyleColor(5);
+}
+
+void FullscreenUI::DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max,
+                                           ImU32 col_left, ImU32 col_right, float rounding)
+{
+  dl->AddRectFilled(pos_min, ImVec2(pos_min.x + rounding, pos_max.y), col_left, rounding, ImDrawFlags_RoundCornersLeft);
+  dl->AddRectFilledMultiColor(ImVec2(pos_min.x + rounding, pos_min.y), ImVec2(pos_max.x - rounding, pos_max.y),
+                              col_left, col_right, col_right, col_left);
+  dl->AddRectFilled(ImVec2(pos_max.x - rounding, pos_min.y), pos_max, col_right, rounding,
+                    ImDrawFlags_RoundCornersRight);
 }
 
 bool FullscreenUI::BeginFullscreenColumns(const char* title, float pos_y, bool expand_to_screen_width, bool footer)
@@ -4108,14 +4161,14 @@ void FullscreenUI::ProgressDialog::Draw()
   EndRender();
 }
 
-std::unique_ptr<ProgressCallback> FullscreenUI::ProgressDialog::GetProgressCallback(std::string title,
-                                                                                    float window_unscaled_width)
+std::unique_ptr<ProgressCallbackWithPrompt>
+FullscreenUI::ProgressDialog::GetProgressCallback(std::string title, float window_unscaled_width)
 {
   if (m_state == PopupDialog::State::Open)
   {
     // return dummy callback so the op can still go through
     ERROR_LOG("Progress dialog is already open, cannot create dialog for '{}'.", std::move(title));
-    return std::make_unique<ProgressCallback>();
+    return std::make_unique<ProgressCallbackWithPrompt>();
   }
 
   SetTitleAndOpen(std::move(title));
@@ -4140,12 +4193,12 @@ FullscreenUI::ProgressDialog::ProgressCallbackImpl::~ProgressCallbackImpl()
     return;
   }
 
-  Host::RunOnCPUThread([]() { GPUThread::RunOnThread(close_cb); });
+  Host::RunOnCoreThread([]() { GPUThread::RunOnThread(close_cb); });
 }
 
 void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetStatusText(std::string_view text)
 {
-  Host::RunOnCPUThread([text = std::string(text)]() mutable {
+  Host::RunOnCoreThread([text = std::string(text)]() mutable {
     GPUThread::RunOnThread([text = std::move(text)]() mutable {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4159,7 +4212,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressRange(u32 ra
 {
   ProgressCallback::SetProgressRange(range);
 
-  Host::RunOnCPUThread([range]() {
+  Host::RunOnCoreThread([range]() {
     GPUThread::RunOnThread([range]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4173,7 +4226,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetProgressValue(u32 va
 {
   ProgressCallback::SetProgressValue(value);
 
-  Host::RunOnCPUThread([value]() {
+  Host::RunOnCoreThread([value]() {
     GPUThread::RunOnThread([value]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4187,7 +4240,7 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::SetCancellable(bool can
 {
   ProgressCallback::SetCancellable(cancellable);
 
-  Host::RunOnCPUThread([cancellable]() {
+  Host::RunOnCoreThread([cancellable]() {
     GPUThread::RunOnThread([cancellable]() {
       if (!s_state.progress_dialog.IsOpen())
         return;
@@ -4202,7 +4255,96 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::IsCancelled() const
   return s_state.progress_dialog.m_cancelled.load(std::memory_order_acquire);
 }
 
-std::unique_ptr<ProgressCallback> FullscreenUI::OpenModalProgressDialog(std::string title, float window_unscaled_width)
+void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnCoreThread([message = std::string(message)]() mutable {
+    GPUThread::RunOnThread([message = std::move(message)]() mutable {
+      if (!s_state.progress_dialog.IsOpen())
+      {
+        s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+        s_state.progress_dialog.m_prompt_waiting.notify_one();
+        return;
+      }
+
+      // need to save state, since opening the next dialog will close this one
+      std::string existing_title = s_state.progress_dialog.GetTitle();
+      u32 progress_range = s_state.progress_dialog.m_progress_range;
+      u32 progress_value = s_state.progress_dialog.m_progress_value;
+      float last_frac = s_state.progress_dialog.m_last_frac;
+      float width = s_state.progress_dialog.m_width;
+      s_state.progress_dialog.CloseImmediately();
+
+      OpenInfoMessageDialog(
+        s_state.progress_dialog.GetTitle(), std::move(message),
+        [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
+          s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
+          s_state.progress_dialog.m_progress_range = progress_range;
+          s_state.progress_dialog.m_progress_value = progress_value;
+          s_state.progress_dialog.m_last_frac = last_frac;
+          s_state.progress_dialog.m_width = width;
+          s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+          s_state.progress_dialog.m_prompt_waiting.notify_one();
+        });
+    });
+  });
+
+  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
+}
+
+bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                                                       std::string_view yes_text /* =  */,
+                                                                       std::string_view no_text /* = */)
+{
+  s_state.progress_dialog.m_prompt_result.store(false, std::memory_order_relaxed);
+  s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnCoreThread(
+    [message = std::string(message), yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+      GPUThread::RunOnThread(
+        [message = std::move(message), yes_text = std::move(yes_text), no_text = std::move(no_text)]() mutable {
+          if (!s_state.progress_dialog.IsOpen())
+          {
+            s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+            s_state.progress_dialog.m_prompt_waiting.notify_one();
+            return;
+          }
+
+          // need to save state, since opening the next dialog will close this one
+          std::string existing_title = s_state.progress_dialog.GetTitle();
+          u32 progress_range = s_state.progress_dialog.m_progress_range;
+          u32 progress_value = s_state.progress_dialog.m_progress_value;
+          float last_frac = s_state.progress_dialog.m_last_frac;
+          float width = s_state.progress_dialog.m_width;
+          s_state.progress_dialog.CloseImmediately();
+
+          if (yes_text.empty())
+            yes_text = FSUI_ICONSTR(ICON_FA_CHECK, "Yes");
+          if (no_text.empty())
+            no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
+
+          OpenConfirmMessageDialog(s_state.progress_dialog.GetTitle(), std::move(message),
+                                   [existing_title = std::move(existing_title), progress_range, progress_value,
+                                    last_frac, width](bool result) mutable {
+                                     s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
+                                     s_state.progress_dialog.m_progress_range = progress_range;
+                                     s_state.progress_dialog.m_progress_value = progress_value;
+                                     s_state.progress_dialog.m_last_frac = last_frac;
+                                     s_state.progress_dialog.m_width = width;
+                                     s_state.progress_dialog.m_prompt_result.store(result, std::memory_order_relaxed);
+                                     s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
+                                     s_state.progress_dialog.m_prompt_waiting.notify_one();
+                                   });
+        });
+    });
+
+  s_state.progress_dialog.m_prompt_waiting.wait(true, std::memory_order_acquire);
+  return s_state.progress_dialog.m_prompt_result.load(std::memory_order_relaxed);
+}
+
+std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialog(std::string title,
+                                                                                  float window_unscaled_width)
 {
   return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
 }
@@ -4933,7 +5075,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
   const float& note_font_weight = UIStyle.BoldFontWeight;
 
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
-  const ImVec4& right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
 
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
@@ -5012,7 +5154,7 @@ void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
     const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
     const u32 right_background_color32 =
       ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
-                                         (box_width - min_rounded_width) / (box_width - min_rounded_width)),
+                                         (box_width - min_rounded_width) / (max_width - min_rounded_width)),
                                   background_opacity));
 
     dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
@@ -5171,7 +5313,7 @@ std::vector<std::string_view> FullscreenUI::GetLocalizedThemeDisplayNames()
 void FullscreenUI::UpdateTheme()
 {
   TinyString theme =
-    Host::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
+    Core::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
   if (theme.empty())
     theme = Host::GetDefaultFullscreenUITheme();
 

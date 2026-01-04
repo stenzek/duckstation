@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "playstation_mouse.h"
 #include "gpu.h"
-#include "host.h"
 #include "system.h"
 
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/log.h"

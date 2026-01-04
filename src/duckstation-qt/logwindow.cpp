@@ -6,7 +6,7 @@
 #include "qthost.h"
 #include "settingwidgetbinder.h"
 
-#include "util/host.h"
+#include "util/ini_settings_interface.h"
 
 #include <QtCore/QLatin1StringView>
 #include <QtCore/QUtf8StringView>
@@ -20,288 +20,32 @@
 // But once I get rid of that, there will be.
 LogWindow* g_log_window;
 
-LogWindow::LogWindow(bool attach_to_main)
-  : QMainWindow(), m_is_dark_theme(QtHost::IsDarkApplicationTheme()), m_attached_to_main_window(attach_to_main)
+LogWidget::LogWidget(QWidget* parent) : QPlainTextEdit(parent), m_is_dark_theme(QtHost::IsDarkApplicationTheme())
 {
-  restoreSize();
-  createUi();
+  setReadOnly(true);
+  setUndoRedoEnabled(false);
+  setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  setMaximumBlockCount(MAX_LINES);
+  setFont(QtHost::GetFixedFont());
 
-  Log::RegisterCallback(&LogWindow::logCallback, this);
+  Log::RegisterCallback(&LogWidget::logCallback, this);
 }
 
-LogWindow::~LogWindow() = default;
-
-void LogWindow::updateSettings()
+LogWidget::~LogWidget()
 {
-  const bool new_enabled = Host::GetBoolSettingValue("Logging", "LogToWindow", false);
-  const bool attach_to_main = Host::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
-  const bool curr_enabled = (g_log_window != nullptr);
-  if (new_enabled == curr_enabled)
-  {
-    if (g_log_window && g_log_window->m_attached_to_main_window != attach_to_main)
-    {
-      g_log_window->m_attached_to_main_window = attach_to_main;
-      if (attach_to_main)
-        g_log_window->reattachToMainWindow();
-    }
-
-    return;
-  }
-
-  if (new_enabled)
-  {
-    g_log_window = new LogWindow(attach_to_main);
-    if (attach_to_main && g_main_window && g_main_window->isVisible())
-      g_log_window->reattachToMainWindow();
-
-    g_log_window->show();
-  }
-  else if (g_log_window)
-  {
-    g_log_window->m_destroying = true;
-    g_log_window->close();
-    g_log_window->deleteLater();
-    g_log_window = nullptr;
-  }
+  Log::UnregisterCallback(&LogWidget::logCallback, this);
 }
 
-void LogWindow::destroy()
-{
-  if (!g_log_window)
-    return;
-
-  g_log_window->m_destroying = true;
-  g_log_window->close();
-  g_log_window->deleteLater();
-  g_log_window = nullptr;
-}
-
-void LogWindow::reattachToMainWindow()
-{
-  // Skip when maximized.
-  if (g_main_window->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
-    return;
-
-  resize(width(), g_main_window->height());
-
-  const QPoint new_pos = g_main_window->pos() + QPoint(g_main_window->width() + 10, 0);
-  if (pos() != new_pos)
-    move(new_pos);
-}
-
-void LogWindow::updateWindowTitle()
-{
-  QString title;
-
-  const QString& serial = QtHost::GetCurrentGameSerial();
-
-  if (QtHost::IsSystemValid() && !serial.isEmpty())
-  {
-    const QFileInfo fi(QtHost::GetCurrentGamePath());
-    title = tr("Log Window - %1 [%2]").arg(serial).arg(fi.fileName());
-  }
-  else
-  {
-    title = tr("Log Window");
-  }
-
-  setWindowTitle(title);
-}
-
-void LogWindow::createUi()
-{
-  setWindowIcon(QIcon::fromTheme(QStringLiteral("file-list-line")));
-  setWindowFlag(Qt::CustomizeWindowHint, true);
-  setWindowFlag(Qt::WindowCloseButtonHint, false);
-  updateWindowTitle();
-
-  QAction* action;
-
-  QMenuBar* menu = new QMenuBar(this);
-  setMenuBar(menu);
-
-  QMenu* log_menu = menu->addMenu("&Log");
-  QtUtils::StylePopupMenu(log_menu);
-  action = log_menu->addAction(tr("&Clear"));
-  connect(action, &QAction::triggered, this, &LogWindow::onClearTriggered);
-  action = log_menu->addAction(tr("&Save..."));
-  connect(action, &QAction::triggered, this, &LogWindow::onSaveTriggered);
-
-  log_menu->addSeparator();
-
-  action = log_menu->addAction(tr("Cl&ose"));
-  QtUtils::StylePopupMenu(log_menu);
-  connect(action, &QAction::triggered, this, &LogWindow::close);
-
-  QMenu* settings_menu = menu->addMenu(tr("&Settings"));
-  QtUtils::StylePopupMenu(settings_menu);
-
-  action = settings_menu->addAction(tr("Log To &System Console"));
-  action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToConsole", false);
-
-  action = settings_menu->addAction(tr("Log To &Debug Console"));
-  action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToDebug", false);
-
-  action = settings_menu->addAction(tr("Log To &File"));
-  action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToFile", false);
-
-  settings_menu->addSeparator();
-
-  action = settings_menu->addAction(tr("Attach To &Main Window"));
-  action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "AttachLogWindowToMainWindow", true);
-
-  action = settings_menu->addAction(tr("Show &Timestamps"));
-  action->setCheckable(true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogTimestamps", true);
-
-  settings_menu->addSeparator();
-
-  m_level_menu = settings_menu->addMenu(tr("&Log Level"));
-  QtUtils::StylePopupMenu(m_level_menu);
-  for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
-  {
-    action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
-    action->setCheckable(true);
-    connect(action, &QAction::triggered, this, [this, i]() { setLogLevel(static_cast<Log::Level>(i)); });
-  }
-  updateLogLevelUi();
-
-  QMenu* filters_menu = menu->addMenu(tr("&Channels"));
-  QtUtils::StylePopupMenu(filters_menu);
-  connect(filters_menu, &QMenu::aboutToShow, this, [filters_menu]() {
-    filters_menu->clear();
-    populateFilterMenu(filters_menu);
-  });
-
-  m_text = new QPlainTextEdit(this);
-  m_text->setReadOnly(true);
-  m_text->setUndoRedoEnabled(false);
-  m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
-  m_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  m_text->setMaximumBlockCount(MAX_LINES);
-  m_text->setFont(QtHost::GetFixedFont());
-
-  setCentralWidget(m_text);
-}
-
-void LogWindow::updateLogLevelUi()
-{
-  const Log::Level level =
-    Settings::ParseLogLevelName(Host::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
-      .value_or(Log::DEFAULT_LOG_LEVEL);
-
-  const QList<QAction*> actions = m_level_menu->actions();
-  for (u32 i = 0; i < actions.size(); i++)
-    actions[i]->setChecked(static_cast<Log::Level>(i) == level);
-}
-
-void LogWindow::setLogLevel(Log::Level level)
-{
-  Host::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
-  Host::CommitBaseSettingChanges();
-  g_emu_thread->applySettings(false);
-}
-
-void LogWindow::populateFilterMenu(QMenu* filter_menu)
-{
-  const auto settings_Lock = Host::GetSettingsLock();
-  const INISettingsInterface* si = QtHost::GetBaseSettingsInterface();
-
-  for (const char* channel_name : Log::GetChannelNames())
-  {
-    const bool enabled = si->GetBoolValue("Logging", channel_name, true);
-    QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
-      Host::SetBaseBoolSettingValue("Logging", channel_name, checked);
-      Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings(false);
-    });
-    action->setCheckable(true);
-    action->setChecked(enabled);
-  }
-}
-
-void LogWindow::onClearTriggered()
-{
-  m_text->clear();
-}
-
-void LogWindow::onSaveTriggered()
-{
-  const QString path = QFileDialog::getSaveFileName(this, tr("Select Log File"), QString(), tr("Log Files (*.txt)"));
-  if (path.isEmpty())
-    return;
-
-  QFile file(path);
-  if (!file.open(QFile::WriteOnly | QFile::Text))
-  {
-    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"), tr("Failed to open file for writing."));
-    return;
-  }
-
-  file.write(m_text->toPlainText().toUtf8());
-  file.close();
-
-  appendMessage(QLatin1StringView("LogWindow"), static_cast<u32>(Log::Level::Info),
-                tr("Log was written to %1.\n").arg(path));
-}
-
-void LogWindow::logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
-                            std::string_view message)
-{
-  LogWindow* this_ptr = static_cast<LogWindow*>(pUserParam);
-
-  // TODO: Split message based on lines.
-  // I don't like the memory allocations here either...
-
-  QString qmessage;
-  qmessage.reserve(message.length() + 1);
-  qmessage.append(QUtf8StringView(message.data(), message.length()));
-  qmessage.append(QChar('\n'));
-
-  const QLatin1StringView qchannel(
-    (Log::UnpackLevel(cat) <= Log::Level::Warning) ? functionName : Log::GetChannelName(Log::UnpackChannel(cat)));
-
-  this_ptr->m_lines_pending.fetch_add(1, std::memory_order_acq_rel);
-
-  if (QThread::isMainThread())
-  {
-    this_ptr->appendMessage(qchannel, static_cast<u32>(cat), qmessage);
-  }
-  else
-  {
-    QMetaObject::invokeMethod(this_ptr, &LogWindow::appendMessage, Qt::QueuedConnection, qchannel,
-                              static_cast<quint32>(cat), qmessage);
-  }
-}
-
-void LogWindow::closeEvent(QCloseEvent* event)
-{
-  if (!m_destroying)
-  {
-    event->ignore();
-    return;
-  }
-
-  Log::UnregisterCallback(&LogWindow::logCallback, this);
-
-  saveSize();
-
-  QMainWindow::closeEvent(event);
-}
-
-void LogWindow::changeEvent(QEvent* event)
+void LogWidget::changeEvent(QEvent* event)
 {
   if (event->type() == QEvent::StyleChange)
     m_is_dark_theme = QtHost::IsDarkApplicationTheme();
 
-  QMainWindow::changeEvent(event);
+  QPlainTextEdit::changeEvent(event);
 }
 
-void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
+void LogWidget::appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
 {
   const int num_lines_still_pending = m_lines_pending.fetch_sub(1, std::memory_order_acq_rel) - 1;
   if (m_lines_to_skip > 0)
@@ -321,27 +65,27 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, con
   }
   else if (num_lines_still_pending > BLOCK_UPDATES_THRESHOLD)
   {
-    if (m_text->updatesEnabled())
+    if (updatesEnabled())
     {
-      m_text->setUpdatesEnabled(false);
-      m_text->document()->blockSignals(true);
-      m_text->blockSignals(true);
+      setUpdatesEnabled(false);
+      document()->blockSignals(true);
+      blockSignals(true);
     }
   }
-  else if (!m_text->updatesEnabled())
+  else if (!updatesEnabled())
   {
-    m_text->blockSignals(false);
-    m_text->document()->blockSignals(false);
-    m_text->setUpdatesEnabled(true);
+    blockSignals(false);
+    document()->blockSignals(false);
+    setUpdatesEnabled(true);
   }
 
   realAppendMessage(channel, cat, message);
 }
 
-void LogWindow::realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
+void LogWidget::realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
 {
-  QTextCursor temp_cursor = m_text->textCursor();
-  QScrollBar* scrollbar = m_text->verticalScrollBar();
+  QTextCursor temp_cursor = textCursor();
+  QScrollBar* scrollbar = verticalScrollBar();
   const bool cursor_at_end = temp_cursor.atEnd();
   const bool scroll_at_end = scrollbar->sliderPosition() == scrollbar->maximum();
 
@@ -432,24 +176,275 @@ void LogWindow::realAppendMessage(const QLatin1StringView& channel, quint32 cat,
   }
 
   if (cursor_at_end && scroll_at_end)
-    m_text->centerCursor();
+    centerCursor();
+}
+
+void LogWidget::logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
+                            std::string_view message)
+{
+  LogWidget* this_ptr = static_cast<LogWidget*>(pUserParam);
+
+  // TODO: Split message based on lines.
+  // I don't like the memory allocations here either...
+
+  QString qmessage;
+  qmessage.reserve(message.length() + 1);
+  qmessage.append(QUtf8StringView(message.data(), message.length()));
+  qmessage.append(QChar('\n'));
+
+  const QLatin1StringView qchannel(
+    (Log::UnpackLevel(cat) <= Log::Level::Warning) ? functionName : Log::GetChannelName(Log::UnpackChannel(cat)));
+
+  this_ptr->m_lines_pending.fetch_add(1, std::memory_order_acq_rel);
+
+  if (QThread::isMainThread())
+  {
+    this_ptr->appendMessage(qchannel, static_cast<u32>(cat), qmessage);
+  }
+  else
+  {
+    QMetaObject::invokeMethod(this_ptr, &LogWidget::appendMessage, Qt::QueuedConnection, qchannel,
+                              static_cast<quint32>(cat), qmessage);
+  }
+}
+
+LogWindow::LogWindow(bool attach_to_main) : QMainWindow(), m_attached_to_main_window(attach_to_main)
+{
+  restoreSize();
+  createUi();
+}
+
+LogWindow::~LogWindow() = default;
+
+void LogWindow::updateSettings()
+{
+  const bool new_enabled = Core::GetBoolSettingValue("Logging", "LogToWindow", false);
+  const bool attach_to_main = Core::GetBoolSettingValue("Logging", "AttachLogWindowToMainWindow", true);
+  const bool curr_enabled = (g_log_window != nullptr);
+  if (new_enabled == curr_enabled)
+  {
+    if (g_log_window && g_log_window->m_attached_to_main_window != attach_to_main)
+    {
+      g_log_window->m_attached_to_main_window = attach_to_main;
+      if (attach_to_main)
+        g_log_window->reattachToMainWindow();
+    }
+
+    return;
+  }
+
+  if (new_enabled)
+  {
+    g_log_window = new LogWindow(attach_to_main);
+    if (attach_to_main && g_main_window && g_main_window->isVisible())
+      g_log_window->reattachToMainWindow();
+
+    g_log_window->show();
+  }
+  else if (g_log_window)
+  {
+    g_log_window->m_destroying = true;
+    g_log_window->close();
+    g_log_window->deleteLater();
+    g_log_window = nullptr;
+  }
+}
+
+void LogWindow::destroy()
+{
+  if (!g_log_window)
+    return;
+
+  g_log_window->m_destroying = true;
+  g_log_window->close();
+  g_log_window->deleteLater();
+  g_log_window = nullptr;
+}
+
+void LogWindow::reattachToMainWindow()
+{
+  // Skip when maximized.
+  if (g_main_window->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+    return;
+
+  resize(width(), g_main_window->height());
+
+  const QPoint new_pos = g_main_window->pos() + QPoint(g_main_window->width() + 10, 0);
+  if (pos() != new_pos)
+    move(new_pos);
+}
+
+void LogWindow::updateWindowTitle()
+{
+  QString title;
+
+  const QString& serial = QtHost::GetCurrentGameSerial();
+
+  if (QtHost::IsSystemValid() && !serial.isEmpty())
+  {
+    const QFileInfo fi(QtHost::GetCurrentGamePath());
+    title = tr("Log Window - %1 [%2]").arg(serial).arg(fi.fileName());
+  }
+  else
+  {
+    title = tr("Log Window");
+  }
+
+  setWindowTitle(title);
+}
+
+void LogWindow::createUi()
+{
+  setWindowIcon(QIcon::fromTheme(QStringLiteral("file-list-line")));
+  setWindowFlag(Qt::CustomizeWindowHint, true);
+  setWindowFlag(Qt::WindowCloseButtonHint, false);
+  updateWindowTitle();
+
+  m_log_widget = new LogWidget(this);
+  setCentralWidget(m_log_widget);
+
+  QAction* action;
+
+  QMenuBar* menu = new QMenuBar(this);
+  setMenuBar(menu);
+
+  QMenu* log_menu = menu->addMenu("&Log");
+  QtUtils::StylePopupMenu(log_menu);
+  action = log_menu->addAction(tr("&Clear"));
+  connect(action, &QAction::triggered, m_log_widget, &LogWidget::clear);
+  action = log_menu->addAction(tr("&Save..."));
+  connect(action, &QAction::triggered, this, &LogWindow::onSaveTriggered);
+
+  QMenu* settings_menu = menu->addMenu(tr("&Settings"));
+  QtUtils::StylePopupMenu(settings_menu);
+
+  action = settings_menu->addAction(tr("Log To &System Console"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToConsole", false);
+
+  action = settings_menu->addAction(tr("Log To &Debug Console"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToDebug", false);
+
+  action = settings_menu->addAction(tr("Log To &File"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogToFile", false);
+
+  settings_menu->addSeparator();
+
+  action = settings_menu->addAction(tr("Attach To &Main Window"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "AttachLogWindowToMainWindow", true);
+
+  action = settings_menu->addAction(tr("Show &Timestamps"));
+  action->setCheckable(true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, action, "Logging", "LogTimestamps", true);
+
+  settings_menu->addSeparator();
+
+  m_level_menu = settings_menu->addMenu(tr("&Log Level"));
+  QtUtils::StylePopupMenu(m_level_menu);
+  for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
+  {
+    action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
+    action->setCheckable(true);
+    connect(action, &QAction::triggered, this, [this, i]() { setLogLevel(static_cast<Log::Level>(i)); });
+  }
+  updateLogLevelUi();
+
+  QMenu* filters_menu = menu->addMenu(tr("&Channels"));
+  QtUtils::StylePopupMenu(filters_menu);
+  connect(filters_menu, &QMenu::aboutToShow, this, [filters_menu]() {
+    filters_menu->clear();
+    populateFilterMenu(filters_menu);
+  });
+}
+
+void LogWindow::updateLogLevelUi()
+{
+  const Log::Level level =
+    Settings::ParseLogLevelName(Core::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
+      .value_or(Log::DEFAULT_LOG_LEVEL);
+
+  const QList<QAction*> actions = m_level_menu->actions();
+  for (u32 i = 0; i < actions.size(); i++)
+    actions[i]->setChecked(static_cast<Log::Level>(i) == level);
+}
+
+void LogWindow::setLogLevel(Log::Level level)
+{
+  Core::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
+  Host::CommitBaseSettingChanges();
+  g_core_thread->applySettings(false);
+}
+
+void LogWindow::populateFilterMenu(QMenu* filter_menu)
+{
+  const auto settings_Lock = Core::GetSettingsLock();
+  const INISettingsInterface* si = QtHost::GetBaseSettingsInterface();
+
+  for (const char* channel_name : Log::GetChannelNames())
+  {
+    const bool enabled = si->GetBoolValue("Logging", channel_name, true);
+    QAction* const action = filter_menu->addAction(QString::fromUtf8(channel_name), [channel_name](bool checked) {
+      Core::SetBaseBoolSettingValue("Logging", channel_name, checked);
+      Host::CommitBaseSettingChanges();
+      g_core_thread->applySettings(false);
+    });
+    action->setCheckable(true);
+    action->setChecked(enabled);
+  }
+}
+
+void LogWindow::onSaveTriggered()
+{
+  const QString path = QFileDialog::getSaveFileName(this, tr("Select Log File"), QString(), tr("Log Files (*.txt)"));
+  if (path.isEmpty())
+    return;
+
+  QFile file(path);
+  if (!file.open(QFile::WriteOnly | QFile::Text))
+  {
+    QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"), tr("Failed to open file for writing."));
+    return;
+  }
+
+  file.write(m_log_widget->toPlainText().toUtf8());
+  file.close();
+
+  m_log_widget->appendMessage(QLatin1StringView("LogWindow"),
+                              Log::PackCategory(Log::Channel::Host, Log::Level::Info, Log::Color::Default),
+                              tr("Log was written to %1.\n").arg(path));
+}
+
+void LogWindow::closeEvent(QCloseEvent* event)
+{
+  if (!m_destroying)
+  {
+    event->ignore();
+    return;
+  }
+
+  saveSize();
+
+  QMainWindow::closeEvent(event);
 }
 
 void LogWindow::saveSize()
 {
-  const int current_width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int current_height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int current_width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int current_height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
   const QSize wsize = size();
 
   bool changed = false;
   if (current_width != wsize.width())
   {
-    Host::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
+    Core::SetBaseIntSettingValue("UI", "LogWindowWidth", wsize.width());
     changed = true;
   }
   if (current_height != wsize.height())
   {
-    Host::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
+    Core::SetBaseIntSettingValue("UI", "LogWindowHeight", wsize.height());
     changed = true;
   }
 
@@ -459,7 +454,7 @@ void LogWindow::saveSize()
 
 void LogWindow::restoreSize()
 {
-  const int width = Host::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
-  const int height = Host::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
+  const int width = Core::GetBaseIntSettingValue("UI", "LogWindowWidth", DEFAULT_WIDTH);
+  const int height = Core::GetBaseIntSettingValue("UI", "LogWindowHeight", DEFAULT_HEIGHT);
   resize(width, height);
 }

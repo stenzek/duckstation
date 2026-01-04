@@ -431,14 +431,14 @@ void X11Window::Resize(u16 width, u16 height)
 std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error)
 {
   xcb_connection_t* connection = nullptr;
-  if (wi.type == WindowInfo::Type::Xlib)
+  if (wi.type == WindowInfoType::Xlib)
   {
     if (!dyn_libs::OpenX11Xcb(error))
       return std::nullopt;
 
     connection = dyn_libs::XGetXCBConnection(static_cast<Display*>(wi.display_connection));
   }
-  else if (wi.type == WindowInfo::Type::XCB)
+  else if (wi.type == WindowInfoType::XCB)
   {
     connection = static_cast<xcb_connection_t*>(wi.display_connection);
   }

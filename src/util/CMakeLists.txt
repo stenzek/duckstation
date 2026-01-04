@@ -17,6 +17,8 @@ add_library(util
   cd_image_ppf.cpp
   compress_helpers.cpp
   compress_helpers.h
+  core_audio_stream.cpp
+  core_audio_stream.h
   cue_parser.cpp
   cue_parser.h
   dyn_shaderc.h
@@ -30,8 +32,7 @@ add_library(util
   gpu_shader_cache.h
   gpu_texture.cpp
   gpu_texture.h
-  host.cpp
-  host.h
+  gpu_types.h
   http_downloader.cpp
   http_downloader.h
   image.cpp
@@ -74,6 +75,8 @@ add_library(util
   state_wrapper.h
   texture_decompress.cpp
   texture_decompress.h
+  translation.cpp
+  translation.h
   wav_reader_writer.cpp
   wav_reader_writer.h
   window_info.cpp
@@ -82,7 +85,6 @@ add_library(util
 
 target_precompile_headers(util PRIVATE "pch.h")
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
 target_link_libraries(util PRIVATE libchdr lzma JPEG::JPEG PNG::PNG WebP::libwebp plutosvg::plutosvg ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash zstd::libzstd_shared reshadefx)
 
@@ -171,8 +173,8 @@ if(ENABLE_VULKAN)
     vulkan_builders.h
     vulkan_device.cpp
     vulkan_device.h
-    vulkan_entry_points.h
     vulkan_entry_points.inl
+    vulkan_headers.h
     vulkan_loader.cpp
     vulkan_loader.h
     vulkan_pipeline.cpp
@@ -251,7 +253,7 @@ if(WIN32)
     xinput_source.h
   )
   target_link_libraries(util PRIVATE d3d12ma)
-  target_link_libraries(util PRIVATE winmm.lib Dwmapi.lib winhttp.lib)
+  target_link_libraries(util PRIVATE Cfgmgr32.lib Dwmapi.lib winhttp.lib)
 
   if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)

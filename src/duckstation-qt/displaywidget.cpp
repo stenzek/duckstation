@@ -5,7 +5,9 @@
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "qtwindowinfo.h"
 
+#include "core/core.h"
 #include "core/fullscreenui.h"
 
 #include "util/imgui_manager.h"
@@ -49,15 +51,38 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
 
 DisplayWidget::~DisplayWidget() = default;
 
-std::optional<WindowInfo> DisplayWidget::getWindowInfo(RenderAPI render_api, Error* error)
+const std::optional<WindowInfo>& DisplayWidget::getWindowInfo(RenderAPI render_api, Error* error)
 {
-  std::optional<WindowInfo> ret = QtUtils::GetWindowInfoForWidget(this, render_api, error);
-  if (ret.has_value())
+  if (!m_window_info.has_value())
+    m_window_info = QtUtils::GetWindowInfoForWidget(this, render_api, error);
+
+  return m_window_info;
+}
+
+void DisplayWidget::clearWindowInfo()
+{
+  m_window_info.reset();
+}
+
+void DisplayWidget::checkForSizeChange()
+{
+  if (!m_window_info.has_value())
+    return;
+
+  // avoid spamming resize events for paint events (sent on move on windows)
+  const u16 prev_width = m_window_info->surface_width;
+  const u16 prev_height = m_window_info->surface_height;
+  const float prev_scale = m_window_info->surface_scale;
+  QtUtils::UpdateSurfaceSize(this, &m_window_info.value());
+  if (prev_width != m_window_info->surface_width || prev_height != m_window_info->surface_height ||
+      prev_scale != m_window_info->surface_scale)
   {
-    m_last_window_size = QSize(ret->surface_width, ret->surface_height);
-    m_last_window_scale = ret->surface_scale;
+    DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", m_window_info->surface_width,
+            m_window_info->surface_height, width(), height(), m_window_info->surface_scale);
+    emit windowResizedEvent(m_window_info->surface_width, m_window_info->surface_height, m_window_info->surface_scale);
   }
-  return ret;
+
+  updateCenterPos();
 }
 
 void DisplayWidget::updateRelativeMode(bool enabled)
@@ -163,22 +188,6 @@ bool DisplayWidget::isActuallyFullscreen() const
   return container ? container->isFullScreen() : isFullScreen();
 }
 
-void DisplayWidget::checkForSizeChange()
-{
-  // avoid spamming resize events for paint events (sent on move on windows)
-  const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
-  if (m_last_window_size != size || m_last_window_scale != dpr)
-  {
-    DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(), dpr);
-
-    m_last_window_size = size;
-    m_last_window_scale = dpr;
-    emit windowResizedEvent(size.width(), size.height(), static_cast<float>(dpr));
-  }
-
-  updateCenterPos();
-}
-
 void DisplayWidget::updateCenterPos()
 {
 #ifdef _WIN32
@@ -270,9 +279,11 @@ bool DisplayWidget::event(QEvent* event)
     {
       if (!m_relative_mouse_enabled)
       {
+        const float surface_scale =
+          m_window_info.has_value() ? m_window_info->surface_scale : static_cast<float>(devicePixelRatio());
         const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
-        const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * m_last_window_scale);
-        const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * m_last_window_scale);
+        const float scaled_x = static_cast<float>(mouse_pos.x()) * surface_scale;
+        const float scaled_y = static_cast<float>(mouse_pos.y()) * surface_scale;
         InputManager::UpdatePointerAbsolutePosition(0, scaled_x, scaled_y);
       }
       else
@@ -325,13 +336,11 @@ bool DisplayWidget::event(QEvent* event)
 
     case QEvent::MouseButtonDblClick:
     {
-      // since we don't get press and release events for double-click, we need to send both the down and up
-      // otherwise the second click in a double click won't be registered by the input system
+      // we don't get press events for double-click, the dblclick event is substituted instead
       if (!m_relative_mouse_enabled || !InputManager::IsUsingRawInput())
       {
         const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
         emit windowMouseButtonEvent(static_cast<int>(button_index), true);
-        emit windowMouseButtonEvent(static_cast<int>(button_index), false);
       }
 
       // don't toggle fullscreen when we're bound.. that wouldn't end well.
@@ -339,9 +348,15 @@ bool DisplayWidget::event(QEvent* event)
           ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled &&
             !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
-          Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
+          Core::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
       {
-        g_emu_thread->toggleFullscreen();
+        g_core_thread->toggleFullscreen();
+
+        // when swapping fullscreen, the window is going to get recreated, and we won't get the release event.
+        // therefore we need to trigger it here instead, otherwise it gets lost and imgui is confused.
+        // skip this if we're not running on wankland or using render-to-main, since the window is preserved.
+        if (QtHost::IsDisplayWidgetContainerNeeded() || g_main_window->canRenderToMainWindow())
+          Host::RunOnCoreThread(&ImGuiManager::ClearMouseButtonState);
       }
 
       return true;
@@ -358,6 +373,7 @@ bool DisplayWidget::event(QEvent* event)
       return true;
     }
 
+    case QEvent::Show:
     case QEvent::Resize:
     case QEvent::DevicePixelRatioChange:
     {
@@ -398,8 +414,21 @@ bool DisplayWidget::event(QEvent* event)
 #ifdef __APPLE__
       // On MacOS, the user can "cancel" fullscreen by unmaximizing the window.
       if (ws_event->oldState() & Qt::WindowFullScreen && !(windowState() & Qt::WindowFullScreen))
-        g_emu_thread->setFullscreen(false);
+        g_core_thread->setFullscreen(false);
 #endif
+
+      return true;
+    }
+
+    case QEvent::WinIdChange:
+    {
+      QWidget::event(event);
+
+      if (m_window_info.has_value())
+      {
+        ERROR_LOG("Window ID changed while we had a valid WindowInfo. This is NOT expected, please report.");
+        clearWindowInfo();
+      }
 
       return true;
     }
@@ -483,6 +512,38 @@ QPaintEngine* AuxiliaryDisplayWidget::paintEngine() const
   return nullptr;
 }
 
+const std::optional<WindowInfo>& AuxiliaryDisplayWidget::getWindowInfo(RenderAPI render_api, Error* error)
+{
+  if (!m_window_info.has_value())
+    m_window_info = QtUtils::GetWindowInfoForWidget(this, render_api, error);
+
+  return m_window_info;
+}
+
+void AuxiliaryDisplayWidget::checkForSizeChange()
+{
+  if (!m_window_info.has_value())
+    return;
+
+  // avoid spamming resize events for paint events (sent on move on windows)
+  const u16 prev_width = m_window_info->surface_width;
+  const u16 prev_height = m_window_info->surface_height;
+  const float prev_scale = m_window_info->surface_scale;
+  QtUtils::UpdateSurfaceSize(this, &m_window_info.value());
+  if (prev_width != m_window_info->surface_width || prev_height != m_window_info->surface_height ||
+      prev_scale != m_window_info->surface_scale)
+  {
+    DEV_LOG("Auxiliary display widget resized to {}x{} (Qt {}x{}) DPR={}", m_window_info->surface_width,
+            m_window_info->surface_height, width(), height(), m_window_info->surface_scale);
+
+    g_core_thread->queueAuxiliaryRenderWindowInputEvent(
+      m_userdata, Host::AuxiliaryRenderWindowEvent::Resized,
+      Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(m_window_info->surface_width)},
+      Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(m_window_info->surface_height)},
+      Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(m_window_info->surface_scale)});
+  }
+}
+
 bool AuxiliaryDisplayWidget::event(QEvent* event)
 {
   const QEvent::Type type = event->type();
@@ -503,7 +564,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
           if (ch == QChar('\b'))
             break;
 
-          g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+          g_core_thread->queueAuxiliaryRenderWindowInputEvent(
             m_userdata, Host::AuxiliaryRenderWindowEvent::TextEntered,
             Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(ch.unicode())});
         }
@@ -512,7 +573,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       if (key_event->isAutoRepeat())
         return true;
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata,
         (type == QEvent::KeyPress) ? Host::AuxiliaryRenderWindowEvent::KeyPressed :
                                      Host::AuxiliaryRenderWindowEvent::KeyReleased,
@@ -524,10 +585,12 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     case QEvent::MouseMove:
     {
       const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
-      const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * m_last_window_scale);
-      const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * m_last_window_scale);
+      const float surface_scale =
+        m_window_info.has_value() ? m_window_info->surface_scale : static_cast<float>(devicePixelRatio());
+      const float scaled_x = static_cast<float>(mouse_pos.x()) * surface_scale;
+      const float scaled_y = static_cast<float>(mouse_pos.y()) * surface_scale;
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata, Host::AuxiliaryRenderWindowEvent::MouseMoved,
         Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_x},
         Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_y});
@@ -540,7 +603,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     case QEvent::MouseButtonRelease:
     {
       const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata,
         (type == QEvent::MouseButtonRelease) ? Host::AuxiliaryRenderWindowEvent::MouseReleased :
                                                Host::AuxiliaryRenderWindowEvent::MousePressed,
@@ -556,7 +619,7 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       const QPoint delta = wheel_event->angleDelta();
       if (delta.x() != 0 || delta.y())
       {
-        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        g_core_thread->queueAuxiliaryRenderWindowInputEvent(
           m_userdata, Host::AuxiliaryRenderWindowEvent::MouseWheel,
           Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.x())},
           Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.y())});
@@ -570,30 +633,30 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
       if (m_destroying)
         return QWidget::event(event);
 
-      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(m_userdata, Host::AuxiliaryRenderWindowEvent::CloseRequest);
+      g_core_thread->queueAuxiliaryRenderWindowInputEvent(m_userdata, Host::AuxiliaryRenderWindowEvent::CloseRequest);
       event->ignore();
       return true;
     }
 
+    case QEvent::Show:
     case QEvent::Resize:
     case QEvent::DevicePixelRatioChange:
     {
       QWidget::event(event);
 
-      // avoid spamming resize events for paint events (sent on move on windows)
-      const auto& [size, dpr] = QtUtils::GetPixelSizeForWidget(this);
-      if (m_last_window_size != size || m_last_window_scale != dpr)
-      {
-        DEV_LOG("Display widget resized to {}x{} (Qt {}x{}) DPR={}", size.width(), size.height(), width(), height(),
-                dpr);
+      checkForSizeChange();
+      return true;
+    }
 
-        m_last_window_size = size;
-        m_last_window_scale = dpr;
-        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
-          m_userdata, Host::AuxiliaryRenderWindowEvent::Resized,
-          Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(size.width())},
-          Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(size.height())},
-          Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(dpr)});
+    case QEvent::WinIdChange:
+    {
+      QWidget::event(event);
+
+      if (m_window_info.has_value())
+      {
+        ERROR_LOG("Auxiliary display widget window ID changed while we had a valid WindowInfo. This is NOT expected, "
+                  "please report.");
+        m_window_info.reset();
       }
 
       return true;
@@ -645,6 +708,7 @@ AuxiliaryDisplayWidget* AuxiliaryDisplayWidget::create(s32 pos_x, s32 pos_y, u32
 void AuxiliaryDisplayWidget::destroy()
 {
   m_destroying = true;
+  m_window_info.reset();
 
   QWidget* container = static_cast<QWidget*>(parent());
   if (!container)

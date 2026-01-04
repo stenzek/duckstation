@@ -140,6 +140,8 @@ set(SRCS
   qttranslations.inl
   qtutils.cpp
   qtutils.h
+  qtwindowinfo.cpp
+  qtwindowinfo.h
   resource.h
   selectdiscdialog.cpp
   selectdiscdialog.h
@@ -179,7 +181,7 @@ set(TS_FILES
 
 add_executable(duckstation-qt ${SRCS} ${QM_FILES})
 target_precompile_headers(duckstation-qt PRIVATE "pch.h")
-target_include_directories(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::GuiPrivate Qt6::Widgets)
 
 # Our Qt builds may have exceptions on, so force them off.

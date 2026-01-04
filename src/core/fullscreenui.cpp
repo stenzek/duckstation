@@ -4,10 +4,13 @@
 #include "fullscreenui.h"
 #include "achievements_private.h"
 #include "controller.h"
+#include "core.h"
 #include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
 #include "game_list.h"
 #include "gpu_thread.h"
+#include "host.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
@@ -82,7 +85,7 @@ static void DoToggleFastForward();
 static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestReset();
-static void BeginChangeDiscOnCPUThread(bool needs_pause);
+static void BeginChangeDiscOnCoreThread(bool needs_pause);
 static void StartChangeDiscFromFile();
 static void DoRequestExit();
 static void DoDesktopMode();
@@ -120,6 +123,11 @@ static void DrawResumeStateSelector();
 
 static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
 static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
+
+const char* SFX_NAV_ACTIVATE = "sounds/nav_activate.wav";
+const char* SFX_NAV_BACK = "sounds/nav_back.wav";
+const char* SFX_NAV_MOVE = "sounds/nav_move.wav";
+const char* SFX_CONTENT_START = "sounds/content_start.wav";
 
 //////////////////////////////////////////////////////////////////////////
 // State
@@ -182,6 +190,7 @@ void FullscreenUI::Initialize()
     UpdateRunIdleState();
   }
 
+  SoundEffectManager::EnsureInitialized();
   INFO_LOG("Fullscreen UI initialized.");
 }
 
@@ -284,7 +293,7 @@ void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
   s_locals.was_paused_on_quick_menu_open = GPUThread::IsSystemPaused();
   if (!s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(true); });
 
   s_locals.pause_menu_was_open |= set_pause_menu_open;
 }
@@ -301,6 +310,7 @@ void FullscreenUI::OpenPauseMenu()
 
     PauseForMenuOpen(true);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     UpdateAchievementsRecentUnlockAndAlmostThere();
     BeginTransition(SHORT_TRANSITION_TIME, []() {
@@ -322,6 +332,7 @@ void FullscreenUI::OpenCheatsMenu()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, []() {
       if (!SwitchToGameSettings(SettingsPage::Cheats))
@@ -336,7 +347,7 @@ void FullscreenUI::OpenDiscChangeMenu()
     return;
 
   DebugAssert(!GPUThread::IsOnThread());
-  BeginChangeDiscOnCPUThread(true);
+  BeginChangeDiscOnCoreThread(true);
 }
 
 void FullscreenUI::FixStateIfPaused()
@@ -354,7 +365,7 @@ void FullscreenUI::ClosePauseMenu()
     return;
 
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(SHORT_TRANSITION_TIME, []() {
     s_locals.current_pause_submenu = PauseSubMenu::None;
@@ -371,7 +382,7 @@ void FullscreenUI::ClosePauseMenuImmediately()
   CancelTransition();
 
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   s_locals.current_pause_submenu = PauseSubMenu::None;
   s_locals.pause_menu_was_open = false;
@@ -424,7 +435,7 @@ void FullscreenUI::ReturnToMainWindow()
 void FullscreenUI::ReturnToMainWindow(float transition_time)
 {
   if (GPUThread::IsSystemPaused() && !s_locals.was_paused_on_quick_menu_open)
-    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
+    Host::RunOnCoreThread([]() { System::PauseSystem(false); });
 
   BeginTransition(transition_time, []() {
     s_locals.previous_main_window = MainWindowType::None;
@@ -449,6 +460,8 @@ void FullscreenUI::Shutdown(bool clear_state)
 {
   if (clear_state)
   {
+    SoundEffectManager::Shutdown();
+
     s_locals.current_main_window = MainWindowType::None;
     s_locals.current_pause_submenu = PauseSubMenu::None;
     s_locals.pause_menu_was_open = false;
@@ -537,6 +550,7 @@ void FullscreenUI::DestroyResources()
 {
   s_locals.app_background_texture.reset();
   s_locals.app_background_shader.reset();
+  s_locals.background_loaded = false;
 }
 
 GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
@@ -614,6 +628,8 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
   if (GPUThread::HasGPUBackend())
     return;
 
+  EnqueueSoundEffect(SFX_CONTENT_START);
+
   // Stop running idle to prevent game list from being redrawn until we know if startup succeeded.
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
 
@@ -621,7 +637,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
   params.path = std::move(path);
   params.save_state = std::move(state);
   params.override_fast_boot = std::move(fast_boot);
-  Host::RunOnCPUThread([params = std::move(params)]() mutable {
+  Host::RunOnCoreThread([params = std::move(params)]() mutable {
     if (System::IsValid())
       return;
 
@@ -714,7 +730,7 @@ void FullscreenUI::DoStartDisc()
 
 void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback)
 {
-  Host::RunOnCPUThread([action = std::move(action), callback = std::move(callback)]() mutable {
+  Host::RunOnCoreThread([action = std::move(action), callback = std::move(callback)]() mutable {
     const bool was_saving = System::IsSavingMemoryCards();
     GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), was_saving]() mutable {
       if (!was_saving)
@@ -745,7 +761,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
 
   ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
     if (result)
-      Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
+      Host::RunOnCoreThread([save_state]() { Host::RequestSystemShutdown(false, save_state, false); });
     else
       ClosePauseMenuImmediately();
   });
@@ -757,7 +773,7 @@ void FullscreenUI::RequestReset()
 
   ConfirmIfSavingMemoryCards(FSUI_STR("reset"), [](bool result) {
     if (result)
-      Host::RunOnCPUThread(System::ResetSystem);
+      Host::RunOnCoreThread(System::ResetSystem);
 
     BeginTransition(LONG_TRANSITION_TIME, &ClosePauseMenuImmediately);
   });
@@ -765,7 +781,7 @@ void FullscreenUI::RequestReset()
 
 void FullscreenUI::DoToggleFastForward()
 {
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     if (!System::IsValid())
       return;
 
@@ -792,7 +808,7 @@ void FullscreenUI::StartChangeDiscFromFile()
         }
         else
         {
-          Host::RunOnCPUThread([path]() { System::InsertMedia(path.c_str()); });
+          Host::RunOnCoreThread([path]() { System::InsertMedia(path.c_str()); });
         }
       }
 
@@ -804,7 +820,7 @@ void FullscreenUI::StartChangeDiscFromFile()
                    GetDiscImageFilters(), std::string(Path::GetDirectory(GPUThread::GetGamePath())));
 }
 
-void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
+void FullscreenUI::BeginChangeDiscOnCoreThread(bool needs_pause)
 {
   ChoiceDialogOptions options;
 
@@ -891,7 +907,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
           {
             ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [paths = std::move(paths), index](bool result) {
               if (result)
-                Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
+                Host::RunOnCoreThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
 
               ReturnToPreviousWindow();
             });
@@ -921,7 +937,7 @@ void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
 void FullscreenUI::DoToggleAnalogMode()
 {
   // hacky way to toggle analog mode
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
       Controller* const ctrl = System::GetController(i);
@@ -943,17 +959,17 @@ void FullscreenUI::DoToggleAnalogMode()
 
 void FullscreenUI::DoRequestExit()
 {
-  Host::RunOnCPUThread([]() { Host::RequestExitApplication(true); });
+  Host::RunOnCoreThread([]() { Host::RequestExitApplication(true); });
 }
 
 void FullscreenUI::DoDesktopMode()
 {
-  Host::RunOnCPUThread([]() { Host::RequestExitBigPicture(); });
+  Host::RunOnCoreThread([]() { Host::RequestExitBigPicture(); });
 }
 
 void FullscreenUI::DoToggleFullscreen()
 {
-  Host::RunOnCPUThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
+  Host::RunOnCoreThread([]() { GPUThread::SetFullscreen(!GPUThread::IsFullscreen()); });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -975,7 +991,7 @@ void FullscreenUI::UpdateBackground()
   s_locals.background_loaded = true;
 
   const TinyString background_name =
-    Host::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+    Core::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
   if (background_name.empty() || background_name == "None")
     return;
 
@@ -1092,13 +1108,11 @@ bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.geometry_shader = nullptr;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
+  plconfig.depth_format = GPUTextureFormat::Unknown;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
-                                                               GPUTexture::Format::RGBA8);
+                                                               GPUTextureFormat::RGBA8);
   plconfig.vertex_shader = vs.get();
   plconfig.fragment_shader = fs.get();
   s_locals.app_background_shader = g_gpu_device->CreatePipeline(plconfig, error);
@@ -1175,7 +1189,7 @@ ImVec4 FullscreenUI::GetTransparentBackgroundColor(const ImVec4& no_background_c
 
 bool FullscreenUI::ShouldOpenToGameList()
 {
-  return Host::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
+  return Core::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
 }
 
 void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
@@ -1301,11 +1315,19 @@ void FullscreenUI::DrawLandingWindow()
   if (!AreAnyDialogsOpen())
   {
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       OpenFixedPopupDialog(ABOUT_DIALOG_NAME);
+    }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       DoResume();
+    }
     else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
+    {
       DoToggleFullscreen();
+    }
   }
 
   if (IsGamepadInputSource())
@@ -1370,7 +1392,10 @@ void FullscreenUI::DrawStartGameWindow()
   if (!AreAnyDialogsOpen())
   {
     if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       OpenSaveStateSelector(std::string(), std::string(), true);
+    }
   }
 
   if (IsGamepadInputSource())
@@ -1582,7 +1607,7 @@ void FullscreenUI::DrawPauseMenu()
           ClosePauseMenu();
         ImGui::SetItemDefaultFocus();
 
-        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_PF_FAST_FORWARD, "Toggle Fast Forward")))
+        if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_FORWARD, "Toggle Fast Forward")))
         {
           ClosePauseMenu();
           DoToggleFastForward();
@@ -1623,14 +1648,14 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_CAMERA, "Save Screenshot")))
         {
-          Host::RunOnCPUThread([]() { System::SaveScreenshot(); });
+          Host::RunOnCoreThread([]() { System::SaveScreenshot(); });
           ClosePauseMenu();
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
         {
           BeginTransition(SHORT_TRANSITION_TIME, []() { s_locals.current_main_window = MainWindowType::None; });
-          Host::RunOnCPUThread([]() { BeginChangeDiscOnCPUThread(false); });
+          Host::RunOnCoreThread([]() { BeginChangeDiscOnCoreThread(false); });
         }
 
         if (MenuButtonWithoutSummary(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings")))
@@ -1808,7 +1833,7 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   if (GPUThread::HasGPUBackend())
   {
     // need to get the undo state, if any
-    Host::RunOnCPUThread([serial = serial, is_loading]() {
+    Host::RunOnCoreThread([serial = serial, is_loading]() {
       std::optional<ExtendedSaveStateInfo> undo_state;
       if (is_loading)
         undo_state = System::GetUndoSaveStateInfo();
@@ -1852,9 +1877,9 @@ void FullscreenUI::DrawSaveStateSelector()
 
       // Loading undo state?
       if (is_undo)
-        Host::RunOnCPUThread(&System::UndoLoadState);
+        Host::RunOnCoreThread(&System::UndoLoadState);
       else
-        Host::RunOnCPUThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
+        Host::RunOnCoreThread([global, slot]() { System::LoadStateFromSlot(global, slot); });
     }
     else
     {
@@ -1868,7 +1893,7 @@ void FullscreenUI::DrawSaveStateSelector()
     ClearSaveStateEntryList(); // entry no longer valid
     ReturnToMainWindow(LONG_TRANSITION_TIME);
 
-    Host::RunOnCPUThread([slot, global]() { System::SaveStateToSlot(global, slot); });
+    Host::RunOnCoreThread([slot, global]() { System::SaveStateToSlot(global, slot); });
   };
 
   ImGuiIO& io = ImGui::GetIO();
@@ -2208,7 +2233,7 @@ void FullscreenUI::DrawResumeStateSelector()
 
 void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
-  Host::RunOnCPUThread([url = std::string(url)]() {
+  Host::RunOnCoreThread([url = std::string(url)]() {
     GPUThread::SetFullscreen(false);
     Host::OpenURL(url);
   });

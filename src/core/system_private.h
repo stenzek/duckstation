@@ -69,16 +69,16 @@ bool ProcessStartup(Error* error);
 void ProcessShutdown();
 
 /// Called on CPU thread initialization.
-bool CPUThreadInitialize(Error* error, u32 async_worker_thread_count);
+bool CoreThreadInitialize(Error* error);
 
 /// Called on CPU thread shutdown.
-void CPUThreadShutdown();
+void CoreThreadShutdown();
 
 /// Returns a handle to the CPU thread.
-const Threading::ThreadHandle& GetCPUThreadHandle();
+const Threading::ThreadHandle& GetCoreThreadHandle();
 
 /// Changes the CPU thread handle, use with care.
-void SetCPUThreadHandle(Threading::ThreadHandle handle);
+void SetCoreThreadHandle(Threading::ThreadHandle handle);
 
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();
@@ -129,7 +129,7 @@ void OnMediaCaptureStarted();
 void OnMediaCaptureStopped();
 
 /// Provided by the host; called once per frame at guest vsync.
-void PumpMessagesOnCPUThread();
+void PumpMessagesOnCoreThread();
 
 /// Requests a specific display window size.
 void RequestResizeHostDisplay(s32 width, s32 height);

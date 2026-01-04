@@ -301,7 +301,7 @@ void SettingsWindow::onRestoreDefaultsClicked()
     return;
   }
 
-  g_emu_thread->setDefaultSettings(true, false);
+  g_core_thread->setDefaultSettings(true, false);
 }
 
 void SettingsWindow::onCopyGlobalSettingsClicked()
@@ -318,9 +318,9 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
   }
 
   {
-    auto lock = Host::GetSettingsLock();
+    const auto lock = Core::GetSettingsLock();
     Settings temp;
-    temp.Load(*Host::Internal::GetBaseSettingsLayer(), *Host::Internal::GetBaseSettingsLayer());
+    temp.Load(*Core::GetBaseSettingsLayer(), *Core::GetBaseSettingsLayer());
     temp.Save(*m_sif.get(), true);
   }
   saveAndReloadGameSettings();
@@ -430,7 +430,7 @@ bool SettingsWindow::getEffectiveBoolValue(const char* section, const char* key,
   if (m_sif && m_sif->GetBoolValue(section, key, &value))
     return value;
   else
-    return Host::GetBaseBoolSettingValue(section, key, default_value);
+    return Core::GetBaseBoolSettingValue(section, key, default_value);
 }
 
 int SettingsWindow::getEffectiveIntValue(const char* section, const char* key, int default_value) const
@@ -439,7 +439,7 @@ int SettingsWindow::getEffectiveIntValue(const char* section, const char* key, i
   if (m_sif && m_sif->GetIntValue(section, key, &value))
     return value;
   else
-    return Host::GetBaseIntSettingValue(section, key, default_value);
+    return Core::GetBaseIntSettingValue(section, key, default_value);
 }
 
 float SettingsWindow::getEffectiveFloatValue(const char* section, const char* key, float default_value) const
@@ -448,7 +448,7 @@ float SettingsWindow::getEffectiveFloatValue(const char* section, const char* ke
   if (m_sif && m_sif->GetFloatValue(section, key, &value))
     return value;
   else
-    return Host::GetBaseFloatSettingValue(section, key, default_value);
+    return Core::GetBaseFloatSettingValue(section, key, default_value);
 }
 
 std::string SettingsWindow::getEffectiveStringValue(const char* section, const char* key,
@@ -456,7 +456,7 @@ std::string SettingsWindow::getEffectiveStringValue(const char* section, const c
 {
   std::string value;
   if (!m_sif || !m_sif->GetStringValue(section, key, &value))
-    value = Host::GetBaseStringSettingValue(section, key, default_value);
+    value = Core::GetBaseStringSettingValue(section, key, default_value);
   return value;
 }
 
@@ -470,7 +470,7 @@ Qt::CheckState SettingsWindow::getCheckState(const char* section, const char* ke
   }
   else
   {
-    value = Host::GetBaseBoolSettingValue(section, key, default_value);
+    value = Core::GetBaseBoolSettingValue(section, key, default_value);
   }
 
   return value ? Qt::Checked : Qt::Unchecked;
@@ -490,7 +490,7 @@ std::optional<bool> SettingsWindow::getBoolValue(const char* section, const char
   }
   else
   {
-    value = Host::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
+    value = Core::GetBaseBoolSettingValue(section, key, default_value.value_or(false));
   }
 
   return value;
@@ -510,7 +510,7 @@ std::optional<int> SettingsWindow::getIntValue(const char* section, const char* 
   }
   else
   {
-    value = Host::GetBaseIntSettingValue(section, key, default_value.value_or(0));
+    value = Core::GetBaseIntSettingValue(section, key, default_value.value_or(0));
   }
 
   return value;
@@ -530,7 +530,7 @@ std::optional<float> SettingsWindow::getFloatValue(const char* section, const ch
   }
   else
   {
-    value = Host::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
+    value = Core::GetBaseFloatSettingValue(section, key, default_value.value_or(0.0f));
   }
 
   return value;
@@ -550,7 +550,7 @@ std::optional<std::string> SettingsWindow::getStringValue(const char* section, c
   }
   else
   {
-    value = Host::GetBaseStringSettingValue(section, key, default_value.value_or(""));
+    value = Core::GetBaseStringSettingValue(section, key, default_value.value_or(""));
   }
 
   return value;
@@ -565,10 +565,10 @@ void SettingsWindow::setBoolSettingValue(const char* section, const char* key, s
   }
   else
   {
-    value.has_value() ? Host::SetBaseBoolSettingValue(section, key, value.value()) :
-                        Host::DeleteBaseSettingValue(section, key);
+    value.has_value() ? Core::SetBaseBoolSettingValue(section, key, value.value()) :
+                        Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -581,10 +581,10 @@ void SettingsWindow::setIntSettingValue(const char* section, const char* key, st
   }
   else
   {
-    value.has_value() ? Host::SetBaseIntSettingValue(section, key, value.value()) :
-                        Host::DeleteBaseSettingValue(section, key);
+    value.has_value() ? Core::SetBaseIntSettingValue(section, key, value.value()) :
+                        Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -597,10 +597,10 @@ void SettingsWindow::setFloatSettingValue(const char* section, const char* key, 
   }
   else
   {
-    value.has_value() ? Host::SetBaseFloatSettingValue(section, key, value.value()) :
-                        Host::DeleteBaseSettingValue(section, key);
+    value.has_value() ? Core::SetBaseFloatSettingValue(section, key, value.value()) :
+                        Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -613,10 +613,10 @@ void SettingsWindow::setStringSettingValue(const char* section, const char* key,
   }
   else
   {
-    value.has_value() ? Host::SetBaseStringSettingValue(section, key, value.value()) :
-                        Host::DeleteBaseSettingValue(section, key);
+    value.has_value() ? Core::SetBaseStringSettingValue(section, key, value.value()) :
+                        Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -625,7 +625,7 @@ bool SettingsWindow::containsSettingValue(const char* section, const char* key) 
   if (m_sif)
     return m_sif->ContainsValue(section, key);
   else
-    return Host::ContainsBaseSettingValue(section, key);
+    return Core::ContainsBaseSettingValue(section, key);
 }
 
 void SettingsWindow::removeSettingValue(const char* section, const char* key)
@@ -637,9 +637,9 @@ void SettingsWindow::removeSettingValue(const char* section, const char* key)
   }
   else
   {
-    Host::DeleteBaseSettingValue(section, key);
+    Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -647,7 +647,7 @@ void SettingsWindow::saveAndReloadGameSettings()
 {
   DebugAssert(m_sif);
   QtHost::SaveGameSettings(m_sif.get(), true);
-  g_emu_thread->reloadGameSettings(false);
+  g_core_thread->reloadGameSettings(false);
 }
 
 void SettingsWindow::setGameTitle(std::string_view title)

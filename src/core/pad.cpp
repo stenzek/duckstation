@@ -3,7 +3,6 @@
 
 #include "pad.h"
 #include "controller.h"
-#include "host.h"
 #include "interrupt_controller.h"
 #include "memory_card.h"
 #include "multitap.h"
@@ -13,6 +12,7 @@
 
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/bitfield.h"
 #include "common/bitutils.h"

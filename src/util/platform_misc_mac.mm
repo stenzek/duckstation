@@ -34,7 +34,7 @@ static bool SetScreensaverInhibitMacOS(bool inhibit)
 {
   if (inhibit)
   {
-    const CFStringRef reason = CFSTR("System Running");
+    const CFStringRef reason = CFSTR("DuckStation System Running");
     if (IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason,
                                     &s_prevent_idle_assertion) != kIOReturnSuccess)
     {
@@ -52,17 +52,18 @@ static bool SetScreensaverInhibitMacOS(bool inhibit)
   }
 }
 
-static bool s_screensaver_suspended;
+static bool s_screensaver_suspended = false;
 
 void PlatformMisc::SuspendScreensaver()
 {
   if (s_screensaver_suspended)
+    return;
 
-    if (!SetScreensaverInhibitMacOS(true))
-    {
-      ERROR_LOG("Failed to suspend screensaver.");
-      return;
-    }
+  if (!SetScreensaverInhibitMacOS(true))
+  {
+    ERROR_LOG("Failed to suspend screensaver.");
+    return;
+  }
 
   s_screensaver_suspended = true;
 }
@@ -76,16 +77,6 @@ void PlatformMisc::ResumeScreensaver()
     ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
-}
-
-bool PlatformMisc::PlaySoundAsync(const char* path)
-{
-  NSString* nspath = [[NSString alloc] initWithUTF8String:path];
-  NSSound* sound = [[NSSound alloc] initWithContentsOfFile:nspath byReference:YES];
-  const bool result = [sound play];
-  [sound release];
-  [nspath release];
-  return result;
 }
 
 bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)

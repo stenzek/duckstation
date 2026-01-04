@@ -7,6 +7,8 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
+
 #include "common/bitutils.h"
 #include "common/log.h"
 
@@ -287,18 +289,18 @@ void InputBindingDialog::saveListToSettings()
     else
       m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
     QtHost::SaveGameSettings(m_sif, false);
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
     if (!m_bindings.empty())
-      Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+      Core::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     else
-      Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+      Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_emu_thread->updateControllerSettings();
-    g_emu_thread->reloadInputBindings();
+      g_core_thread->updateControllerSettings();
+    g_core_thread->reloadInputBindings();
   }
 }
 
@@ -374,13 +376,13 @@ void InputBindingDialog::onResetDeadzoneClicked()
   {
     m_sif->DeleteValue(m_section_name.c_str(), key);
     QtHost::SaveGameSettings(m_sif, false);
-    g_emu_thread->reloadGameSettings(false);
+    g_core_thread->reloadGameSettings(false);
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings(false);
+    g_core_thread->applySettings(false);
   }
 }
 
@@ -399,13 +401,13 @@ void InputBindingDialog::onResetSensitivityClicked()
   {
     m_sif->DeleteValue(m_section_name.c_str(), key);
     QtHost::SaveGameSettings(m_sif, false);
-    g_emu_thread->reloadGameSettings(false);
+    g_core_thread->reloadGameSettings(false);
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), key);
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings(false);
+    g_core_thread->applySettings(false);
   }
 }
 

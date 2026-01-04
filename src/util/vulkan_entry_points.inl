@@ -246,6 +246,9 @@ VULKAN_DEVICE_ENTRY_POINT(vkCmdEndRenderingKHR, false)
 // VK_KHR_push_descriptor
 VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
 
+// VK_KHR_swapchain_maintenance1
+VULKAN_DEVICE_ENTRY_POINT(vkReleaseSwapchainImagesKHR, false)
+
 // VK_EXT_external_memory_host
 VULKAN_DEVICE_ENTRY_POINT(vkGetMemoryHostPointerPropertiesEXT, false)
 

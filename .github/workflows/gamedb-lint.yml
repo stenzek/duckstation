@@ -16,14 +16,15 @@ on:
       - 'data/resources/discdb.yaml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   gamedb-lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-slim
     timeout-minutes: 120
     steps:
     - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
 
     - name: Install Packages
       shell: bash

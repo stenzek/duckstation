@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements.h"
+#include "core.h"
 #include "cpu_code_cache.h"
 #include "cpu_core.h"
 #include "cpu_pgxp.h"
@@ -20,13 +21,14 @@
 #include "util/gpu_device.h"
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 #include <cmath>
@@ -68,20 +70,22 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
 static void HotkeyToggleOSD()
 {
-  g_settings.display_show_fps ^= Host::GetBoolSettingValue("Display", "ShowFPS", false);
-  g_settings.display_show_speed ^= Host::GetBoolSettingValue("Display", "ShowSpeed", false);
-  g_settings.display_show_gpu_stats ^= Host::GetBoolSettingValue("Display", "ShowGPUStatistics", false);
-  g_settings.display_show_resolution ^= Host::GetBoolSettingValue("Display", "ShowResolution", false);
-  g_settings.display_show_latency_stats ^= Host::GetBoolSettingValue("Display", "ShowLatencyStatistics", false);
-  g_settings.display_show_cpu_usage ^= Host::GetBoolSettingValue("Display", "ShowCPU", false);
-  g_settings.display_show_gpu_usage ^= Host::GetBoolSettingValue("Display", "ShowGPU", false);
-  g_settings.display_show_frame_times ^= Host::GetBoolSettingValue("Display", "ShowFrameTimes", false);
-  g_settings.display_show_status_indicators ^= Host::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
-  g_settings.display_show_inputs ^= Host::GetBoolSettingValue("Display", "ShowInputs", false);
-  g_settings.display_show_enhancements ^= Host::GetBoolSettingValue("Display", "ShowEnhancements", false);
+  g_settings.display_show_fps ^= Core::GetBoolSettingValue("Display", "ShowFPS", false);
+  g_settings.display_show_speed ^= Core::GetBoolSettingValue("Display", "ShowSpeed", false);
+  g_settings.display_show_gpu_stats ^= Core::GetBoolSettingValue("Display", "ShowGPUStatistics", false);
+  g_settings.display_show_resolution ^= Core::GetBoolSettingValue("Display", "ShowResolution", false);
+  g_settings.display_show_latency_stats ^= Core::GetBoolSettingValue("Display", "ShowLatencyStatistics", false);
+  g_settings.display_show_cpu_usage ^= Core::GetBoolSettingValue("Display", "ShowCPU", false);
+  g_settings.display_show_gpu_usage ^= Core::GetBoolSettingValue("Display", "ShowGPU", false);
+  g_settings.display_show_frame_times ^= Core::GetBoolSettingValue("Display", "ShowFrameTimes", false);
+  g_settings.display_show_status_indicators ^= Core::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
+  g_settings.display_show_inputs ^= Core::GetBoolSettingValue("Display", "ShowInputs", false);
+  g_settings.display_show_enhancements ^= Core::GetBoolSettingValue("Display", "ShowEnhancements", false);
 
   GPUThread::UpdateSettings(true, false, false);
 }
+
+#define DEFINE_HOTKEY(name, category, display_name, handler) {(name), (category), (display_name), (handler)},
 
 #ifndef __ANDROID__
 
@@ -94,7 +98,7 @@ static void HotkeyToggleOSD()
 
 #endif
 
-BEGIN_HOTKEY_LIST(g_common_hotkeys)
+static constexpr const HotkeyInfo s_hotkey_list[] = {
 
 DEFINE_NON_ANDROID_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "Interface"),
                           TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"), [](s32 pressed) {
@@ -171,7 +175,7 @@ DEFINE_NON_ANDROID_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "System"),
 
 DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
   if (!pressed)
-    Host::RunOnCPUThread(System::ResetSystem);
+    Host::RunOnCoreThread(System::ResetSystem);
 })
 
 DEFINE_NON_ANDROID_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
@@ -184,14 +188,14 @@ DEFINE_HOTKEY("SwitchToPreviousDisc", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Switch to Previous Disc"), [](s32 pressed) {
                 // Defer because otherwise the hotkey might be invalidated by config change.
                 if (!pressed)
-                  Host::RunOnCPUThread([]() { System::SwitchToPreviousDisc(true); });
+                  Host::RunOnCoreThread([]() { System::SwitchToPreviousDisc(true); });
               })
 
 DEFINE_HOTKEY("SwitchToNextDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Switch to Next Disc"),
               [](s32 pressed) {
                 // Defer because otherwise the hotkey might be invalidated by config change.
                 if (!pressed)
-                  Host::RunOnCPUThread([]() { System::SwitchToNextDisc(true); });
+                  Host::RunOnCoreThread([]() { System::SwitchToNextDisc(true); });
               })
 
 DEFINE_HOTKEY("Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Rewind"), [](s32 pressed) {
@@ -282,7 +286,7 @@ DEFINE_HOTKEY("ResetEmulationSpeed", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Reset Emulation Speed"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  g_settings.emulation_speed = std::max(Host::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
+                  g_settings.emulation_speed = std::max(Core::GetFloatSettingValue("Main", "EmulationSpeed", 1.0f),
                                                         Achievements::IsHardcoreModeActive() ? 1.0f : 0.1f);
                   System::UpdateSpeedLimiterState();
                   Host::AddIconOSDMessage(
@@ -336,8 +340,8 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   // This is pretty yikes, if PGXP was off we'll have already disabled all the dependent settings.
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   {
-                    const auto lock = Host::GetSettingsLock();
-                    const SettingsInterface& si = *Host::GetSettingsInterface();
+                    const auto lock = Core::GetSettingsLock();
+                    const SettingsInterface& si = *Core::GetSettingsInterface();
                     if (g_settings.gpu_pgxp_enable)
                       g_settings.LoadPGXPSettings(si);
                     g_settings.FixIncompatibleSettings(si, false);
@@ -386,6 +390,20 @@ DEFINE_HOTKEY("ToggleWidescreen", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLA
               [](s32 pressed) {
                 if (!pressed)
                   System::ToggleWidescreen();
+              })
+
+DEFINE_HOTKEY("ToggleModulationCrop", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Toggle Texture Modulation Cropping"), [](s32 pressed) {
+                if (!pressed && System::IsValid())
+                {
+                  g_settings.gpu_modulation_crop = !g_settings.gpu_modulation_crop;
+                  GPUThread::UpdateSettings(true, false, false);
+                  Host::AddIconOSDMessage(
+                    OSDMessageType::Quick, "ToggleModulationCrop", ICON_FA_SWATCHBOOK,
+                    g_settings.gpu_modulation_crop ?
+                      TRANSLATE_STR("OSDMessage", "Texture modulation cropping is now enabled.") :
+                      TRANSLATE_STR("OSDMessage", "Texture modulation cropping is now disabled."));
+                }
               })
 
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
@@ -538,7 +556,7 @@ DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("H
                 {
                   g_settings.audio_output_muted = !g_settings.audio_output_muted;
                   const s32 volume = System::GetAudioOutputVolume();
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   if (g_settings.audio_output_muted)
                   {
                     Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_MUTED_SPEAKER,
@@ -574,7 +592,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOO
                     Truncate8(std::min<s32>(static_cast<s32>(System::GetAudioOutputVolume()) + 10, 200));
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_HIGH_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume));
                 }
@@ -588,7 +606,7 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
                   const u8 volume = Truncate8(std::max<s32>(static_cast<s32>(System::GetAudioOutputVolume()) - 10, 0));
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
-                  SPU::GetOutputStream()->SetOutputVolume(volume);
+                  SPU::GetOutputStream().SetOutputVolume(volume);
                   Host::AddIconOSDMessage(OSDMessageType::Quick, "AudioControlHotkey", ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume));
                 }
@@ -629,20 +647,20 @@ DEFINE_HOTKEY("SaveStateAndSelectNextSlot", TRANSLATE_NOOP("Hotkeys", "Save Stat
 DEFINE_HOTKEY("UndoLoadState", TRANSLATE_NOOP("Hotkeys", "Save States"), TRANSLATE_NOOP("Hotkeys", "Undo Load State"),
               [](s32 pressed) {
                 if (!pressed)
-                  Host::RunOnCPUThread(System::UndoLoadState);
+                  Host::RunOnCoreThread(System::UndoLoadState);
               })
 
 #define MAKE_LOAD_STATE_HOTKEY(global, slot, name)                                                                     \
   DEFINE_HOTKEY(global ? "LoadGameState" #slot : "LoadGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { System::LoadStateFromSlot(global, slot); });                           \
+                    Host::RunOnCoreThread([]() { System::LoadStateFromSlot(global, slot); });                           \
                 })
 #define MAKE_SAVE_STATE_HOTKEY(global, slot, name)                                                                     \
   DEFINE_HOTKEY(global ? "SaveGameState" #slot : "SaveGlobalState" #slot, TRANSLATE_NOOP("Hotkeys", "Save States"),    \
                 name, [](s32 pressed) {                                                                                \
                   if (!pressed)                                                                                        \
-                    Host::RunOnCPUThread([]() { System::SaveStateToSlot(global, slot); });                             \
+                    Host::RunOnCoreThread([]() { System::SaveStateToSlot(global, slot); });                             \
                 })
 
 // clang-format off
@@ -752,5 +770,10 @@ DEFINE_HOTKEY("ToggleVRAMView", TRANSLATE_NOOP("Hotkeys", "Debugging"), TRANSLAT
                                             TRANSLATE_STR("OSDMessage", "Now showing display."));
                 }
               })
+};
 
-END_HOTKEY_LIST()
+std::span<const HotkeyInfo> Core::GetHotkeyList()
+{
+  return s_hotkey_list;
+}
+

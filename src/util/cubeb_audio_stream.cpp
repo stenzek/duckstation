@@ -1,54 +1,66 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "host.h"
 #include "imgui_manager.h"
+#include "translation.h"
 
 #include "core/settings.h"
 
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
-#include "common/scoped_guard.h"
 #include "common/string_util.h"
 
 #include "cubeb/cubeb.h"
 #include "fmt/format.h"
 
-LOG_CHANNEL(CubebAudioStream);
+#include <mutex>
+#include <string>
+
+LOG_CHANNEL(AudioStream);
 
 namespace {
 
-class CubebAudioStream : public AudioStream
+struct CubebContextHolder
+{
+  std::mutex mutex;
+  cubeb* context = nullptr;
+  u32 reference_count = 0;
+  std::string driver_name;
+};
+
+class CubebAudioStream final : public AudioStream
 {
 public:
-  CubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters);
-  ~CubebAudioStream();
+  CubebAudioStream();
+  ~CubebAudioStream() override;
 
-  void SetPaused(bool paused) override;
+  bool Initialize(u32 sample_rate, u32 channels, u32 output_latency_frames, bool output_latency_minimal,
+                  std::string_view driver_name, std::string_view device_name, AudioStreamSource* source,
+                  bool auto_start, Error* error);
 
-  bool Initialize(const char* driver_name, const char* device_name, Error* error);
+  bool Start(Error* error) override;
+  bool Stop(Error* error) override;
 
 private:
-  static void LogCallback(const char* fmt, ...);
   static long DataCallback(cubeb_stream* stm, void* user_ptr, const void* input_buffer, void* output_buffer,
                            long nframes);
   static void StateCallback(cubeb_stream* stream, void* user_ptr, cubeb_state state);
-
-  void DestroyContextAndStream();
 
   cubeb* m_context = nullptr;
   cubeb_stream* stream = nullptr;
 };
 } // namespace
 
-static TinyString GetCubebErrorString(int rv)
+static CubebContextHolder s_cubeb_context;
+
+static void FormatCubebError(Error* error, const char* prefix, int rv)
 {
-  TinyString ret;
+  const char* str;
   switch (rv)
   {
     // clang-format off
-#define C(e) case e: ret.assign(#e); break
+#define C(e) case e: str = #e; break
     // clang-format on
 
     C(CUBEB_OK);
@@ -59,28 +71,20 @@ static TinyString GetCubebErrorString(int rv)
     C(CUBEB_ERROR_DEVICE_UNAVAILABLE);
 
     default:
-      ret = "CUBEB_ERROR_UNKNOWN";
+      str = "CUBEB_ERROR_UNKNOWN";
       break;
 
 #undef C
   }
 
-  ret.append_format(" ({})", rv);
-  return ret;
+  Error::SetStringFmt(error, "{}: {} ({})", prefix, str, rv);
 }
 
-CubebAudioStream::CubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
-  : AudioStream(sample_rate, parameters)
+static void CubebLogCallback(const char* fmt, ...)
 {
-}
+  if (!Log::IsLogVisible(Log::Level::Dev, Log::Channel::AudioStream))
+    return;
 
-CubebAudioStream::~CubebAudioStream()
-{
-  DestroyContextAndStream();
-}
-
-void CubebAudioStream::LogCallback(const char* fmt, ...)
-{
   LargeString str;
   std::va_list ap;
   va_start(ap, fmt);
@@ -89,7 +93,56 @@ void CubebAudioStream::LogCallback(const char* fmt, ...)
   DEV_LOG(str);
 }
 
-void CubebAudioStream::DestroyContextAndStream()
+static cubeb* GetCubebContext(std::string_view driver_name, Error* error)
+{
+  std::lock_guard<std::mutex> lock(s_cubeb_context.mutex);
+  if (s_cubeb_context.context)
+  {
+    // Check if the requested driver/device matches the existing context.
+    if (driver_name != s_cubeb_context.driver_name)
+      ERROR_LOG("Cubeb context initialized with driver {}, but requested {}", driver_name, s_cubeb_context.driver_name);
+
+    s_cubeb_context.reference_count++;
+    return s_cubeb_context.context;
+  }
+
+  Assert(s_cubeb_context.reference_count == 0);
+
+  INFO_LOG("Creating Cubeb context with {} driver...", driver_name.empty() ? std::string_view("default") : driver_name);
+  cubeb_set_log_callback(CUBEB_LOG_NORMAL, CubebLogCallback);
+
+  std::string driver_name_str = std::string(driver_name);
+  const int rv =
+    cubeb_init(&s_cubeb_context.context, "DuckStation", driver_name_str.empty() ? nullptr : driver_name_str.c_str());
+  if (rv != CUBEB_OK)
+  {
+    FormatCubebError(error, "Could not initialize cubeb context: ", rv);
+    return nullptr;
+  }
+
+  s_cubeb_context.driver_name = std::move(driver_name_str);
+  s_cubeb_context.reference_count = 1;
+  return s_cubeb_context.context;
+}
+
+static void ReleaseCubebContext(cubeb* ctx)
+{
+  std::lock_guard<std::mutex> lock(s_cubeb_context.mutex);
+  AssertMsg(s_cubeb_context.context == ctx, "Cubeb context mismatch on release.");
+  Assert(s_cubeb_context.reference_count > 0);
+  s_cubeb_context.reference_count--;
+  if (s_cubeb_context.reference_count > 0)
+    return;
+
+  VERBOSE_LOG("Destroying Cubeb context...");
+  cubeb_destroy(s_cubeb_context.context);
+  s_cubeb_context.context = nullptr;
+  s_cubeb_context.driver_name = {};
+}
+
+CubebAudioStream::CubebAudioStream() = default;
+
+CubebAudioStream::~CubebAudioStream()
 {
   if (stream)
   {
@@ -99,69 +152,77 @@ void CubebAudioStream::DestroyContextAndStream()
   }
 
   if (m_context)
-  {
-    cubeb_destroy(m_context);
-    m_context = nullptr;
-  }
+    ReleaseCubebContext(m_context);
 }
 
-bool CubebAudioStream::Initialize(const char* driver_name, const char* device_name, Error* error)
+bool CubebAudioStream::Initialize(u32 sample_rate, u32 channels, u32 output_latency_frames, bool output_latency_minimal,
+                                  std::string_view driver_name, std::string_view device_name, AudioStreamSource* source,
+                                  bool auto_start, Error* error)
 {
-  cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
+  static constexpr std::array channel_layout_mapping = {
+    CUBEB_LAYOUT_UNDEFINED,  // 0
+    CUBEB_LAYOUT_MONO,       // 1
+    CUBEB_LAYOUT_STEREO,     // 2
+    CUBEB_LAYOUT_STEREO_LFE, // 3
+    CUBEB_LAYOUT_QUAD,       // 4
+    CUBEB_LAYOUT_QUAD_LFE,   // 5
+    CUBEB_LAYOUT_3F2_BACK,   // 6
+    CUBEB_LAYOUT_3F3R_LFE,   // 7
+    CUBEB_LAYOUT_3F4_LFE,    // 8
+  };
 
-  int rv =
-    cubeb_init(&m_context, "DuckStation", g_settings.audio_driver.empty() ? nullptr : g_settings.audio_driver.c_str());
-  if (rv != CUBEB_OK)
+  if (channels >= channel_layout_mapping.size())
   {
-    Error::SetStringFmt(error, "Could not initialize cubeb context: {}", GetCubebErrorString(rv));
+    Error::SetStringFmt(error, "Unsupported channel count: {}", channels);
     return false;
   }
 
+  m_context = GetCubebContext(driver_name, error);
+  if (!m_context)
+    return false;
+
   cubeb_stream_params params = {};
   params.format = CUBEB_SAMPLE_S16LE;
-  params.rate = m_sample_rate;
-  params.channels = NUM_CHANNELS;
-  params.layout = CUBEB_LAYOUT_STEREO;
+  params.rate = sample_rate;
+  params.channels = channels;
+  params.layout = channel_layout_mapping[channels];
   params.prefs = CUBEB_STREAM_PREF_NONE;
 
-  u32 latency_frames = GetBufferSizeForMS(
-    m_sample_rate, (m_parameters.output_latency_ms == 0) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
   u32 min_latency_frames = 0;
-  rv = cubeb_get_min_latency(m_context, &params, &min_latency_frames);
+  int rv = cubeb_get_min_latency(m_context, &params, &min_latency_frames);
   if (rv == CUBEB_ERROR_NOT_SUPPORTED)
   {
     DEV_LOG("Cubeb backend does not support latency queries, using latency of {} ms ({} frames).",
-            m_parameters.buffer_ms, latency_frames);
+            FramesToMS(sample_rate, output_latency_frames), output_latency_frames);
   }
   else
   {
     if (rv != CUBEB_OK)
     {
-      Error::SetStringFmt(error, "cubeb_get_min_latency() failed: {}", GetCubebErrorString(rv));
-      DestroyContextAndStream();
+      FormatCubebError(error, "cubeb_get_min_latency() failed: {}", rv);
       return false;
     }
 
-    const u32 minimum_latency_ms = GetMSForBufferSize(m_sample_rate, min_latency_frames);
-    DEV_LOG("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
-    if (m_parameters.output_latency_minimal)
+    if (output_latency_minimal)
     {
       // use minimum
-      latency_frames = min_latency_frames;
+      output_latency_frames = min_latency_frames;
     }
-    else if (minimum_latency_ms > m_parameters.output_latency_ms)
+    else if (min_latency_frames > output_latency_frames)
     {
       WARNING_LOG("Minimum latency is above requested latency: {} vs {}, adjusting to compensate.", min_latency_frames,
-                  latency_frames);
-      latency_frames = min_latency_frames;
+                  output_latency_frames);
+      output_latency_frames = min_latency_frames;
     }
   }
 
+  DEV_LOG("Output latency: {} ms ({} audio frames)", FramesToMS(sample_rate, output_latency_frames),
+          min_latency_frames);
+
   cubeb_devid selected_device = nullptr;
-  const std::string& selected_device_name = g_settings.audio_output_device;
   cubeb_device_collection devices;
   bool devices_valid = false;
-  if (!selected_device_name.empty())
+  if (!device_name.empty())
   {
     rv = cubeb_enumerate_devices(m_context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
     devices_valid = (rv == CUBEB_OK);
@@ -170,7 +231,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
       for (size_t i = 0; i < devices.count; i++)
       {
         const cubeb_device_info& di = devices.device[i];
-        if (di.device_id && selected_device_name == di.device_id)
+        if (di.device_id && device_name == di.device_id)
         {
           INFO_LOG("Using output device '{}' ({}).", di.device_id, di.friendly_name ? di.friendly_name : di.device_id);
           selected_device = di.devid;
@@ -180,41 +241,42 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 
       if (!selected_device)
       {
-        Host::AddOSDMessage(
-          OSDMessageType::Error,
-          fmt::format("Requested audio output device '{}' not found, using default.", selected_device_name));
+        Host::AddOSDMessage(OSDMessageType::Error,
+                            fmt::format("Requested audio output device '{}' not found, using default.", device_name));
       }
     }
     else
     {
-      WARNING_LOG("cubeb_enumerate_devices() returned {}, using default device.", GetCubebErrorString(rv));
+      Error enumerate_error;
+      FormatCubebError(&enumerate_error, "cubeb_enumerate_devices() failed: ", rv);
+      WARNING_LOG("{}, using default device.", enumerate_error.GetDescription());
     }
   }
-
-  BaseInitialize();
 
   char stream_name[32];
   std::snprintf(stream_name, sizeof(stream_name), "%p", this);
 
-  rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params, latency_frames,
-                         &CubebAudioStream::DataCallback, StateCallback, this);
+  rv =
+    cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params,
+                      output_latency_frames, &CubebAudioStream::DataCallback, &CubebAudioStream::StateCallback, source);
 
   if (devices_valid)
     cubeb_device_collection_destroy(m_context, &devices);
 
   if (rv != CUBEB_OK)
   {
-    Error::SetStringFmt(error, "cubeb_stream_init() failed: {}", GetCubebErrorString(rv));
-    DestroyContextAndStream();
+    FormatCubebError(error, "cubeb_stream_init() failed: ", rv);
     return false;
   }
 
-  rv = cubeb_stream_start(stream);
-  if (rv != CUBEB_OK)
+  if (auto_start)
   {
-    Error::SetStringFmt(error, "cubeb_stream_start() failed: {}", GetCubebErrorString(rv));
-    DestroyContextAndStream();
-    return false;
+    rv = cubeb_stream_start(stream);
+    if (rv != CUBEB_OK)
+    {
+      FormatCubebError(error, "cubeb_stream_start() failed: ", rv);
+      return false;
+    }
   }
 
   return true;
@@ -228,33 +290,45 @@ void CubebAudioStream::StateCallback(cubeb_stream* stream, void* user_ptr, cubeb
 long CubebAudioStream::DataCallback(cubeb_stream* stm, void* user_ptr, const void* input_buffer, void* output_buffer,
                                     long nframes)
 {
-  static_cast<CubebAudioStream*>(user_ptr)->ReadFrames(static_cast<s16*>(output_buffer), static_cast<u32>(nframes));
+  static_cast<AudioStreamSource*>(user_ptr)->ReadFrames(static_cast<s16*>(output_buffer), static_cast<u32>(nframes));
   return nframes;
 }
 
-void CubebAudioStream::SetPaused(bool paused)
+bool CubebAudioStream::Start(Error* error)
 {
-  if (paused == m_paused || !stream)
-    return;
-
-  const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
+  const int rv = cubeb_stream_start(stream);
   if (rv != CUBEB_OK)
   {
-    ERROR_LOG("Could not {} stream: {}", paused ? "pause" : "resume", rv);
-    return;
+    FormatCubebError(error, "cubeb_stream_start() failed: ", rv);
+    return false;
   }
 
-  m_paused = paused;
+  return true;
 }
 
-std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate,
-                                                                 const AudioStreamParameters& parameters,
-                                                                 const char* driver_name, const char* device_name,
-                                                                 Error* error)
+bool CubebAudioStream::Stop(Error* error)
 {
-  std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>(sample_rate, parameters);
-  if (!stream->Initialize(driver_name, device_name, error))
+  const int rv = cubeb_stream_stop(stream);
+  if (rv != CUBEB_OK)
+  {
+    FormatCubebError(error, "cubeb_stream_stop() failed: ", rv);
+    return false;
+  }
+
+  return true;
+}
+
+std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(
+  u32 sample_rate, u32 channels, u32 output_latency_frames, bool output_latency_minimal, std::string_view driver_name,
+  std::string_view device_name, AudioStreamSource* source, bool auto_start, Error* error)
+{
+  std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>();
+  if (!stream->Initialize(sample_rate, channels, output_latency_frames, output_latency_minimal, driver_name,
+                          device_name, source, auto_start, error))
+  {
     stream.reset();
+  }
+
   return stream;
 }
 
@@ -269,30 +343,32 @@ std::vector<std::pair<std::string, std::string>> AudioStream::GetCubebDriverName
   return names;
 }
 
-std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const char* driver, u32 sample_rate)
+std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(std::string_view driver, u32 sample_rate)
 {
+  Error error;
+
   std::vector<AudioStream::DeviceInfo> ret;
   ret.emplace_back(std::string(), TRANSLATE_STR("AudioStream", "Default"), 0);
 
   cubeb* context;
-  int rv = cubeb_init(&context, "DuckStation", (driver && *driver) ? driver : nullptr);
+  TinyString driver_str(driver);
+  int rv = cubeb_init(&context, "DuckStation", driver_str.empty() ? nullptr : driver_str.c_str());
   if (rv != CUBEB_OK)
   {
-    ERROR_LOG("cubeb_init() failed: {}", GetCubebErrorString(rv));
+    FormatCubebError(&error, "cubeb_init() failed: ", rv);
+    ERROR_LOG(error.GetDescription());
     return ret;
   }
-
-  ScopedGuard context_cleanup([context]() { cubeb_destroy(context); });
 
   cubeb_device_collection devices;
   rv = cubeb_enumerate_devices(context, CUBEB_DEVICE_TYPE_OUTPUT, &devices);
   if (rv != CUBEB_OK)
   {
-    ERROR_LOG("cubeb_enumerate_devices() failed: {}", GetCubebErrorString(rv));
+    FormatCubebError(&error, "cubeb_enumerate_devices() failed: ", rv);
+    ERROR_LOG(error.GetDescription());
+    cubeb_destroy(context);
     return ret;
   }
-
-  ScopedGuard devices_cleanup([context, &devices]() { cubeb_device_collection_destroy(context, &devices); });
 
   // we need stream parameters to query latency
   cubeb_stream_params params = {};
@@ -315,5 +391,7 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetCubebOutputDevices(const ch
     ret.emplace_back(di.device_id, di.friendly_name ? di.friendly_name : di.device_id, min_latency);
   }
 
+  cubeb_device_collection_destroy(context, &devices);
+  cubeb_destroy(context);
   return ret;
 }

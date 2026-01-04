@@ -9,8 +9,6 @@
 #include <cstdio>
 #include <limits>
 
-LOG_CHANNEL(ProgressCallback);
-
 static ProgressCallback s_nullProgressCallbacks;
 ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;
 
@@ -100,4 +98,31 @@ void ProgressCallback::SetProgressRange(u32 range)
 void ProgressCallback::IncrementProgressValue()
 {
   SetProgressValue((m_progress_value - m_base_progress_value) + 1);
+}
+
+ProgressCallbackWithPrompt::~ProgressCallbackWithPrompt() = default;
+
+void ProgressCallbackWithPrompt::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+}
+
+bool ProgressCallbackWithPrompt::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                               std::string_view yes_text /*= {}*/, std::string_view no_text /*= {}*/)
+{
+  return false;
+}
+
+void ProgressCallbackWithPrompt::AppendMessage(std::string_view message)
+{
+  Log::Write(Log::PackCategory(Log::Channel::Host, Log::Level::Info, Log::Color::StrongOrange), message);
+}
+
+void ProgressCallbackWithPrompt::SetAutoClose(bool enabled)
+{
+}
+
+void ProgressCallbackWithPrompt::SetStatusTextAndAppendMessage(std::string_view message)
+{
+  SetStatusText(message);
+  AppendMessage(message);
 }

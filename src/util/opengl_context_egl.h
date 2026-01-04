@@ -41,13 +41,13 @@ protected:
   EGLSurface CreateFallbackSurface(EGLConfig config, void* window, Error* error);
 
   bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, Error* error);
-  bool CreateContext(bool surfaceless, GPUTexture::Format surface_format, const Version& version,
+  bool CreateContext(bool surfaceless, GPUTextureFormat surface_format, const Version& version,
                      EGLContext share_context, Error* error);
   bool CreateContextAndSurface(WindowInfo& wi, SurfaceHandle* surface, const Version& version, EGLContext share_context,
                                bool make_current, Error* error);
   EGLSurface GetPBufferSurface(Error* error);
   EGLSurface GetSurfacelessSurface();
-  bool CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format);
+  bool CheckConfigSurfaceFormat(EGLConfig config, GPUTextureFormat format);
   void UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) const;
 
   EGLDisplay m_display = EGL_NO_DISPLAY;

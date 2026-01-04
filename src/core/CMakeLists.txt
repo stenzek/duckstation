@@ -20,6 +20,8 @@ add_library(core
   cheats.h
   controller.cpp
   controller.h
+  core.cpp
+  core.h
   cpu_code_cache.cpp
   cpu_code_cache.h
   cpu_code_cache_private.h
@@ -59,6 +61,7 @@ add_library(core
   gpu_commands.cpp
   gpu_dump.cpp
   gpu_dump.h
+  gpu_helpers.h
   gpu_hw.cpp
   gpu_hw.h
   gpu_hw_shadergen.cpp
@@ -82,7 +85,6 @@ add_library(core
   gte.cpp
   gte.h
   gte_types.h
-  host.cpp
   host.h
   hotkeys.cpp
   input_types.h
@@ -127,6 +129,8 @@ add_library(core
   shader_cache_version.h
   sio.cpp
   sio.h
+  sound_effect_manager.cpp
+  sound_effect_manager.h
   spu.cpp
   spu.h
   system.cpp
@@ -146,9 +150,8 @@ set(RECOMPILER_SRCS
 
 target_precompile_headers(core PRIVATE "pch.h")
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util)
-target_link_libraries(core PRIVATE xxhash imgui rapidyaml rcheevos cpuinfo::cpuinfo ZLIB::ZLIB zstd::libzstd_shared libzip::zip)
+target_link_libraries(core PRIVATE xxhash imgui rapidyaml rcheevos cpuinfo::cpuinfo ZLIB::ZLIB zstd::libzstd_shared libzip::zip speex_resampler_headers)
 
 if(CPU_ARCH_X64)
   target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
@@ -227,15 +230,4 @@ function(add_core_resources target)
     endif()
     add_resources(${target} ${path} ${CMAKE_SOURCE_DIR}/data/resources/)
   endforeach()
-
-  # Linux platforms need a copy of the .desktop and icon file because Wayland stupidity.
-  # See QtHost::EarlyProcessStartup() for where this is used and why. We still need to set it when running
-  # as a Flatpak, but thankfully we don't need the extra copy.
-  if((LINUX OR BSD) AND (NOT DEFINED ENV{container}))
-    message(STATUS "Copying desktop file to resources directory.")
-    set(PACKAGING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/scripts/packaging")
-    foreach(path "org.duckstation.DuckStation.desktop" "org.duckstation.DuckStation.png")
-      add_resources(${target} "${PACKAGING_SOURCE_DIR}/${path}" "${PACKAGING_SOURCE_DIR}")
-    endforeach()
-  endif()
 endfunction()

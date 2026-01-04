@@ -7,11 +7,14 @@
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/small_string.h"
 
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QVBoxLayout>
 #include <array>
 
@@ -151,7 +154,7 @@ QtAsyncTaskWithProgress* QtAsyncTaskWithProgress::create(QWidget* const callback
   self->m_callback = std::move(callback);
 
   connect(self, &QtAsyncTaskWithProgress::completed, callback_parent, [self]() {
-    const CompletionCallback& cb = std::get<CompletionCallback>(self->m_callback);
+    CompletionCallback& cb = std::get<CompletionCallback>(self->m_callback);
     if (cb)
       cb();
   });
@@ -164,7 +167,7 @@ void QtAsyncTaskWithProgress::start()
   // Disconnect from the calling thread, so it can be pulled by the async task.
   moveToThread(nullptr);
 
-  System::QueueAsyncTask([this]() mutable {
+  Host::QueueAsyncTask([this]() mutable {
     QThread* const worker_thread = QThread::currentThread();
     moveToThread(worker_thread);
 
@@ -185,12 +188,18 @@ void QtAsyncTaskWithProgress::cancel()
 }
 
 QtAsyncTaskWithProgressDialog::QtAsyncTaskWithProgressDialog(const QString& initial_title,
-                                                             const QString& initial_status_text, bool cancellable,
-                                                             int range, int value, float show_delay,
-                                                             QWidget* dialog_parent, WorkCallback callback)
-  : m_callback(std::move(callback)), m_show_delay(show_delay)
+                                                             const QString& initial_status_text,
+                                                             bool initial_message_log, bool initial_cancellable,
+                                                             int initial_range, int initial_value, float show_delay,
+                                                             bool auto_close, QWidget* dialog_parent,
+                                                             WorkCallback callback)
+  : m_callback(std::move(callback)), m_show_delay(show_delay), m_auto_close(auto_close)
 {
-  m_dialog = new ProgressDialog(initial_title, initial_status_text, cancellable, range, value, *this, dialog_parent);
+  m_dialog = new ProgressDialog(initial_title, initial_status_text, initial_message_log, initial_cancellable,
+                                initial_range, initial_value, this, dialog_parent);
+  m_cancellable = initial_cancellable;
+  m_progress_range = initial_range;
+  m_progress_value = initial_value;
 
   if (show_delay <= 0.0f)
   {
@@ -203,16 +212,24 @@ QtAsyncTaskWithProgressDialog::~QtAsyncTaskWithProgressDialog()
 {
   if (m_dialog)
   {
-    // should null out itself
-    delete m_dialog;
-    DebugAssert(!m_dialog);
+    if (m_auto_close)
+    {
+      // should null out itself
+      delete m_dialog;
+      DebugAssert(!m_dialog);
+    }
+    else
+    {
+      m_dialog->taskFinished();
+    }
   }
 }
 
 QtAsyncTaskWithProgressDialog::ProgressDialog::ProgressDialog(const QString& initial_title,
-                                                              const QString& initial_status_text, bool cancellable,
-                                                              int range, int value, QtAsyncTaskWithProgressDialog& task,
-                                                              QWidget* parent)
+                                                              const QString& initial_status_text,
+                                                              bool initial_message_log, bool initial_cancellable,
+                                                              int initial_range, int initial_value,
+                                                              QtAsyncTaskWithProgressDialog* task, QWidget* parent)
   : QDialog(parent), m_task(task)
 {
   if (!initial_title.isEmpty())
@@ -221,13 +238,13 @@ QtAsyncTaskWithProgressDialog::ProgressDialog::ProgressDialog(const QString& ini
     setWindowTitle(QStringLiteral("DuckStation"));
 
   setWindowFlag(Qt::CustomizeWindowHint, true);
-  setWindowFlag(Qt::WindowCloseButtonHint, cancellable);
+  setWindowFlag(Qt::WindowCloseButtonHint, initial_cancellable);
   setWindowModality(Qt::WindowModal);
-  setMinimumSize(MINIMUM_WIDTH, cancellable ? MINIMUM_HEIGHT_WITH_CANCEL : MINIMUM_HEIGHT_WITHOUT_CANCEL);
+  setMinimumWidth(MINIMUM_WIDTH);
 
   m_progress_bar = new QProgressBar(this);
-  m_progress_bar->setRange(0, range);
-  m_progress_bar->setValue(value);
+  m_progress_bar->setRange(0, initial_range);
+  m_progress_bar->setValue(initial_value);
 
   m_status_label = new QLabel(this);
   m_status_label->setAlignment(Qt::AlignCenter);
@@ -236,19 +253,27 @@ QtAsyncTaskWithProgressDialog::ProgressDialog::ProgressDialog(const QString& ini
 
   m_button_box = new QDialogButtonBox(QDialogButtonBox::Cancel, this);
   connect(m_button_box, &QDialogButtonBox::rejected, this, &QDialog::close);
-  m_button_box->setVisible(cancellable);
+  m_button_box->setVisible(initial_cancellable);
 
-  QVBoxLayout* const layout = new QVBoxLayout(this);
-  layout->setSpacing(8);
-  layout->addWidget(m_status_label);
-  layout->addWidget(m_progress_bar);
-  layout->addWidget(m_button_box);
+  m_layout = new QVBoxLayout(this);
+  m_layout->setSpacing(8);
+  m_layout->addWidget(m_status_label);
+  m_layout->addWidget(m_progress_bar);
+  m_layout->addWidget(m_button_box);
+
+  if (initial_message_log)
+    addMessageLog();
+
+  updateMinimumHeight();
 }
 
 QtAsyncTaskWithProgressDialog::ProgressDialog::~ProgressDialog()
 {
-  DebugAssert(m_task.m_dialog == this);
-  m_task.m_dialog = nullptr;
+  if (m_task)
+  {
+    DebugAssert(m_task->m_dialog == this);
+    m_task->m_dialog = nullptr;
+  }
 }
 
 void QtAsyncTaskWithProgressDialog::ProgressDialog::setCancellable(bool cancellable)
@@ -257,7 +282,7 @@ void QtAsyncTaskWithProgressDialog::ProgressDialog::setCancellable(bool cancella
     return;
 
   setWindowFlag(Qt::WindowCloseButtonHint, cancellable);
-  setMinimumHeight(cancellable ? MINIMUM_HEIGHT_WITH_CANCEL : MINIMUM_HEIGHT_WITHOUT_CANCEL);
+  updateMinimumHeight();
 
   m_button_box->setVisible(cancellable);
 }
@@ -268,26 +293,61 @@ void QtAsyncTaskWithProgressDialog::ProgressDialog::closeEvent(QCloseEvent* even
   QDialog::closeEvent(event);
 }
 
+void QtAsyncTaskWithProgressDialog::ProgressDialog::updateMinimumHeight()
+{
+  setMinimumHeight((m_button_box->isVisible() ? MINIMUM_HEIGHT_WITH_CANCEL : MINIMUM_HEIGHT_WITHOUT_CANCEL) +
+                   (m_message_log ? MESSAGE_LOG_HEIGHT : 0));
+}
+
 void QtAsyncTaskWithProgressDialog::ProgressDialog::cancelled()
 {
-  m_task.m_ts_cancelled.store(true, std::memory_order_release);
+  if (m_task)
+    m_task->m_ts_cancelled.store(true, std::memory_order_release);
+}
+
+void QtAsyncTaskWithProgressDialog::ProgressDialog::taskFinished()
+{
+  DebugAssert(m_task);
+  m_task = nullptr;
+
+  m_button_box->setStandardButtons(QDialogButtonBox::Close);
+  if (!m_button_box->isVisible())
+  {
+    m_button_box->setVisible(true);
+    updateMinimumHeight();
+  }
+}
+
+void QtAsyncTaskWithProgressDialog::ProgressDialog::addMessageLog()
+{
+  DebugAssert(!m_message_log);
+
+  m_message_log = new QPlainTextEdit(this);
+  m_message_log->setReadOnly(true);
+  m_message_log->setMinimumHeight(100);
+  m_layout->insertWidget(2, m_message_log);
 }
 
 QtAsyncTaskWithProgressDialog* QtAsyncTaskWithProgressDialog::create(QWidget* parent, std::string_view initial_title,
                                                                      std::string_view initial_status_text,
-                                                                     bool cancellable, int range, int value,
-                                                                     float show_delay, WorkCallback callback)
+                                                                     bool initial_message_log, bool initial_cancellable,
+                                                                     int initial_range, int initial_value,
+                                                                     float show_delay, bool auto_close,
+                                                                     WorkCallback callback)
 {
   DebugAssert(parent);
 
   // NOTE: Must get connected before queuing, because otherwise you risk a race.
   QtAsyncTaskWithProgressDialog* task = new QtAsyncTaskWithProgressDialog(
-    QtUtils::StringViewToQString(initial_title), QtUtils::StringViewToQString(initial_status_text), cancellable, range,
-    value, show_delay, parent, std::move(callback));
-  connect(task, &QtAsyncTaskWithProgressDialog::completed, parent,
-          [task]() { std::get<CompletionCallback>(task->m_callback)(); });
+    QtUtils::StringViewToQString(initial_title), QtUtils::StringViewToQString(initial_status_text), initial_message_log,
+    initial_cancellable, initial_range, initial_value, show_delay, auto_close, parent, std::move(callback));
+  connect(task, &QtAsyncTaskWithProgressDialog::completed, parent, [task]() {
+    CompletionCallback& cb = std::get<CompletionCallback>(task->m_callback);
+    if (cb)
+      cb();
+  });
 
-  System::QueueAsyncTask([task]() {
+  Host::QueueAsyncTask([task]() {
     task->m_callback = std::get<WorkCallback>(task->m_callback)(task);
     Host::RunOnUIThread([task]() {
       emit task->completed(task);
@@ -301,7 +361,7 @@ QtAsyncTaskWithProgressDialog* QtAsyncTaskWithProgressDialog::create(QWidget* pa
 QtAsyncTaskWithProgressDialog* QtAsyncTaskWithProgressDialog::create(QWidget* parent, float show_delay,
                                                                      WorkCallback callback)
 {
-  return create(parent, {}, {}, false, 0, 1, show_delay, std::move(callback));
+  return create(parent, {}, {}, false, false, 0, 1, show_delay, true, std::move(callback));
 }
 
 void QtAsyncTaskWithProgressDialog::cancel()
@@ -397,11 +457,122 @@ void QtAsyncTaskWithProgressDialog::SetProgressValue(u32 value)
   }
 }
 
-void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
+static QMessageBox::Icon ConvertPromptIcon(ProgressCallbackWithPrompt::PromptIcon icon)
 {
-  DebugAssert(!m_shown);
+  switch (icon)
+  {
+    case ProgressCallbackWithPrompt::PromptIcon::Error:
+      return QMessageBox::Critical;
+    case ProgressCallbackWithPrompt::PromptIcon::Warning:
+      return QMessageBox::Warning;
+    case ProgressCallbackWithPrompt::PromptIcon::Question:
+      return QMessageBox::Question;
+    case ProgressCallbackWithPrompt::PromptIcon::Information:
+    default:
+      return QMessageBox::Information;
+  }
+}
 
-  if (m_show_timer.GetTimeSeconds() < m_show_delay)
+void QtAsyncTaskWithProgressDialog::AlertPrompt(PromptIcon icon, std::string_view message)
+{
+  m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnUIThread([this, icon, message = QtUtils::StringViewToQString(message)]() {
+    if (!m_dialog)
+    {
+      // dialog closed :(
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+      return;
+    }
+
+    EnsureShown();
+
+    QMessageBox* msgbox =
+      QtUtils::NewMessageBox(m_dialog, ConvertPromptIcon(icon), m_dialog->windowTitle(), message, QMessageBox::Ok);
+    connect(msgbox, &QMessageBox::finished, [this]() {
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+    });
+    msgbox->open();
+  });
+
+  m_prompt_waiting.wait(true, std::memory_order_acquire);
+}
+
+bool QtAsyncTaskWithProgressDialog::ConfirmPrompt(PromptIcon icon, std::string_view message,
+                                                  std::string_view yes_text /*= {}*/, std::string_view no_text /*= {}*/)
+{
+  m_prompt_result.store(false, std::memory_order_relaxed);
+  m_prompt_waiting.test_and_set(std::memory_order_release);
+
+  Host::RunOnUIThread([this, icon, message = QtUtils::StringViewToQString(message),
+                       yes_text = QtUtils::StringViewToQString(yes_text),
+                       no_text = QtUtils::StringViewToQString(no_text)]() {
+    if (!m_dialog)
+    {
+      // dialog closed :(
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+      return;
+    }
+
+    EnsureShown();
+
+    QMessageBox* msgbox = QtUtils::NewMessageBox(m_dialog, ConvertPromptIcon(icon), m_dialog->windowTitle(), message,
+                                                 QMessageBox::NoButton);
+    QAbstractButton* yes_button;
+    if (!yes_text.isEmpty())
+      yes_button = msgbox->addButton(yes_text, QMessageBox::YesRole);
+    else
+      yes_button = msgbox->addButton(QMessageBox::Yes);
+    if (!no_text.isEmpty())
+      msgbox->addButton(no_text, QMessageBox::NoRole);
+    else
+      msgbox->addButton(QMessageBox::No);
+    connect(msgbox, &QMessageBox::finished, [this, msgbox, yes_button]() {
+      m_prompt_result.store((msgbox->clickedButton() == yes_button), std::memory_order_relaxed);
+      m_prompt_waiting.clear(std::memory_order_release);
+      m_prompt_waiting.notify_one();
+    });
+    msgbox->open();
+  });
+
+  m_prompt_waiting.wait(true, std::memory_order_acquire);
+  return m_prompt_result.load(std::memory_order_relaxed);
+}
+
+void QtAsyncTaskWithProgressDialog::AppendMessage(std::string_view message)
+{
+  Log::Write(Log::PackCategory(Log::Channel::Host, Log::Level::Info, Log::Color::StrongOrange), message);
+
+  EnsureShown();
+
+  Host::RunOnUIThread([this, message = QtUtils::StringViewToQString(message)]() {
+    if (!m_dialog)
+      return;
+
+    if (!m_dialog->m_message_log)
+      m_dialog->addMessageLog();
+
+    m_dialog->m_message_log->appendPlainText(message);
+
+    QScrollBar* const scrollbar = m_dialog->m_message_log->verticalScrollBar();
+    const bool cursor_at_end = m_dialog->m_message_log->textCursor().atEnd();
+    const bool scroll_at_end = scrollbar->sliderPosition() == scrollbar->maximum();
+    if (cursor_at_end && scroll_at_end)
+      m_dialog->m_message_log->centerCursor();
+  });
+}
+
+void QtAsyncTaskWithProgressDialog::SetAutoClose(bool enabled)
+{
+  m_auto_close = enabled;
+}
+
+void QtAsyncTaskWithProgressDialog::EnsureShown()
+{
+  if (!m_shown)
     return;
 
   m_shown = true;
@@ -419,4 +590,14 @@ void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
     m_dialog->setCancellable(cancellable);
     m_dialog->open();
   });
+}
+
+void QtAsyncTaskWithProgressDialog::CheckForDelayedShow()
+{
+  DebugAssert(!m_shown);
+
+  if (m_show_timer.GetTimeSeconds() < m_show_delay)
+    return;
+
+  EnsureShown();
 }

@@ -9,6 +9,7 @@
 #include "settingwidgetbinder.h"
 
 #include "core/cheats.h"
+#include "core/core.h"
 
 #include "common/error.h"
 #include "common/log.h"
@@ -379,7 +380,7 @@ void GameCheatSettingsWidget::onRemoveCodeClicked()
 void GameCheatSettingsWidget::onReloadClicked()
 {
   reloadList();
-  g_emu_thread->reloadCheats(true, false, true, true);
+  g_core_thread->reloadCheats(true, false, true, true);
 }
 
 bool GameCheatSettingsWidget::shouldLoadFromDatabase() const
@@ -389,7 +390,7 @@ bool GameCheatSettingsWidget::shouldLoadFromDatabase() const
 
 void GameCheatSettingsWidget::checkForMasterDisable()
 {
-  const bool game_settings_enabled = Host::GetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
+  const bool game_settings_enabled = Core::GetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
   const bool cheats_enabled = m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "EnableCheats", false);
   if (m_master_enable_ignored || (game_settings_enabled && cheats_enabled))
     return;
@@ -406,9 +407,9 @@ void GameCheatSettingsWidget::checkForMasterDisable()
     mbox->setCheckBox(cb);
 
     connect(mbox, &QMessageBox::accepted, this, []() {
-      Host::SetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
+      Core::SetBaseBoolSettingValue("Main", "ApplyGameSettings", true);
       Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings(false);
+      g_core_thread->applySettings(false);
     });
 
     mbox->show();
@@ -609,7 +610,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   }
 
   reloadList();
-  g_emu_thread->reloadCheats(true, false, false, true);
+  g_core_thread->reloadCheats(true, false, false, true);
 }
 
 void GameCheatSettingsWidget::newCode()
@@ -620,7 +621,7 @@ void GameCheatSettingsWidget::newCode()
   connect(dlg, &QDialog::accepted, this, [this] {
     // no need to reload cheats yet, it's not active. just refresh the list
     reloadList();
-    g_emu_thread->reloadCheats(true, false, false, true);
+    g_core_thread->reloadCheats(true, false, false, true);
   });
 
   dlg->open();
@@ -637,7 +638,7 @@ void GameCheatSettingsWidget::editCode(const std::string_view code_name)
 
   connect(dlg, &QDialog::accepted, this, [this] {
     reloadList();
-    g_emu_thread->reloadCheats(true, true, false, true);
+    g_core_thread->reloadCheats(true, true, false, true);
   });
 
   dlg->open();
@@ -676,7 +677,7 @@ void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool 
   }
 
   reloadList();
-  g_emu_thread->reloadCheats(true, true, false, true);
+  g_core_thread->reloadCheats(true, true, false, true);
 }
 
 void GameCheatSettingsWidget::onExportClicked()

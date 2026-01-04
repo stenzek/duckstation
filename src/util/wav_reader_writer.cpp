@@ -64,9 +64,11 @@ WAVReader::WAVReader(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
-  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_num_frames = std::exchange(move.m_num_frames, 0);
+  m_current_frame = std::exchange(move.m_current_frame, 0);
 }
 
 WAVReader::~WAVReader()
@@ -79,9 +81,11 @@ WAVReader& WAVReader::operator=(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
-  m_num_channels = std::exchange(move.m_num_channels, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
+  m_current_frame = std::exchange(move.m_current_frame, 0);
   return *this;
 }
 
@@ -182,8 +186,10 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
   m_file = fp.release();
   m_frames_start = FileSystem::FTell64(m_file);
   m_sample_rate = format.sample_rate;
+  m_bytes_per_frame = sizeof(s16) * format.num_channels;
   m_num_channels = format.num_channels;
   m_num_frames = num_frames;
+  m_current_frame = 0;
   return true;
 }
 
@@ -194,41 +200,184 @@ void WAVReader::Close()
 
   std::fclose(m_file);
   m_file = nullptr;
-  m_sample_rate = 0;
+  m_frames_start = 0;
+  m_bytes_per_frame = 0;
   m_num_channels = 0;
+  m_sample_rate = 0;
   m_num_frames = 0;
+  m_current_frame = 0;
 }
 
 std::FILE* WAVReader::TakeFile()
 {
   std::FILE* ret = std::exchange(m_file, nullptr);
-  m_sample_rate = 0;
   m_frames_start = 0;
+  m_bytes_per_frame = 0;
   m_num_channels = 0;
+  m_sample_rate = 0;
   m_num_frames = 0;
+  m_current_frame = 0;
   return ret;
 }
 
 u64 WAVReader::GetFileSize()
 {
-  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file), 1));
+  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file), 0));
+}
+
+u32 WAVReader::GetRemainingFrames() const
+{
+  return (m_num_frames - m_current_frame);
 }
 
 bool WAVReader::SeekToFrame(u32 num, Error* error)
 {
-  const s64 offset = m_frames_start + (static_cast<s64>(num) * (sizeof(s16) * m_num_channels));
-  return FileSystem::FSeek64(m_file, offset, SEEK_SET, error);
-}
-
-bool WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
-{
-  if (std::fread(samples, sizeof(s16) * m_num_channels, num_frames, m_file) != num_frames)
+  if (num > m_num_frames)
   {
-    Error::SetErrno(error, "fread() failed: ", errno);
+    Error::SetStringFmt(error, "Frame number {} out of range (max {})", num, m_num_frames);
     return false;
   }
 
+  const s64 offset = m_frames_start + (static_cast<s64>(num) * (sizeof(s16) * m_num_channels));
+  if (!FileSystem::FSeek64(m_file, offset, SEEK_SET, error))
+    return false;
+
+  m_current_frame = num;
   return true;
+}
+
+std::optional<u32> WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
+{
+  const u32 frames_remaining = m_num_frames - m_current_frame;
+  if (frames_remaining == 0)
+    return 0;
+
+  const u32 read =
+    static_cast<u32>(std::fread(samples, m_bytes_per_frame, std::min(num_frames, frames_remaining), m_file));
+  if (read == 0)
+  {
+    if (std::ferror(m_file))
+    {
+      Error::SetErrno(error, "fread() failed: ", errno);
+      return std::nullopt;
+    }
+  }
+
+  m_current_frame += read;
+  return read;
+}
+
+template<typename T>
+static std::optional<std::span<const u8>> FindChunk(const std::span<const u8>& file, T* chunk, u32 tag, Error* error)
+{
+  size_t offset = 0;
+  for (;;)
+  {
+    if (offset + sizeof(WAV_CHUNK_HEADER) > file.size())
+    {
+      Error::SetStringView(error, "Unexpected end of file while searching for chunk");
+      return {};
+    }
+
+    WAV_CHUNK_HEADER header;
+    std::memcpy(&header, file.data() + offset, sizeof(header));
+
+    if (header.chunk_id != tag)
+    {
+      offset += sizeof(header) + header.chunk_size;
+      continue;
+    }
+
+    if (header.chunk_size < (sizeof(T) - sizeof(header)))
+    {
+      Error::SetStringFmt(error, "Chunk is too small (required {} got {})", sizeof(T) - sizeof(header),
+                          header.chunk_size);
+      return {};
+    }
+    else if (header.chunk_size > (file.size() - offset - sizeof(header)))
+    {
+      Error::SetStringView(error, "Chunk size exceeds file size");
+      return {};
+    }
+
+    if constexpr (sizeof(T) > sizeof(header))
+    {
+      if ((offset + sizeof(T)) > file.size())
+      {
+        Error::SetStringView(error, "Unexpected end of file while reading chunk header");
+        return {};
+      }
+    }
+
+    std::memcpy(chunk, file.data() + offset, sizeof(T));
+    return file.subspan(offset + sizeof(header), header.chunk_size);
+  }
+}
+
+std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* data, size_t size,
+                                                                   Error* error /*= nullptr*/)
+{
+  std::optional<WAVReader::MemoryParseResult> result;
+
+  WAV_HEADER file_header;
+  if (size < sizeof(file_header))
+  {
+    Error::SetStringView(error, "Data size is too small to be a valid WAV file");
+    return result;
+  }
+
+  std::memcpy(&file_header, data, sizeof(file_header));
+  if (file_header.chunk_id != RIFF_VALUE || file_header.format != WAVE_VALUE)
+  {
+    Error::SetStringView(error, "Invalid file header, must be RIFF");
+    return result;
+  }
+
+  const std::span<const u8> whole_file(reinterpret_cast<const u8*>(data) + sizeof(file_header),
+                                       size - sizeof(file_header));
+
+  WAV_FULL_HEADER::FormatChunk format;
+  if (!FindChunk(whole_file, &format, FMT_VALUE, error).has_value())
+  {
+    Error::AddPrefix(error, "Failed to get FMT chunk: ");
+    return result;
+  }
+
+  if (format.audio_format != 1) // PCM
+  {
+    Error::SetStringFmt(error, "Unsupported audio format {}", format.audio_format);
+    return result;
+  }
+
+  if (format.sample_rate == 0 || format.num_channels == 0 || format.bits_per_sample != 16)
+  {
+    Error::SetStringFmt(error, "Unsupported file format samplerate={} channels={} bits={}", format.sample_rate,
+                        format.num_channels, format.bits_per_sample);
+    return result;
+  }
+
+  WAV_CHUNK_HEADER data_chunk;
+  std::optional<std::span<const u8>> sample_data = FindChunk(whole_file, &data_chunk, DATA_VALUE, error);
+  if (!sample_data.has_value())
+  {
+    Error::AddPrefix(error, "Failed to get DATA chunk: ");
+    return result;
+  }
+
+  const u32 num_frames = static_cast<u32>(sample_data->size() / (sizeof(s16) * format.num_channels));
+  if (num_frames == 0)
+  {
+    Error::SetStringFmt(error, "File has no frames");
+    return result;
+  }
+
+  result.emplace();
+  result->bytes_per_frame = sizeof(s16) * format.num_channels;
+  result->sample_rate = format.sample_rate;
+  result->num_channels = format.num_channels;
+  result->num_frames = num_frames;
+  result->sample_data = sample_data->data();
+  return result;
 }
 
 WAVWriter::WAVWriter() = default;

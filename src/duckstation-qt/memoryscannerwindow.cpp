@@ -9,9 +9,10 @@
 
 #include "core/bus.h"
 #include "core/cpu_core.h"
-#include "core/host.h"
 #include "core/settings.h"
 #include "core/system.h"
+
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -176,8 +177,8 @@ void MemoryScannerWindow::connectUi()
   m_update_timer = new QTimer(this);
   connect(m_update_timer, &QTimer::timeout, this, &MemoryScannerWindow::updateScanUi);
 
-  connect(g_emu_thread, &EmuThread::systemStarted, this, &MemoryScannerWindow::onSystemStarted);
-  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &MemoryScannerWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::systemStarted, this, &MemoryScannerWindow::onSystemStarted);
+  connect(g_core_thread, &CoreThread::systemDestroyed, this, &MemoryScannerWindow::onSystemDestroyed);
 
   if (QtHost::IsSystemValid())
     onSystemStarted();
@@ -566,6 +567,8 @@ void MemoryScannerWindow::updateResultsValues()
 {
   QSignalBlocker sb(m_ui.scanTable);
 
+  const QBrush changed_color(QtHost::IsDarkApplicationTheme() ? QColor(255, 80, 80) : QColor(191, 121, 20));
+
   int row = 0;
   for (const MemoryScan::Result& res : m_scanner.GetResults())
   {
@@ -576,7 +579,7 @@ void MemoryScannerWindow::updateResultsValues()
         item->setText(formatValue(res.value, m_scanner.GetValueSigned()));
       else
         item->setText(formatHexValue(res.value, m_scanner.GetSize()));
-      item->setForeground(Qt::red);
+      item->setForeground(changed_color);
     }
 
     row++;

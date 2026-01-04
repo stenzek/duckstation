@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
 #include "cue_parser.h"
-#include "host.h"
+#include "translation.h"
 #include "wav_reader_writer.h"
 
 #include "common/align.h"
@@ -524,8 +524,11 @@ bool WaveTrackFileInterface::Read(void* buffer, u64 offset, u32 size, Error* err
   const u32 num_frames_to_read = std::min(num_frames, m_reader.GetNumFrames() - frame_number);
   if (num_frames_to_read > 0)
   {
-    if (!m_reader.SeekToFrame(frame_number, error) || !m_reader.ReadFrames(buffer, num_frames_to_read, error))
+    if (!m_reader.SeekToFrame(frame_number, error) ||
+        m_reader.ReadFrames(buffer, num_frames_to_read, error).value_or(0) != num_frames_to_read)
+    {
       return false;
+    }
   }
 
   // Padding.

@@ -9,7 +9,10 @@
 #include "scmversion/scmversion.h"
 #include "unzip.h"
 
+#include "core/core.h"
+
 #include "util/http_downloader.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -119,7 +122,7 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* const parent, Error* const error) 
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
 
-  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), error);
+  m_http = HTTPDownloader::Create(Core::GetHTTPUserAgent(), error);
 
   m_http_poll_timer = new QTimer(this);
   m_http_poll_timer->connect(m_http_poll_timer, &QTimer::timeout, this, &AutoUpdaterDialog::httpPollTimerPoll);
@@ -167,7 +170,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
 #if !defined(_WIN32) && !defined(__APPLE__)
     EmuFolders::AppRoot.starts_with("/home") && // Devbuilds should be in home directory.
 #endif
-    Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+    Core::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
   {
     return;
   }
@@ -227,7 +230,7 @@ void AutoUpdaterDialog::warnAboutUnofficialBuild()
   }
 
   if (cb->isChecked())
-    Host::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
+    Core::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
 #endif
 }
 
@@ -247,7 +250,7 @@ std::string AutoUpdaterDialog::getDefaultTag()
 
 std::string AutoUpdaterDialog::getCurrentUpdateTag()
 {
-  return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
+  return Core::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", UPDATER_RELEASE_CHANNEL);
 }
 
 void AutoUpdaterDialog::setDownloadSectionVisibility(bool visible)
@@ -454,6 +457,8 @@ void AutoUpdaterDialog::queueGetChanges()
 
 void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
+  std::string_view error_message;
+
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -509,16 +514,23 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, 
       }
 
       m_ui.updateNotes->setText(changes_html);
+      return;
     }
     else
     {
-      reportError("Change list JSON is not an object");
+      error_message = "Change list JSON is not an object";
     }
   }
   else
   {
-    reportError(fmt::format("Failed to download change list: {}", error.GetDescription()));
+    error_message = error.GetDescription();
   }
+
+  m_ui.updateNotes->setText(QString::fromStdString(
+    fmt::format("<h2>Failed to download change list</h2><p>The error was:<pre>{}</pre></p><p>You may be able to "
+                "install this update anyway. If the download installation fails, you can download the update "
+                "from:</p><p><a href=\"" DOWNLOAD_PAGE_URL "\">" DOWNLOAD_PAGE_URL "</a></p>",
+                error_message, UPDATER_RELEASE_CHANNEL, UPDATER_RELEASE_CHANNEL)));
 }
 
 void AutoUpdaterDialog::downloadUpdateClicked()
@@ -581,7 +593,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
 bool AutoUpdaterDialog::updateNeeded() const
 {
-  QString last_checked_sha = QString::fromStdString(Host::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
+  QString last_checked_sha = QString::fromStdString(Core::GetBaseStringSettingValue("AutoUpdater", "LastVersion"));
 
   INFO_LOG("Current SHA: {}", g_scm_hash_str);
   INFO_LOG("Latest SHA: {}", m_latest_sha.toUtf8().constData());
@@ -598,7 +610,7 @@ bool AutoUpdaterDialog::updateNeeded() const
 
 void AutoUpdaterDialog::skipThisUpdateClicked()
 {
-  Host::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
+  Core::SetBaseStringSettingValue("AutoUpdater", "LastVersion", m_latest_sha.toUtf8().constData());
   Host::CommitBaseSettingChanges();
   close();
 }

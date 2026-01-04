@@ -1,17 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "gpu_types.h"
-#include "timers.h"
 #include "types.h"
-
-#include "util/gpu_device.h"
-#include "util/gpu_texture.h"
 
 #include "common/bitfield.h"
 #include "common/fifo_queue.h"
+#include "common/gsvector.h"
 #include "common/types.h"
 
 #include <algorithm>
@@ -196,12 +193,13 @@ public:
   float ComputeAspectRatioCorrection() const;
 
   /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
-  static void ApplyPixelAspectRatioToSize(float par, float* width, float* height);
+  static GSVector2 CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                              float pixel_aspect_ratio, const GSVector2 video_size,
+                                              const GSVector2 source_size, const GSVector2 window_size);
 
-  // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
-  void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
-                                                    float* display_y) const;
-  bool ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
+  // Converts window coordinates into horizontal ticks and scanlines. Returns -1 if out of range. Used for lightguns.
+  GSVector2 ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const;
+  bool ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
                                                     u32* out_line) const;
 
   // Returns the current beam position.
@@ -216,9 +214,11 @@ public:
 
   // Returns the video clock frequency.
   TickCount GetCRTCFrequency() const;
-  ALWAYS_INLINE u16 GetCRTCDotClockDivider() const { return m_crtc_state.dot_clock_divider; }
-  ALWAYS_INLINE s32 GetCRTCDisplayWidth() const { return m_crtc_state.display_width; }
-  ALWAYS_INLINE s32 GetCRTCDisplayHeight() const { return m_crtc_state.display_height; }
+
+  // Video output access.
+  GSVector2i GetCRTCVideoSize() const;
+  GSVector4i GetCRTCVideoActiveRect() const;
+  GSVector4i GetCRTCVRAMSourceRect() const;
 
   // Ticks for hblank/vblank.
   void CRTCTickEvent(TickCount ticks);
@@ -238,11 +238,13 @@ public:
   u8 CalculateAutomaticResolutionScale() const;
 
   /// Helper function for computing the draw rectangle in a larger window.
-  static void CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
-                                s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
-                                u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                                float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
-                                GSVector4i* draw_rect);
+  static void CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
+                                const GSVector4i& video_active_rect, const GSVector4i& source_rect,
+                                DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
+                                bool integer_scale, DisplayFineCropMode fine_crop,
+                                const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
+                                GSVector4i* out_display_rect, GSVector4i* out_draw_rect,
+                                GSVector4* out_crop_amount = nullptr);
 
 private:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;
@@ -274,13 +276,7 @@ private:
   void UpdateDMARequest();
   void UpdateGPUIdle();
 
-  /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
-  ALWAYS_INLINE u8 GetInterlacedDisplayField() const { return m_crtc_state.interlaced_field; }
-
-  /// Returns 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
-  ALWAYS_INLINE u8 GetActiveLineLSB() const { return m_crtc_state.active_line_lsb; }
-
-  /// Updates drawing area that's suitablef or clamping.
+  /// Updates drawing area that's suitable for clamping.
   void SetClampedDrawingArea();
 
   /// Sets/decodes GP0(E1h) (set draw mode).
@@ -296,11 +292,7 @@ private:
   void FinishVRAMWrite();
 
   /// Returns the number of vertices in the buffered poly-line.
-  ALWAYS_INLINE u32 GetPolyLineVertexCount() const
-  {
-    return (static_cast<u32>(m_polyline_buffer.size()) + BoolToUInt32(m_render_command.shading_enable)) >>
-           BoolToUInt8(m_render_command.shading_enable);
-  }
+  u32 GetPolyLineVertexCount() const;
 
   void AddCommandTicks(TickCount ticks);
 
@@ -320,99 +312,10 @@ private:
   void FinishPolyline();
   void FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand rc) const;
 
-  ALWAYS_INLINE_RELEASE void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded,
-                                                  bool textured, bool semitransparent)
-  {
-    // This will not produce the correct results for triangles which are partially outside the clip area.
-    // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
-    // the edges with the clip rectangle.
-    // TODO: Coordinates are exclusive, so off by one here...
-    const GSVector2i clamp_min = GSVector2i::load<true>(&m_clamped_drawing_area.x);
-    const GSVector2i clamp_max = GSVector2i::load<true>(&m_clamped_drawing_area.z);
-    v1 = v1.sat_s32(clamp_min, clamp_max);
-    v2 = v2.sat_s32(clamp_min, clamp_max);
-    v3 = v3.sat_s32(clamp_min, clamp_max);
-
-    TickCount pixels =
-      std::abs((v1.x * v2.y + v2.x * v3.y + v3.x * v1.y - v1.x * v3.y - v2.x * v1.y - v3.x * v2.y) / 2);
-    if (textured)
-      pixels += pixels;
-    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
-      pixels += (pixels + 1) / 2;
-    if (m_GPUSTAT.SkipDrawingToActiveField())
-      pixels /= 2;
-
-    AddCommandTicks(pixels);
-  }
-  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent)
-  {
-    const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
-
-    u32 drawn_width = clamped_rect.width();
-    u32 drawn_height = clamped_rect.height();
-
-    u32 ticks_per_row = drawn_width;
-    if (textured)
-    {
-      switch (m_draw_mode.mode_reg.texture_mode)
-      {
-        case GPUTextureMode::Palette4Bit:
-          ticks_per_row += drawn_width;
-          break;
-
-        case GPUTextureMode::Palette8Bit:
-        {
-          // Texture cache reload every 2 pixels, reads in 8 bytes (assuming 4x2). Cache only reloads if the
-          // draw width is greater than 128, otherwise the cache hits between rows.
-          if (drawn_width > 128)
-            ticks_per_row += (drawn_width / 4) * 8;
-          else if ((drawn_width * drawn_height) > 2048)
-            ticks_per_row += ((drawn_width / 4) * (4 * (128 / drawn_width)));
-          else
-            ticks_per_row += drawn_width;
-        }
-        break;
-
-        case GPUTextureMode::Direct16Bit:
-        case GPUTextureMode::Reserved_Direct16Bit:
-        {
-          // Same as above, except with 2x2 blocks instead of 4x2.
-          if (drawn_width > 128)
-            ticks_per_row += (drawn_width / 2) * 8;
-          else if ((drawn_width * drawn_height) > 1024)
-            ticks_per_row += ((drawn_width / 4) * (8 * (128 / drawn_width)));
-          else
-            ticks_per_row += drawn_width;
-        }
-        break;
-
-          DefaultCaseIsUnreachable()
-      }
-    }
-
-    if (semitransparent || m_GPUSTAT.check_mask_before_draw)
-      ticks_per_row += (drawn_width + 1u) / 2u;
-    if (m_GPUSTAT.SkipDrawingToActiveField())
-      drawn_height = std::max<u32>(drawn_height / 2, 1u);
-
-    AddCommandTicks(ticks_per_row * drawn_height);
-  }
-  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(const GSVector4i rect, bool shaded)
-  {
-    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-
-    // Needed because we're not multiplying either dimension.
-    if (clamped_rect.rempty())
-      return;
-
-    const u32 drawn_width = clamped_rect.width();
-    u32 drawn_height = clamped_rect.height();
-
-    if (m_GPUSTAT.SkipDrawingToActiveField())
-      drawn_height = std::max<u32>(drawn_height / 2, 1u);
-
-    AddCommandTicks(std::max(drawn_width, drawn_height));
-  }
+  void AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded, bool textured,
+                            bool semitransparent);
+  void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent);
+  void AddDrawLineTicks(const GSVector4i rect, bool shaded);
 
   GPUSTAT m_GPUSTAT = {};
 
@@ -514,8 +417,11 @@ private:
     bool in_hblank;
     bool in_vblank;
 
-    u8 interlaced_field; // 0 = odd, 1 = even
+    /// 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...)
+    u8 interlaced_field;
     u8 interlaced_display_field;
+
+    /// 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
     u8 active_line_lsb;
 
     ALWAYS_INLINE void UpdateHBlankFlag()

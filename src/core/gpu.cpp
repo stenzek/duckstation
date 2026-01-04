@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu.h"
+#include "core.h"
 #include "dma.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
+#include "gpu_helpers.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
@@ -25,6 +27,7 @@
 #include "util/postprocessing.h"
 #include "util/shadergen.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"
@@ -735,18 +738,45 @@ float GPU::ComputeAspectRatioCorrection() const
   return (relative_width / relative_height);
 }
 
-void GPU::ApplyPixelAspectRatioToSize(float par, float* width, float* height)
+GSVector2 GPU::CalculateDisplayWindowSize(DisplayFineCropMode mode, std::span<const s16, 4> amount,
+                                          float pixel_aspect_ratio, const GSVector2 video_size,
+                                          const GSVector2 source_size, const GSVector2 window_size)
 {
-  if (par < 1.0f)
+  GSVector2 size = video_size;
+  if (pixel_aspect_ratio < 1.0f)
   {
     // stretch height, preserve width
-    *height = std::ceil(*height / par);
+    size.y = size.y / pixel_aspect_ratio;
   }
   else
   {
     // stretch width, preserve height
-    *width = std::ceil(*width * par);
+    size.x = size.x * pixel_aspect_ratio;
   }
+
+  if (mode != DisplayFineCropMode::None)
+  {
+    GSVector4 crop_amount = GSVector4(GSVector4i::loadl<false>(amount.data()).s16to32());
+    switch (mode)
+    {
+      case DisplayFineCropMode::VideoResolution:
+        break;
+
+      case DisplayFineCropMode::InternalResolution:
+        crop_amount *= GSVector4::xyxy(size / source_size);
+        break;
+
+      case DisplayFineCropMode::WindowResolution:
+        crop_amount *= GSVector4::xyxy(size / window_size);
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    size = (size - crop_amount.xy() - crop_amount.zw()).max(GSVector2::cxpr(1.0f));
+  }
+
+  return size;
 }
 
 void GPU::UpdateCRTCConfig()
@@ -1014,6 +1044,32 @@ void GPU::UpdateCRTCDisplayParameters()
   {
     System::UpdateAutomaticResolutionScale();
   }
+}
+
+GSVector2i GPU::GetCRTCVideoSize() const
+{
+  // Verify assumptions about struct layout.
+  static_assert(offsetof(CRTCState, display_width) + sizeof(u16) == offsetof(CRTCState, display_height));
+  return GSVector2i::load32(&m_crtc_state.display_width).u16to32();
+}
+
+GSVector4i GPU::GetCRTCVideoActiveRect() const
+{
+  static_assert(offsetof(CRTCState, display_origin_left) + sizeof(u16) == offsetof(CRTCState, display_origin_top) &&
+                offsetof(CRTCState, display_vram_width) + sizeof(u16) == offsetof(CRTCState, display_vram_height));
+  const GSVector2i origin = GSVector2i::load32(&m_crtc_state.display_origin_left).u16to32();
+  const GSVector2i size = GSVector2i::load32(&m_crtc_state.display_vram_width).u16to32();
+  return GSVector4i::xyxy(origin, origin.add32(size));
+}
+
+GSVector4i GPU::GetCRTCVRAMSourceRect() const
+{
+  static_assert(offsetof(CRTCState, display_vram_left) + sizeof(u16) == offsetof(CRTCState, display_vram_top) &&
+                offsetof(CRTCState, display_vram_top) + sizeof(u16) == offsetof(CRTCState, display_vram_width) &&
+                offsetof(CRTCState, display_vram_width) + sizeof(u16) == offsetof(CRTCState, display_vram_height));
+  const GSVector4i rc = GSVector4i::loadl<false>(&m_crtc_state.display_vram_left).u16to32();
+  const GSVector2i origin = rc.xy();
+  return GSVector4i::xyxy(origin, origin.add32(rc.zw()));
 }
 
 TickCount GPU::GetPendingCRTCTicks() const
@@ -1315,46 +1371,44 @@ u8 GPU::UpdateOrGetGPUBusyPct()
   return m_last_gpu_busy_pct;
 }
 
-void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
-                                                       float* display_y) const
+GSVector2 GPU::ConvertScreenCoordinatesToDisplayCoordinates(GSVector2 window_pos) const
 {
   const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
   if (wi.IsSurfaceless())
-  {
-    *display_x = *display_y = -1.0f;
-    return;
-  }
+    return GSVector2::cxpr(-1.0f);
 
-  GSVector4i display_rc, draw_rc;
-  CalculateDrawRect(wi.surface_width, wi.surface_height, m_crtc_state.display_width, m_crtc_state.display_height,
-                    m_crtc_state.display_origin_left, m_crtc_state.display_origin_top, m_crtc_state.display_vram_width,
-                    m_crtc_state.display_vram_height, g_settings.display_rotation, g_settings.display_alignment,
+  GSVector4 crop_amount = GSVector4::zero();
+  GSVector4i source_rc, display_rc, draw_rc;
+  const GSVector2i crtc_video_size = GetCRTCVideoSize();
+  CalculateDrawRect(GSVector2i(wi.surface_width, wi.surface_height), crtc_video_size, GetCRTCVideoActiveRect(),
+                    GetCRTCVRAMSourceRect(), g_settings.display_rotation, g_settings.display_alignment,
                     ComputePixelAspectRatio(),
                     (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                      g_settings.display_scaling == DisplayScalingMode::BilinearInteger),
-                    &display_rc, &draw_rc);
+                    g_settings.display_fine_crop_mode, g_settings.display_fine_crop_amount, &source_rc, &display_rc,
+                    &draw_rc, &crop_amount);
 
   // convert coordinates to active display region, then to full display region
-  const float scaled_display_x =
-    (window_x - static_cast<float>(display_rc.left)) / static_cast<float>(display_rc.width());
-  const float scaled_display_y =
-    (window_y - static_cast<float>(display_rc.top)) / static_cast<float>(display_rc.height());
+  const GSVector2 local_pos = window_pos - GSVector2(display_rc.xy());
+  GSVector2 scaled_display_pos = local_pos / GSVector2(display_rc.rsize());
 
   // scale back to internal resolution
-  *display_x = scaled_display_x * static_cast<float>(m_crtc_state.display_width);
-  *display_y = scaled_display_y * static_cast<float>(m_crtc_state.display_height);
+  const GSVector2 cropped_video_size = GSVector2(crtc_video_size) - crop_amount.xy() - crop_amount.zw();
+  const GSVector2 display_pos = scaled_display_pos * cropped_video_size + crop_amount.xy();
 
   // TODO: apply rotation matrix
 
-  DEV_LOG("win {:.0f},{:.0f} -> local {:.0f},{:.0f}, disp {:.2f},{:.2f} (size {},{} frac {},{})", window_x, window_y,
-          window_x - display_rc.left, window_y - display_rc.top, *display_x, *display_y, m_crtc_state.display_width,
-          m_crtc_state.display_height, *display_x / static_cast<float>(m_crtc_state.display_width),
-          *display_y / static_cast<float>(m_crtc_state.display_height));
+  DEV_LOG("win {} -> local {}, disp {} (size {} frac {})", window_pos, local_pos, display_pos, cropped_video_size,
+          display_pos / cropped_video_size);
+
+  return display_pos;
 }
 
-bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(float display_x, float display_y, float x_scale, u32* out_tick,
+bool GPU::ConvertDisplayCoordinatesToBeamTicksAndLines(const GSVector2& display_pos, float x_scale, u32* out_tick,
                                                        u32* out_line) const
 {
+  float display_x = display_pos.x;
+  float display_y = display_pos.y;
   if (x_scale != 1.0f)
   {
     const float dw = static_cast<float>(m_crtc_state.display_width);
@@ -1774,120 +1828,157 @@ static bool IntegerScalePreferWidth(float display_width, float display_height, f
   return (scale_width >= scale_height);
 }
 
-void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
-                            s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
-                            u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                            float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
-                            GSVector4i* draw_rect)
+void GPU::CalculateDrawRect(const GSVector2i& window_size, const GSVector2i& video_size,
+                            const GSVector4i& video_active_rect, const GSVector4i& source_rect,
+                            DisplayRotation rotation, DisplayAlignment alignment, float pixel_aspect_ratio,
+                            bool integer_scale, DisplayFineCropMode fine_crop,
+                            const std::span<const s16, 4>& fine_crop_amount, GSVector4i* out_source_rect,
+                            GSVector4i* out_display_rect, GSVector4i* out_draw_rect, GSVector4* out_crop_amount)
 {
-  const float fwindow_width = static_cast<float>(window_width);
-  const float fwindow_height = static_cast<float>(window_height);
-  float display_width = static_cast<float>(crtc_display_width);
-  float display_height = static_cast<float>(crtc_display_height);
-  float active_left = static_cast<float>(display_origin_left);
-  float active_top = static_cast<float>(display_origin_top);
-  float active_width = static_cast<float>(display_vram_width);
-  float active_height = static_cast<float>(display_vram_height);
+  GSVector2 fwindow_size = GSVector2(window_size);
+  GSVector2 fvideo_size = GSVector2(video_size);
+  GSVector4 fvideo_active_rect = GSVector4(video_active_rect);
+  GSVector4 fsource_rect = GSVector4(source_rect);
 
   // for integer scale, use whichever gets us a greater effective display size
   // this is needed for games like crash where the framebuffer is wide to not lose detail
   if (integer_scale ?
-        IntegerScalePreferWidth(display_width, display_height, pixel_aspect_ratio, fwindow_width, fwindow_height) :
+        IntegerScalePreferWidth(fvideo_size.x, fvideo_size.y, pixel_aspect_ratio, fwindow_size.x, fwindow_size.y) :
         (pixel_aspect_ratio >= 1.0f))
   {
-    display_width *= pixel_aspect_ratio;
-    active_left *= pixel_aspect_ratio;
-    active_width *= pixel_aspect_ratio;
+    fvideo_size.x *= pixel_aspect_ratio;
+    fvideo_active_rect = fvideo_active_rect.blend32<5>(fvideo_active_rect * pixel_aspect_ratio);
   }
   else
   {
-    display_height /= pixel_aspect_ratio;
-    active_top /= pixel_aspect_ratio;
-    active_height /= pixel_aspect_ratio;
+    fvideo_size.y /= pixel_aspect_ratio;
+    fvideo_active_rect = fvideo_active_rect.blend32<10>(fvideo_active_rect / pixel_aspect_ratio);
+  }
+
+  if (fine_crop != DisplayFineCropMode::None)
+  {
+    GSVector4 crop_amount = GSVector4(GSVector4i::loadl<false>(fine_crop_amount.data()).s16to32());
+    switch (fine_crop)
+    {
+      case DisplayFineCropMode::VideoResolution:
+        break;
+
+      case DisplayFineCropMode::InternalResolution:
+        crop_amount *= GSVector4::xyxy(fvideo_size / fsource_rect.rsize());
+        break;
+
+      case DisplayFineCropMode::WindowResolution:
+        crop_amount *= GSVector4::xyxy(fvideo_size / fwindow_size);
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    if (out_crop_amount)
+      *out_crop_amount = crop_amount;
+
+    // apply crop to padding first
+    const GSVector2 crop_padding_left_top = fvideo_active_rect.xy().min(crop_amount.xy());
+    const GSVector2 crop_padding_right_bottom = (fvideo_size - fvideo_active_rect.zw()).min(crop_amount.zw());
+    fvideo_active_rect = fvideo_active_rect - GSVector4::xyxy(crop_padding_left_top);
+    fvideo_size = fvideo_size - crop_padding_left_top - crop_padding_right_bottom;
+    crop_amount = crop_amount - GSVector4::xyxy(crop_padding_left_top, crop_padding_right_bottom);
+
+    // apply remaining crop to active area
+    const GSVector2 crop_size = crop_amount.xy() + crop_amount.zw();
+    fvideo_active_rect -= GSVector4::loadh(crop_size);
+    fvideo_size -= crop_size;
+
+    // need to take it off the source too
+    const GSVector2 video_to_source = fsource_rect.rsize() / fvideo_active_rect.rsize();
+    const GSVector4 source_crop_amount = crop_amount * GSVector4::xyxy(video_to_source);
+    fsource_rect = (fsource_rect + source_crop_amount).blend32<12>(fsource_rect - source_crop_amount);
+
+    // ensure we haven't cropped everything away
+    fvideo_active_rect = fvideo_active_rect.sat(GSVector4::zero(), fvideo_active_rect);
+    fvideo_size -= crop_size.sat(GSVector2::zero(), GSVector2::cxpr(1.0f, 1.0f));
+    fsource_rect = fsource_rect.sat(GSVector4::zero(), fsource_rect);
   }
 
   // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
   if (rotation == DisplayRotation::Rotate90 || rotation == DisplayRotation::Rotate270)
   {
-    std::swap(display_width, display_height);
-    std::swap(active_width, active_height);
-    std::swap(active_top, active_left);
+    fvideo_size = fvideo_size.yx();
+    fvideo_active_rect = fvideo_active_rect.yxwz();
   }
 
   // now fit it within the window
   float scale;
-  float left_padding, top_padding;
-  if ((display_width / display_height) >= (fwindow_width / fwindow_height))
+  GSVector2 padding;
+  if ((fvideo_size.x / fvideo_size.y) >= (fwindow_size.x / fwindow_size.y))
   {
     // align in middle vertically
-    scale = fwindow_width / display_width;
+    scale = fwindow_size.x / fvideo_size.x;
     if (integer_scale)
     {
       // skip integer scaling if we cannot fit in the window at all
       scale = (scale >= 1.0f) ? std::floor(scale) : scale;
-      left_padding = std::max<float>((fwindow_width - display_width * scale) / 2.0f, 0.0f);
+      padding.x = std::max<float>((fwindow_size.x - fvideo_size.x * scale) / 2.0f, 0.0f);
     }
     else
     {
-      left_padding = 0.0f;
+      padding.x = 0.0f;
     }
 
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        top_padding = std::max<float>(fwindow_height - (display_height * scale), 0.0f);
+        padding.y = std::max<float>(fwindow_size.y - (fvideo_size.y * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
+        padding.y = std::max<float>((fwindow_size.y - (fvideo_size.y * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:
       default:
-        top_padding = 0.0f;
+        padding.y = 0.0f;
         break;
     }
   }
   else
   {
     // align in middle horizontally
-    scale = static_cast<float>(window_height) / display_height;
+    scale = fwindow_size.y / fvideo_size.y;
     if (integer_scale)
     {
       // skip integer scaling if we cannot fit in the window at all
       scale = (scale >= 1.0f) ? std::floor(scale) : scale;
-      top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
+      padding.y = std::max<float>((fwindow_size.y - (fvideo_size.y * scale)) / 2.0f, 0.0f);
     }
     else
     {
-      top_padding = 0.0f;
+      padding.y = 0.0f;
     }
 
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        left_padding = std::max<float>(fwindow_width - (display_width * scale), 0.0f);
+        padding.x = std::max<float>(fwindow_size.x - (fvideo_size.x * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        left_padding = std::max<float>((fwindow_width - (display_width * scale)) / 2.0f, 0.0f);
+        padding.x = std::max<float>((fwindow_size.x - (fvideo_size.x * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:
       default:
-        left_padding = 0.0f;
+        padding.x = 0.0f;
         break;
     }
   }
 
-  // TODO: This should be a float rectangle. But because GL is lame, it only has integer viewports...
-  const s32 left = static_cast<s32>(active_left * scale + left_padding);
-  const s32 top = static_cast<s32>(active_top * scale + top_padding);
-  const s32 right = left + static_cast<s32>(active_width * scale);
-  const s32 bottom = top + static_cast<s32>(active_height * scale);
-  *draw_rect = GSVector4i(left, top, right, bottom);
-  *display_rect = GSVector4i(
-    GSVector4(left_padding, top_padding, left_padding + display_width * scale, top_padding + display_height * scale));
+  const GSVector4 padding4 = GSVector4::xyxy(padding);
+  fvideo_size *= scale;
+  fvideo_active_rect *= scale;
+  *out_source_rect = GSVector4i(fsource_rect);
+  *out_draw_rect = GSVector4i(fvideo_active_rect + padding4);
+  *out_display_rect = GSVector4i(GSVector4::loadh(fvideo_size) + padding4);
 }
 
 void GPU::ReadVRAM(u16 x, u16 y, u16 width, u16 height)
@@ -1931,7 +2022,7 @@ void GPU::ClearDisplay()
 void GPU::UpdateDisplay(bool submit_frame)
 {
   const bool interlaced = IsInterlacedDisplayEnabled();
-  const u8 interlaced_field = GetInterlacedDisplayField();
+  const u8 interlaced_field = m_crtc_state.interlaced_field;
   const bool line_skip = (interlaced && m_GPUSTAT.vertical_resolution);
 
   // NOTE: Must be split out, since this can push commands itself (e.g. media capture).
@@ -1939,23 +2030,46 @@ void GPU::UpdateDisplay(bool submit_frame)
   submit_frame = (submit_frame && System::GetFramePresentationParameters(&frame));
 
   GPUBackendUpdateDisplayCommand* cmd = GPUBackend::NewUpdateDisplayCommand();
-  cmd->display_width = m_crtc_state.display_width;
-  cmd->display_height = m_crtc_state.display_height;
-  cmd->display_origin_left = m_crtc_state.display_origin_left;
-  cmd->display_origin_top = m_crtc_state.display_origin_top;
-  cmd->display_vram_left = m_crtc_state.display_vram_left;
-  cmd->display_vram_top = m_crtc_state.display_vram_top;
-  cmd->display_vram_width = m_crtc_state.display_vram_width;
-  cmd->display_vram_height = m_crtc_state.display_vram_height >> BoolToUInt8(interlaced);
-  cmd->X = m_crtc_state.regs.X;
   cmd->gpu_busy_pct = g_settings.display_show_gpu_stats ? UpdateOrGetGPUBusyPct() : 0;
-  cmd->interlaced_display_enabled = interlaced;
-  cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
-  cmd->interlaced_display_interleaved = line_skip;
-  cmd->interleaved_480i_mode = m_GPUSTAT.InInterleaved480iMode();
-  cmd->display_24bit = m_GPUSTAT.display_area_color_depth_24;
-  cmd->display_disabled = IsDisplayDisabled();
-  cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
+  if (!g_settings.gpu_show_vram) [[likely]]
+  {
+    cmd->display_width = m_crtc_state.display_width;
+    cmd->display_height = m_crtc_state.display_height;
+    cmd->display_origin_left = m_crtc_state.display_origin_left;
+    cmd->display_origin_top = m_crtc_state.display_origin_top;
+    cmd->display_vram_left = m_crtc_state.display_vram_left;
+    cmd->display_vram_top = m_crtc_state.display_vram_top;
+    cmd->display_vram_width = m_crtc_state.display_vram_width;
+    cmd->display_vram_height = m_crtc_state.display_vram_height >> BoolToUInt8(interlaced);
+    cmd->X = m_crtc_state.regs.X;
+    cmd->interlaced_display_enabled = interlaced;
+    cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
+    cmd->interlaced_display_interleaved = line_skip;
+    cmd->interleaved_480i_mode = m_GPUSTAT.InInterleaved480iMode();
+    cmd->display_24bit = m_GPUSTAT.display_area_color_depth_24;
+    cmd->display_disabled = IsDisplayDisabled();
+    cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();
+  }
+  else
+  {
+    cmd->display_width = VRAM_WIDTH;
+    cmd->display_height = VRAM_HEIGHT;
+    cmd->display_origin_left = 0;
+    cmd->display_origin_top = 0;
+    cmd->display_vram_left = 0;
+    cmd->display_vram_top = 0;
+    cmd->display_vram_width = VRAM_WIDTH;
+    cmd->display_vram_height = VRAM_HEIGHT;
+    cmd->X = 0;
+    cmd->interlaced_display_enabled = false;
+    cmd->interlaced_display_field = false;
+    cmd->interlaced_display_interleaved = false;
+    cmd->interleaved_480i_mode = false;
+    cmd->display_24bit = false;
+    cmd->display_disabled = false;
+    cmd->display_pixel_aspect_ratio = 1.0f;
+  }
+
   if ((cmd->submit_frame = submit_frame))
   {
     std::memcpy(&cmd->frame, &frame, sizeof(frame));
@@ -2001,12 +2115,12 @@ u8 GPU::CalculateAutomaticResolutionScale() const
       !main_window_info.IsSurfaceless() && m_crtc_state.display_width > 0 && m_crtc_state.display_height > 0 &&
       m_crtc_state.display_vram_width > 0 && m_crtc_state.display_vram_height > 0)
   {
-    GSVector4i display_rect, draw_rect;
-    CalculateDrawRect(main_window_info.surface_width, main_window_info.surface_height, m_crtc_state.display_width,
-                      m_crtc_state.display_height, m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
-                      m_crtc_state.display_vram_width, m_crtc_state.display_vram_height, g_settings.display_rotation,
+    GSVector4i source_rect, display_rect, draw_rect;
+    CalculateDrawRect(GSVector2i(main_window_info.surface_width, main_window_info.surface_height), GetCRTCVideoSize(),
+                      GetCRTCVideoActiveRect(), GetCRTCVRAMSourceRect(), g_settings.display_rotation,
                       g_settings.display_alignment, g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
-                      g_settings.IsUsingIntegerDisplayScaling(false), &display_rect, &draw_rect);
+                      g_settings.IsUsingIntegerDisplayScaling(false), g_settings.display_fine_crop_mode,
+                      g_settings.display_fine_crop_amount, &source_rect, &display_rect, &draw_rect);
 
     // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
     // anamorphic aspect ratio.
@@ -2184,7 +2298,7 @@ void GPU::StopRecordingGPUDump()
 
   // Are we compressing the dump?
   const GPUDumpCompressionMode compress_mode =
-    Settings::ParseGPUDumpCompressionMode(Host::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
+    Settings::ParseGPUDumpCompressionMode(Core::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
       .value_or(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE);
   std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(m_gpu_dump->GetPath()));
   if (compress_mode == GPUDumpCompressionMode::Disabled)
@@ -2202,7 +2316,7 @@ void GPU::StopRecordingGPUDump()
   Host::AddIconOSDMessage(
     OSDMessageType::Persistent, osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
     fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)));
-  System::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
+  Host::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
     Error error;
     if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
     {

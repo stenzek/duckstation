@@ -5,6 +5,7 @@
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
+#include "gpu_helpers.h"
 #include "gpu_thread_commands.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -342,6 +343,107 @@ void GPU::FillDrawCommand(GPUBackendDrawCommand* RESTRICT cmd, GPURenderCommand 
   cmd->draw_mode.bits = m_draw_mode.mode_reg.bits;
   cmd->palette.bits = m_draw_mode.palette_reg.bits;
   cmd->window = m_draw_mode.texture_window;
+}
+
+ALWAYS_INLINE u32 GPU::GetPolyLineVertexCount() const
+{
+  return (static_cast<u32>(m_polyline_buffer.size()) + BoolToUInt32(m_render_command.shading_enable)) >>
+         BoolToUInt8(m_render_command.shading_enable);
+}
+
+ALWAYS_INLINE_RELEASE void GPU::AddDrawTriangleTicks(GSVector2i v1, GSVector2i v2, GSVector2i v3, bool shaded,
+                                                     bool textured, bool semitransparent)
+{
+  // This will not produce the correct results for triangles which are partially outside the clip area.
+  // However, usually it'll undershoot not overshoot. If we wanted to make this more accurate, we'd need to intersect
+  // the edges with the clip rectangle.
+  // TODO: Coordinates are exclusive, so off by one here...
+  const GSVector2i clamp_min = GSVector2i::load<true>(&m_clamped_drawing_area.x);
+  const GSVector2i clamp_max = GSVector2i::load<true>(&m_clamped_drawing_area.z);
+  v1 = v1.sat_s32(clamp_min, clamp_max);
+  v2 = v2.sat_s32(clamp_min, clamp_max);
+  v3 = v3.sat_s32(clamp_min, clamp_max);
+
+  TickCount pixels = std::abs((v1.x * v2.y + v2.x * v3.y + v3.x * v1.y - v1.x * v3.y - v2.x * v1.y - v3.x * v2.y) / 2);
+  if (textured)
+    pixels += pixels;
+  if (semitransparent || m_GPUSTAT.check_mask_before_draw)
+    pixels += (pixels + 1) / 2;
+  if (m_GPUSTAT.SkipDrawingToActiveField())
+    pixels /= 2;
+
+  AddCommandTicks(pixels);
+}
+
+ALWAYS_INLINE_RELEASE void GPU::AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent)
+{
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+
+  u32 drawn_width = clamped_rect.width();
+  u32 drawn_height = clamped_rect.height();
+
+  u32 ticks_per_row = drawn_width;
+  if (textured)
+  {
+    switch (m_draw_mode.mode_reg.texture_mode)
+    {
+      case GPUTextureMode::Palette4Bit:
+        ticks_per_row += drawn_width;
+        break;
+
+      case GPUTextureMode::Palette8Bit:
+      {
+        // Texture cache reload every 2 pixels, reads in 8 bytes (assuming 4x2). Cache only reloads if the
+        // draw width is greater than 128, otherwise the cache hits between rows.
+        if (drawn_width > 128)
+          ticks_per_row += (drawn_width / 4) * 8;
+        else if ((drawn_width * drawn_height) > 2048)
+          ticks_per_row += ((drawn_width / 4) * (4 * (128 / drawn_width)));
+        else
+          ticks_per_row += drawn_width;
+      }
+      break;
+
+      case GPUTextureMode::Direct16Bit:
+      case GPUTextureMode::Reserved_Direct16Bit:
+      {
+        // Same as above, except with 2x2 blocks instead of 4x2.
+        if (drawn_width > 128)
+          ticks_per_row += (drawn_width / 2) * 8;
+        else if ((drawn_width * drawn_height) > 1024)
+          ticks_per_row += ((drawn_width / 4) * (8 * (128 / drawn_width)));
+        else
+          ticks_per_row += drawn_width;
+      }
+      break;
+
+        DefaultCaseIsUnreachable()
+    }
+  }
+
+  if (semitransparent || m_GPUSTAT.check_mask_before_draw)
+    ticks_per_row += (drawn_width + 1u) / 2u;
+  if (m_GPUSTAT.SkipDrawingToActiveField())
+    drawn_height = std::max<u32>(drawn_height / 2, 1u);
+
+  AddCommandTicks(ticks_per_row * drawn_height);
+}
+
+ALWAYS_INLINE_RELEASE void GPU::AddDrawLineTicks(const GSVector4i rect, bool shaded)
+{
+  const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+
+  // Needed because we're not multiplying either dimension.
+  if (clamped_rect.rempty())
+    return;
+
+  const u32 drawn_width = clamped_rect.width();
+  u32 drawn_height = clamped_rect.height();
+
+  if (m_GPUSTAT.SkipDrawingToActiveField())
+    drawn_height = std::max<u32>(drawn_height / 2, 1u);
+
+  AddCommandTicks(std::max(drawn_width, drawn_height));
 }
 
 bool GPU::HandleRenderPolygonCommand()

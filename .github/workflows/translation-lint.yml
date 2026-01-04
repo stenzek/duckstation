@@ -12,14 +12,15 @@ on:
       - 'src/duckstation-qt/translations/*.ts'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   translation-lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-slim
     timeout-minutes: 120
     steps:
     - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
 
     # Meh, can't be bothered to work out exactly which one was modified, just check them all.
     - name: Check Translation Placeholders

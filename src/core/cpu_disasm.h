@@ -12,5 +12,6 @@ void DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits);
 void DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits);
 
 const char* GetGTERegisterName(u32 index);
+const char* GetCop0RegisterName(u32 index);
 
 } // namespace CPU

@@ -14,7 +14,7 @@
   X(CodeCache)                                                                                                         \
   X(CompressHelpers)                                                                                                   \
   X(Controller)                                                                                                        \
-  X(CubebAudioStream)                                                                                                  \
+  X(Core)                                                                                                              \
   X(CueParser)                                                                                                         \
   X(DInputSource)                                                                                                      \
   X(DMA)                                                                                                               \
@@ -48,7 +48,6 @@
   X(PerfMon)                                                                                                           \
   X(PlatformMisc)                                                                                                      \
   X(PostProcessing)                                                                                                    \
-  X(ProgressCallback)                                                                                                  \
   X(PIO)                                                                                                               \
   X(ReShadeFXShader)                                                                                                   \
   X(Recompiler)                                                                                                        \
@@ -58,6 +57,7 @@
   X(Settings)                                                                                                          \
   X(ShaderGen)                                                                                                         \
   X(Sockets)                                                                                                           \
+  X(SoundEffectManager)                                                                                                \
   X(StateWrapper)                                                                                                      \
   X(System)                                                                                                            \
   X(TTY)                                                                                                               \

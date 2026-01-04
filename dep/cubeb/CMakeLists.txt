@@ -46,6 +46,8 @@ target_include_directories(cubeb
     EXPORT=
     RANDOM_PREFIX=speex
   )
+  add_library(speex_resampler_headers INTERFACE)
+  target_include_directories(speex_resampler_headers INTERFACE subprojects)
 
 # $<BUILD_INTERFACE:> required because of https://gitlab.kitware.com/cmake/cmake/-/issues/15415
 target_link_libraries(cubeb PRIVATE $<BUILD_INTERFACE:speex>)

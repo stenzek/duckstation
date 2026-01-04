@@ -30,7 +30,7 @@ void OnSystemDestroyed();
 
 void Shutdown(bool clear_state);
 void Render();
-void InvalidateCoverCache();
+void InvalidateCoverCache(std::string path = {});
 
 float GetBackgroundAlpha();
 
@@ -96,6 +96,12 @@ private:
   std::string m_image;
   std::string m_title;
 };
+
+// Sound effect names.
+extern const char* SFX_NAV_ACTIVATE;
+extern const char* SFX_NAV_BACK;
+extern const char* SFX_NAV_MOVE;
+extern const char* SFX_CONTENT_START;
 
 } // namespace FullscreenUI
 

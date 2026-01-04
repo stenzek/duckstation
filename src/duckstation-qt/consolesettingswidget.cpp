@@ -6,6 +6,7 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "core/core.h"
 #include "core/game_database.h"
 #include "core/system.h"
 
@@ -184,8 +185,8 @@ void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
 void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
 {
   if (state == Qt::Checked &&
-      (!m_dialog->isPerGameSettings() || !Host::GetBaseBoolSettingValue("CPU", "OverclockEnable", false)) &&
-      !Host::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
+      (!m_dialog->isPerGameSettings() || !Core::GetBaseBoolSettingValue("CPU", "OverclockEnable", false)) &&
+      !Core::GetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", false))
   {
     const QString message =
       tr("Enabling CPU overclocking will break games, cause bugs, reduce performance and can significantly increase "
@@ -214,7 +215,7 @@ void ConsoleSettingsWidget::onEnableCPUClockSpeedControlChecked(int state)
       updateCPUClockSpeedLabel();
     });
     connect(yes_button, &QPushButton::clicked, this, []() {
-      Host::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
+      Core::SetBaseBoolSettingValue("UI", "CPUOverclockingWarningShown", true);
       Host::CommitBaseSettingChanges();
     });
     mb->open();

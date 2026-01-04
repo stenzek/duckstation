@@ -1,14 +1,14 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include "host.h"
+#include "util/translation.h"
 
 #include "common/small_string.h"
 #include "common/types.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -27,7 +27,7 @@ class Error;
 class Image;
 class GPUTexture;
 class GPUSwapChain;
-class ProgressCallback;
+class ProgressCallbackWithPrompt;
 
 enum class OSDMessageType : u8;
 
@@ -192,6 +192,7 @@ public:
   IconStackString(std::string_view icon, std::string_view str);
   IconStackString(std::string_view icon, std::string_view str, std::string_view suffix);
 };
+void FormatIconString(SmallStringBase& str, std::string_view icon, std::string_view label);
 
 #define FSUI_ICONSTR(icon, str) fmt::format("{} {}", icon, Host::TranslateToStringView(FSUI_TR_CONTEXT, str))
 #define FSUI_ICONVSTR(icon, str) ::FullscreenUI::IconStackString(icon, str).view()
@@ -267,6 +268,9 @@ void UpdateTransitionState();
 void BeginLayout();
 void EndLayout();
 
+/// Enqueues a sound effect, and prevents any other sound effects from being started this frame.
+void EnqueueSoundEffect(std::string_view sound_effect);
+
 bool IsAnyFixedPopupDialogOpen();
 bool IsFixedPopupDialogOpen(std::string_view name);
 void OpenFixedPopupDialog(std::string_view name);
@@ -303,6 +307,9 @@ void CancelPendingMenuClose();
 
 void PushPrimaryColor();
 void PopPrimaryColor();
+
+void DrawRoundedGradientRect(ImDrawList* const dl, const ImVec2& pos_min, const ImVec2& pos_max, ImU32 col_left,
+                             ImU32 col_right, float rounding);
 
 void DrawWindowTitle(std::string_view title);
 
@@ -484,7 +491,8 @@ void OpenMessageDialog(std::string_view title, std::string message, MessageDialo
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();
 
-std::unique_ptr<ProgressCallback> OpenModalProgressDialog(std::string title, float window_unscaled_width = 500.0f);
+std::unique_ptr<ProgressCallbackWithPrompt> OpenModalProgressDialog(std::string title,
+                                                                    float window_unscaled_width = 500.0f);
 
 float GetNotificationVerticalPosition();
 float GetNotificationVerticalDirection();

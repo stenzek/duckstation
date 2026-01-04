@@ -75,5 +75,5 @@ public:
 
 private:
   std::vector<char> m_buffer;
-  PreferUnorderedStringMap<Offset> m_string_map;
+  UnorderedStringMap<Offset> m_string_map;
 };

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>902</width>
+    <width>977</width>
     <height>743</height>
    </rect>
   </property>
@@ -39,6 +39,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Enables the player LED on DualSense controllers.</string>
+          </property>
           <property name="text">
            <string>Enable DualSense Player LED</string>
           </property>
@@ -53,7 +56,7 @@
            </sizepolicy>
           </property>
           <property name="toolTip">
-           <string>Controller LED Settings</string>
+           <string>Adjusts LED settings for controllers with configurable LEDs.</string>
           </property>
           <property name="icon">
            <iconset theme="lightbulb-line"/>
@@ -64,6 +67,9 @@
       </item>
       <item row="1" column="0">
        <widget class="QCheckBox" name="enableSDLSource">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Enable SDL Input Source</string>
         </property>
@@ -71,15 +77,18 @@
       </item>
       <item row="1" column="1">
        <widget class="QCheckBox" name="enableSDLEnhancedMode">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
-         <string>DualShock 4 / DualSense Enhanced Mode</string>
+         <string>DualShock 4 / DualSense Enhanced Mode (Bluetooth Only)</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="SDLHelpText">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;advanced options&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -88,6 +97,9 @@
       </item>
       <item row="2" column="0">
        <widget class="QCheckBox" name="enableTouchPadAsPointer">
+        <property name="toolTip">
+         <string>Allows use of the touchpad for DualShock 4 / DualSense controllers.</string>
+        </property>
         <property name="text">
          <string>Enable Touchpad</string>
         </property>
@@ -115,7 +127,7 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="enableXInputSource">
         <property name="text">
-         <string>Enable XInput Input Source</string>
+         <string>Enable XInput Source</string>
         </property>
        </widget>
       </item>
@@ -125,13 +137,13 @@
    <item row="2" column="0">
     <widget class="QGroupBox" name="dinputGroup">
      <property name="title">
-      <string>DInput Source</string>
+      <string>DirectInput Source</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</string>
+         <string>The DirectInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL is recommended instead.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -141,7 +153,7 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="enableDInputSource">
         <property name="text">
-         <string>Enable DInput Input Source</string>
+         <string>Enable DirectInput Source</string>
         </property>
        </widget>
       </item>
@@ -278,6 +290,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QCheckBox" name="enableMouseMapping">
+          <property name="toolTip">
+           <string>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</string>
+          </property>
           <property name="text">
            <string>Enable Mouse Mapping</string>
           </property>
@@ -285,6 +300,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="enableRawInput">
+          <property name="toolTip">
+           <string>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</string>
+          </property>
           <property name="text">
            <string>Use Raw Input</string>
           </property>

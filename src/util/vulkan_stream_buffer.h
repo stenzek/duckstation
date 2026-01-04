@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 
 #include "common/types.h"
 

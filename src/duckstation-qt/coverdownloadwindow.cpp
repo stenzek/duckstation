@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "coverdownloadwindow.h"
+#include "gamelistwidget.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
@@ -52,7 +53,9 @@ void CoverDownloadWindow::onStartClicked()
       Error error;
       const bool result = GameList::DownloadCovers(
         urls, use_serials, progress, &error, [](const GameList::Entry* entry, std::string) mutable {
-          Host::RunOnUIThread([path = entry->path]() { g_main_window->invalidateCoverCacheForPath(path); });
+          Host::RunOnUIThread([path = entry->path]() {
+            g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(path, GameListModel::Column_Cover);
+          });
         });
       return [this, result, error = std::move(error)]() { downloadComplete(result, error); };
     });
@@ -66,7 +69,7 @@ void CoverDownloadWindow::onStartClicked()
 
 void CoverDownloadWindow::downloadComplete(bool result, const Error& error)
 {
-  g_main_window->refreshGameGridCovers();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumn(GameListModel::Column_Cover);
 
   m_ui.status->setText(tr("Download complete."));
   if (!result)

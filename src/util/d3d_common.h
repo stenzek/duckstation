@@ -60,7 +60,7 @@ bool CreateD3D12Device(IDXGIAdapter* adapter, D3D_FEATURE_LEVEL feature_level,
 Microsoft::WRL::ComPtr<ID3DBlob> SerializeRootSignature(const D3D12_ROOT_SIGNATURE_DESC* desc, Error* error);
 
 // returns a list of all adapter names
-GPUDevice::AdapterInfoList GetAdapterInfoList();
+std::optional<GPUDevice::AdapterInfoList> GetAdapterInfoList(Error* error);
 
 // returns the fullscreen mode to use for the specified dimensions
 std::optional<DXGI_MODE_DESC>
@@ -93,7 +93,7 @@ struct DXGIFormatMapping
   DXGI_FORMAT rtv_format;
   DXGI_FORMAT dsv_format;
 };
-const DXGIFormatMapping& GetFormatMapping(GPUTexture::Format format);
-GPUTexture::Format GetFormatForDXGIFormat(DXGI_FORMAT format);
+const DXGIFormatMapping& GetFormatMapping(GPUTextureFormat format);
+GPUTextureFormat GetFormatForDXGIFormat(DXGI_FORMAT format);
 
 } // namespace D3DCommon

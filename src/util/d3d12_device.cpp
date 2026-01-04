@@ -54,7 +54,7 @@ enum : u32
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;
 
-static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
+static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
 
 // We just need to keep this alive, never reference it.
 static DynamicHeapArray<u8> s_pipeline_cache_data;
@@ -1100,7 +1100,7 @@ std::unique_ptr<GPUSwapChain> D3D12Device::CreateSwapChain(const WindowInfo& wi,
                                                            Error* error)
 {
   std::unique_ptr<D3D12SwapChain> ret;
-  if (wi.type != WindowInfo::Type::Win32)
+  if (wi.type != WindowInfoType::Win32)
   {
     Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
     return ret;
@@ -1137,7 +1137,7 @@ void D3D12Device::RenderBlankFrame(D3D12SwapChain* swap_chain)
   swap_chain->AdvanceBuffer();
 }
 
-bool D3D12Device::SupportsTextureFormat(GPUTexture::Format format) const
+bool D3D12Device::SupportsTextureFormat(GPUTextureFormat format) const
 {
   constexpr u32 required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE;
 
@@ -1362,10 +1362,10 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, CreateFlags creat
 
   m_features.dxt_textures =
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-     (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
-      SupportsTextureFormat(GPUTexture::Format::BC3)));
+     (SupportsTextureFormat(GPUTextureFormat::BC1) && SupportsTextureFormat(GPUTextureFormat::BC2) &&
+      SupportsTextureFormat(GPUTextureFormat::BC3)));
   m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-                              SupportsTextureFormat(GPUTexture::Format::BC7));
+                              SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
 void D3D12Device::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,
@@ -1784,7 +1784,8 @@ bool D3D12Device::CreateRootSignatures(Error* error)
   {
     auto& rs = m_mipmap_render_root_signature;
     rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-    rsb.AddStaticSampler(0, D3D12Sampler::GetD3DSamplerDesc(GPUSampler::GetLinearConfig()), D3D12_SHADER_VISIBILITY_PIXEL);
+    rsb.AddStaticSampler(0, D3D12Sampler::GetD3DSamplerDesc(GPUSampler::GetLinearConfig()),
+                         D3D12_SHADER_VISIBILITY_PIXEL);
     if (!(rs = rsb.Create(error, true)))
       return false;
     D3D12::SetObjectName(rs.Get(), "Render Mipmap Pipeline Layout");

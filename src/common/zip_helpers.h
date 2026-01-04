@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -12,7 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "zip.h"
+#include <fmt/format.h>
+#include <zip.h>
 
 namespace ZipHelpers {
 

@@ -45,7 +45,7 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
-static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> s_pixel_format_mapping = {
+static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTextureFormat::MaxCount)> s_pixel_format_mapping = {
   MTLPixelFormatInvalid,               // Unknown
   MTLPixelFormatRGBA8Unorm,            // RGBA8
   MTLPixelFormatBGRA8Unorm,            // BGRA8
@@ -92,19 +92,24 @@ static void LogNSError(NSError* error, std::string_view message)
              "  NSError Description: {}", [error.description UTF8String]);
 }
 
-static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
+static GPUTextureFormat GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
 {
-  for (u32 i = 0; i < static_cast<u32>(GPUTexture::Format::MaxCount); i++)
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFormat::MaxCount); i++)
   {
     if (s_pixel_format_mapping[i] == fmt)
-      return static_cast<GPUTexture::Format>(i);
+      return static_cast<GPUTextureFormat>(i);
   }
 
-  return GPUTexture::Format::Unknown;
+  return GPUTextureFormat::Unknown;
 }
 
 static u32 GetMetalMaxTextureSize(id<MTLDevice> device)
 {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   // https://gist.github.com/kylehowells/63d0723abc9588eb734cade4b7df660d
   if ([device supportsFamily:MTLGPUFamilyMacCatalyst1] || [device supportsFamily:MTLGPUFamilyMac1] ||
       [device supportsFamily:MTLGPUFamilyApple3])
@@ -115,6 +120,10 @@ static u32 GetMetalMaxTextureSize(id<MTLDevice> device)
   {
     return 8192;
   }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 static u32 GetMetalMaxMultisamples(id<MTLDevice> device)
@@ -238,11 +247,11 @@ std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi,
         // Default should be BGRA8.
         const MTLPixelFormat layer_fmt = [layer pixelFormat];
         wi_copy.surface_format = GetTextureFormatForMTLFormat(layer_fmt);
-        if (wi_copy.surface_format == GPUTexture::Format::Unknown)
+        if (wi_copy.surface_format == GPUTextureFormat::Unknown)
         {
           ERROR_LOG("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
           [layer setPixelFormat:MTLPixelFormatBGRA8Unorm];
-          wi_copy.surface_format = GPUTexture::Format::BGRA8;
+          wi_copy.surface_format = GPUTextureFormat::BGRA8;
         }
 
         VERBOSE_LOG("Metal layer pixel format is {}.", GPUTexture::GetFormatName(wi_copy.surface_format));
@@ -275,7 +284,7 @@ void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
     // has to be encoding, we don't "begin" a render pass here, so the inline encoder won't get flushed otherwise.
     EndAnyEncoding();
 
-    id<MTLDrawable> drawable = [[swap_chain->GetLayer() nextDrawable] retain];
+    id<CAMetalDrawable> drawable = [[swap_chain->GetLayer() nextDrawable] retain];
     MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
     desc.colorAttachments[0].loadAction = MTLLoadActionClear;
     desc.colorAttachments[0].storeAction = MTLStoreActionStore;
@@ -374,12 +383,21 @@ void MetalDevice::SetFeatures(CreateFlags create_flags)
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
   // Framebuffer fetch requires MSL 2.3 and an Apple GPU family.
   const bool supports_fbfetch = [m_device supportsFamily:MTLGPUFamilyApple1];
 
   // If fbfetch is disabled, barriers aren't supported on Apple GPUs.
   const bool supports_barriers =
     ([m_device supportsFamily:MTLGPUFamilyMac1] && ![m_device supportsFamily:MTLGPUFamilyApple3]);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
   m_features.dual_source_blend = !HasCreateFlag(create_flags, CreateFlags::DisableDualSourceBlend);
   m_features.framebuffer_fetch = !HasCreateFlag(create_flags, CreateFlags::DisableFramebufferFetch) && supports_fbfetch;
@@ -419,7 +437,8 @@ bool MetalDevice::LoadShaders()
           return nil;
       }
 
-      id<MTLLibrary> lib = [m_device newLibraryWithFile:path error:nil];
+      NSURL* url = [NSURL fileURLWithPath:path];
+      id<MTLLibrary> lib = [m_device newLibraryWithURL:url error:nil];
       if (lib == nil)
         return nil;
 
@@ -796,7 +815,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
     {
-      if (config.color_formats[i] == GPUTexture::Format::Unknown)
+      if (config.color_formats[i] == GPUTextureFormat::Unknown)
         break;
 
       MTLRenderPipelineColorAttachmentDescriptor* ca = desc.colorAttachments[0];
@@ -853,7 +872,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
 
     // General
     const MTLPrimitiveType primitive = primitives[static_cast<u8>(config.primitive)];
-    desc.rasterSampleCount = config.samples;
+    desc.rasterSampleCount = config.rasterization.multisamples;
 
     // Metal-specific stuff
     desc.vertexBuffers[0].mutability = MTLMutabilityImmutable;
@@ -903,7 +922,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Comp
 }
 
 MetalTexture::MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
-                           Format format, Flags flags)
+                           GPUTextureFormat format, Flags flags)
   : GPUTexture(width, height, layers, levels, samples, type, format, flags), m_texture(texture)
 {
 }
@@ -1088,7 +1107,7 @@ void MetalTexture::SetDebugName(std::string_view name)
 #endif
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                       GPUTexture::Type type, GPUTexture::Format format,
+                                                       GPUTexture::Type type, GPUTextureFormat format,
                                                        GPUTexture::Flags flags, const void* data, u32 data_stride,
                                                        Error* error)
 {
@@ -1162,7 +1181,7 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
   }
 }
 
-MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTexture::Format format, u8* import_buffer,
+MetalDownloadTexture::MetalDownloadTexture(u32 width, u32 height, GPUTextureFormat format, u8* import_buffer,
                                            size_t buffer_offset, id<MTLBuffer> buffer, const u8* map_ptr, u32 map_pitch)
   : GPUDownloadTexture(width, height, format, (import_buffer != nullptr)), m_buffer_offset(buffer_offset),
     m_buffer(buffer)
@@ -1176,7 +1195,7 @@ MetalDownloadTexture::~MetalDownloadTexture()
   [m_buffer release];
 }
 
-std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                    void* memory, size_t memory_size, u32 memory_stride,
                                                                    Error* error)
 {
@@ -1315,13 +1334,13 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        Error* error)
 {
   return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
-std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
                                                                        u32 memory_stride, Error* error)
 {
@@ -1418,16 +1437,16 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
   }
 }
 
-bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
+bool MetalDevice::SupportsTextureFormat(GPUTextureFormat format) const
 {
-  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGB5A1)
+  if (format == GPUTextureFormat::RGB565 || format == GPUTextureFormat::RGB5A1)
   {
     // These formats require an Apple Silicon GPU.
     // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
     if (![m_device supportsFamily:MTLGPUFamilyApple2])
       return false;
   }
-  else if (format >= GPUTexture::Format::BC1 && format <= GPUTexture::Format::BC7)
+  else if (format >= GPUTextureFormat::BC1 && format <= GPUTextureFormat::BC7)
   {
     if (!m_device.supportsBCTextureCompression)
       return false;
@@ -1511,8 +1530,8 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   // Only does first level for now..
   DebugAssert(dst_level == 0 && dst_layer == 0);
 
-  const GPUTexture::Format src_format = dst->GetFormat();
-  const GPUTexture::Format dst_format = dst->GetFormat();
+  const GPUTextureFormat src_format = dst->GetFormat();
+  const GPUTextureFormat dst_format = dst->GetFormat();
   GPUPipeline* resolve_pipeline;
   if (auto iter = std::find_if(m_resolve_pipelines.begin(), m_resolve_pipelines.end(),
                                [src_format, dst_format](const auto& it) {
@@ -1673,7 +1692,7 @@ MetalDevice::ClearPipelineConfig MetalDevice::GetCurrentClearPipelineConfig() co
   for (u32 i = 0; i < m_num_current_render_targets; i++)
     config.color_formats[i] = m_current_render_targets[i]->GetFormat();
 
-  config.depth_format = m_current_depth_target ? m_current_depth_target->GetFormat() : GPUTexture::Format::Unknown;
+  config.depth_format = m_current_depth_target ? m_current_depth_target->GetFormat() : GPUTextureFormat::Unknown;
   config.samples =
     m_current_depth_target ? m_current_depth_target->GetSamples() : m_current_render_targets[0]->GetSamples();
   return config;
@@ -1692,7 +1711,7 @@ id<MTLRenderPipelineState> MetalDevice::GetClearDepthPipeline(const ClearPipelin
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (config.color_formats[i] == GPUTexture::Format::Unknown)
+    if (config.color_formats[i] == GPUTextureFormat::Unknown)
       break;
     desc.colorAttachments[i].pixelFormat = s_pixel_format_mapping[static_cast<u8>(config.color_formats[i])];
     desc.colorAttachments[i].writeMask = MTLColorWriteMaskNone;
@@ -2435,7 +2454,6 @@ void MetalDevice::SubmitDrawIndexedWithBarrier(u32 index_count, u32 base_index, 
         {3, 1}, // MTLPrimitiveTypeTriangleStrip
       };
 
-      const u32 first_step = vertices_per_primitive[static_cast<size_t>(primitive)][0] * sizeof(u16);
       const u32 index_step = vertices_per_primitive[static_cast<size_t>(primitive)][1] * sizeof(u16);
       const u32 end_offset = (base_index + index_count) * sizeof(u16);
       for (; index_offset < end_offset; index_offset += index_step)

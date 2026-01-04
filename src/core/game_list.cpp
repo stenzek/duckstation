@@ -4,8 +4,8 @@
 #include "game_list.h"
 #include "achievements.h"
 #include "bios.h"
+#include "core.h"
 #include "fullscreenui.h"
-#include "host.h"
 #include "memory_card_image.h"
 #include "psf_loader.h"
 #include "settings.h"
@@ -17,6 +17,7 @@
 #include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
@@ -86,8 +87,8 @@ struct MemcardTimestampCacheEntry
 
 } // namespace
 
-using CacheMap = PreferUnorderedStringMap<Entry>;
-using PlayedTimeMap = PreferUnorderedStringMap<PlayedTimeEntry>;
+using CacheMap = UnorderedStringMap<Entry>;
+using PlayedTimeMap = UnorderedStringMap<PlayedTimeEntry>;
 
 static_assert(std::is_same_v<decltype(Entry::hash), GameHash>);
 
@@ -191,18 +192,18 @@ bool GameList::IsGameListLoaded()
 
 bool GameList::ShouldShowLocalizedTitles()
 {
-  return Host::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
+  return Core::GetBaseBoolSettingValue("UI", "GameListShowLocalizedTitles", true);
 }
 
 bool GameList::ShouldLoadAchievementsProgress()
 {
-  return Host::ContainsBaseSettingValue("Cheevos", "Token");
+  return Core::ContainsBaseSettingValue("Cheevos", "Token");
 }
 
 bool GameList::PreferAchievementGameBadgesForIcons()
 {
   return (ShouldLoadAchievementsProgress() &&
-          Host::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
+          Core::GetBaseBoolSettingValue("UI", "GameListPreferAchievementGameBadgesForIcons", false));
 }
 
 bool GameList::IsScannableFilename(std::string_view path)
@@ -710,7 +711,7 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
 
   {
     // cancel if excluded
-    const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+    const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
     if (IsPathExcluded(excluded_paths, path))
       return false;
   }
@@ -1059,9 +1060,9 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
     old_entries.swap(s_state.entries);
   }
 
-  const std::vector<std::string> excluded_paths(Host::GetBaseStringListSetting("GameList", "ExcludedPaths"));
-  std::vector<std::string> dirs(Host::GetBaseStringListSetting("GameList", "Paths"));
-  std::vector<std::string> recursive_dirs(Host::GetBaseStringListSetting("GameList", "RecursivePaths"));
+  const std::vector<std::string> excluded_paths(Core::GetBaseStringListSetting("GameList", "ExcludedPaths"));
+  std::vector<std::string> dirs(Core::GetBaseStringListSetting("GameList", "Paths"));
+  std::vector<std::string> recursive_dirs(Core::GetBaseStringListSetting("GameList", "RecursivePaths"));
   const PlayedTimeMap played_time = LoadPlayedTimeMap();
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
   custom_attributes_ini.Load();
@@ -1587,33 +1588,35 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 
 std::string GameList::FormatTimestamp(std::time_t timestamp)
 {
-  std::string ret;
-
   if (timestamp == 0)
   {
-    ret = TRANSLATE_STR("GameList", "Never");
+    return TRANSLATE_STR("GameList", "Never");
   }
   else
   {
-    const std::optional<std::tm> ctime = Common::LocalTime(std::time(nullptr));
-    const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
-    if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year && ctime->tm_yday == ttime->tm_yday)
-    {
-      ret = TRANSLATE_STR("GameList", "Today");
-    }
-    else if (ctime.has_value() && ttime.has_value() &&
-             ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
-              (ctime->tm_yday == 0 && (ctime->tm_year - 1) == ttime->tm_year)))
-    {
-      ret = TRANSLATE_STR("GameList", "Yesterday");
-    }
-    else
-    {
-      ret = Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
-    }
-  }
+    const std::time_t current_time = std::time(nullptr);
 
-  return ret;
+    // Avoid localtime call when more than two days have passed.
+    if (current_time < timestamp || (current_time - timestamp) <= (2 * 24 * 60 * 60))
+    {
+      const std::optional<std::tm> ctime = Common::LocalTime(current_time);
+      const std::optional<std::tm> ttime = Common::LocalTime(timestamp);
+      if (ctime.has_value() && ttime.has_value() && ctime->tm_year == ttime->tm_year &&
+          ctime->tm_yday == ttime->tm_yday)
+      {
+        return TRANSLATE_STR("GameList", "Today");
+      }
+      else if (ctime.has_value() && ttime.has_value() &&
+               ((ctime->tm_year == ttime->tm_year && ctime->tm_yday == (ttime->tm_yday + 1)) ||
+                (ctime->tm_yday == 0 && ctime->tm_mon == 0 && (ctime->tm_year - 1) == ttime->tm_year &&
+                 ttime->tm_mon == 11 && ttime->tm_mday == 31)))
+      {
+        return TRANSLATE_STR("GameList", "Yesterday");
+      }
+    }
+
+    return Host::FormatNumber(Host::NumberFormatType::ShortDate, static_cast<s64>(timestamp));
+  }
 }
 
 TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
@@ -1622,31 +1625,30 @@ TinyString GameList::FormatTimespan(std::time_t timespan, bool long_format)
   const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
   const u32 seconds = static_cast<u32>((timespan % 3600) % 60);
 
-  TinyString ret;
   if (!long_format)
   {
     if (hours >= 100)
-      ret.format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m"), hours, minutes);
     else if (hours > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}h {}m {}s"), hours, minutes, seconds);
     else if (minutes > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}m {}s"), minutes, seconds);
     else if (seconds > 0)
-      ret.format(TRANSLATE_FS("GameList", "{}s"), seconds);
+      return TinyString::from_format(TRANSLATE_FS("GameList", "{}s"), seconds);
     else
-      ret = TRANSLATE_SV("GameList", "None");
+      return TinyString(TRANSLATE_SV("GameList", "None"));
   }
   else
   {
     if (hours > 0)
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n hours", "", hours));
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n hours", "", hours);
     else if (minutes > 0)
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n minutes", "", minutes));
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n minutes", "", minutes);
+    else if (seconds > 0)
+      return TRANSLATE_PLURAL_SSTR("GameList", "%n seconds", "", seconds);
     else
-      ret.assign(TRANSLATE_PLURAL_SSTR("GameList", "%n seconds", "", seconds));
+      return TinyString(TRANSLATE_SV("GameList", "None"));
   }
-
-  return ret;
 }
 
 std::vector<std::pair<std::string_view, const GameList::Entry*>>
@@ -1763,7 +1765,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     return false;
   }
 
-  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent(), error));
+  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Core::GetHTTPUserAgent(), error));
   if (!downloader)
   {
     Error::AddPrefix(error, "Failed to create HTTP downloader: ");

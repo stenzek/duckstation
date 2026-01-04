@@ -7,6 +7,7 @@
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
 
+#include "core/core.h"
 #include "core/gpu_presenter.h"
 
 #include "util/postprocessing.h"
@@ -60,7 +61,7 @@ PostProcessingChainConfigWidget::~PostProcessingChainConfigWidget() = default;
 
 SettingsInterface& PostProcessingChainConfigWidget::getSettingsInterfaceToUpdate()
 {
-  return m_dialog->isPerGameSettings() ? *m_dialog->getSettingsInterface() : *Host::Internal::GetBaseSettingsLayer();
+  return m_dialog->isPerGameSettings() ? *m_dialog->getSettingsInterface() : *Core::GetBaseSettingsLayer();
 }
 
 void PostProcessingChainConfigWidget::commitSettingsUpdate()
@@ -75,7 +76,7 @@ void PostProcessingChainConfigWidget::commitSettingsUpdate()
 
 void PostProcessingChainConfigWidget::triggerSettingsReload()
 {
-  g_emu_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
+  g_core_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
                                              m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
 }
 
@@ -113,7 +114,7 @@ void PostProcessingChainConfigWidget::selectIndex(s32 index)
 
 void PostProcessingChainConfigWidget::updateList()
 {
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = getSettingsInterfaceToUpdate();
 
   updateList(si);
@@ -170,7 +171,7 @@ void PostProcessingChainConfigWidget::updateButtonsAndConfigPane(std::optional<u
   if (!index.has_value())
     return;
 
-  const auto lock = Host::GetSettingsLock();
+  const auto lock = Core::GetSettingsLock();
   const SettingsInterface& si = getSettingsInterfaceToUpdate();
   std::vector<PostProcessing::ShaderOption> options =
     PostProcessing::Config::GetStageOptions(si, m_section, index.value());
@@ -193,7 +194,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
     if (selected_shader.empty())
       return;
 
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
 
     Error error;
@@ -218,7 +219,7 @@ void PostProcessingChainConfigWidget::onRemoveButtonClicked()
   if (selected_items.empty())
     return;
 
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   SettingsInterface& si = getSettingsInterfaceToUpdate();
 
   QListWidgetItem* item = selected_items.first();
@@ -237,7 +238,7 @@ void PostProcessingChainConfigWidget::onClearButtonClicked()
   if (QtUtils::MessageBoxQuestion(this, tr("Clear Shader Stages"),
                                   tr("Are you sure you want to clear all shader stages?")) == QMessageBox::Yes)
   {
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
     PostProcessing::Config::ClearStages(si, m_section);
     updateList(si);
@@ -251,7 +252,7 @@ void PostProcessingChainConfigWidget::onMoveUpButtonClicked()
   std::optional<u32> index = getSelectedIndex();
   if (index.has_value() && index.value() > 0)
   {
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
     PostProcessing::Config::MoveStageUp(si, m_section, index.value());
     updateList(si);
@@ -266,7 +267,7 @@ void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
   std::optional<u32> index = getSelectedIndex();
   if (index.has_value() && index.value() < (static_cast<u32>(m_ui.stages->count() - 1)))
   {
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();
     PostProcessing::Config::MoveStageDown(si, m_section, index.value());
     updateList(si);
@@ -278,7 +279,7 @@ void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 
 void PostProcessingChainConfigWidget::onReloadButtonClicked()
 {
-  g_emu_thread->reloadPostProcessingShaders();
+  g_core_thread->reloadPostProcessingShaders();
 }
 
 void PostProcessingChainConfigWidget::onOpenDirectoryButtonClicked()
@@ -303,7 +304,7 @@ void PostProcessingChainConfigWidget::onStageItemChanged(QListWidgetItem* item)
 
   const u32 index = item_data.toUInt();
 
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   SettingsInterface& si = getSettingsInterfaceToUpdate();
   PostProcessing::Config::SetStageEnabled(si, m_section, index, item->checkState() == Qt::Checked);
   lock.unlock();
@@ -325,7 +326,7 @@ PostProcessingShaderConfigWidget::~PostProcessingShaderConfigWidget() = default;
 
 void PostProcessingShaderConfigWidget::updateConfigForOption(const PostProcessing::ShaderOption& option)
 {
-  auto lock = Host::GetSettingsLock();
+  auto lock = Core::GetSettingsLock();
   SettingsInterface& si = m_widget->getSettingsInterfaceToUpdate();
   PostProcessing::Config::SetStageOption(si, m_section, m_stage_index, option);
   lock.unlock();
@@ -335,7 +336,7 @@ void PostProcessingShaderConfigWidget::updateConfigForOption(const PostProcessin
 void PostProcessingShaderConfigWidget::onResetDefaultsClicked()
 {
   {
-    auto lock = Host::GetSettingsLock();
+    auto lock = Core::GetSettingsLock();
     SettingsInterface& si = m_widget->getSettingsInterfaceToUpdate();
     for (PostProcessing::ShaderOption& option : m_options)
     {
@@ -609,7 +610,7 @@ PostProcessingOverlayConfigWidget::~PostProcessingOverlayConfigWidget() = defaul
 
 void PostProcessingOverlayConfigWidget::triggerSettingsReload()
 {
-  g_emu_thread->updatePostProcessingSettings(true, false, false);
+  g_core_thread->updatePostProcessingSettings(true, false, false);
 }
 
 void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int index)

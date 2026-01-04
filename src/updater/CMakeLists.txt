@@ -3,6 +3,7 @@ add_executable(updater
   updater.h
 )
 
+target_include_directories(updater PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(updater PRIVATE common minizip ZLIB::ZLIB)
 
 if(WIN32)

@@ -8,6 +8,7 @@
 #include "bios.h"
 #include "bus.h"
 #include "cheats.h"
+#include "core.h"
 #include "cpu_core.h"
 #include "fullscreenui.h"
 #include "fullscreenui_widgets.h"
@@ -15,12 +16,14 @@
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
+#include "sound_effect_manager.h"
 #include "system.h"
 
 #include "scmversion/scmversion.h"
 
 #include "common/assert.h"
 #include "common/binary_reader_writer.h"
+#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/heap_array.h"
@@ -42,7 +45,7 @@
 #include "util/state_wrapper.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 #include "imgui.h"
@@ -82,8 +85,10 @@ static constexpr float CHALLENGE_FAILED_NOTIFICATION_TIME = 5.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 
-static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
-static constexpr float INDICATOR_FADE_OUT_TIME = 0.3f;
+static constexpr float CHALLENGE_INDICATOR_FADE_IN_TIME = 0.1f;
+static constexpr float CHALLENGE_INDICATOR_FADE_OUT_TIME = 0.3f;
+static constexpr float INDICATOR_FADE_IN_TIME = 0.2f;
+static constexpr float INDICATOR_FADE_OUT_TIME = 0.4f;
 
 // Some API calls are really slow. Set a longer timeout.
 static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
@@ -101,11 +106,19 @@ struct LoginWithPasswordParameters
   bool result;
 };
 
+struct FetchGameTitlesParameters
+{
+  Error* error;
+  rc_client_async_handle_t* request;
+  rc_client_game_title_list_t* list;
+  bool success;
+};
+
 struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
   std::string text;
-  float opacity;
+  float time;
   bool active;
 };
 
@@ -113,7 +126,7 @@ struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  float opacity;
+  float time;
   bool active;
 };
 
@@ -139,10 +152,14 @@ static bool IdentifyGame(CDImage* image);
 static bool IdentifyCurrentGame();
 static void BeginLoadGame();
 static void UpdateGameSummary(bool update_progress_database);
+static DynamicHeapArray<u8> SaveStateToBuffer();
+static void LoadStateFromBuffer(std::span<const u8> data);
+static bool SaveStateToBuffer(std::span<u8> data);
 static std::string GetImageURL(const char* image_name, u32 type);
 static std::string GetLocalImagePath(const std::string_view image_name, u32 type);
 static void DownloadImage(std::string url, std::string cache_path);
 static float IndicatorOpacity(float delta_time, bool active, float& opacity);
+static float IndicatorAnimation(bool active, float time, float width, float position_x, float* opacity);
 
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
 static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
@@ -179,6 +196,8 @@ static void HandleServerReconnectedEvent(const rc_client_event_t* event);
 
 static void ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void ClientLoginWithPasswordCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
+static void FetchGameTitlesCallback(int result, const char* error_message, rc_client_game_title_list_t* list,
+                                    rc_client_t* client, void* userdata);
 static void ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 
 static void DisplayHardcoreDeferredMessage();
@@ -586,7 +605,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
 
   char rc_client_user_agent[128];
   rc_client_get_user_agent_clause(new_client, rc_client_user_agent, std::size(rc_client_user_agent));
-  *http = HTTPDownloader::Create(fmt::format("{} {}", Host::GetHTTPUserAgent(), rc_client_user_agent));
+  *http = HTTPDownloader::Create(fmt::format("{} {}", Core::GetHTTPUserAgent(), rc_client_user_agent));
   if (!*http)
   {
     Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
@@ -600,9 +619,9 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
   rc_client_set_userdata(new_client, http->get());
 
   // Allow custom host to be overridden through config.
-  if (std::string host = Host::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
+  if (std::string host = Core::GetBaseStringSettingValue("Cheevos", "Host"); !host.empty())
   {
-    // drop trailing hash, rc_client appends its own
+    // drop trailing slash, rc_client appends its own
     while (!host.empty() && host.back() == '/')
       host.pop_back();
     if (!host.empty())
@@ -628,15 +647,15 @@ void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownl
 
 bool Achievements::HasSavedCredentials()
 {
-  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
+  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
   return (!username.empty() && !api_token.empty());
 }
 
 bool Achievements::TryLoggingInWithToken()
 {
-  const TinyString username = Host::GetTinyStringSettingValue("Cheevos", "Username");
-  const TinyString api_token = Host::GetTinyStringSettingValue("Cheevos", "Token");
+  const TinyString username = Core::GetTinyStringSettingValue("Cheevos", "Username");
+  const TinyString api_token = Core::GetTinyStringSettingValue("Cheevos", "Token");
   if (username.empty() || api_token.empty())
     return false;
 
@@ -657,7 +676,7 @@ bool Achievements::TryLoggingInWithToken()
   }
   else
   {
-    WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
+    WARNING_LOG("Invalid encrypted login token, requesting a new one.");
     Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
     return false;
   }
@@ -696,28 +715,30 @@ void Achievements::UpdateSettings(const Settings& old_config)
       DisableHardcoreMode(true, true);
   }
 
-  // These cannot be modified while a game is loaded, so just toss state and reload.
   auto lock = GetLock();
-  if (HasActiveGame())
+  const bool encore_mode_changed = (g_settings.achievements_encore_mode != old_config.achievements_encore_mode);
+  const bool spectator_mode_changed =
+    (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode);
+  const bool unofficial_test_mode_changed =
+    (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode);
+
+  if (encore_mode_changed)
+    rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
+  if (spectator_mode_changed)
+    rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
+  if (unofficial_test_mode_changed)
+    rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+
+  // If a game is active and these settings changed, reload the game to apply them.
+  // Just unload and reload without destroying the client to preserve hardcore mode.
+  if (HasActiveGame() && (encore_mode_changed || spectator_mode_changed || unofficial_test_mode_changed))
   {
-    lock.unlock();
-    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode ||
-        g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode ||
-        g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-    {
-      Shutdown();
-      Initialize();
-      return;
-    }
-  }
-  else
-  {
-    if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
-      rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
-    if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
-      rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
-    if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-      rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+    // Save and restore state to preserve progress.
+    const DynamicHeapArray<u8> state_data = SaveStateToBuffer();
+    ClearGameInfo();
+    BeginLoadGame();
+    LoadStateFromBuffer(state_data.cspan());
+    return;
   }
 
   if (!g_settings.achievements_leaderboard_trackers)
@@ -965,10 +986,10 @@ void Achievements::UpdateGameSummary(bool update_progress_database)
 
 void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock)
 {
-  // Limit rich presence updates to once per second, since it could change per frame.
   if (!s_state.has_rich_presence)
     return;
 
+  // Limit rich presence updates to once per second, since it could change per frame.
   const Timer::Value now = Timer::GetCurrentValue();
   if (Timer::ConvertValueToSeconds(now - s_state.rich_presence_poll_time) < 1)
     return;
@@ -1221,6 +1242,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   // update progress database on first load, in case it was played on another PC
   UpdateGameSummary(true);
 
+  // needed for notifications
+  SoundEffectManager::EnsureInitialized();
+
   if (display_summary)
     DisplayAchievementSummary();
 
@@ -1310,7 +1334,7 @@ void Achievements::DisplayAchievementSummary()
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(INFO_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(INFO_SOUND_NAME);
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
@@ -1342,7 +1366,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   const rc_client_achievement_t* cheevo = event->achievement;
   DebugAssert(cheevo);
 
-  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_state.game_id);
+  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->id, cheevo->title, s_state.game_id);
   UpdateGameSummary(true);
 
   if (g_settings.achievements_notifications)
@@ -1364,12 +1388,12 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   }
 
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(UNLOCK_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(UNLOCK_SOUND_NAME);
 }
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
-  INFO_LOG("Game {} complete", s_state.game_id);
+  INFO_LOG("Game {} ({}) complete", s_state.game_id, s_state.game_title);
   UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications)
@@ -1388,7 +1412,7 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 
 void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
 {
-  INFO_LOG("Subset {} ({}) complete", event->subset->title, event->subset->id);
+  INFO_LOG("Subset {} ({}) complete", event->subset->id, event->subset->title);
   UpdateGameSummary(false);
 
   if (g_settings.achievements_notifications && event->subset->badge_name[0] != '\0')
@@ -1456,7 +1480,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
   }
 
   if (g_settings.achievements_sound_effects)
-    PlatformMisc::PlaySoundAsync(EmuFolders::GetOverridableResourcePath(LBSUBMIT_SOUND_NAME).c_str());
+    SoundEffectManager::EnqueueSoundEffect(LBSUBMIT_SOUND_NAME);
 }
 
 void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* event)
@@ -1508,7 +1532,7 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
   s_state.active_leaderboard_trackers.push_back(LeaderboardTrackerIndicator{
     .tracker_id = id,
     .text = event->leaderboard_tracker->display,
-    .opacity = 0.0f,
+    .time = 0.0f,
     .active = true,
   });
 }
@@ -1524,6 +1548,7 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
     return;
 
   it->active = false;
+  it->time = std::min(it->time, INDICATOR_FADE_OUT_TIME);
 }
 
 void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* event)
@@ -1615,7 +1640,7 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
 
   s_state.active_progress_indicator->achievement = event->achievement;
   s_state.active_progress_indicator->badge_path = GetAchievementBadgePath(event->achievement, false);
-  s_state.active_progress_indicator->opacity = 0.0f;
+  s_state.active_progress_indicator->time = 0.0f;
   s_state.active_progress_indicator->active = true;
   FullscreenUI::UpdateAchievementsLastProgressUpdate(event->achievement);
 }
@@ -1634,6 +1659,7 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
   }
 
   s_state.active_progress_indicator->active = false;
+  s_state.active_progress_indicator->time = std::min(s_state.active_progress_indicator->time, INDICATOR_FADE_OUT_TIME);
 }
 
 void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client_event_t* event)
@@ -1729,7 +1755,7 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
     Cheats::ReloadCheats(true, true, false, true, true);
 
     // Defer settings update in case something is using it.
-    Host::RunOnCPUThread([]() { System::ApplySettings(false); });
+    Host::RunOnCoreThread([]() { System::ApplySettings(false); });
   }
   else if (System::GetState() == System::State::Starting)
   {
@@ -1741,6 +1767,59 @@ void Achievements::OnHardcoreModeChanged(bool enabled, bool display_message, boo
   FullscreenUI::ClearAchievementsState();
 
   Host::OnAchievementsHardcoreModeChanged(enabled);
+}
+
+void Achievements::LoadStateFromBuffer(std::span<const u8> data)
+{
+  // if we're active, make sure we've downloaded and activated all the achievements
+  // before deserializing, otherwise that state's going to get lost.
+  if (s_state.load_game_request)
+  {
+    FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
+                                            TRANSLATE_SV("Achievements", "Downloading achievements data..."));
+
+    s_state.http_downloader->WaitForAllRequests();
+
+    FullscreenUI::CloseLoadingScreen();
+  }
+
+  if (data.empty())
+  {
+    // reset runtime, no data (state might've been created without cheevos)
+    WARNING_LOG("State is missing cheevos data, resetting runtime");
+    rc_client_reset(s_state.client);
+    return;
+  }
+
+  const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data.size());
+  if (result != RC_OK)
+    ERROR_LOG("Failed to deserialize cheevos state ({}/{}), runtime was reset", rc_error_str(result), result);
+}
+
+bool Achievements::SaveStateToBuffer(std::span<u8> data)
+{
+  const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data.size());
+  if (result != RC_OK)
+  {
+    // set data to zero, effectively serializing nothing
+    ERROR_LOG("Failed to serialize cheevos state ({}/{})", rc_error_str(result), result);
+    return false;
+  }
+
+  return true;
+}
+
+DynamicHeapArray<u8> Achievements::SaveStateToBuffer()
+{
+  DynamicHeapArray<u8> ret;
+  if (const size_t data_size = rc_client_progress_size(s_state.client); data_size > 0)
+  {
+    ret.resize(data_size);
+    if (!SaveStateToBuffer(ret))
+      ret.deallocate();
+  }
+
+  return ret;
 }
 
 bool Achievements::DoState(StateWrapper& sw)
@@ -1762,40 +1841,14 @@ bool Achievements::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
-    // if we're active, make sure we've downloaded and activated all the achievements
-    // before deserializing, otherwise that state's going to get lost.
-    if (s_state.load_game_request)
-    {
-      FullscreenUI::OpenOrUpdateLoadingScreen(System::GetImageForLoadingScreen(System::GetGamePath()),
-                                              TRANSLATE_SV("Achievements", "Downloading achievements data..."));
-
-      s_state.http_downloader->WaitForAllRequests();
-
-      FullscreenUI::CloseLoadingScreen();
-    }
-
     u32 data_size = 0;
     sw.DoEx(&data_size, REQUIRED_VERSION, 0u);
-    if (data_size == 0)
-    {
-      // reset runtime, no data (state might've been created without cheevos)
-      WARNING_LOG("State is missing cheevos data, resetting runtime");
-      rc_client_reset(s_state.client);
-
-      return !sw.HasError();
-    }
 
     const std::span<u8> data = sw.GetDeferredBytes(data_size);
     if (sw.HasError())
       return false;
 
-    const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
-    if (result != RC_OK)
-    {
-      WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
-      rc_client_reset(s_state.client);
-    }
-
+    LoadStateFromBuffer(data);
     return true;
   }
   else
@@ -1810,11 +1863,9 @@ bool Achievements::DoState(StateWrapper& sw)
       const std::span<u8> data = sw.GetDeferredBytes(data_size);
       if (!sw.HasError()) [[likely]]
       {
-        const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data_size);
-        if (result != RC_OK)
+        if (!SaveStateToBuffer(data))
         {
           // set data to zero, effectively serializing nothing
-          WARNING_LOG("Failed to serialize cheevos state ({})", result);
           data_size = 0;
           sw.SetPosition(size_pos);
           sw.Do(&data_size);
@@ -1971,14 +2022,35 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
   params->result = true;
 
   // Store configuration.
-  Host::SetBaseStringSettingValue("Cheevos", "Username", params->username);
-  Host::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
-  Host::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
+  Core::SetBaseStringSettingValue("Cheevos", "Username", params->username);
+  Core::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
+  Core::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
 
   // Will be using temporary client if achievements are not enabled.
   if (client == s_state.client)
     FinishLogin();
+}
+
+void Achievements::FetchGameTitlesCallback(int result, const char* error_message, rc_client_game_title_list_t* list,
+                                           rc_client_t* client, void* userdata)
+{
+  FetchGameTitlesParameters* params = static_cast<FetchGameTitlesParameters*>(userdata);
+  params->request = nullptr;
+
+  if (result != RC_OK || !list)
+  {
+    if (error_message)
+      Error::SetString(params->error, error_message);
+    else
+      Error::SetStringFmt(params->error, TRANSLATE_FS("Achievements", "Failed to fetch game titles (code {})."),
+                          result);
+    params->success = false;
+    return;
+  }
+
+  params->list = list;
+  params->success = true;
 }
 
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
@@ -2110,19 +2182,6 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   progress->FormatStatusText(TRANSLATE_FS("Achievements", "Fetching icon info for {} games..."), game_ids.size());
 
-  // Fetch game titles (includes badge names) from RetroAchievements
-  const rc_api_fetch_game_titles_request_t titles_request = {
-    .game_ids = game_ids.data(),
-    .num_game_ids = static_cast<u32>(game_ids.size()),
-  };
-
-  rc_api_request_t request;
-  if (rc_api_init_fetch_game_titles_request(&request, &titles_request) != RC_OK)
-  {
-    Error::SetStringView(error, "Failed to create API request.");
-    return false;
-  }
-
   auto lock = GetLock();
   if (!IsActive())
   {
@@ -2130,30 +2189,23 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
     return false;
   }
 
-  std::optional<rc_api_fetch_game_titles_response_t> titles_response;
-  s_state.http_downloader->CreatePostRequest(
-    request.url, request.post_data,
-    [&titles_response, error](s32 status_code, const Error&, const std::string&, HTTPDownloader::Request::Data data) {
-      const rc_api_server_response_t rr = MakeRCAPIServerResponse(status_code, data);
-      const int parse_result = rc_api_process_fetch_game_titles_server_response(&titles_response.emplace(), &rr);
-      if (parse_result != RC_OK)
-      {
-        Error::SetStringFmt(error, "rc_api_process_fetch_game_titles_server_response() failed: {}",
-                            rc_error_str(parse_result));
-        titles_response.reset();
-      }
-    },
-    progress);
+  // Fetch game titles (includes badge names) from RetroAchievements
+  FetchGameTitlesParameters params = {error, nullptr, nullptr, false};
+  params.request = rc_client_begin_fetch_game_titles(s_state.client, game_ids.data(), static_cast<u32>(game_ids.size()),
+                                                     FetchGameTitlesCallback, &params);
+  if (!params.request)
+  {
+    Error::SetStringView(error, TRANSLATE_SV("Achievements", "Failed to create game titles request."));
+    return false;
+  }
 
-  rc_api_destroy_request(&request);
   WaitForHTTPRequestsWithYield(lock);
 
-  if (!titles_response.has_value())
+  if (!params.success || !params.list)
     return false;
 
-  const ScopedGuard response_guard(
-    [&titles_response]() { rc_api_destroy_fetch_game_titles_response(&titles_response.value()); });
-  if (titles_response->num_entries == 0)
+  const ScopedGuard list_guard([&params]() { rc_client_destroy_game_title_list(params.list); });
+  if (params.list->num_entries == 0)
   {
     Error::SetStringView(error, TRANSLATE_SV("Achievements", "No image names returned."));
     return false;
@@ -2161,22 +2213,23 @@ bool Achievements::DownloadGameIcons(ProgressCallback* progress, Error* error)
 
   // Create all download requests in parallel
   u32 badges_to_download = 0;
-  for (u32 i = 0; i < titles_response->num_entries; i++)
+  for (u32 i = 0; i < params.list->num_entries; i++)
   {
-    const rc_api_game_title_entry_t& entry = titles_response->entries[i];
+    const rc_client_game_title_entry_t& entry = params.list->entries[i];
 
-    if (!entry.image_name || entry.image_name[0] == '\0')
+    if (entry.badge_name[0] == '\0')
       continue;
 
-    std::string path = GetLocalImagePath(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string path = GetLocalImagePath(entry.badge_name, RC_IMAGE_TYPE_GAME);
     if (FileSystem::FileExists(path.c_str()))
     {
       // Already have this icon, just update the cache
-      GameList::UpdateAchievementBadgeName(entry.id, entry.image_name);
+      GameList::UpdateAchievementBadgeName(entry.game_id, entry.badge_name);
       continue;
     }
 
-    std::string url = GetImageURL(entry.image_name, RC_IMAGE_TYPE_GAME);
+    std::string url =
+      entry.badge_url ? std::string(entry.badge_url) : GetImageURL(entry.badge_name, RC_IMAGE_TYPE_GAME);
     if (url.empty())
       continue;
 
@@ -2244,9 +2297,9 @@ void Achievements::Logout()
   }
 
   INFO_LOG("Clearing credentials...");
-  Host::DeleteBaseSettingValue("Cheevos", "Username");
-  Host::DeleteBaseSettingValue("Cheevos", "Token");
-  Host::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
+  Core::DeleteBaseSettingValue("Cheevos", "Username");
+  Core::DeleteBaseSettingValue("Cheevos", "Token");
+  Core::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
   Host::CommitBaseSettingChanges();
   ClearProgressDatabase();
 }
@@ -2260,7 +2313,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(std::string_view trigger, std
                 trigger),
     [callback = std::move(callback)](bool res) mutable {
       // don't run the callback in the middle of rendering the UI
-      Host::RunOnCPUThread([callback = std::move(callback), res]() {
+      Host::RunOnCoreThread([callback = std::move(callback), res]() {
         if (res)
           DisableHardcoreMode(true, true);
         callback(res);
@@ -2274,12 +2327,12 @@ float Achievements::IndicatorOpacity(float delta_time, bool active, float& opaci
   if (active)
   {
     target = 1.0f;
-    rate = INDICATOR_FADE_IN_TIME;
+    rate = CHALLENGE_INDICATOR_FADE_IN_TIME;
   }
   else
   {
     target = 0.0f;
-    rate = -INDICATOR_FADE_OUT_TIME;
+    rate = -CHALLENGE_INDICATOR_FADE_OUT_TIME;
   }
 
   if (opacity != target)
@@ -2288,19 +2341,53 @@ float Achievements::IndicatorOpacity(float delta_time, bool active, float& opaci
   return opacity;
 }
 
+float Achievements::IndicatorAnimation(bool active, float time, float width, float position_x, float* opacity)
+{
+  static constexpr float MOVE_WIDTH = 0.3f;
+
+  if (active)
+  {
+    if (time < INDICATOR_FADE_IN_TIME)
+    {
+      const float pct = time / INDICATOR_FADE_IN_TIME;
+      const float eased_pct = std::clamp(Easing::OutExpo(pct), 0.0f, 1.0f);
+      *opacity = pct;
+      return ImFloor(position_x + (width * MOVE_WIDTH * (1.0f - eased_pct)));
+    }
+  }
+  else
+  {
+    if (time < INDICATOR_FADE_OUT_TIME)
+    {
+      const float pct = time / INDICATOR_FADE_OUT_TIME;
+      const float eased_pct = std::clamp(Easing::InExpo(pct), 0.0f, 1.0f);
+      *opacity = eased_pct;
+      return ImFloor(position_x + (width * MOVE_WIDTH * (1.0f - eased_pct)));
+    }
+  }
+
+  *opacity = 1.0f;
+  return position_x;
+}
+
 void Achievements::DrawGameOverlays()
 {
+  using FullscreenUI::DarkerColor;
+  using FullscreenUI::DrawRoundedGradientRect;
   using FullscreenUI::LayoutScale;
   using FullscreenUI::ModAlpha;
   using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
 
+  static constexpr const float& font_size = UIStyle.MediumFontSize;
+  static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+
+  static constexpr float bg_opacity = 0.8f;
+
   if (!HasActiveGame())
     return;
 
   const auto lock = GetLock();
-
-  constexpr float bg_opacity = 0.8f;
 
   const float margin =
     std::max(ImCeil(ImGuiManager::GetScreenMargin() * ImGuiManager::GetGlobalScale()), LayoutScale(10.0f));
@@ -2358,31 +2445,37 @@ void Achievements::DrawGameOverlays()
   if (s_state.active_progress_indicator.has_value())
   {
     AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
-    const float opacity = IndicatorOpacity(io.DeltaTime, indicator.active, indicator.opacity);
+    indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    const ImVec2 progress_image_size = LayoutScale(32.0f, 32.0f);
     const std::string_view text = s_state.active_progress_indicator->achievement->measured_progress;
-    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                         0.0f, IMSTR_START_END(text));
+    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+    const float box_width = progress_image_size.x + text_size.x + spacing + padding * 2.0f;
 
-    const ImVec2 box_min = ImVec2(position.x - image_size.x - text_size.x - spacing - padding * 2.0f,
-                                  position.y - image_size.y - padding * 2.0f);
+    float opacity;
+    const ImVec2 box_min =
+      ImVec2(IndicatorAnimation(indicator.active, indicator.time, box_width, position.x - box_width, &opacity),
+             position.y - progress_image_size.y - padding * 2.0f);
     const ImVec2 box_max = position;
 
-    dl->AddRectFilled(box_min, box_max,
-                      ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
+    DrawRoundedGradientRect(dl, box_min, box_max,
+                            ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                            ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
 
-    GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
+    GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
     if (badge)
     {
       const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
-      dl->AddImage(badge, badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+      dl->AddImage(badge, badge_pos, badge_pos + progress_image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
                    ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
     const ImVec2 text_pos =
-      box_min + ImVec2(padding + image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+      box_min + ImVec2(padding + progress_image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
     const ImRect text_clip_rect(text_pos, box_max);
-    RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos, box_max,
+    RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
                               ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
                               ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
 
@@ -2392,37 +2485,48 @@ void Achievements::DrawGameOverlays()
       s_state.active_progress_indicator.reset();
     }
 
-    position.y -= image_size.y + padding * 3.0f;
+    position.y -= progress_image_size.y + padding * 3.0f;
   }
 
   if (!s_state.active_leaderboard_trackers.empty())
   {
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    TinyString tstr;
+
     for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
       LeaderboardTrackerIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(io.DeltaTime, indicator.active, indicator.opacity);
+      indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
 
-      TinyString width_string;
-      width_string.append(ICON_FA_STOPWATCH);
+      tstr.assign(ICON_FA_STOPWATCH " ");
       for (u32 i = 0; i < indicator.text.length(); i++)
-        width_string.append('0');
-      const ImVec2 size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f,
-                                                      IMSTR_START_END(width_string));
+      {
+        // 8 is typically the widest digit
+        if (indicator.text[i] >= '0' && indicator.text[i] <= '9')
+          tstr.append('8');
+        else
+          tstr.append(indicator.text[i]);
+      }
 
-      const ImRect box(ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f), position);
-      dl->AddRectFilled(box.Min, box.Max,
-                        ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
+      const ImVec2 size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(tstr));
+      const float box_width = size.x + padding * 2.0f;
+      float opacity;
+      const ImRect box(
+        ImVec2(IndicatorAnimation(indicator.active, indicator.time, box_width, position.x - box_width, &opacity),
+               position.y - size.y - padding * 2.0f),
+        position);
+
+      DrawRoundedGradientRect(dl, box.Min, box.Max,
+                              ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                              ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+
+      tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
 
       const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
-      const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                           0.0f, IMSTR_START_END(indicator.text));
-      const ImVec2 text_pos = ImVec2(box.Max.x - padding - text_size.x, box.Min.y + padding);
-      RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos, box.Max,
-                                text_col, indicator.text, &text_size, ImVec2(0.0f, 0.0f), 0.0f, &box);
-
-      const ImVec2 icon_pos = ImVec2(box.Min.x + padding, box.Min.y + padding);
-      RenderShadowedTextClipped(dl, UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, icon_pos, box.Max,
-                                text_col, ICON_FA_STOPWATCH, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight,
+                                ImVec2(box.Min.x + padding, box.Min.y + padding), box.Max, text_col, tstr, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       if (!indicator.active && opacity <= 0.01f)
       {
@@ -3181,7 +3285,7 @@ void Achievements::UpdateProgressDatabase()
   }
 
   // done asynchronously so we don't hitch on disk I/O
-  System::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore]() {
+  Host::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore]() {
     // no point storing it in memory, just write directly to the file
     Error error;
     FileSystem::ManagedCFilePtr fp = OpenProgressDatabase(true, false, &error);
@@ -3370,7 +3474,7 @@ const Achievements::ProgressDatabase::Entry* Achievements::ProgressDatabase::Loo
 namespace Achievements {
 
 static void FinishLoadRAIntegration();
-static void FinishLoadRAIntegrationOnCPUThread();
+static void FinishLoadRAIntegrationOnCoreThread();
 
 static void RAIntegrationBeginLoadCallback(int result, const char* error_message, rc_client_t* client, void* userdata);
 static void RAIntegrationEventHandler(const rc_client_raintegration_event_t* event, rc_client_t* client);
@@ -3436,15 +3540,14 @@ void Achievements::FinishLoadRAIntegration()
 
   const char* error_message = nullptr;
   const int res = rc_client_finish_load_raintegration(
-    s_state.client,
-    (wi.has_value() && wi->type == WindowInfo::Type::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
+    s_state.client, (wi.has_value() && wi->type == WindowInfoType::Win32) ? static_cast<HWND>(wi->window_handle) : NULL,
     "DuckStation", g_scm_tag_str, &error_message);
   if (res != RC_OK)
   {
     std::string message = fmt::format("Failed to initialize RAIntegration:\n{}", error_message ? error_message : "");
     Host::ReportErrorAsync("RAIntegration Error", message);
     s_state.using_raintegration = false;
-    Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
+    Host::RunOnCoreThread(&Achievements::FinishLoadRAIntegrationOnCoreThread);
     return;
   }
 
@@ -3455,10 +3558,10 @@ void Achievements::FinishLoadRAIntegration()
 
   Host::OnRAIntegrationMenuChanged();
 
-  Host::RunOnCPUThread(&Achievements::FinishLoadRAIntegrationOnCPUThread);
+  Host::RunOnCoreThread(&Achievements::FinishLoadRAIntegrationOnCoreThread);
 }
 
-void Achievements::FinishLoadRAIntegrationOnCPUThread()
+void Achievements::FinishLoadRAIntegrationOnCoreThread()
 {
   // note: this is executed even for the failure case.
   // we want to finish initializing with internal client if RAIntegration didn't load.
@@ -3504,7 +3607,7 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
     case RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED:
     {
       // Could get called from a different thread...
-      Host::RunOnCPUThread([]() {
+      Host::RunOnCoreThread([]() {
         const auto lock = GetLock();
         OnHardcoreModeChanged(rc_client_get_hardcore_enabled(s_state.client) != 0, false, false);
       });
@@ -3513,7 +3616,7 @@ void Achievements::RAIntegrationEventHandler(const rc_client_raintegration_event
 
     case RC_CLIENT_RAINTEGRATION_EVENT_PAUSE:
     {
-      Host::RunOnCPUThread([]() { System::PauseSystem(true); });
+      Host::RunOnCoreThread([]() { System::PauseSystem(true); });
     }
     break;
 
@@ -3531,7 +3634,7 @@ void Achievements::RAIntegrationWriteMemoryCallback(uint32_t address, uint8_t* b
 
   // This can be called on the UI thread, so always queue it.
   llvm::SmallVector<u8, 16> data(buffer, buffer + num_bytes);
-  Host::RunOnCPUThread([address, data = std::move(data)]() {
+  Host::RunOnCoreThread([address, data = std::move(data)]() {
     u8* src = (address >= 0x200000U) ? CPU::g_state.scratchpad.data() : Bus::g_ram;
     const u32 offset = (address & Bus::RAM_2MB_MASK); // size guarded by check above
 

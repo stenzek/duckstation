@@ -11,6 +11,15 @@
 #include <memory>
 #include <string>
 
+#define MAKE_PROGRESS_CALLBACK_FORWARDER(from, to)                                                                     \
+  template<typename... T>                                                                                              \
+  void from(fmt::format_string<T...> fmt, T&&... args)                                                                 \
+  {                                                                                                                    \
+    TinyString str;                                                                                                    \
+    fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));                                     \
+    to(str.view());                                                                                                    \
+  }
+
 class ProgressCallback
 {
 public:
@@ -30,18 +39,7 @@ public:
   virtual void SetProgressValue(u32 value);
   virtual void IncrementProgressValue();
 
-#define MAKE_PROGRESS_CALLBACK_FORWARDER(from, to)                                                                     \
-  template<typename... T>                                                                                              \
-  void from(fmt::format_string<T...> fmt, T&&... args)                                                                 \
-  {                                                                                                                    \
-    TinyString str;                                                                                                    \
-    fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));                                     \
-    to(str.view());                                                                                                    \
-  }
-
   MAKE_PROGRESS_CALLBACK_FORWARDER(FormatStatusText, SetStatusText);
-
-#undef MAKE_PROGRESS_CALLBACK_FORWARDER
 
 protected:
   struct State
@@ -68,3 +66,32 @@ protected:
 public:
   static ProgressCallback* NullProgressCallback;
 };
+
+class ProgressCallbackWithPrompt : public ProgressCallback
+{
+public:
+  virtual ~ProgressCallbackWithPrompt() override;
+
+  enum class PromptIcon
+  {
+    Error,
+    Warning,
+    Question,
+    Information,
+  };
+
+  virtual void AlertPrompt(PromptIcon icon, std::string_view message);
+  virtual bool ConfirmPrompt(PromptIcon icon, std::string_view message, std::string_view yes_text = {},
+                             std::string_view no_text = {});
+
+  virtual void AppendMessage(std::string_view message);
+
+  virtual void SetAutoClose(bool enabled);
+
+  void SetStatusTextAndAppendMessage(std::string_view message);
+
+  MAKE_PROGRESS_CALLBACK_FORWARDER(AppendFormatMessage, AppendMessage);
+  MAKE_PROGRESS_CALLBACK_FORWARDER(FormatStatusTextAndAppendMessage, SetStatusTextAndAppendMessage);
+};
+
+#undef MAKE_PROGRESS_CALLBACK_FORWARDER

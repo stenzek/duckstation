@@ -9,7 +9,10 @@
 #include "settingwidgetbinder.h"
 
 #include "core/achievements.h"
+#include "core/core.h"
 #include "core/system.h"
+
+#include "util/translation.h"
 
 #include "common/string_util.h"
 
@@ -97,11 +100,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
     connect(m_ui.refreshProgress, &QPushButton::clicked, g_main_window, &MainWindow::refreshAchievementProgress);
-    connect(g_emu_thread, &EmuThread::achievementsRefreshed, this, &AchievementSettingsWidget::onAchievementsRefreshed);
+    connect(g_core_thread, &CoreThread::achievementsRefreshed, this, &AchievementSettingsWidget::onAchievementsRefreshed);
     updateLoginState();
 
     // force a refresh of game info
-    Host::RunOnCPUThread(Host::OnAchievementsRefreshed);
+    Host::RunOnCoreThread(Host::OnAchievementsRefreshed);
   }
   else
   {
@@ -183,7 +186,7 @@ void AchievementSettingsWidget::onHardcoreModeStateChanged()
     this, QMessageBox::Question, tr("Reset System"),
     tr("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
     QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
-  msgbox->connect(msgbox, &QMessageBox::accepted, this, []() { g_emu_thread->resetSystem(true); });
+  msgbox->connect(msgbox, &QMessageBox::accepted, this, []() { g_core_thread->resetSystem(true); });
   msgbox->open();
 }
 
@@ -203,13 +206,13 @@ void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged(
 
 void AchievementSettingsWidget::updateLoginState()
 {
-  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
   const bool logged_in = !username.empty();
 
   if (logged_in)
   {
     const u64 login_unix_timestamp =
-      StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
+      StringUtil::FromChars<u64>(Core::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
     m_ui.loginStatus->setText(
@@ -223,14 +226,14 @@ void AchievementSettingsWidget::updateLoginState()
   }
 
   m_ui.viewProfile->setEnabled(logged_in);
-  m_ui.refreshProgress->setEnabled(logged_in && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false));
+  m_ui.refreshProgress->setEnabled(logged_in && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false));
 }
 
 void AchievementSettingsWidget::onLoginLogoutPressed()
 {
-  if (!Host::GetBaseStringSettingValue("Cheevos", "Username").empty())
+  if (!Core::GetBaseStringSettingValue("Cheevos", "Username").empty())
   {
-    Host::RunOnCPUThread([]() { Achievements::Logout(); }, true);
+    Host::RunOnCoreThread([]() { Achievements::Logout(); }, true);
     updateLoginState();
     return;
   }
@@ -245,18 +248,18 @@ void AchievementSettingsWidget::onLoginCompleted()
   updateLoginState();
 
   // Login can enable achievements/hardcore.
-  if (!m_ui.enable->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  if (!m_ui.enable->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
   {
     m_ui.enable->setChecked(true);
     updateEnableState();
   }
-  if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  if (!m_ui.hardcoreMode->isChecked() && Core::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
     m_ui.hardcoreMode->setChecked(true);
 }
 
 void AchievementSettingsWidget::onViewProfilePressed()
 {
-  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
   if (username.empty())
     return;
 

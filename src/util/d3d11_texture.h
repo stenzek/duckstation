@@ -79,7 +79,7 @@ public:
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
   static std::unique_ptr<D3D11Texture> Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
-                                              u32 samples, Type type, Format format, Flags flags,
+                                              u32 samples, Type type, GPUTextureFormat format, Flags flags,
                                               const void* initial_data, u32 initial_data_stride, Error* error);
 
   D3D11_TEXTURE2D_DESC GetDesc() const;
@@ -95,9 +95,9 @@ public:
 #endif
 
 private:
-  D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
-               ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv,
-               ComPtr<ID3D11UnorderedAccessView> uav);
+  D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, GPUTextureFormat format,
+               Flags flags, ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
+               ComPtr<ID3D11View> rtv_dsv, ComPtr<ID3D11UnorderedAccessView> uav);
 
   ComPtr<ID3D11Texture2D> m_texture;
   ComPtr<ID3D11ShaderResourceView> m_srv;
@@ -136,7 +136,7 @@ class D3D11DownloadTexture final : public GPUDownloadTexture
 public:
   ~D3D11DownloadTexture() override;
 
-  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, Error* error);
+  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
@@ -151,7 +151,7 @@ public:
 #endif
 
 private:
-  D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height, GPUTexture::Format format);
+  D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height, GPUTextureFormat format);
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
 };

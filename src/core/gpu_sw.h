@@ -52,18 +52,18 @@ public:
   void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss) override;
 
 private:
-  static constexpr GPUTexture::Format FORMAT_FOR_24BIT = GPUTexture::Format::RGBA8; // RGBA8 always supported.
+  static constexpr GPUTextureFormat FORMAT_FOR_24BIT = GPUTextureFormat::RGBA8; // RGBA8 always supported.
 
-  template<GPUTexture::Format display_format>
+  template<GPUTextureFormat display_format>
   bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip);
 
   bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip);
 
   bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit);
 
-  GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format);
+  GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format);
 
   FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_upload_buffer;
-  GPUTexture::Format m_16bit_display_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_16bit_display_format = GPUTextureFormat::Unknown;
   std::unique_ptr<GPUTexture> m_upload_texture;
 };

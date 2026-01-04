@@ -1,16 +1,18 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cheats.h"
 #include "achievements.h"
 #include "bus.h"
 #include "controller.h"
+#include "core.h"
 #include "cpu_core.h"
 #include "game_database.h"
 #include "host.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -23,7 +25,7 @@
 #include "common/zip_helpers.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 LOG_CHANNEL(Cheats);
@@ -467,6 +469,24 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
         if (ImportOldChtFile(serial))
           disk_patch_files = FindChtFilesOnDisk(serial, hash, cheats);
       }
+
+      if (disk_patch_files.empty())
+      {
+        // Is this game part of a disc set? Try codes for the other discs.
+        const GameDatabase::Entry* gentry = GameDatabase::GetEntryForSerial(serial);
+        if (gentry && gentry->disc_set)
+        {
+          for (const std::string_view& set_serial : gentry->disc_set->serials)
+          {
+            if (set_serial == serial)
+              continue;
+
+            disk_patch_files = FindChtFilesOnDisk(set_serial, std::nullopt, cheats);
+            if (!disk_patch_files.empty())
+              break;
+          }
+        }
+      }
     }
 
     Error error;
@@ -819,14 +839,14 @@ bool Cheats::AreCheatsEnabled()
     return false;
 
   // Only in the gameini.
-  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  const SettingsInterface* sif = Core::GetGameSettingsLayer();
   return (sif && sif->GetBoolValue("Cheats", "EnableCheats", false));
 }
 
 bool Cheats::ShouldLoadDatabaseCheats()
 {
   // Only in the gameini.
-  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  const SettingsInterface* sif = Core::GetGameSettingsLayer();
   return (sif && sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
 }
 
@@ -846,13 +866,13 @@ bool Cheats::AreAnyPatchesEnabled()
     return true;
 
   // Only in the gameini.
-  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  const SettingsInterface* sif = Core::GetGameSettingsLayer();
   return (sif && sif->ContainsValue("Patches", "Enable"));
 }
 
 void Cheats::ReloadEnabledLists()
 {
-  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  const SettingsInterface* sif = Core::GetGameSettingsLayer();
   if (!sif)
   {
     // no gameini => nothing is going to be enabled.
@@ -901,7 +921,7 @@ u32 Cheats::EnablePatches(const CheatCodeList& patches, const EnableCodeList& en
     if (p->HasOptions())
     {
       // need to extract the option from the ini
-      SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+      SettingsInterface* sif = Core::GetGameSettingsLayer();
       if (sif) [[likely]]
       {
         if (const std::optional<u32> value = sif->GetOptionalUIntValue(section, p->GetName().c_str(), std::nullopt))
@@ -1115,7 +1135,7 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
 
   if (show_disabled_codes && (hc_mode_active || g_settings.disable_all_enhancements))
   {
-    const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+    const SettingsInterface* sif = Core::GetGameSettingsLayer();
     const u32 requested_cheat_count = (sif && sif->GetBoolValue("Cheats", "EnableCheats", false)) ?
                                         static_cast<u32>(sif->GetStringList("Cheats", "Enable").size()) :
                                         0;

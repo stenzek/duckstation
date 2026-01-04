@@ -301,13 +301,13 @@ static std::string FixupDuplicateAdapterNames(const GPUDevice::AdapterInfoList& 
   return adapter_name;
 }
 
-GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
+std::optional<GPUDevice::AdapterInfoList> D3DCommon::GetAdapterInfoList(Error* error)
 {
-  GPUDevice::AdapterInfoList adapters;
+  std::optional<GPUDevice::AdapterInfoList> ret;
 
-  Microsoft::WRL::ComPtr<IDXGIFactory5> factory = CreateFactory(false, nullptr);
+  Microsoft::WRL::ComPtr<IDXGIFactory5> factory = CreateFactory(false, error);
   if (!factory)
-    return adapters;
+    return ret;
 
   Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
   for (u32 index = 0;; index++)
@@ -322,10 +322,13 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
       continue;
     }
 
+    if (!ret.has_value())
+      ret.emplace();
+
     // Unfortunately we can't get any properties such as feature level without creating the device.
     // So just assume a max of the D3D11 max across the board.
     GPUDevice::AdapterInfo ai;
-    ai.name = FixupDuplicateAdapterNames(adapters, GetAdapterName(adapter.Get(), &ai.driver_type));
+    ai.name = FixupDuplicateAdapterNames(ret.value(), GetAdapterName(adapter.Get(), &ai.driver_type));
     ai.max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
     ai.max_multisamples = 8;
     ai.supports_sample_shading = true;
@@ -365,10 +368,16 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
         ERROR_LOG("EnumOutputs() failed: {:08X}", static_cast<unsigned>(hr));
     }
 
-    adapters.push_back(std::move(ai));
+    ret->push_back(std::move(ai));
   }
 
-  return adapters;
+  if (!ret.has_value())
+  {
+    Error::SetStringView(error, "No DXGI adapters found.");
+    return ret;
+  }
+
+  return ret;
 }
 
 std::optional<DXGI_MODE_DESC>
@@ -801,7 +810,7 @@ bool D3DCommon::LoadDXCompilerLibrary(Error* error)
   return true;
 }
 
-static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTexture::Format::MaxCount)>
+static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTextureFormat::MaxCount)>
   s_format_mapping = {{
     // clang-format off
   // d3d_format                    srv_format                           rtv_format                      dsv_format
@@ -839,19 +848,19 @@ static constexpr std::array<D3DCommon::DXGIFormatMapping, static_cast<int>(GPUTe
     // clang-format on
   }};
 
-const D3DCommon::DXGIFormatMapping& D3DCommon::GetFormatMapping(GPUTexture::Format format)
+const D3DCommon::DXGIFormatMapping& D3DCommon::GetFormatMapping(GPUTextureFormat format)
 {
   DebugAssert(static_cast<u8>(format) < s_format_mapping.size());
   return s_format_mapping[static_cast<u8>(format)];
 }
 
-GPUTexture::Format D3DCommon::GetFormatForDXGIFormat(DXGI_FORMAT format)
+GPUTextureFormat D3DCommon::GetFormatForDXGIFormat(DXGI_FORMAT format)
 {
-  for (u32 i = 0; i < static_cast<u32>(GPUTexture::Format::MaxCount); i++)
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFormat::MaxCount); i++)
   {
     if (s_format_mapping[i].resource_format == format)
-      return static_cast<GPUTexture::Format>(i);
+      return static_cast<GPUTextureFormat>(i);
   }
 
-  return GPUTexture::Format::Unknown;
+  return GPUTextureFormat::Unknown;
 }

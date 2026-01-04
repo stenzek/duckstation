@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements.h"
+#include "core.h"
 #include "fullscreenui_private.h"
 #include "game_list.h"
 #include "gpu_thread.h"
@@ -149,9 +150,9 @@ void FullscreenUI::DoSetCoverImage(std::string source_path, std::string existing
 
 void FullscreenUI::PopulateGameListEntryList()
 {
-  const s32 sort = Host::GetBaseIntSettingValue("Main", "FullscreenUIGameSort", 0);
-  const bool reverse = Host::GetBaseBoolSettingValue("Main", "FullscreenUIGameSortReverse", false);
-  const bool merge_disc_sets = Host::GetBaseBoolSettingValue("Main", "FullscreenUIMergeDiscSets", true);
+  const s32 sort = Core::GetBaseIntSettingValue("Main", "FullscreenUIGameSort", 0);
+  const bool reverse = Core::GetBaseBoolSettingValue("Main", "FullscreenUIGameSortReverse", false);
+  const bool merge_disc_sets = Core::GetBaseBoolSettingValue("Main", "FullscreenUIMergeDiscSets", true);
 
   s_game_list_locals.game_list_sorted_entries.clear();
   s_game_list_locals.game_list_sorted_entries.reserve(GameList::GetEntryCount());
@@ -335,6 +336,7 @@ void FullscreenUI::DrawGameListWindow()
   {
     if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       BeginTransition([]() {
         s_game_list_locals.game_list_view =
           (s_game_list_locals.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
@@ -343,10 +345,12 @@ void FullscreenUI::DrawGameListWindow()
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
     {
+      EnqueueSoundEffect(SFX_NAV_BACK);
       BeginTransition(&SwitchToSettings);
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
     {
+      EnqueueSoundEffect(SFX_NAV_ACTIVATE);
       DoResume();
     }
   }
@@ -389,7 +393,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (!AreAnyDialogsOpen() && WantsToCloseMenu())
     BeginTransition([]() { SwitchToMainWindow(MainWindowType::Landing); });
 
-  const bool compact_mode = Host::GetBaseBoolSettingValue("Main", "FullscreenUIGameListCompactMode", true);
+  const bool compact_mode = Core::GetBaseBoolSettingValue("Main", "FullscreenUIGameListCompactMode", true);
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
   auto game_list_lock = GameList::GetLock();
   const GameList::Entry* selected_entry = nullptr;
@@ -741,8 +745,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   BeginMenuButtons(0, 0.0f, 15.0f, 15.0f, 20.0f, 20.0f);
 
   const ImGuiStyle& style = ImGui::GetStyle();
-  const bool show_trophy_icons = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowTrophyIcons", true);
-  const bool show_titles = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowGridTitles", true);
+  const bool show_trophy_icons = Core::GetBaseBoolSettingValue("Main", "FullscreenUIShowTrophyIcons", true);
+  const bool show_titles = Core::GetBaseBoolSettingValue("Main", "FullscreenUIShowGridTitles", true);
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
   const float title_font_size = UIStyle.MediumLargeFontSize;
@@ -1030,7 +1034,7 @@ void FullscreenUI::HandleSelectDiscForDiscSet(const GameDatabase::DiscSetEntry* 
 void FullscreenUI::SwitchToGameList()
 {
   s_game_list_locals.game_list_view =
-    static_cast<GameListView>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
+    static_cast<GameListView>(Core::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
   s_game_list_locals.game_list_current_selection_path = {};
   s_game_list_locals.game_list_current_selection_timeout = 0.0f;
 
@@ -1140,17 +1144,20 @@ void FullscreenUI::SetCoverCacheEntry(std::string path, std::string cover_path)
   s_game_list_locals.cover_image_map.emplace(std::move(path), std::move(cover_path));
 }
 
-void FullscreenUI::ClearCoverCache()
+void FullscreenUI::RemoveCoverCacheEntry(const std::string& path)
 {
-  s_game_list_locals.cover_image_map.clear();
+  if (path.empty())
+    s_game_list_locals.cover_image_map.clear();
+  else
+    s_game_list_locals.cover_image_map.erase(path);
 }
 
-void FullscreenUI::InvalidateCoverCache()
+void FullscreenUI::InvalidateCoverCache(std::string path)
 {
   if (!GPUThread::IsFullscreenUIRequested())
     return;
 
-  GPUThread::RunOnThread(&FullscreenUI::ClearCoverCache);
+  GPUThread::RunOnThread([path = std::move(path)]() { RemoveCoverCacheEntry(path); });
 }
 
 void FullscreenUI::DrawGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,

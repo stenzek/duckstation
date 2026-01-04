@@ -51,6 +51,7 @@ for /f "usebackq tokens=1,2 delims==" %%a in ("%SCRIPTDIR%\versions") do (
     )
 )
 
+call :downloadfile "brotli-%BROTLI%.tar.gz" "https://github.com/google/brotli/archive/refs/tags/v%BROTLI%.tar.gz" "%BROTLI_GZ_HASH%" || goto error
 call :downloadfile "freetype-%FREETYPE%.tar.gz" "https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz" "%FREETYPE_GZ_HASH%" || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.tar.gz" "%HARFBUZZ_GZ_HASH%" || goto error
 call :downloadfile "libpng-%LIBPNG%.tar.gz" "https://download.sourceforge.net/libpng/libpng-%LIBPNG%.tar.gz" "%LIBPNG_GZ_HASH%" || goto error
@@ -86,14 +87,14 @@ if %DEBUG%==1 (
   echo Building release libraries...
 )
 
-set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG"
+set FORCEPDB=-DCMAKE_EXE_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_MODULE_LINKER_FLAGS_RELEASE="/DEBUG"
 
 echo Building zlib-ng...
 rmdir /S /Q "zlib-ng-%ZLIBNG%"
 tar -xf "zlib-ng-%ZLIBNG%.tar.gz" || goto error
 cd "zlib-ng-%ZLIBNG%" || goto error
 rem BUILD_SHARED_LIBS deliberately ommitted so that both shared and static libraries are built, we need static for the updater.
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DZLIB_COMPAT=ON -DBUILD_TESTING=OFF -DWITH_BENCHMARK_APPS=OFF -DWITH_GTEST=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
@@ -114,7 +115,7 @@ echo Building libjpeg...
 rmdir /S /Q "libjpeg-turbo-%LIBJPEGTURBO%"
 tar -xf "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" || goto error
 cd "libjpeg-turbo-%LIBJPEGTURBO%" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
@@ -129,6 +130,16 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 rmdir /S /Q "zstd-%ZSTD%"
+
+echo Building Brotli...
+rmdir /S /Q "brotli-%BROTLI%"
+tar -xf "brotli-%BROTLI%.tar.gz" || goto error
+cd "brotli-%BROTLI%" || goto error
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=OFF -DBROTLI_BUILD_TOOLS=OFF -DBROTLI_DISABLE_TESTS=ON -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+rmdir /S /Q "brotli-%BROTLI%"
 
 echo Building WebP...
 rmdir /S /Q "libwebp-%LIBWEBP%"
@@ -155,7 +166,8 @@ rmdir /S /Q "freetype-%FREETYPE%"
 tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
 cd "freetype-%FREETYPE%" || goto error
 %PATCH% -p1 < "%SCRIPTDIR%\freetype-harfbuzz-soname.patch" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build -G Ninja || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\freetype-static-brotli.patch" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_DISABLE_BZIP2=TRUE -DFT_REQUIRE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
@@ -199,7 +211,7 @@ rem Disable the PCRE2 JIT, it doesn't properly verify AVX2 support.
 rem Stop checkboxes in Fusion theme having such bright outlines.
 %PATCH% -p1 < "%SCRIPTDIR%\qtbase-fusion-style.patch" || goto error
 
-cmake -B build -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" %FORCEPDB% -DQT_GENERATE_SBOM=OFF -DINPUT_ssl=yes -DINPUT_openssl=no -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON %QTBUILDSPEC% || goto error
+cmake -B build -DFEATURE_sql=OFF -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" %FORCEPDB% -DQT_GENERATE_SBOM=OFF -DINPUT_ssl=yes -DINPUT_openssl=no -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_brotli=OFF %QTBUILDSPEC% || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

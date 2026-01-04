@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "controllersettingswindow.h"
-#include "displaywidget.h"
-#include "settingswindow.h"
 #include "ui_mainwindow.h"
 
 #include "core/types.h"
@@ -13,22 +10,24 @@
 #include "util/imgui_manager.h"
 #include "util/window_info.h"
 
-#include <QtCore/QThread>
+#include <QtGui/QShortcut>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
-#include <QtWidgets/QStackedWidget>
 #include <memory>
 #include <optional>
 
 class QLabel;
-class QThread;
 class QProgressBar;
 class QShortcut;
 
-class MainWindow;
+class CoreThread;
 class GameListWidget;
-class EmuThread;
+class DisplayWidget;
+class DisplayContainer;
+class LogWidget;
+class SettingsWindow;
+class ControllerSettingsWindow;
 class AutoUpdaterDialog;
 class MemoryCardEditorWindow;
 class DebuggerWindow;
@@ -106,6 +105,7 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
+  ALWAYS_INLINE GameListWidget* getGameListWidget() const { return m_game_list_widget; }
   ALWAYS_INLINE DebuggerWindow* getDebuggerWindow() const { return m_debugger_window; }
 
   /// Opens the editor for a specific input profile.
@@ -119,12 +119,12 @@ public:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
 
+  /// Returns true if rendering to the main window should be allowed.
+  bool canRenderToMainWindow() const;
+
   void refreshGameList(bool invalidate_cache);
-  void refreshGameListModel();
   void cancelGameListRefresh();
   QIcon getIconForGame(const QString& path);
-  void invalidateCoverCacheForPath(const std::string& path);
-  void refreshGameGridCovers();
   void refreshAchievementProgress();
 
   void runOnUIThread(const std::function<void()>& func);
@@ -155,10 +155,6 @@ protected:
   void moveEvent(QMoveEvent* event) override;
   void resizeEvent(QResizeEvent* event) override;
 
-#ifdef _WIN32
-  bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
-#endif
-
 private:
   /// Initializes the window. Call once at startup.
   void initialize();
@@ -185,20 +181,27 @@ private:
   bool shouldHideMouseCursor() const;
   bool shouldHideMainWindow() const;
 
-  void switchToGameListView();
+  void switchToGameListView(bool pause_system = true);
   void switchToEmulationView();
   void saveDisplayWindowGeometryToConfig();
   void restoreDisplayWindowGeometryFromConfig();
+
+  /// Returns true if the separate-window display widget should use the main window coordinates.
+  bool useMainWindowGeometryForDisplayWindow() const;
+
+  bool wantsLogWidget() const;
   bool wantsDisplayWidget() const;
+
   void createDisplayWidget(bool fullscreen, bool render_to_main);
   void destroyDisplayWidget();
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions();
   void updateGameListRelatedActions();
+  void updateLogWidget();
 
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
-  void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
+  void doControllerSettings(u32 category = 0);
 
   void openSelectDiscDialog(const QString& title, std::function<void(std::string)> callback);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
@@ -207,8 +210,6 @@ private:
   void destroySubWindows();
   void showAutoUpdaterWindow();
 
-  void registerForDeviceNotifications();
-  void unregisterForDeviceNotifications();
   void notifyRAIntegrationOfWindowChange();
 
   /// Fills menu with save state info and handlers.
@@ -323,6 +324,8 @@ private:
   DisplayWidget* m_display_widget = nullptr;
   DisplayContainer* m_display_container = nullptr;
 
+  LogWidget* m_log_widget = nullptr;
+
   QProgressBar* m_status_progress_widget = nullptr;
   QLabel* m_status_renderer_widget = nullptr;
   QLabel* m_status_fps_widget = nullptr;
@@ -360,10 +363,6 @@ private:
   bool m_was_paused_on_game_list_switch = false;
   bool m_was_disc_change_request = false;
   bool m_is_closing = false;
-
-#ifdef _WIN32
-  void* m_device_notification_handle = nullptr;
-#endif
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
   QMenu* m_raintegration_menu = nullptr;

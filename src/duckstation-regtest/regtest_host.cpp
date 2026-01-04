@@ -4,6 +4,7 @@
 #include "core/achievements.h"
 #include "core/bus.h"
 #include "core/controller.h"
+#include "core/core_private.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
@@ -23,6 +24,7 @@
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/platform_misc.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
@@ -33,6 +35,7 @@
 #include "common/path.h"
 #include "common/sha256_digest.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
 #include "common/threading.h"
 #include "common/time_helpers.h"
 #include "common/timer.h"
@@ -57,18 +60,19 @@ static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
 static std::string GetFrameDumpPath(u32 frame);
-static void ProcessCPUThreadEvents();
+static void ProcessCoreThreadEvents();
 static void GPUThreadEntryPoint();
 
 struct RegTestHostState
 {
-  ALIGN_TO_CACHE_LINE std::mutex cpu_thread_events_mutex;
-  std::condition_variable cpu_thread_event_done;
+  ALIGN_TO_CACHE_LINE std::mutex core_thread_events_mutex;
+  std::condition_variable core_thread_event_done;
   std::deque<std::pair<std::function<void()>, bool>> cpu_thread_events;
   u32 blocking_cpu_events_pending = 0;
 };
 
 static RegTestHostState s_state;
+ALIGN_TO_CACHE_LINE static TaskQueue s_async_task_queue;
 
 } // namespace RegTestHost
 
@@ -86,7 +90,7 @@ bool RegTestHost::SetFolders()
   DEV_LOG("Program Path: {}", program_path);
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
+  EmuFolders::DataRoot = Core::ComputeDataDirectory();
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 
   DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
@@ -116,7 +120,7 @@ bool RegTestHost::InitializeConfig()
 {
   SetFolders();
 
-  Host::Internal::SetBaseSettingsLayer(&s_base_settings_interface);
+  Core::SetBaseSettingsLayer(&s_base_settings_interface);
 
   // default settings for runner
   SettingsInterface& si = s_base_settings_interface;
@@ -341,9 +345,9 @@ void Host::OnMediaCaptureStopped()
   //
 }
 
-void Host::PumpMessagesOnCPUThread()
+void Host::PumpMessagesOnCoreThread()
 {
-  RegTestHost::ProcessCPUThreadEvents();
+  RegTestHost::ProcessCoreThreadEvents();
 
   s_frames_remaining--;
   if (s_frames_remaining == 0)
@@ -353,20 +357,20 @@ void Host::PumpMessagesOnCPUThread()
   }
 }
 
-void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
+void Host::RunOnCoreThread(std::function<void()> function, bool block /* = false */)
 {
   using namespace RegTestHost;
 
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  std::unique_lock lock(s_state.core_thread_events_mutex);
   s_state.cpu_thread_events.emplace_back(std::move(function), block);
   s_state.blocking_cpu_events_pending += BoolToUInt32(block);
   if (block)
-    s_state.cpu_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
+    s_state.core_thread_event_done.wait(lock, []() { return s_state.blocking_cpu_events_pending == 0; });
 }
 
-void RegTestHost::ProcessCPUThreadEvents()
+void RegTestHost::ProcessCoreThreadEvents()
 {
-  std::unique_lock lock(s_state.cpu_thread_events_mutex);
+  std::unique_lock lock(s_state.core_thread_events_mutex);
 
   for (;;)
   {
@@ -382,14 +386,24 @@ void RegTestHost::ProcessCPUThreadEvents()
     if (event.second)
     {
       s_state.blocking_cpu_events_pending--;
-      s_state.cpu_thread_event_done.notify_one();
+      s_state.core_thread_event_done.notify_one();
     }
   }
 }
 
 void Host::RunOnUIThread(std::function<void()> function, bool block /* = false */)
 {
-  RunOnCPUThread(std::move(function), block);
+  RunOnCoreThread(std::move(function), block);
+}
+
+void Host::QueueAsyncTask(std::function<void()> function)
+{
+  RegTestHost::s_async_task_queue.SubmitTask(std::move(function));
+}
+
+void Host::WaitForAllAsyncTasks()
+{
+  RegTestHost::s_async_task_queue.WaitForAll();
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -421,6 +435,11 @@ std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool f
                                                     Error* error)
 {
   return WindowInfo();
+}
+
+WindowInfoType Host::GetRenderWindowInfoType()
+{
+  return WindowInfoType::Surfaceless;
 }
 
 void Host::ReleaseRenderWindow()
@@ -464,10 +483,11 @@ void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 
   // Need to take a copy of the display texture.
   GPUTexture* const read_texture = presenter.GetDisplayTexture();
-  const u32 read_x = static_cast<u32>(presenter.GetDisplayTextureViewX());
-  const u32 read_y = static_cast<u32>(presenter.GetDisplayTextureViewY());
-  const u32 read_width = static_cast<u32>(presenter.GetDisplayTextureViewWidth());
-  const u32 read_height = static_cast<u32>(presenter.GetDisplayTextureViewHeight());
+  const GSVector4i read_rect = presenter.GetDisplayTextureRect();
+  const u32 read_x = static_cast<u32>(read_rect.x);
+  const u32 read_y = static_cast<u32>(read_rect.y);
+  const u32 read_width = static_cast<u32>(read_rect.width());
+  const u32 read_height = static_cast<u32>(read_rect.height());
   const ImageFormat read_format = GPUTexture::GetImageFormatForTextureFormat(read_texture->GetFormat());
   if (read_format == ImageFormat::None)
     return;
@@ -509,7 +529,7 @@ void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
     return;
   }
 
-  System::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
+  Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
     Error error;
 
     if (image.GetFormat() != ImageFormat::RGBA8)
@@ -700,9 +720,6 @@ void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
 {
   // noop
 }
-
-BEGIN_HOTKEY_LIST(g_host_hotkeys)
-END_HOTKEY_LIST()
 
 static void SignalHandler(int signal)
 {
@@ -997,7 +1014,7 @@ int main(int argc, char* argv[])
   Error startup_error;
   if (!System::PerformEarlyHardwareChecks(&startup_error) || !System::ProcessStartup(&startup_error))
   {
-    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    ERROR_LOG("ProcessStartup() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
   }
 
@@ -1019,12 +1036,14 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->path))
     return EXIT_FAILURE;
 
-  // Only one async worker.
-  if (!System::CPUThreadInitialize(&startup_error, 1))
+  if (!System::CoreThreadInitialize(&startup_error))
   {
-    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    ERROR_LOG("CoreThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
   }
+
+  // Only one async worker, keep the CPU usage down so we can parallelize execution of regtest itself.
+  RegTestHost::s_async_task_queue.SetWorkerCount(1);
 
   RegTestHost::HookSignals();
   s_gpu_thread.Start(&RegTestHost::GPUThreadEntryPoint);
@@ -1081,8 +1100,10 @@ cleanup:
     s_gpu_thread.Join();
   }
 
-  RegTestHost::ProcessCPUThreadEvents();
-  System::CPUThreadShutdown();
+  RegTestHost::s_async_task_queue.SetWorkerCount(0);
+
+  RegTestHost::ProcessCoreThreadEvents();
+  System::CoreThreadShutdown();
   System::ProcessShutdown();
   return result;
 }

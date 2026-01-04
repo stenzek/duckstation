@@ -54,6 +54,10 @@ class MainWindow;
 class DisplayWidget;
 class InputDeviceListModel;
 
+namespace Host {
+enum class NumberFormatType : u8;
+}
+
 namespace Achievements {
 enum class LoginRequestReason;
 }
@@ -61,13 +65,13 @@ enum class LoginRequestReason;
 Q_DECLARE_METATYPE(std::optional<bool>);
 Q_DECLARE_METATYPE(std::shared_ptr<SystemBootParameters>);
 
-class EmuThread : public QThread
+class CoreThread : public QThread
 {
   Q_OBJECT
 
 public:
-  EmuThread();
-  ~EmuThread();
+  CoreThread();
+  ~CoreThread();
 
   void start();
   void stop();
@@ -141,10 +145,7 @@ public:
   void reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
   void updateEmuFolders();
   void updateControllerSettings();
-  void reloadInputSources();
   void reloadInputBindings();
-  void reloadInputDevices();
-  void closeInputSources();
   void startFullscreenUI();
   void stopFullscreenUI();
   void exitFullscreenUI();
@@ -183,7 +184,7 @@ public:
   void openGamePropertiesForCurrentGame(const QString& category = {});
   void setGPUThreadRunIdle(bool active);
   void updateFullscreenUITheme();
-  void runOnEmuThread(const std::function<void()>& callback);
+  void runOnCoreThread(const std::function<void()>& callback);
 
 protected:
   void run() override;
@@ -257,7 +258,7 @@ public:
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-  // NOTE: Should only be called on EmuThread.
+  // NOTE: Should only be called on core thread.
   void enumerateDevices();
 
   void onDeviceConnected(const InputBindingKey& key, const QString& identifier, const QString& device_name,
@@ -294,7 +295,7 @@ private:
   std::variant<WorkCallback, CompletionCallback> m_callback;
 };
 
-extern EmuThread* g_emu_thread;
+extern CoreThread* g_core_thread;
 
 namespace QtHost {
 /// Returns the locale to use for date/time formatting, etc.
@@ -318,17 +319,11 @@ void UpdateThemeOnStyleChange();
 /// Sets batch mode (exit after game shutdown).
 bool InBatchMode();
 
-/// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
+/// Sets NoGUI mode (implies batch mode, does not display main window, exits on shutdown).
 bool InNoGUIMode();
 
 /// Returns true if display widgets need to wrapped in a container, thanks to Wayland stupidity.
 bool IsDisplayWidgetContainerNeeded();
-
-/// Returns true if rendering to the main window should be allowed.
-bool CanRenderToMainWindow();
-
-/// Returns true if the separate-window display widget should use the main window coordinates.
-bool UseMainWindowGeometryForDisplayWindow();
 
 /// Call when the language changes.
 void UpdateApplicationLanguage(QWidget* dialog_parent);

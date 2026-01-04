@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-#include "util/audio_stream.h"
+#include "util/core_audio_stream.h"
 
 #include "common/small_string.h"
 
@@ -22,6 +22,7 @@ enum class Level : u32;
 }
 
 enum class RenderAPI : u8;
+enum class WindowInfoType : u8;
 enum class MediaCaptureBackend : u8;
 enum class OSDMessageType : u8;
 
@@ -40,9 +41,10 @@ struct GPUSettings
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
   u8 gpu_downsample_scale = 1;
   GPUWireframeMode gpu_wireframe_mode = DEFAULT_GPU_WIREFRAME_MODE;
-  DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayAspectRatio display_aspect_ratio = DEFAULT_DISPLAY_ASPECT_RATIO;
+  DisplayDeinterlacingMode display_deinterlacing_mode = DEFAULT_DISPLAY_DEINTERLACING_MODE;
   DisplayCropMode display_crop_mode = DEFAULT_DISPLAY_CROP_MODE;
+  DisplayFineCropMode display_fine_crop_mode = DEFAULT_DISPLAY_FINE_CROP_MODE;
   DisplayAlignment display_alignment = DEFAULT_DISPLAY_ALIGNMENT;
   DisplayRotation display_rotation = DEFAULT_DISPLAY_ROTATION;
   DisplayScalingMode display_scaling = DEFAULT_DISPLAY_SCALING;
@@ -51,12 +53,12 @@ struct GPUSettings
   DisplayScreenshotMode display_screenshot_mode = DEFAULT_DISPLAY_SCREENSHOT_MODE;
   DisplayScreenshotFormat display_screenshot_format = DEFAULT_DISPLAY_SCREENSHOT_FORMAT;
   u8 display_screenshot_quality = DEFAULT_DISPLAY_SCREENSHOT_QUALITY;
+  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   s16 display_active_start_offset = 0;
   s16 display_active_end_offset = 0;
   s8 display_line_start_offset = 0;
   s8 display_line_end_offset = 0;
 
-  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_software_renderer_for_memory_states : 1 = false;
@@ -78,6 +80,7 @@ struct GPUSettings
   bool gpu_force_round_texcoords : 1 = false;
   bool gpu_widescreen_rendering : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
+  bool gpu_modulation_crop : 1 = false;
   bool gpu_texture_cache : 1 = false;
   bool gpu_show_vram : 1 = false;
   bool gpu_dump_cpu_to_vram_copies : 1 = false;
@@ -118,6 +121,8 @@ struct GPUSettings
 
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = 0.0f;
+
+  std::array<s16, 4> display_fine_crop_amount = {};
 
   float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
@@ -218,6 +223,7 @@ struct GPUSettings
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Progressive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;
   static constexpr DisplayAspectRatio DEFAULT_DISPLAY_ASPECT_RATIO = DisplayAspectRatio::Auto();
+  static constexpr DisplayFineCropMode DEFAULT_DISPLAY_FINE_CROP_MODE = DisplayFineCropMode::None;
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayRotation DEFAULT_DISPLAY_ROTATION = DisplayRotation::Normal;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
@@ -472,7 +478,6 @@ struct Settings : public GPUSettings
   static const char* GetRendererDisplayName(GPURenderer renderer);
   static RenderAPI GetRenderAPIForRenderer(GPURenderer renderer);
   static GPURenderer GetRendererForRenderAPI(RenderAPI api);
-  static GPURenderer GetAutomaticRenderer();
 
   static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);
@@ -505,6 +510,10 @@ struct Settings : public GPUSettings
   static std::optional<DisplayCropMode> ParseDisplayCropMode(const char* str);
   static const char* GetDisplayCropModeName(DisplayCropMode crop_mode);
   static const char* GetDisplayCropModeDisplayName(DisplayCropMode crop_mode);
+
+  static std::optional<DisplayFineCropMode> ParseDisplayFineCropMode(const char* str);
+  static const char* GetDisplayFineCropModeName(DisplayFineCropMode mode);
+  static const char* GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode);
 
   static std::optional<DisplayAspectRatio> ParseDisplayAspectRatio(std::string_view str);
   static TinyString GetDisplayAspectRatioName(DisplayAspectRatio ar);

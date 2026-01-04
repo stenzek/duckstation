@@ -73,8 +73,9 @@ mkdir -p "${INSTALLDIR}"
 mkdir -p deps-build
 cd deps-build
 
-if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; then
+if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE_COMMIT.tar.gz" ]]; then
 	curl -C - -L \
+		-o "brotli-$BROTLI.tar.gz" "https://github.com/google/brotli/archive/refs/tags/v$BROTLI.tar.gz" \
 		-o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download" \
 		-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 		-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
@@ -99,6 +100,7 @@ if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; t
 fi
 
 cat > SHASUMS <<EOF
+$BROTLI_GZ_HASH  brotli-$BROTLI.tar.gz
 $FREETYPE_GZ_HASH  freetype-$FREETYPE.tar.gz
 $HARFBUZZ_GZ_HASH  harfbuzz-$HARFBUZZ.tar.gz
 $LIBJPEGTURBO_GZ_HASH  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
@@ -176,7 +178,7 @@ EOF
 #rm -fr "zlib-ng-$ZLIBNG"
 #tar xf "zlib-ng-$ZLIBNG.tar.gz"
 #cd "zlib-ng-$ZLIBNG"
-#cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
+#cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DBUILD_TESTING=OFF -DWITH_BENCHMARK_APPS=OFF -DWITH_GTEST=OFF -B build -G Ninja
 #cmake --build build --parallel
 #ninja -C build install
 #cd ..
@@ -207,7 +209,7 @@ echo "Building libjpeg..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 cd "libjpeg-turbo-$LIBJPEGTURBO"
-cmake "${CMAKE_COMMON[@]}" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+cmake "${CMAKE_COMMON[@]}" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -222,6 +224,15 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 rm -fr "zstd-$ZSTD"
+
+echo "Building Brotli..."
+rm -fr "brotli-$BROTLI"
+tar xf "brotli-$BROTLI.tar.gz"
+cd "brotli-$BROTLI"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=OFF -DBROTLI_BUILD_TOOLS=OFF -DBROTLI_DISABLE_TESTS=ON -B build -G Ninja
+ninja -C build install
+cd ..
+rm -fr "brotli-$BROTLI"
 
 echo "Building WebP..."
 rm -fr "libwebp-$LIBWEBP"
@@ -253,7 +264,8 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.gz"
 cd "freetype-$FREETYPE"
 patch -p1 < "$SCRIPTDIR/freetype-harfbuzz-soname.patch"
-cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build -G Ninja
+patch -p1 < "$SCRIPTDIR/freetype-static-brotli.patch"
+cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_REQUIRE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
@@ -285,6 +297,7 @@ rm -fr "SDL3-$SDL3"
 # ICU avoids pulling in a bunch of large libraries, and hopefully we can get away without it.
 # OpenGL is needed to render window decorations in Wayland, apparently.
 # dbus-runtime and linked off to avoid a relocation error (different to host.. probably should change that).
+# Brotli is disabled as we static link it, and QtNetwork doesn't link with bbrotlicommon.
 echo "Building Qt Base..."
 rm -fr "qtbase-everywhere-src-$QT"
 tar xf "qtbase-everywhere-src-$QT.tar.xz"
@@ -292,7 +305,7 @@ cd "qtbase-everywhere-src-$QT"
 patch -p1 < "$SCRIPTDIR/qtbase-fusion-style.patch"
 mkdir build
 cd build
-../configure -prefix "$INSTALLDIR" -extprefix "$INSTALLDIR" -qt-host-path "$HOSTDIR" -release -dbus runtime -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -- -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAINFILE" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_dbus_linked=OFF -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_gtk3=OFF
+../configure -prefix "$INSTALLDIR" -extprefix "$INSTALLDIR" -qt-host-path "$HOSTDIR" -release -dbus runtime -fontconfig -qt-doubleconversion -ssl -openssl-runtime -opengl desktop -qpa xcb,wayland -xkbcommon -xcb -- -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAINFILE" -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DQT_GENERATE_SBOM=OFF -DFEATURE_cups=OFF -DFEATURE_dbus=ON -DFEATURE_dbus_linked=OFF -DFEATURE_icu=OFF -DFEATURE_sql=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_gtk3=OFF -DFEATURE_brotli=OFF
 cmake --build . --parallel
 ninja install
 cd ../../

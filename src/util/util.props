@@ -13,7 +13,7 @@
 
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);Dwmapi.lib;winhttp.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);Cfgmgr32.lib;Dwmapi.lib;winhttp.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 

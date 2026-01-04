@@ -34,14 +34,6 @@ class ControllerSettingsWindow final : public QWidget
   Q_OBJECT
 
 public:
-  enum class Category
-  {
-    GlobalSettings,
-    FirstControllerSettings,
-    HotkeySettings,
-    Count
-  };
-
   ControllerSettingsWindow(INISettingsInterface* game_sif = nullptr, bool edit_profiles = false,
                            QWidget* parent = nullptr);
   ~ControllerSettingsWindow();
@@ -61,13 +53,13 @@ public:
   ALWAYS_INLINE bool isEditingProfile() const { return m_editing_input_profiles; }
   ALWAYS_INLINE INISettingsInterface* getEditingSettingsInterface() { return m_editing_settings_interface; }
 
-  Category getCurrentCategory() const;
+  int getCategoryRow() const;
+  void setCategoryRow(int row);
+  void setCategory(u32 category);
 
   void updateListDescription(u32 global_slot, ControllerBindingWidget* widget);
 
   void switchProfile(const std::string_view name);
-
-  void setCategory(Category category);
 
   // Helper functions for updating setting values globally or in the profile.
   bool getBoolValue(const char* section, const char* key, bool default_value) const;
@@ -78,6 +70,10 @@ public:
   void setStringValue(const char* section, const char* key, const char* value);
   void clearSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
+
+  static constexpr u32 CATEGORY_GLOBAL_SETTINGS = 0;
+  static constexpr u32 CATEGORY_FIRST_CONTROLLER_SETTINGS = 1;
+  static constexpr u32 CATEGORY_HOTKEY_SETTINGS = 2;
 
 protected:
   void closeEvent(QCloseEvent* event) override;

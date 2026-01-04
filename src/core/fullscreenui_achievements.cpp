@@ -4,9 +4,11 @@
 #include "achievements_private.h"
 #include "fullscreenui_private.h"
 #include "gpu_thread.h"
+#include "host.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -68,7 +70,7 @@ static bool IsCoreSubsetOpen();
 static void SetCurrentSubsetID(u32 subset_id);
 static void DrawSubsetSelector();
 template<typename T>
-static void CollectSubsetsFromList(const T* list);
+static void CollectSubsetsFromList(const T* list, bool include_achievements, bool include_leaderboards);
 template<typename T>
 static bool IsBucketVisibleInCurrentSubset(const T& bucket);
 
@@ -606,6 +608,7 @@ void FullscreenUI::OpenAchievementsWindow()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, &SwitchToAchievements);
   });
@@ -685,12 +688,14 @@ void FullscreenUI::DrawSubsetSelector()
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
         ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       new_subset_id = (i == 0) ? s_achievements_locals.subset_info_list.back().subset_id :
                                  s_achievements_locals.subset_info_list[i - 1].subset_id;
     }
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
              ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
     {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
       new_subset_id = ((i + 1) == s_achievements_locals.subset_info_list.size()) ?
                         s_achievements_locals.subset_info_list.front().subset_id :
                         s_achievements_locals.subset_info_list[i + 1].subset_id;
@@ -727,12 +732,31 @@ void FullscreenUI::SetCurrentSubsetID(u32 subset_id)
 }
 
 template<typename T>
-void FullscreenUI::CollectSubsetsFromList(const T* list)
+void FullscreenUI::CollectSubsetsFromList(const T* list, bool include_achievements, bool include_leaderboards)
 {
   s_achievements_locals.open_subset = nullptr;
   s_achievements_locals.subset_info_list.clear();
-  if (std::any_of(list->buckets, list->buckets + list->num_buckets,
-                  [&list](const auto& it) { return it.subset_id != list->buckets[0].subset_id; }))
+
+  // Prefer rc_client grabbing subsets if possible. Old external clients won't support this.
+  rc_client_subset_list_t* subset_list = rc_client_create_subset_list(Achievements::GetClient());
+  if (subset_list && subset_list->num_subsets > 0)
+  {
+    // If there is only a single subset, we don't want to show a selector.
+    if (subset_list->num_subsets > 1)
+    {
+      for (u32 i = 0; i < subset_list->num_subsets; i++)
+      {
+        const rc_client_subset_t* subset = subset_list->subsets[i];
+        if ((include_achievements && subset->num_achievements > 0) ||
+            (include_leaderboards && subset->num_leaderboards > 0))
+        {
+          AddSubsetInfo(subset);
+        }
+      }
+    }
+  }
+  else if (std::any_of(list->buckets, list->buckets + list->num_buckets,
+                       [&list](const auto& it) { return it.subset_id != list->buckets[0].subset_id; }))
   {
     for (u32 bucket_idx = 0; bucket_idx < list->num_buckets; bucket_idx++)
     {
@@ -745,9 +769,14 @@ void FullscreenUI::CollectSubsetsFromList(const T* list)
           AddSubsetInfo(subset);
       }
     }
+  }
 
-    // hopefully the first will be core...
-    Assert(s_achievements_locals.subset_info_list.size() > 1);
+  if (subset_list)
+    rc_client_destroy_subset_list(subset_list);
+
+  // hopefully the first will be core...
+  if (!s_achievements_locals.subset_info_list.empty())
+  {
     const auto it = std::ranges::find_if(s_achievements_locals.subset_info_list, [](const SubsetInfo& info) {
       return info.subset_id == s_achievements_locals.last_open_subset_id;
     });
@@ -807,7 +836,7 @@ void FullscreenUI::SwitchToAchievements()
     }
   }
 
-  CollectSubsetsFromList(s_achievements_locals.achievement_list);
+  CollectSubsetsFromList(s_achievements_locals.achievement_list, true, false);
   SwitchToMainWindow(MainWindowType::Achievements);
 }
 
@@ -1057,14 +1086,6 @@ void FullscreenUI::DrawAchievementsWindow()
   }
   EndFullscreenWindow();
 
-  SetFullscreenStatusText(std::array{
-    std::make_pair(ICON_PF_ACHIEVEMENTS_MISSABLE, TRANSLATE_SV("Achievements", "Missable")),
-    std::make_pair(ICON_PF_ACHIEVEMENTS_PROGRESSION, TRANSLATE_SV("Achievements", "Progression")),
-    std::make_pair(ICON_PF_ACHIEVEMENTS_WIN, TRANSLATE_SV("Achievements", "Win Condition")),
-    std::make_pair(ICON_FA_LOCK, TRANSLATE_SV("Achievements", "Locked")),
-    std::make_pair(ICON_FA_UNLOCK, TRANSLATE_SV("Achievements", "Unlocked")),
-  });
-
   if (IsGamepadInputSource())
   {
     if (s_achievements_locals.open_subset)
@@ -1108,114 +1129,137 @@ void FullscreenUI::DrawAchievementsWindow()
 
 void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
 {
-  static constexpr float progress_height_unscaled = 20.0f;
-  static constexpr float progress_spacing_unscaled = 5.0f;
-  static constexpr float progress_rounding_unscaled = 5.0f;
+  static constexpr const float progress_height_unscaled = 20.0f;
+  static constexpr const float progress_rounding_unscaled = 5.0f;
 
-  const float spacing = LayoutScale(LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING);
-  const u32 text_color = ImGui::GetColorU32(UIStyle.SecondaryTextColor);
-  const u32 summary_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryTextColor));
-  const u32 rarity_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.SecondaryTextColor)));
+  static constexpr const float& title_font_size = UIStyle.LargeFontSize;
+  static constexpr const float& title_font_weight = UIStyle.BoldFontWeight;
+  static constexpr const float& subtitle_font_size = UIStyle.MediumFontSize;
+  static constexpr const float& subtitle_font_weight = UIStyle.NormalFontWeight;
+  static constexpr const float& type_badge_font_size = UIStyle.MediumSmallFontSize;
+  static constexpr const float& type_badge_font_weight = UIStyle.BoldFontWeight;
+
+  const std::string_view title(cheevo->title);
+  const std::string_view description = cheevo->description ? std::string_view(cheevo->description) : std::string_view();
+  const std::string_view measured_progress(cheevo->measured_progress);
+  const bool is_unlocked = (cheevo->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
+  const bool is_measured = (!is_unlocked && !measured_progress.empty());
+
+  ImVec2 type_badge_padding;
+  ImVec2 type_badge_size;
+  float type_badge_spacing = 0.0f;
+  float type_badge_rounding = 0.0f;
+  ImU32 type_badge_bg_color = 0;
+  TinyString type_badge_text;
+  switch (cheevo->type)
+  {
+    case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
+      type_badge_text.format(ICON_PF_ACHIEVEMENTS_MISSABLE " {}", TRANSLATE_SV("Achievements", "Missable"));
+      type_badge_bg_color = IM_COL32(205, 45, 32, 255);
+      break;
+
+    case RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION:
+      type_badge_text.format(ICON_PF_ACHIEVEMENTS_PROGRESSION " {}", TRANSLATE_SV("Achievements", "Progression"));
+      type_badge_bg_color = IM_COL32(13, 71, 161, 255);
+      break;
+
+    case RC_CLIENT_ACHIEVEMENT_TYPE_WIN:
+      type_badge_text.format(ICON_PF_ACHIEVEMENTS_PROGRESSION " {}", TRANSLATE_SV("Achievements", "Win Condition"));
+      type_badge_bg_color = IM_COL32(50, 110, 30, 255);
+      break;
+  }
+  if (!type_badge_text.empty())
+  {
+    type_badge_padding = LayoutScale(5.0f, 3.0f);
+    type_badge_spacing = LayoutScale(10.0f);
+    type_badge_rounding = LayoutScale(3.0f);
+    type_badge_size = UIStyle.Font->CalcTextSizeA(type_badge_font_size, type_badge_font_weight, FLT_MAX, 0.0f,
+                                                  IMSTR_START_END(type_badge_text));
+    type_badge_size += type_badge_padding * 2.0f;
+  }
 
   const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
-  const bool is_unlocked = (cheevo->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
-  const std::string_view measured_progress(cheevo->measured_progress);
-  const bool is_measured = !is_unlocked && !measured_progress.empty();
-  const float unlock_rarity_height = spacing + UIStyle.MediumFontSize;
-  const ImVec2 points_template_size = UIStyle.Font->CalcTextSizeA(
-    UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, TRANSLATE("Achievements", "XXX points"));
+  const float image_right_padding = LayoutScale(15.0f);
   const float avail_width = GetMenuButtonAvailableWidth();
-  const size_t summary_length = std::strlen(cheevo->description);
-  const float summary_wrap_width = (avail_width - (image_size.x + spacing + spacing) - points_template_size.x);
-  const ImVec2 summary_text_size =
-    UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, summary_wrap_width,
-                                cheevo->description, cheevo->description + summary_length);
-
-  const float content_height = UIStyle.LargeFontSize + spacing + summary_text_size.y + unlock_rarity_height +
-                               LayoutScale(is_measured ? progress_height_unscaled : 0.0f) +
+  const float spacing = LayoutScale(4.0f);
+  const ImVec2 right_side_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
+                                                             0.0f, TRANSLATE("Achievements", "XXX points"));
+  const float max_text_width = avail_width - (image_size.x + image_right_padding + spacing + right_side_size.x);
+  const float max_title_width =
+    max_text_width - (type_badge_text.empty() ? 0.0f : type_badge_size.x + type_badge_spacing);
+  const ImVec2 title_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
+                                                        max_title_width, IMSTR_START_END(title));
+  const ImVec2 description_size = description.empty() ?
+                                    ImVec2() :
+                                    UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight,
+                                                                FLT_MAX, max_text_width, IMSTR_START_END(description));
+  const float content_height = (title_size.y + spacing + description_size.y + spacing + UIStyle.MediumFontSize) +
+                               (is_measured ? (spacing + LayoutScale(progress_height_unscaled)) : 0.0f) +
                                LayoutScale(LAYOUT_MENU_ITEM_EXTRA_HEIGHT);
+
+  SmallString text;
+  text.format("chv_{}", cheevo->id);
+
   ImRect bb;
   bool visible, hovered;
-  const bool clicked =
-    MenuButtonFrame(TinyString::from_format("chv_{}", cheevo->id), content_height, true, &bb, &visible, &hovered);
+  const bool clicked = MenuButtonFrame(text, content_height, true, &bb, &visible, &hovered);
   if (!visible)
     return;
 
-  const std::string& badge_path =
-    GetCachedAchievementBadgePath(cheevo, cheevo->state != RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
 
-  if (!badge_path.empty())
+  if (const std::string& badge_path = GetCachedAchievementBadgePath(cheevo, !is_unlocked); !badge_path.empty())
   {
     GPUTexture* badge = GetCachedTextureAsync(badge_path);
     if (badge)
     {
       const ImRect image_bb = CenterImage(ImRect(bb.Min, bb.Min + image_size), badge);
-      ImGui::GetWindowDrawList()->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                                           IM_COL32(255, 255, 255, 255));
+      dl->AddImage(badge, image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                   IM_COL32(255, 255, 255, 255));
     }
   }
 
-  SmallString text;
+  // make it easier to compute bounding boxes...
+  ImVec2 current_pos = ImVec2(bb.Min.x + image_size.x + image_right_padding, bb.Min.y);
 
-  const float midpoint = bb.Min.y + UIStyle.LargeFontSize + spacing;
-  text = TRANSLATE_PLURAL_SSTR("Achievements", "%n points", "Achievement points", cheevo->points);
-  const ImVec2 points_size =
-    UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX, 0.0f, IMSTR_START_END(text));
-  const float points_template_start = bb.Max.x - points_template_size.x;
-  const float points_start = points_template_start + ((points_template_size.x - points_size.x) * 0.5f);
+  // -- Title --
+  const ImRect title_bb(current_pos, current_pos + title_size);
+  const u32 text_color = ImGui::GetColorU32(UIStyle.SecondaryTextColor);
+  RenderShadowedTextClipped(dl, UIStyle.Font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max,
+                            text_color, title, &title_size, ImVec2(0.0f, 0.0f), max_title_width, &title_bb);
+  current_pos.y += title_size.y + spacing;
 
-  std::string_view right_icon_text;
-  switch (cheevo->type)
+  // -- Type Badge --
+  if (!type_badge_text.empty())
   {
-    case RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE:
-      right_icon_text = ICON_PF_ACHIEVEMENTS_MISSABLE; // Missable
-      break;
+    const ImVec2 type_badge_pos(title_bb.Min.x + title_size.x + type_badge_spacing,
+                                ImFloor(title_bb.Min.y + (title_font_size - type_badge_size.y) * 0.5f));
+    dl->AddRectFilled(type_badge_pos, type_badge_pos + type_badge_size, type_badge_bg_color, type_badge_rounding);
 
-    case RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION:
-      right_icon_text = ICON_PF_ACHIEVEMENTS_PROGRESSION; // Progression
-      break;
-
-    case RC_CLIENT_ACHIEVEMENT_TYPE_WIN:
-      right_icon_text = ICON_PF_ACHIEVEMENTS_WIN; // Win Condition
-      break;
-
-      // Just use the lock for standard achievements.
-    case RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD:
-    default:
-      right_icon_text = is_unlocked ? ICON_FA_UNLOCK : ICON_FA_LOCK;
-      break;
+    const ImVec2 type_badge_text_pos = type_badge_pos + type_badge_padding;
+    const ImVec4 type_badge_text_clip = ImVec4(type_badge_pos.x, type_badge_pos.y, type_badge_pos.x + type_badge_size.x,
+                                               type_badge_pos.y + type_badge_size.y);
+    dl->AddText(UIStyle.Font, type_badge_font_size, type_badge_font_weight, type_badge_text_pos,
+                IM_COL32(255, 255, 255, 255), IMSTR_START_END(type_badge_text), 0.0f, &type_badge_text_clip);
   }
 
-  const ImVec2 right_icon_size = UIStyle.Font->CalcTextSizeA(UIStyle.LargeFontSize, UIStyle.BoldFontWeight, FLT_MAX,
-                                                             0.0f, IMSTR_START_END(right_icon_text));
-
-  const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
-  const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
-  const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + summary_text_size.y));
-  const ImRect unlock_rarity_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x,
-                                summary_bb.Max.y + unlock_rarity_height);
-  const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
-  const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y),
-                       ImVec2(bb.Max.x, midpoint));
-
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, title_bb.Min, title_bb.Max,
-                            text_color, cheevo->title, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.LargeFontSize, UIStyle.BoldFontWeight, lock_bb.Min, lock_bb.Max,
-                            text_color, right_icon_text, &right_icon_size, ImVec2(0.0f, 0.0f), 0.0f, &lock_bb);
-  RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, points_bb.Min,
-                            points_bb.Max, summary_color, text, &points_size, ImVec2(0.0f, 0.0f), 0.0f, &points_bb);
-
-  if (cheevo->description && summary_length > 0)
+  // -- Description --
+  const u32 description_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryTextColor));
+  if (!description.empty())
   {
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, summary_bb.Min,
-                              summary_bb.Max, summary_color, std::string_view(cheevo->description, summary_length),
-                              &summary_text_size, ImVec2(0.0f, 0.0f), summary_wrap_width, &summary_bb);
+    const ImRect description_bb(current_pos, current_pos + description_size);
+    RenderShadowedTextClipped(dl, UIStyle.Font, subtitle_font_size, subtitle_font_weight, description_bb.Min,
+                              description_bb.Max, description_color, description, &description_size, ImVec2(0.0f, 0.0f),
+                              max_text_width, &description_bb);
+    current_pos.y += description_size.y + spacing;
   }
 
+  // -- Rarity --
   // display hc if hc is active
   const float rarity_to_display =
     rc_client_get_hardcore_enabled(Achievements::GetClient()) ? cheevo->rarity_hardcore : cheevo->rarity;
-
+  const ImRect rarity_bb(current_pos, ImVec2(current_pos.x + max_text_width, current_pos.y + UIStyle.MediumFontSize));
+  const u32 rarity_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.SecondaryTextColor)));
   if (is_unlocked)
   {
     const std::string date =
@@ -1223,44 +1267,59 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
     text.format(TRANSLATE_FS("Achievements", "Unlocked: {} | {:.1f}% of players have this achievement"), date,
                 rarity_to_display);
 
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, unlock_rarity_bb.Min,
-                              unlock_rarity_bb.Max, rarity_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                              &unlock_rarity_bb);
+    RenderShadowedTextClipped(dl, UIStyle.Font, subtitle_font_size, subtitle_font_weight, rarity_bb.Min, rarity_bb.Max,
+                              rarity_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &rarity_bb);
   }
   else
   {
     text.format(TRANSLATE_FS("Achievements", "{:.1f}% of players have this achievement"), rarity_to_display);
-    RenderShadowedTextClipped(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, unlock_rarity_bb.Min,
-                              unlock_rarity_bb.Max, rarity_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                              &unlock_rarity_bb);
+    RenderShadowedTextClipped(dl, UIStyle.Font, subtitle_font_size, subtitle_font_weight, rarity_bb.Min, rarity_bb.Max,
+                              rarity_color, text, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &rarity_bb);
   }
+  current_pos.y += UIStyle.MediumFontSize + spacing;
 
-  if (!is_unlocked && is_measured)
+  if (is_measured)
   {
-    ImDrawList* dl = ImGui::GetWindowDrawList();
-    const float progress_height = LayoutScale(progress_height_unscaled);
-    const float progress_spacing = LayoutScale(progress_spacing_unscaled);
     const float progress_rounding = LayoutScale(progress_rounding_unscaled);
-    const ImRect progress_bb(summary_bb.Min.x, unlock_rarity_bb.Max.y + progress_spacing,
-                             summary_bb.Max.x - progress_spacing,
-                             unlock_rarity_bb.Max.y + progress_spacing + progress_height);
+    const ImRect progress_bb(current_pos,
+                             ImVec2(max_text_width, current_pos.y + LayoutScale(progress_height_unscaled)));
     const float fraction = cheevo->measured_percent * 0.01f;
     dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
                       progress_rounding);
     ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), 0.0f, fraction,
                                   progress_rounding);
 
-    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(UIStyle.MediumFontSize, UIStyle.NormalFontWeight, FLT_MAX,
-                                                         0.0f, IMSTR_START_END(measured_progress));
-    const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
-                          progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
-    dl->AddText(UIStyle.Font, UIStyle.MediumFontSize, UIStyle.NormalFontWeight, text_pos,
+    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(subtitle_font_size, subtitle_font_weight, FLT_MAX, 0.0f,
+                                                         IMSTR_START_END(measured_progress));
+    const ImVec2 text_pos =
+      ImFloor(ImVec2(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
+                     progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f)));
+    dl->AddText(UIStyle.Font, subtitle_font_size, subtitle_font_weight, text_pos,
                 ImGui::GetColorU32(UIStyle.PrimaryTextColor), IMSTR_START_END(measured_progress));
   }
 
+  // right side items
+  current_pos = ImVec2(bb.Max.x - right_side_size.x, bb.Min.y);
+
+  // -- Lock Icon and Points --
+  const std::string_view lock_text = is_unlocked ? ICON_EMOJI_UNLOCKED : ICON_FA_LOCK;
+  const ImVec2 lock_size =
+    UIStyle.Font->CalcTextSizeA(title_font_size, 0.0f, FLT_MAX, 0.0f, IMSTR_START_END(lock_text));
+  const ImRect lock_bb(current_pos, ImVec2(bb.Max.x, current_pos.y + lock_size.y));
+  RenderShadowedTextClipped(dl, UIStyle.Font, title_font_size, 0.0f, lock_bb.Min, lock_bb.Max, text_color, lock_text,
+                            &lock_size, ImVec2(0.5f, 0.0f), 0.0f, &lock_bb);
+  current_pos.y += lock_size.y + spacing;
+
+  text = TRANSLATE_PLURAL_SSTR("Achievements", "%n points", "Achievement points", cheevo->points);
+  const ImVec2 points_size =
+    UIStyle.Font->CalcTextSizeA(subtitle_font_size, subtitle_font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+  const ImRect points_bb(current_pos, ImVec2(bb.Max.x, current_pos.y + points_size.y));
+  RenderShadowedTextClipped(dl, UIStyle.Font, subtitle_font_size, subtitle_font_weight, points_bb.Min, points_bb.Max,
+                            description_color, text, &points_size, ImVec2(0.5f, 0.0f), 0.0f, &points_bb);
+
   if (clicked)
   {
-    const SmallString url = SmallString::from_format(fmt::runtime(ACHEIVEMENT_DETAILS_URL_TEMPLATE), cheevo->id);
+    const std::string url = fmt::format(fmt::runtime(ACHEIVEMENT_DETAILS_URL_TEMPLATE), cheevo->id);
     INFO_LOG("Opening achievement details: {}", url);
     Host::OpenURL(url);
   }
@@ -1287,6 +1346,7 @@ void FullscreenUI::OpenLeaderboardsWindow()
 
     PauseForMenuOpen(false);
     ForceKeyNavEnabled();
+    EnqueueSoundEffect(SFX_NAV_ACTIVATE);
 
     BeginTransition(SHORT_TRANSITION_TIME, &SwitchToLeaderboards);
   });
@@ -1314,7 +1374,7 @@ void FullscreenUI::SwitchToLeaderboards()
     return;
   }
 
-  CollectSubsetsFromList(s_achievements_locals.leaderboard_list);
+  CollectSubsetsFromList(s_achievements_locals.leaderboard_list, false, true);
   SwitchToMainWindow(MainWindowType::Leaderboards);
 }
 
@@ -1778,7 +1838,7 @@ void FullscreenUI::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (pressed)
   {
-    const SmallString url = SmallString::from_format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
+    const std::string url = fmt::format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
     INFO_LOG("Opening profile details: {}", url);
     Host::OpenURL(url);
   }

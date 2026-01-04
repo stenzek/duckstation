@@ -34,15 +34,9 @@ public:
   GPUPresenter();
   virtual ~GPUPresenter();
 
-  ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
-  ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
-  ALWAYS_INLINE s32 GetDisplayVRAMWidth() const { return m_display_vram_width; }
-  ALWAYS_INLINE s32 GetDisplayVRAMHeight() const { return m_display_vram_height; }
-  ALWAYS_INLINE s32 GetDisplayTextureViewX() const { return m_display_texture_view_x; }
-  ALWAYS_INLINE s32 GetDisplayTextureViewY() const { return m_display_texture_view_y; }
-  ALWAYS_INLINE s32 GetDisplayTextureViewWidth() const { return m_display_texture_view_width; }
-  ALWAYS_INLINE s32 GetDisplayTextureViewHeight() const { return m_display_texture_view_height; }
+  ALWAYS_INLINE const GSVector2i& GetVideoSize() const { return m_video_size; }
   ALWAYS_INLINE GPUTexture* GetDisplayTexture() const { return m_display_texture; }
+  ALWAYS_INLINE const GSVector4i& GetDisplayTextureRect() const { return m_display_texture_rect; }
   ALWAYS_INLINE bool HasDisplayTexture() const { return m_display_texture; }
   ALWAYS_INLINE bool HasBorderOverlay() const { return static_cast<bool>(m_border_overlay_texture); }
 
@@ -53,16 +47,16 @@ public:
 
   void ClearDisplay();
   void ClearDisplayTexture();
-  void SetDisplayParameters(u16 display_width, u16 display_height, u16 display_origin_left, u16 display_origin_top,
-                            u16 display_vram_width, u16 display_vram_height, float display_pixel_aspect_ratio,
-                            bool display_24bit);
-  void SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height);
+  void SetDisplayParameters(const GSVector2i& video_size, const GSVector4i& video_active_rect,
+                            float display_pixel_aspect_ratio, bool display_24bit);
+  void SetDisplayTexture(GPUTexture* texture, const GSVector4i& source_rect);
   bool Deinterlace(u32 field);
   bool ApplyChromaSmoothing();
 
   /// Helper function for computing the draw rectangle in a larger window.
-  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool integer_scale,
-                         bool apply_alignment, GSVector4i* display_rect, GSVector4i* draw_rect) const;
+  void CalculateDrawRect(const GSVector2i& window_size, bool apply_aspect_ratio, bool integer_scale, bool apply_crop,
+                         bool apply_alignment, GSVector4i* source_rect, GSVector4i* display_rect,
+                         GSVector4i* draw_rect) const;
 
   /// Helper function for computing screenshot bounds.
   GSVector2i CalculateScreenshotSize(DisplayScreenshotMode mode) const;
@@ -111,11 +105,13 @@ private:
   void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
                           const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
                           const WindowInfo::PreRotation prerotation) const;
-  void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i display_rect,
-                   bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation) const;
+  void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i source_rect,
+                   const GSVector4i display_rect, bool dst_alpha_blend, DisplayRotation rotation,
+                   WindowInfo::PreRotation prerotation) const;
 
   GSVector2i CalculateDisplayPostProcessSourceSize() const;
-  GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i draw_rect_without_overlay,
+  GPUTexture* GetDisplayPostProcessInputTexture(const GSVector4i source_rect,
+                                                const GSVector4i draw_rect_without_overlay,
                                                 DisplayRotation rotation) const;
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input, const GSVector4i display_rect,
                                                    const GSVector2i postfx_size) const;
@@ -130,13 +126,8 @@ private:
   bool LoadOverlayTexture();
   bool LoadOverlayPreset(Error* error, Image* image);
 
-  s32 m_display_width = 0;
-  s32 m_display_height = 0;
-
-  s32 m_display_origin_left = 0;
-  s32 m_display_origin_top = 0;
-  s32 m_display_vram_width = 0;
-  s32 m_display_vram_height = 0;
+  GSVector2i m_video_size = GSVector2i::cxpr(0);
+  GSVector4i m_video_active_rect = GSVector4i::cxpr(0);
   float m_display_pixel_aspect_ratio = 1.0f;
 
   u32 m_current_deinterlace_buffer = 0;
@@ -150,13 +141,10 @@ private:
   std::unique_ptr<GPUPipeline> m_display_pipeline;
   std::unique_ptr<GPUPipeline> m_display_24bit_pipeline;
   GPUTexture* m_display_texture = nullptr;
-  s32 m_display_texture_view_x = 0;
-  s32 m_display_texture_view_y = 0;
-  s32 m_display_texture_view_width = 0;
-  s32 m_display_texture_view_height = 0;
+  GSVector4i m_display_texture_rect = GSVector4i::cxpr(0);
 
   u32 m_skipped_present_count = 0;
-  GPUTexture::Format m_present_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_present_format = GPUTextureFormat::Unknown;
   bool m_display_texture_24bit = false;
   bool m_border_overlay_alpha_blend = false;
   bool m_border_overlay_destination_alpha_blend = false;

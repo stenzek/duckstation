@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <cerrno>
 #include <map>
+#include <span>
 #include <unordered_map>
+#include <vector>
 
 LOG_CHANNEL(CDImage);
 
@@ -49,7 +51,7 @@ private:
   bool ReadV3Patch(std::FILE* fp, Error* error);
   u32 ReadFileIDDiz(std::FILE* fp, u32 version);
 
-  bool AddPatch(u64 offset, const u8* patch, u32 patch_size, Error* error);
+  bool AddPatch(u64 offset, std::span<const u8> patch, std::span<const u8> undo_data, Error* error);
 
   std::unique_ptr<CDImage> m_parent_image;
   std::vector<u8> m_replacement_data;
@@ -193,7 +195,7 @@ bool CDImagePPF::ReadV1Patch(std::FILE* fp, Error* error)
       return false;
     }
 
-    if (!AddPatch(offset, temp.data(), chunk_size, error)) [[unlikely]]
+    if (!AddPatch(offset, temp, {}, error)) [[unlikely]]
       return false;
 
     count -= sizeof(offset) + sizeof(chunk_size) + chunk_size;
@@ -284,7 +286,7 @@ bool CDImagePPF::ReadV2Patch(std::FILE* fp, Error* error)
       return false;
     }
 
-    if (!AddPatch(offset, temp.data(), chunk_size, error))
+    if (!AddPatch(offset, temp, {}, error))
       return false;
 
     count -= sizeof(offset) + sizeof(chunk_size) + chunk_size;
@@ -360,28 +362,43 @@ bool CDImagePPF::ReadV3Patch(std::FILE* fp, Error* error)
       return false;
     }
 
-    temp.resize(chunk_size);
-    if (std::fread(temp.data(), 1, chunk_size, fp) != chunk_size)
+    // undo data is stored after patch data if present
+    const size_t read_chunk_size = undo ? (static_cast<size_t>(chunk_size) * 2) : chunk_size;
+    temp.resize(read_chunk_size);
+    if (std::fread(temp.data(), 1, read_chunk_size, fp) != read_chunk_size)
     {
       Error::SetErrno(error, "Failed to read patch data: ", errno);
       return false;
     }
 
-    if (!AddPatch(offset, temp.data(), chunk_size, error))
+    std::span<const u8> patch_span = temp;
+    std::span<const u8> undo_span;
+    if (undo)
+    {
+      undo_span = patch_span.subspan(chunk_size, chunk_size);
+      patch_span = patch_span.subspan(0, chunk_size);
+    }
+
+    if (!AddPatch(offset, patch_span, undo_span, error))
       return false;
 
-    count -= sizeof(offset) + sizeof(chunk_size) + chunk_size;
+    count -= sizeof(offset) + sizeof(chunk_size) + static_cast<u32>(read_chunk_size);
   }
 
   INFO_LOG("Loaded {} replacement sectors from version 3 PPF", m_replacement_map.size());
   return true;
 }
 
-bool CDImagePPF::AddPatch(u64 offset, const u8* patch, u32 patch_size, Error* error)
+bool CDImagePPF::AddPatch(u64 offset, std::span<const u8> patch, std::span<const u8> undo_data, Error* error)
 {
-  DEBUG_LOG("Starting applying patch of {} bytes at at offset {}", patch_size, offset);
+  DEBUG_LOG("Starting applying patch{} of {} bytes at at offset {}", patch.empty() ? "" : " with undo data",
+            patch.size(), offset);
 
-  while (patch_size > 0)
+  DebugAssert(undo_data.empty() || patch.size() == undo_data.size());
+
+  u32 remaining_patch_size = static_cast<u32>(patch.size());
+  u32 patch_offset = 0;
+  while (remaining_patch_size > 0)
   {
     const u32 sector_index = Truncate32(offset / RAW_SECTOR_SIZE) + m_replacement_offset;
     const u32 sector_offset = Truncate32(offset % RAW_SECTOR_SIZE);
@@ -391,7 +408,7 @@ bool CDImagePPF::AddPatch(u64 offset, const u8* patch, u32 patch_size, Error* er
       return true;
     }
 
-    const u32 bytes_to_patch = std::min(patch_size, RAW_SECTOR_SIZE - sector_offset);
+    const u32 bytes_to_patch = std::min(static_cast<u32>(patch.size()), RAW_SECTOR_SIZE - sector_offset);
 
     auto iter = m_replacement_map.find(sector_index);
     if (iter == m_replacement_map.end())
@@ -408,12 +425,22 @@ bool CDImagePPF::AddPatch(u64 offset, const u8* patch, u32 patch_size, Error* er
       iter = m_replacement_map.emplace(sector_index, replacement_buffer_start).first;
     }
 
+    // verify undo data, but don't reject if it doesn't match
+    if (!undo_data.empty())
+    {
+      if (std::memcmp(&undo_data[patch_offset], &m_replacement_data[iter->second + sector_offset], bytes_to_patch) != 0)
+      {
+        WARNING_LOG("Original file data does not match undo data for patch at offset {} size {}", offset,
+                    bytes_to_patch);
+      }
+    }
+
     // patch it!
     DEBUG_LOG("  Patching {} bytes at sector {} offset {}", bytes_to_patch, sector_index, sector_offset);
-    std::memcpy(&m_replacement_data[iter->second + sector_offset], patch, bytes_to_patch);
+    std::memcpy(&m_replacement_data[iter->second + sector_offset], &patch[patch_offset], bytes_to_patch);
     offset += bytes_to_patch;
-    patch += bytes_to_patch;
-    patch_size -= bytes_to_patch;
+    patch_offset += bytes_to_patch;
+    remaining_patch_size -= bytes_to_patch;
   }
 
   return true;

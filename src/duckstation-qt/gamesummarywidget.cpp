@@ -2,14 +2,19 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamesummarywidget.h"
+#include "controllersettingswindow.h"
+#include "gamelistwidget.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtprogresscallback.h"
 #include "settingswindow.h"
 
 #include "core/controller.h"
+#include "core/core.h"
 #include "core/game_database.h"
 #include "core/game_list.h"
+
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/string_util.h"
@@ -270,7 +275,7 @@ void GameSummaryWidget::setCustomTitle(const std::string& text)
     }
   }
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Title);
 }
 
 void GameSummaryWidget::setCustomRegion(int region)
@@ -289,7 +294,7 @@ void GameSummaryWidget::setCustomRegion(int region)
     }
   }
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Region);
 }
 
 void GameSummaryWidget::onCustomLanguageChanged(int language)
@@ -298,7 +303,7 @@ void GameSummaryWidget::onCustomLanguageChanged(int language)
     m_path, (language > 0) ? std::optional<GameDatabase::Language>(static_cast<GameDatabase::Language>(language - 1)) :
                              std::optional<GameDatabase::Language>());
 
-  g_main_window->refreshGameListModel();
+  g_main_window->getGameListWidget()->getModel()->invalidateColumnForPath(m_path, GameListModel::Column_Region);
 }
 
 static QString MSFToString(const CDImage::Position& position)
@@ -400,8 +405,8 @@ void GameSummaryWidget::onInputProfileChanged(int index)
       sif->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
 
       {
-        const auto lock = Host::GetSettingsLock();
-        SettingsInterface* base_sif = Host::Internal::GetBaseSettingsLayer();
+        const auto lock = Core::GetSettingsLock();
+        SettingsInterface* base_sif = Core::GetBaseSettingsLayer();
         InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
         QtUtils::AsyncMessageBox(this, QMessageBox::Information, QtUtils::GetRootWidget(this)->windowTitle(),
@@ -448,8 +453,8 @@ void GameSummaryWidget::onComputeHashClicked()
 
   m_ui.computeHashes->setEnabled(false);
 
-  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, true, 1, 0,
-                                        0.0f, [this, path = m_path](ProgressCallback* progress) {
+  QtAsyncTaskWithProgressDialog::create(this, TRANSLATE_SV("GameSummaryWidget", "Verifying Image"), {}, false, true, 1,
+                                        0, 0.0f, true, [this, path = m_path](ProgressCallback* progress) {
                                           Error error;
                                           CDImageHasher::TrackHashes track_hashes;
                                           const bool result = computeImageHash(path, track_hashes, progress, &error);
@@ -569,7 +574,7 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
   QString text;
 
   if (!found_revision.empty())
-    text = tr("Revision: %1").arg(found_revision.empty() ? tr("N/A") : QString::fromStdString(found_revision));
+    text = tr("Revision: %1").arg(QString::fromStdString(found_revision));
 
   if (found_serial != m_dialog->getGameSerial())
   {
@@ -589,7 +594,8 @@ void GameSummaryWidget::processHashResults(const CDImageHasher::TrackHashes& tra
     }
   }
 
-  m_ui.revision->setText(text);
+  if (!text.isEmpty())
+    m_ui.revision->setText(text);
 
   // update in ui
   for (size_t i = 0; i < track_hashes.size(); i++)

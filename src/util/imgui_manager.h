@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "util/gpu_texture.h"
-
 #include "common/types.h"
 
 #include <array>
@@ -18,6 +16,7 @@ struct WindowInfo;
 
 class GPUSwapChain;
 class GPUTexture;
+enum class GPUTextureFormat : u8;
 
 struct ImGuiContext;
 struct ImFont;
@@ -108,7 +107,7 @@ float GetWindowWidth();
 float GetWindowHeight();
 
 /// Updates internal state when the window is size.
-void WindowResized(GPUTexture::Format format, float width, float height);
+void WindowResized(GPUTextureFormat format, float width, float height);
 
 /// Updates scaling of the on-screen elements.
 void RequestScaleUpdate();
@@ -174,6 +173,9 @@ bool ProcessHostKeyEvent(InputBindingKey key, float value);
 
 /// Called on the CPU thread when any input event fires. Allows imgui to take over controller navigation.
 bool ProcessGenericInputEvent(GenericInputBinding key, float value);
+
+/// Resets the state of ImGui mouse buttons, call after the window is changed and events get lost.
+void ClearMouseButtonState();
 
 /// Sets an image and scale for a software cursor. Software cursors can be used for things like crosshairs.
 void SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color = 0xFFFFFF);

@@ -101,7 +101,7 @@ void DoStartPath(std::string path, std::string state = std::string(), std::optio
 
 GPUTexture* GetCoverForCurrentGame(const std::string& game_path);
 void SetCoverCacheEntry(std::string path, std::string cover_path);
-void ClearCoverCache();
+void RemoveCoverCacheEntry(const std::string& path);
 
 //////////////////////////////////////////////////////////////////////////
 // Settings

@@ -522,7 +522,7 @@ bool MemoryWatchList::LoadFromFile(const char* path, Error* error)
     std::optional<u32> parsed_address;
     if (!GetStringFromObject(child, "description", &entry.description) ||
         !GetStringFromObject(child, "address", &address) || !GetStringFromObject(child, "size", &size) ||
-        !GetUIntFromObject(child, "isSigned", &entry.is_signed) || !GetUIntFromObject(child, "freeze", &entry.freeze) ||
+        !GetIntFromObject(child, "isSigned", &entry.is_signed) || !GetIntFromObject(child, "freeze", &entry.freeze) ||
         !(parsed_address = StringUtil::FromCharsWithOptionalBase<u32>(address)).has_value() ||
         (size != "byte" && size != "halfword" && size != "word"))
     {

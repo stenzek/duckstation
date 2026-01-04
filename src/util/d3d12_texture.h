@@ -74,11 +74,11 @@ private:
     DSV
   };
 
-  D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
-               DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource, ComPtr<D3D12MA::Allocation> allocation,
-               const D3D12DescriptorHandle& srv_descriptor, const D3D12DescriptorHandle& write_descriptor,
-               const D3D12DescriptorHandle& uav_descriptor, WriteDescriptorType wdtype,
-               D3D12_RESOURCE_STATES resource_state);
+  D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, GPUTextureFormat format,
+               Flags flags, DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource,
+               ComPtr<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
+               const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
+               WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state);
 
   ID3D12GraphicsCommandList4* GetCommandBufferForUpdate();
   ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width, u32 height,
@@ -163,7 +163,7 @@ public:
 
   ~D3D12DownloadTexture() override;
 
-  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, Error* error);
+  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTextureFormat format, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
@@ -178,7 +178,7 @@ public:
 #endif
 
 private:
-  D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format, ComPtr<D3D12MA::Allocation> allocation,
+  D3D12DownloadTexture(u32 width, u32 height, GPUTextureFormat format, ComPtr<D3D12MA::Allocation> allocation,
                        ComPtr<ID3D12Resource> buffer);
 
   ComPtr<D3D12MA::Allocation> m_allocation;

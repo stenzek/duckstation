@@ -4,6 +4,7 @@
 #pragma once
 
 #include "gpu_types.h"
+#include "types.h"
 
 #include "common/bitfield.h"
 #include "common/file_system.h"

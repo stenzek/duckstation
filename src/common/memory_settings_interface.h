@@ -52,8 +52,8 @@ public:
   using SettingsInterface::GetUIntValue;
 
 private:
-  using KeyMap = PreferUnorderedStringMultimap<std::string>;
-  using SectionMap = PreferUnorderedStringMap<KeyMap>;
+  using KeyMap = UnorderedStringMultimap<std::string>;
+  using SectionMap = UnorderedStringMap<KeyMap>;
 
   void SetValue(const char* section, const char* key, std::string value);
 

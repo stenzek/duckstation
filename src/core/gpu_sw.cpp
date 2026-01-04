@@ -3,6 +3,7 @@
 
 #include "gpu_sw.h"
 #include "gpu.h"
+#include "gpu_helpers.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "settings.h"
@@ -37,9 +38,9 @@ bool GPU_SW::Initialize(bool upload_vram, Error* error)
   if (!GPUBackend::Initialize(upload_vram, error))
     return false;
 
-  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB5A1, GPUTexture::Format::A1BGR5,
-                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGBA8};
-  for (const GPUTexture::Format format : formats_for_16bit)
+  static constexpr const std::array formats_for_16bit = {GPUTextureFormat::RGB5A1, GPUTextureFormat::A1BGR5,
+                                                         GPUTextureFormat::RGB565, GPUTextureFormat::RGBA8};
+  for (const GPUTextureFormat format : formats_for_16bit)
   {
     if (g_gpu_device->SupportsTextureFormat(format))
     {
@@ -50,7 +51,7 @@ bool GPU_SW::Initialize(bool upload_vram, Error* error)
 
   // RGBA8 will always be supported, hence we'll find one.
   INFO_LOG("Using {} format for 16-bit display", GPUTexture::GetFormatName(m_16bit_display_format));
-  Assert(m_16bit_display_format != GPUTexture::Format::Unknown);
+  Assert(m_16bit_display_format != GPUTextureFormat::Unknown);
 
   // if we're using "new" vram, clear it out here
   if (!upload_vram)
@@ -106,7 +107,10 @@ void GPU_SW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 void GPU_SW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
   const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-    cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+    cmd->shading_enable,
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   DrawFunction(cmd, &cmd->vertices[0], &cmd->vertices[1], &cmd->vertices[2]);
   if (cmd->num_vertices > 3)
@@ -116,7 +120,10 @@ void GPU_SW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 void GPU_SW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 {
   const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-    cmd->shading_enable, cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+    cmd->shading_enable,
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   // Need to cut out the irrelevant bits.
   // TODO: In _theory_ we could use the fixed-point parts here.
@@ -147,8 +154,10 @@ void GPU_SW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
     return;
   }
 
-  const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction =
-    GPU_SW_Rasterizer::GetDrawRectangleFunction(cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
+  const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawRectangleFunction(
+    GPU_SW_Rasterizer::GetModulationMode(cmd->texture_enable, cmd->raw_texture_enable,
+                                         g_gpu_settings.gpu_modulation_crop),
+    cmd->transparency_enable);
 
   DrawFunction(cmd);
 }
@@ -203,7 +212,7 @@ void GPU_SW::RestoreDeviceContext()
 {
 }
 
-GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format)
+GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTextureFormat format)
 {
   if (!m_upload_texture || m_upload_texture->GetWidth() != width || m_upload_texture->GetHeight() != height ||
       m_upload_texture->GetFormat() != format)
@@ -219,7 +228,7 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   return m_upload_texture.get();
 }
 
-template<GPUTexture::Format display_format>
+template<GPUTextureFormat display_format>
 ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip)
 {
   GPUTexture* texture = GetDisplayTexture(width, height, display_format);
@@ -356,20 +365,20 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
 
     switch (m_16bit_display_format)
     {
-      case GPUTexture::Format::RGB5A1:
-        return CopyOut15Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGB5A1:
+        return CopyOut15Bit<GPUTextureFormat::RGB5A1>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::A1BGR5:
-        return CopyOut15Bit<GPUTexture::Format::A1BGR5>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::A1BGR5:
+        return CopyOut15Bit<GPUTextureFormat::A1BGR5>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::RGB565:
-        return CopyOut15Bit<GPUTexture::Format::RGB565>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGB565:
+        return CopyOut15Bit<GPUTextureFormat::RGB565>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::RGBA8:
-        return CopyOut15Bit<GPUTexture::Format::RGBA8>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::RGBA8:
+        return CopyOut15Bit<GPUTextureFormat::RGBA8>(src_x, src_y, width, height, line_skip);
 
-      case GPUTexture::Format::BGRA8:
-        return CopyOut15Bit<GPUTexture::Format::BGRA8>(src_x, src_y, width, height, line_skip);
+      case GPUTextureFormat::BGRA8:
+        return CopyOut15Bit<GPUTextureFormat::BGRA8>(src_x, src_y, width, height, line_skip);
 
       default:
         UnreachableCode();
@@ -411,7 +420,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
-        m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
         if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
         {
           if (m_presenter.ApplyChromaSmoothing())
@@ -427,7 +436,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
-        m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), GSVector4i::loadh(GSVector2i(width, height)));
         if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
           m_presenter.ApplyChromaSmoothing();
       }
@@ -436,7 +445,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   else
   {
     if (CopyOut(0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false))
-      m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+      m_presenter.SetDisplayTexture(m_upload_texture.get(), GSVector4i::cxpr(0, 0, VRAM_WIDTH, VRAM_HEIGHT));
   }
 }
 

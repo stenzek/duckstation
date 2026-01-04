@@ -133,25 +133,25 @@ static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> Create
   }
 }
 
-static GPUTexture::Format MapTextureFormat(reshadefx::texture_format format)
+static GPUTextureFormat MapTextureFormat(reshadefx::texture_format format)
 {
-  static constexpr GPUTexture::Format s_mapping[] = {
-    GPUTexture::Format::Unknown, // unknown
-    GPUTexture::Format::R8,      // r8
-    GPUTexture::Format::R16,     // r16
-    GPUTexture::Format::R16F,    // r16f
-    GPUTexture::Format::R32I,    // r32i
-    GPUTexture::Format::R32U,    // r32u
-    GPUTexture::Format::R32F,    // r32f
-    GPUTexture::Format::RG8,     // rg8
-    GPUTexture::Format::RG16,    // rg16
-    GPUTexture::Format::RG16F,   // rg16f
-    GPUTexture::Format::RG32F,   // rg32f
-    GPUTexture::Format::RGBA8,   // rgba8
-    GPUTexture::Format::RGBA16,  // rgba16
-    GPUTexture::Format::RGBA16F, // rgba16f
-    GPUTexture::Format::RGBA32F, // rgba32f
-    GPUTexture::Format::RGB10A2, // rgb10a2
+  static constexpr GPUTextureFormat s_mapping[] = {
+    GPUTextureFormat::Unknown, // unknown
+    GPUTextureFormat::R8,      // r8
+    GPUTextureFormat::R16,     // r16
+    GPUTextureFormat::R16F,    // r16f
+    GPUTextureFormat::R32I,    // r32i
+    GPUTextureFormat::R32U,    // r32u
+    GPUTextureFormat::R32F,    // r32f
+    GPUTextureFormat::RG8,     // rg8
+    GPUTextureFormat::RG16,    // rg16
+    GPUTextureFormat::RG16F,   // rg16f
+    GPUTextureFormat::RG32F,   // rg32f
+    GPUTextureFormat::RGBA8,   // rgba8
+    GPUTextureFormat::RGBA16,  // rgba16
+    GPUTextureFormat::RGBA16F, // rgba16f
+    GPUTextureFormat::RGBA32F, // rgba32f
+    GPUTextureFormat::RGB10A2, // rgb10a2
   };
   DebugAssert(static_cast<u32>(format) < std::size(s_mapping));
   return s_mapping[static_cast<u32>(format)];
@@ -1084,7 +1084,7 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform& 
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer_format,
+bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTextureFormat backbuffer_format,
                                                    const reshadefx::effect_module& mod, Error* error)
 {
   u32 total_passes = 0;
@@ -1147,7 +1147,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       }
 
       tex.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                               GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
+                                               GPUTextureFormat::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
                                                image.GetPitch(), error);
       if (!tex.texture)
         return false;
@@ -1427,7 +1427,7 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
   return m_textures[static_cast<size_t>(id)].texture.get();
 }
 
-bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                                                       ProgressCallback* progress)
 {
   m_textures.clear();
@@ -1478,12 +1478,10 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   GPUPipeline::GraphicsConfig plconfig;
   plconfig.layout = GPUPipeline::Layout::MultiTextureAndUBO;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.depth_format = GPUTextureFormat::Unknown;
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
 
   GPUPipeline::ComputeConfig cplconfig;
@@ -1547,8 +1545,8 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
             ((pass.render_targets[i] >= 0) ? m_textures[pass.render_targets[i]].format : format);
         }
         for (size_t i = pass.render_targets.size(); i < GPUDevice::MAX_RENDER_TARGETS; i++)
-          plconfig.color_formats[i] = GPUTexture::Format::Unknown;
-        plconfig.depth_format = GPUTexture::Format::Unknown;
+          plconfig.color_formats[i] = GPUTextureFormat::Unknown;
+        plconfig.depth_format = GPUTextureFormat::Unknown;
 
         plconfig.blend = MapBlendState(info);
         plconfig.primitive = MapPrimitive(info.topology);
@@ -1579,10 +1577,9 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::ResizeTargets(u32 source_width, u32 source_height,
-                                                    GPUTexture::Format target_format, u32 target_width,
-                                                    u32 target_height, u32 viewport_width, u32 viewport_height,
-                                                    Error* error)
+bool PostProcessing::ReShadeFXShader::ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format,
+                                                    u32 target_width, u32 target_height, u32 viewport_width,
+                                                    u32 viewport_height, Error* error)
 {
   for (Texture& tex : m_textures)
   {

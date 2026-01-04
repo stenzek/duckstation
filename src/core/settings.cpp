@@ -4,8 +4,9 @@
 #include "settings.h"
 #include "achievements.h"
 #include "controller.h"
+#include "core.h"
+#include "gpu_thread.h"
 #include "gte_types.h"
-#include "host.h"
 #include "imgui_overlays.h"
 #include "system.h"
 
@@ -13,6 +14,7 @@
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -299,6 +301,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       si.GetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)).c_str())
       .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
   gpu_widescreen_rendering = gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
+  gpu_modulation_crop = si.GetBoolValue("GPU", "EnableModulationCrop", false);
   gpu_texture_cache = si.GetBoolValue("GPU", "EnableTextureCache", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
@@ -319,6 +322,16 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       .value_or(DEFAULT_DISPLAY_CROP_MODE);
   display_aspect_ratio =
     ParseDisplayAspectRatio(si.GetStringValue("Display", "AspectRatio")).value_or(DEFAULT_DISPLAY_ASPECT_RATIO);
+  display_fine_crop_mode = ParseDisplayFineCropMode(si.GetStringValue("Display", "FineCropMode").c_str())
+                             .value_or(DEFAULT_DISPLAY_FINE_CROP_MODE);
+  display_fine_crop_amount[0] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropLeft", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[1] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropTop", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[2] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropRight", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
+  display_fine_crop_amount[3] = static_cast<s16>(std::clamp<s32>(
+    si.GetIntValue("Display", "FineCropBottom", 0), std::numeric_limits<s16>::min(), std::numeric_limits<s16>::max()));
   display_alignment =
     ParseDisplayAlignment(
       si.GetStringValue("Display", "Alignment", GetDisplayAlignmentName(DEFAULT_DISPLAY_ALIGNMENT)).c_str())
@@ -668,6 +681,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_rendering);
+  si.SetBoolValue("GPU", "EnableModulationCrop", gpu_modulation_crop);
   si.SetBoolValue("GPU", "EnableTextureCache", gpu_texture_cache);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
@@ -695,6 +709,11 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("Display", "LineEndOffset", display_line_end_offset);
   si.SetBoolValue("Display", "Force4_3For24Bit", display_force_4_3_for_24bit);
   si.SetStringValue("Display", "AspectRatio", GetDisplayAspectRatioName(display_aspect_ratio).c_str());
+  si.SetStringValue("Display", "FineCropMode", GetDisplayFineCropModeName(display_fine_crop_mode));
+  si.SetIntValue("Display", "FineCropLeft", display_fine_crop_amount[0]);
+  si.SetIntValue("Display", "FineCropTop", display_fine_crop_amount[1]);
+  si.SetIntValue("Display", "FineCropRight", display_fine_crop_amount[2]);
+  si.SetIntValue("Display", "FineCropBottom", display_fine_crop_amount[3]);
   si.SetStringValue("Display", "Alignment", GetDisplayAlignmentName(display_alignment));
   si.SetStringValue("Display", "Rotation", GetDisplayRotationName(display_rotation));
   si.SetStringValue("Display", "Scaling", GetDisplayScalingName(display_scaling));
@@ -1067,6 +1086,7 @@ void Settings::ApplySettingRestrictions()
 {
   if (disable_all_enhancements)
   {
+    region = ConsoleRegion::Auto;
     cpu_overclock_enable = false;
     cpu_overclock_active = false;
     cpu_enable_8mb_ram = false;
@@ -1085,6 +1105,7 @@ void Settings::ApplySettingRestrictions()
     gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     gpu_widescreen_rendering = false;
     gpu_widescreen_hack = false;
+    gpu_modulation_crop = false;
     gpu_texture_cache = false;
     gpu_pgxp_enable = false;
     display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
@@ -1092,6 +1113,10 @@ void Settings::ApplySettingRestrictions()
     cdrom_read_speedup = 1;
     cdrom_seek_speedup = 1;
     cdrom_mute_cd_audio = false;
+    cdrom_region_check = false;
+    cdrom_subq_skew = false;
+    cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
+    apply_compatibility_settings = true;
     texture_replacements.enable_vram_write_replacements = false;
     mdec_use_old_routines = false;
     bios_patch_fast_boot = false;
@@ -1100,6 +1125,10 @@ void Settings::ApplySettingRestrictions()
     rewind_enable = false;
     pio_device_type = PIODeviceType::None;
     pcdrv_enable = false;
+    dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;
+    dma_halt_ticks = DEFAULT_DMA_HALT_TICKS;
+    gpu_fifo_size = DEFAULT_GPU_FIFO_SIZE;
+    gpu_max_run_ahead = DEFAULT_GPU_MAX_RUN_AHEAD;
   }
 
   // if challenge mode is enabled, disable things like rewind since they use save states
@@ -1257,13 +1286,10 @@ void Settings::UpdateLogConfig(const SettingsInterface& si)
   const bool log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
   const bool log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
   const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
-  const bool log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
   const bool log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
   const bool log_file_timestamps = si.GetBoolValue("Logging", "LogFileTimestamps", false);
 
-  const bool any_logs_enabled = (log_to_console || log_to_debug || log_to_window || log_to_file);
-  Log::SetLogLevel(any_logs_enabled ? log_level : Log::Level::None);
-
+  Log::SetLogLevel(log_level);
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
   Log::SetDebugOutputParams(log_to_debug);
 
@@ -1572,7 +1598,7 @@ RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
     case GPURenderer::Software:
     case GPURenderer::Automatic:
     default:
-      return GPUDevice::GetPreferredAPI();
+      return GPUDevice::GetPreferredAPI(Host::GetRenderWindowInfoType());
   }
 }
 
@@ -1607,11 +1633,6 @@ GPURenderer Settings::GetRendererForRenderAPI(RenderAPI api)
     default:
       return GPURenderer::Automatic;
   }
-}
-
-GPURenderer Settings::GetAutomaticRenderer()
-{
-  return GetRendererForRenderAPI(GPUDevice::GetPreferredAPI());
 }
 
 static constexpr const std::array s_texture_filter_names = {
@@ -1908,6 +1929,46 @@ const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 {
   return Host::TranslateToCString("Settings", s_display_crop_mode_display_names[static_cast<size_t>(crop_mode)],
                                   "DisplayCropMode");
+}
+
+static constexpr const std::array s_display_fine_crop_mode_names = {
+  "None",
+  "VideoResolution",
+  "InternalResolution",
+  "WindowResolution",
+};
+static constexpr const std::array s_display_fine_crop_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "None", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Video Resolution", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Internal Resolution", "DisplayFineCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Window Resolution", "DisplayFineCropMode"),
+};
+static_assert(s_display_fine_crop_mode_names.size() == static_cast<size_t>(DisplayFineCropMode::MaxCount));
+static_assert(s_display_fine_crop_mode_display_names.size() == static_cast<size_t>(DisplayFineCropMode::MaxCount));
+
+std::optional<DisplayFineCropMode> Settings::ParseDisplayFineCropMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_fine_crop_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<DisplayFineCropMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetDisplayFineCropModeName(DisplayFineCropMode mode)
+{
+  return s_display_fine_crop_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetDisplayFineCropModeDisplayName(DisplayFineCropMode mode)
+{
+  return Host::TranslateToCString("Settings", s_display_fine_crop_mode_display_names[static_cast<size_t>(mode)],
+                                  "DisplayFineCropMode");
 }
 
 static constexpr const std::string_view s_auto_aspect_ratio_name =
@@ -2660,8 +2721,8 @@ void EmuFolders::Update()
 
   // have to manually grab the lock here, because of the ReloadGameSettings() below.
   {
-    auto lock = Host::GetSettingsLock();
-    LoadConfig(*Host::Internal::GetBaseSettingsLayer());
+    const auto lock = Core::GetSettingsLock();
+    LoadConfig(*Core::GetBaseSettingsLayer());
     EnsureFoldersExist();
   }
 

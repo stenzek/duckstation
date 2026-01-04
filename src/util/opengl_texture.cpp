@@ -29,9 +29,9 @@ static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 // Default upload alignment, for restoring.
 static constexpr u32 DEFAULT_UPLOAD_ALIGNMENT = 4;
 
-const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(GPUTexture::Format format, bool gles)
+const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(GPUTextureFormat format, bool gles)
 {
-  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
+  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTextureFormat::MaxCount)>
     mapping = {{
       {},                                                                                       // Unknown
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
@@ -67,7 +67,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
     }};
 
   // GLES doesn't have the non-normalized 16-bit formats.. use float and hope for the best, lol.
-  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
+  static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTextureFormat::MaxCount)>
     mapping_gles = {{
       {},                                                                                       // Unknown
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
@@ -110,8 +110,8 @@ ALWAYS_INLINE static u32 GetUploadAlignment(u32 pitch)
   return ((pitch % 4) == 0) ? 4 : (((pitch % 2) == 0) ? 2 : 1);
 }
 
-OpenGLTexture::OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                             Flags flags, GLuint id)
+OpenGLTexture::OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                             GPUTextureFormat format, Flags flags, GLuint id)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
                static_cast<u8>(samples), type, format, flags),
     m_id(id)
@@ -140,7 +140,7 @@ bool OpenGLTexture::UseTextureStorage() const
 }
 
 std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                     Type type, Format format, Flags flags, const void* data,
+                                                     Type type, GPUTextureFormat format, Flags flags, const void* data,
                                                      u32 data_pitch, Error* error)
 {
   if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
@@ -857,7 +857,7 @@ std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBu
     new OpenGLTextureBuffer(format, size_in_elements, std::move(buffer), texture_id));
 }
 
-OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported,
+OpenGLDownloadTexture::OpenGLDownloadTexture(u32 width, u32 height, GPUTextureFormat format, bool imported,
                                              GLuint buffer_id, u8* cpu_buffer, const u8* map_ptr, u32 map_pitch)
   : GPUDownloadTexture(width, height, format, imported), m_buffer_id(buffer_id), m_cpu_buffer(cpu_buffer)
 {
@@ -887,7 +887,7 @@ OpenGLDownloadTexture::~OpenGLDownloadTexture()
   }
 }
 
-std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<OpenGLDownloadTexture> OpenGLDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                      void* memory, size_t memory_size, u32 memory_pitch,
                                                                      Error* error)
 {
@@ -1053,16 +1053,15 @@ void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUDownloadTexture>
-OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)
+std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                                        Error* error /* = nullptr */)
 {
   return OpenGLDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
-std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height,
-                                                                        GPUTexture::Format format, void* memory,
-                                                                        size_t memory_size, u32 memory_stride,
-                                                                        Error* error /* = nullptr */)
+std::unique_ptr<GPUDownloadTexture> OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                                        void* memory, size_t memory_size,
+                                                                        u32 memory_stride, Error* error /* = nullptr */)
 {
   // not _really_ memory importing, but PBOs are broken on Intel....
   return OpenGLDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);

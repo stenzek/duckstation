@@ -100,7 +100,7 @@ void DebuggerWindow::onPauseActionTriggered(bool paused)
     setUIEnabled(false, true);
   }
 
-  g_emu_thread->setSystemPaused(paused);
+  g_core_thread->setSystemPaused(paused);
 }
 
 void DebuggerWindow::onRunToCursorTriggered()
@@ -113,7 +113,7 @@ void DebuggerWindow::onRunToCursorTriggered()
   }
 
   CPU::AddBreakpoint(CPU::BreakpointType::Execute, addr.value(), true, true);
-  g_emu_thread->setSystemPaused(false);
+  g_core_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onGoToPCTriggered()
@@ -143,7 +143,7 @@ void DebuggerWindow::onDumpAddressTriggered()
 
 void DebuggerWindow::onTraceTriggered()
 {
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     const bool trace_enabled = !CPU::IsTraceEnabled();
     if (trace_enabled)
       CPU::StartTrace();
@@ -224,7 +224,7 @@ void DebuggerWindow::onBreakpointListItemChanged(QTreeWidgetItem* item, int colu
 
   const bool enabled = (item->checkState(0) == Qt::Checked);
 
-  Host::RunOnCPUThread([bp_addr, bp_type, enabled]() {
+  Host::RunOnCoreThread([bp_addr, bp_type, enabled]() {
     CPU::SetBreakpointEnabled(static_cast<CPU::BreakpointType>(bp_type), bp_addr, enabled);
   });
 }
@@ -233,7 +233,7 @@ void DebuggerWindow::onStepIntoActionTriggered()
 {
   Assert(QtHost::IsSystemPaused());
   saveCurrentState();
-  g_emu_thread->singleStepCPU();
+  g_core_thread->singleStepCPU();
 }
 
 void DebuggerWindow::onStepOverActionTriggered()
@@ -247,7 +247,7 @@ void DebuggerWindow::onStepOverActionTriggered()
 
   // unpause to let it run to the breakpoint
   saveCurrentState();
-  g_emu_thread->setSystemPaused(false);
+  g_core_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onStepOutActionTriggered()
@@ -262,7 +262,7 @@ void DebuggerWindow::onStepOutActionTriggered()
 
   // unpause to let it run to the breakpoint
   saveCurrentState();
-  g_emu_thread->setSystemPaused(false);
+  g_core_thread->setSystemPaused(false);
 }
 
 void DebuggerWindow::onCodeViewAddressActivated(VirtualMemoryAddress address)
@@ -294,9 +294,9 @@ void DebuggerWindow::onCodeViewContextMenuRequested(const QPoint& pt)
                   [this, address]() { toggleBreakpoint(address); });
 
   menu->addAction(QIcon::fromTheme(QStringLiteral("debugger-go-to-cursor")), tr("&Run To Cursor"), [address]() {
-    Host::RunOnCPUThread([address]() {
+    Host::RunOnCoreThread([address]() {
       CPU::AddBreakpoint(CPU::BreakpointType::Execute, address, true, true);
-      g_emu_thread->setSystemPaused(false);
+      g_core_thread->setSystemPaused(false);
     });
   });
 
@@ -429,8 +429,8 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
   QtUtils::SaveWindowGeometry(this);
-  g_emu_thread->disconnect(this);
-  Host::RunOnCPUThread(&CPU::ClearBreakpoints);
+  g_core_thread->disconnect(this);
+  Host::RunOnCoreThread(&CPU::ClearBreakpoints);
   QMainWindow::closeEvent(event);
   emit closed();
 }
@@ -453,11 +453,11 @@ void DebuggerWindow::setupAdditionalUi()
 
 void DebuggerWindow::connectSignals()
 {
-  connect(g_emu_thread, &EmuThread::systemPaused, this, &DebuggerWindow::onSystemPaused);
-  connect(g_emu_thread, &EmuThread::systemResumed, this, &DebuggerWindow::onSystemResumed);
-  connect(g_emu_thread, &EmuThread::systemStarted, this, &DebuggerWindow::onSystemStarted);
-  connect(g_emu_thread, &EmuThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
-  connect(g_emu_thread, &EmuThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
+  connect(g_core_thread, &CoreThread::systemPaused, this, &DebuggerWindow::onSystemPaused);
+  connect(g_core_thread, &CoreThread::systemResumed, this, &DebuggerWindow::onSystemResumed);
+  connect(g_core_thread, &CoreThread::systemStarted, this, &DebuggerWindow::onSystemStarted);
+  connect(g_core_thread, &CoreThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
+  connect(g_core_thread, &CoreThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
   connect(m_ui.actionPause, &QAction::triggered, this, &DebuggerWindow::onPauseActionTriggered);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
@@ -565,7 +565,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
     const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
     const u32 end_page = static_cast<u32>(offset + count - 1) >> HOST_PAGE_SHIFT;
-    Host::RunOnCPUThread([start_page, end_page]() {
+    Host::RunOnCoreThread([start_page, end_page]() {
       for (u32 i = start_page; i <= end_page; i++)
       {
         if (Bus::g_ram_code_bits[i])
@@ -592,7 +592,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
 void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 {
-  Host::RunOnCPUThread([address]() {
+  Host::RunOnCoreThread([address]() {
     const bool new_bp_state = !CPU::HasBreakpointAtAddress(CPU::BreakpointType::Execute, address);
     if (new_bp_state)
     {
@@ -618,7 +618,7 @@ void DebuggerWindow::toggleBreakpoint(VirtualMemoryAddress address)
 void DebuggerWindow::clearBreakpoints()
 {
   m_ui.codeView->clearBreakpoints();
-  Host::RunOnCPUThread(&CPU::ClearBreakpoints);
+  Host::RunOnCoreThread(&CPU::ClearBreakpoints);
 }
 
 bool DebuggerWindow::tryFollowLoadStore(VirtualMemoryAddress address)
@@ -651,7 +651,7 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
 
 void DebuggerWindow::refreshBreakpointList()
 {
-  Host::RunOnCPUThread([]() {
+  Host::RunOnCoreThread([]() {
     Host::RunOnUIThread([bps = CPU::CopyBreakpointList()]() {
       DebuggerWindow* const win = g_main_window->getDebuggerWindow();
       if (!win)
@@ -687,7 +687,7 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
 
 void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCPUThread([address, type]() {
+  Host::RunOnCoreThread([address, type]() {
     const bool result = CPU::AddBreakpoint(type, address);
     Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
       DebuggerWindow* const win = g_main_window->getDebuggerWindow();
@@ -708,7 +708,7 @@ void DebuggerWindow::addBreakpoint(CPU::BreakpointType type, u32 address)
 
 void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
 {
-  Host::RunOnCPUThread([address, type]() {
+  Host::RunOnCoreThread([address, type]() {
     const bool result = CPU::RemoveBreakpoint(type, address);
     Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), result]() {
       DebuggerWindow* const win = g_main_window->getDebuggerWindow();

@@ -18,6 +18,7 @@ class ThreadHandle;
 
 enum class RenderAPI : u8;
 enum class GPUVSyncMode : u8;
+enum class WindowInfoType : u8;
 
 enum class GPURenderer : u8;
 enum class GPUBackendCommandType : u8;
@@ -47,8 +48,7 @@ void StopFullscreenUI();
 
 /// Backend control.
 std::optional<GPURenderer> GetRequestedRenderer();
-bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
-                      Error* error);
+bool CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error);
 void DestroyGPUBackend();
 bool HasGPUBackend();
 bool IsGPUBackendRequested();
@@ -117,6 +117,9 @@ namespace Host {
 /// This could also be fullscreen transition.
 std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                               Error* error);
+
+/// Returns the window type for the host.
+WindowInfoType GetRenderWindowInfoType();
 
 /// Called when the core is finished with a render window.
 void ReleaseRenderWindow();

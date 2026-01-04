@@ -42,8 +42,9 @@ static VkImageLayout GetVkImageLayout(VulkanTexture::Layout layout)
            s_vk_layout_mapping[static_cast<u32>(layout)];
 }
 
-VulkanTexture::VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                             Flags flags, VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format)
+VulkanTexture::VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                             GPUTextureFormat format, Flags flags, VkImage image, VmaAllocation allocation,
+                             VkImageView view, VkFormat vk_format)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
                static_cast<u8>(samples), type, format, flags),
     m_image(image), m_allocation(allocation), m_view(view), m_vk_format(vk_format)
@@ -56,8 +57,8 @@ VulkanTexture::~VulkanTexture()
 }
 
 std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                     Type type, Format format, Flags flags, VkFormat vk_format,
-                                                     Error* error)
+                                                     Type type, GPUTextureFormat format, Flags flags,
+                                                     VkFormat vk_format, Error* error)
 {
   if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return {};
@@ -753,7 +754,7 @@ void VulkanTexture::GenerateMipmaps()
 }
 
 std::unique_ptr<GPUTexture> VulkanDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                        GPUTexture::Type type, GPUTexture::Format format,
+                                                        GPUTexture::Type type, GPUTextureFormat format,
                                                         GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                         u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
@@ -980,7 +981,7 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
   return tb;
 }
 
-VulkanDownloadTexture::VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,
+VulkanDownloadTexture::VulkanDownloadTexture(u32 width, u32 height, GPUTextureFormat format, VmaAllocation allocation,
                                              VkDeviceMemory memory, VkBuffer buffer, VkDeviceSize memory_offset,
                                              const u8* map_ptr, u32 map_pitch)
   : GPUDownloadTexture(width, height, format, (memory != VK_NULL_HANDLE)), m_allocation(allocation), m_memory(memory),
@@ -1005,7 +1006,7 @@ VulkanDownloadTexture::~VulkanDownloadTexture()
   }
 }
 
-std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                      void* memory, size_t memory_size,
                                                                      u32 memory_stride, Error* error)
 {
@@ -1192,16 +1193,15 @@ void VulkanDownloadTexture::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUDownloadTexture>
-VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)
+std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                                        Error* error /* = nullptr */)
 {
   return VulkanDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
-std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height,
-                                                                        GPUTexture::Format format, void* memory,
-                                                                        size_t memory_size, u32 memory_stride,
-                                                                        Error* error /* = nullptr */)
+std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
+                                                                        void* memory, size_t memory_size,
+                                                                        u32 memory_stride, Error* error /* = nullptr */)
 {
   return VulkanDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
 }

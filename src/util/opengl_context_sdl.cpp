@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "opengl_context_sdl.h"
+#include "gpu_texture.h"
 #include "opengl_loader.h"
 
 #include "common/assert.h"
@@ -54,14 +55,14 @@ bool OpenGLContextSDL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::s
     Error::SetStringView(error, "Surfaceless is not supported with OpenGLContextSDL.");
     return false;
   }
-  else if (wi.type != WindowInfo::Type::SDL)
+  else if (wi.type != WindowInfoType::SDL)
   {
     Error::SetStringView(error, "Incompatible window type.");
     return false;
   }
 
-  if (wi.surface_format == GPUTexture::Format::Unknown)
-    wi.surface_format = GPUTexture::Format::RGBA8;
+  if (wi.surface_format == GPUTextureFormat::Unknown)
+    wi.surface_format = GPUTextureFormat::RGBA8;
 
   SDL_Window* const window = static_cast<SDL_Window*>(wi.window_handle);
   for (const Version& cv : versions_to_try)
@@ -91,7 +92,7 @@ OpenGLContext::SurfaceHandle OpenGLContextSDL::CreateSurface(WindowInfo& wi, Err
     Error::SetStringView(error, "Trying to create a surfaceless surface.");
     return nullptr;
   }
-  else if (wi.type != WindowInfo::Type::SDL)
+  else if (wi.type != WindowInfoType::SDL)
   {
     Error::SetStringView(error, "Incompatible window type.");
     return nullptr;
@@ -190,21 +191,21 @@ std::unique_ptr<OpenGLContext> OpenGLContextSDL::CreateSharedContext(WindowInfo&
   return {};
 }
 
-bool OpenGLContextSDL::CreateVersionContext(const Version& version, SDL_Window* window,
-                                            GPUTexture::Format surface_format, bool share_context, bool make_current)
+bool OpenGLContextSDL::CreateVersionContext(const Version& version, SDL_Window* window, GPUTextureFormat surface_format,
+                                            bool share_context, bool make_current)
 {
   SDL_GL_ResetAttributes();
 
   switch (surface_format)
   {
-    case GPUTexture::Format::RGBA8:
+    case GPUTextureFormat::RGBA8:
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
       SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
       break;
 
-    case GPUTexture::Format::RGB565:
+    case GPUTextureFormat::RGB565:
       SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
       SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
       SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);

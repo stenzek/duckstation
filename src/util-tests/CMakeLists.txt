@@ -5,4 +5,5 @@ add_executable(util-tests
   image_tests.cpp
 )
 
+target_include_directories(util-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util-tests PRIVATE util gtest gtest_main)

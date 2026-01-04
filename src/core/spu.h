@@ -9,7 +9,7 @@
 
 class StateWrapper;
 
-class AudioStream;
+class CoreAudioStream;
 
 namespace SPU {
 
@@ -47,7 +47,7 @@ std::array<u8, RAM_SIZE>& GetWritableRAM();
 bool IsAudioOutputMuted();
 void SetAudioOutputMuted(bool muted);
 
-AudioStream* GetOutputStream();
-void RecreateOutputStream();
+CoreAudioStream& GetOutputStream();
+void CreateOutputStream();
 
 }; // namespace SPU

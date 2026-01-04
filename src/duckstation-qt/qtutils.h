@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "util/window_info.h"
-
 #include "common/types.h"
 
 #include <QtCore/QByteArray>
@@ -34,7 +32,6 @@ class QVariant;
 class QWidget;
 class QUrl;
 
-enum class RenderAPI : u8;
 
 enum class ConsoleRegion : u8;
 enum class DiscRegion : u8;
@@ -71,6 +68,17 @@ inline void CloseAndDeleteWindow(T*& window)
     window->deleteLater();
 
   window = nullptr;
+}
+
+/// Safely deletes a widget and nulls the reference.
+template<typename T>
+inline void SafeDeleteWidget(T*& widget)
+{
+  if (!widget)
+    return;
+
+  delete widget;
+  widget = nullptr;
 }
 
 /// For any positive values, sets the corresponding column width to the specified value.
@@ -161,13 +169,6 @@ QSize ApplyDevicePixelRatioToSize(const QSize& size, qreal device_pixel_ratio);
 
 /// Removes the device pixel ratio from the given size, giving the size in device-independent units.
 QSize GetDeviceIndependentSize(const QSize& size, qreal device_pixel_ratio);
-
-/// Returns the pixel size (real geometry) for a widget.
-/// Also returns the "real" DPR scale for the widget, ignoring any operating-system level downsampling.
-std::pair<QSize, qreal> GetPixelSizeForWidget(const QWidget* widget);
-
-/// Returns the common window info structure for a Qt widget.
-std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);
 
 /// Saves a window's geometry to configuration. Returns false if the configuration was changed.
 void SaveWindowGeometry(QWidget* widget, bool auto_commit_changes = true);

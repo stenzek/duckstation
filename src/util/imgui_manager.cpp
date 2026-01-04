@@ -3,12 +3,13 @@
 
 #include "imgui_manager.h"
 #include "gpu_device.h"
-#include "host.h"
 #include "image.h"
 #include "input_manager.h"
 #include "shadergen.h"
+#include "translation.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
+#include "core/core.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/gpu_thread.h"
@@ -25,14 +26,13 @@
 #include "common/thirdparty/usb_key_code_data.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 #include "imgui_freetype.h"
 #include "imgui_internal.h"
 
 #include <atomic>
-#include <chrono>
 #include <cmath>
 #include <deque>
 #include <limits>
@@ -118,7 +118,7 @@ static constexpr std::array<const char*, static_cast<size_t>(TextFont::MaxCount)
   "NotoSansKR-VariableFont_wght.ttf",  // Korean
 }};
 static constexpr const char* FIXED_FONT_NAME = "JetBrainsMono-VariableFont_wght.ttf";
-static constexpr const char* FA_FONT_NAME = "fa-solid-900.ttf";
+static constexpr const char* FA_FONT_NAME = FONT_ICON_FILE_NAME_FAS;
 static constexpr const char* PF_FONT_NAME = "promptfont.otf";
 static constexpr const char* EMOJI_FONT_NAME = "TwitterColorEmoji-SVGinOT.ttf";
 
@@ -126,22 +126,28 @@ namespace {
 
 struct ALIGN_TO_CACHE_LINE State
 {
+  // Shared between both threads
+
   // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
   std::atomic_bool imgui_wants_text{false};
 
+  std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
+
   std::deque<PostedOSDMessage> osd_posted_messages;
   std::mutex osd_messages_lock;
 
-  // Owned by GPU thread
+  // Read by both threads
   ALIGN_TO_CACHE_LINE ImGuiContext* imgui_context = nullptr;
-  Timer::Value last_render_time = 0;
+
+  // Owned by GPU thread
+  ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
 
   float global_scale = 0.0f;
   float window_width = 0.0f;
   float window_height = 0.0f;
-  GPUTexture::Format window_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat window_format = GPUTextureFormat::Unknown;
   bool scale_changed = false;
 
   // we maintain a second copy of the stick state here so we can map it to the dpad
@@ -154,8 +160,6 @@ struct ALIGN_TO_CACHE_LINE State
 
   std::deque<OSDMessage> osd_active_messages;
   float osd_messages_end_y = 0.0f;
-
-  std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
   TextFontOrder text_font_order = ImGuiManager::GetDefaultTextFontOrder();
 
@@ -215,7 +219,7 @@ bool ImGuiManager::Initialize(Error* error)
   SetCommonIOOptions(io, s_state.imgui_context->PlatformIO);
 
   s_state.last_render_time = Timer::GetCurrentValue();
-  s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8;
+  s_state.window_format = main_swap_chain ? main_swap_chain->GetFormat() : GPUTextureFormat::RGBA8;
   s_state.window_width = main_swap_chain ? static_cast<float>(main_swap_chain->GetWidth()) : 0.0f;
   s_state.window_height = main_swap_chain ? static_cast<float>(main_swap_chain->GetHeight()) : 0.0f;
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
@@ -282,7 +286,7 @@ float ImGuiManager::GetWindowHeight()
   return s_state.window_height;
 }
 
-void ImGuiManager::WindowResized(GPUTexture::Format format, float width, float height)
+void ImGuiManager::WindowResized(GPUTextureFormat format, float width, float height)
 {
   if (s_state.window_format != format) [[unlikely]]
   {
@@ -406,8 +410,6 @@ bool ImGuiManager::CompilePipelines(Error* error)
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
   plconfig.blend.write_mask = 0x7;
   plconfig.SetTargetFormats(s_state.window_format);
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
   plconfig.vertex_shader = imgui_vs.get();
   plconfig.geometry_shader = nullptr;
@@ -523,8 +525,8 @@ void ImGuiManager::UpdateTextures()
 
         Error error;
         std::unique_ptr<GPUTexture> gtex = g_gpu_device->FetchTexture(
-          tex->Width, tex->Height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-          GPUTexture::Flags::None, tex->GetPixels(), tex->GetPitch(), &error);
+          tex->Width, tex->Height, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8, GPUTexture::Flags::None,
+          tex->GetPixels(), tex->GetPitch(), &error);
         if (!gtex) [[unlikely]]
         {
           ERROR_LOG("Failed to create {}x{} imgui texture: {}", tex->Width, tex->Height, error.GetDescription());
@@ -956,6 +958,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
   using FullscreenUI::DarkerColor;
+  using FullscreenUI::DrawRoundedGradientRect;
   using FullscreenUI::ModAlpha;
   using FullscreenUI::RenderShadowedTextClipped;
   using FullscreenUI::UIStyle;
@@ -983,9 +986,14 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float normal_icon_margin = std::ceil(4.0f * scale);
   const float large_icon_margin = std::ceil(8.0f * scale);
   const float max_width = (s_state.window_width * 0.6f) - (margin + padding) * 2.0f;
+  const float max_width_for_color = std::ceil(400.0f * scale);
+  const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
   float position_y = margin;
+
+  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
 
   auto iter = s_state.osd_active_messages.begin();
   while (iter != s_state.osd_active_messages.end())
@@ -1097,8 +1105,14 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
 
-    dl->AddRectFilled(pos, pos_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)),
-                      rounding);
+    const float background_opacity = opacity * 0.95f;
+    DrawRoundedGradientRect(
+      dl, pos, pos_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+      ImGui::GetColorU32(
+        ModAlpha(ImLerp(left_background_color, right_background_color,
+                        std::min((box_width - min_rounded_width) / (max_width_for_color - min_rounded_width), 1.0f)),
+                 background_opacity)),
+      rounding);
 
     const ImVec2 base_pos = ImVec2(pos.x + padding, pos.y + padding);
     const ImU32 color = ImGui::GetColorU32(ModAlpha(text_color, opacity));
@@ -1399,6 +1413,39 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
+void ImGuiManager::ClearMouseButtonState()
+{
+  if (!s_state.imgui_context)
+    return;
+
+  GPUThread::RunOnThread([]() {
+    if (!s_state.imgui_context)
+      return;
+
+    ImGuiIO& io = s_state.imgui_context->IO;
+    for (int i = 0; i < ImGuiMouseButton_COUNT; i++)
+    {
+      bool current_state = io.MouseDown[i];
+      for (int n = s_state.imgui_context->InputEventsQueue.Size - 1; n >= 0; n--)
+      {
+        const ImGuiInputEvent& event = s_state.imgui_context->InputEventsQueue[n];
+        if (event.Type == ImGuiInputEventType_MouseButton && event.MouseButton.Button == i)
+        {
+          current_state = event.MouseButton.Down;
+          break;
+        }
+      }
+
+      // not down?
+      if (!current_state)
+        continue;
+
+      // Queue a button up event.
+      s_state.imgui_context->IO.AddMouseButtonEvent(i, false);
+    }
+  });
+}
+
 const char* ImGuiManager::GetClipboardTextImpl(ImGuiContext* ctx)
 {
   const std::string text = Host::GetClipboardText();
@@ -1456,7 +1503,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(SoftwareCursor& sc, const std::st
   }
   g_gpu_device->RecycleTexture(std::move(sc.texture));
   sc.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                          GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
+                                          GPUTextureFormat::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
                                           image.GetPitch(), &error);
   if (!sc.texture)
   {
@@ -1701,14 +1748,14 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   u32 height = default_height;
   if (config_prefix)
   {
-    pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+    pos_x = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
                                          DEFAULT_POSITION);
-    pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+    pos_y = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
                                          DEFAULT_POSITION);
     width =
-      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), default_width);
+      Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), default_width);
     height =
-      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), default_height);
+      Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), default_height);
   }
 
   WindowInfo wi;
@@ -1754,12 +1801,12 @@ void ImGuiManager::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowState* stat
   u32 old_width = 0, old_height = 0;
   if (config_section)
   {
-    old_pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+    old_pos_x = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
                                              DEFAULT_POSITION);
-    old_pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+    old_pos_y = Core::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
                                              DEFAULT_POSITION);
-    old_width = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), 0);
-    old_height = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), 0);
+    old_width = Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), 0);
+    old_height = Core::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), 0);
   }
 
   ImGui::DestroyContext(state->imgui_context);
@@ -1778,10 +1825,10 @@ void ImGuiManager::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowState* stat
     // update config if the window was moved
     if (old_pos_x != new_pos_x || old_pos_y != new_pos_y || old_width != new_width || old_height != new_height)
     {
-      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix), new_pos_x);
-      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix), new_pos_y);
-      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), new_width);
-      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), new_height);
+      Core::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix), new_pos_x);
+      Core::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix), new_pos_y);
+      Core::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), new_width);
+      Core::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), new_height);
       Host::CommitBaseSettingChanges();
     }
   }

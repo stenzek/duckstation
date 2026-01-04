@@ -75,6 +75,9 @@ private:
   void HandleControllerConnection(u32 index, const XINPUT_STATE& state);
   void HandleControllerDisconnection(u32 index);
 
+  static std::string GetDeviceIdentifier(u32 index);
+  static std::string GetDeviceName(u32 index);
+
   ControllerDataArray m_controllers;
 
   HMODULE m_xinput_module{};

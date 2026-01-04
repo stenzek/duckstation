@@ -203,6 +203,11 @@ static constexpr const std::array<const char*, 64> s_gte_register_names = {
    "trz",   "llm_0", "llm_1", "llm_2", "llm_3", "llm_4", "rbk",  "gbk",  "bbk",  "lcm_0", "lcm_1", "lcm_2", "lcm_3",
    "lcm_4", "rfc",   "gfc",   "bfc",   "ofx",   "ofy",   "h",    "dqa",  "dqb",  "zsf3",  "zsf4",  "flag"}};
 
+static constexpr const std::array<const char*, 32> s_cop0_register_names = {
+  {"$0",   "$1",  "$2",    "BPC", "$4",   "BDA", "TAR", "DCIC", "BadA", "BDAM", "$10",
+   "BPCM", "SR",  "CAUSE", "EPC", "PRID", "$16", "$17", "$18",  "$19",  "$20",  "$21",
+   "$22",  "$23", "$24",   "$25", "$26",  "$27", "$28", "$29",  "$30",  "$31"}};
+
 static constexpr const std::array<GTEInstructionTable, 64> s_gte_instructions = {{
   {"UNKNOWN", false, false, false}, // 0x00
   {"rtps", true, true, false},      // 0x01
@@ -352,7 +357,7 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
     }
     else if (std::strncmp(str, "coprdc", 6) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
         dest->append(GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue()) + 32));
       else
         dest->append_format("{}", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
@@ -360,23 +365,27 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
     }
     else if (std::strncmp(str, "coprd", 5) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
         dest->append(GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue())));
+      else if (inst.cop.cop_n == 0)
+        dest->append(GetCop0RegisterName(static_cast<u8>(inst.r.rd.GetValue())));
       else
         dest->append_format("{}", ZeroExtend32(static_cast<u8>(inst.r.rd.GetValue())));
       str += 5;
     }
     else if (std::strncmp(str, "coprt", 5) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
         dest->append(GetGTERegisterName(static_cast<u8>(inst.r.rt.GetValue())));
+      else if (inst.cop.cop_n == 0)
+        dest->append(GetCop0RegisterName(static_cast<u8>(inst.r.rt.GetValue())));
       else
         dest->append_format("{}", ZeroExtend32(static_cast<u8>(inst.r.rt.GetValue())));
       str += 5;
     }
     else if (std::strncmp(str, "cop", 3) == 0)
     {
-      dest->append_format("{}", static_cast<u8>(inst.op.GetValue()) & INSTRUCTION_COP_N_MASK);
+      dest->append_format("{}", inst.cop.cop_n.GetValue());
       str += 3;
     }
     else
@@ -480,28 +489,84 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     }
     else if (std::strncmp(str, "coprdc", 6) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
       {
         dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue()) + 32),
                             g_state.gte_regs.cr32[static_cast<u8>(inst.r.rd.GetValue())]);
       }
+
       str += 6;
     }
     else if (std::strncmp(str, "coprd", 5) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
       {
         dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue())),
                             g_state.gte_regs.dr32[static_cast<u8>(inst.r.rd.GetValue())]);
+      }
+      else if (inst.cop.cop_n == 0)
+      {
+        dest->append_format("{}{}", dest->empty() ? "" : ", ",
+                            GetCop0RegisterName(static_cast<u8>(inst.r.rd.GetValue())));
+
+        u32 value = 0;
+        switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
+        {
+          case Cop0Reg::BPC:
+            value = g_state.cop0_regs.BPC;
+            break;
+
+          case Cop0Reg::BPCM:
+            value = g_state.cop0_regs.BPCM;
+            break;
+
+          case Cop0Reg::BDA:
+            value = g_state.cop0_regs.BDA;
+            break;
+
+          case Cop0Reg::BDAM:
+            value = g_state.cop0_regs.BDAM;
+            break;
+
+          case Cop0Reg::DCIC:
+            value = g_state.cop0_regs.dcic.bits;
+            break;
+
+          case Cop0Reg::JUMPDEST:
+            value = g_state.cop0_regs.TAR;
+            break;
+
+          case Cop0Reg::BadVaddr:
+            value = g_state.cop0_regs.BadVaddr;
+            break;
+
+          case Cop0Reg::SR:
+            value = g_state.cop0_regs.sr.bits;
+            break;
+
+          case Cop0Reg::CAUSE:
+            value = g_state.cop0_regs.cause.bits;
+            break;
+
+          case Cop0Reg::EPC:
+            value = g_state.cop0_regs.EPC;
+            break;
+
+          case Cop0Reg::PRID:
+            value = g_state.cop0_regs.PRID;
+            break;
+        }
+
+        dest->append_format("=0x{:08x}", value);
       }
 
       str += 5;
     }
     else if (std::strncmp(str, "coprt", 5) == 0)
     {
-      if (inst.IsCop2Instruction())
+      if (inst.cop.cop_n == 2)
       {
         dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rt.GetValue())),
@@ -701,4 +766,9 @@ void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits)
 const char* CPU::GetGTERegisterName(u32 index)
 {
   return (index < s_gte_register_names.size()) ? s_gte_register_names[index] : "";
+}
+
+const char* CPU::GetCop0RegisterName(u32 index)
+{
+  return (index < s_cop0_register_names.size()) ? s_cop0_register_names[index] : "";
 }

@@ -5436,7 +5436,7 @@ Questo file può pesare anche diversi GB, quindi bisogna tenere conto dell&apos;
     </message>
 </context>
 <context>
-    <name>EmuThread</name>
+    <name>CoreThread</name>
     <message>
         <location filename="../qthost.cpp" line="736"/>
         <location filename="../qthost.cpp" line="750"/>

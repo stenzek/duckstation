@@ -194,24 +194,12 @@ TEST(GSVector2iTest, UnpackOperations)
   EXPECT_EQ(upl8_result.U8[5], 0);
   EXPECT_EQ(upl8_result.U8[6], 0);
   EXPECT_EQ(upl8_result.U8[7], 0);
-  EXPECT_EQ(upl8_result.U8[8], 0x56);
-  EXPECT_EQ(upl8_result.U8[9], 0);
-  EXPECT_EQ(upl8_result.U8[10], 0);
-  EXPECT_EQ(upl8_result.U8[11], 0);
-  EXPECT_EQ(upl8_result.U8[12], 0x78);
-  EXPECT_EQ(upl8_result.U8[13], 0);
-  EXPECT_EQ(upl8_result.U8[14], 0);
-  EXPECT_EQ(upl8_result.U8[15], 0);
 
   auto upl16_result = v1.upl16();
   EXPECT_EQ(upl16_result.U16[0], 0x12);
   EXPECT_EQ(upl16_result.U16[1], 0);
   EXPECT_EQ(upl16_result.U16[2], 0x34);
   EXPECT_EQ(upl16_result.U16[3], 0);
-  EXPECT_EQ(upl16_result.U16[4], 0x56);
-  EXPECT_EQ(upl16_result.U16[5], 0);
-  EXPECT_EQ(upl16_result.U16[6], 0x78);
-  EXPECT_EQ(upl16_result.U16[7], 0);
 }
 
 TEST(GSVector2iTest, TypeConversions)
@@ -806,20 +794,28 @@ TEST(GSVector4iTest, Shift64BitOperations)
 #ifdef GSVECTOR_HAS_SRLV
 TEST(GSVector4iTest, VariableShifts)
 {
-  GSVector4i v1(0x1000, 0x2000, 0x4000, 0x8000);
-  GSVector4i shift_amounts(1, 2, 3, 4);
+  GSVector4i v1(0x1000, 0x2000, 0x4000, 0x8000, 0x1000, 0x2000, 0x4000, 0x8000);
+  GSVector4i shift_amounts(1, 2, 3, 4, 1, 2, 3, 4);
 
   auto sllv16_result = v1.sllv16(shift_amounts);
   EXPECT_EQ(sllv16_result.U16[0], 0x2000); // 0x1000 << 1
   EXPECT_EQ(sllv16_result.U16[1], 0x8000); // 0x2000 << 2
   EXPECT_EQ(sllv16_result.U16[2], 0x0000); // 0x4000 << 3 (overflow)
   EXPECT_EQ(sllv16_result.U16[3], 0x0000); // 0x8000 << 4 (overflow)
+  EXPECT_EQ(sllv16_result.U16[4], 0x2000); // 0x1000 << 1
+  EXPECT_EQ(sllv16_result.U16[5], 0x8000); // 0x2000 << 2
+  EXPECT_EQ(sllv16_result.U16[6], 0x0000); // 0x4000 << 3 (overflow)
+  EXPECT_EQ(sllv16_result.U16[7], 0x0000); // 0x8000 << 4 (overflow)
 
   auto srlv16_result = v1.srlv16(shift_amounts);
   EXPECT_EQ(srlv16_result.U16[0], 0x0800); // 0x1000 >> 1
   EXPECT_EQ(srlv16_result.U16[1], 0x0800); // 0x2000 >> 2
   EXPECT_EQ(srlv16_result.U16[2], 0x0800); // 0x4000 >> 3
   EXPECT_EQ(srlv16_result.U16[3], 0x0800); // 0x8000 >> 4
+  EXPECT_EQ(srlv16_result.U16[4], 0x0800); // 0x1000 >> 1
+  EXPECT_EQ(srlv16_result.U16[5], 0x0800); // 0x2000 >> 2
+  EXPECT_EQ(srlv16_result.U16[6], 0x0800); // 0x4000 >> 3
+  EXPECT_EQ(srlv16_result.U16[7], 0x0800); // 0x8000 >> 4
 }
 #endif
 
@@ -1023,10 +1019,10 @@ TEST(GSVector4Test, BasicOps)
   // sat(minmax vector) : x/z clamped to [min.x, min.z], y/w to [min.y, min.w]
   GSVector4 range(0.0f, -1.0f, 2.0f, 1.0f);
   auto sat_pair = v.sat(range);
-  EXPECT_FLOAT_EQ(sat_pair.x, 1.0f);      // within [0,2]
-  EXPECT_FLOAT_EQ(sat_pair.y, -1.0f);     // clamped to -1
-  EXPECT_FLOAT_EQ(sat_pair.z, 2.0f);      // clamped to 2
-  EXPECT_FLOAT_EQ(sat_pair.w, -1.0f);     // clamped to -1
+  EXPECT_FLOAT_EQ(sat_pair.x, 1.0f);  // within [0,2]
+  EXPECT_FLOAT_EQ(sat_pair.y, -1.0f); // clamped to -1
+  EXPECT_FLOAT_EQ(sat_pair.z, 2.0f);  // clamped to 2
+  EXPECT_FLOAT_EQ(sat_pair.w, -1.0f); // clamped to -1
 }
 
 TEST(GSVector4Test, BlendAndMask)
@@ -1189,10 +1185,10 @@ TEST(GSVector4Test, ReplaceNaN)
   GSVector4 v(1.0f, std::numeric_limits<float>::quiet_NaN(), -5.0f, std::numeric_limits<float>::quiet_NaN());
   GSVector4 repl(10.0f, 20.0f, 30.0f, 40.0f);
   auto r = v.replace_nan(repl);
-  EXPECT_FLOAT_EQ(r.x, 1.0f);   // kept
-  EXPECT_FLOAT_EQ(r.y, 20.0f);  // replaced
-  EXPECT_FLOAT_EQ(r.z, -5.0f);  // kept
-  EXPECT_FLOAT_EQ(r.w, 40.0f);  // replaced
+  EXPECT_FLOAT_EQ(r.x, 1.0f);  // kept
+  EXPECT_FLOAT_EQ(r.y, 20.0f); // replaced
+  EXPECT_FLOAT_EQ(r.z, -5.0f); // kept
+  EXPECT_FLOAT_EQ(r.w, 40.0f); // replaced
 }
 
 TEST(GSVector4Test, DoubleExtendedOps)
@@ -1221,14 +1217,14 @@ TEST(GSVector4Test, DoubleExtendedOps)
   EXPECT_DOUBLE_EQ(d.max64(d2).F64[1], 10.0);
 
   auto gt = d.gt64(d2);
-  EXPECT_EQ(gt.U64[0], 0ULL);                 // -4 > -2 ? no
-  EXPECT_EQ(gt.U64[1], 0ULL);                 // 9 > 10 ? no
+  EXPECT_EQ(gt.U64[0], 0ULL); // -4 > -2 ? no
+  EXPECT_EQ(gt.U64[1], 0ULL); // 9 > 10 ? no
   auto lt = d.lt64(d2);
-  EXPECT_NE(lt.U64[0], 0ULL);                 // -4 < -2
-  EXPECT_NE(lt.U64[1], 0ULL);                 // 9 < 10
+  EXPECT_NE(lt.U64[0], 0ULL); // -4 < -2
+  EXPECT_NE(lt.U64[1], 0ULL); // 9 < 10
   auto ge = d.ge64(d2);
-  EXPECT_EQ(ge.U64[0], 0ULL);                 // -4 >= -2 ? no
-  EXPECT_EQ(ge.U64[1], 0ULL);                 // 9 >= 10 ? no
+  EXPECT_EQ(ge.U64[0], 0ULL); // -4 >= -2 ? no
+  EXPECT_EQ(ge.U64[1], 0ULL); // 9 >= 10 ? no
   auto le = d.le64(d2);
   EXPECT_NE(le.U64[0], 0ULL);
   EXPECT_NE(le.U64[1], 0ULL);
@@ -1273,4 +1269,243 @@ TEST(GSVectorTest, ConversionsGSVector2iGSVector2)
   // Cast preserves bit pattern
   EXPECT_EQ(cast_result2.U32[0], vf2.U32[0]);
   EXPECT_EQ(cast_result2.U32[1], vf2.U32[1]);
+}
+
+// width() tests
+TEST(GSVectorTest, Width_ReturnsCorrectValue)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+
+  EXPECT_FLOAT_EQ(rect1.width(), 40.0f); // 50 - 10 = 40
+  EXPECT_FLOAT_EQ(rect2.width(), 70.0f); // 100 - 30 = 70
+}
+
+TEST(GSVectorTest, Width_EmptyRect_ReturnsZero)
+{
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+  const GSVector4 zeroSizeRect = GSVector4(25.0f, 35.0f, 25.0f, 35.0f);
+
+  EXPECT_FLOAT_EQ(emptyRect.width(), 0.0f);
+  EXPECT_FLOAT_EQ(zeroSizeRect.width(), 0.0f);
+}
+
+TEST(GSVectorTest, Width_InvalidRect_ReturnsNegative)
+{
+  const GSVector4 invalidRect = GSVector4(50.0f, 80.0f, 10.0f, 20.0f); // right < left, bottom < top
+
+  EXPECT_FLOAT_EQ(invalidRect.width(), -40.0f); // 10 - 50 = -40
+}
+
+// height() tests
+TEST(GSVectorTest, Height_ReturnsCorrectValue)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+
+  EXPECT_FLOAT_EQ(rect1.height(), 60.0f); // 80 - 20 = 60
+  EXPECT_FLOAT_EQ(rect2.height(), 80.0f); // 120 - 40 = 80
+}
+
+TEST(GSVectorTest, Height_EmptyRect_ReturnsZero)
+{
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+  const GSVector4 zeroSizeRect = GSVector4(25.0f, 35.0f, 25.0f, 35.0f);
+
+  EXPECT_FLOAT_EQ(emptyRect.height(), 0.0f);
+  EXPECT_FLOAT_EQ(zeroSizeRect.height(), 0.0f);
+}
+
+TEST(GSVectorTest, Height_InvalidRect_ReturnsNegative)
+{
+  const GSVector4 invalidRect = GSVector4(50.0f, 80.0f, 10.0f, 20.0f); // right < left, bottom < top
+
+  EXPECT_FLOAT_EQ(invalidRect.height(), -60.0f); // 20 - 80 = -60
+}
+
+// rsize() tests
+TEST(GSVectorTest, Rsize_ReturnsCorrectSize)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+
+  GSVector2 size1 = rect1.rsize();
+  EXPECT_FLOAT_EQ(size1.x, 40.0f);
+  EXPECT_FLOAT_EQ(size1.y, 60.0f);
+
+  GSVector2 size2 = rect2.rsize();
+  EXPECT_FLOAT_EQ(size2.x, 70.0f);
+  EXPECT_FLOAT_EQ(size2.y, 80.0f);
+}
+
+TEST(GSVectorTest, Rsize_EmptyRect_ReturnsZeroSize)
+{
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+
+  GSVector2 size = emptyRect.rsize();
+  EXPECT_FLOAT_EQ(size.x, 0.0f);
+  EXPECT_FLOAT_EQ(size.y, 0.0f);
+}
+
+// rvalid() tests
+TEST(GSVectorTest, Rvalid_ValidRect_ReturnsTrue)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+  EXPECT_TRUE(rect1.rvalid());
+  EXPECT_TRUE(rect2.rvalid());
+}
+
+TEST(GSVectorTest, Rvalid_EmptyRect_ReturnsFalse)
+{
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+  const GSVector4 zeroSizeRect = GSVector4(25.0f, 35.0f, 25.0f, 35.0f);
+
+  // Empty rect where left==right and top==bottom is considered invalid
+  EXPECT_FALSE(emptyRect.rvalid());
+  EXPECT_FALSE(zeroSizeRect.rvalid());
+}
+
+TEST(GSVectorTest, Rvalid_InvalidRect_ReturnsFalse)
+{
+  const GSVector4 invalidRect = GSVector4(50.0f, 80.0f, 10.0f, 20.0f); // right < left, bottom < top
+  EXPECT_FALSE(invalidRect.rvalid());
+}
+
+TEST(GSVectorTest, Rvalid_PartiallyInvalid_ReturnsFalse)
+{
+  const GSVector4 invalidWidth(50.0f, 20.0f, 10.0f, 80.0f);  // right < left
+  const GSVector4 invalidHeight(10.0f, 80.0f, 50.0f, 20.0f); // bottom < top
+
+  EXPECT_FALSE(invalidWidth.rvalid());
+  EXPECT_FALSE(invalidHeight.rvalid());
+}
+
+// rempty() tests
+TEST(GSVectorTest, Rempty_EmptyRect_ReturnsTrue)
+{
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+  const GSVector4 zeroSizeRect = GSVector4(25.0f, 35.0f, 25.0f, 35.0f);
+  EXPECT_TRUE(emptyRect.rempty());
+  EXPECT_TRUE(zeroSizeRect.rempty());
+}
+
+TEST(GSVectorTest, Rempty_NonEmptyRect_ReturnsFalse)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+  EXPECT_FALSE(rect1.rempty());
+  EXPECT_FALSE(rect2.rempty());
+}
+
+TEST(GSVectorTest, Rempty_ZeroWidthOnly_ReturnsTrue)
+{
+  GSVector4 zeroWidth(25.0f, 20.0f, 25.0f, 80.0f); // width = 0, height > 0
+  EXPECT_TRUE(zeroWidth.rempty());
+}
+
+TEST(GSVectorTest, Rempty_ZeroHeightOnly_ReturnsTrue)
+{
+  GSVector4 zeroHeight(10.0f, 50.0f, 40.0f, 50.0f); // width > 0, height = 0
+  EXPECT_TRUE(zeroHeight.rempty());
+}
+
+TEST(GSVectorTest, Rempty_InvalidRect_ReturnsTrue)
+{
+  const GSVector4 invalidRect = GSVector4(50.0f, 80.0f, 10.0f, 20.0f); // right < left, bottom < top
+
+  // Invalid rects are considered empty
+  EXPECT_TRUE(invalidRect.rempty());
+}
+
+// runion() tests
+TEST(GSVectorTest, Runion_OverlappingRects_ReturnsCorrectUnion)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+
+  GSVector4 result = rect1.runion(rect2);
+
+  // Union should be min of lefts/tops and max of rights/bottoms
+  EXPECT_FLOAT_EQ(result.left, 10.0f);    // min(10, 30)
+  EXPECT_FLOAT_EQ(result.top, 20.0f);     // min(20, 40)
+  EXPECT_FLOAT_EQ(result.right, 100.0f);  // max(50, 100)
+  EXPECT_FLOAT_EQ(result.bottom, 120.0f); // max(80, 120)
+}
+
+TEST(GSVectorTest, Runion_NonOverlappingRects_ReturnsEnclosingRect)
+{
+  GSVector4 rectA(0.0f, 0.0f, 10.0f, 10.0f);
+  GSVector4 rectB(50.0f, 50.0f, 60.0f, 60.0f);
+
+  GSVector4 result = rectA.runion(rectB);
+
+  EXPECT_FLOAT_EQ(result.left, 0.0f);
+  EXPECT_FLOAT_EQ(result.top, 0.0f);
+  EXPECT_FLOAT_EQ(result.right, 60.0f);
+  EXPECT_FLOAT_EQ(result.bottom, 60.0f);
+}
+
+TEST(GSVectorTest, Runion_ContainedRect_ReturnsOuterRect)
+{
+  GSVector4 outer(0.0f, 0.0f, 100.0f, 100.0f);
+  GSVector4 inner(25.0f, 25.0f, 75.0f, 75.0f);
+
+  GSVector4 result = outer.runion(inner);
+
+  EXPECT_FLOAT_EQ(result.left, 0.0f);
+  EXPECT_FLOAT_EQ(result.top, 0.0f);
+  EXPECT_FLOAT_EQ(result.right, 100.0f);
+  EXPECT_FLOAT_EQ(result.bottom, 100.0f);
+}
+
+TEST(GSVectorTest, Runion_WithEmptyRect_ReturnsOtherRect)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+  const GSVector4 emptyRect = GSVector4(0.0f, 0.0f, 0.0f, 0.0f);
+
+  GSVector4 result = rect1.runion(emptyRect);
+
+  // Union with empty rect at origin
+  EXPECT_FLOAT_EQ(result.left, 0.0f);    // min(10, 0)
+  EXPECT_FLOAT_EQ(result.top, 0.0f);     // min(20, 0)
+  EXPECT_FLOAT_EQ(result.right, 50.0f);  // max(50, 0)
+  EXPECT_FLOAT_EQ(result.bottom, 80.0f); // max(80, 0)
+}
+
+TEST(GSVectorTest, Runion_IdenticalRects_ReturnsSameRect)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+
+  GSVector4 result = rect1.runion(rect1);
+
+  EXPECT_FLOAT_EQ(result.left, rect1.left);
+  EXPECT_FLOAT_EQ(result.top, rect1.top);
+  EXPECT_FLOAT_EQ(result.right, rect1.right);
+  EXPECT_FLOAT_EQ(result.bottom, rect1.bottom);
+}
+
+TEST(GSVectorTest, Runion_NegativeCoordinates_ReturnsCorrectUnion)
+{
+  GSVector4 rectA(-50.0f, -40.0f, -10.0f, -5.0f);
+  GSVector4 rectB(-30.0f, -20.0f, 10.0f, 15.0f);
+
+  GSVector4 result = rectA.runion(rectB);
+
+  EXPECT_FLOAT_EQ(result.left, -50.0f);  // min(-50, -30)
+  EXPECT_FLOAT_EQ(result.top, -40.0f);   // min(-40, -20)
+  EXPECT_FLOAT_EQ(result.right, 10.0f);  // max(-10, 10)
+  EXPECT_FLOAT_EQ(result.bottom, 15.0f); // max(-5, 15)
+}
+
+TEST(GSVectorTest, Runion_IsCommutative)
+{
+  const GSVector4 rect1 = GSVector4(10.0f, 20.0f, 50.0f, 80.0f); // left=10, top=20, right=50, bottom=80
+  const GSVector4 rect2 = GSVector4(30.0f, 40.0f, 100.0f, 120.0f);
+
+  GSVector4 result1 = rect1.runion(rect2);
+  GSVector4 result2 = rect2.runion(rect1);
+
+  EXPECT_TRUE(result1.eq(result2));
 }

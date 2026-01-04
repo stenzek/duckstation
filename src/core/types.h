@@ -163,6 +163,15 @@ enum class DisplayCropMode : u8
   MaxCount
 };
 
+enum class DisplayFineCropMode : u8
+{
+  None,
+  VideoResolution,
+  InternalResolution,
+  WindowResolution,
+  MaxCount
+};
+
 enum class DisplayAlignment : u8
 {
   LeftOrTop,

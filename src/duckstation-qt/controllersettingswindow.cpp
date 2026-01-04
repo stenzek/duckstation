@@ -9,7 +9,7 @@
 #include "qthost.h"
 
 #include "core/controller.h"
-#include "core/host.h"
+#include "core/core.h"
 
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
@@ -123,30 +123,29 @@ int ControllerSettingsWindow::getHotkeyCategoryIndex() const
   return 1 + (mtap_enabled[0] ? 4 : 1) + (mtap_enabled[1] ? 4 : 1);
 }
 
-ControllerSettingsWindow::Category ControllerSettingsWindow::getCurrentCategory() const
+int ControllerSettingsWindow::getCategoryRow() const
 {
-  const int index = m_ui.settingsCategory->currentRow();
-  if (index == 0)
-    return Category::GlobalSettings;
-  else if (index >= getHotkeyCategoryIndex())
-    return Category::HotkeySettings;
-  else
-    return Category::FirstControllerSettings;
+  return m_ui.settingsCategory->currentRow();
 }
 
-void ControllerSettingsWindow::setCategory(Category category)
+void ControllerSettingsWindow::setCategoryRow(int row)
+{
+  m_ui.settingsCategory->setCurrentRow(row);
+}
+
+void ControllerSettingsWindow::setCategory(u32 category)
 {
   switch (category)
   {
-    case Category::GlobalSettings:
+    case CATEGORY_GLOBAL_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(0);
       break;
 
-    case Category::FirstControllerSettings:
+    case CATEGORY_FIRST_CONTROLLER_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(1);
       break;
 
-    case Category::HotkeySettings:
+    case CATEGORY_HOTKEY_SETTINGS:
       m_ui.settingsCategory->setCurrentRow(getHotkeyCategoryIndex());
       break;
 
@@ -208,9 +207,8 @@ void ControllerSettingsWindow::onNewProfileClicked()
         temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", true);
 
       // from global
-      auto lock = Host::GetSettingsLock();
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, true,
-                                      copy_hotkey_bindings);
+      const auto lock = Core::GetSettingsLock();
+      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), true, true, true, copy_hotkey_bindings);
     }
     else
     {
@@ -225,7 +223,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
   {
     // still need to copy the source config
     if (!m_editing_settings_interface)
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), false, true, false, false);
+      InputManager::CopyConfiguration(&temp_si, *Core::GetBaseSettingsLayer(), false, true, false, false);
     else
       InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, false, true, false, false);
   }
@@ -256,12 +254,12 @@ void ControllerSettingsWindow::onApplyProfileClicked()
   {
     const bool copy_hotkey_bindings =
       m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-    auto lock = Host::GetSettingsLock();
-    InputManager::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true,
-                                    true, copy_hotkey_bindings);
+    const auto lock = Core::GetSettingsLock();
+    InputManager::CopyConfiguration(Core::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true, true,
+                                    copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
-  g_emu_thread->applySettings();
+  g_core_thread->applySettings();
 
   // Recreate global widget on profile apply
   g_main_window->getControllerSettingsWindow()->createWidgets();
@@ -301,7 +299,7 @@ void ControllerSettingsWindow::onRestoreDefaultsClicked()
   }
 
   // actually restore it
-  g_emu_thread->setDefaultSettings(false, true);
+  g_core_thread->setDefaultSettings(false, true);
 
   // reload all settings
   createWidgets();
@@ -312,13 +310,13 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   DebugAssert(!isEditingGlobalSettings());
 
   {
-    const auto lock = Host::GetSettingsLock();
-    InputManager::CopyConfiguration(m_editing_settings_interface, *Host::Internal::GetBaseSettingsLayer(), true, true,
-                                    true, false);
+    const auto lock = Core::GetSettingsLock();
+    InputManager::CopyConfiguration(m_editing_settings_interface, *Core::GetBaseSettingsLayer(), true, true, true,
+                                    false);
   }
 
   m_editing_settings_interface->Save();
-  g_emu_thread->reloadGameSettings();
+  g_core_thread->reloadGameSettings();
   createWidgets();
 
   QtUtils::AsyncMessageBox(this, QMessageBox::Information, tr("DuckStation Controller Settings"),
@@ -331,7 +329,7 @@ bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key
   if (m_editing_settings_interface)
     return m_editing_settings_interface->GetBoolValue(section, key, default_value);
   else
-    return Host::GetBaseBoolSettingValue(section, key, default_value);
+    return Core::GetBaseBoolSettingValue(section, key, default_value);
 }
 
 s32 ControllerSettingsWindow::getIntValue(const char* section, const char* key, s32 default_value) const
@@ -339,7 +337,7 @@ s32 ControllerSettingsWindow::getIntValue(const char* section, const char* key, 
   if (m_editing_settings_interface)
     return m_editing_settings_interface->GetIntValue(section, key, default_value);
   else
-    return Host::GetBaseIntSettingValue(section, key, default_value);
+    return Core::GetBaseIntSettingValue(section, key, default_value);
 }
 
 std::string ControllerSettingsWindow::getStringValue(const char* section, const char* key,
@@ -349,7 +347,7 @@ std::string ControllerSettingsWindow::getStringValue(const char* section, const 
   if (m_editing_settings_interface)
     value = m_editing_settings_interface->GetStringValue(section, key, default_value);
   else
-    value = Host::GetBaseStringSettingValue(section, key, default_value);
+    value = Core::GetBaseStringSettingValue(section, key, default_value);
   return value;
 }
 
@@ -362,9 +360,9 @@ void ControllerSettingsWindow::setBoolValue(const char* section, const char* key
   }
   else
   {
-    Host::SetBaseBoolSettingValue(section, key, value);
+    Core::SetBaseBoolSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -377,9 +375,9 @@ void ControllerSettingsWindow::setIntValue(const char* section, const char* key,
   }
   else
   {
-    Host::SetBaseIntSettingValue(section, key, value);
+    Core::SetBaseIntSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -392,9 +390,9 @@ void ControllerSettingsWindow::setStringValue(const char* section, const char* k
   }
   else
   {
-    Host::SetBaseStringSettingValue(section, key, value);
+    Core::SetBaseStringSettingValue(section, key, value);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 
@@ -402,7 +400,7 @@ void ControllerSettingsWindow::saveAndReloadGameSettings()
 {
   DebugAssert(m_editing_settings_interface);
   QtHost::SaveGameSettings(m_editing_settings_interface, false);
-  g_emu_thread->reloadGameSettings(false);
+  g_core_thread->reloadGameSettings(false);
 }
 
 void ControllerSettingsWindow::clearSettingValue(const char* section, const char* key)
@@ -411,13 +409,13 @@ void ControllerSettingsWindow::clearSettingValue(const char* section, const char
   {
     m_editing_settings_interface->DeleteValue(section, key);
     m_editing_settings_interface->Save();
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
-    Host::DeleteBaseSettingValue(section, key);
+    Core::DeleteBaseSettingValue(section, key);
     Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings();
+    g_core_thread->applySettings();
   }
 }
 

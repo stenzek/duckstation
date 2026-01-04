@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "gpu_texture.h"
-
 #include <ctime>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+
+enum class GPUTextureFormat : u8;
 
 class Error;
 class GPUTexture;
@@ -47,7 +47,7 @@ public:
 
   static std::unique_ptr<MediaCapture> Create(MediaCaptureBackend backend, Error* error);
 
-  virtual bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTexture::Format texture_format,
+  virtual bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format,
                             u32 sample_rate, std::string path, bool capture_video, std::string_view video_codec,
                             u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
                             std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,

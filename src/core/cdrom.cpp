@@ -18,6 +18,7 @@
 #include "util/imgui_manager.h"
 #include "util/iso_reader.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/bitfield.h"
@@ -2625,7 +2626,7 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
       DoStatSecondResponse();
 
       if (g_settings.cdrom_auto_disc_change)
-        Host::RunOnCPUThread([]() { System::SwitchToNextDisc(false); });
+        Host::RunOnCoreThread([]() { System::SwitchToNextDisc(false); });
     }
     break;
 

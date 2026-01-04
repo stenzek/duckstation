@@ -6,7 +6,9 @@
 #include "bitutils.h"
 
 #include <cctype>
+#include <charconv>
 #include <cstdio>
+#include <iomanip>
 #include <memory>
 
 #ifndef __APPLE__
@@ -14,6 +16,8 @@
 #else
 #include <alloca.h>
 #endif
+
+#include "fast_float/fast_float.h"
 
 #ifdef _WIN32
 #include "windows_headers.h"
@@ -140,12 +144,6 @@ std::size_t StringUtil::Strlcpy(char* dst, const char* src, std::size_t size)
   return len;
 }
 
-std::size_t StringUtil::Strnlen(const char* str, std::size_t max_size)
-{
-  const char* loc = static_cast<const char*>(std::memchr(str, 0, max_size));
-  return loc ? static_cast<size_t>(loc - str) : max_size;
-}
-
 std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size_t size)
 {
   std::size_t len = src.length();
@@ -160,6 +158,259 @@ std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size
     dst[size - 1] = '\0';
   }
   return len;
+}
+
+std::size_t StringUtil::Strnlen(const char* str, std::size_t max_size)
+{
+  const char* loc = static_cast<const char*>(std::memchr(str, 0, max_size));
+  return loc ? static_cast<size_t>(loc - str) : max_size;
+}
+
+int StringUtil::Strcasecmp(const char* s1, const char* s2)
+{
+#ifdef _MSC_VER
+  return _stricmp(s1, s2);
+#else
+  return strcasecmp(s1, s2);
+#endif
+}
+
+int StringUtil::Strncasecmp(const char* s1, const char* s2, std::size_t n)
+{
+#ifdef _MSC_VER
+  return _strnicmp(s1, s2, n);
+#else
+  return strncasecmp(s1, s2, n);
+#endif
+}
+
+bool StringUtil::EqualNoCase(std::string_view s1, std::string_view s2)
+{
+  const size_t s1_len = s1.length();
+  const size_t s2_len = s2.length();
+  if (s1_len != s2_len)
+    return false;
+  else if (s1_len == 0)
+    return true;
+
+  return (Strncasecmp(s1.data(), s2.data(), s1_len) == 0);
+}
+
+int StringUtil::CompareNoCase(std::string_view s1, std::string_view s2)
+{
+  const size_t s1_len = s1.length();
+  const size_t s2_len = s2.length();
+  const size_t compare_len = std::min(s1_len, s2_len);
+  const int compare_res = (compare_len > 0) ? Strncasecmp(s1.data(), s2.data(), compare_len) : 0;
+  return (compare_res != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
+}
+
+bool StringUtil::ContainsNoCase(std::string_view s1, std::string_view s2)
+{
+  return (std::search(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                      [](char lhs, char rhs) { return (ToLower(lhs) == ToLower(rhs)); }) != s1.end());
+}
+
+/// Wrapper around std::from_chars
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> StringUtil::FromChars(const std::string_view str, const int base /*= 10*/)
+{
+  T value;
+
+  const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  return value;
+}
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> StringUtil::FromChars(const std::string_view str, const int base, std::string_view* const endptr)
+{
+  T value;
+
+  const char* ptr = str.data();
+  const char* end = ptr + str.length();
+  const std::from_chars_result result = std::from_chars(ptr, end, value, base);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  if (endptr)
+  {
+    const size_t remaining_len = end - result.ptr;
+    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+  }
+
+  return value;
+}
+
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> StringUtil::FromCharsWithOptionalBase(const std::string_view str,
+                                                       std::string_view* const endptr /*= nullptr*/)
+{
+  int base;
+  std::string_view data;
+  if (str.starts_with("0x"))
+  {
+    base = 16;
+    data = str.substr(2);
+  }
+  else if (str.starts_with("0b"))
+  {
+    base = 2;
+    data = str.substr(2);
+  }
+  else if (str.starts_with("0") && str.length() > 1)
+  {
+    base = 8;
+    data = str.substr(1);
+  }
+  else
+  {
+    base = 10;
+    data = str;
+  }
+
+  if (endptr)
+    return FromChars<T>(data, base, endptr);
+  else
+    return FromChars<T>(data, base);
+}
+
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::optional<T> StringUtil::FromChars(const std::string_view str)
+{
+  T value;
+
+  const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  return value;
+}
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::optional<T> StringUtil::FromChars(const std::string_view str, std::string_view* const endptr)
+{
+  T value;
+
+  const char* ptr = str.data();
+  const char* end = ptr + str.length();
+  const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
+  if (result.ec != std::errc())
+    return std::nullopt;
+
+  if (endptr)
+  {
+    const size_t remaining_len = end - result.ptr;
+    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
+  }
+
+  return value;
+}
+
+/// Wrapper around std::to_chars
+template<typename T>
+  requires std::is_integral_v<T>
+std::string StringUtil::ToChars(const T value, const int base /*= 10*/)
+{
+  constexpr size_t MAX_SIZE = 32;
+  char buf[MAX_SIZE];
+  std::string ret;
+
+  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value, base);
+  if (result.ec == std::errc())
+    ret.append(buf, result.ptr - buf);
+
+  return ret;
+}
+
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::string StringUtil::ToChars(const T value)
+{
+  constexpr size_t MAX_SIZE = 64;
+  char buf[MAX_SIZE];
+  std::string ret;
+  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value);
+  if (result.ec == std::errc())
+    ret.append(buf, result.ptr - buf);
+  return ret;
+}
+
+// Instantiating with known types
+#define TO_FROM_CHARS_INTEGRAL_TYPES(X)                                                                                \
+  X(s8)                                                                                                                \
+  X(u8)                                                                                                                \
+  X(s16)                                                                                                               \
+  X(u16)                                                                                                               \
+  X(s32)                                                                                                               \
+  X(unsigned int)                                                                                                      \
+  X(s64)                                                                                                               \
+  X(u64)
+
+#define X(T)                                                                                                           \
+  template std::optional<T> StringUtil::FromChars<T>(const std::string_view, const int);                               \
+  template std::optional<T> StringUtil::FromChars<T>(const std::string_view, const int, std::string_view* const);      \
+  template std::optional<T> StringUtil::FromCharsWithOptionalBase<T>(const std::string_view, std::string_view* const); \
+  template std::string StringUtil::ToChars<T>(const T, const int);
+TO_FROM_CHARS_INTEGRAL_TYPES(X);
+#undef X
+
+#define TO_FROM_CHARS_FLOATING_POINT_TYPES(X)                                                                          \
+  X(float)                                                                                                             \
+  X(double)
+
+#define X(T)                                                                                                           \
+  template std::optional<T> StringUtil::FromChars<T>(const std::string_view);                                          \
+  template std::optional<T> StringUtil::FromChars<T>(const std::string_view, std::string_view* const);                 \
+  template std::string StringUtil::ToChars<T>(T);
+
+TO_FROM_CHARS_FLOATING_POINT_TYPES(X);
+#undef X
+
+/// Explicit override for booleans
+template<>
+std::optional<bool> StringUtil::FromChars(const std::string_view str, int base)
+{
+  if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
+      Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
+      Strncasecmp("enabled", str.data(), str.length()) == 0)
+  {
+    return true;
+  }
+
+  if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
+      Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
+      Strncasecmp("disabled", str.data(), str.length()) == 0)
+  {
+    return false;
+  }
+
+  return std::nullopt;
+}
+
+template<>
+inline std::string StringUtil::ToChars(bool value, int base)
+{
+  return std::string(value ? "true" : "false");
+}
+
+std::string StringUtil::StripControlCharacters(std::string_view str)
+{
+  std::string out;
+  out.reserve(str.length());
+  for (size_t i = 0; i < str.length();)
+  {
+    char32_t ch;
+    i += StringUtil::DecodeUTF8(str, i, &ch);
+    ch = (ch < 0x20) ? '_' : ch;
+    StringUtil::EncodeAndAppendUTF8(out, ch);
+  }
+  return out;
 }
 
 u8 StringUtil::DecodeHexDigit(char ch)
@@ -321,6 +572,29 @@ std::string StringUtil::EncodeBase64(const std::span<u8> data)
   return ret;
 }
 
+bool StringUtil::StartsWithNoCase(const std::string_view str, const std::string_view prefix)
+{
+  return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
+}
+
+bool StringUtil::EndsWithNoCase(const std::string_view str, const std::string_view suffix)
+{
+  const std::size_t suffix_length = suffix.length();
+  return (str.length() >= suffix_length &&
+          Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
+}
+
+size_t StringUtil::CountChar(const std::string_view str, char ch)
+{
+  return std::count(str.begin(), str.end(), ch);
+}
+
+size_t StringUtil::CountCharNoCase(const std::string_view str, char ch)
+{
+  ch = ToLower(ch);
+  return std::count_if(str.begin(), str.end(), [ch](char och) { return (ch == ToLower(och)); });
+}
+
 std::string_view StringUtil::StripWhitespace(const std::string_view str)
 {
   std::string_view::size_type start = 0;
@@ -461,6 +735,18 @@ bool StringUtil::ParseAssignmentString(const std::string_view str, std::string_v
     *value = std::string_view();
 
   return true;
+}
+
+std::optional<std::string_view> StringUtil::GetNextToken(std::string_view& caret, char separator)
+{
+  std::optional<std::string_view> ret;
+  const std::string_view::size_type pos = caret.find(separator);
+  if (pos != std::string_view::npos)
+  {
+    ret = caret.substr(0, pos);
+    caret = caret.substr(pos + 1);
+  }
+  return ret;
 }
 
 size_t StringUtil::GetUTF8CharacterCount(const std::string_view str)
@@ -878,6 +1164,45 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
     delete[] match_bytes;
 
   return ret;
+}
+
+void StringUtil::StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
+                              std::size_t copy_size, std::size_t count)
+{
+  if (src_stride == dst_stride && src_stride == copy_size)
+  {
+    std::memcpy(dst, src, src_stride * count);
+    return;
+  }
+
+  const u8* src_ptr = static_cast<const u8*>(src);
+  u8* dst_ptr = static_cast<u8*>(dst);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    std::memcpy(dst_ptr, src_ptr, copy_size);
+    src_ptr += src_stride;
+    dst_ptr += dst_stride;
+  }
+}
+
+int StringUtil::StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
+                             std::size_t copy_size, std::size_t count)
+{
+  if (p1_stride == p2_stride && p1_stride == copy_size)
+    return std::memcmp(p1, p2, p1_stride * count);
+
+  const u8* p1_ptr = static_cast<const u8*>(p1);
+  const u8* p2_ptr = static_cast<const u8*>(p2);
+  for (std::size_t i = 0; i < count; i++)
+  {
+    int result = std::memcmp(p1_ptr, p2_ptr, copy_size);
+    if (result != 0)
+      return result;
+    p2_ptr += p2_stride;
+    p1_ptr += p1_stride;
+  }
+
+  return 0;
 }
 
 size_t StringUtil::DecodeUTF8(const std::string_view str, size_t offset, char32_t* ch)

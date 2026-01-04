@@ -16,6 +16,7 @@
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -24,17 +25,17 @@
 #include "common/threading.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 LOG_CHANNEL(GPU);
 
 namespace {
 
-struct ALIGN_TO_CACHE_LINE CPUThreadState
+struct ALIGN_TO_CACHE_LINE CoreThreadState
 {
   static constexpr u32 WAIT_NONE = 0;
-  static constexpr u32 WAIT_CPU_THREAD_WAITING = 1;
+  static constexpr u32 WAIT_CORE_THREAD_WAITING = 1;
   static constexpr u32 WAIT_GPU_THREAD_SIGNALING = 2;
   static constexpr u32 WAIT_GPU_THREAD_POSTED = 3;
 
@@ -48,7 +49,7 @@ struct ALIGN_TO_CACHE_LINE CPUThreadState
 GPUBackend::Counters GPUBackend::s_counters = {};
 GPUBackend::Stats GPUBackend::s_stats = {};
 
-static CPUThreadState s_cpu_thread_state = {};
+static CoreThreadState s_core_thread_state = {};
 
 GPUBackend::GPUBackend(GPUPresenter& presenter) : m_presenter(presenter)
 {
@@ -271,73 +272,73 @@ bool GPUBackend::IsUsingHardwareBackend()
 
 bool GPUBackend::BeginQueueFrame()
 {
-  const u32 queued_frames = s_cpu_thread_state.queued_frames.fetch_add(1, std::memory_order_acq_rel) + 1;
+  const u32 queued_frames = s_core_thread_state.queued_frames.fetch_add(1, std::memory_order_acq_rel) + 1;
   if (queued_frames <= g_settings.gpu_max_queued_frames)
     return false;
 
   if (g_settings.gpu_max_queued_frames > 0)
-    DEV_LOG("<-- {} queued frames, {} max, blocking CPU thread", queued_frames, g_settings.gpu_max_queued_frames);
+    DEV_LOG("<-- {} queued frames, {} max, blocking core thread", queued_frames, g_settings.gpu_max_queued_frames);
 
-  s_cpu_thread_state.wait_state.store(CPUThreadState::WAIT_CPU_THREAD_WAITING, std::memory_order_release);
+  s_core_thread_state.wait_state.store(CoreThreadState::WAIT_CORE_THREAD_WAITING, std::memory_order_release);
   return true;
 }
 
 void GPUBackend::WaitForOneQueuedFrame()
 {
   // Inbetween this and the post call, we may have finished the frame. Check.
-  if (s_cpu_thread_state.queued_frames.load(std::memory_order_acquire) <= g_settings.gpu_max_queued_frames)
+  if (s_core_thread_state.queued_frames.load(std::memory_order_acquire) <= g_settings.gpu_max_queued_frames)
   {
     // It's possible that the GPU thread has already signaled the semaphore.
     // If so, then we still need to drain it, otherwise waits in the future will return prematurely.
-    u32 expected = CPUThreadState::WAIT_CPU_THREAD_WAITING;
-    if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_NONE,
-                                                              std::memory_order_acq_rel, std::memory_order_acquire))
+    u32 expected = CoreThreadState::WAIT_CORE_THREAD_WAITING;
+    if (s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_NONE,
+                                                               std::memory_order_acq_rel, std::memory_order_acquire))
     {
       return;
     }
   }
 
-  s_cpu_thread_state.gpu_thread_wait.Wait();
+  s_core_thread_state.gpu_thread_wait.Wait();
 
   // Depending on where the GPU thread is, now we can either be in WAIT_GPU_THREAD_SIGNALING or WAIT_GPU_THREAD_POSTED
   // state. We want to clear the flag here regardless, so a store-release is fine. Because the GPU thread has a
   // compare-exchange on WAIT_GPU_THREAD_SIGNALING, it can't "overwrite" the value we store here.
-  s_cpu_thread_state.wait_state.store(CPUThreadState::WAIT_NONE, std::memory_order_release);
+  s_core_thread_state.wait_state.store(CoreThreadState::WAIT_NONE, std::memory_order_release);
 
   // Sanity check: queued frames should be in range now. If they're not, we fucked up the semaphore.
-  if (const u32 queued_frames = s_cpu_thread_state.queued_frames.load(std::memory_order_acquire);
+  if (const u32 queued_frames = s_core_thread_state.queued_frames.load(std::memory_order_acquire);
       queued_frames > g_settings.gpu_max_queued_frames) [[unlikely]]
   {
-    ERROR_LOG("queued_frames {} above max queued frames {} after CPU wait", queued_frames,
+    ERROR_LOG("queued_frames {} above max queued frames {} after core thread wait", queued_frames,
               g_settings.gpu_max_queued_frames);
   }
 }
 
 u32 GPUBackend::GetQueuedFrameCount()
 {
-  return s_cpu_thread_state.queued_frames.load(std::memory_order_acquire);
+  return s_core_thread_state.queued_frames.load(std::memory_order_acquire);
 }
 
 void GPUBackend::ReleaseQueuedFrame()
 {
-  s_cpu_thread_state.queued_frames.fetch_sub(1, std::memory_order_acq_rel);
+  s_core_thread_state.queued_frames.fetch_sub(1, std::memory_order_acq_rel);
 
   // We need two states here in case we get preempted in between the compare_exchange_strong() and Post().
   // This means that we will only release the semaphore once the CPU is guaranteed to be in a waiting state,
   // and ensure that we don't post twice if the CPU thread lags and we process 2 frames before it wakes up.
-  u32 expected = CPUThreadState::WAIT_CPU_THREAD_WAITING;
-  if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_GPU_THREAD_SIGNALING,
-                                                            std::memory_order_acq_rel, std::memory_order_acquire))
+  u32 expected = CoreThreadState::WAIT_CORE_THREAD_WAITING;
+  if (s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_GPU_THREAD_SIGNALING,
+                                                             std::memory_order_acq_rel, std::memory_order_acquire))
   {
     if (g_gpu_settings.gpu_max_queued_frames > 0)
-      DEV_LOG("--> Unblocking CPU thread");
+      DEV_LOG("--> Unblocking core thread");
 
-    s_cpu_thread_state.gpu_thread_wait.Post();
+    s_core_thread_state.gpu_thread_wait.Post();
 
-    // This needs to be a compare_exchange, because the CPU thread can clear the flag before we execute this line.
-    expected = CPUThreadState::WAIT_GPU_THREAD_SIGNALING;
-    s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_GPU_THREAD_POSTED,
-                                                          std::memory_order_acq_rel, std::memory_order_acquire);
+    // This needs to be a compare_exchange, because the core thread can clear the flag before we execute this line.
+    expected = CoreThreadState::WAIT_GPU_THREAD_SIGNALING;
+    s_core_thread_state.wait_state.compare_exchange_strong(expected, CoreThreadState::WAIT_GPU_THREAD_POSTED,
+                                                           std::memory_order_acq_rel, std::memory_order_acquire);
   }
 }
 
@@ -364,7 +365,7 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
           if (!backend->AllocateMemorySaveState(states[i], error))
           {
             // Free anything that was allocated.
-            for (size_t j = 0; j <= i; i++)
+            for (size_t j = 0; j <= i; j++)
             {
               states[j].state_data.deallocate();
               states[j].vram_texture.reset();
@@ -549,11 +550,19 @@ void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand
 {
   s_stats.gpu_busy_pct = cmd->gpu_busy_pct;
 
+  // Assumptions about struct layout.
+  static_assert(offsetof(GPUBackendUpdateDisplayCommand, display_width) + sizeof(u16) ==
+                offsetof(GPUBackendUpdateDisplayCommand, display_height));
+  static_assert(offsetof(GPUBackendUpdateDisplayCommand, display_origin_left) + sizeof(u16) ==
+                offsetof(GPUBackendUpdateDisplayCommand, display_origin_top));
+
   // Height has to be doubled because we halved it on the GPU side.
-  m_presenter.SetDisplayParameters(cmd->display_width, cmd->display_height, cmd->display_origin_left,
-                                   cmd->display_origin_top, cmd->display_vram_width,
-                                   cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled),
-                                   cmd->display_pixel_aspect_ratio, cmd->display_24bit);
+  const GSVector2i display_size = GSVector2i::load32(&cmd->display_width).u16to32();
+  const GSVector2i active_origin = GSVector2i::load32(&cmd->display_origin_left).u16to32();
+  const GSVector2i active_size =
+    GSVector2i(cmd->display_vram_width, cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled));
+  const GSVector4i active_rect = GSVector4i::xyxy(active_origin, active_origin.add32(active_size));
+  m_presenter.SetDisplayParameters(display_size, active_rect, cmd->display_pixel_aspect_ratio, cmd->display_24bit);
 
   UpdateDisplay(cmd);
   if (cmd->submit_frame)
@@ -693,9 +702,10 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
       else
       {
         // Crop it if border overlay isn't enabled.
-        GSVector4i draw_rect, display_rect;
-        backend->GetPresenter().CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), apply_aspect_ratio,
-                                                  false, false, &display_rect, &draw_rect);
+        GSVector4i source_rect, draw_rect, display_rect;
+        backend->GetPresenter().CalculateDrawRect(GSVector2i(static_cast<s32>(width), static_cast<s32>(height)),
+                                                  apply_aspect_ratio, false, true, false, &source_rect, &display_rect,
+                                                  &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }
@@ -768,9 +778,9 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
           fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)));
       }
 
-      System::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
-                              flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                              osd_key = std::move(osd_key)]() mutable {
+      Host::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
+                            flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                            osd_key = std::move(osd_key)]() mutable {
         Error error;
 
         if (flip_y)

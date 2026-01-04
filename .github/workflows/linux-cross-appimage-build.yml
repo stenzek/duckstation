@@ -4,6 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: "${{ matrix.arch }}"
@@ -24,7 +27,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/deps
         key: deps-cross ${{ matrix.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh', 'scripts/deps/versions') }}
@@ -91,7 +94,7 @@ jobs:
         scripts/packaging/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ matrix.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "linux-${{ matrix.arch }}-appimage"
         path: "DuckStation-*.AppImage"

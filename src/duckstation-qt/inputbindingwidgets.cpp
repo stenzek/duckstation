@@ -7,6 +7,7 @@
 #include "qthost.h"
 #include "qtutils.h"
 
+#include "core/core.h"
 #include "core/host.h"
 
 #include "common/bitutils.h"
@@ -46,7 +47,7 @@ InputBindingWidget::~InputBindingWidget()
 bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
 {
   return (sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) :
-                Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
+                Core::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
          !InputManager::IsUsingRawInput();
 }
 
@@ -248,15 +249,15 @@ void InputBindingWidget::setNewBinding()
     {
       m_sif->SetStringValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
       QtHost::SaveGameSettings(m_sif, false);
-      g_emu_thread->reloadGameSettings();
+      g_core_thread->reloadGameSettings();
     }
     else
     {
-      Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
+      Core::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
       Host::CommitBaseSettingChanges();
       if (m_bind_type == InputBindingInfo::Type::Pointer)
-        g_emu_thread->updateControllerSettings();
-      g_emu_thread->reloadInputBindings();
+        g_core_thread->updateControllerSettings();
+      g_core_thread->reloadInputBindings();
     }
   }
 
@@ -271,15 +272,15 @@ void InputBindingWidget::clearBinding()
   {
     m_sif->DeleteValue(m_section_name.c_str(), m_key_name.c_str());
     QtHost::SaveGameSettings(m_sif, false);
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
-    Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
+    Core::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_emu_thread->updateControllerSettings();
-    g_emu_thread->reloadInputBindings();
+      g_core_thread->updateControllerSettings();
+    g_core_thread->reloadInputBindings();
   }
   reloadBinding();
 }
@@ -287,7 +288,7 @@ void InputBindingWidget::clearBinding()
 void InputBindingWidget::reloadBinding()
 {
   m_bindings = m_sif ? m_sif->GetStringList(m_section_name.c_str(), m_key_name.c_str()) :
-                       Host::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
+                       Core::GetBaseStringListSetting(m_section_name.c_str(), m_key_name.c_str());
   updateTextAndToolTip();
 }
 
@@ -442,7 +443,7 @@ void InputBindingWidget::openDialog()
 
 void InputBindingWidget::showEffectBindingDialog()
 {
-  if (!g_emu_thread->getInputDeviceListModel()->hasEffectsOfType(m_bind_type))
+  if (!g_core_thread->getInputDeviceListModel()->hasEffectsOfType(m_bind_type))
   {
     QtUtils::AsyncMessageBox(this, QMessageBox::Critical, tr("Error"),
                              (m_bind_type == InputBindingInfo::Type::Motor) ?
@@ -483,7 +484,7 @@ void InputBindingWidget::showEffectBindingDialog()
       item->setCheckState(item->isSelected() ? Qt::Checked : Qt::Unchecked);
   });
 
-  for (const auto& [type, key] : g_emu_thread->getInputDeviceListModel()->getEffectList())
+  for (const auto& [type, key] : g_core_thread->getInputDeviceListModel()->getEffectList())
   {
     if (type != m_bind_type)
       continue;
@@ -500,7 +501,7 @@ void InputBindingWidget::showEffectBindingDialog()
     item->setCheckState(is_bound ? Qt::Checked : Qt::Unchecked);
     item->setText(QStringLiteral("%1\n%2")
                     .arg(QtUtils::StringViewToQString(name))
-                    .arg(g_emu_thread->getInputDeviceListModel()->getDeviceName(key)));
+                    .arg(g_core_thread->getInputDeviceListModel()->getDeviceName(key)));
     item->setData(Qt::UserRole, QtUtils::StringViewToQString(name));
     item->setIcon(InputDeviceListModel::getIconForKey(key));
     list->addItem(item);
@@ -532,15 +533,15 @@ void InputBindingWidget::showEffectBindingDialog()
   {
     m_sif->SetStringList(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     QtHost::SaveGameSettings(m_sif, false);
-    g_emu_thread->reloadGameSettings();
+    g_core_thread->reloadGameSettings();
   }
   else
   {
-    Host::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
+    Core::SetBaseStringListSettingValue(m_section_name.c_str(), m_key_name.c_str(), m_bindings);
     Host::CommitBaseSettingChanges();
     if (m_bind_type == InputBindingInfo::Type::Pointer)
-      g_emu_thread->updateControllerSettings();
-    g_emu_thread->reloadInputBindings();
+      g_core_thread->updateControllerSettings();
+    g_core_thread->reloadInputBindings();
   }
 
   setNewBinding();

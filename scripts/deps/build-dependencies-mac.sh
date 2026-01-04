@@ -27,7 +27,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-export MACOSX_DEPLOYMENT_TARGET=13.0
+export MACOSX_DEPLOYMENT_TARGET=13.3
 
 NPROCS="$(getconf _NPROCESSORS_ONLN)"
 SCRIPTDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
@@ -64,6 +64,7 @@ CMAKE_COMMON_QT=(
 )
 
 cat > SHASUMS <<EOF
+$BROTLI_GZ_HASH  brotli-$BROTLI.tar.gz
 $FREETYPE_GZ_HASH  freetype-$FREETYPE.tar.gz
 $HARFBUZZ_GZ_HASH  harfbuzz-$HARFBUZZ.tar.gz
 $LIBPNG_GZ_HASH  libpng-$LIBPNG.tar.gz
@@ -87,6 +88,7 @@ $SOUNDTOUCH_GZ_HASH  soundtouch-$SOUNDTOUCH_COMMIT.tar.gz
 EOF
 
 curl -L \
+	-o "brotli-$BROTLI.tar.gz" "https://github.com/google/brotli/archive/refs/tags/v$BROTLI.tar.gz" \
 	-o "freetype-$FREETYPE.tar.gz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.gz/download" \
 	-o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.gz" \
@@ -137,16 +139,16 @@ echo "Building libjpeg..."
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 cd "libjpeg-turbo-$LIBJPEGTURBO"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -B build
 make -C build "-j$NPROCS"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build-arm64
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -B build-arm64
 make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
 cd ..
 rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
 
-echo "Installing Zstd..."
+echo "Installing Zstandard..."
 rm -fr "zstd-$ZSTD"
 tar xf "zstd-$ZSTD.tar.gz"
 cd "zstd-$ZSTD"
@@ -158,6 +160,16 @@ merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
 make -C build-dir install
 cd ..
 rm -fr "zstd-$ZSTD"
+
+echo "Installing Brotli..."
+rm -fr "brotli-$BROTLI"
+tar xf "brotli-$BROTLI.tar.gz"
+cd "brotli-$BROTLI"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=OFF -DBROTLI_BUILD_TOOLS=OFF -DBROTLI_DISABLE_TESTS=ON -B build
+cmake --build build --parallel
+cmake --install build
+cd ..
+rm -fr "brotli-$BROTLI"
 
 echo "Installing WebP..."
 rm -fr "libwebp-$LIBWEBP"
@@ -194,7 +206,8 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.gz"
 cd "freetype-$FREETYPE"
 patch -p1 < "$SCRIPTDIR/freetype-harfbuzz-soname.patch"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build
+patch -p1 < "$SCRIPTDIR/freetype-static-brotli.patch"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_REQUIRE_BROTLI=TRUE -DFT_DYNAMIC_HARFBUZZ=TRUE -B build
 cmake --build build --parallel
 cmake --install build
 cd ..
@@ -283,7 +296,7 @@ patch -p1 < "$SCRIPTDIR/qtbase-window-modal-tahoe.patch"
 # We could run macdeployqt twice, but that's even more janky than patching it.
 patch -p1 < "$SCRIPTDIR/qtbase-macdeploy-imageformats.patch"
 
-cmake -B build "${CMAKE_COMMON[@]}" "${CMAKE_COMMON_QT[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake -B build "${CMAKE_COMMON[@]}" "${CMAKE_COMMON_QT[@]}" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON -DFEATURE_brotli=OFF
 make -C build "-j$NPROCS"
 make -C build install
 cd ..

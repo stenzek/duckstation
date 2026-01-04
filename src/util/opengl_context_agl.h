@@ -6,6 +6,11 @@
 #include "opengl_context.h"
 #include "opengl_loader.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <AppKit/AppKit.h>
 #else
@@ -47,3 +52,7 @@ private:
   NSOpenGLPixelFormat* m_pixel_format = nullptr;
   void* m_opengl_module_handle = nullptr;
 };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

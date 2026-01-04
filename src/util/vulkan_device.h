@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -6,7 +6,7 @@
 #include "gpu_device.h"
 #include "gpu_framebuffer_manager.h"
 #include "gpu_texture.h"
-#include "vulkan_loader.h"
+#include "vulkan_headers.h"
 #include "vulkan_stream_buffer.h"
 
 #include "common/dimensional_array.h"
@@ -47,32 +47,25 @@ public:
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
-    bool vk_ext_surface_maintenance1 : 1;
-    bool vk_ext_swapchain_maintenance1 : 1;
-    bool vk_khr_get_physical_device_properties2 : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;
-    bool vk_khr_get_surface_capabilities2 : 1;
     bool vk_khr_maintenance4 : 1;
     bool vk_khr_maintenance5 : 1;
     bool vk_khr_push_descriptor : 1;
     bool vk_khr_shader_non_semantic_info : 1;
+    bool vk_khr_swapchain_maintenance1 : 1;
   };
 
-  static GPUTexture::Format GetFormatForVkFormat(VkFormat format);
+  using ExtensionList = std::vector<const char*>;
 
-  static const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> TEXTURE_FORMAT_MAPPING;
+  static GPUTextureFormat GetFormatForVkFormat(VkFormat format);
+
+  static const std::array<VkFormat, static_cast<u32>(GPUTextureFormat::MaxCount)> TEXTURE_FORMAT_MAPPING;
 
 public:
   VulkanDevice();
   ~VulkanDevice() override;
-
-  // Returns a list of Vulkan-compatible GPUs.
-  using GPUList = std::vector<std::pair<VkPhysicalDevice, AdapterInfo>>;
-  static GPUList EnumerateGPUs(VkInstance instance);
-  static GPUList EnumerateGPUs();
-  static AdapterInfoList GetAdapterList();
 
   std::string GetDriverInfo() const override;
 
@@ -85,20 +78,20 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            GPUTexture::Type type, GPUTextureFormat format, GPUTexture::Flags flags,
                                             const void* data = nullptr, u32 data_stride = 0,
                                             Error* error = nullptr) override;
   std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
   std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
                                                         Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             Error* error = nullptr) override;
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                             void* memory, size_t memory_size, u32 memory_stride,
                                                             Error* error = nullptr) override;
 
-  bool SupportsTextureFormat(GPUTexture::Format format) const override;
+  bool SupportsTextureFormat(GPUTextureFormat format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                          u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) override;
   void ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -159,16 +152,12 @@ public:
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }
-  ALWAYS_INLINE VkInstance GetVulkanInstance() const { return m_instance; }
   ALWAYS_INLINE VkDevice GetVulkanDevice() const { return m_device; }
   ALWAYS_INLINE VmaAllocator GetAllocator() const { return m_allocator; }
   ALWAYS_INLINE VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_physical_device; }
   ALWAYS_INLINE u32 GetGraphicsQueueFamilyIndex() const { return m_graphics_queue_family_index; }
   ALWAYS_INLINE u32 GetPresentQueueFamilyIndex() const { return m_present_queue_family_index; }
   ALWAYS_INLINE const OptionalExtensions& GetOptionalExtensions() const { return m_optional_extensions; }
-
-  /// Returns true if Vulkan is suitable as a default for the devices in the system.
-  static bool IsSuitableDefaultRenderer();
 
   // Helpers for getting constants
   ALWAYS_INLINE u32 GetBufferCopyOffsetAlignment() const
@@ -186,7 +175,7 @@ public:
   VkRenderPass GetRenderPass(const GPUPipeline::GraphicsConfig& config);
   VkRenderPass GetRenderPass(VulkanTexture* const* rts, u32 num_rts, VulkanTexture* ds,
                              GPUPipeline::RenderPassFlag render_pass_flags);
-  VkRenderPass GetSwapChainRenderPass(GPUTexture::Format format, VkAttachmentLoadOp load_op);
+  VkRenderPass GetSwapChainRenderPass(GPUTextureFormat format, VkAttachmentLoadOp load_op);
 
   // Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
   VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);
@@ -322,32 +311,16 @@ private:
 
   using CleanupObjectFunction = void (*)(VulkanDevice& dev, void* obj);
 
-  // Helper method to create a Vulkan instance.
-  static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
-                                         bool enable_validation_layer);
-
   bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header, Error* error);
   void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header);
 
-  // Enable/disable debug message runtime.
-  bool EnableDebugUtils();
-  void DisableDebugUtils();
-
-  using ExtensionList = std::vector<const char*>;
-  static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
-                                       bool enable_debug_utils);
-  bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, bool enable_validation_layer,
-                    CreateFlags create_flags, Error* error);
+  bool CreateDevice(VkPhysicalDevice physical_device, VkSurfaceKHR surface, CreateFlags create_flags, Error* error);
   bool EnableOptionalDeviceExtensions(VkPhysicalDevice physical_device,
                                       std::span<const VkExtensionProperties> available_extensions,
                                       ExtensionList& enabled_extensions, VkPhysicalDeviceFeatures& enabled_features,
                                       bool enable_surface, Error* error);
   void SetFeatures(CreateFlags create_flags, VkPhysicalDevice physical_device,
                    const VkPhysicalDeviceFeatures& vk_features);
-
-  static GPUDriverType GuessDriverType(const VkPhysicalDeviceProperties& device_properties,
-                                       const VkPhysicalDeviceDriverProperties& driver_properties);
-  static u32 GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties);
 
   bool CreateAllocator();
   void DestroyAllocator();
@@ -399,42 +372,64 @@ private:
   void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present);
   void QueuePresent(VulkanSwapChain* present_swap_chain);
 
-  VkInstance m_instance = VK_NULL_HANDLE;
-  VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
   VkDevice m_device = VK_NULL_HANDLE;
   VmaAllocator m_allocator = VK_NULL_HANDLE;
 
-  VkCommandBuffer m_current_command_buffer = VK_NULL_HANDLE;
-
-  VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
+  OptionalExtensions m_optional_extensions = {};
+  std::optional<bool> m_exclusive_fullscreen_control;
+  bool m_device_was_lost = false;
 
   VkQueue m_graphics_queue = VK_NULL_HANDLE;
   VkQueue m_present_queue = VK_NULL_HANDLE;
   u32 m_graphics_queue_family_index = 0;
   u32 m_present_queue_family_index = 0;
 
-  VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
-  float m_accumulated_gpu_time = 0.0f;
+  VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
 
+  VkCommandBuffer m_current_command_buffer = VK_NULL_HANDLE;
+
+  float m_accumulated_gpu_time = 0.0f;
+  u32 m_current_frame = 0;
   std::array<CommandBuffer, NUM_COMMAND_BUFFERS> m_frame_resources;
   std::deque<std::pair<u64, std::function<void()>>> m_cleanup_objects; // [fence_counter, callback]
   u64 m_next_fence_counter = 1;
   u64 m_completed_fence_counter = 0;
-  u32 m_current_frame = 0;
 
-  bool m_device_was_lost = false;
+  // Which bindings/state has to be updated before the next draw.
+  u32 m_dirty_flags = ALL_DIRTY_STATE;
+
+  VulkanPipeline* m_current_pipeline = nullptr;
+  GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+
+  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  u32 m_num_current_render_targets = 0;
+
+  std::array<VulkanTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
+  VulkanTexture* m_current_depth_target = nullptr;
+  VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
+  VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
+
+  std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
+  std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
+  VulkanTextureBuffer* m_current_texture_buffer = nullptr;
+  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
+  GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
+  VulkanSwapChain* m_current_swap_chain = nullptr;
+
+  VulkanStreamBuffer m_vertex_buffer;
+  VulkanStreamBuffer m_index_buffer;
+  VulkanStreamBuffer m_uniform_buffer;
+  VulkanStreamBuffer m_texture_upload_buffer;
+
+  VkDescriptorSet m_ubo_descriptor_set = VK_NULL_HANDLE;
+  u32 m_uniform_buffer_position = 0;
+  u32 m_uniform_buffer_alignment = 0;
+
+  VkQueryPool m_timestamp_query_pool = VK_NULL_HANDLE;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
   VkPipelineCache m_pipeline_cache = VK_NULL_HANDLE;
-
-  // TODO: Move to static?
-  VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
-
-  VkPhysicalDeviceProperties m_device_properties = {};
-  VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
-  OptionalExtensions m_optional_extensions = {};
-  std::optional<bool> m_exclusive_fullscreen_control;
 
   VkDescriptorSetLayout m_ubo_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_ds_layout = VK_NULL_HANDLE;
@@ -446,31 +441,8 @@ private:
                    static_cast<size_t>(PipelineLayoutType::MaxCount)>
     m_pipeline_layouts = {};
 
-  VulkanStreamBuffer m_vertex_buffer;
-  VulkanStreamBuffer m_index_buffer;
-  VulkanStreamBuffer m_uniform_buffer;
-  VulkanStreamBuffer m_texture_upload_buffer;
-
-  VkDescriptorSet m_ubo_descriptor_set = VK_NULL_HANDLE;
-  u32 m_uniform_buffer_position = 0;
-
-  // Which bindings/state has to be updated before the next draw.
-  u32 m_dirty_flags = ALL_DIRTY_STATE;
-
-  u32 m_num_current_render_targets = 0;
-  GPUPipeline::RenderPassFlag m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  std::array<VulkanTexture*, MAX_RENDER_TARGETS> m_current_render_targets = {};
-  VulkanTexture* m_current_depth_target = nullptr;
-  VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
-  VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
-
-  VulkanPipeline* m_current_pipeline = nullptr;
-  GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-
-  std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
-  std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};
-  VulkanTextureBuffer* m_current_texture_buffer = nullptr;
-  GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
-  GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
-  VulkanSwapChain* m_current_swap_chain = nullptr;
+  // Cold variables.
+  VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
+  VkPhysicalDeviceProperties m_device_properties = {};
+  VkPhysicalDeviceDriverProperties m_device_driver_properties = {};
 };

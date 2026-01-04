@@ -109,8 +109,7 @@ std::string D3D12Pipeline::GetPipelineName(const GraphicsConfig& config)
     hash.Update(shader->GetBytecodeData(), shader->GetBytecodeSize());
   hash.Update(&config.color_formats, sizeof(config.color_formats));
   hash.Update(&config.depth_format, sizeof(config.depth_format));
-  hash.Update(&config.samples, sizeof(config.samples));
-  hash.Update(&config.per_sample_shading, sizeof(config.per_sample_shading));
+  hash.Update(&config.render_pass_flags, sizeof(config.render_pass_flags));
 
   u8 digest[SHA1Digest::DIGEST_SIZE];
   hash.Final(digest);
@@ -238,8 +237,8 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
 
   gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID,
                             cull_mapping[static_cast<u8>(config.rasterization.cull_mode.GetValue())], false);
-  if (config.samples > 1)
-    gpb.SetMultisamples(config.samples);
+  if (config.rasterization.multisamples > 1)
+    gpb.SetMultisamples(config.rasterization.multisamples);
   gpb.SetDepthState(config.depth.depth_test != GPUPipeline::DepthFunc::Always || config.depth.depth_write,
                     config.depth.depth_write, compare_mapping[static_cast<u8>(config.depth.depth_test.GetValue())]);
   gpb.SetNoStencilState();
@@ -253,11 +252,11 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
-    if (config.color_formats[i] != GPUTexture::Format::Unknown)
+    if (config.color_formats[i] != GPUTextureFormat::Unknown)
       gpb.SetRenderTarget(i, D3DCommon::GetFormatMapping(config.color_formats[i]).rtv_format);
   }
 
-  if (config.depth_format != GPUTexture::Format::Unknown)
+  if (config.depth_format != GPUTextureFormat::Unknown)
     gpb.SetDepthStencilFormat(D3DCommon::GetFormatMapping(config.depth_format).dsv_format);
 
   ComPtr<ID3D12PipelineState> pipeline;

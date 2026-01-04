@@ -14,6 +14,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cmath>
 #include <hidsdi.h>
 #include <hidusage.h>
@@ -47,12 +48,7 @@ bool Win32RawInputSource::Initialize(const SettingsInterface& si, std::unique_lo
     return false;
   }
 
-  if (!OpenDevices())
-  {
-    ERROR_LOG("Failed to open devices");
-    return false;
-  }
-
+  ReloadDevices();
   return true;
 }
 
@@ -60,14 +56,10 @@ void Win32RawInputSource::UpdateSettings(const SettingsInterface& si, std::uniqu
 {
 }
 
-bool Win32RawInputSource::ReloadDevices()
-{
-  return false;
-}
-
 void Win32RawInputSource::Shutdown()
 {
   CloseDevices();
+  UnregisterRawInput();
   DestroyDummyWindow();
 }
 
@@ -247,76 +239,146 @@ error:
 #endif
 }
 
-bool Win32RawInputSource::OpenDevices()
+bool Win32RawInputSource::IsAcceptableRawInputMouse(const RAWINPUTDEVICELIST& rid)
 {
-  UINT num_devices = 0;
-  if (GetRawInputDeviceList(nullptr, &num_devices, sizeof(RAWINPUTDEVICELIST)) == static_cast<UINT>(-1) ||
-      num_devices == 0)
+  if (rid.dwType == RIM_TYPEMOUSE)
+  {
+    // Make sure it's a real mouse with buttons.
+    // My goal with this was to stop my silly Corsair keyboard from showing up as a mouse... but it reports 32 buttons.
+    RID_DEVICE_INFO devinfo = {
+      .cbSize = sizeof(devinfo),
+      .dwType = RIM_TYPEMOUSE,
+      .mouse = {},
+    };
+    UINT devinfo_size = sizeof(devinfo);
+    if (GetRawInputDeviceInfoW(rid.hDevice, RIDI_DEVICEINFO, &devinfo, &devinfo_size) <= 0 ||
+        devinfo.mouse.dwNumberOfButtons == 0)
+    {
+      return false;
+    }
+
+    return true;
+  }
+  else
   {
     return false;
   }
+}
 
-  std::vector<RAWINPUTDEVICELIST> devices(num_devices);
-  if (GetRawInputDeviceList(devices.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) == static_cast<UINT>(-1))
-    return false;
-  devices.resize(num_devices);
+bool Win32RawInputSource::ReloadDevices()
+{
+  std::vector<RAWINPUTDEVICELIST> devices;
+  UINT num_devices = 0;
+  if (GetRawInputDeviceList(nullptr, &num_devices, sizeof(RAWINPUTDEVICELIST)) != static_cast<UINT>(-1) &&
+      num_devices > 0)
+  {
+    devices.resize(num_devices);
+    if (GetRawInputDeviceList(devices.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) != static_cast<UINT>(-1))
+      devices.resize(num_devices);
+    else
+      devices.clear();
+  }
+
+  // close any devices no longer in the list
+  bool any_changed = false;
+  for (size_t i = 0; i < m_mice.size(); i++)
+  {
+    MouseState& ms = m_mice[i];
+    if (!ms.device)
+      continue;
+
+    if (std::ranges::none_of(devices, [&ms](const RAWINPUTDEVICELIST& rid) { return rid.hDevice == ms.device; }))
+    {
+      DEV_LOG("Detected raw input device {} removal", i);
+
+      ms = {};
+
+      InputManager::OnInputDeviceDisconnected(
+        MakeGenericControllerDeviceKey(InputSourceType::Pointer, static_cast<u32>(i)),
+        InputManager::GetPointerDeviceName(static_cast<u32>(i)));
+
+      any_changed = true;
+    }
+  }
 
   for (const RAWINPUTDEVICELIST& rid : devices)
   {
-    if (rid.dwType == RIM_TYPEMOUSE)
-    {
-      // Make sure it's a real mouse with buttons.
-      // My goal with this was to stop my silly Corsair keyboard from showing up as a mouse... but it reports 32
-      // buttons.
-      RID_DEVICE_INFO devinfo = {
-        .cbSize = sizeof(devinfo),
-        .dwType = RIM_TYPEMOUSE,
-        .mouse = {},
-      };
-      UINT devinfo_size = sizeof(devinfo);
-      if (GetRawInputDeviceInfoW(rid.hDevice, RIDI_DEVICEINFO, &devinfo, &devinfo_size) <= 0 ||
-          devinfo.mouse.dwNumberOfButtons == 0)
-      {
-        continue;
-      }
+    // Already tracking?
+    if (std::ranges::any_of(m_mice, [&rid](const MouseState& ms) { return (rid.hDevice == ms.device); }))
+      continue;
 
-      m_mice.push_back({.device = rid.hDevice, .button_state = 0, .last_x = 0, .last_y = 0});
+    if (!IsAcceptableRawInputMouse(rid))
+      continue;
+
+    // Find a free slot. Might have been closed above.
+    auto iter = std::ranges::find_if(m_mice, [](const MouseState& ms) { return !ms.device; });
+    if (iter == m_mice.end())
+    {
+      m_mice.push_back({});
+      iter = std::prev(m_mice.end());
     }
+
+    iter->device = rid.hDevice;
+    iter->button_state = 0;
+    iter->last_x = 0;
+    iter->last_y = 0;
+
+    const u32 pointer_index = static_cast<u32>(std::distance(m_mice.begin(), iter));
+    InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, pointer_index),
+                                         InputManager::GetPointerDeviceName(pointer_index),
+                                         GetMouseDeviceName(pointer_index));
+
+    any_changed = true;
   }
 
-  DEV_LOG("Found {} mice", m_mice.size());
+  // Drop any trailing closed devices.
+  while (!m_mice.empty() && !m_mice.back().device)
+    m_mice.pop_back();
 
-  // Grab all mouse input.
-  if (!m_mice.empty())
-  {
-    const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, 0, m_dummy_window};
-    if (!RegisterRawInputDevices(&rrid, 1, sizeof(rrid)))
-      return false;
-
-    for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
-    {
-      InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
-                                           InputManager::GetPointerDeviceName(i), GetMouseDeviceName(i));
-    }
-  }
-
-  return true;
+  DEV_LOG("Found {} mice", std::ranges::count_if(m_mice, [](const MouseState& ms) { return (ms.device != nullptr); }));
+  return any_changed;
 }
 
 void Win32RawInputSource::CloseDevices()
 {
-  if (!m_mice.empty())
-  {
-    const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, RIDEV_REMOVE, m_dummy_window};
-    RegisterRawInputDevices(&rrid, 1, sizeof(rrid));
+  if (m_mice.empty())
+    return;
 
-    for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
-    {
-      InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
-                                              InputManager::GetPointerDeviceName(i));
-    }
-    m_mice.clear();
+  m_mice.clear();
+
+  const u32 num_mice = static_cast<u32>(m_mice.size());
+  for (u32 i = 0; i < num_mice; i++)
+  {
+    InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
+                                            InputManager::GetPointerDeviceName(i));
   }
+}
+
+void Win32RawInputSource::EnsureRawInputRegistered()
+{
+  if (m_raw_input_registered)
+    return;
+
+  const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, 0, m_dummy_window};
+  if (!RegisterRawInputDevices(&rrid, 1, sizeof(rrid)))
+  {
+    ERROR_LOG("RegisterRawInputDevices() failed: {}", GetLastError());
+    return;
+  }
+
+  m_raw_input_registered = true;
+}
+
+void Win32RawInputSource::UnregisterRawInput()
+{
+  if (!m_raw_input_registered)
+    return;
+
+  const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, RIDEV_REMOVE, m_dummy_window};
+  if (!RegisterRawInputDevices(&rrid, 1, sizeof(rrid)))
+    ERROR_LOG("RegisterRawInputDevices() to remove failed: {}", GetLastError());
+
+  m_raw_input_registered = false;
 }
 
 bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
@@ -374,8 +436,7 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
 
         // This is truely awful. But for something that isn't used much, it's the easiest way to get the render rect...
         const WindowInfo& render_wi = GPUThread::GetRenderWindowInfo();
-        if (render_wi.type == WindowInfo::Type::Win32 &&
-            GetWindowRect(static_cast<HWND>(render_wi.window_handle), &rect))
+        if (render_wi.type == WindowInfoType::Win32 && GetWindowRect(static_cast<HWND>(render_wi.window_handle), &rect))
         {
           absolute_x -= rect.left;
           absolute_y -= rect.top;

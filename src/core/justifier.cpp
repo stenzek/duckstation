@@ -3,15 +3,16 @@
 
 #include "justifier.h"
 #include "gpu.h"
-#include "host.h"
 #include "interrupt_controller.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/assert.h"
+#include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -220,16 +221,14 @@ void Justifier::UpdatePosition()
     return;
   }
 
-  float display_x, display_y;
   const auto [window_x, window_y] = (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() :
                                                              InputManager::GetPointerAbsolutePosition(m_cursor_index);
-  g_gpu.ConvertScreenCoordinatesToDisplayCoordinates(window_x, window_y, &display_x, &display_y);
+  const GSVector2 display_pos = g_gpu.ConvertScreenCoordinatesToDisplayCoordinates(GSVector2(window_x, window_y));
 
   // are we within the active display area?
   u32 tick, line;
-  if (display_x < 0 || display_y < 0 ||
-      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
-      m_shoot_offscreen)
+  if ((display_pos < GSVector2::zero()).anytrue() ||
+      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_pos, m_x_scale, &tick, &line) || m_shoot_offscreen)
   {
     DEV_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
     m_position_valid = false;
@@ -248,8 +247,8 @@ void Justifier::UpdatePosition()
                                                      static_cast<s32>(g_gpu.GetCRTCActiveStartLine()),
                                                      static_cast<s32>(g_gpu.GetCRTCActiveEndLine())));
 
-  DEV_LOG("Lightgun window coordinates {},{} -> dpy {},{} -> tick {} line {} [{}-{}]", window_x, window_y, display_x,
-          display_y, tick, line, m_irq_first_line, m_irq_last_line);
+  DEV_LOG("Lightgun window coordinates {},{} -> dpy {} -> tick {} line {} [{}-{}]", window_x, window_y, display_pos,
+          tick, line, m_irq_first_line, m_irq_last_line);
 
   UpdateIRQEvent();
 }

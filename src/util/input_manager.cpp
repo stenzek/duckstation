@@ -4,8 +4,10 @@
 #include "input_manager.h"
 #include "imgui_manager.h"
 #include "input_source.h"
+#include "translation.h"
 
 #include "core/controller.h"
+#include "core/core.h"
 #include "core/host.h"
 #include "core/system.h"
 
@@ -33,6 +35,11 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#include <cfgmgr32.h>
+#endif
 
 LOG_CHANNEL(InputManager);
 
@@ -146,7 +153,10 @@ static void AddPadBindings(const SettingsInterface& si, const std::string& secti
 static void InternalReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si);
 static void SynchronizePadEffectBindings(InputBindingKey key);
 static void UpdateContinuedVibration();
+static void InternalPauseVibration();
+static void InternalClearEffects();
 static void GenerateRelativeMouseEvents();
+[[maybe_unused]] static void ReloadDevices();
 
 static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
@@ -162,6 +172,13 @@ static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock
 
 static const KeyCodeData* FindKeyCodeData(u32 usb_code);
 
+#ifdef _WIN32
+static DWORD WINAPI DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action,
+                                               PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
+static void RegisterDeviceNotificationHandle();
+static void UnregisterDeviceNotificationHandle();
+#endif
+
 // ------------------------------------------------------------------------
 // Tracking host mouse movement and turning into relative events
 // 4 axes: pointer left/right, wheel vertical/horizontal. Last/Next/Normalized.
@@ -171,11 +188,6 @@ static constexpr const std::array<const char*, static_cast<u8>(InputPointerAxis:
 static constexpr const std::array<const char*, 3> s_pointer_button_names = {
   {"LeftButton", "RightButton", "MiddleButton"}};
 static constexpr const std::array<const char*, 3> s_sensor_accelerometer_names = {{"Turn", "Tilt", "Rotate"}};
-
-// ------------------------------------------------------------------------
-// Hotkeys
-// ------------------------------------------------------------------------
-static const HotkeyInfo* const s_hotkey_list[] = {g_common_hotkeys, g_host_hotkeys};
 
 // ------------------------------------------------------------------------
 // Local Variables
@@ -209,6 +221,12 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Input sources. Keyboard/mouse don't exist here.
   std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType::Count)> input_sources;
+
+#ifdef _WIN32
+  // Device notification handle for Windows.
+  HCMNOTIFICATION device_notification_handle = nullptr;
+  std::atomic_flag device_notification_reload_pending = ATOMIC_FLAG_INIT;
+#endif
 
   ALIGN_TO_CACHE_LINE
   std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
@@ -267,6 +285,8 @@ static constexpr const std::array s_legacy_key_names = {
 };
 
 } // namespace InputManager
+
+ForceFeedbackDevice::~ForceFeedbackDevice() = default;
 
 // ------------------------------------------------------------------------
 // Binding Parsing
@@ -926,29 +946,15 @@ float InputManager::ApplySingleBindingScale(float scale, float deadzone, float v
   return (deadzone > 0.0f && svalue < deadzone) ? 0.0f : svalue;
 }
 
-std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
-{
-  std::vector<const HotkeyInfo*> ret;
-  for (const HotkeyInfo* hotkey_list : s_hotkey_list)
-  {
-    for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
-      ret.push_back(hotkey);
-  }
-  return ret;
-}
-
 void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 {
-  for (const HotkeyInfo* hotkey_list : s_hotkey_list)
+  for (const HotkeyInfo& hotkey : Core::GetHotkeyList())
   {
-    for (const HotkeyInfo* hotkey = hotkey_list; hotkey->name != nullptr; hotkey++)
-    {
-      const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey->name));
-      if (bindings.empty())
-        continue;
+    const std::vector<std::string> bindings(si.GetStringList("Hotkeys", hotkey.name));
+    if (bindings.empty())
+      continue;
 
-      AddBindings(bindings, InputButtonEventHandler{hotkey->handler});
-    }
+    AddBindings(bindings, InputButtonEventHandler{hotkey.handler});
   }
 }
 
@@ -1697,9 +1703,8 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
   if (copy_hotkey_bindings)
   {
-    std::vector<const HotkeyInfo*> hotkeys(InputManager::GetHotkeyList());
-    for (const HotkeyInfo* hki : hotkeys)
-      dest_si->CopyStringListValue(src_si, "Hotkeys", hki->name);
+    for (const HotkeyInfo& hk : Core::GetHotkeyList())
+      dest_si->CopyStringListValue(src_si, "Hotkeys", hk.name);
   }
 }
 
@@ -1869,7 +1874,7 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, u32 bind_index, float
   }
 }
 
-void InputManager::PauseVibration()
+void InputManager::InternalPauseVibration()
 {
   for (PadVibrationBinding& binding : s_state.pad_vibration_array)
   {
@@ -1946,10 +1951,8 @@ void InputManager::SetPadLEDState(u32 pad_index, float intensity)
   }
 }
 
-void InputManager::ClearEffects()
+void InputManager::InternalClearEffects()
 {
-  PauseVibration();
-
   for (PadLEDBinding& pad : s_state.pad_led_array)
   {
     if (pad.last_intensity == 0.0f)
@@ -2192,9 +2195,9 @@ void InputManager::InternalReloadBindings(const SettingsInterface& binding_si,
 
 void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
 {
-  PauseVibration();
-
   std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+  InternalClearEffects();
   InternalReloadBindings(binding_si, hotkey_binding_si);
 
   UpdateRelativeMouseMode();
@@ -2204,12 +2207,23 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 // Source Management
 // ------------------------------------------------------------------------
 
-bool InputManager::ReloadDevices()
+void InputManager::ClearEffects()
 {
   std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+  InternalClearEffects();
+}
 
+void InputManager::PauseVibration()
+{
+  std::unique_lock lock(s_state.mutex);
+  InternalPauseVibration();
+}
+
+void InputManager::ReloadDevices()
+{
   bool changed = false;
-
+  std::unique_lock lock(s_state.mutex);
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_state.input_sources[i])
@@ -2217,8 +2231,12 @@ bool InputManager::ReloadDevices()
   }
 
   UpdatePointerCount();
+  if (!changed)
+    return;
 
-  return changed;
+  // need to release the lock, since otherwise we would risk a lock ordering issue
+  lock.unlock();
+  System::ReloadInputBindings();
 }
 
 void InputManager::CloseSources()
@@ -2233,6 +2251,10 @@ void InputManager::CloseSources()
       s_state.input_sources[i].reset();
     }
   }
+
+#ifdef _WIN32
+  UnregisterDeviceNotificationHandle();
+#endif
 }
 
 void InputManager::PollSources()
@@ -2428,6 +2450,20 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::RawInput, &InputSource::CreateWin32RawInputSource);
+
+  // Request device notifications when using raw input/xinput/dinput, as we need to manually handle device changes
+  if (s_state.input_sources[static_cast<u32>(InputSourceType::DInput)] ||
+      s_state.input_sources[static_cast<u32>(InputSourceType::XInput)] ||
+      s_state.input_sources[static_cast<u32>(InputSourceType::RawInput)])
+  {
+    if (!s_state.device_notification_handle)
+      RegisterDeviceNotificationHandle();
+  }
+  else
+  {
+    if (s_state.device_notification_handle)
+      UnregisterDeviceNotificationHandle();
+  }
 #endif
 #ifdef ENABLE_SDL
   UpdateInputSourceState(si, settings_lock, InputSourceType::SDL, &InputSource::CreateSDLSource);
@@ -2442,6 +2478,52 @@ void InputManager::ReloadSourcesAndBindings(const SettingsInterface& si, const S
   UpdateRelativeMouseMode();
 }
 
-ForceFeedbackDevice::~ForceFeedbackDevice()
+#ifdef _WIN32
+
+DWORD InputManager::DeviceNotificationCallback(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action,
+                                               PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize)
 {
+  if (Action != CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL && Action != CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL)
+    return ERROR_SUCCESS;
+
+  // This comes through on a thread pool worker, so we need to queue the reload on the core thread.
+  // We tend to get a few of these in quick succession, so try to batch the reloads together.
+  if (!s_state.device_notification_reload_pending.test_and_set(std::memory_order_acq_rel))
+  {
+    Host::RunOnCoreThread([]() {
+      DEV_LOG("Reloading input devices due to device notification.");
+      s_state.device_notification_reload_pending.clear(std::memory_order_release);
+      ReloadDevices();
+    });
+  }
+
+  return ERROR_SUCCESS;
 }
+
+void InputManager::RegisterDeviceNotificationHandle()
+{
+  DebugAssert(!s_state.device_notification_handle);
+  s_state.device_notification_reload_pending.clear(std::memory_order_release);
+
+  // We use these notifications to detect when a controller is connected or disconnected.
+  CM_NOTIFY_FILTER filter = {};
+  filter.cbSize = sizeof(CM_NOTIFY_FILTER);
+  filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+  filter.Flags = CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES;
+
+  const CONFIGRET cr = CM_Register_Notification(&filter, nullptr, &InputManager::DeviceNotificationCallback,
+                                                &s_state.device_notification_handle);
+  if (cr != CR_SUCCESS)
+    ERROR_LOG("CM_Register_Notification() failed: {}", cr);
+}
+
+void InputManager::UnregisterDeviceNotificationHandle()
+{
+  if (!s_state.device_notification_handle)
+    return;
+
+  CM_Unregister_Notification(s_state.device_notification_handle);
+  s_state.device_notification_handle = nullptr;
+}
+
+#endif

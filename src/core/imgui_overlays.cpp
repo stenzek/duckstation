@@ -5,6 +5,7 @@
 #include "achievements.h"
 #include "cdrom.h"
 #include "controller.h"
+#include "core.h"
 #include "cpu_core_private.h"
 #include "dma.h"
 #include "fullscreenui.h"
@@ -19,12 +20,14 @@
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
+#include "timers.h"
 
 #include "util/gpu_device.h"
 #include "util/imgui_animated.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/media_capture.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"
@@ -167,7 +170,7 @@ bool ImGuiManager::UpdateDebugWindowConfig()
     const DebugWindowInfo& info = s_debug_window_info[i];
 
     const bool current = (state.window_handle != nullptr);
-    const bool enabled = (!block_all && Host::GetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false));
+    const bool enabled = (!block_all && Core::GetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false));
     if (enabled == current)
       continue;
 
@@ -210,7 +213,7 @@ void ImGuiManager::RenderDebugWindows()
       // window was closed, destroy it and update the configuration
       const DebugWindowInfo& info = s_debug_window_info[i];
       DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, info.name);
-      Host::SetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false);
+      Core::SetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false);
       Host::CommitBaseSettingChanges();
     }
   }
@@ -513,8 +516,8 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
       {
         text.assign(BOLD("CPU:") " ");
       }
-      FormatProcessorStat(text, PerformanceCounters::GetCPUThreadUsage(),
-                          PerformanceCounters::GetCPUThreadAverageTime());
+      FormatProcessorStat(text, PerformanceCounters::GetCoreThreadUsage(),
+                          PerformanceCounters::GetCoreThreadAverageTime());
       DrawPerformanceStat(dl, position_y, fixed_font, fixed_font_size, FIXED_BOLD_WEIGHT, 0, shadow_offset, rbound,
                           text);
       position_y += spacing;
@@ -1114,13 +1117,13 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
     return fmt::format("{} {}", binding, caption);
   };
 
-  s_state.load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
+  s_state.load_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
                                             TRANSLATE_SV("SaveStateSelectorUI", "Load"));
-  s_state.save_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
+  s_state.save_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
                                             TRANSLATE_SV("SaveStateSelectorUI", "Save"));
-  s_state.prev_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
+  s_state.prev_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
                                             TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
-  s_state.next_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
+  s_state.next_legend = format_legend_entry(Core::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
                                             TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
 }
 
@@ -1194,7 +1197,7 @@ void SaveStateSelectorUI::InitializeListEntry(ListEntry* li, ExtendedSaveStateIn
     {
       li->preview_texture = g_gpu_device->FetchTexture(
         ssi->screenshot.GetWidth(), ssi->screenshot.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-        GPUTexture::Format::RGBA8, GPUTexture::Flags::None, ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
+        GPUTextureFormat::RGBA8, GPUTexture::Flags::None, ssi->screenshot.GetPixels(), ssi->screenshot.GetPitch());
       if (!li->preview_texture) [[unlikely]]
         ERROR_LOG("Failed to upload save state image to GPU");
     }
@@ -1410,7 +1413,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 {
   DebugAssert(GPUThread::IsOnThread());
 
-  Host::RunOnCPUThread(
+  Host::RunOnCoreThread(
     [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::LoadStateFromSlot(global, slot); });
 
   Close();
@@ -1418,7 +1421,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
 
 void SaveStateSelectorUI::SaveCurrentSlot()
 {
-  Host::RunOnCPUThread(
+  Host::RunOnCoreThread(
     [global = IsCurrentSlotGlobal(), slot = GetCurrentSlot()]() { System::SaveStateToSlot(global, slot); });
 
   Close();

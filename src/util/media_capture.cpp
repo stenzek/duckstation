@@ -3,7 +3,7 @@
 
 #include "media_capture.h"
 #include "gpu_device.h"
-#include "host.h"
+#include "translation.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -16,7 +16,7 @@
 #include "common/string_util.h"
 #include "common/threading.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 
 #include <algorithm>
@@ -87,7 +87,7 @@ public:
 
   virtual ~MediaCaptureBase() override;
 
-  bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTexture::Format texture_format, u32 sample_rate,
+  bool BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format, u32 sample_rate,
                     std::string path, bool capture_video, std::string_view video_codec, u32 video_bitrate,
                     std::string_view video_codec_args, bool capture_audio, std::string_view audio_codec,
                     u32 audio_bitrate, std::string_view audio_codec_args, Error* error) override final;
@@ -150,7 +150,7 @@ protected:
   std::atomic_bool m_capturing{false};
   std::atomic_bool m_encoding_error{false};
 
-  GPUTexture::Format m_video_render_texture_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_video_render_texture_format = GPUTextureFormat::Unknown;
   u32 m_video_width = 0;
   u32 m_video_height = 0;
   float m_video_fps = 0;
@@ -186,7 +186,7 @@ protected:
 
 MediaCaptureBase::~MediaCaptureBase() = default;
 
-bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTexture::Format texture_format,
+bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 height, GPUTextureFormat texture_format,
                                     u32 sample_rate, std::string path, bool capture_video, std::string_view video_codec,
                                     u32 video_bitrate, std::string_view video_codec_args, bool capture_audio,
                                     std::string_view audio_codec, u32 audio_bitrate, std::string_view audio_codec_args,
@@ -1230,7 +1230,7 @@ ALWAYS_INLINE_RELEASE void MediaCaptureMF::ConvertVideoFrame(u8* dst, size_t dst
     src_stride = static_cast<size_t>(-static_cast<std::make_signed_t<size_t>>(src_stride));
   }
 
-  if (m_video_render_texture_format == GPUTexture::Format::RGBA8)
+  if (m_video_render_texture_format == GPUTextureFormat::RGBA8)
   {
     // need to convert rgba -> bgra, as well as flipping vertically
     const u32 vector_width = 4;
@@ -2177,9 +2177,9 @@ bool MediaCaptureFFmpeg::InternalBeginCapture(float fps, float aspect, u32 sampl
                    static_cast<s64>(static_cast<double>(fps) * 10000.0), 10000, std::numeric_limits<s32>::max());
 
     // Map input pixel format.
-    static constexpr const std::pair<GPUTexture::Format, AVPixelFormat> texture_pf_mapping[] = {
-      {GPUTexture::Format::RGBA8, AV_PIX_FMT_RGBA},
-      {GPUTexture::Format::BGRA8, AV_PIX_FMT_BGRA},
+    static constexpr const std::pair<GPUTextureFormat, AVPixelFormat> texture_pf_mapping[] = {
+      {GPUTextureFormat::RGBA8, AV_PIX_FMT_RGBA},
+      {GPUTextureFormat::BGRA8, AV_PIX_FMT_BGRA},
     };
     if (const auto pf_mapping =
           std::find_if(std::begin(texture_pf_mapping), std::end(texture_pf_mapping),

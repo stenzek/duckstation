@@ -211,6 +211,7 @@
     <addaction name="actionViewGameList"/>
     <addaction name="actionViewGameGrid"/>
     <addaction name="actionViewSystemDisplay"/>
+    <addaction name="actionViewSystemLog"/>
     <addaction name="separator"/>
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
@@ -1413,6 +1414,20 @@
    </property>
    <property name="toolTip">
     <string>Downloads icons for all games from RetroAchievements.</string>
+   </property>
+  </action>
+  <action name="actionViewSystemLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="file-list-line"/>
+   </property>
+   <property name="text">
+    <string>System Log</string>
    </property>
   </action>
  </widget>

@@ -40,7 +40,7 @@ endif()
 
 # Release build optimizations for MSVC.
 if(MSVC)
-  add_definitions("/D_CRT_SECURE_NO_WARNINGS")
+  add_compile_definitions("_UNICODE" "UNICODE" "_CRT_NONSTDC_NO_DEPRECATE" "_CRT_SECURE_NO_WARNINGS")
   foreach(config CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     # Set warning level 3 instead of 4.
     string(REPLACE "/W3" "/W4" ${config} "${${config}}")
@@ -99,8 +99,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT CMAKE_GENERATOR MATCHES "Xco
   file(RELATIVE_PATH source_dir_remap "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}")
   string(REGEX REPLACE "\/+$" "" source_dir_remap "${source_dir_remap}")
   set(source_dir_remap_str "\"${CMAKE_SOURCE_DIR}\"=\"${source_dir_remap}\"")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmacro-prefix-map=${source_dir_remap_str} -ffile-prefix-map=${source_dir_remap_str}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmacro-prefix-map=${source_dir_remap_str} -ffile-prefix-map=${source_dir_remap_str}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffile-prefix-map=${source_dir_remap_str}")
 endif()
 
 # Write binaries to a seperate directory.
@@ -115,9 +115,6 @@ endif()
 if(BUILD_TESTS)
   enable_testing()
 endif()
-
-# Prevent fmt from being built with exceptions, or being thrown at call sites.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
 
 # Recursively include the source tree.
 add_subdirectory(dep)

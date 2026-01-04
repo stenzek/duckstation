@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_controller.h"
-#include "host.h"
 #include "settings.h"
 #include "system.h"
 
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 

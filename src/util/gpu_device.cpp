@@ -41,6 +41,7 @@ LOG_CHANNEL(GPUDevice);
 
 #ifdef ENABLE_VULKAN
 #include "vulkan_device.h"
+#include "vulkan_loader.h"
 #endif
 
 std::unique_ptr<GPUDevice> g_gpu_device;
@@ -121,10 +122,13 @@ bool GPUPipeline::InputLayout::operator!=(const InputLayout& rhs) const
                       sizeof(VertexAttribute) * rhs.vertex_attributes.size()) != 0);
 }
 
-GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState()
+GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState(u8 multisamples /* = 1 */,
+                                                                                bool per_sample_shading /* = false */)
 {
   RasterizationState ret = {};
   ret.cull_mode = CullMode::None;
+  ret.multisamples = multisamples;
+  ret.per_sample_shading = per_sample_shading;
   return ret;
 }
 
@@ -164,12 +168,12 @@ GPUPipeline::BlendState GPUPipeline::BlendState::GetAlphaBlendingState()
   return ret;
 }
 
-void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTexture::Format color_format,
-                                                   GPUTexture::Format depth_format_ /* = GPUTexture::Format::Unknown */)
+void GPUPipeline::GraphicsConfig::SetTargetFormats(GPUTextureFormat color_format,
+                                                   GPUTextureFormat depth_format_ /* = GPUTexture::Format::Unknown */)
 {
   color_formats[0] = color_format;
   for (size_t i = 1; i < std::size(color_formats); i++)
-    color_formats[i] = GPUTexture::Format::Unknown;
+    color_formats[i] = GPUTextureFormat::Unknown;
   depth_format = depth_format_;
 }
 
@@ -178,7 +182,7 @@ u32 GPUPipeline::GraphicsConfig::GetRenderTargetCount() const
   u32 num_rts = 0;
   for (; num_rts < static_cast<u32>(std::size(color_formats)); num_rts++)
   {
-    if (color_formats[num_rts] == GPUTexture::Format::Unknown)
+    if (color_formats[num_rts] == GPUTextureFormat::Unknown)
       break;
   }
   return num_rts;
@@ -325,7 +329,7 @@ GPUDevice::GPUDevice()
 
 GPUDevice::~GPUDevice() = default;
 
-RenderAPI GPUDevice::GetPreferredAPI()
+RenderAPI GPUDevice::GetPreferredAPI(WindowInfoType window_type)
 {
   static RenderAPI preferred_renderer = RenderAPI::None;
   if (preferred_renderer == RenderAPI::None) [[unlikely]]
@@ -340,7 +344,7 @@ RenderAPI GPUDevice::GetPreferredAPI()
     preferred_renderer = RenderAPI::Metal;
 #elif defined(ENABLE_OPENGL) && defined(ENABLE_VULKAN)
     // On Linux, if we have both GL and Vulkan, prefer VK if the driver isn't software.
-    preferred_renderer = VulkanDevice::IsSuitableDefaultRenderer() ? RenderAPI::Vulkan : RenderAPI::OpenGL;
+    preferred_renderer = VulkanLoader::IsSuitableDefaultRenderer(window_type) ? RenderAPI::Vulkan : RenderAPI::OpenGL;
 #elif defined(ENABLE_OPENGL)
     preferred_renderer = RenderAPI::OpenGL;
 #elif defined(ENABLE_VULKAN)
@@ -410,15 +414,16 @@ bool GPUDevice::IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs)
                          (rhs == RenderAPI::OpenGL || rhs == RenderAPI::OpenGLES)));
 }
 
-GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
+std::optional<GPUDevice::AdapterInfoList> GPUDevice::GetAdapterListForAPI(RenderAPI api, WindowInfoType window_type,
+                                                                          Error* error)
 {
-  AdapterInfoList ret;
+  std::optional<AdapterInfoList> ret;
 
   switch (api)
   {
 #ifdef ENABLE_VULKAN
     case RenderAPI::Vulkan:
-      ret = VulkanDevice::GetAdapterList();
+      ret = VulkanLoader::GetAdapterList(window_type, error);
       break;
 #endif
 
@@ -426,13 +431,14 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
       // No way of querying.
+      ret = AdapterInfoList();
       break;
 #endif
 
 #ifdef _WIN32
     case RenderAPI::D3D11:
     case RenderAPI::D3D12:
-      ret = D3DCommon::GetAdapterInfoList();
+      ret = D3DCommon::GetAdapterInfoList(error);
       break;
 #endif
 
@@ -689,7 +695,7 @@ bool GPUDevice::CreateResources(Error* error)
 {
   // Backend may initialize null texture itself if it needs it.
   if (!m_empty_texture &&
-      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTextureFormat::RGBA8,
                                         GPUTexture::Flags::None, nullptr, 0, error)))
   {
     Error::AddPrefix(error, "Failed to create null texture: ");
@@ -948,7 +954,7 @@ bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
 }
 
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                    GPUTexture::Type type, GPUTexture::Format format,
+                                                    GPUTexture::Type type, GPUTextureFormat format,
                                                     GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                     u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
@@ -1031,7 +1037,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
 
 GPUDevice::AutoRecycleTexture
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                                   GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                   GPUTextureFormat format, GPUTexture::Flags flags, const void* data /* = nullptr */,
                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret =
@@ -1044,17 +1050,17 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchAndUploadTextureImage(const Image& i
                                                                   Error* error /*= nullptr*/)
 {
   const Image* image_to_upload = &image;
-  GPUTexture::Format gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
+  GPUTextureFormat gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
   bool gpu_format_supported;
 
   // avoid device query for compressed formats that we've already pretested
-  if (gpu_format >= GPUTexture::Format::BC1 && gpu_format <= GPUTexture::Format::BC3)
+  if (gpu_format >= GPUTextureFormat::BC1 && gpu_format <= GPUTextureFormat::BC3)
     gpu_format_supported = m_features.dxt_textures;
-  else if (gpu_format == GPUTexture::Format::BC7)
+  else if (gpu_format == GPUTextureFormat::BC7)
     gpu_format_supported = m_features.bptc_textures;
-  else if (gpu_format == GPUTexture::Format::RGBA8) // always supported
+  else if (gpu_format == GPUTextureFormat::RGBA8) // always supported
     gpu_format_supported = true;
-  else if (gpu_format != GPUTexture::Format::Unknown)
+  else if (gpu_format != GPUTextureFormat::Unknown)
     gpu_format_supported = SupportsTextureFormat(gpu_format);
   else
     gpu_format_supported = false;
@@ -1160,7 +1166,7 @@ void GPUDevice::TrimTexturePool()
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */,
+                              GPUTextureFormat format, GPUTexture::Flags flags, bool preserve /* = true */,
                               Error* error /* = nullptr */)
 {
   GPUTexture* old_tex = tex->get();
@@ -1210,7 +1216,7 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, GPUTexture::Flags flags, const void* replace_data,
+                              GPUTextureFormat format, GPUTexture::Flags flags, const void* replace_data,
                               u32 replace_data_pitch, Error* error /* = nullptr */)
 {
   GPUTexture* old_tex = tex->get();
@@ -1310,7 +1316,10 @@ void GPUDevice::SetDriverType(GPUDriverType type)
 {
   m_driver_type = type;
 
-#define NTENTRY(n) {GPUDriverType::n, #n}
+#define NTENTRY(n)                                                                                                     \
+  {                                                                                                                    \
+    GPUDriverType::n, #n                                                                                               \
+  }
   static constexpr const std::pair<GPUDriverType, const char*> name_table[] = {
     NTENTRY(Unknown),
     NTENTRY(AMDProprietary),
@@ -1385,13 +1394,10 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
 namespace dyn_libs {
 static void CloseShaderc();
 static void CloseSpirvCross();
-static void CloseAll();
 
 static std::mutex s_dyn_mutex;
 static DynamicLibrary s_shaderc_library;
 static DynamicLibrary s_spirv_cross_library;
-
-static bool s_close_registered = false;
 
 shaderc_compiler_t g_shaderc_compiler = nullptr;
 
@@ -1437,17 +1443,17 @@ bool dyn_libs::OpenShaderc(Error* error)
     return false;
   }
 
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
   return true;
 }
 
 void dyn_libs::CloseShaderc()
 {
+  if (!s_shaderc_library.IsOpen())
+  {
+    DebugAssert(!g_shaderc_compiler);
+    return;
+  }
+
   if (g_shaderc_compiler)
   {
     shaderc_compiler_release(g_shaderc_compiler);
@@ -1492,17 +1498,14 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   SPIRV_CROSS_MSL_FUNCTIONS(LOAD_FUNC)
 #undef LOAD_FUNC
 
-  if (!s_close_registered)
-  {
-    s_close_registered = true;
-    std::atexit(&dyn_libs::CloseAll);
-  }
-
   return true;
 }
 
 void dyn_libs::CloseSpirvCross()
 {
+  if (!s_spirv_cross_library.IsOpen())
+    return;
+
 #define UNLOAD_FUNC(F) F = nullptr;
   SPIRV_CROSS_FUNCTIONS(UNLOAD_FUNC)
   SPIRV_CROSS_HLSL_FUNCTIONS(UNLOAD_FUNC)
@@ -1510,12 +1513,6 @@ void dyn_libs::CloseSpirvCross()
 #undef UNLOAD_FUNC
 
   s_spirv_cross_library.Close();
-}
-
-void dyn_libs::CloseAll()
-{
-  CloseShaderc();
-  CloseSpirvCross();
 }
 
 #undef SPIRV_CROSS_HLSL_FUNCTIONS
@@ -2096,4 +2093,16 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
 #endif
 
   return CreateShaderFromSource(stage, target_language, dest_source, entry_point, out_binary, error);
+}
+
+void GPUDevice::UnloadDynamicLibraries()
+{
+  Assert(!g_gpu_device);
+
+  dyn_libs::CloseSpirvCross();
+  dyn_libs::CloseShaderc();
+
+#ifdef ENABLE_VULKAN
+  VulkanLoader::DestroyVulkanInstance();
+#endif
 }

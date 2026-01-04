@@ -30,7 +30,8 @@ public:
 
   QPaintEngine* paintEngine() const override;
 
-  std::optional<WindowInfo> getWindowInfo(RenderAPI render_api, Error* error);
+  const std::optional<WindowInfo>& getWindowInfo(RenderAPI render_api, Error* error);
+  void clearWindowInfo();
 
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);
@@ -65,9 +66,7 @@ private:
 
   std::vector<int> m_keys_pressed_with_modifiers;
 
-  QSize m_last_window_size;
-  u32 m_last_window_height = 0;
-  qreal m_last_window_scale = 1;
+  std::optional<WindowInfo> m_window_info;
 
   const char* m_window_position_key = nullptr;
 };
@@ -96,6 +95,8 @@ public:
 
   QPaintEngine* paintEngine() const override;
 
+  const std::optional<WindowInfo>& getWindowInfo(RenderAPI render_api, Error* error);
+
   static AuxiliaryDisplayWidget* create(s32 pos_x, s32 pos_y, u32 width, u32 height, const QString& title,
                                         const QString& icon_name, void* userdata);
   void destroy();
@@ -104,8 +105,9 @@ protected:
   bool event(QEvent* event) override;
 
 private:
+  void checkForSizeChange();
+
   void* m_userdata = nullptr;
-  QSize m_last_window_size;
-  qreal m_last_window_scale = 1;
+  std::optional<WindowInfo> m_window_info;
   bool m_destroying = false;
 };

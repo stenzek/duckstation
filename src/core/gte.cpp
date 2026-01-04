@@ -1789,7 +1789,7 @@ void GTE::DrawFreecamWindow(float scale)
   }
 
   if (enabled_changed || (!freecam_enabled && changed))
-    Host::RunOnCPUThread([enabled = freecam_enabled || changed]() { SetFreecamEnabled(enabled); });
+    Host::RunOnCoreThread([enabled = freecam_enabled || changed]() { SetFreecamEnabled(enabled); });
 
   if (changed)
     s_config.freecam_transform_changed.store(true, std::memory_order_release);

@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "d3d11_device.h"
-#include "core/host.h" // TODO: Remove me
 #include "d3d11_pipeline.h"
 #include "d3d11_texture.h"
 #include "d3d_common.h"
+
+#include "core/core.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -28,7 +29,7 @@ LOG_CHANNEL(GPUDevice);
 static std::mutex s_instance_mutex;
 
 static constexpr std::array<float, 4> s_clear_color = {};
-static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
+static constexpr GPUTextureFormat s_swap_chain_format = GPUTextureFormat::RGBA8;
 
 void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 {
@@ -203,10 +204,10 @@ void D3D11Device::SetFeatures(CreateFlags create_flags)
 
   m_features.dxt_textures =
     (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-     (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
-      SupportsTextureFormat(GPUTexture::Format::BC3)));
+     (SupportsTextureFormat(GPUTextureFormat::BC1) && SupportsTextureFormat(GPUTextureFormat::BC2) &&
+      SupportsTextureFormat(GPUTextureFormat::BC3)));
   m_features.bptc_textures = (!HasCreateFlag(create_flags, CreateFlags::DisableCompressedTextures) &&
-                              SupportsTextureFormat(GPUTexture::Format::BC7));
+                              SupportsTextureFormat(GPUTextureFormat::BC7));
 }
 
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
@@ -274,7 +275,7 @@ bool D3D11SwapChain::CreateSwapChain(Error* error)
   }
 
   m_using_flip_model_swap_chain =
-    !Host::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
+    !Core::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
 
   IDXGIFactory5* const dxgi_factory = D3D11Device::GetDXGIFactory();
   ID3D11Device1* const d3d_device = D3D11Device::GetD3DDevice();
@@ -397,7 +398,7 @@ bool D3D11SwapChain::CreateRTV(Error* error)
   m_window_info.surface_format = s_swap_chain_format;
   VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
-  if (m_window_info.type == WindowInfo::Type::Win32)
+  if (m_window_info.type == WindowInfoType::Win32)
   {
     BOOL fullscreen = FALSE;
     DXGI_SWAP_CHAIN_DESC desc;
@@ -469,7 +470,7 @@ std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi,
                                                            Error* error)
 {
   std::unique_ptr<D3D11SwapChain> ret;
-  if (wi.type != WindowInfo::Type::Win32)
+  if (wi.type != WindowInfoType::Win32)
   {
     Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
     return ret;

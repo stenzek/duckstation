@@ -17,7 +17,7 @@
 LOG_CHANNEL(GPUDevice);
 
 std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                       GPUTexture::Type type, GPUTexture::Format format,
+                                                       GPUTexture::Type type, GPUTextureFormat format,
                                                        GPUTexture::Flags flags, const void* data /* = nullptr */,
                                                        u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
@@ -25,7 +25,7 @@ std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u3
                               data_stride, error);
 }
 
-bool D3D11Device::SupportsTextureFormat(GPUTexture::Format format) const
+bool D3D11Device::SupportsTextureFormat(GPUTextureFormat format) const
 {
   const DXGI_FORMAT dfmt = D3DCommon::GetFormatMapping(format).resource_format;
   if (dfmt == DXGI_FORMAT_UNKNOWN)
@@ -101,9 +101,10 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
   return std::unique_ptr<GPUSampler>(new D3D11Sampler(std::move(ss)));
 }
 
-D3D11Texture::D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                           Flags flags, ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
-                           ComPtr<ID3D11View> rtv_dsv, ComPtr<ID3D11UnorderedAccessView> uav)
+D3D11Texture::D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
+                           GPUTextureFormat format, Flags flags, ComPtr<ID3D11Texture2D> texture,
+                           ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv,
+                           ComPtr<ID3D11UnorderedAccessView> uav)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
                static_cast<u8>(samples), type, format, flags),
     m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv_dsv(std::move(rtv_dsv)), m_uav(std::move(uav))
@@ -243,7 +244,7 @@ DXGI_FORMAT D3D11Texture::GetDXGIFormat() const
 }
 
 std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
-                                                   u32 samples, Type type, Format format, Flags flags,
+                                                   u32 samples, Type type, GPUTextureFormat format, Flags flags,
                                                    const void* initial_data, u32 initial_data_stride, Error* error)
 {
   if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
@@ -446,7 +447,7 @@ std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuf
 }
 
 D3D11DownloadTexture::D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height,
-                                           GPUTexture::Format format)
+                                           GPUTextureFormat format)
   : GPUDownloadTexture(width, height, format, false), m_texture(std::move(tex))
 {
 }
@@ -457,7 +458,7 @@ D3D11DownloadTexture::~D3D11DownloadTexture()
     D3D11DownloadTexture::Unmap();
 }
 
-std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTextureFormat format,
                                                                    Error* error)
 {
   D3D11_TEXTURE2D_DESC desc = {};
@@ -566,13 +567,13 @@ void D3D11DownloadTexture::SetDebugName(std::string_view name)
 
 #endif
 
-std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        Error* error /* = nullptr */)
 {
   return D3D11DownloadTexture::Create(width, height, format, error);
 }
 
-std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                        void* memory, size_t memory_size,
                                                                        u32 memory_stride, Error* error /* = nullptr */)
 {

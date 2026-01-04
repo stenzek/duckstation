@@ -197,7 +197,7 @@
 #define ICON_PF_F10 "\xF0\x9F\xB3\x90"
 #define ICON_PF_F11 "\xF0\x9F\xB3\x91"
 #define ICON_PF_F12 "\xF0\x9F\xB3\x92"
-#define ICON_PF_EMPTY_KEYCAP "\xE2\x92\x8F"
+#define ICON_PF_EMPTY_KEYCAP "\xF0\x9F\xB3\x86"
 #define ICON_PF_1 "\xF0\x9F\xB2\xA1"
 #define ICON_PF_2 "\xF0\x9F\xB2\xA2"
 #define ICON_PF_3 "\xF0\x9F\xB2\xA3"

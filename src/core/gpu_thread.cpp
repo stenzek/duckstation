@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_thread.h"
+#include "core.h"
 #include "fullscreenui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
@@ -21,6 +22,7 @@
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
 #include "util/state_wrapper.h"
+#include "util/translation.h"
 
 #include "common/align.h"
 #include "common/error.h"
@@ -29,7 +31,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
 
@@ -95,7 +97,7 @@ namespace {
 struct ALIGN_TO_CACHE_LINE State
 {
   // Owned by CPU thread.
-  ALIGN_TO_CACHE_LINE Timer::Value thread_spin_time = 0;
+  Timer::Value thread_spin_time = 0;
   Threading::ThreadHandle gpu_thread;
   Common::unique_aligned_ptr<u8[]> command_fifo_data;
   WindowInfo render_window_info;
@@ -597,11 +599,9 @@ std::optional<GPURenderer> GPUThread::GetRequestedRenderer()
   return s_state.requested_renderer;
 }
 
-bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, bool fullscreen, bool force_recreate_device,
-                                 Error* error)
+bool GPUThread::CreateGPUBackend(GPURenderer renderer, bool upload_vram, std::optional<bool> fullscreen, Error* error)
 {
-  return Reconfigure(renderer, upload_vram, fullscreen ? std::optional<bool>(true) : std::nullopt, std::nullopt,
-                     force_recreate_device, error);
+  return Reconfigure(renderer, upload_vram, fullscreen, std::nullopt, false, error);
 }
 
 void GPUThread::DestroyGPUBackend()
@@ -637,7 +637,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (fullscreen && g_gpu_device && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
   }
   std::optional<bool> exclusive_fullscreen_control;
   if (g_gpu_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
@@ -684,7 +684,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        Host::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
+        Core::GetStringSettingValue("GPU", "Adapter"), create_flags, shader_dump_directory, EmuFolders::Cache,
         SHADER_CACHE_VERSION, wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
         fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {
@@ -1238,7 +1238,7 @@ void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
   DebugAssert(IsOnThread());
 
   std::string message = fmt::format("GPU thread shut down with fatal error:\n\n{}", reason);
-  Host::RunOnCPUThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
+  Host::RunOnCoreThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
   ERROR_LOG("Switching to null renderer: {}", reason);
@@ -1328,7 +1328,7 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusiv
   if (allow_exclusive_fullscreen && fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
-      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+      GPUDevice::ExclusiveFullscreenMode::Parse(Core::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
     exclusive_fullscreen_requested = fullscreen_mode.has_value();
   }
   std::optional<bool> exclusive_fullscreen_control;
@@ -1409,7 +1409,7 @@ void GPUThread::DisplayWindowResizedOnThread()
 
   if (s_state.gpu_backend)
   {
-    Host::RunOnCPUThread(&System::DisplayWindowResized);
+    Host::RunOnCoreThread(&System::DisplayWindowResized);
 
     // If we're paused, re-present the current frame at the new window size.
     if (IsSystemPaused())

@@ -50,7 +50,7 @@ void GamePatchDetailsWidget::onEnabledStateChanged(Qt::CheckState state)
     si->RemoveFromStringList("Patches", "Enable", m_name.c_str());
 
   QtHost::SaveGameSettings(si, true);
-  g_emu_thread->reloadGameSettings();
+  g_core_thread->reloadGameSettings();
 }
 
 GamePatchSettingsWidget::GamePatchSettingsWidget(SettingsWindow* dialog, QWidget* parent) : m_dialog(dialog)
@@ -70,7 +70,7 @@ void GamePatchSettingsWidget::onReloadClicked()
   reloadList();
 
   // reload it on the emu thread too, so it picks up any changes
-  g_emu_thread->reloadCheats(true, false, true, true);
+  g_core_thread->reloadCheats(true, false, true, true);
 }
 
 void GamePatchSettingsWidget::disableAllPatches()

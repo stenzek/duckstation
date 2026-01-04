@@ -1,0 +1,4 @@
+nav_activate.wav: BBRS_SFX_MenuItemScrolling by FairSonicStudio -- https://freesound.org/s/744322/ -- License: Attribution 4.0
+nav_back.wav: menu_target by ZeltBolt -- https://freesound.org/s/833056/ -- License: Attribution 4.0
+nav_move.wav: Click / Tick / Menu Navigation by Foxfire- -- https://freesound.org/s/702168/ -- License: Creative Commons 0
+content_start.wav: sf3-sfx-menu-validate.wav by broumbroum -- https://freesound.org/s/50565/ -- License: Attribution 3.0

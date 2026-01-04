@@ -7,25 +7,14 @@
 
 #include <algorithm>
 #include <array>
-#include <charconv>
 #include <cstddef>
 #include <cstring>
 #include <functional>
-#include <iomanip>
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "fast_float/fast_float.h"
-
-// Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
-// merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
-#if !defined(_MSC_VER)
-#include <locale>
-#include <sstream>
-#endif
 
 namespace StringUtil {
 
@@ -52,50 +41,15 @@ std::size_t Strlcpy(char* dst, const std::string_view src, std::size_t size);
 std::size_t Strnlen(const char* str, std::size_t max_size);
 
 /// Platform-independent strcasecmp
-inline int Strcasecmp(const char* s1, const char* s2)
-{
-#ifdef _MSC_VER
-  return _stricmp(s1, s2);
-#else
-  return strcasecmp(s1, s2);
-#endif
-}
+int Strcasecmp(const char* s1, const char* s2);
 
 /// Platform-independent strcasecmp
-inline int Strncasecmp(const char* s1, const char* s2, std::size_t n)
-{
-#ifdef _MSC_VER
-  return _strnicmp(s1, s2, n);
-#else
-  return strncasecmp(s1, s2, n);
-#endif
-}
+int Strncasecmp(const char* s1, const char* s2, std::size_t n);
 
 // Case-insensitive equality of string views.
-inline bool EqualNoCase(std::string_view s1, std::string_view s2)
-{
-  const size_t s1_len = s1.length();
-  const size_t s2_len = s2.length();
-  if (s1_len != s2_len)
-    return false;
-  else if (s1_len == 0)
-    return true;
-
-  return (Strncasecmp(s1.data(), s2.data(), s1_len) == 0);
-}
-inline int CompareNoCase(std::string_view s1, std::string_view s2)
-{
-  const size_t s1_len = s1.length();
-  const size_t s2_len = s2.length();
-  const size_t compare_len = std::min(s1_len, s2_len);
-  const int compare_res = (compare_len > 0) ? Strncasecmp(s1.data(), s2.data(), compare_len) : 0;
-  return (compare_res != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
-}
-inline bool ContainsNoCase(std::string_view s1, std::string_view s2)
-{
-  return (std::search(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                      [](char lhs, char rhs) { return (ToLower(lhs) == ToLower(rhs)); }) != s1.end());
-}
+bool EqualNoCase(std::string_view s1, std::string_view s2);
+int CompareNoCase(std::string_view s1, std::string_view s2);
+bool ContainsNoCase(std::string_view s1, std::string_view s2);
 
 /// Constexpr version of strcmp, suitable for use in static_assert.
 inline constexpr int ConstexprCompare(const char* s1, const char* s2)
@@ -110,155 +64,34 @@ inline constexpr int ConstexprCompare(const char* s1, const char* s2)
 }
 
 /// Wrapper around std::from_chars
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-inline std::optional<T> FromChars(const std::string_view str, int base = 10)
-{
-  T value;
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> FromChars(const std::string_view str, const int base = 10);
 
-  const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
-  if (result.ec != std::errc())
-    return std::nullopt;
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> FromChars(const std::string_view str, const int base, std::string_view* const endptr);
 
-  return value;
-}
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-inline std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr)
-{
-  T value;
+template<typename T>
+  requires std::is_integral_v<T>
+std::optional<T> FromCharsWithOptionalBase(const std::string_view str, std::string_view* const endptr = nullptr);
 
-  const char* ptr = str.data();
-  const char* end = ptr + str.length();
-  const std::from_chars_result result = std::from_chars(ptr, end, value, base);
-  if (result.ec != std::errc())
-    return std::nullopt;
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::optional<T> FromChars(const std::string_view str);
 
-  if (endptr)
-  {
-    const size_t remaining_len = end - result.ptr;
-    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
-  }
-
-  return value;
-}
-
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-inline std::optional<T> FromCharsWithOptionalBase(std::string_view str, std::string_view* endptr = nullptr)
-{
-  int base = 10;
-  if (str.starts_with("0x"))
-  {
-    base = 16;
-    str = str.substr(2);
-  }
-  else if (str.starts_with("0b"))
-  {
-    base = 2;
-    str = str.substr(2);
-  }
-  else if (str.starts_with("0") && str.length() > 1)
-  {
-    base = 8;
-    str = str.substr(1);
-  }
-
-  if (endptr)
-    return FromChars<T>(str, base, endptr);
-  else
-    return FromChars<T>(str, base);
-}
-
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline std::optional<T> FromChars(const std::string_view str)
-{
-  T value;
-
-  const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
-  if (result.ec != std::errc())
-    return std::nullopt;
-
-  return value;
-}
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline std::optional<T> FromChars(const std::string_view str, std::string_view* endptr)
-{
-  T value;
-
-  const char* ptr = str.data();
-  const char* end = ptr + str.length();
-  const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
-  if (result.ec != std::errc())
-    return std::nullopt;
-
-  if (endptr)
-  {
-    const size_t remaining_len = end - result.ptr;
-    *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
-  }
-
-  return value;
-}
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::optional<T> FromChars(const std::string_view str, std::string_view* const endptr);
 
 /// Wrapper around std::to_chars
-template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
-inline std::string ToChars(T value, int base = 10)
-{
-  constexpr size_t MAX_SIZE = 32;
-  char buf[MAX_SIZE];
-  std::string ret;
+template<typename T>
+  requires std::is_integral_v<T>
+std::string ToChars(const T value, const int base = 10);
 
-  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value, base);
-  if (result.ec == std::errc())
-    ret.append(buf, result.ptr - buf);
-
-  return ret;
-}
-
-template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
-inline std::string ToChars(T value)
-{
-  // No to_chars() in older versions of libstdc++/libc++.
-#ifdef _MSC_VER
-  constexpr size_t MAX_SIZE = 64;
-  char buf[MAX_SIZE];
-  std::string ret;
-  const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value);
-  if (result.ec == std::errc())
-    ret.append(buf, result.ptr - buf);
-  return ret;
-#else
-  std::ostringstream ss;
-  ss.imbue(std::locale::classic());
-  ss << value;
-  return std::move(ss).str();
-#endif
-}
-
-/// Explicit override for booleans
-template<>
-inline std::optional<bool> FromChars(const std::string_view str, int base)
-{
-  if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
-      Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
-      Strncasecmp("enabled", str.data(), str.length()) == 0)
-  {
-    return true;
-  }
-
-  if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
-      Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
-      Strncasecmp("disabled", str.data(), str.length()) == 0)
-  {
-    return false;
-  }
-
-  return std::nullopt;
-}
-
-template<>
-inline std::string ToChars(bool value, int base)
-{
-  return std::string(value ? "true" : "false");
-}
+template<typename T>
+  requires std::is_floating_point_v<T>
+std::string ToChars(const T value);
 
 /// Returns true if the given character is whitespace.
 ALWAYS_INLINE bool IsWhitespace(char ch)
@@ -266,6 +99,9 @@ ALWAYS_INLINE bool IsWhitespace(char ch)
   return ((ch >= 0x09 && ch <= 0x0D) || // horizontal tab, line feed, vertical tab, form feed, carriage return
           ch == 0x20);                  // space
 }
+
+/// Removes control characters from the given string.
+std::string StripControlCharacters(std::string_view str);
 
 /// Encode/decode hexadecimal byte buffers
 u8 DecodeHexDigit(char ch);
@@ -336,16 +172,12 @@ std::string EncodeBase64(const std::span<u8> data);
 std::optional<std::vector<u8>> DecodeBase64(const std::string_view str);
 
 /// StartsWith/EndsWith variants which aren't case sensitive.
-ALWAYS_INLINE bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
-{
-  return (!str.empty() && Strncasecmp(str.data(), prefix.data(), prefix.length()) == 0);
-}
-ALWAYS_INLINE bool EndsWithNoCase(const std::string_view str, const std::string_view suffix)
-{
-  const std::size_t suffix_length = suffix.length();
-  return (str.length() >= suffix_length &&
-          Strncasecmp(str.data() + (str.length() - suffix_length), suffix.data(), suffix_length) == 0);
-}
+bool StartsWithNoCase(const std::string_view str, const std::string_view prefix);
+bool EndsWithNoCase(const std::string_view str, const std::string_view suffix);
+
+/// Returns the number of occurrences of the given character in the string.
+size_t CountChar(const std::string_view str, char ch);
+size_t CountCharNoCase(const std::string_view str, char ch);
 
 /// Strip whitespace from the start/end of the string.
 std::string_view StripWhitespace(const std::string_view str);
@@ -443,17 +275,7 @@ void ReplaceAll(std::string* subject, const char search, const char replacement)
 bool ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value);
 
 /// Helper for tokenizing strings.
-ALWAYS_INLINE std::optional<std::string_view> GetNextToken(std::string_view& caret, char separator)
-{
-  std::optional<std::string_view> ret;
-  const std::string_view::size_type pos = caret.find(separator);
-  if (pos != std::string_view::npos)
-  {
-    ret = caret.substr(0, pos);
-    caret = caret.substr(pos + 1);
-  }
-  return ret;
-}
+std::optional<std::string_view> GetNextToken(std::string_view& caret, char separator);
 
 /// Unicode replacement character.
 inline constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
@@ -492,44 +314,11 @@ void EllipsiseInPlace(std::string& str, u32 max_length, const char* ellipsis = "
 std::optional<size_t> BytePatternSearch(const std::span<const u8> bytes, const std::string_view pattern);
 
 /// Strided memcpy/memcmp.
-ALWAYS_INLINE void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride,
-                                std::size_t copy_size, std::size_t count)
-{
-  if (src_stride == dst_stride && src_stride == copy_size)
-  {
-    std::memcpy(dst, src, src_stride * count);
-    return;
-  }
+void StrideMemCpy(void* dst, std::size_t dst_stride, const void* src, std::size_t src_stride, std::size_t copy_size,
+                  std::size_t count);
 
-  const u8* src_ptr = static_cast<const u8*>(src);
-  u8* dst_ptr = static_cast<u8*>(dst);
-  for (std::size_t i = 0; i < count; i++)
-  {
-    std::memcpy(dst_ptr, src_ptr, copy_size);
-    src_ptr += src_stride;
-    dst_ptr += dst_stride;
-  }
-}
-
-ALWAYS_INLINE int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride,
-                               std::size_t copy_size, std::size_t count)
-{
-  if (p1_stride == p2_stride && p1_stride == copy_size)
-    return std::memcmp(p1, p2, p1_stride * count);
-
-  const u8* p1_ptr = static_cast<const u8*>(p1);
-  const u8* p2_ptr = static_cast<const u8*>(p2);
-  for (std::size_t i = 0; i < count; i++)
-  {
-    int result = std::memcmp(p1_ptr, p2_ptr, copy_size);
-    if (result != 0)
-      return result;
-    p2_ptr += p2_stride;
-    p1_ptr += p1_stride;
-  }
-
-  return 0;
-}
+int StrideMemCmp(const void* p1, std::size_t p1_stride, const void* p2, std::size_t p2_stride, std::size_t copy_size,
+                 std::size_t count);
 
 #ifdef _WIN32
 

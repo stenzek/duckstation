@@ -33,25 +33,6 @@ class Image;
 #define ENABLE_GPU_OBJECT_NAMES
 #endif
 
-enum class RenderAPI : u8
-{
-  None,
-  D3D11,
-  D3D12,
-  Vulkan,
-  OpenGL,
-  OpenGLES,
-  Metal
-};
-
-enum class GPUVSyncMode : u8
-{
-  Disabled,
-  FIFO,
-  Mailbox,
-  Count
-};
-
 class GPUSampler
 {
 public:
@@ -117,59 +98,6 @@ public:
   static Config GetLinearConfig();
 };
 
-enum class GPUShaderStage : u8
-{
-  Vertex,
-  Fragment,
-  Geometry,
-  Compute,
-
-  MaxCount
-};
-
-enum class GPUShaderLanguage : u8
-{
-  None,
-  HLSL,
-  GLSL,
-  GLSLES,
-  GLSLVK,
-  MSL,
-  SPV,
-  Count
-};
-
-enum class GPUDriverType : u16
-{
-  MobileFlag = 0x100,
-  SoftwareFlag = 0x200,
-
-  Unknown = 0,
-  AMDProprietary = 1,
-  AMDMesa = 2,
-  IntelProprietary = 3,
-  IntelMesa = 4,
-  NVIDIAProprietary = 5,
-  NVIDIAMesa = 6,
-  AppleProprietary = 7,
-  AppleMesa = 8,
-  DozenMesa = 9,
-
-  ImaginationProprietary = MobileFlag | 1,
-  ImaginationMesa = MobileFlag | 2,
-  ARMProprietary = MobileFlag | 3,
-  ARMMesa = MobileFlag | 4,
-  QualcommProprietary = MobileFlag | 5,
-  QualcommMesa = MobileFlag | 6,
-  BroadcomProprietary = MobileFlag | 7,
-  BroadcomMesa = MobileFlag | 8,
-
-  LLVMPipe = SoftwareFlag | 1,
-  SwiftShader = SoftwareFlag | 2,
-  WARP = SoftwareFlag | 3,
-};
-IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUDriverType);
-
 class GPUShader
 {
 public:
@@ -229,8 +157,9 @@ public:
   {
     NoRenderPassFlags = 0,
     ColorFeedbackLoop = (1 << 0),
-    SampleDepthBuffer = (1 << 1),
-    BindRenderTargetsAsImages = (1 << 2),
+    ColorFeedbackLoopActive = (1 << 1),
+    SampleDepthBuffer = (1 << 2),
+    BindRenderTargetsAsImages = (1 << 3),
   };
 
   enum class Primitive : u8
@@ -370,12 +299,13 @@ public:
     MaxCount
   };
 
-  // TODO: purge this?
   union RasterizationState
   {
-    u8 key;
+    u16 key;
 
-    BitField<u8, CullMode, 0, 2> cull_mode;
+    BitField<u16, CullMode, 0, 2> cull_mode;
+    BitField<u16, u8, 2, 6> multisamples;
+    BitField<u16, bool, 8, 1> per_sample_shading;
 
     // clang-format off
     ALWAYS_INLINE bool operator==(const RasterizationState& rhs) const { return key == rhs.key; }
@@ -383,7 +313,7 @@ public:
     ALWAYS_INLINE bool operator<(const RasterizationState& rhs) const { return key < rhs.key; }
     // clang-format on
 
-    static RasterizationState GetNoCullState();
+    static RasterizationState GetNoCullState(u8 multisamples = 1, bool per_sample_shading = false);
   };
 
   union DepthState
@@ -447,27 +377,23 @@ public:
 
   struct GraphicsConfig
   {
-    Layout layout;
-
-    Primitive primitive;
     InputLayout input_layout;
-
-    RasterizationState rasterization;
-    DepthState depth;
-    BlendState blend;
-
     GPUShader* vertex_shader;
     GPUShader* geometry_shader;
     GPUShader* fragment_shader;
 
-    GPUTexture::Format color_formats[4];
-    GPUTexture::Format depth_format;
-    u8 samples;
-    bool per_sample_shading;
+    BlendState blend;
+    RasterizationState rasterization;
+    DepthState depth;
+
+    Layout layout;
+    Primitive primitive;
+
+    GPUTextureFormat color_formats[4];
+    GPUTextureFormat depth_format;
     RenderPassFlag render_pass_flags;
 
-    void SetTargetFormats(GPUTexture::Format color_format,
-                          GPUTexture::Format depth_format_ = GPUTexture::Format::Unknown);
+    void SetTargetFormats(GPUTextureFormat color_format, GPUTextureFormat depth_format_ = GPUTextureFormat::Unknown);
     u32 GetRenderTargetCount() const;
   };
 
@@ -541,7 +467,7 @@ public:
   ALWAYS_INLINE u32 GetPostRotatedHeight() const { return m_window_info.GetPostRotatedHeight(); }
   ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
   ALWAYS_INLINE WindowInfo::PreRotation GetPreRotation() const { return m_window_info.surface_prerotation; }
-  ALWAYS_INLINE GPUTexture::Format GetFormat() const { return m_window_info.surface_format; }
+  ALWAYS_INLINE GPUTextureFormat GetFormat() const { return m_window_info.surface_format; }
   ALWAYS_INLINE GSVector2i GetSizeVec() const
   {
     return GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
@@ -691,13 +617,13 @@ public:
   static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
   static constexpr u32 PIPELINE_CACHE_HASH_SIZE = 20;
   static constexpr u32 BASE_UNIFORM_BUFFER_ALIGNMENT = 16;
-  static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
+  static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTextureFormat) * MAX_RENDER_TARGETS);
 
   GPUDevice();
   virtual ~GPUDevice();
 
   /// Returns the default/preferred API for the system.
-  static RenderAPI GetPreferredAPI();
+  static RenderAPI GetPreferredAPI(WindowInfoType window_type);
 
   /// Returns a string representing the specified API.
   static const char* RenderAPIToString(RenderAPI api);
@@ -715,7 +641,7 @@ public:
   static bool IsSameRenderAPI(RenderAPI lhs, RenderAPI rhs);
 
   /// Returns a list of adapters for the given API.
-  static AdapterInfoList GetAdapterListForAPI(RenderAPI api);
+  static std::optional<AdapterInfoList> GetAdapterListForAPI(RenderAPI api, WindowInfoType window_type, Error* error);
 
   /// Dumps out a shader that failed compilation.
   static void DumpBadShader(std::string_view code, std::string_view errors);
@@ -805,7 +731,7 @@ public:
   virtual void WaitForGPUIdle() = 0;
 
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                    GPUTexture::Type type, GPUTexture::Format format,
+                                                    GPUTexture::Type type, GPUTextureFormat format,
                                                     GPUTexture::Flags flags, const void* data = nullptr,
                                                     u32 data_stride = 0, Error* error = nullptr) = 0;
   virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) = 0;
@@ -816,10 +742,10 @@ public:
 
   // Texture pooling.
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                           GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                           GPUTexture::Type type, GPUTextureFormat format, GPUTexture::Flags flags,
                                            const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   AutoRecycleTexture FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                             GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                             GPUTexture::Type type, GPUTextureFormat format, GPUTexture::Flags flags,
                                              const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   std::unique_ptr<GPUTexture> FetchAndUploadTextureImage(const Image& image,
                                                          GPUTexture::Flags flags = GPUTexture::Flags::None,
@@ -827,9 +753,9 @@ public:
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 
-  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                     Error* error = nullptr) = 0;
-  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTextureFormat format,
                                                                     void* memory, size_t memory_size, u32 memory_stride,
                                                                     Error* error = nullptr) = 0;
 
@@ -926,12 +852,12 @@ public:
   bool UsesLowerLeftOrigin() const;
   static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                     GPUTexture::Format format, GPUTexture::Flags flags, bool preserve = true, Error* error = nullptr);
+                     GPUTextureFormat format, GPUTexture::Flags flags, bool preserve = true, Error* error = nullptr);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                     GPUTexture::Format format, GPUTexture::Flags flags, const void* replace_data,
-                     u32 replace_data_pitch, Error* error = nullptr);
+                     GPUTextureFormat format, GPUTexture::Flags flags, const void* replace_data, u32 replace_data_pitch,
+                     Error* error = nullptr);
 
-  virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
+  virtual bool SupportsTextureFormat(GPUTextureFormat format) const = 0;
 
   /// Enables/disables GPU frame timing.
   virtual bool SetGPUTimingEnabled(bool enabled);
@@ -941,6 +867,9 @@ public:
 
   ALWAYS_INLINE static Statistics& GetStatistics() { return s_stats; }
   static void ResetStatistics();
+
+  /// Releases dynamic libraries and other resources used by the GPU device system.
+  static void UnloadDynamicLibraries();
 
 protected:
   virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, CreateFlags create_flags, const WindowInfo& wi,
@@ -1005,7 +934,7 @@ private:
     u8 levels;
     u8 samples;
     GPUTexture::Type type;
-    GPUTexture::Format format;
+    GPUTextureFormat format;
     GPUTexture::Flags flags;
 
     ALWAYS_INLINE bool operator==(const TexturePoolKey& rhs) const

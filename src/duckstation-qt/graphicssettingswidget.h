@@ -22,10 +22,12 @@ class GraphicsSettingsWidget : public QWidget
   Q_OBJECT
 
 public:
+  static constexpr int DEFAULT_MAX_RESOLUTION_SCALE = 16;
+
   GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GraphicsSettingsWidget();
 
-  static void populateUpscalingModes(QComboBox* const cb, int max_scale);
+  static void populateUpscalingModes(QComboBox* const cb, int max_scale = DEFAULT_MAX_RESOLUTION_SCALE);
 
   static QVariant packAspectRatio(DisplayAspectRatio ar);
   static DisplayAspectRatio unpackAspectRatio(const QVariant& var);
@@ -48,6 +50,8 @@ private:
 
   void updateResolutionDependentOptions();
   void onDownsampleModeChanged();
+  void onFineCropModeChanged();
+  void onFineCropResetClicked();
 
   void onOSDShowMessagesChanged();
 
@@ -71,6 +75,8 @@ private:
   bool effectiveRendererIsHardware() const;
 
   void populateGPUAdaptersAndResolutions(RenderAPI render_api);
+
+  void populateAndConnectUpscalingModes(int max_scale = DEFAULT_MAX_RESOLUTION_SCALE);
 
   Ui::GraphicsSettingsWidget m_ui;
 

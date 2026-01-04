@@ -3,6 +3,9 @@ name: Upload Caches
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   upload-windows-cache:
     runs-on: windows-2022
@@ -14,12 +17,12 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           dep/msvc/deps-arm64
           dep/msvc/deps-x64
-        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat') }}
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-windows-arm64.bat', 'scripts/deps/build-dependencies-windows-x64.bat', 'scripts/deps/versions') }}
 
     - name: Zip Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
@@ -30,7 +33,7 @@ jobs:
 
     - name: Upload Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: "windows"
         path: "deps-*.zip"

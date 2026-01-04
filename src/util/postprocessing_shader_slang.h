@@ -30,9 +30,9 @@ public:
   bool LoadFromFile(std::string name, const char* path, Error* error);
   bool LoadFromString(std::string name, std::string_view path, std::string_view code, Error* error);
 
-  bool ResizeTargets(u32 source_width, u32 source_height, GPUTexture::Format target_format, u32 target_width,
+  bool ResizeTargets(u32 source_width, u32 source_height, GPUTextureFormat target_format, u32 target_width,
                      u32 target_height, u32 viewport_width, u32 viewport_height, Error* error) override;
-  bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+  bool CompilePipeline(GPUTextureFormat format, u32 width, u32 height, Error* error,
                        ProgressCallback* progress) override;
   GPUDevice::PresentResult Apply(GPUTexture* original_color, GPUTexture* input_color, GPUTexture* input_depth,
                                  GPUTexture* final_target, GSVector4i final_rect, s32 orig_width, s32 orig_height,
@@ -96,7 +96,7 @@ private:
 
     // Framebuffer
     TextureID output_texture_id = 0;
-    GPUTexture::Format output_format = GPUTexture::Format::Unknown;
+    GPUTextureFormat output_format = GPUTextureFormat::Unknown;
     std::array<std::pair<ScaleType, float>, 2> output_scale = {};
     GPUSampler::Config output_sampler_config = {};
 
@@ -111,7 +111,7 @@ private:
   static bool ParseScaleType(ScaleType* dst, std::string_view value, Error* error);
   static GPUSampler::AddressMode ParseWrapMode(std::string_view value);
 
-  static std::unique_ptr<GPUPipeline> CreateBlitPipeline(GPUTexture::Format format, Error* error);
+  static std::unique_ptr<GPUPipeline> CreateBlitPipeline(GPUTextureFormat format, Error* error);
 
   bool ParsePresetFile(std::string_view path, std::string_view code, Error* error);
   bool ParsePresetTextures(std::string_view preset_path, const SlangPresetParser& parser, Error* error);
@@ -146,7 +146,7 @@ private:
   std::vector<std::unique_ptr<GPUTexture>> m_original_history_textures;
 
   std::unique_ptr<GPUPipeline> m_output_blit_pipeline;
-  GPUTexture::Format m_output_framebuffer_format = GPUTexture::Format::Unknown;
+  GPUTextureFormat m_output_framebuffer_format = GPUTextureFormat::Unknown;
 };
 
 } // namespace PostProcessing
