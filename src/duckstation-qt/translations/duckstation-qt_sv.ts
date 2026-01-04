@@ -4360,11 +4360,11 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>CPU Debugger</source>
-        <translation>CPU-debugger</translation>
+        <translation>CPU-felsökare</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>&amp;Debugga</translation>
+        <translation>&amp;Felsök</translation>
     </message>
     <message>
         <source>Breakpoints</source>
@@ -4586,7 +4586,7 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
     <message>
         <source>Debugger</source>
-        <translation>Debugger</translation>
+        <translation>Felsökare</translation>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
@@ -6186,7 +6186,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Debugging Settings</source>
-        <translation>Inställningar för debugging</translation>
+        <translation>Inställningar för felsökning</translation>
     </message>
     <message>
         <source>Default Boot</source>
@@ -13168,7 +13168,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
-        <translation>CPU-debug&amp;ger</translation>
+        <translation>CPU-felsöka&amp;re</translation>
     </message>
     <message>
         <source>Merge Multi-Disc Games</source>
@@ -16767,7 +16767,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Debug</source>
         <comment>LogLevel</comment>
-        <translation>Debugg</translation>
+        <translation>Felsök</translation>
     </message>
     <message>
         <source>Trace</source>
