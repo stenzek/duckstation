@@ -185,7 +185,7 @@ target_include_directories(duckstation-qt PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" 
 target_link_libraries(duckstation-qt PRIVATE core common imgui minizip scmversion Qt6::Core Qt6::Gui Qt6::GuiPrivate Qt6::Widgets)
 
 # Our Qt builds may have exceptions on, so force them off.
-target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS)
+target_compile_definitions(duckstation-qt PRIVATE QT_NO_EXCEPTIONS QT_NO_SIGNALS_SLOTS_KEYWORDS)
 
 add_core_resources(duckstation-qt)
 
