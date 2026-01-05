@@ -4507,7 +4507,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.audio_backend != old_settings.audio_backend ||
         g_settings.audio_driver != old_settings.audio_driver ||
         g_settings.audio_output_device != old_settings.audio_output_device ||
-        g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
+        g_settings.audio_stream_parameters.output_latency_ms !=
+          old_settings.audio_stream_parameters.output_latency_ms ||
+        g_settings.audio_stream_parameters.output_latency_minimal !=
+          old_settings.audio_stream_parameters.output_latency_minimal)
     {
       if (g_settings.audio_backend != old_settings.audio_backend)
       {
@@ -4523,6 +4526,10 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       SPU::CreateOutputStream();
       if (sound_effects_active)
         SoundEffectManager::EnsureInitialized();
+    }
+    else if (g_settings.audio_stream_parameters != old_settings.audio_stream_parameters)
+    {
+      SPU::GetOutputStream().UpdateParameters(g_settings.audio_stream_parameters);
     }
 
     if (g_settings.emulation_speed != old_settings.emulation_speed)

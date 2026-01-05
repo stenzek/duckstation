@@ -134,6 +134,64 @@ bool CoreAudioStream::Initialize(AudioBackend backend, u32 sample_rate, const Au
   return true;
 }
 
+void CoreAudioStream::UpdateParameters(const AudioStreamParameters& params)
+{
+  constexpr auto copy_stretch_params = [](AudioStreamParameters& dest, const AudioStreamParameters& src) {
+    dest.stretch_sequence_length_ms = src.stretch_sequence_length_ms;
+    dest.stretch_seekwindow_ms = src.stretch_seekwindow_ms;
+    dest.stretch_overlap_ms = src.stretch_overlap_ms;
+    dest.stretch_use_quickseek = src.stretch_use_quickseek;
+    dest.stretch_use_aa_filter = src.stretch_use_aa_filter;
+  };
+
+  if (params.buffer_ms != m_parameters.buffer_ms)
+  {
+    Error error;
+
+    // have to pause the stream to change buffer size
+    if (m_stream && !m_paused)
+    {
+      if (!m_stream->Stop(&error))
+      {
+        ERROR_LOG("Failed to stop audio stream for buffer size change: {}", error.GetDescription());
+        return;
+      }
+    }
+
+    StretchDestroy();
+    DestroyBuffer();
+
+    m_parameters.buffer_ms = params.buffer_ms;
+    copy_stretch_params(m_parameters, params);
+
+    AllocateBuffer();
+    StretchAllocate();
+
+    if (m_stream && !m_paused)
+    {
+      if (!m_stream->Start(&error))
+      {
+        ERROR_LOG("Failed to start audio stream after buffer size change: {}", error.GetDescription());
+        m_paused = true;
+      }
+    }
+
+    return;
+  }
+
+  if (params.stretch_mode != m_parameters.stretch_mode)
+  {
+    StretchDestroy();
+    copy_stretch_params(m_parameters, params);
+    StretchAllocate();
+  }
+  else
+  {
+    // easier case: just changing stretch settings
+    StretchUpdateParameters(params);
+  }
+}
+
 void CoreAudioStream::Destroy()
 {
   m_stream.reset();
@@ -581,6 +639,42 @@ void CoreAudioStream::StretchAllocate()
   m_average_available = 0;
 
   m_staging_buffer_pos = 0;
+}
+
+void CoreAudioStream::StretchUpdateParameters(const AudioStreamParameters& params)
+{
+  if (m_parameters.stretch_mode == AudioStretchMode::Off)
+    return;
+
+  if (params.stretch_use_quickseek != m_parameters.stretch_use_quickseek)
+  {
+    m_parameters.stretch_use_quickseek = params.stretch_use_quickseek;
+    soundtouch_setSetting(m_soundtouch, SETTING_USE_QUICKSEEK, m_parameters.stretch_use_quickseek);
+  }
+
+  if (params.stretch_use_aa_filter != m_parameters.stretch_use_aa_filter)
+  {
+    m_parameters.stretch_use_aa_filter = params.stretch_use_aa_filter;
+    soundtouch_setSetting(m_soundtouch, SETTING_USE_AA_FILTER, m_parameters.stretch_use_aa_filter);
+  }
+
+  if (params.stretch_sequence_length_ms != m_parameters.stretch_sequence_length_ms)
+  {
+    m_parameters.stretch_sequence_length_ms = params.stretch_sequence_length_ms;
+    soundtouch_setSetting(m_soundtouch, SETTING_SEQUENCE_MS, m_parameters.stretch_sequence_length_ms);
+  }
+
+  if (params.stretch_seekwindow_ms != m_parameters.stretch_seekwindow_ms)
+  {
+    m_parameters.stretch_seekwindow_ms = params.stretch_seekwindow_ms;
+    soundtouch_setSetting(m_soundtouch, SETTING_SEEKWINDOW_MS, m_parameters.stretch_seekwindow_ms);
+  }
+
+  if (params.stretch_overlap_ms != m_parameters.stretch_overlap_ms)
+  {
+    m_parameters.stretch_overlap_ms = params.stretch_overlap_ms;
+    soundtouch_setSetting(m_soundtouch, SETTING_OVERLAP_MS, m_parameters.stretch_overlap_ms);
+  }
 }
 
 void CoreAudioStream::StretchDestroy()

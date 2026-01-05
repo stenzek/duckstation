@@ -94,6 +94,10 @@ public:
                   std::string_view driver_name, std::string_view device_name, Error* error);
   void Destroy();
 
+  /// Updates stream parameters without recreating the stream.
+  /// NOTE: Cannot handle changes in output latency.
+  void UpdateParameters(const AudioStreamParameters& params);
+
   /// Temporarily pauses the stream, preventing it from requesting data.
   void SetPaused(bool paused);
 
@@ -125,6 +129,7 @@ private:
   void InternalWriteFrames(SampleType* samples, u32 num_frames);
 
   void StretchAllocate();
+  void StretchUpdateParameters(const AudioStreamParameters& params);
   void StretchDestroy();
   void StretchWriteBlock(const float* block);
   void StretchUnderrun();
