@@ -71,7 +71,7 @@ struct PGXPValue
   }
 };
 
-struct ALIGN_TO_CACHE_LINE State
+struct State
 {
   // ticks the CPU has executed
   u32 downcount = 0;
@@ -245,8 +245,6 @@ void ClearBreakpoints();
 bool AddStepOverBreakpoint();
 bool AddStepOutBreakpoint(u32 max_instructions_to_search = 1000);
 void SetSingleStepFlag();
-
-extern bool TRACE_EXECUTION;
 
 // Debug register introspection
 struct DebuggerRegisterListEntry

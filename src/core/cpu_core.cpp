@@ -38,6 +38,8 @@ enum class ExecutionBreakType
   Breakpoint,
 };
 
+static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
+
 static void UpdateLoadDelay();
 static void Branch(u32 target);
 static void FlushLoadDelay();
@@ -98,69 +100,76 @@ static bool WriteMemoryByte(VirtualMemoryAddress addr, u32 value);
 static bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value);
 static bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 
-constinit State g_state;
-bool TRACE_EXECUTION = false;
+struct Locals
+{
+  ExecutionBreakType break_type = ExecutionBreakType::None;
+  u32 breakpoint_counter = 1;
+  u32 last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  CPUExecutionMode current_execution_mode = CPUExecutionMode::Interpreter;
+  std::array<std::vector<Breakpoint>, static_cast<u32>(BreakpointType::Count)> breakpoints;
 
-static fastjmp_buf s_jmp_buf;
+  std::FILE* log_file = nullptr;
+  bool log_file_opened = false;
+  bool trace_to_log = false;
 
-static std::FILE* s_log_file = nullptr;
-static bool s_log_file_opened = false;
-static bool s_trace_to_log = false;
+  fastjmp_buf exit_jmp_buf;
+};
 
-static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
-static std::array<std::vector<Breakpoint>, static_cast<u32>(BreakpointType::Count)> s_breakpoints;
-static u32 s_breakpoint_counter = 1;
-static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-static CPUExecutionMode s_current_execution_mode = CPUExecutionMode::Interpreter;
-static ExecutionBreakType s_break_type = ExecutionBreakType::None;
+ALIGN_TO_CACHE_LINE constinit State g_state;
+ALIGN_TO_CACHE_LINE static Locals s_locals;
+
+#ifdef _DEBUG
+static bool TRACE_EXECUTION = false;
+#endif
+
 } // namespace CPU
 
 bool CPU::IsTraceEnabled()
 {
-  return s_trace_to_log;
+  return s_locals.trace_to_log;
 }
 
 void CPU::StartTrace()
 {
-  if (s_trace_to_log)
+  if (s_locals.trace_to_log)
     return;
 
-  s_trace_to_log = true;
+  s_locals.trace_to_log = true;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
 
 void CPU::StopTrace()
 {
-  if (!s_trace_to_log)
+  if (!s_locals.trace_to_log)
     return;
 
-  if (s_log_file)
-    std::fclose(s_log_file);
+  if (s_locals.log_file)
+    std::fclose(s_locals.log_file);
 
-  s_log_file_opened = false;
-  s_trace_to_log = false;
+  s_locals.log_file_opened = false;
+  s_locals.trace_to_log = false;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
 
 void CPU::WriteToExecutionLog(const char* format, ...)
 {
-  if (!s_log_file_opened) [[unlikely]]
+  if (!s_locals.log_file_opened) [[unlikely]]
   {
-    s_log_file = FileSystem::OpenCFile(Path::Combine(EmuFolders::DataRoot, "cpu_log.txt").c_str(), "wb");
-    s_log_file_opened = true;
+    s_locals.log_file = FileSystem::OpenCFile(Path::Combine(EmuFolders::DataRoot, "cpu_log.txt").c_str(), "wb");
+    s_locals.log_file_opened = true;
   }
 
-  if (s_log_file)
+  if (s_locals.log_file)
   {
     std::va_list ap;
     va_start(ap, format);
-    std::vfprintf(s_log_file, format, ap);
+    std::vfprintf(s_locals.log_file, format, ap);
     va_end(ap);
 
 #ifdef _DEBUG
-    std::fflush(s_log_file);
+    std::fflush(s_locals.log_file);
 #endif
   }
 }
@@ -170,14 +179,14 @@ void CPU::Initialize()
   // From nocash spec.
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
-  s_current_execution_mode = g_settings.cpu_execution_mode;
+  s_locals.current_execution_mode = g_settings.cpu_execution_mode;
   g_state.using_debug_dispatcher = false;
-  g_state.using_interpreter = (s_current_execution_mode == CPUExecutionMode::Interpreter);
-  for (BreakpointList& bps : s_breakpoints)
+  g_state.using_interpreter = (s_locals.current_execution_mode == CPUExecutionMode::Interpreter);
+  for (BreakpointList& bps : s_locals.breakpoints)
     bps.clear();
-  s_breakpoint_counter = 1;
-  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-  s_break_type = ExecutionBreakType::None;
+  s_locals.breakpoint_counter = 1;
+  s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_locals.break_type = ExecutionBreakType::None;
 
   UpdateMemoryPointers();
   UpdateDebugDispatcherFlag();
@@ -295,7 +304,7 @@ bool CPU::DoState(StateWrapper& sw)
   if (sw.IsReading())
   {
     // Trigger an execution mode change if the state was/wasn't using the interpreter.
-    s_current_execution_mode =
+    s_locals.current_execution_mode =
       g_state.using_interpreter ?
         CPUExecutionMode::Interpreter :
         ((g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter) ? CPUExecutionMode::CachedInterpreter :
@@ -351,7 +360,7 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
             g_state.cop0_regs.EPC, g_state.cop0_regs.cause.BD ? "true" : "false",
             g_state.cop0_regs.cause.CE.GetValue());
     DisassembleAndPrint(g_state.current_instruction_pc, 4u, 0u);
-    if (s_trace_to_log)
+    if (s_locals.trace_to_log)
     {
       CPU::WriteToExecutionLog("Exception %u at 0x%08X (epc=0x%08X, BD=%s, CE=%u)\n",
                                static_cast<u8>(g_state.cop0_regs.cause.Excode.GetValue()),
@@ -2051,19 +2060,19 @@ void CPU::DispatchInterrupt()
 
 CPUExecutionMode CPU::GetCurrentExecutionMode()
 {
-  return s_current_execution_mode;
+  return s_locals.current_execution_mode;
 }
 
 bool CPU::UpdateDebugDispatcherFlag()
 {
-  const bool has_any_breakpoints = (HasAnyBreakpoints() || s_break_type == ExecutionBreakType::SingleStep);
+  const bool has_any_breakpoints = (HasAnyBreakpoints() || s_locals.break_type == ExecutionBreakType::SingleStep);
 
   const auto& dcic = g_state.cop0_regs.dcic;
   const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
                                     dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();
 
   const bool use_debug_dispatcher =
-    has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log ||
+    has_any_breakpoints || has_cop0_breakpoints || s_locals.trace_to_log ||
     (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
   if (use_debug_dispatcher == g_state.using_debug_dispatcher)
     return false;
@@ -2078,13 +2087,14 @@ void CPU::CheckForExecutionModeChange()
   // Currently, any breakpoints require the interpreter.
   const CPUExecutionMode new_execution_mode =
     (g_state.using_debug_dispatcher ? CPUExecutionMode::Interpreter : g_settings.cpu_execution_mode);
-  if (s_current_execution_mode == new_execution_mode) [[likely]]
+  if (s_locals.current_execution_mode == new_execution_mode) [[likely]]
   {
-    DebugAssert(g_state.using_interpreter == (s_current_execution_mode == CPUExecutionMode::Interpreter));
+    DebugAssert(g_state.using_interpreter == (s_locals.current_execution_mode == CPUExecutionMode::Interpreter));
     return;
   }
 
-  WARNING_LOG("Execution mode changed from {} to {}", Settings::GetCPUExecutionModeName(s_current_execution_mode),
+  WARNING_LOG("Execution mode changed from {} to {}",
+              Settings::GetCPUExecutionModeName(s_locals.current_execution_mode),
               Settings::GetCPUExecutionModeName(new_execution_mode));
 
   // Clear bus error flag, it can get set in the rec and we don't want to fire it later in the int.
@@ -2117,9 +2127,9 @@ void CPU::CheckForExecutionModeChange()
         while (g_state.next_instruction_is_branch_delay_slot)
         {
           WARNING_LOG("EXECMODE: Executing instruction at 0x{:08X} because it is in a branch delay slot.", g_state.pc);
-          if (fastjmp_set(&s_jmp_buf) == 0)
+          if (fastjmp_set(&s_locals.exit_jmp_buf) == 0)
           {
-            s_break_type = ExecutionBreakType::ExecuteOneInstruction;
+            s_locals.break_type = ExecutionBreakType::ExecuteOneInstruction;
             g_state.using_debug_dispatcher = true;
             ExecuteInterpreter();
           }
@@ -2133,7 +2143,7 @@ void CPU::CheckForExecutionModeChange()
     }
   }
 
-  s_current_execution_mode = new_execution_mode;
+  s_locals.current_execution_mode = new_execution_mode;
   g_state.using_interpreter = new_interpreter;
 
   // Wipe out code cache when switching modes.
@@ -2145,7 +2155,7 @@ void CPU::CheckForExecutionModeChange()
 {
   // can't exit while running events without messing things up
   DebugAssert(!TimingEvents::IsRunningEvents());
-  fastjmp_jmp(&s_jmp_buf, 1);
+  fastjmp_jmp(&s_locals.exit_jmp_buf, 1);
 }
 
 bool CPU::HasAnyBreakpoints()
@@ -2156,7 +2166,7 @@ bool CPU::HasAnyBreakpoints()
 
 ALWAYS_INLINE CPU::BreakpointList& CPU::GetBreakpointList(BreakpointType type)
 {
-  return s_breakpoints[static_cast<size_t>(type)];
+  return s_locals.breakpoints[static_cast<size_t>(type)];
 }
 
 const char* CPU::GetBreakpointTypeName(BreakpointType type)
@@ -2188,12 +2198,12 @@ CPU::BreakpointList CPU::CopyBreakpointList(bool include_auto_clear, bool includ
   BreakpointList bps;
 
   size_t total = 0;
-  for (const BreakpointList& bplist : s_breakpoints)
+  for (const BreakpointList& bplist : s_locals.breakpoints)
     total += bplist.size();
 
   bps.reserve(total);
 
-  for (const BreakpointList& bplist : s_breakpoints)
+  for (const BreakpointList& bplist : s_locals.breakpoints)
   {
     for (const Breakpoint& bp : bplist)
     {
@@ -2217,7 +2227,7 @@ bool CPU::AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool 
   INFO_LOG("Adding {} breakpoint at {:08X}, auto clear = {}", GetBreakpointTypeName(type), address,
            static_cast<unsigned>(auto_clear));
 
-  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, type, auto_clear, enabled};
+  Breakpoint bp{address, nullptr, auto_clear ? 0 : s_locals.breakpoint_counter++, 0, type, auto_clear, enabled};
   GetBreakpointList(type).push_back(std::move(bp));
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
@@ -2257,8 +2267,8 @@ bool CPU::SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 
-  if (address == s_last_breakpoint_check_pc && !enabled)
-    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  if (address == s_locals.last_breakpoint_check_pc && !enabled)
+    s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 
   return true;
 }
@@ -2277,18 +2287,18 @@ bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 
-  if (address == s_last_breakpoint_check_pc)
-    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  if (address == s_locals.last_breakpoint_check_pc)
+    s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
 
   return true;
 }
 
 void CPU::ClearBreakpoints()
 {
-  for (BreakpointList& bplist : s_breakpoints)
+  for (BreakpointList& bplist : s_locals.breakpoints)
     bplist.clear();
-  s_breakpoint_counter = 0;
-  s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+  s_locals.breakpoint_counter = 0;
+  s_locals.last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
@@ -2419,21 +2429,22 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
 
 ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
 {
-  if (s_breakpoints[static_cast<u32>(BreakpointType::Execute)].empty()) [[likely]]
+  if (s_locals.breakpoints[static_cast<u32>(BreakpointType::Execute)].empty()) [[likely]]
     return;
 
   const u32 pc = g_state.pc;
-  if (pc == s_last_breakpoint_check_pc || s_break_type == ExecutionBreakType::ExecuteOneInstruction) [[unlikely]]
+  if (pc == s_locals.last_breakpoint_check_pc || s_locals.break_type == ExecutionBreakType::ExecuteOneInstruction)
+    [[unlikely]]
   {
     // we don't want to trigger the same breakpoint which just paused us repeatedly.
     return;
   }
 
-  s_last_breakpoint_check_pc = pc;
+  s_locals.last_breakpoint_check_pc = pc;
 
   if (CheckBreakpointList(BreakpointType::Execute, pc)) [[unlikely]]
   {
-    s_break_type = ExecutionBreakType::None;
+    s_locals.break_type = ExecutionBreakType::None;
     ExitExecution();
   }
 }
@@ -2443,7 +2454,7 @@ ALWAYS_INLINE_RELEASE void CPU::MemoryBreakpointCheck(VirtualMemoryAddress addre
 {
   const BreakpointType bptype = (type == MemoryAccessType::Read) ? BreakpointType::Read : BreakpointType::Write;
   if (CheckBreakpointList(bptype, address)) [[unlikely]]
-    s_break_type = ExecutionBreakType::Breakpoint;
+    s_locals.break_type = ExecutionBreakType::Breakpoint;
 }
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -2479,7 +2490,7 @@ template<PGXPMode pgxp_mode, bool debug>
       // trace functionality
       if constexpr (debug)
       {
-        if (s_trace_to_log)
+        if (s_locals.trace_to_log)
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
         // handle all mirrors of the syscall trampoline. will catch 200000A0 etc, but those aren't fetchable anyway
@@ -2506,9 +2517,9 @@ template<PGXPMode pgxp_mode, bool debug>
 
       if constexpr (debug)
       {
-        if (s_break_type != ExecutionBreakType::None) [[unlikely]]
+        if (s_locals.break_type != ExecutionBreakType::None) [[unlikely]]
         {
-          const ExecutionBreakType break_type = std::exchange(s_break_type, ExecutionBreakType::None);
+          const ExecutionBreakType break_type = std::exchange(s_locals.break_type, ExecutionBreakType::None);
           if (break_type >= ExecutionBreakType::SingleStep)
             System::PauseSystem(true);
 
@@ -2556,14 +2567,14 @@ void CPU::ExecuteInterpreter()
 
 fastjmp_buf* CPU::GetExecutionJmpBuf()
 {
-  return &s_jmp_buf;
+  return &s_locals.exit_jmp_buf;
 }
 
 void CPU::Execute()
 {
   CheckForExecutionModeChange();
 
-  if (fastjmp_set(&s_jmp_buf) != 0)
+  if (fastjmp_set(&s_locals.exit_jmp_buf) != 0)
     return;
 
   if (g_state.using_interpreter)
@@ -2574,7 +2585,7 @@ void CPU::Execute()
 
 void CPU::SetSingleStepFlag()
 {
-  s_break_type = ExecutionBreakType::SingleStep;
+  s_locals.break_type = ExecutionBreakType::SingleStep;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
