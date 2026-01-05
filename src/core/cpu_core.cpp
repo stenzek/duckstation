@@ -535,7 +535,7 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0ExecutionBreakpointCheck()
   if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled())
     return;
 
-  const u32 pc = g_state.current_instruction_pc;
+  const u32 pc = g_state.pc;
   const u32 bpc = g_state.cop0_regs.BPC;
   const u32 bpcm = g_state.cop0_regs.BPCM;
 
