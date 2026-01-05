@@ -866,6 +866,7 @@ void FullscreenUI::UpdateTransitionState()
     // g_gpu_device->RecycleTexture(std::move(s_state.transition_current_texture));
     // g_gpu_device->RecycleTexture(std::move(s_state.transition_prev_texture));
     s_state.transition_state = TransitionState::Inactive;
+    UpdateRunIdleState();
   }
 }
 
