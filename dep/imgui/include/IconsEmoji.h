@@ -8,6 +8,7 @@
 
 #define ICON_EMOJI_WARNING "\xe2\x9a\xa0"
 #define ICON_EMOJI_CHECKMARK_BUTTON "\xe2\x9c\x85"
+#define ICON_EMOJI_CROSS_MARK_BUTTON "\xe2\x9d\x8c"
 #define ICON_EMOJI_OPTICAL_DISK "\xf0\x9f\x92\xbf"
 #define ICON_EMOJI_FLOPPY_DISK "\xf0\x9f\x92\xbe"
 #define ICON_EMOJI_INFORMATION "\xe2\x84\xb9"
@@ -44,3 +45,5 @@
 #define ICON_EMOJI_INDEX_DIVIDERS "\xf0\x9f\x97\x82"
 #define ICON_EMOJI_CLIPBOARD "\xf0\x9f\x93\x8b"
 #define ICON_EMOJI_NOTEBOOK "\xf0\x9f\x93\x99"
+#define ICON_EMOJI_GEAR "\xe2\x9a\x99"
+#define ICON_EMOJI_NO_ENTRY_SIGN "\xe2\x9b\x94"

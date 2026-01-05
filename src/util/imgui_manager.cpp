@@ -26,6 +26,7 @@
 #include "common/thirdparty/usb_key_code_data.h"
 #include "common/timer.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome.h"
 #include "fmt/format.h"
 #include "imgui.h"
@@ -846,6 +847,15 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::stri
     INFO_LOG("OSD [{}]: {}{}{}", key, title.empty() ? "" : "\n", title, message);
   else
     INFO_LOG("OSD: {}{}{}", title.empty() ? "" : "\n", title, message);
+
+  static constexpr const std::array<const char*, static_cast<size_t>(OSDMessageType::MaxCount)> default_icons = {
+    ICON_EMOJI_NO_ENTRY_SIGN, // Error
+    ICON_EMOJI_WARNING,       // Warning
+    ICON_EMOJI_INFORMATION,   // Info
+    ICON_EMOJI_INFORMATION,   // Quick
+  };
+  if (icon.empty())
+    icon = default_icons[static_cast<size_t>(type)];
 
   std::unique_lock lock(s_state.osd_messages_lock);
   s_state.osd_posted_messages.push_back(PostedOSDMessage{
