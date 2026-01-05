@@ -64,9 +64,10 @@ WAVReader::WAVReader(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bits_per_sample = std::exchange(move.m_bits_per_sample, static_cast<u8>(0));
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u8>(0));
   m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
-  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_num_frames = std::exchange(move.m_num_frames, 0);
   m_current_frame = std::exchange(move.m_current_frame, 0);
 }
@@ -81,8 +82,9 @@ WAVReader& WAVReader::operator=(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_bits_per_sample = std::exchange(move.m_bits_per_sample, static_cast<u8>(0));
+  m_num_channels = std::exchange(move.m_num_channels, static_cast<u8>(0));
   m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
-  m_num_channels = std::exchange(move.m_num_channels, static_cast<u16>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
   m_current_frame = std::exchange(move.m_current_frame, 0);
@@ -162,7 +164,9 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
     return false;
   }
 
-  if (format.sample_rate == 0 || format.num_channels == 0 || format.bits_per_sample != 16)
+  if (format.sample_rate == 0 || format.num_channels == 0 ||
+      (format.bits_per_sample != 8 && format.bits_per_sample != 16 && format.bits_per_sample != 24 &&
+       format.bits_per_sample != 32))
   {
     Error::SetStringFmt(error, "Unsupported file format samplerate={} channels={} bits={}", format.sample_rate,
                         format.num_channels, format.bits_per_sample);
@@ -176,7 +180,8 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
     return false;
   }
 
-  const u32 num_frames = data.chunk_size / (sizeof(s16) * format.num_channels);
+  const u32 bytes_per_frame = (format.bits_per_sample / 8) * format.num_channels;
+  const u32 num_frames = (bytes_per_frame > 0) ? (data.chunk_size / bytes_per_frame) : 0;
   if (num_frames == 0)
   {
     Error::SetStringFmt(error, "File has no frames");
@@ -185,9 +190,10 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
 
   m_file = fp.release();
   m_frames_start = FileSystem::FTell64(m_file);
+  m_bits_per_sample = static_cast<u8>(format.bits_per_sample);
+  m_num_channels = static_cast<u8>(format.num_channels);
+  m_bytes_per_frame = static_cast<s16>(bytes_per_frame);
   m_sample_rate = format.sample_rate;
-  m_bytes_per_frame = sizeof(s16) * format.num_channels;
-  m_num_channels = format.num_channels;
   m_num_frames = num_frames;
   m_current_frame = 0;
   return true;
@@ -201,8 +207,9 @@ void WAVReader::Close()
   std::fclose(m_file);
   m_file = nullptr;
   m_frames_start = 0;
-  m_bytes_per_frame = 0;
+  m_bits_per_sample = 0;
   m_num_channels = 0;
+  m_bytes_per_frame = 0;
   m_sample_rate = 0;
   m_num_frames = 0;
   m_current_frame = 0;
@@ -213,7 +220,9 @@ std::FILE* WAVReader::TakeFile()
   std::FILE* ret = std::exchange(m_file, nullptr);
   m_frames_start = 0;
   m_bytes_per_frame = 0;
+  m_bits_per_sample = 0;
   m_num_channels = 0;
+  m_bytes_per_frame = 0;
   m_sample_rate = 0;
   m_num_frames = 0;
   m_current_frame = 0;
@@ -349,7 +358,9 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
     return result;
   }
 
-  if (format.sample_rate == 0 || format.num_channels == 0 || format.bits_per_sample != 16)
+  if (format.sample_rate == 0 || format.num_channels == 0 ||
+      (format.bits_per_sample != 8 && format.bits_per_sample != 16 && format.bits_per_sample != 24 &&
+       format.bits_per_sample != 32))
   {
     Error::SetStringFmt(error, "Unsupported file format samplerate={} channels={} bits={}", format.sample_rate,
                         format.num_channels, format.bits_per_sample);
@@ -364,7 +375,8 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
     return result;
   }
 
-  const u32 num_frames = static_cast<u32>(sample_data->size() / (sizeof(s16) * format.num_channels));
+  const u32 bytes_per_frame = (format.bits_per_sample / 8) * format.num_channels;
+  const u32 num_frames = (bytes_per_frame > 0) ? (static_cast<u32>(sample_data->size() / bytes_per_frame)) : 0;
   if (num_frames == 0)
   {
     Error::SetStringFmt(error, "File has no frames");
@@ -372,8 +384,9 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
   }
 
   result.emplace();
-  result->bytes_per_frame = sizeof(s16) * format.num_channels;
+  result->bits_per_sample = format.bits_per_sample;
   result->sample_rate = format.sample_rate;
+  result->bytes_per_frame = bytes_per_frame;
   result->num_channels = format.num_channels;
   result->num_frames = num_frames;
   result->sample_data = sample_data->data();

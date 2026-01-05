@@ -25,6 +25,7 @@ public:
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
   ALWAYS_INLINE u32 GetNumChannels() const { return m_num_channels; }
   ALWAYS_INLINE u32 GetNumFrames() const { return m_num_frames; }
+  ALWAYS_INLINE u32 GetBitsPerSample() const { return m_bits_per_sample; }
   ALWAYS_INLINE u32 GetBytesPerFrame() const { return m_bytes_per_frame; }
   ALWAYS_INLINE u64 GetFramesStartOffset() const { return m_frames_start; }
   ALWAYS_INLINE bool IsOpen() const { return (m_file != nullptr); }
@@ -43,8 +44,9 @@ public:
 
   struct MemoryParseResult
   {
-    u32 bytes_per_frame;
+    u32 bits_per_sample;
     u32 sample_rate;
+    u32 bytes_per_frame;
     u32 num_channels;
     u32 num_frames;
     const void* sample_data;
@@ -57,8 +59,9 @@ private:
 
   std::FILE* m_file = nullptr;
   s64 m_frames_start = 0;
+  u8 m_bits_per_sample = 0;
+  u8 m_num_channels = 0;
   u16 m_bytes_per_frame = 0;
-  u16 m_num_channels = 0;
   u32 m_sample_rate = 0;
   u32 m_num_frames = 0;
   u32 m_current_frame = 0;

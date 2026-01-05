@@ -129,10 +129,12 @@ static void MixFrames(AudioStream::SampleType* dest, const AudioStream::SampleTy
 /// Stops the stream if there are no active sounds.
 static void StopStreamIfInactive();
 
+static void ConvertTo16Bit(const void* src, std::span<AudioStream::SampleType> dst, u32 in_bits_per_sample);
 static void ConvertToStereo(std::span<const AudioStream::SampleType> src, std::span<AudioStream::SampleType> dst,
                             u32 in_channels);
 
-static bool ConvertFrames(CachedEffect& effect, u32 in_sample_rate, u32 in_channels, u32 in_frames, Error* error);
+static bool ConvertFrames(CachedEffect& effect, const void* frames_in, u32 in_bits_per_sample, u32 in_sample_rate,
+                          u32 in_channels, u32 in_frames, Error* error);
 
 static PlayingResampledEffect CreateResampledStreamedEffect(WAVReader&& reader, Error* error);
 
@@ -226,13 +228,18 @@ bool SoundEffectManager::LoadCachedEffect(const std::string& resource_name, cons
   effect->frames.resize(parsed->num_frames * parsed->num_channels);
   if (parsed->num_frames > 0)
   {
-    std::memcpy(effect->frames.data(), parsed->sample_data, parsed->num_frames * parsed->bytes_per_frame);
-
     SpeexResamplerStatePtr resampler_state;
-    if (parsed->sample_rate != SAMPLE_RATE || parsed->num_channels != NUM_CHANNELS)
+    if (parsed->bits_per_sample != 16 || parsed->sample_rate != SAMPLE_RATE || parsed->num_channels != NUM_CHANNELS)
     {
-      if (!ConvertFrames(*effect, parsed->sample_rate, parsed->num_channels, parsed->num_frames, error))
+      if (!ConvertFrames(*effect, parsed->sample_data, parsed->bits_per_sample, parsed->sample_rate,
+                         parsed->num_channels, parsed->num_frames, error))
+      {
         return false;
+      }
+    }
+    else
+    {
+      std::memcpy(effect->frames.data(), parsed->sample_data, parsed->num_frames * parsed->bytes_per_frame);
     }
 
     DEV_LOG("Loaded effect '{}' with {} frames.", resource_name, effect->frames.size() / NUM_CHANNELS);
@@ -285,7 +292,8 @@ void SoundEffectManager::StreamSoundEffect(std::string path)
     }
 
     PlayingResampledEffect resampled;
-    if (reader.GetSampleRate() != SAMPLE_RATE || reader.GetNumChannels() != NUM_CHANNELS)
+    if (reader.GetSampleRate() != SAMPLE_RATE || reader.GetNumChannels() != NUM_CHANNELS ||
+        reader.GetBitsPerSample() != 16)
     {
       resampled = CreateResampledStreamedEffect(std::move(reader), &error);
       if (!resampled)
@@ -531,6 +539,95 @@ void SoundEffectManager::MixFrames(AudioStream::SampleType* dest, const AudioStr
   }
 }
 
+void SoundEffectManager::ConvertTo16Bit(const void* src, std::span<AudioStream::SampleType> dst, u32 in_bits_per_sample)
+{
+  const u32 num_samples = static_cast<u32>(dst.size());
+  DebugAssert(in_bits_per_sample != 16);
+  if (in_bits_per_sample == 8)
+  {
+    // Convert 8-bit unsigned to 16-bit signed
+    const u8* src_ptr = static_cast<const u8*>(src);
+    AudioStream::SampleType* dst_ptr = dst.data();
+
+    u32 i = 0;
+#ifdef CPU_ARCH_SIMD
+    static constexpr u32 SAMPLES_PER_VEC = 16;
+    const u32 num_samples_aligned = Common::AlignDownPow2(num_samples, SAMPLES_PER_VEC);
+    for (; i < num_samples_aligned; i += SAMPLES_PER_VEC)
+    {
+      const GSVector4i vsrc =
+        GSVector4i::load<false>(src_ptr) ^ GSVector4i::cxpr8(-128, -128, -128, -128, -128, -128, -128, -128, -128, -128,
+                                                             -128, -128, -128, -128, -128, -128);
+      const GSVector4i vlow = vsrc.upl8(vsrc).sll16<8>();
+      const GSVector4i vhi = vsrc.uph8(vsrc).sll16<8>();
+      GSVector4i::store<false>(dst_ptr, vlow);
+      GSVector4i::store<false>(dst_ptr + 8, vhi);
+      src_ptr += SAMPLES_PER_VEC;
+      dst_ptr += SAMPLES_PER_VEC;
+    }
+#endif
+
+    for (; i < num_samples; i++)
+    {
+      const s16 sample = (static_cast<s16>(*(src_ptr++)) ^ 0x80) << 8;
+      *(dst_ptr++) = sample;
+    }
+  }
+  else if (in_bits_per_sample == 24)
+  {
+    // Convert 24-bit signed to 16-bit signed
+    const u8* src_ptr = static_cast<const u8*>(src);
+    AudioStream::SampleType* dst_ptr = dst.data();
+    for (u32 i = 0; i < num_samples; i++)
+    {
+      const s32 sample =
+        (static_cast<s32>(src_ptr[0]) | (static_cast<s32>(src_ptr[1]) << 8) | (static_cast<s32>(src_ptr[2]) << 16));
+      // sign extend
+      const s32 signed_sample = (sample << 8) >> 8;
+      *(dst_ptr++) = static_cast<s16>(signed_sample >> 8);
+      src_ptr += 3;
+    }
+  }
+  else if (in_bits_per_sample == 32)
+  {
+    // Convert 32-bit signed to 16-bit signed
+    const s32* src_ptr = static_cast<const s32*>(src);
+    AudioStream::SampleType* dst_ptr = dst.data();
+
+    u32 i = 0;
+#ifdef CPU_ARCH_SIMD
+    static constexpr u32 SAMPLES_PER_VEC = 8;
+    const u32 num_samples_aligned = Common::AlignDownPow2(num_samples, SAMPLES_PER_VEC);
+    for (; i < num_samples_aligned; i += SAMPLES_PER_VEC)
+    {
+      const GSVector4i vsrclow = GSVector4i::load<false>(src_ptr).sra32<16>();
+      src_ptr += 4;
+      const GSVector4i vsrchigh = GSVector4i::load<false>(src_ptr).sra32<16>();
+      src_ptr += 4;
+
+      const GSVector4i vdest = vsrclow.ps32(vsrchigh);
+      GSVector4i::store<false>(dst_ptr, vdest);
+      dst_ptr += SAMPLES_PER_VEC;
+    }
+#endif
+
+    i = 0;
+    src_ptr = static_cast<const s32*>(src);
+    dst_ptr = dst.data();
+
+    for (; i < num_samples; i++)
+    {
+      const s32 sample = *(src_ptr++);
+      *(dst_ptr++) = static_cast<s16>(sample >> 16);
+    }
+  }
+  else
+  {
+    ERROR_LOG("Unsupported bits per sample: {}", in_bits_per_sample);
+    std::memset(dst.data(), 0, num_samples * sizeof(AudioStream::SampleType));
+  }
+}
+
 void SoundEffectManager::ConvertToStereo(std::span<const AudioStream::SampleType> src,
                                          std::span<AudioStream::SampleType> dst, u32 in_channels)
 {
@@ -593,16 +690,31 @@ void SoundEffectManager::SpeexResamplerStateDeleter::operator()(SpeexResamplerSt
   speex_resampler_destroy(state);
 }
 
-bool SoundEffectManager::ConvertFrames(CachedEffect& effect, u32 in_sample_rate, u32 in_channels, u32 in_frames,
-                                       Error* error)
+bool SoundEffectManager::ConvertFrames(CachedEffect& effect, const void* frames_in, u32 in_bits_per_sample,
+                                       u32 in_sample_rate, u32 in_channels, u32 in_frames, Error* error)
 {
   DynamicHeapArray<AudioStream::SampleType> temp_frames;
+
+  std::span<const s16> frames_in_span;
+
+  if (in_bits_per_sample != 16)
+  {
+    temp_frames.resize(in_frames * in_channels);
+    ConvertTo16Bit(frames_in, temp_frames, in_bits_per_sample);
+    effect.frames.swap(temp_frames);
+    frames_in_span = effect.frames;
+  }
+  else
+  {
+    frames_in_span = std::span<const s16>(static_cast<const s16*>(frames_in), in_frames * in_channels);
+  }
 
   if (in_channels != NUM_CHANNELS)
   {
     temp_frames.resize(in_frames * NUM_CHANNELS);
-    ConvertToStereo(effect.frames, temp_frames, in_channels);
+    ConvertToStereo(frames_in_span, temp_frames, in_channels);
     effect.frames.swap(temp_frames);
+    frames_in_span = effect.frames;
   }
 
   if (in_sample_rate != SAMPLE_RATE)
@@ -643,7 +755,7 @@ bool SoundEffectManager::ConvertFrames(CachedEffect& effect, u32 in_sample_rate,
       unsigned int frames_processed = in_frames - input_frames_count;
       unsigned int frames_generated = (static_cast<u32>(temp_frames.size() / NUM_CHANNELS) - output_frame_count);
       const int ret = speex_resampler_process_interleaved_int(
-        resampler_state.get(), (frames_processed > 0) ? &effect.frames[input_frames_count * NUM_CHANNELS] : nullptr,
+        resampler_state.get(), (frames_processed > 0) ? &frames_in_span[input_frames_count * NUM_CHANNELS] : nullptr,
         &frames_processed, &temp_frames[output_frame_count * NUM_CHANNELS], &frames_generated);
       if (ret != RESAMPLER_ERR_SUCCESS)
       {
@@ -700,28 +812,52 @@ u32 SoundEffectManager::ReadEntryFrames(PlayingResampledEffect& effect, AudioStr
     if (effect->input_buffer_pos == effect->input_buffer_size && effect->reader.GetRemainingFrames() > 0)
     {
       const bool needs_upmix = (effect->reader.GetNumChannels() != NUM_CHANNELS);
-      if (needs_upmix)
+      const bool needs_shift = (effect->reader.GetBitsPerSample() != 16);
+      if (needs_upmix || needs_shift)
       {
-        const u32 required_buffer_space = ResampledStreamedEffect::INPUT_BUFFER_SIZE * effect->reader.GetNumChannels();
+        u32 required_buffer_space = ((ResampledStreamedEffect::INPUT_BUFFER_SIZE * effect->reader.GetNumChannels() *
+                                      effect->reader.GetBytesPerFrame()) +
+                                     (sizeof(s16) - 1)) /
+                                    sizeof(s16);
+
+        // use second half of buffer as scratch when doing both
+        if (needs_upmix && needs_shift)
+          required_buffer_space += ResampledStreamedEffect::INPUT_BUFFER_SIZE * effect->reader.GetNumChannels();
+
         if (required_buffer_space > s_locals.temp_buffer.size())
           s_locals.temp_buffer.resize(required_buffer_space);
       }
 
       Error error;
-      const std::optional<u32> frames =
-        effect->reader.ReadFrames(needs_upmix ? s_locals.temp_buffer.data() : effect->input_buffer.data(),
-                                  ResampledStreamedEffect::INPUT_BUFFER_SIZE, &error);
+      const std::optional<u32> frames = effect->reader.ReadFrames(
+        (needs_upmix || needs_shift) ? s_locals.temp_buffer.data() : effect->input_buffer.data(),
+        ResampledStreamedEffect::INPUT_BUFFER_SIZE, &error);
       if (!frames.has_value())
       {
         ERROR_LOG("Error reading wave file: {}", error.GetDescription());
         break;
       }
 
-      if (needs_upmix && frames.value() > 0)
+      if (frames.value() > 0)
       {
-        ConvertToStereo(s_locals.temp_buffer.cspan(0, frames.value() * effect->reader.GetNumChannels()),
-                        std::span(effect->input_buffer).subspan(0, frames.value() * NUM_CHANNELS),
-                        effect->reader.GetNumChannels());
+        const u32 total_samples = frames.value() * effect->reader.GetNumChannels();
+        const std::span<AudioStream::SampleType> final_frames_out =
+          std::span(effect->input_buffer).subspan(0, frames.value() * NUM_CHANNELS);
+        std::span<AudioStream::SampleType> frames_in;
+        if (needs_shift)
+        {
+          std::span<AudioStream::SampleType> frames_out =
+            needs_upmix ? s_locals.temp_buffer.span(s_locals.temp_buffer.size() - total_samples) : final_frames_out;
+          ConvertTo16Bit(s_locals.temp_buffer.data(), frames_out, effect->reader.GetBitsPerSample());
+          frames_in = frames_out;
+        }
+        else
+        {
+          frames_in = s_locals.temp_buffer.span(0, total_samples);
+        }
+
+        if (needs_upmix)
+          ConvertToStereo(frames_in, final_frames_out, effect->reader.GetNumChannels());
       }
 
       effect->input_buffer_pos = 0;
