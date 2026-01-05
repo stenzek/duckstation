@@ -64,9 +64,10 @@ WAVReader::WAVReader(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_format = std::exchange(move.m_format, InvalidFormat);
   m_bits_per_sample = std::exchange(move.m_bits_per_sample, static_cast<u8>(0));
   m_num_channels = std::exchange(move.m_num_channels, static_cast<u8>(0));
-  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u8>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
   m_current_frame = std::exchange(move.m_current_frame, 0);
@@ -82,9 +83,10 @@ WAVReader& WAVReader::operator=(WAVReader&& move)
 {
   m_file = std::exchange(move.m_file, nullptr);
   m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_format = std::exchange(move.m_format, InvalidFormat);
   m_bits_per_sample = std::exchange(move.m_bits_per_sample, static_cast<u8>(0));
   m_num_channels = std::exchange(move.m_num_channels, static_cast<u8>(0));
-  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u16>(0));
+  m_bytes_per_frame = std::exchange(move.m_bytes_per_frame, static_cast<u8>(0));
   m_sample_rate = std::exchange(move.m_sample_rate, 0);
   m_num_frames = std::exchange(move.m_num_frames, 0);
   m_current_frame = std::exchange(move.m_current_frame, 0);
@@ -137,6 +139,27 @@ static bool FindChunk(std::FILE* fp, T* chunk, u32 tag, Error* error, bool skip_
   }
 }
 
+static bool ValidateFormat(const WAV_FULL_HEADER::FormatChunk& format, Error* error)
+{
+  if (format.audio_format != WAVReader::PCMFormat && format.audio_format != WAVReader::FloatFormat) // PCM
+  {
+    Error::SetStringFmt(error, "Unsupported audio format {}", format.audio_format);
+    return false;
+  }
+
+  if (format.sample_rate == 0 || format.num_channels == 0 || format.num_channels > 8 ||
+      (format.audio_format == WAVReader::PCMFormat && format.bits_per_sample != 8 && format.bits_per_sample != 16 &&
+       format.bits_per_sample != 24 && format.bits_per_sample != 32) ||
+      (format.audio_format == WAVReader::FloatFormat && format.bits_per_sample != 32))
+  {
+    Error::SetStringFmt(error, "Unsupported file format format={} samplerate={} channels={} bits={}",
+                        format.audio_format, format.sample_rate, format.num_channels, format.bits_per_sample);
+    return false;
+  }
+
+  return true;
+}
+
 bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
 {
   auto fp = FileSystem::OpenManagedCFile(path, "rb", error);
@@ -158,20 +181,8 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
     return false;
   }
 
-  if (format.audio_format != 1) // PCM
-  {
-    Error::SetStringFmt(error, "Unsupported audio format {}", format.audio_format);
+  if (!ValidateFormat(format, error))
     return false;
-  }
-
-  if (format.sample_rate == 0 || format.num_channels == 0 ||
-      (format.bits_per_sample != 8 && format.bits_per_sample != 16 && format.bits_per_sample != 24 &&
-       format.bits_per_sample != 32))
-  {
-    Error::SetStringFmt(error, "Unsupported file format samplerate={} channels={} bits={}", format.sample_rate,
-                        format.num_channels, format.bits_per_sample);
-    return false;
-  }
 
   WAV_CHUNK_HEADER data;
   if (!FindChunk(fp.get(), &data, DATA_VALUE, error, false))
@@ -180,7 +191,7 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
     return false;
   }
 
-  const u32 bytes_per_frame = (format.bits_per_sample / 8) * format.num_channels;
+  const u8 bytes_per_frame = static_cast<u8>((format.bits_per_sample / 8) * format.num_channels);
   const u32 num_frames = (bytes_per_frame > 0) ? (data.chunk_size / bytes_per_frame) : 0;
   if (num_frames == 0)
   {
@@ -190,9 +201,10 @@ bool WAVReader::Open(const char* path, Error* error /*= nullptr*/)
 
   m_file = fp.release();
   m_frames_start = FileSystem::FTell64(m_file);
+  m_format = static_cast<Format>(format.audio_format);
   m_bits_per_sample = static_cast<u8>(format.bits_per_sample);
   m_num_channels = static_cast<u8>(format.num_channels);
-  m_bytes_per_frame = static_cast<s16>(bytes_per_frame);
+  m_bytes_per_frame = bytes_per_frame;
   m_sample_rate = format.sample_rate;
   m_num_frames = num_frames;
   m_current_frame = 0;
@@ -207,6 +219,7 @@ void WAVReader::Close()
   std::fclose(m_file);
   m_file = nullptr;
   m_frames_start = 0;
+  m_format = InvalidFormat;
   m_bits_per_sample = 0;
   m_num_channels = 0;
   m_bytes_per_frame = 0;
@@ -219,6 +232,7 @@ std::FILE* WAVReader::TakeFile()
 {
   std::FILE* ret = std::exchange(m_file, nullptr);
   m_frames_start = 0;
+  m_format = InvalidFormat;
   m_bytes_per_frame = 0;
   m_bits_per_sample = 0;
   m_num_channels = 0;
@@ -352,20 +366,8 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
     return result;
   }
 
-  if (format.audio_format != 1) // PCM
-  {
-    Error::SetStringFmt(error, "Unsupported audio format {}", format.audio_format);
+  if (!ValidateFormat(format, error))
     return result;
-  }
-
-  if (format.sample_rate == 0 || format.num_channels == 0 ||
-      (format.bits_per_sample != 8 && format.bits_per_sample != 16 && format.bits_per_sample != 24 &&
-       format.bits_per_sample != 32))
-  {
-    Error::SetStringFmt(error, "Unsupported file format samplerate={} channels={} bits={}", format.sample_rate,
-                        format.num_channels, format.bits_per_sample);
-    return result;
-  }
 
   WAV_CHUNK_HEADER data_chunk;
   std::optional<std::span<const u8>> sample_data = FindChunk(whole_file, &data_chunk, DATA_VALUE, error);
@@ -375,7 +377,7 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
     return result;
   }
 
-  const u32 bytes_per_frame = (format.bits_per_sample / 8) * format.num_channels;
+  const u8 bytes_per_frame = static_cast<u8>((format.bits_per_sample / 8) * format.num_channels);
   const u32 num_frames = (bytes_per_frame > 0) ? (static_cast<u32>(sample_data->size() / bytes_per_frame)) : 0;
   if (num_frames == 0)
   {
@@ -384,10 +386,11 @@ std::optional<WAVReader::MemoryParseResult> WAVReader::ParseMemory(const void* d
   }
 
   result.emplace();
-  result->bits_per_sample = format.bits_per_sample;
-  result->sample_rate = format.sample_rate;
+  result->format = static_cast<Format>(format.audio_format);
+  result->bits_per_sample = static_cast<u8>(format.bits_per_sample);
+  result->num_channels = static_cast<u8>(format.num_channels);
   result->bytes_per_frame = bytes_per_frame;
-  result->num_channels = format.num_channels;
+  result->sample_rate = format.sample_rate;
   result->num_frames = num_frames;
   result->sample_data = sample_data->data();
   return result;
