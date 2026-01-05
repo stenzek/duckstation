@@ -908,6 +908,14 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
             <numerusform>Denna deluppsättning har %n ledartavlor.</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Failed to fetch game titles (code {}).</source>
+        <translation>Misslyckades med att hämta speltitlar (kod {}).</translation>
+    </message>
+    <message>
+        <source>Failed to create game titles request.</source>
+        <translation>Misslyckades med att skapa begäran för speltitlar.</translation>
+    </message>
 </context>
 <context>
     <name>AdvancedSettingsWidget</name>
@@ -1025,7 +1033,7 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>Disable Window Rounded Corners</source>
-        <translation>Inaktivera fönster med rundade hörn</translation>
+        <translation type="vanished">Inaktivera fönster med rundade hörn</translation>
     </message>
     <message>
         <source>Display Active Start Offset</source>
@@ -1169,7 +1177,7 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>Use Fractional Window Scale</source>
-        <translation>Använd fraktionell fönsterskalning</translation>
+        <translation type="vanished">Använd fraktionell fönsterskalning</translation>
     </message>
 </context>
 <context>
@@ -1725,7 +1733,6 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     </message>
     <message>
         <source>N/A</source>
-        <extracomment>Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language&apos;s ruleset.</extracomment>
         <translation>Inte tillgängligt</translation>
     </message>
     <message>
@@ -1839,6 +1846,14 @@ Vi kommer att fortsätta försöka skicka in begäran.</translation>
     <message>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
         <translation>När den är aktiverad används den minsta stödda utmatningslatensen för värd-API:et.</translation>
+    </message>
+    <message>
+        <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer + %4 ms output)</source>
+        <translation>Maximal latens: %1 ms (%2 ms utsträckning + %3 ms buffert + %4 ms utgång)</translation>
+    </message>
+    <message>
+        <source>Maximum Latency: %1 ms (%2 ms stretch + %3 ms buffer, minimum output latency unknown)</source>
+        <translation>Maximal latens: %1 ms (%2 ms utsträckning + %3 ms buffert, minsta utgångslatens okänd)</translation>
     </message>
 </context>
 <context>
@@ -3438,7 +3453,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>DualShock 4 / DualSense Enhanced Mode</source>
-        <translation>DualShock 4 / DualSense utökat läge</translation>
+        <translation type="vanished">DualShock 4 / DualSense utökat läge</translation>
     </message>
     <message>
         <source>Enable DualSense Player LED</source>
@@ -3454,7 +3469,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Enable XInput Input Source</source>
-        <translation>Aktivera inmatningskälla för XInput</translation>
+        <translation type="vanished">Aktivera inmatningskälla för XInput</translation>
     </message>
     <message>
         <source>Using raw input improves precision when you bind controller sticks to the mouse pointer. Also enables multiple mice to be used.</source>
@@ -3478,11 +3493,11 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>DInput Source</source>
-        <translation>DInput-källa</translation>
+        <translation type="vanished">DInput-källa</translation>
     </message>
     <message>
         <source>The DInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL instead is recommended.</source>
-        <translation>DInput-källan ger stöd för äldre handkontroller som inte har stöd för XInput. Åtkomst till dessa handkontroller via SDL rekommenderas dock.</translation>
+        <translation type="vanished">DInput-källan ger stöd för äldre handkontroller som inte har stöd för XInput. Åtkomst till dessa handkontroller via SDL rekommenderas dock.</translation>
     </message>
     <message>
         <source>Multitap Mode:</source>
@@ -3490,7 +3505,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>Enable DInput Input Source</source>
-        <translation>Aktivera inmatningskälla för DInput</translation>
+        <translation type="vanished">Aktivera inmatningskälla för DInput</translation>
     </message>
     <message>
         <source>Profile Settings</source>
@@ -3542,7 +3557,7 @@ Den här varningen visas bara en gång.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;advanced options&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-inmatningskällan stöder de flesta kontroller och erbjuder vibrations-/LED-funktionalitet för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;avancerade alternativ&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="vanished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-inmatningskällan stöder de flesta kontroller och erbjuder vibrations-/LED-funktionalitet för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;avancerade alternativ&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Advanced SDL Options</source>
@@ -3569,6 +3584,58 @@ Den ”alternativa” färgen används när analogt läge är aktivt.</translati
     <message>
         <source>Normal Mode:</source>
         <translation>Normalt läge:</translation>
+    </message>
+    <message>
+        <source>Enables the player LED on DualSense controllers.</source>
+        <translation>Aktiverar spelarens LED på DualSense-kontroller.</translation>
+    </message>
+    <message>
+        <source>Adjusts LED settings for controllers with configurable LEDs.</source>
+        <translation>Justerar LED-inställningar för kontroller med konfigurerbar LED.</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables the SDL input source and detection of controllers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aktiverar SDL-ingångskällan och detektering av styrenheter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows rumble and LED effects for DualShock 4 / DualSense controllers in Bluetooth mode. This option is not required for wired connections.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Enabling enhanced reports may result in your controller being unusable in other applications until it is turned off and on again.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tillåter vibrationer och LED-effekter för DualShock 4-/DualSense-kontroller i Bluetooth-läge. Det här alternativet krävs inte för kabelanslutningar. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Om du aktiverar förbättrade rapporter kan det hända att din kontroller inte går att använda i andra program förrän du stänger av och slår på den igen.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>DualShock 4 / DualSense Enhanced Mode (Bluetooth Only)</source>
+        <translation>DualShock 4 / DualSense förbättrat läge (endast Bluetooth)</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The SDL input source supports most controllers, and is the preferred option. Enhanced mode may be required for the Vibration/LED functionality of DualShock 4 / DualSense pads in Bluetooth mode. You can also edit &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;advanced options&lt;/span&gt;&lt;/a&gt; which control device-specific behavior.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SDL-ingångskällan stöder de flesta kontroller och är det rekommenderade alternativet. Förbättrat läge kan krävas för vibrations-/LED-funktionen hos DualShock 4-/DualSense-kontroller i Bluetooth-läge. Du kan också redigera &lt;a href=&quot;ADVANCED_SDL_OPTIONS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;avancerade alternativ&lt;/span&gt;&lt;/a&gt; som styr enhetsspecifikt beteende.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Allows use of the touchpad for DualShock 4 / DualSense controllers.</source>
+        <translation>Möjliggör användning av pekplattan på DualShock 4-/DualSense-kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable XInput Source</source>
+        <translation>Aktivera XInput-källa</translation>
+    </message>
+    <message>
+        <source>DirectInput Source</source>
+        <translation>DirectInput-källa</translation>
+    </message>
+    <message>
+        <source>The DirectInput source provides support for legacy controllers which do not support XInput. Accessing these controllers via SDL is recommended instead.</source>
+        <translation>DirectInput-källan ger stöd för äldre kontroller som inte stöder XInput. Istället rekommenderas att du använder SDL för att komma åt dessa kontroller.</translation>
+    </message>
+    <message>
+        <source>Enable DirectInput Source</source>
+        <translation>Aktivera DirectInput-källa</translation>
+    </message>
+    <message>
+        <source>Allows the mouse to be mapped to emulated controls. By default movement of the mouse will be ignored.</source>
+        <translation>Gör det möjligt att mappa musen till emulerade kontroller. Som standard ignoreras musens rörelser.</translation>
+    </message>
+    <message>
+        <source>Uses raw input for mice input. Enable if you wish to use multiple mice/lightguns.</source>
+        <translation>Använder rå inmatning för musinmatning. Aktivera om du vill använda flera möss/ljuspistoler.</translation>
     </message>
 </context>
 <context>
@@ -3864,6 +3931,111 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>JogCon</source>
         <translation>JogCon</translation>
+    </message>
+</context>
+<context>
+    <name>CoreThread</name>
+    <message>
+        <source>%1x%2</source>
+        <translation>%1x%2</translation>
+    </message>
+    <message>
+        <source>Game: %1 (%2)
+</source>
+        <translation>Spel: %1 (%2)
+</translation>
+    </message>
+    <message>
+        <source>Rich presence inactive or unsupported.</source>
+        <translation>Rich presence inaktivt eller stöds inte.</translation>
+    </message>
+    <message>
+        <source>Game not loaded or no RetroAchievements available.</source>
+        <translation>Inget spel är inläst eller så är inte RetroAchievements tillgängligt.</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Fel</translation>
+    </message>
+    <message>
+        <source>Failed to boot system: %1</source>
+        <translation>Misslyckades med att starta upp systemet: %1</translation>
+    </message>
+    <message>
+        <source>Failed to load state: %1</source>
+        <translation>Misslyckades med att läsa in tillstånd: %1</translation>
+    </message>
+    <message>
+        <source>No resume save state found.</source>
+        <translation>Inget återupptagningsbart sparat tillstånd hittades.</translation>
+    </message>
+    <message>
+        <source>Memory Card Busy</source>
+        <translation>Minneskortet är upptaget</translation>
+    </message>
+    <message>
+        <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
+
+Do you want to %1 anyway?</source>
+        <translation>VARNING: Ditt spel sparar fortfarande till minneskortet. Fortsätter du att %1 kan detta OÅTERKALLELIGT FÖRSTÖRA DITT MINNESKORT. Vi rekommenderar att du återupptar ditt spel och väntar 5 sekunder för att det ska spara klart.
+
+Vill du %1 ändå?</translation>
+    </message>
+    <message>
+        <source>shut down</source>
+        <translation>stäng av</translation>
+    </message>
+    <message>
+        <source>reset</source>
+        <translation>starta om</translation>
+    </message>
+    <message>
+        <source>change disc</source>
+        <translation>byt skiva</translation>
+    </message>
+    <message>
+        <source>Failed to switch to subimage %1</source>
+        <translation>Misslyckades med att växla till underbild %1</translation>
+    </message>
+    <message>
+        <source>Confirm Download</source>
+        <translation>Bekräfta hämtning</translation>
+    </message>
+    <message>
+        <source>Your DuckStation installation does not have the padtest application available.
+
+This file is approximately 206KB, do you want to download it now?</source>
+        <translation>Din DuckStation-installation har inte padtest-programmet tillgängligt.
+
+Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
+    </message>
+    <message>
+        <source>File Download</source>
+        <translation type="vanished">Filhämtning</translation>
+    </message>
+    <message>
+        <source>Failed to save state: %1</source>
+        <translation>Misslyckades med att spara tillstånd: %1</translation>
+    </message>
+    <message>
+        <source>No Image</source>
+        <translation>Ingen bild</translation>
+    </message>
+    <message>
+        <source>Game: %1 FPS</source>
+        <translation>Spel: %1 bilder/s</translation>
+    </message>
+    <message>
+        <source>Video: %1 FPS (%2%)</source>
+        <translation>Video: %1 bilder/s (%2%)</translation>
+    </message>
+    <message>
+        <source>State saved to %1.</source>
+        <translation>Tillstånd sparades till %1.</translation>
+    </message>
+    <message>
+        <source>Failed to download padtest application: %1</source>
+        <translation>Misslyckades med att hämta applikationen padtest: %1</translation>
     </message>
 </context>
 <context>
@@ -4188,11 +4360,11 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>CPU Debugger</source>
-        <translation>CPU-debugger</translation>
+        <translation>CPU-felsökare</translation>
     </message>
     <message>
         <source>&amp;Debug</source>
-        <translation>&amp;Debugga</translation>
+        <translation>&amp;Felsök</translation>
     </message>
     <message>
         <source>Breakpoints</source>
@@ -4414,7 +4586,7 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
     <message>
         <source>Debugger</source>
-        <translation>Debugger</translation>
+        <translation>Felsökare</translation>
     </message>
     <message>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
@@ -4529,111 +4701,6 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     <message>
         <source>Scan For New Games</source>
         <translation>Sök efter nya spel</translation>
-    </message>
-</context>
-<context>
-    <name>CoreThread</name>
-    <message>
-        <source>%1x%2</source>
-        <translation>%1x%2</translation>
-    </message>
-    <message>
-        <source>Game: %1 (%2)
-</source>
-        <translation>Spel: %1 (%2)
-</translation>
-    </message>
-    <message>
-        <source>Rich presence inactive or unsupported.</source>
-        <translation>Rich presence inaktivt eller stöds inte.</translation>
-    </message>
-    <message>
-        <source>Game not loaded or no RetroAchievements available.</source>
-        <translation>Inget spel är inläst eller så är inte RetroAchievements tillgängligt.</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>Fel</translation>
-    </message>
-    <message>
-        <source>Failed to boot system: %1</source>
-        <translation>Misslyckades med att starta upp systemet: %1</translation>
-    </message>
-    <message>
-        <source>Failed to load state: %1</source>
-        <translation>Misslyckades med att läsa in tillstånd: %1</translation>
-    </message>
-    <message>
-        <source>No resume save state found.</source>
-        <translation>Inget återupptagningsbart sparat tillstånd hittades.</translation>
-    </message>
-    <message>
-        <source>Memory Card Busy</source>
-        <translation>Minneskortet är upptaget</translation>
-    </message>
-    <message>
-        <source>WARNING: Your game is still saving to the memory card. Continuing to %1 may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.
-
-Do you want to %1 anyway?</source>
-        <translation>VARNING: Ditt spel sparar fortfarande till minneskortet. Fortsätter du att %1 kan detta OÅTERKALLELIGT FÖRSTÖRA DITT MINNESKORT. Vi rekommenderar att du återupptar ditt spel och väntar 5 sekunder för att det ska spara klart.
-
-Vill du %1 ändå?</translation>
-    </message>
-    <message>
-        <source>shut down</source>
-        <translation>stäng av</translation>
-    </message>
-    <message>
-        <source>reset</source>
-        <translation>starta om</translation>
-    </message>
-    <message>
-        <source>change disc</source>
-        <translation>byt skiva</translation>
-    </message>
-    <message>
-        <source>Failed to switch to subimage %1</source>
-        <translation>Misslyckades med att växla till underbild %1</translation>
-    </message>
-    <message>
-        <source>Confirm Download</source>
-        <translation>Bekräfta hämtning</translation>
-    </message>
-    <message>
-        <source>Your DuckStation installation does not have the padtest application available.
-
-This file is approximately 206KB, do you want to download it now?</source>
-        <translation>Din DuckStation-installation har inte padtest-programmet tillgängligt.
-
-Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
-    </message>
-    <message>
-        <source>File Download</source>
-        <translation type="vanished">Filhämtning</translation>
-    </message>
-    <message>
-        <source>Failed to save state: %1</source>
-        <translation>Misslyckades med att spara tillstånd: %1</translation>
-    </message>
-    <message>
-        <source>No Image</source>
-        <translation>Ingen bild</translation>
-    </message>
-    <message>
-        <source>Game: %1 FPS</source>
-        <translation>Spel: %1 bilder/s</translation>
-    </message>
-    <message>
-        <source>Video: %1 FPS (%2%)</source>
-        <translation>Video: %1 bilder/s (%2%)</translation>
-    </message>
-    <message>
-        <source>State saved to %1.</source>
-        <translation>Tillstånd sparades till %1.</translation>
-    </message>
-    <message>
-        <source>Failed to download padtest application: %1</source>
-        <translation>Misslyckades med att hämta applikationen padtest: %1</translation>
     </message>
 </context>
 <context>
@@ -5067,7 +5134,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Advanced</source>
-        <translation>Avancerat</translation>
+        <translation type="vanished">Avancerat</translation>
     </message>
     <message>
         <source>%d ms</source>
@@ -6119,7 +6186,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     </message>
     <message>
         <source>Debugging Settings</source>
-        <translation>Inställningar för debugging</translation>
+        <translation>Inställningar för felsökning</translation>
     </message>
     <message>
         <source>Default Boot</source>
@@ -8620,6 +8687,58 @@ ${serial}: Serienumret för spelet.</translation>
         <source>This game was not scanned by DuckStation. Some functionality is not available.</source>
         <translation>Detta spel har inte sökts igenom av DuckStation. Viss funktionalitet är inte tillgänglig.</translation>
     </message>
+    <message>
+        <source>Advanced Display Options</source>
+        <translation>Avancerade visningsalternativ</translation>
+    </message>
+    <message>
+        <source>Advanced Rendering Options</source>
+        <translation>Avancerade renderingsalternativ</translation>
+    </message>
+    <message>
+        <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding.</source>
+        <translation>Beskär vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band.</translation>
+    </message>
+    <message>
+        <source>Determines how much to crop the display area.</source>
+        <translation>Bestämmer hur mycket av visningsområdet som ska beskäras.</translation>
+    </message>
+    <message>
+        <source>Disable Window Resizing</source>
+        <translation>Inaktivera ändring av fönsterstorlek</translation>
+    </message>
+    <message>
+        <source>Enables manual fine cropping of the display area, while preserving the aspect ratio of the image. Useful for removing black borders in certain games.</source>
+        <translation>Aktiverar manuell finjustering av visningsområdet, samtidigt som bildens bildförhållande bibehålls. Användbart för att ta bort svarta kanter i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Fine Crop Amount</source>
+        <translation>Mängden finjusterad beskäring</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode</source>
+        <translation>Läget för finjusterad beskäring</translation>
+    </message>
+    <message>
+        <source>Plays sound effects when navigating and activating menus.</source>
+        <translation>Spelar ljudeffekter vid navigering och aktivering av menyer.</translation>
+    </message>
+    <message>
+        <source>Prevents resizing of the window while a game is running.</source>
+        <translation>Förhindrar storleksändring av fönstret medan ett spel körs.</translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <translation>Visa alla</translation>
+    </message>
+    <message>
+        <source>Show Nearby</source>
+        <translation>Visa närliggande</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
+        <translation>Beskäring av texturmodulation (&quot;Old/v0&quot; GPU)</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -10131,7 +10250,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>N/A</source>
-        <translation>Inte tillgängligt</translation>
+        <translation type="vanished">Inte tillgängligt</translation>
     </message>
     <message>
         <source>Serial Mismatch: %1 vs %2</source>
@@ -10234,7 +10353,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Automatically Resize Window</source>
-        <translation>Storleksändra fönstret automatiskt</translation>
+        <translation type="vanished">Storleksändra fönstret automatiskt</translation>
     </message>
     <message>
         <source>Rendering Options</source>
@@ -10971,7 +11090,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
-        <translation>Ändrar automatiskt storlek på fönstret så att det matchar den interna upplösningen. &lt;strong&gt;För höga interna upplösningar kommer detta att skapa mycket stora fönster.&lt;/strong&gt;</translation>
+        <translation type="vanished">Ändrar automatiskt storlek på fönstret så att det matchar den interna upplösningen. &lt;strong&gt;För höga interna upplösningar kommer detta att skapa mycket stora fönster.&lt;/strong&gt;</translation>
     </message>
     <message>
         <source>Line Detection</source>
@@ -10979,7 +11098,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation>Försök att upptäcka en bildpunkt höga/breda linjer som förlitar sig på icke uppskalad rastrering och fyller i luckor som uppstått genom uppskalning.</translation>
+        <translation>Försök att upptäcka en bildpunkt höga/breda linjer som förlitar sig på icke-uppskalad rastrering och fyller i luckor som uppstått genom uppskalning.</translation>
     </message>
     <message>
         <source>Multi-Sampling</source>
@@ -11400,6 +11519,58 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc. Errors and warnings are still displayed regardless of this setting.</source>
         <translation>Visar meddelanden på skärmen när händelser inträffar, till exempel när spartillstånd skapas/läses in, skärmbilder fångas osv. Fel och varningar visas fortfarande oavsett denna inställning.</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode:</source>
+        <translation>Läget för finjusterad beskäring:</translation>
+    </message>
+    <message>
+        <source>Reset Fine Cropping</source>
+        <translation>Återställ finjusterad beskäring</translation>
+    </message>
+    <message>
+        <source>Fine Crop Size:</source>
+        <translation>Storlek för finjusterad beskäring:</translation>
+    </message>
+    <message>
+        <source>Left:</source>
+        <translation>Vänster:</translation>
+    </message>
+    <message>
+        <source>Top:</source>
+        <translation>Överst:</translation>
+    </message>
+    <message>
+        <source>Right:</source>
+        <translation>Höger:</translation>
+    </message>
+    <message>
+        <source>Bottom:</source>
+        <translation>Nederst:</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0 GPU&quot;)</source>
+        <translation>Beskäring av texturmodulation (&quot;Old/v0&quot; GPU)</translation>
+    </message>
+    <message>
+        <source>Fine Crop Mode</source>
+        <translation>Läget för finjusterad beskäring</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Enables manual fine cropping of the display area, while preserving the aspect ratio of the image. Useful for removing black borders in certain games.</source>
+        <translation>Aktiverar manuell finjustering av visningsområdet, samtidigt som bildens bildförhållande bibehålls. Användbart för att ta bort svarta kanter i vissa spel.</translation>
+    </message>
+    <message>
+        <source>Texture Modulation Cropping (&quot;Old/v0&quot; GPU)</source>
+        <translation>Beskäring av texturmodulation (&quot;Old/v0&quot; GPU)</translation>
+    </message>
+    <message>
+        <source>Crops vertex colours to 5:5:5 before modulating with the texture colour, which typically results in more visible banding. This is a characteristic of the &quot;old&quot; GPUs found in early model consoles.</source>
+        <translation>Beskär vertexfärgerna till 5:5:5 innan de moduleras med texturfärgen, vilket vanligtvis resulterar i mer synliga band. Detta är ett kännetecken för de ”gamla” GPU:erna som finns i tidiga konsolmodeller.</translation>
     </message>
 </context>
 <context>
@@ -11950,6 +12121,10 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>Switch to Next Disc</source>
         <translation>Växla till nästa skiva</translation>
     </message>
+    <message>
+        <source>Toggle Texture Modulation Cropping</source>
+        <translation>Växla beskäring av texturmodulation</translation>
+    </message>
 </context>
 <context>
     <name>ISOBrowserWindow</name>
@@ -12421,6 +12596,38 @@ Skift-klicka för att ställa in flera bindningar.</translation>
         <source>Selects the channel that will be checked for updates to the application. The &lt;strong&gt;preview&lt;/strong&gt; channel contains the latest changes, and may be unstable. The &lt;strong&gt;latest&lt;/strong&gt; channel tracks the latest release.</source>
         <translation>Väljer den kanal som ska kontrolleras för uppdateringar av applikationen. Kanalen &lt;strong&gt;preview&lt;/strong&gt; innehåller de senaste ändringarna och kan vara instabil. Kanalen &lt;strong&gt;latest&lt;/strong&gt; följer den senaste versionen.</translation>
     </message>
+    <message>
+        <source>Display System Log In Main Window</source>
+        <translation>Visa systemlogg i huvudfönstret</translation>
+    </message>
+    <message>
+        <source>Automatically Resize Window</source>
+        <translation>Storleksändra fönstret automatiskt</translation>
+    </message>
+    <message>
+        <source>Disable Window Rounded Corners</source>
+        <translation>Inaktivera fönster med rundade hörn</translation>
+    </message>
+    <message>
+        <source>Use Fractional Window Scale</source>
+        <translation>Använd fraktionell fönsterskalning</translation>
+    </message>
+    <message>
+        <source>Displays the log in the main window of the application while a game is running.</source>
+        <translation>Visar loggen i huvudfönstret för applikationen när ett spel körs.</translation>
+    </message>
+    <message>
+        <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
+        <translation>Ändrar automatiskt storlek på fönstret så att det matchar den interna upplösningen. &lt;strong&gt;För höga interna upplösningar kommer detta att skapa mycket stora fönster.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <source>Disables the rounding of windows automatically applied in Windows 11, which may obscure parts of the content.</source>
+        <translation>Inaktiverar den automatiska avrundningen av fönster i Windows 11, som kan dölja delar av innehållet.</translation>
+    </message>
+    <message>
+        <source>Calculates the true scaling factor for your display, avoiding the downsampling applied by MacOS.</source>
+        <translation>Beräknar den verkliga skalningsfaktorn för din skärm och undviker den nedsampling som tillämpas av MacOS.</translation>
+    </message>
 </context>
 <context>
     <name>JogCon</name>
@@ -12659,6 +12866,15 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
 </context>
 <context>
+    <name>LogWidget</name>
+    <message>
+        <source>Dropped %1 log messages, please use file or system console logging.
+</source>
+        <translation>Släppte %1 loggmeddelanden, använd loggning till fil eller systemkonsol.
+</translation>
+    </message>
+</context>
+<context>
     <name>LogWindow</name>
     <message>
         <source>Log Window - %1 [%2]</source>
@@ -12678,7 +12894,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Cl&amp;ose</source>
-        <translation>Stä&amp;ng</translation>
+        <translation type="vanished">Stä&amp;ng</translation>
     </message>
     <message>
         <source>&amp;Settings</source>
@@ -12737,7 +12953,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation>Släppte %1 loggmeddelanden, använd loggning till fill eller systemkonstoll.
+        <translation type="vanished">Släppte %1 loggmeddelanden, använd loggning till fill eller systemkonstoll.
 </translation>
     </message>
 </context>
@@ -12952,7 +13168,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>CPU D&amp;ebugger</source>
-        <translation>CPU-debug&amp;ger</translation>
+        <translation>CPU-felsöka&amp;re</translation>
     </message>
     <message>
         <source>Merge Multi-Disc Games</source>
@@ -14189,6 +14405,10 @@ Detta går inte att ångra.</translation>
     <message>
         <source>Refresh Achievement Progress</source>
         <translation>Uppdatera prestationsförlopp</translation>
+    </message>
+    <message>
+        <source>System Log</source>
+        <translation>Systemlogg</translation>
     </message>
 </context>
 <context>
@@ -15652,6 +15872,14 @@ Din dump kan vara skadad eller så är den fysiska skivan repig.</translation>
         <source>Failed to load post-processing chain.</source>
         <translation>Det gick inte att läsa in efterbehandlingskedjan.</translation>
     </message>
+    <message>
+        <source>Texture modulation cropping is now enabled.</source>
+        <translation>Beskäring av texturmodulation är nu aktiverad.</translation>
+    </message>
+    <message>
+        <source>Texture modulation cropping is now disabled.</source>
+        <translation>Beskäring av texturmodulation är nu inaktiverad.</translation>
+    </message>
 </context>
 <context>
     <name>Pad</name>
@@ -16539,7 +16767,7 @@ Vill du skapa denna katalog?</translation>
     <message>
         <source>Debug</source>
         <comment>LogLevel</comment>
-        <translation>Debugg</translation>
+        <translation>Felsök</translation>
     </message>
     <message>
         <source>Trace</source>
@@ -17200,6 +17428,26 @@ Vill du skapa denna katalog?</translation>
         <source>PAR 1:1</source>
         <comment>DisplayAspectRatio</comment>
         <translation>PAR 1:1</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>DisplayFineCropMode</comment>
+        <translation>Ingen</translation>
+    </message>
+    <message>
+        <source>Video Resolution</source>
+        <comment>DisplayFineCropMode</comment>
+        <translation>Videoupplösning</translation>
+    </message>
+    <message>
+        <source>Internal Resolution</source>
+        <comment>DisplayFineCropMode</comment>
+        <translation>Intern upplösning</translation>
+    </message>
+    <message>
+        <source>Window Resolution</source>
+        <comment>DisplayFineCropMode</comment>
+        <translation>Fönsterupplösning</translation>
     </message>
 </context>
 <context>
@@ -18361,6 +18609,10 @@ Använder istället ett delat kort.</translation>
     <message>
         <source>Downsampling disabled.</source>
         <translation>Nedsampling inaktiverad.</translation>
+    </message>
+    <message>
+        <source>Texture modulation cropping disabled.</source>
+        <translation>Beskäring av texturmodulation inaktiverad.</translation>
     </message>
 </context>
 <context>
