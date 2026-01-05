@@ -155,7 +155,6 @@
     <QtUi Include="graphicssettingswidget.ui" />
     <QtUi Include="memoryscannerwindow.ui" />
     <QtUi Include="controllerbindingwidget_negconrumble.ui" />
-    <QtUi Include="audiostretchsettingsdialog.ui" />
     <QtUi Include="controllerbindingwidget_justifier.ui" />
     <QtUi Include="selectdiscdialog.ui" />
     <QtUi Include="texturereplacementsettingsdialog.ui" />

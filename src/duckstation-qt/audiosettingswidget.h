@@ -36,8 +36,10 @@ private:
   void onOutputVolumeChanged(int new_value);
   void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);
-
-  void onStretchSettingsClicked();
+  void onResetBufferSizeClicked();
+  void onResetStretchSequenceLengthClicked();
+  void onResetStretchSeekWindowClicked();
+  void onResetStretchOverlapClicked();
 
   Ui::AudioSettingsWidget m_ui;
   SettingsWindow* m_dialog;

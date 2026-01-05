@@ -201,13 +201,25 @@ void QtUtils::SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
   }
 }
 
-void QtUtils::BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
+void QtUtils::BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/,
+                                const QString& format /*= QStringLiteral()*/)
 {
-  auto update_label = [label, range](int new_value) {
-    label->setText(QString::number(static_cast<int>(new_value) / range));
-  };
-  update_label(slider->value());
-  QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
+  if (format.isEmpty())
+  {
+    auto update_label = [label, range](int new_value) {
+      label->setText(QString::number(static_cast<int>(new_value) / range));
+    };
+    update_label(slider->value());
+    QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
+  }
+  else
+  {
+    auto update_label = [label, range, format](int new_value) {
+      label->setText(format.arg(static_cast<int>(new_value) / range));
+    };
+    update_label(slider->value());
+    QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
+  }
 }
 
 void QtUtils::SetWindowResizeable(QWidget* widget, bool resizeable)

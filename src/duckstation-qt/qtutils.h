@@ -32,7 +32,6 @@ class QVariant;
 class QWidget;
 class QUrl;
 
-
 enum class ConsoleRegion : u8;
 enum class DiscRegion : u8;
 namespace GameDatabase {
@@ -109,7 +108,7 @@ QString NormalizeLineEndings(QString str);
 void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited);
 
 /// Binds a label to a slider's value.
-void BindLabelToSlider(QSlider* slider, QLabel* label, float range = 1.0f);
+void BindLabelToSlider(QSlider* slider, QLabel* label, float range = 1.0f, const QString& format = QString());
 
 /// Changes whether a window is resizable.
 void SetWindowResizeable(QWidget* widget, bool resizeable);

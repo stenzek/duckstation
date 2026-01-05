@@ -20,7 +20,6 @@ set(SRCS
   audiosettingswidget.cpp
   audiosettingswidget.h
   audiosettingswidget.ui
-  audiostretchsettingsdialog.ui
   autoupdaterdialog.cpp
   autoupdaterdialog.h
   autoupdaterdialog.ui

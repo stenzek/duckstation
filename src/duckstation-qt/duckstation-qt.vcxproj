@@ -283,9 +283,6 @@
     <QtUi Include="controllerbindingwidget_negconrumble.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="audiostretchsettingsdialog.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="controllerbindingwidget_justifier.ui">
       <FileType>Document</FileType>
     </QtUi>
