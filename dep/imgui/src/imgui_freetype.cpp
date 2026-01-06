@@ -144,7 +144,7 @@ struct ImGui_ImplFreeType_Data
 struct ImGui_ImplFreeType_FontSrcData
 {
     // Initialize from an external data buffer. Doesn't copy data, and you must ensure it stays valid up to this object lifetime.
-    bool                            InitFont(FT_Library ft_library, ImFontConfig* src, ImGuiFreeTypeLoaderFlags extra_user_flags);
+    bool                            InitFont(FT_Library ft_library, const ImFontConfig* src, ImGuiFreeTypeLoaderFlags extra_user_flags);
     void                            CloseFont();
     ImGui_ImplFreeType_FontSrcData()   { memset((void*)this, 0, sizeof(*this)); }
     ~ImGui_ImplFreeType_FontSrcData()  { CloseFont(); }
@@ -168,9 +168,9 @@ struct ImGui_ImplFreeType_FontSrcBakedData
     ImGui_ImplFreeType_FontSrcBakedData() { memset((void*)this, 0, sizeof(*this)); }
 };
 
-bool ImGui_ImplFreeType_FontSrcData::InitFont(FT_Library ft_library, ImFontConfig* src, ImGuiFreeTypeLoaderFlags extra_font_loader_flags)
+bool ImGui_ImplFreeType_FontSrcData::InitFont(FT_Library ft_library, const ImFontConfig* src, ImGuiFreeTypeLoaderFlags extra_font_loader_flags)
 {
-    FT_Error error = FT_New_Memory_Face(ft_library, (uint8_t*)src->FontData, (uint32_t)src->FontDataSize, (uint32_t)src->FontNo, &FtFace);
+    FT_Error error = FT_New_Memory_Face(ft_library, (const FT_Byte*)src->FontData, (FT_Long)src->FontDataSize, (FT_Long)src->FontNo, &FtFace);
     if (error != 0)
         return false;
     error = FT_Select_Charmap(FtFace, FT_ENCODING_UNICODE);
@@ -208,12 +208,8 @@ bool ImGui_ImplFreeType_FontSrcData::InitFont(FT_Library ft_library, ImFontConfi
     LoadFlags = 0;
     if ((UserFlags & ImGuiFreeTypeLoaderFlags_Bitmap) == 0)
         LoadFlags |= FT_LOAD_NO_BITMAP;
-
     if (UserFlags & ImGuiFreeTypeLoaderFlags_NoHinting)
         LoadFlags |= FT_LOAD_NO_HINTING;
-    else
-        src->PixelSnapH = true; // FIXME: A bit weird to do this this way.
-
     if (UserFlags & ImGuiFreeTypeLoaderFlags_NoAutoHint)
         LoadFlags |= FT_LOAD_NO_AUTOHINT;
     if (UserFlags & ImGuiFreeTypeLoaderFlags_ForceAutoHint)
@@ -373,7 +369,7 @@ static void* FreeType_Realloc(FT_Memory /*memory*/, long cur_size, long new_size
     return block;
 }
 
-bool ImGui_ImplFreeType_LoaderInit(ImFontAtlas* atlas)
+static bool ImGui_ImplFreeType_LoaderInit(ImFontAtlas* atlas)
 {
     IM_ASSERT(atlas->FontLoaderData == nullptr);
     ImGui_ImplFreeType_Data* bd = IM_NEW(ImGui_ImplFreeType_Data)();
@@ -406,7 +402,7 @@ bool ImGui_ImplFreeType_LoaderInit(ImFontAtlas* atlas)
     return true;
 }
 
-void ImGui_ImplFreeType_LoaderShutdown(ImFontAtlas* atlas)
+static void ImGui_ImplFreeType_LoaderShutdown(ImFontAtlas* atlas)
 {
     ImGui_ImplFreeType_Data* bd = (ImGui_ImplFreeType_Data*)atlas->FontLoaderData;
     IM_ASSERT(bd != nullptr);
@@ -415,7 +411,7 @@ void ImGui_ImplFreeType_LoaderShutdown(ImFontAtlas* atlas)
     atlas->FontLoaderData = nullptr;
 }
 
-bool ImGui_ImplFreeType_FontSrcInit(ImFontAtlas* atlas, ImFontConfig* src)
+static bool ImGui_ImplFreeType_FontSrcInit(ImFontAtlas* atlas, ImFontConfig* src)
 {
     ImGui_ImplFreeType_Data* bd = (ImGui_ImplFreeType_Data*)atlas->FontLoaderData;
     ImGui_ImplFreeType_FontSrcData* bd_font_data = IM_NEW(ImGui_ImplFreeType_FontSrcData);
@@ -432,7 +428,7 @@ bool ImGui_ImplFreeType_FontSrcInit(ImFontAtlas* atlas, ImFontConfig* src)
     return true;
 }
 
-void ImGui_ImplFreeType_FontSrcDestroy(ImFontAtlas* atlas, ImFontConfig* src)
+static void ImGui_ImplFreeType_FontSrcDestroy(ImFontAtlas* atlas, ImFontConfig* src)
 {
     IM_UNUSED(atlas);
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
@@ -440,12 +436,13 @@ void ImGui_ImplFreeType_FontSrcDestroy(ImFontAtlas* atlas, ImFontConfig* src)
     src->FontLoaderData = nullptr;
 }
 
-bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src)
+static bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src)
 {
     IM_UNUSED(atlas);
     float size = baked->Size;
     if (src->MergeMode && src->SizePixels != 0.0f)
-        size *= (src->SizePixels / baked->ContainerFont->Sources[0]->SizePixels);
+        size *= (src->SizePixels / baked->OwnerFont->Sources[0]->SizePixels);
+    size *= src->ExtraSizeScale;
 
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
 
@@ -503,7 +500,7 @@ bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* src, ImF
     return true;
 }
 
-void ImGui_ImplFreeType_FontBakedDestroy(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src)
+static void ImGui_ImplFreeType_FontBakedDestroy(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src)
 {
     IM_UNUSED(atlas);
     IM_UNUSED(baked);
@@ -516,7 +513,7 @@ void ImGui_ImplFreeType_FontBakedDestroy(ImFontAtlas* atlas, ImFontConfig* src, 
     bd_baked_data->~ImGui_ImplFreeType_FontSrcBakedData(); // ~IM_PLACEMENT_DELETE()
 }
 
-bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src, ImWchar codepoint, ImFontGlyph* out_glyph)
+static bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void* loader_data_for_baked_src, ImWchar codepoint, ImFontGlyph* out_glyph, float* out_advance_x)
 {
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;
     uint32_t glyph_index = FT_Get_Char_Index(bd_font_data->FtFace, codepoint);
@@ -554,9 +551,20 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
     if (metrics == nullptr)
         return false;
 
-    // Render glyph into a bitmap (currently held by FreeType)
     FT_Face face = bd_font_data->FtFace;
     FT_GlyphSlot slot = face->glyph;
+    const float rasterizer_density = src->RasterizerDensity * baked->RasterizerDensity;
+
+    // Load metrics only mode
+    const float advance_x = (slot->advance.x / FT_SCALEFACTOR) / rasterizer_density;
+    if (out_advance_x != NULL)
+    {
+        IM_ASSERT(out_glyph == NULL);
+        *out_advance_x = advance_x;
+        return true;
+    }
+
+    // Render glyph into a bitmap (currently held by FreeType)
     FT_Render_Mode render_mode = (bd_font_data->UserFlags & ImGuiFreeTypeLoaderFlags_Monochrome) ? FT_RENDER_MODE_MONO : FT_RENDER_MODE_NORMAL;
     error = FT_Render_Glyph(slot, render_mode);
     const FT_Bitmap* ft_bitmap = &slot->bitmap;
@@ -566,11 +574,10 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
     const int w = (int)ft_bitmap->width;
     const int h = (int)ft_bitmap->rows;
     const bool is_visible = (w != 0 && h != 0);
-    const float rasterizer_density = src->RasterizerDensity * baked->RasterizerDensity;
 
     // Prepare glyph
     out_glyph->Codepoint = codepoint;
-    out_glyph->AdvanceX = (slot->advance.x / FT_SCALEFACTOR) / rasterizer_density;
+    out_glyph->AdvanceX = advance_x;
 
     // Pack and retrieve position inside texture atlas
     if (is_visible)
@@ -589,14 +596,10 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
         uint32_t* temp_buffer = (uint32_t*)atlas->Builder->TempBuffer.Data;
         ImGui_ImplFreeType_BlitGlyph(ft_bitmap, temp_buffer, w);
 
-        const float ref_size = baked->ContainerFont->Sources[0]->SizePixels;
+        const float ref_size = baked->OwnerFont->Sources[0]->SizePixels;
         const float offsets_scale = (ref_size != 0.0f) ? (baked->Size / ref_size) : 1.0f;
-        float font_off_x = (src->GlyphOffset.x * offsets_scale);
-        float font_off_y = (src->GlyphOffset.y * offsets_scale) + baked->Ascent;
-        if (src->PixelSnapH) // Snap scaled offset. This is to mitigate backward compatibility issues for GlyphOffset, but a better design would be welcome.
-            font_off_x = IM_ROUND(font_off_x);
-        if (src->PixelSnapV)
-            font_off_y = IM_ROUND(font_off_y);
+        float font_off_x = ImFloor(src->GlyphOffset.x * offsets_scale + 0.5f); // Snap scaled offset.
+        float font_off_y = ImFloor(src->GlyphOffset.y * offsets_scale + 0.5f) + baked->Ascent;
         float recip_h = 1.0f / rasterizer_density;
         float recip_v = 1.0f / rasterizer_density;
 
@@ -616,7 +619,7 @@ bool ImGui_ImplFreeType_FontBakedLoadGlyph(ImFontAtlas* atlas, ImFontConfig* src
     return true;
 }
 
-bool ImGui_ImplFreetype_FontSrcContainsGlyph(ImFontAtlas* atlas, ImFontConfig* src, ImWchar codepoint)
+static bool ImGui_ImplFreetype_FontSrcContainsGlyph(ImFontAtlas* atlas, ImFontConfig* src, ImWchar codepoint)
 {
     IM_UNUSED(atlas);
     ImGui_ImplFreeType_FontSrcData* bd_font_data = (ImGui_ImplFreeType_FontSrcData*)src->FontLoaderData;

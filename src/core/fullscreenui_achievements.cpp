@@ -338,8 +338,9 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                       progress_rounding);
     if (summary.num_unlocked_achievements > 0)
     {
-      ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), 0.0f,
-                                    unlocked_fraction, progress_rounding);
+      ImGui::RenderRectFilledInRangeH(
+        dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), progress_bb.Min.x,
+        progress_bb.Min.x + (unlocked_fraction * progress_bb.GetWidth()), progress_rounding);
     }
 
     buffer.format("{}/{}", summary.num_unlocked_achievements, summary.num_core_achievements);
@@ -400,8 +401,9 @@ void FullscreenUI::DrawAchievementsPauseMenuOverlays(float start_pos_y)
                         progress_rounding);
       if (measured_percent > 0.0f)
       {
-        ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), 0.0f,
-                                      measured_percent * 0.01f, progress_rounding);
+        ImGui::RenderRectFilledInRangeH(
+          dl, progress_bb, ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor)), progress_bb.Min.x,
+          progress_bb.Min.x + ((measured_percent * 0.01f) * progress_bb.GetWidth()), progress_rounding);
       }
 
       const ImVec2 measured_progress_size =
@@ -1016,8 +1018,8 @@ void FullscreenUI::DrawAchievementsWindow()
                         progress_rounding);
       if (summary.num_unlocked_achievements > 0)
       {
-        ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), 0.0f, fraction,
-                                      progress_rounding);
+        ImGui::RenderRectFilledInRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), progress_bb.Min.x,
+                                        progress_bb.Min.x + (fraction * progress_bb.GetWidth()), progress_rounding);
       }
 
       text.format("{}%", static_cast<u32>(std::round(fraction * 100.0f)));
@@ -1288,8 +1290,8 @@ void FullscreenUI::DrawAchievement(const rc_client_achievement_t* cheevo)
     const float fraction = cheevo->measured_percent * 0.01f;
     dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
                       progress_rounding);
-    ImGui::RenderRectFilledRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), 0.0f, fraction,
-                                  progress_rounding);
+    ImGui::RenderRectFilledInRangeH(dl, progress_bb, ImGui::GetColorU32(UIStyle.SecondaryColor), progress_bb.Min.x,
+                                    progress_bb.Min.x + (fraction * progress_bb.GetWidth()), progress_rounding);
 
     const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(subtitle_font_size, subtitle_font_weight, FLT_MAX, 0.0f,
                                                          IMSTR_START_END(measured_progress));
