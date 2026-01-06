@@ -54,13 +54,13 @@ static void WriteRegDelayed(Reg rd, u32 value);
 
 static void DispatchCop0Breakpoint();
 static bool IsCop0ExecutionBreakpointUnmasked();
-static void Cop0ExecutionBreakpointCheck();
+static bool Cop0ExecutionBreakpointCheck(u32 pc);
 template<MemoryAccessType type>
 static void Cop0DataBreakpointCheck(VirtualMemoryAddress address);
 
 static BreakpointList& GetBreakpointList(BreakpointType type);
 static bool CheckBreakpointList(BreakpointType type, VirtualMemoryAddress address);
-static void ExecutionBreakpointCheck();
+static void ExecutionBreakpointCheck(u32 pc);
 template<MemoryAccessType type>
 static void MemoryBreakpointCheck(VirtualMemoryAddress address);
 
@@ -539,23 +539,23 @@ ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
   return false;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::Cop0ExecutionBreakpointCheck()
+ALWAYS_INLINE_RELEASE bool CPU::Cop0ExecutionBreakpointCheck(u32 pc)
 {
   if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled())
-    return;
+    return false;
 
-  const u32 pc = g_state.pc;
   const u32 bpc = g_state.cop0_regs.BPC;
   const u32 bpcm = g_state.cop0_regs.BPCM;
 
   // Break condition is "((PC XOR BPC) AND BPCM)=0".
   if (bpcm == 0 || ((pc ^ bpc) & bpcm) != 0u)
-    return;
+    return false;
 
   DEV_LOG("Cop0 execution breakpoint at {:08X}", pc);
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bpc_code_break = true;
   DispatchCop0Breakpoint();
+  return true;
 }
 
 template<MemoryAccessType type>
@@ -2427,12 +2427,11 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
   return false;
 }
 
-ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
+ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck(u32 pc)
 {
   if (s_locals.breakpoints[static_cast<u32>(BreakpointType::Execute)].empty()) [[likely]]
     return;
 
-  const u32 pc = g_state.pc;
   if (pc == s_locals.last_breakpoint_check_pc || s_locals.break_type == ExecutionBreakType::ExecuteOneInstruction)
     [[unlikely]]
   {
@@ -2468,10 +2467,7 @@ template<PGXPMode pgxp_mode, bool debug>
     do
     {
       if constexpr (debug)
-      {
-        Cop0ExecutionBreakpointCheck();
-        ExecutionBreakpointCheck();
-      }
+        ExecutionBreakpointCheck(g_state.pc);
 
       g_state.pending_ticks++;
 
@@ -2482,6 +2478,12 @@ template<PGXPMode pgxp_mode, bool debug>
       g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
       g_state.next_instruction_is_branch_delay_slot = false;
       g_state.branch_was_taken = false;
+
+      if constexpr (debug)
+      {
+        if (Cop0ExecutionBreakpointCheck(g_state.current_instruction_pc))
+          continue;
+      }
 
       // fetch the next instruction - even if this fails, it'll still refetch on the flush so we can continue
       if (!FetchInstruction())
