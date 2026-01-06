@@ -1647,7 +1647,9 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path, Settings
 {
   auto lock = GameList::GetLock();
   const GameList::Entry* entry = !path.empty() ? GameList::GetEntryForPath(path) : nullptr;
-  if (!entry || entry->serial.empty())
+
+  // playlists will always contain the first disc's serial, so use the current game instead
+  if (!entry || entry->serial.empty() || entry->type == GameList::EntryType::Playlist)
   {
     Host::RunOnCoreThread([page]() {
       Error error;

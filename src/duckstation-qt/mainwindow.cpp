@@ -2782,7 +2782,9 @@ void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = null
     // show for first disc instead
     entry = GameList::GetFirstDiscSetMember(entry->dbentry->disc_set);
   }
-  if (entry)
+
+  // playlists will always contain the first disc's serial, so use the current game instead
+  if (entry && entry->type != GameList::EntryType::Playlist)
     SettingsWindow::openGamePropertiesDialog(entry, category);
   else
     g_core_thread->openGamePropertiesForCurrentGame(category ? QString::fromUtf8(category) : QString());
