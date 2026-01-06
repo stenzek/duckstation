@@ -47,12 +47,13 @@ static void FlushPipeline();
 
 static u32 GetExceptionVector(bool debug_exception = false);
 static void RaiseException(u32 CAUSE_bits, u32 EPC, u32 vector);
+static void RaiseDataBusException();
 
 static u32 ReadReg(Reg rs);
 static void WriteReg(Reg rd, u32 value);
 static void WriteRegDelayed(Reg rd, u32 value);
 
-static void DispatchCop0Breakpoint();
+static void DispatchCop0Breakpoint(bool data);
 static bool IsCop0ExecutionBreakpointUnmasked();
 static bool Cop0ExecutionBreakpointCheck(u32 pc);
 template<MemoryAccessType type>
@@ -387,7 +388,7 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
   FlushPipeline();
 }
 
-ALWAYS_INLINE_RELEASE void CPU::DispatchCop0Breakpoint()
+ALWAYS_INLINE_RELEASE void CPU::DispatchCop0Breakpoint(bool data)
 {
   // When a breakpoint address match occurs the PSX jumps to 80000040h (ie. unlike normal exceptions, not to 80000080h).
   // The Excode value in the CAUSE register is set to 09h (same as BREAK opcode), and EPC contains the return address,
@@ -395,7 +396,7 @@ ALWAYS_INLINE_RELEASE void CPU::DispatchCop0Breakpoint()
   // any-jump break is enabled, then it must be disabled BEFORE jumping from 80000040h to the actual exception handler).
   RaiseException(Cop0Registers::CAUSE::MakeValueForException(
                    Exception::BP, g_state.current_instruction_in_branch_delay_slot,
-                   g_state.current_instruction_was_branch_taken, g_state.current_instruction.cop.cop_n),
+                   g_state.current_instruction_was_branch_taken, data ? 0 : g_state.current_instruction.cop.cop_n),
                  g_state.current_instruction_pc, GetExceptionVector(true));
 }
 
@@ -554,7 +555,7 @@ ALWAYS_INLINE_RELEASE bool CPU::Cop0ExecutionBreakpointCheck(u32 pc)
   DEV_LOG("Cop0 execution breakpoint at {:08X}", pc);
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bpc_code_break = true;
-  DispatchCop0Breakpoint();
+  DispatchCop0Breakpoint(false);
   return true;
 }
 
@@ -587,7 +588,7 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0DataBreakpointCheck(VirtualMemoryAddress add
   else
     g_state.cop0_regs.dcic.status_bda_data_write_break = true;
 
-  DispatchCop0Breakpoint();
+  DispatchCop0Breakpoint(true);
 }
 
 #ifdef _DEBUG
@@ -3427,6 +3428,14 @@ ALWAYS_INLINE_RELEASE bool CPU::DoAlignmentCheck(VirtualMemoryAddress address)
   return false;
 }
 
+ALWAYS_INLINE_RELEASE void CPU::RaiseDataBusException()
+{
+  RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::DBE,
+                                                             g_state.current_instruction_in_branch_delay_slot,
+                                                             g_state.current_instruction_was_branch_taken, 0),
+                 g_state.current_instruction_pc);
+}
+
 #if 0
 static void MemoryBreakpoint(MemoryAccessType type, MemoryAccessSize size, VirtualMemoryAddress addr, u32 value)
 {
@@ -3478,7 +3487,7 @@ bool CPU::ReadMemoryByte(VirtualMemoryAddress addr, u8* value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
@@ -3495,7 +3504,7 @@ bool CPU::ReadMemoryHalfWord(VirtualMemoryAddress addr, u16* value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
@@ -3512,7 +3521,7 @@ bool CPU::ReadMemoryWord(VirtualMemoryAddress addr, u32* value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
@@ -3528,7 +3537,7 @@ bool CPU::WriteMemoryByte(VirtualMemoryAddress addr, u32 value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
@@ -3546,7 +3555,7 @@ bool CPU::WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
@@ -3564,7 +3573,7 @@ bool CPU::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   if (g_state.bus_error) [[unlikely]]
   {
     g_state.bus_error = false;
-    RaiseException(Exception::DBE);
+    RaiseDataBusException();
     return false;
   }
 
