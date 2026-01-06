@@ -51,6 +51,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     AchievementChallengeIndicatorMode::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.progressIndicators, "Cheevos", "ProgressIndicators", true);
 
+  m_ui.changeSoundsLink->setText(
+    QStringLiteral("<a href=\"https://github.com/stenzek/duckstation/wiki/Resource-Overrides\"><span "
+                   "style=\"text-decoration: none;\">%1</span></a>")
+      .arg(tr("Change Sounds")));
+
   dialog->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"),
                              tr("When enabled and logged in, DuckStation will scan for achievements on startup."));
   dialog->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"),
@@ -100,7 +105,8 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
     connect(m_ui.refreshProgress, &QPushButton::clicked, g_main_window, &MainWindow::refreshAchievementProgress);
-    connect(g_core_thread, &CoreThread::achievementsRefreshed, this, &AchievementSettingsWidget::onAchievementsRefreshed);
+    connect(g_core_thread, &CoreThread::achievementsRefreshed, this,
+            &AchievementSettingsWidget::onAchievementsRefreshed);
     updateLoginState();
 
     // force a refresh of game info
