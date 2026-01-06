@@ -1974,6 +1974,12 @@ restart_instruction:
       }
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+      {
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
+
       u32 value;
       if (!ReadMemoryWord(addr, &value))
         return;
@@ -1997,6 +2003,12 @@ restart_instruction:
       StallUntilGTEComplete();
 
       const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+      {
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
+      }
+
       const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
       WriteMemoryWord(addr, value);
 
@@ -2005,16 +2017,46 @@ restart_instruction:
     }
     break;
 
-      // swc0/lwc0/cop1/cop3 are essentially no-ops
+      // cop1/cop3 are essentially no-ops
     case InstructionOp::cop1:
     case InstructionOp::cop3:
+    {
+    }
+    break;
+
     case InstructionOp::lwc0:
     case InstructionOp::lwc1:
     case InstructionOp::lwc3:
+    {
+      // todo: check enable
+      // lwc0/1/3 should still perform the memory read, but discard the result
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+      {
+        Cop0DataBreakpointCheck<MemoryAccessType::Read>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Read>(addr);
+      }
+
+      u32 value;
+      ReadMemoryWord(addr, &value);
+    }
+    break;
+
+      break;
     case InstructionOp::swc0:
     case InstructionOp::swc1:
     case InstructionOp::swc3:
     {
+      // todo: check enable
+      // lwc0/1/3 should still perform the memory read, but discard the result
+      const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
+      if constexpr (debug)
+      {
+        Cop0DataBreakpointCheck<MemoryAccessType::Write>(addr);
+        MemoryBreakpointCheck<MemoryAccessType::Write>(addr);
+      }
+
+      WriteMemoryWord(addr, 0);
     }
     break;
 
