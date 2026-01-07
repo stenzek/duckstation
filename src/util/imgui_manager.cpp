@@ -191,7 +191,7 @@ void ImGuiManager::SetTextFontOrder(const TextFontOrder& order)
   ReloadFontDataIfActive();
 }
 
-bool ImGuiManager::Initialize(Error* error)
+bool ImGuiManager::Initialize(bool preserve_fsui_state, Error* error)
 {
   if (!LoadFontData(error))
   {
@@ -230,8 +230,11 @@ bool ImGuiManager::Initialize(Error* error)
   FullscreenUI::UpdateTheme();
   FullscreenUI::UpdateLayoutScale();
 
-  if (!CreateFontAtlas(error) || !CompilePipelines(error) || !FullscreenUI::InitializeWidgets(error))
+  if (!CreateFontAtlas(error) || !CompilePipelines(error) ||
+      !FullscreenUI::InitializeWidgets(preserve_fsui_state, error))
+  {
     return false;
+  }
 
   NewFrame();
 
@@ -239,11 +242,11 @@ bool ImGuiManager::Initialize(Error* error)
   return true;
 }
 
-void ImGuiManager::Shutdown(bool clear_fsui_state)
+void ImGuiManager::Shutdown(bool preserve_fsui_state)
 {
   DestroySoftwareCursorTextures();
 
-  FullscreenUI::ShutdownWidgets(clear_fsui_state);
+  FullscreenUI::ShutdownWidgets(preserve_fsui_state);
 
   s_state.text_font = nullptr;
   s_state.fixed_font = nullptr;

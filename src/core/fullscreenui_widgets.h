@@ -213,10 +213,10 @@ ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 
 /// Initializes, setting up any state.
-bool InitializeWidgets(Error* error);
+bool InitializeWidgets(bool preserve_fsui_state, Error* error);
 
 /// Shuts down, clearing all state.
-void ShutdownWidgets(bool clear_state);
+void ShutdownWidgets(bool preserve_fsui_state);
 
 /// Loads settings from the settings interface.
 void UpdateWidgetsSettings();

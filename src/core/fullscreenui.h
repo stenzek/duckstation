@@ -19,7 +19,7 @@ class SmallStringBase;
 struct GPUSettings;
 
 namespace FullscreenUI {
-void Initialize();
+void Initialize(bool preserve_state = false);
 bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
@@ -28,7 +28,7 @@ void OnSystemPaused();
 void OnSystemResumed();
 void OnSystemDestroyed();
 
-void Shutdown(bool clear_state);
+void Shutdown(bool preserve_state);
 void Render();
 void InvalidateCoverCache(std::string path = {});
 

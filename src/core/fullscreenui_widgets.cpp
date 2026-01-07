@@ -396,28 +396,38 @@ void FullscreenUI::SetFont(ImFont* ui_font)
   UIStyle.Font = ui_font;
 }
 
-bool FullscreenUI::InitializeWidgets(Error* error)
+bool FullscreenUI::InitializeWidgets(bool preserve_fsui_state, Error* error)
 {
-  std::unique_lock lock(s_state.shared_state_mutex);
-
-  s_state.has_initialized = true;
-  s_state.focus_reset_queued = FocusResetType::ViewChanged;
-  s_state.close_button_state = CloseButtonState::None;
-
-  if (!(s_state.placeholder_texture = LoadTexture("images/placeholder.png")))
-    Error::SetStringView(error, "Failed to load placeholder.png");
-  if (!s_state.placeholder_texture || !CompileTransitionPipelines(error))
   {
-    ShutdownWidgets(true);
+    std::unique_lock lock(s_state.shared_state_mutex);
+
+    if (!(s_state.placeholder_texture = LoadTexture("images/placeholder.png")))
+    {
+      Error::SetStringView(error, "Failed to load placeholder.png");
+      return false;
+    }
+  }
+
+  if (!CompileTransitionPipelines(error))
+  {
+    ShutdownWidgets(preserve_fsui_state);
     return false;
   }
 
+  if (!preserve_fsui_state)
+  {
+    s_state.focus_reset_queued = FocusResetType::ViewChanged;
+    s_state.close_button_state = CloseButtonState::None;
+    ResetMenuButtonFrame();
+  }
+
   UpdateWidgetsSettings();
-  ResetMenuButtonFrame();
+
+  s_state.has_initialized = true;
   return true;
 }
 
-void FullscreenUI::ShutdownWidgets(bool clear_state)
+void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
 {
   std::unique_lock lock(s_state.shared_state_mutex);
 
@@ -435,7 +445,7 @@ void FullscreenUI::ShutdownWidgets(bool clear_state)
 
   s_state.has_initialized = false;
 
-  if (clear_state)
+  if (!preserve_fsui_state)
   {
     s_state.fullscreen_footer_icon_mapping = {};
     s_state.notifications.clear();

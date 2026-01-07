@@ -91,10 +91,10 @@ TextFontOrder GetDefaultTextFontOrder();
 void SetTextFontOrder(const TextFontOrder& order);
 
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(Error* error);
+bool Initialize(bool preserve_fsui_state, Error* error);
 
 /// Frees all ImGui resources.
-void Shutdown(bool clear_fsui_state);
+void Shutdown(bool preserve_fsui_state);
 
 /// Returns main ImGui context.
 ImGuiContext* GetMainContext();

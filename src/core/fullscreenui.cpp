@@ -170,7 +170,7 @@ ALIGN_TO_CACHE_LINE static Locals s_locals;
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::Initialize()
+void FullscreenUI::Initialize(bool preserve_state /*= false */)
 {
   // some achievement callbacks fire early while e.g. there is a load state popup blocking system init
   if (s_locals.initialized || !ImGuiManager::IsInitialized())
@@ -179,7 +179,7 @@ void FullscreenUI::Initialize()
   s_locals.initialized = true;
 
   // in case we open the pause menu while the game is running
-  if (s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+  if (!preserve_state && s_locals.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
       !GPUThread::IsGPUBackendRequested())
   {
     ReturnToMainWindow();
@@ -456,9 +456,9 @@ void FullscreenUI::ReturnToMainWindow(float transition_time)
   });
 }
 
-void FullscreenUI::Shutdown(bool clear_state)
+void FullscreenUI::Shutdown(bool preserve_fsui_state)
 {
-  if (clear_state)
+  if (!preserve_fsui_state)
   {
     SoundEffectManager::Shutdown();
 
