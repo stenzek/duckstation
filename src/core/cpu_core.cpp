@@ -2276,7 +2276,7 @@ bool CPU::AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool 
     System::InterruptExecution();
 
   if (!auto_clear)
-    Host::ReportDebuggerMessage(fmt::format("Added breakpoint at 0x{:08X}.", address));
+    Host::ReportDebuggerEvent(DebuggerEvent::Message, fmt::format("Added breakpoint at 0x{:08X}.", address));
 
   return true;
 }
@@ -2303,8 +2303,9 @@ bool CPU::SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address
   if (it == bplist.end())
     return false;
 
-  Host::ReportDebuggerMessage(fmt::format("{} {} breakpoint at 0x{:08X}.", enabled ? "Enabled" : "Disabled",
-                                          GetBreakpointTypeName(type), address));
+  Host::ReportDebuggerEvent(DebuggerEvent::Message,
+                            fmt::format("{} {} breakpoint at 0x{:08X}.", enabled ? "Enabled" : "Disabled",
+                                        GetBreakpointTypeName(type), address));
   it->enabled = enabled;
 
   if (UpdateDebugDispatcherFlag())
@@ -2324,7 +2325,8 @@ bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
   if (it == bplist.end())
     return false;
 
-  Host::ReportDebuggerMessage(fmt::format("Removed {} breakpoint at 0x{:08X}.", GetBreakpointTypeName(type), address));
+  Host::ReportDebuggerEvent(DebuggerEvent::Message,
+                            fmt::format("Removed {} breakpoint at 0x{:08X}.", GetBreakpointTypeName(type), address));
 
   bplist.erase(it);
   if (UpdateDebugDispatcherFlag())
@@ -2358,7 +2360,7 @@ bool CPU::AddStepOverBreakpoint()
 
   if (!IsCallInstruction(inst))
   {
-    Host::ReportDebuggerMessage(fmt::format("0x{:08X} is not a call instruction.", g_state.pc));
+    Host::ReportDebuggerEvent(DebuggerEvent::Message, fmt::format("0x{:08X} is not a call instruction.", g_state.pc));
     return false;
   }
 
@@ -2367,14 +2369,15 @@ bool CPU::AddStepOverBreakpoint()
 
   if (IsBranchInstruction(inst))
   {
-    Host::ReportDebuggerMessage(fmt::format("Can't step over double branch at 0x{:08X}", g_state.pc));
+    Host::ReportDebuggerEvent(DebuggerEvent::Message,
+                              fmt::format("Can't step over double branch at 0x{:08X}", g_state.pc));
     return false;
   }
 
   // skip the delay slot
   bp_pc += sizeof(Instruction);
 
-  Host::ReportDebuggerMessage(fmt::format("Stepping over to 0x{:08X}.", bp_pc));
+  Host::ReportDebuggerEvent(DebuggerEvent::Message, fmt::format("Stepping over to 0x{:08X}.", bp_pc));
 
   return AddBreakpoint(BreakpointType::Execute, bp_pc, true);
 }
@@ -2390,20 +2393,22 @@ bool CPU::AddStepOutBreakpoint(u32 max_instructions_to_search)
     Instruction inst;
     if (!SafeReadInstruction(ret_pc, &inst.bits))
     {
-      Host::ReportDebuggerMessage(
+      Host::ReportDebuggerEvent(
+        DebuggerEvent::Message,
         fmt::format("Instruction read failed at {:08X} while searching for function end.", ret_pc));
       return false;
     }
 
     if (IsReturnInstruction(inst))
     {
-      Host::ReportDebuggerMessage(fmt::format("Stepping out to 0x{:08X}.", ret_pc));
+      Host::ReportDebuggerEvent(DebuggerEvent::Message, fmt::format("Stepping out to 0x{:08X}.", ret_pc));
       return AddBreakpoint(BreakpointType::Execute, ret_pc, true);
     }
   }
 
-  Host::ReportDebuggerMessage(fmt::format("No return instruction found after {} instructions for step-out at {:08X}.",
-                                          max_instructions_to_search, g_state.pc));
+  Host::ReportDebuggerEvent(DebuggerEvent::Message,
+                            fmt::format("No return instruction found after {} instructions for step-out at {:08X}.",
+                                        max_instructions_to_search, g_state.pc));
 
   return false;
 }
@@ -2450,7 +2455,7 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
       if (bp.auto_clear)
       {
         msg.format("Stopped execution at 0x{:08X}.", pc);
-        Host::ReportDebuggerMessage(msg);
+        Host::ReportDebuggerEvent(DebuggerEvent::Message, msg);
         bplist.erase(bplist.begin() + i);
         count--;
         UpdateDebugDispatcherFlag();
@@ -2459,7 +2464,7 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
       {
         msg.format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.", GetBreakpointTypeName(type), bp.number, address,
                    bp.hit_count);
-        Host::ReportDebuggerMessage(msg);
+        Host::ReportDebuggerEvent(DebuggerEvent::BreakpointHit, msg);
         i++;
       }
 

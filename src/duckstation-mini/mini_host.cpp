@@ -7,6 +7,7 @@
 #include "core/bus.h"
 #include "core/controller.h"
 #include "core/core_private.h"
+#include "core/cpu_core.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
@@ -331,9 +332,9 @@ void MiniHost::SetDefaultSettings(SettingsInterface& si, bool system, bool contr
   }
 }
 
-void Host::ReportDebuggerMessage(std::string_view message)
+void Host::ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view message)
 {
-  ERROR_LOG("ReportDebuggerMessage(): {}", message);
+  ERROR_LOG("ReportDebuggerEvent(): {}", message);
 }
 
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()

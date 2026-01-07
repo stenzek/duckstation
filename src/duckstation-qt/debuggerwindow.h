@@ -27,6 +27,9 @@ public:
   explicit DebuggerWindow(QWidget* parent = nullptr);
   ~DebuggerWindow();
 
+  void reportMessage(const QString& message);
+  void updateBreakpointHitCounts(const CPU::BreakpointList& bps);
+
 Q_SIGNALS:
   void closed();
 
@@ -55,7 +58,6 @@ private:
   void onSystemDestroyed();
   void onSystemPaused();
   void onSystemResumed();
-  void onDebuggerMessageReported(const QString& message);
 
   void timerRefresh();
   void refreshAll();

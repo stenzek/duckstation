@@ -256,4 +256,18 @@ struct DebuggerRegisterListEntry
 inline constexpr u32 NUM_DEBUGGER_REGISTER_LIST_ENTRIES = 103;
 extern const std::array<DebuggerRegisterListEntry, NUM_DEBUGGER_REGISTER_LIST_ENTRIES> g_debugger_register_list;
 
+// Debugger events, calls Host::ReportDebuggerEvent()
+enum class DebuggerEvent : u8
+{
+  Message,
+  BreakpointHit,
+};
+
 } // namespace CPU
+
+namespace Host {
+
+/// Debugger feedback.
+void ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view message);
+
+} // namespace Host

@@ -105,7 +105,6 @@ public:
 Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   void statusMessage(const QString& message);
-  void debuggerMessageReported(const QString& message);
   void settingsResetToDefault(bool system, bool controller);
   void systemStarting();
   void systemStarted();

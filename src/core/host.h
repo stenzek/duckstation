@@ -37,9 +37,6 @@ std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, b
 /// Displays an asynchronous error on the UI thread, i.e. doesn't block the caller.
 void ReportErrorAsync(std::string_view title, std::string_view message);
 
-/// Debugger feedback.
-void ReportDebuggerMessage(std::string_view message);
-
 /// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
 /// The callback may be executed on a different thread. Use RunOnCoreThread() in the callback to ensure safety.
 using ConfirmMessageAsyncCallback = std::function<void(bool)>;

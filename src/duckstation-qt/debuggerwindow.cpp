@@ -12,6 +12,7 @@
 #include "core/cpu_core_private.h"
 
 #include "common/assert.h"
+#include "common/log.h"
 
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QCursor>
@@ -20,6 +21,8 @@
 #include <QtWidgets/QFileDialog>
 
 #include "moc_debuggerwindow.cpp"
+
+LOG_CHANNEL(Host);
 
 static constexpr int TIMER_REFRESH_INTERVAL_MS = 100;
 
@@ -61,7 +64,7 @@ void DebuggerWindow::onSystemResumed()
   m_ui.actionPause->setChecked(false);
 }
 
-void DebuggerWindow::onDebuggerMessageReported(const QString& message)
+void DebuggerWindow::reportMessage(const QString& message)
 {
   m_ui.statusbar->showMessage(message, 0);
 }
@@ -457,7 +460,6 @@ void DebuggerWindow::connectSignals()
   connect(g_core_thread, &CoreThread::systemResumed, this, &DebuggerWindow::onSystemResumed);
   connect(g_core_thread, &CoreThread::systemStarted, this, &DebuggerWindow::onSystemStarted);
   connect(g_core_thread, &CoreThread::systemDestroyed, this, &DebuggerWindow::onSystemDestroyed);
-  connect(g_core_thread, &CoreThread::debuggerMessageReported, this, &DebuggerWindow::onDebuggerMessageReported);
 
   connect(m_ui.actionPause, &QAction::triggered, this, &DebuggerWindow::onPauseActionTriggered);
   connect(m_ui.actionRunToCursor, &QAction::triggered, this, &DebuggerWindow::onRunToCursorTriggered);
@@ -725,4 +727,48 @@ void DebuggerWindow::removeBreakpoint(CPU::BreakpointType type, u32 address)
       win->refreshBreakpointList(bps);
     });
   });
+}
+
+void DebuggerWindow::updateBreakpointHitCounts(const CPU::BreakpointList& bps)
+{
+  for (size_t i = 0; i < bps.size(); i++)
+  {
+    const CPU::Breakpoint& bp = bps[i];
+    QTreeWidgetItem* const item = m_ui.breakpointsWidget->topLevelItem(static_cast<int>(i));
+    if (!item)
+      continue;
+
+    item->setText(3, QString::asprintf("%u", bp.hit_count));
+  }
+}
+
+void Host::ReportDebuggerEvent(CPU::DebuggerEvent event, std::string_view message)
+{
+  if (event == CPU::DebuggerEvent::Message)
+  {
+    if (!message.empty())
+      return;
+
+    INFO_LOG("Debugger message: {}", message);
+    Host::RunOnUIThread([message = QtUtils::StringViewToQString(message)]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
+      win->reportMessage(message);
+    });
+  }
+  else if (event == CPU::DebuggerEvent::BreakpointHit)
+  {
+    Host::RunOnUIThread([bps = CPU::CopyBreakpointList(), message = QtUtils::StringViewToQString(message)]() {
+      DebuggerWindow* const win = g_main_window->getDebuggerWindow();
+      if (!win)
+        return;
+
+      win->updateBreakpointHitCounts(bps);
+
+      if (!message.isEmpty())
+        win->reportMessage(message);
+    });
+  }
 }
