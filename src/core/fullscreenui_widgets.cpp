@@ -1597,13 +1597,13 @@ void FullscreenUI::DrawFullscreenFooter()
 
   if (prev_opacity < 1.0f)
   {
+    const float opacity = 1.0f - prev_opacity;
     if (!s_state.fullscreen_footer_text.empty())
     {
       const ImVec2 text_size =
         font->CalcTextSizeA(font_size, font_weight, max_width, 0.0f, IMSTR_START_END(s_state.fullscreen_footer_text));
       const ImVec2 text_pos =
         ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font_size - padding);
-      const float opacity = 1.0f - prev_opacity;
       dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
                   IMSTR_START_END(s_state.fullscreen_footer_text));
       dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),
@@ -1613,7 +1613,6 @@ void FullscreenUI::DrawFullscreenFooter()
     if (!s_state.left_fullscreen_footer_text.empty())
     {
       const ImVec2 text_pos = ImVec2(padding, io.DisplaySize.y - font_size - padding);
-      const float opacity = 1.0f - prev_opacity;
       dl->AddText(font, font_size, font_weight, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
                   IMSTR_START_END(s_state.left_fullscreen_footer_text));
       dl->AddText(font, font_size, font_weight, text_pos, ModAlpha(text_color, opacity),

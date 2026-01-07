@@ -2226,9 +2226,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                                                 FSUI_VSTR("Plays sound effects when navigating and activating menus."),
                                                 "Main", "FullscreenUISoundEffects", true);
 
-  // use transition to work around double lock
+  // have to queue because we're holding the settings lock, and UpdateWidgetsSettings() reads it
   if (widgets_settings_changed)
-    BeginTransition(0.0f, &FullscreenUI::UpdateWidgetsSettings);
+  {
+    Host::RunOnCoreThread([]() {
+      GPUThread::RunOnThread(&FullscreenUI::UpdateWidgetsSettings);
+    });
+  }
 
   MenuHeading(FSUI_VSTR("Behavior"));
 
