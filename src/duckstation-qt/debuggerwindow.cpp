@@ -34,7 +34,12 @@ DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   connectSignals();
   createModels();
   setMemoryViewRegion(Bus::MemoryRegion::RAM);
-  setUIEnabled(QtHost::IsSystemPaused(), QtHost::IsSystemValid());
+  if (QtHost::IsSystemValid() && QtHost::IsSystemPaused())
+    onSystemPaused();
+  else if (QtHost::IsSystemValid())
+    onSystemStarted();
+  else
+    onSystemDestroyed();
 }
 
 DebuggerWindow::~DebuggerWindow() = default;
