@@ -111,13 +111,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
 
-  connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.renderer, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateRendererDependentOptions);
-  connect(m_ui.textureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.textureFiltering, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
-  connect(m_ui.spriteTextureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.spriteTextureFiltering, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
-  connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.gpuDownsampleMode, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::onDownsampleModeChanged);
   connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
 
@@ -176,7 +176,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
 
-  connect(m_ui.displayFineCropMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.displayFineCropMode, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::onFineCropModeChanged);
   connect(m_ui.displayFineCropReset, &QPushButton::clicked, this, &GraphicsSettingsWidget::onFineCropResetClicked);
   connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
@@ -231,7 +231,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   // OSD Tab
 
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, "Display", "OSDScale", 100);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, "Display", "OSDScale",
+                                              static_cast<int>(GPUSettings::DEFAULT_OSD_SCALE));
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
@@ -266,8 +267,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     sif, m_ui.osdQuickDuration, "Display", "OSDQuickDuration",
     Settings::DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[static_cast<size_t>(OSDMessageType::Quick)]);
 
-  connect(m_ui.fullscreenUITheme, QOverload<int>::of(&QComboBox::currentIndexChanged), g_core_thread,
-          &CoreThread::updateFullscreenUITheme);
+  connect(m_ui.fullscreenUITheme, &QComboBox::currentIndexChanged, g_core_thread, &CoreThread::updateFullscreenUITheme);
   connect(m_ui.showMessages, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onOSDShowMessagesChanged);
 
   // Capture Tab
@@ -306,7 +306,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                "VideoCodecUseArgs", false);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.audioCaptureArguments, "MediaCapture", "AudioCodecArgs");
 
-  connect(m_ui.mediaCaptureBackend, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.mediaCaptureBackend, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::onMediaCaptureBackendChanged);
   connect(m_ui.enableVideoCapture, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onMediaCaptureVideoEnabledChanged);
@@ -586,15 +586,17 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // OSD Tab
 
   dialog->registerWidgetHelp(
-    m_ui.osdScale, tr("Display Scale"), tr("100%"),
+    m_ui.osdScale, tr("Display Scale"), QStringLiteral("%1%").arg(static_cast<int>(GPUSettings::DEFAULT_OSD_SCALE)),
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
   dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
                              tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
-  dialog->registerWidgetHelp(m_ui.osdMargin, tr("Display Margins"), tr("0px"),
+  dialog->registerWidgetHelp(m_ui.osdMargin, tr("Display Margins"),
+                             QStringLiteral("%1px").arg(static_cast<int>(ImGuiManager::DEFAULT_SCREEN_MARGIN)),
                              tr("Determines the margin between the edge of the screen and on-screen messages."));
   dialog->registerWidgetHelp(
-    m_ui.osdMessageLocation, tr("Message Location"), tr("Selects which location on the screen messages are displayed."),
-    QString::fromStdString(Settings::GetNotificationLocationDisplayName(Settings::DEFAULT_OSD_MESSAGE_LOCATION)));
+    m_ui.osdMessageLocation, tr("Message Location"),
+    QString::fromStdString(Settings::GetNotificationLocationDisplayName(Settings::DEFAULT_OSD_MESSAGE_LOCATION)),
+    tr("Selects which location on the screen messages are displayed."));
   dialog->registerWidgetHelp(
     m_ui.showMessages, tr("Show Messages"), tr("Checked"),
     tr("Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being "
@@ -912,7 +914,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.adapter->setEnabled(!m_adapters.empty());
     m_ui.adapterLabel->setEnabled(!m_adapters.empty());
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.adapter, "GPU", "Adapter");
-    connect(m_ui.adapter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+    connect(m_ui.adapter, &QComboBox::currentIndexChanged, this,
             &GraphicsSettingsWidget::updateRendererDependentOptions);
   }
 
@@ -988,7 +990,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     {
       m_ui.msaaMode->setCurrentIndex(0);
     }
-    connect(m_ui.msaaMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this]() {
+    connect(m_ui.msaaMode, &QComboBox::currentIndexChanged, this, [this]() {
       const int index = m_ui.msaaMode->currentIndex();
       if (m_dialog->isPerGameSettings() && index == 0)
       {
@@ -1016,7 +1018,7 @@ void GraphicsSettingsWidget::populateAndConnectUpscalingModes(int max_scale)
 
   SettingWidgetBinder::BindWidgetToIntSetting(m_dialog->getSettingsInterface(), m_ui.resolutionScale, "GPU",
                                               "ResolutionScale", 1);
-  connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+  connect(m_ui.resolutionScale, &QComboBox::currentIndexChanged, this,
           &GraphicsSettingsWidget::updateResolutionDependentOptions);
 }
 
@@ -1152,9 +1154,9 @@ void GraphicsSettingsWidget::createAspectRatioSetting(QComboBox* const cb, QSpin
     }
   };
 
-  connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged), cb, value_changed);
-  connect(numerator, QOverload<int>::of(&QSpinBox::valueChanged), cb, value_changed);
-  connect(denominator, QOverload<int>::of(&QSpinBox::valueChanged), cb, std::move(value_changed));
+  connect(cb, &QComboBox::currentIndexChanged, cb, value_changed);
+  connect(numerator, &QSpinBox::valueChanged, cb, value_changed);
+  connect(denominator, &QSpinBox::valueChanged, cb, std::move(value_changed));
 }
 
 void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
@@ -1306,7 +1308,7 @@ void GraphicsSettingsWidget::onMediaCaptureBackendChanged()
 
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.captureContainer, "MediaCapture", "Container",
                                                    Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);
-    connect(m_ui.captureContainer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+    connect(m_ui.captureContainer, &QComboBox::currentIndexChanged, this,
             &GraphicsSettingsWidget::onMediaCaptureContainerChanged);
   }
 
