@@ -24,6 +24,61 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="QGroupBox" name="loginBox">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="userBadge">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="scaledContents">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="loginStatus">
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="viewProfile">
+        <property name="text">
+         <string>View Profile...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="loginButton">
+        <property name="text">
+         <string>Login...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="settingsGroupBox">
      <property name="title">
       <string>Settings</string>
@@ -226,47 +281,6 @@
        <widget class="QCheckBox" name="progressIndicators">
         <property name="text">
          <string>Show Progress Indicators</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="loginBox">
-     <property name="title">
-      <string>Account</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0">
-      <item>
-       <widget class="QLabel" name="loginStatus">
-        <property name="text">
-         <string>Username:
-Login token generated at:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="refreshProgress">
-        <property name="text">
-         <string>Refresh Progress</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="viewProfile">
-        <property name="text">
-         <string>View Profile...</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="loginButton">
-        <property name="text">
-         <string>Login...</string>
         </property>
        </widget>
       </item>

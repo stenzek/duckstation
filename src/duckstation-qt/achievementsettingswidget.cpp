@@ -104,7 +104,7 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   {
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
-    connect(m_ui.refreshProgress, &QPushButton::clicked, g_main_window, &MainWindow::refreshAchievementProgress);
+    connect(g_core_thread, &CoreThread::achievementsLoginSuccess, this, &AchievementSettingsWidget::updateLoginState);
     updateLoginState();
   }
   else
@@ -159,8 +159,6 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.encoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
-  if (!m_dialog->isPerGameSettings())
-    m_ui.refreshProgress->setEnabled(enabled && m_ui.viewProfile->isEnabled());
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()
@@ -204,7 +202,29 @@ void AchievementSettingsWidget::onLeaderboardsNotificationDurationSliderChanged(
 
 void AchievementSettingsWidget::updateLoginState()
 {
-  const std::string username(Core::GetBaseStringSettingValue("Cheevos", "Username"));
+  std::string username;
+  std::string badge_path;
+
+  {
+    const auto lock = Achievements::GetLock();
+    if (Achievements::IsLoggedIn())
+    {
+      if (const char* username_ptr = Achievements::GetLoggedInUserName())
+        username = username_ptr;
+
+      badge_path = Achievements::GetLoggedInUserBadgePath();
+    }
+    else
+    {
+      username = Core::GetBaseStringSettingValue("Cheevos", "Username");
+    }
+  }
+
+  if (badge_path.empty())
+    badge_path = QtHost::GetResourcePath("images/ra-generic-user.png", true);
+
+  m_ui.userBadge->setPixmap(QPixmap(QString::fromStdString(badge_path)));
+
   const bool logged_in = !username.empty();
 
   if (logged_in)
@@ -214,7 +234,7 @@ void AchievementSettingsWidget::updateLoginState()
     const QString login_timestamp =
       QtHost::FormatNumber(Host::NumberFormatType::ShortDateTime, static_cast<s64>(login_unix_timestamp));
     m_ui.loginStatus->setText(
-      tr("Username: %1\nLogin token generated on %2.").arg(QString::fromStdString(username)).arg(login_timestamp));
+      tr("Logged in as %1\nToken generated at %2").arg(QString::fromStdString(username)).arg(login_timestamp));
     m_ui.loginButton->setText(tr("Logout"));
   }
   else
@@ -224,7 +244,6 @@ void AchievementSettingsWidget::updateLoginState()
   }
 
   m_ui.viewProfile->setEnabled(logged_in);
-  m_ui.refreshProgress->setEnabled(logged_in && Core::GetBaseBoolSettingValue("Cheevos", "Enabled", false));
 }
 
 void AchievementSettingsWidget::onLoginLogoutPressed()
