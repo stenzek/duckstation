@@ -1197,11 +1197,11 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     // acquire for IO.MousePos and system state.
     std::atomic_thread_fence(std::memory_order_acquire);
 
+    FullscreenUI::UploadAsyncTextures();
+
     ImGuiManager::RenderDebugWindows();
 
     FullscreenUI::DrawAchievementsOverlays();
-
-    FullscreenUI::UploadAsyncTextures();
 
     if (backend)
       ImGuiManager::RenderTextOverlays(backend);
