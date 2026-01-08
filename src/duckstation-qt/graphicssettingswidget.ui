@@ -293,7 +293,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>
@@ -763,7 +763,7 @@
          <property name="title">
           <string/>
          </property>
-         <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,1" columnminimumwidth="100,0">
+         <layout class="QGridLayout" name="gridLayout_14" columnstretch="0,1" columnminimumwidth="120,0">
           <property name="topMargin">
            <number>6</number>
           </property>
@@ -814,7 +814,17 @@
           <item row="2" column="1">
            <widget class="QComboBox" name="fullscreenUITheme"/>
           </item>
-          <item row="3" column="0" colspan="2">
+          <item row="3" column="1">
+           <widget class="QComboBox" name="osdMessageLocation"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Message Location:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
              <widget class="QCheckBox" name="showMessages">
@@ -910,7 +920,7 @@
          <property name="title">
           <string>Message Durations</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,1,0,1" columnminimumwidth="100,0,100,0">
+         <layout class="QGridLayout" name="gridLayout_21" columnstretch="0,1,0,1" columnminimumwidth="120,0,120,0">
           <item row="0" column="0">
            <widget class="QLabel" name="osdErrorDurationLabel">
             <property name="text">
@@ -1025,7 +1035,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>

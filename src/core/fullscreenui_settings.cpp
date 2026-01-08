@@ -2287,6 +2287,12 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                           FSUI_VSTR("Determines the margin between the edge of the screen and on-screen messages."),
                           "Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN, 0.0f, 100.0f, 1.0f, 1.0f,
                           "%.0fpx");
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_LOCATION_DOT, "Message Location"),
+                  FSUI_VSTR("Selects which location on the screen messages are displayed."), "Display",
+                  "OSDMessageLocation", Settings::DEFAULT_OSD_MESSAGE_LOCATION, &Settings::ParseNotificationLocation,
+                  &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
+                  NotificationLocation::MaxCount);
+
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_EXCLAMATION, "Show Messages"),
                     FSUI_VSTR("Shows on-screen-display messages when events occur. Errors and warnings are still "
                               "displayed regardless of this setting."),

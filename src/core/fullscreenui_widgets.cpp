@@ -4978,16 +4978,25 @@ FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation locati
   static constexpr float top_start_pct = 0.15f;
 #endif
 
+  const float top_margin = ImFloor(top_start_pct * ImGui::GetIO().DisplaySize.y);
+  CalcStartPosition(screen_margin, top_margin);
+}
+
+FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation location, float spacing, float screen_margin)
+  : m_spacing(spacing), m_location(location)
+{
+  CalcStartPosition(screen_margin, screen_margin);
+}
+
+void FullscreenUI::NotificationLayout::CalcStartPosition(float screen_margin, float top_margin)
+{
   const ImGuiIO& io = ImGui::GetIO();
   switch (m_location)
   {
     case NotificationLocation::TopLeft:
     {
       m_current_position.x = screen_margin;
-
-      // need to consider osd message size
-      m_current_position.y = std::max(std::max(screen_margin, top_start_pct * io.DisplaySize.y),
-                                      ImGuiManager::GetOSDMessageEndPosition() + m_spacing);
+      m_current_position.y = std::max(screen_margin, top_margin);
     }
     break;
 
@@ -5001,7 +5010,7 @@ FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation locati
     case NotificationLocation::TopRight:
     {
       m_current_position.x = io.DisplaySize.x - screen_margin;
-      m_current_position.y = std::max(screen_margin, top_start_pct * io.DisplaySize.y);
+      m_current_position.y = std::max(screen_margin, top_margin);
     }
     break;
 
@@ -5027,6 +5036,16 @@ FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation locati
     break;
 
       DefaultCaseIsUnreachable();
+  }
+
+  // don't draw over osd messages
+  if (m_location == g_gpu_settings.display_osd_message_location)
+  {
+    const float osd_end = ImGuiManager::GetOSDMessageEndPosition();
+    if (m_location >= NotificationLocation::BottomLeft)
+      m_current_position.y = std::min(m_current_position.y, osd_end);
+    else
+      m_current_position.y = std::max(m_current_position.y, osd_end);
   }
 }
 

@@ -978,11 +978,11 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
   static constexpr float MOVE_DURATION = 0.5f;
 
+  s_state.osd_messages_end_y =
+    (g_gpu_settings.display_osd_message_location >= NotificationLocation::BottomLeft) ? s_state.window_height : 0.0f;
+
   if (s_state.osd_active_messages.empty())
-  {
-    s_state.osd_messages_end_y = 0.0f;
     return;
-  }
 
   ImFont* const font = s_state.text_font;
   const float font_size = GetOSDFontSize();
@@ -1002,11 +1002,11 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float max_width_for_color = std::ceil(400.0f * scale);
   const float min_rounded_width = rounding * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
-  float position_x = margin;
-  float position_y = margin;
 
   const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
   const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+
+  FullscreenUI::NotificationLayout layout(g_gpu_settings.display_osd_message_location, spacing, margin);
 
   auto iter = s_state.osd_active_messages.begin();
   while (iter != s_state.osd_active_messages.end())
@@ -1051,69 +1051,56 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     const float box_width = icon_size_with_margin + std::max(text_size.x, title_size.x) + padding + padding;
     const float box_height = std::max(icon_size.y, title_size.y + text_size.y) + padding + padding;
 
-    float opacity;
-    float actual_x;
-    if (time_passed < OSD_FADE_IN_TIME)
+    const auto& [layout_pos, opacity] = layout.GetNextPosition(box_width, box_height, time_passed, msg.duration,
+                                                               OSD_FADE_IN_TIME, OSD_FADE_OUT_TIME, 0.2f);
+    float actual_y;
+    if (!layout.IsVerticalAnimation() || opacity == 1.0f)
     {
-      const float pct = time_passed / OSD_FADE_IN_TIME;
-      const float eased_pct = std::clamp(Easing::OutExpo(pct), 0.0f, 1.0f);
-      actual_x = ImFloor(position_x - (box_width * 0.2f * (1.0f - eased_pct)));
-      opacity = pct;
-    }
-    else if (time_passed > (msg.duration - OSD_FADE_OUT_TIME))
-    {
-      const float pct = (msg.duration - time_passed) / OSD_FADE_OUT_TIME;
-      const float eased_pct = std::clamp(Easing::InExpo(pct), 0.0f, 1.0f);
-      actual_x = ImFloor(position_x - (box_width * 0.2f * (1.0f - eased_pct)));
-      opacity = eased_pct;
+      actual_y = msg.last_y;
+      if (msg.target_y != layout_pos.y)
+      {
+        if (msg.last_y < 0.0f)
+        {
+          // First showing.
+          msg.last_y = layout_pos.y;
+        }
+        else
+        {
+          // We got repositioned, probably due to another message above getting removed.
+          const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
+          const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
+          msg.last_y = std::floor(msg.last_y - ((msg.last_y - msg.target_y) * frac));
+        }
+
+        msg.move_time = current_time;
+        msg.target_y = layout_pos.y;
+        actual_y = msg.last_y;
+      }
+      else if (actual_y != layout_pos.y)
+      {
+        const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
+        if (time_since_move >= MOVE_DURATION)
+        {
+          msg.move_time = current_time;
+          msg.last_y = msg.target_y;
+          actual_y = msg.last_y;
+        }
+        else
+        {
+          const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
+          actual_y = std::floor(msg.last_y - ((msg.last_y - msg.target_y) * frac));
+        }
+      }
     }
     else
     {
-      opacity = 1.0f;
-      actual_x = position_x;
-    }
-
-    const float expected_y = position_y;
-    float actual_y = msg.last_y;
-    if (msg.target_y != expected_y)
-    {
-      if (msg.last_y < 0.0f)
-      {
-        // First showing.
-        msg.last_y = expected_y;
-      }
-      else
-      {
-        // We got repositioned, probably due to another message above getting removed.
-        const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
-        const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
-        msg.last_y = std::floor(msg.last_y - ((msg.last_y - msg.target_y) * frac));
-      }
-
-      msg.move_time = current_time;
-      msg.target_y = expected_y;
-      actual_y = msg.last_y;
-    }
-    else if (actual_y != expected_y)
-    {
-      const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
-      if (time_since_move >= MOVE_DURATION)
-      {
-        msg.move_time = current_time;
-        msg.last_y = msg.target_y;
-        actual_y = msg.last_y;
-      }
-      else
-      {
-        const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
-        actual_y = std::floor(msg.last_y - ((msg.last_y - msg.target_y) * frac));
-      }
+      actual_y = layout_pos.y;
     }
 
     if (actual_y >= ImGui::GetIO().DisplaySize.y || (msg.type >= OSDMessageType::Info && !show_messages))
       break;
 
-    const ImVec2 pos = ImVec2(actual_x, actual_y);
+    const ImVec2 pos = ImVec2(layout_pos.x, actual_y);
     const ImVec2 pos_max = ImVec2(pos.x + box_width, pos.y + box_height);
 
     ImDrawList* const dl = ImGui::GetForegroundDrawList();
@@ -1157,11 +1144,9 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
       RenderShadowedTextClipped(dl, font, font_size, text_font_weight, text_rect.Min, text_rect.Max, actual_text_color,
                                 msg.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_rect, scale);
     }
-
-    position_y += box_height + spacing;
   }
 
-  s_state.osd_messages_end_y = position_y;
+  s_state.osd_messages_end_y = layout.GetCurrentPosition().y;
 }
 
 void ImGuiManager::RenderOSDMessages()

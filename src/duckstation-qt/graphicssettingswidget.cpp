@@ -235,6 +235,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.osdMessageLocation, "Display", "OSDMessageLocation", &Settings::ParseNotificationLocation,
+    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
+    Settings::DEFAULT_OSD_MESSAGE_LOCATION, NotificationLocation::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showMessages, "Display", "ShowOSDMessages", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);
@@ -582,10 +586,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // OSD Tab
 
   dialog->registerWidgetHelp(
-    m_ui.osdScale, tr("OSD Scale"), tr("100%"),
+    m_ui.osdScale, tr("Display Scale"), tr("100%"),
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
   dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
                              tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
+  dialog->registerWidgetHelp(m_ui.osdMargin, tr("Display Margins"), tr("0px"),
+                             tr("Determines the margin between the edge of the screen and on-screen messages."));
+  dialog->registerWidgetHelp(
+    m_ui.osdMessageLocation, tr("Message Location"), tr("Selects which location on the screen messages are displayed."),
+    QString::fromStdString(Settings::GetNotificationLocationDisplayName(Settings::DEFAULT_OSD_MESSAGE_LOCATION)));
   dialog->registerWidgetHelp(
     m_ui.showMessages, tr("Show Messages"), tr("Checked"),
     tr("Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being "

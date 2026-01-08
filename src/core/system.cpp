@@ -4629,6 +4629,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_osd_scale != old_settings.display_osd_scale ||
              g_settings.display_osd_margin != old_settings.display_osd_margin ||
              g_settings.display_osd_message_duration != old_settings.display_osd_message_duration ||
+             g_settings.display_osd_message_location != old_settings.display_osd_message_location ||
              g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
              g_settings.gpu_pgxp_texture_correction != old_settings.gpu_pgxp_texture_correction ||
              g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction ||

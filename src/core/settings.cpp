@@ -400,6 +400,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS[i]);
   }
   display_osd_message_duration[static_cast<size_t>(OSDMessageType::Persistent)] = std::numeric_limits<float>::max();
+  display_osd_message_location = ParseNotificationLocation(si.GetStringValue("Display", "OSDMessageLocation").c_str())
+                                   .value_or(DEFAULT_OSD_MESSAGE_LOCATION);
 
   save_state_compression = ParseSaveStateCompressionModeName(
                              si.GetStringValue("Main", "SaveStateCompression",
@@ -755,6 +757,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
         TinyString::from_format("OSD{}Duration", GetDisplayOSDMessageTypeName(static_cast<OSDMessageType>(i))),
         display_osd_message_duration[i]);
     }
+
+    si.SetStringValue("Display", "OSDMessageLocation", GetNotificationLocationName(display_osd_message_location));
   }
 
   si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);

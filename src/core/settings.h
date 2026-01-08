@@ -128,6 +128,7 @@ struct GPUSettings
   float display_osd_margin = 0.0f;
 
   std::array<float, 5> display_osd_message_duration = DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
+  NotificationLocation display_osd_message_location = DEFAULT_OSD_MESSAGE_LOCATION;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -234,6 +235,7 @@ struct GPUSettings
   static constexpr u8 DEFAULT_DISPLAY_SCREENSHOT_QUALITY = 85;
   static constexpr float DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER = 2.0f;
   static constexpr float DEFAULT_OSD_SCALE = 100.0f;
+  static constexpr NotificationLocation DEFAULT_OSD_MESSAGE_LOCATION = NotificationLocation::TopLeft;
 
   static const std::array<float, 5> DEFAULT_DISPLAY_OSD_MESSAGE_DURATIONS;
 

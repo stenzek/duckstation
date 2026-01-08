@@ -519,8 +519,10 @@ class NotificationLayout
 {
 public:
   NotificationLayout(NotificationLocation location);
+  NotificationLayout(NotificationLocation location, float spacing, float screen_margin);
 
   ALWAYS_INLINE NotificationLocation GetLocation() const { return m_location; }
+  ALWAYS_INLINE const ImVec2& GetCurrentPosition() const { return m_current_position; }
   bool IsVerticalAnimation() const;
 
   ImVec2 GetFixedPosition(float width, float height);
@@ -533,6 +535,8 @@ public:
                                            float in_duration, float out_duration, float width_coeff);
 
 private:
+  void CalcStartPosition(float screen_margin, float top_margin);
+
   ImVec2 m_current_position;
   float m_spacing;
   NotificationLocation m_location;

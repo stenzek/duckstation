@@ -484,6 +484,7 @@ TRANSLATE_NOOP("FullscreenUI", "Menu Background");
 TRANSLATE_NOOP("FullscreenUI", "Menu Borders");
 TRANSLATE_NOOP("FullscreenUI", "Merge Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Merges multi-disc games into one item in the game list.");
+TRANSLATE_NOOP("FullscreenUI", "Message Location");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Move Down");
 TRANSLATE_NOOP("FullscreenUI", "Move Up");
@@ -671,6 +672,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the screen location for achievement and 
 TRANSLATE_NOOP("FullscreenUI", "Selects the screen location for challenge/progress indicators, and leaderboard trackers.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the type of emulated controller for this port.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to.");
+TRANSLATE_NOOP("FullscreenUI", "Selects which location on the screen messages are displayed.");
 TRANSLATE_NOOP("FullscreenUI", "Serial");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "Set Cover Image");
