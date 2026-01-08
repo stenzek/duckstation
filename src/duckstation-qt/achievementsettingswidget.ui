@@ -252,7 +252,7 @@
        </layout>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="notificationLocationLabel">
         <property name="text">
          <string>Notification Location:</string>
         </property>
@@ -281,7 +281,7 @@
        <widget class="QComboBox" name="challengeIndicatorMode"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="indicatorLocationLabel">
         <property name="text">
          <string>Indicator Location:</string>
         </property>
