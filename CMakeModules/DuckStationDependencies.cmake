@@ -41,7 +41,7 @@ find_package(zstd 1.5.7 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(PNG 1.6.53 REQUIRED)
 find_package(JPEG REQUIRED)
-find_package(SDL3 3.2.28 REQUIRED)
+find_package(SDL3 3.4.0 REQUIRED)
 find_package(Freetype 2.14.1 REQUIRED)
 find_package(harfbuzz REQUIRED)
 find_package(plutosvg 0.0.6 REQUIRED)
