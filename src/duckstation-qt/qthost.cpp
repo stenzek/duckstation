@@ -1668,34 +1668,6 @@ void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_p
   emit g_core_thread->achievementsLoginSuccess(QString::fromUtf8(username), points, sc_points, unread_messages);
 }
 
-void Host::OnAchievementsRefreshed()
-{
-  u32 game_id = 0;
-
-  QString game_info;
-
-  if (Achievements::HasActiveGame())
-  {
-    game_id = Achievements::GetGameID();
-
-    game_info = qApp->translate("CoreThread", "Game: %1 (%2)\n")
-                  .arg(QString::fromStdString(Achievements::GetGameTitle()))
-                  .arg(game_id);
-
-    const std::string& rich_presence_string = Achievements::GetRichPresenceString();
-    if (Achievements::HasRichPresence() && !rich_presence_string.empty())
-      game_info.append(QString::fromStdString(StringUtil::Ellipsise(rich_presence_string, 128)));
-    else
-      game_info.append(qApp->translate("CoreThread", "Rich presence inactive or unsupported."));
-  }
-  else
-  {
-    game_info = qApp->translate("CoreThread", "Game not loaded or no RetroAchievements available.");
-  }
-
-  emit g_core_thread->achievementsRefreshed(game_id, game_info);
-}
-
 void Host::OnAchievementsActiveChanged(bool active)
 {
   emit g_core_thread->achievementsActiveChanged(active);

@@ -1005,7 +1005,6 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
   s_state.rich_presence_string.assign(sv);
 
   INFO_LOG("Rich presence updated: {}", s_state.rich_presence_string);
-  Host::OnAchievementsRefreshed();
 
   lock.unlock();
   System::UpdateRichPresence(false);
@@ -1247,8 +1246,6 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   if (display_summary)
     DisplayAchievementSummary();
-
-  Host::OnAchievementsRefreshed();
 }
 
 void Achievements::ClearGameInfo()
@@ -1274,8 +1271,6 @@ void Achievements::ClearGameInfo()
   s_state.has_rich_presence = false;
   s_state.rich_presence_string = {};
   s_state.game_summary = {};
-
-  Host::OnAchievementsRefreshed();
 }
 
 void Achievements::ClearGameHash()

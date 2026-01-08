@@ -105,19 +105,11 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     connect(m_ui.loginButton, &QPushButton::clicked, this, &AchievementSettingsWidget::onLoginLogoutPressed);
     connect(m_ui.viewProfile, &QPushButton::clicked, this, &AchievementSettingsWidget::onViewProfilePressed);
     connect(m_ui.refreshProgress, &QPushButton::clicked, g_main_window, &MainWindow::refreshAchievementProgress);
-    connect(g_core_thread, &CoreThread::achievementsRefreshed, this,
-            &AchievementSettingsWidget::onAchievementsRefreshed);
     updateLoginState();
-
-    // force a refresh of game info
-    Host::RunOnCoreThread(Host::OnAchievementsRefreshed);
   }
   else
   {
-    // remove login and game info, not relevant for per-game
-    m_ui.verticalLayout->removeWidget(m_ui.gameInfoBox);
-    m_ui.gameInfoBox->deleteLater();
-    m_ui.gameInfoBox = nullptr;
+    // remove login, not relevant for per-game
     m_ui.verticalLayout->removeWidget(m_ui.loginBox);
     m_ui.loginBox->deleteLater();
     m_ui.loginBox = nullptr;
@@ -273,9 +265,4 @@ void AchievementSettingsWidget::onViewProfilePressed()
   QtUtils::OpenURL(
     QtUtils::GetRootWidget(this),
     QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
-}
-
-void AchievementSettingsWidget::onAchievementsRefreshed(quint32 id, const QString& game_info_string)
-{
-  m_ui.gameInfo->setText(game_info_string);
 }

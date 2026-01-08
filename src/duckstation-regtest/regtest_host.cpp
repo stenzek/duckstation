@@ -646,11 +646,6 @@ void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_p
   // noop
 }
 
-void Host::OnAchievementsRefreshed()
-{
-  // noop
-}
-
 void Host::OnAchievementsActiveChanged(bool active)
 {
   // noop

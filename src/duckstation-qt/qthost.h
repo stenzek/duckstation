@@ -124,7 +124,6 @@ Q_SIGNALS:
   void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
   void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
-  void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsActiveChanged(bool active);
   void achievementsHardcoreModeChanged(bool enabled);
   void mediaCaptureStarted();

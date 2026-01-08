@@ -209,10 +209,6 @@ void OnAchievementsLoginRequested(Achievements::LoginRequestReason reason);
 /// Called when achievements login completes.
 void OnAchievementsLoginSuccess(const char* display_name, u32 points, u32 sc_points, u32 unread_messages);
 
-/// Called whenever game details or rich presence information is updated.
-/// Implementers can assume the lock is held when this is called.
-void OnAchievementsRefreshed();
-
 /// Called when achievements login completes or they are disabled.
 void OnAchievementsActiveChanged(bool active);
 
