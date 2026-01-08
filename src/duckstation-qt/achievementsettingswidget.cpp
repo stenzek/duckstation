@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievementsettingswidget.h"
@@ -42,6 +42,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.leaderboardNotificationsDuration, "Cheevos",
                                                 "LeaderboardsDuration",
                                                 Settings::DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.notificationLocation, "Cheevos", "NotificationLocation", &Settings::ParseNotificationLocation,
+    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
+    Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION, NotificationLocation::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.leaderboardTrackers, "Cheevos", "LeaderboardTrackers", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.soundEffects, "Cheevos", "SoundEffects", true);
   SettingWidgetBinder::BindWidgetToEnumSetting(
@@ -50,6 +54,10 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     &Settings::GetAchievementChallengeIndicatorModeDisplayName, Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
     AchievementChallengeIndicatorMode::MaxCount);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.progressIndicators, "Cheevos", "ProgressIndicators", true);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.indicatorLocation, "Cheevos", "IndicatorLocation", &Settings::ParseNotificationLocation,
+    &Settings::GetNotificationLocationName, &Settings::GetNotificationLocationDisplayName,
+    Settings::DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION, NotificationLocation::MaxCount);
 
   m_ui.changeSoundsLink->setText(
     QStringLiteral("<a href=\"https://github.com/stenzek/duckstation/wiki/Resource-Overrides\"><span "
@@ -75,18 +83,21 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   dialog->registerWidgetHelp(
     m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"),
     tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
-  dialog->registerWidgetHelp(
-    m_ui.leaderboardTrackers, tr("Show Leaderboard Trackers"), tr("Checked"),
-    tr("Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active."));
+  dialog->registerWidgetHelp(m_ui.leaderboardTrackers, tr("Show Leaderboard Trackers"), tr("Checked"),
+                             tr("Shows a timer in the selected location when leaderboard challenges are active."));
   dialog->registerWidgetHelp(
     m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"),
     tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
-  dialog->registerWidgetHelp(m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
-                             tr("Shows a notification or icons in the lower-right corner of the screen when a "
-                                "challenge/primed achievement is active."));
+  dialog->registerWidgetHelp(m_ui.notificationLocation, tr("Notification Location"), tr("Top Left"),
+                             tr("Selects the screen location for achievement and leaderboard notifications."));
+  dialog->registerWidgetHelp(
+    m_ui.challengeIndicatorMode, tr("Challenge Indicators"), tr("Show Notifications"),
+    tr("Shows a notification or icons in the selected location when a challenge/primed achievement is active."));
+  dialog->registerWidgetHelp(m_ui.indicatorLocation, tr("Indicator Location"), tr("Bottom Right"),
+                             tr("Selects the screen location for challenge/progress indicators, and leaderboard trackers."));
   dialog->registerWidgetHelp(
     m_ui.progressIndicators, tr("Show Progress Indicators"), tr("Checked"),
-    tr("Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes."));
+    tr("Shows a popup in the selected location when progress towards a measured achievement changes."));
 
   connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this,

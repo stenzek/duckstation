@@ -19,7 +19,6 @@
 #include "util/shadergen.h"
 
 #include "common/assert.h"
-#include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -63,7 +62,7 @@ static bool CompileTransitionPipelines(Error* error);
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
 
-static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
+static void DrawBackgroundProgressDialogs(float& current_y);
 static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
 static bool GetLoadingScreenTimeEstimate(SmallString& out_str);
 static void DrawLoadingScreen(std::string_view image, std::string_view title, std::string_view caption,
@@ -76,8 +75,7 @@ static bool AreAnyNotificationsActive();
 static void UpdateNotificationsRunIdle();
 static void UpdateLoadingScreenRunIdle();
 
-static void DrawNotifications(ImVec2& position, float spacing);
-static void DrawToast();
+static void DrawToast(float& current_y);
 static void DrawLoadingScreen();
 
 static ImGuiID GetBackgroundProgressID(std::string_view str_id);
@@ -133,20 +131,6 @@ enum class CloseButtonState : u8
   GamepadPressed,
   AnyReleased,
   Cancelled,
-};
-
-struct Notification
-{
-  std::string key;
-  std::string title;
-  std::string text;
-  std::string note;
-  std::string badge_path;
-  Timer::Value start_time;
-  Timer::Value move_time;
-  float duration;
-  float target_y;
-  float last_y;
 };
 
 struct BackgroundProgressDialogData
@@ -362,8 +346,6 @@ struct WidgetsState
   ProgressDialog progress_dialog;
   MessageDialog message_dialog;
 
-  std::vector<Notification> notifications;
-
   std::string toast_title;
   std::string toast_message;
   Timer::Value toast_start_time;
@@ -448,7 +430,6 @@ void FullscreenUI::ShutdownWidgets(bool preserve_fsui_state)
   if (!preserve_fsui_state)
   {
     s_state.fullscreen_footer_icon_mapping = {};
-    s_state.notifications.clear();
     s_state.background_progress_dialogs.clear();
     s_state.fullscreen_footer_text.clear();
     s_state.last_fullscreen_footer_text.clear();
@@ -1067,6 +1048,12 @@ void FullscreenUI::EnqueueSoundEffect(std::string_view sound_effect)
   s_state.had_sound_effect = true;
 }
 
+float FullscreenUI::GetScreenBottomMargin()
+{
+  return std::max(ImGuiManager::GetScreenMargin(),
+                  LayoutScale(20.0f + (s_state.last_fullscreen_footer_text.empty() ? 0.0f : LAYOUT_FOOTER_HEIGHT)));
+}
+
 FullscreenUI::FixedPopupDialog::FixedPopupDialog() = default;
 
 FullscreenUI::FixedPopupDialog::~FixedPopupDialog() = default;
@@ -1140,15 +1127,9 @@ void FullscreenUI::RenderOverlays()
 
   DrawLoadingScreen();
 
-  const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
-  const float spacing = LayoutScale(10.0f);
-  const float notification_vertical_pos = GetNotificationVerticalPosition();
-  ImVec2 position(margin, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
-                            ((notification_vertical_pos >= 0.5f) ? -margin : margin));
-  position.y = std::max(position.y, ImGuiManager::GetOSDMessageEndPosition());
-  DrawBackgroundProgressDialogs(position, spacing);
-  DrawNotifications(position, spacing);
-  DrawToast();
+  float bottom_center_y = ImGui::GetIO().DisplaySize.y - GetScreenBottomMargin();
+  DrawBackgroundProgressDialogs(bottom_center_y);
+  DrawToast(bottom_center_y);
 
   // cleared?
   if (!AreAnyNotificationsActive())
@@ -4359,25 +4340,6 @@ std::unique_ptr<ProgressCallbackWithPrompt> FullscreenUI::OpenModalProgressDialo
   return s_state.progress_dialog.GetProgressCallback(std::move(title), window_unscaled_width);
 }
 
-static float s_notification_vertical_position = 0.15f;
-static float s_notification_vertical_direction = 1.0f;
-
-float FullscreenUI::GetNotificationVerticalPosition()
-{
-  return s_notification_vertical_position;
-}
-
-float FullscreenUI::GetNotificationVerticalDirection()
-{
-  return s_notification_vertical_direction;
-}
-
-void FullscreenUI::SetNotificationVerticalPosition(float position, float direction)
-{
-  s_notification_vertical_position = position;
-  s_notification_vertical_direction = direction;
-}
-
 ImGuiID FullscreenUI::GetBackgroundProgressID(std::string_view str_id)
 {
   return ImHashStr(str_id.data(), str_id.length());
@@ -4465,20 +4427,21 @@ bool FullscreenUI::IsBackgroundProgressDialogOpen(std::string_view str_id)
   return false;
 }
 
-void FullscreenUI::DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
+void FullscreenUI::DrawBackgroundProgressDialogs(float& current_y)
 {
   if (s_state.background_progress_dialogs.empty())
     return;
 
   const float window_width = LayoutScale(500.0f);
   const float window_height = LayoutScale(75.0f);
+  const float window_pos_x = (ImGui::GetIO().DisplaySize.x - window_width) * 0.5f;
+  const float window_spacing = LayoutScale(10.0f);
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
 
   for (const BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
   {
-    const float window_pos_x = position.x;
-    const float window_pos_y = position.y - ((s_notification_vertical_direction < 0.0f) ? window_height : 0.0f);
+    const float window_pos_y = current_y - window_height;
 
     dl->AddRectFilled(ImVec2(window_pos_x, window_pos_y),
                       ImVec2(window_pos_x + window_width, window_pos_y + window_height),
@@ -4517,7 +4480,7 @@ void FullscreenUI::DrawBackgroundProgressDialogs(ImVec2& position, float spacing
                         ImGui::GetColorU32(UIStyle.SecondaryColor));
     }
 
-    position.y += s_notification_vertical_direction * (window_height + spacing);
+    current_y = current_y - window_height - window_spacing;
   }
 }
 
@@ -4983,12 +4946,9 @@ void FullscreenUI::LoadingScreenProgressCallback::Redraw(bool force)
 // Notifications
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr float NOTIFICATION_APPEAR_ANIMATION_TIME = 0.2f;
-static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
-
 bool FullscreenUI::AreAnyNotificationsActive()
 {
-  return (!s_state.notifications.empty() || !s_state.toast_title.empty() || !s_state.toast_message.empty() ||
+  return (!s_state.toast_title.empty() || !s_state.toast_message.empty() ||
           !s_state.background_progress_dialogs.empty() || s_state.loading_screen_open);
 }
 
@@ -5006,212 +4966,286 @@ void FullscreenUI::UpdateNotificationsRunIdle()
     []() { GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::NotificationsActive, AreAnyNotificationsActive()); });
 }
 
-void FullscreenUI::AddNotification(std::string key, float duration, std::string image_path, std::string title,
-                                   std::string text, std::string note)
+FullscreenUI::NotificationLayout::NotificationLayout(NotificationLocation location)
+  : m_spacing(LayoutScale(10.0f)), m_location(location)
 {
-  const std::unique_lock lock(s_state.shared_state_mutex);
-  if (!s_state.has_initialized)
-    return;
+  const float screen_margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
 
-  const bool prev_had_notifications = AreAnyNotificationsActive();
-  const Timer::Value current_time = Timer::GetCurrentValue();
+  // android goes a little lower due to on-screen buttons
+#ifndef __ANDROID__
+  static constexpr float top_start_pct = 0.1f;
+#else
+  static constexpr float top_start_pct = 0.15f;
+#endif
 
-  if (!key.empty())
+  const ImGuiIO& io = ImGui::GetIO();
+  switch (m_location)
   {
-    for (auto it = s_state.notifications.begin(); it != s_state.notifications.end(); ++it)
+    case NotificationLocation::TopLeft:
     {
-      if (it->key == key)
-      {
-        it->duration = duration;
-        it->title = std::move(title);
-        it->text = std::move(text);
-        it->note = std::move(note);
-        it->badge_path = std::move(image_path);
+      m_current_position.x = screen_margin;
 
-        // Don't fade it in again
-        const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
-        it->start_time =
-          current_time - Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_APPEAR_ANIMATION_TIME));
-        return;
-      }
+      // need to consider osd message size
+      m_current_position.y = std::max(std::max(screen_margin, top_start_pct * io.DisplaySize.y),
+                                      ImGuiManager::GetOSDMessageEndPosition() + m_spacing);
     }
+    break;
+
+    case NotificationLocation::TopCenter:
+    {
+      m_current_position.x = io.DisplaySize.x * 0.5f;
+      m_current_position.y = screen_margin;
+    }
+    break;
+
+    case NotificationLocation::TopRight:
+    {
+      m_current_position.x = io.DisplaySize.x - screen_margin;
+      m_current_position.y = std::max(screen_margin, top_start_pct * io.DisplaySize.y);
+    }
+    break;
+
+    case NotificationLocation::BottomLeft:
+    {
+      m_current_position.x = screen_margin;
+      m_current_position.y = io.DisplaySize.y - GetScreenBottomMargin();
+    }
+    break;
+
+    case NotificationLocation::BottomCenter:
+    {
+      m_current_position.x = io.DisplaySize.x * 0.5f;
+      m_current_position.y = io.DisplaySize.y - GetScreenBottomMargin();
+    }
+    break;
+
+    case NotificationLocation::BottomRight:
+    {
+      m_current_position.x = io.DisplaySize.x - screen_margin;
+      m_current_position.y = io.DisplaySize.y - GetScreenBottomMargin();
+    }
+    break;
+
+      DefaultCaseIsUnreachable();
   }
-
-  Notification notif;
-  notif.key = std::move(key);
-  notif.duration = duration;
-  notif.title = std::move(title);
-  notif.text = std::move(text);
-  notif.note = std::move(note);
-  notif.badge_path = std::move(image_path);
-  notif.start_time = current_time;
-  notif.move_time = current_time;
-  notif.target_y = -1.0f;
-  notif.last_y = -1.0f;
-  s_state.notifications.push_back(std::move(notif));
-
-  if (!prev_had_notifications)
-    UpdateNotificationsRunIdle();
 }
 
-void FullscreenUI::DrawNotifications(ImVec2& position, float spacing)
+bool FullscreenUI::NotificationLayout::IsVerticalAnimation() const
 {
-  if (s_state.notifications.empty())
-    return;
+  return (m_location == NotificationLocation::TopCenter || m_location == NotificationLocation::BottomCenter);
+}
 
-  static constexpr float MOVE_DURATION = 0.5f;
-  const Timer::Value current_time = Timer::GetCurrentValue();
-
-  const float horizontal_padding = FullscreenUI::LayoutScale(20.0f);
-  const float vertical_padding = FullscreenUI::LayoutScale(15.0f);
-  const float horizontal_spacing = FullscreenUI::LayoutScale(10.0f);
-  const float larger_horizontal_spacing = FullscreenUI::LayoutScale(18.0f);
-  const float vertical_spacing = FullscreenUI::LayoutScale(4.0f);
-  const float badge_size = FullscreenUI::LayoutScale(48.0f);
-  const float min_width = FullscreenUI::LayoutScale(200.0f);
-  const float max_width = FullscreenUI::LayoutScale(600.0f);
-  const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
-  const float min_height = (vertical_padding * 2.0f) + badge_size;
-  const float shadow_size = FullscreenUI::LayoutScale(2.0f);
-  const float rounding = FullscreenUI::LayoutScale(20.0f);
-  const float min_rounded_width = rounding * 2.0f;
-
-  ImFont*& font = UIStyle.Font;
-  const float& title_font_size = UIStyle.LargeFontSize;
-  const float& title_font_weight = UIStyle.BoldFontWeight;
-  const float& text_font_size = UIStyle.MediumFontSize;
-  const float& text_font_weight = UIStyle.NormalFontWeight;
-  const float& note_font_size = UIStyle.MediumFontSize;
-  const float& note_font_weight = UIStyle.BoldFontWeight;
-
-  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
-  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
-
-  for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
+ImVec2 FullscreenUI::NotificationLayout::GetFixedPosition(float width, float height)
+{
+  switch (m_location)
   {
-    Notification& notif = s_state.notifications[index];
-    const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.start_time));
-    if (time_passed >= notif.duration)
+    case NotificationLocation::TopLeft:
     {
-      s_state.notifications.erase(s_state.notifications.begin() + index);
-      continue;
+      const ImVec2 pos = ImVec2(m_current_position.x, m_current_position.y);
+      m_current_position.y += height + m_spacing;
+      return pos;
     }
 
-    // place note to the right of the title
-    const ImVec2 note_size = notif.note.empty() ? ImVec2() :
-                                                  font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX, 0.0f,
-                                                                      IMSTR_START_END(notif.note));
-    const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
-                                                  max_text_width - note_size.x, IMSTR_START_END(notif.title));
-    const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
-                                                 IMSTR_START_END(notif.text));
-
-    const float box_width =
-      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
-                 ImCeil(std::max(title_size.x + (notif.note.empty() ? 0.0f : (larger_horizontal_spacing + note_size.x)),
-                                 text_size.x)),
-               min_width);
-    const float box_height =
-      std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
-
-    float opacity = 1.0f;
-    float box_start = position.x;
-    if (time_passed < NOTIFICATION_APPEAR_ANIMATION_TIME)
+    case NotificationLocation::TopCenter:
     {
-      const float pct = time_passed / NOTIFICATION_APPEAR_ANIMATION_TIME;
-      const float eased_pct = Easing::OutExpo(pct);
-      box_start = ImFloor(position.x - (box_width * 0.2f * (1.0f - eased_pct)));
-      opacity = pct;
-    }
-    else if (time_passed >= (notif.duration - NOTIFICATION_DISAPPEAR_ANIMATION_TIME))
-    {
-      const float pct = (notif.duration - time_passed) / NOTIFICATION_DISAPPEAR_ANIMATION_TIME;
-      const float eased_pct = Easing::OutExpo(pct);
-      box_start = ImFloor(position.x - (box_width * 0.2f * (1.0f - eased_pct)));
-      opacity = eased_pct;
+      const ImVec2 pos = ImVec2(ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f), m_current_position.y);
+      m_current_position.y += height + m_spacing;
+      return pos;
     }
 
-    const float expected_y = position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f);
-    float actual_y = notif.last_y;
-    if (notif.target_y != expected_y)
+    case NotificationLocation::TopRight:
     {
-      notif.move_time = current_time;
-      notif.target_y = expected_y;
-      notif.last_y = (notif.last_y < 0.0f) ? expected_y : notif.last_y;
-      actual_y = notif.last_y;
+      const ImVec2 pos = ImVec2(m_current_position.x - width, m_current_position.y);
+      m_current_position.y += height + m_spacing;
+      return pos;
     }
-    else if (actual_y != expected_y)
+
+    case NotificationLocation::BottomLeft:
     {
-      const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.move_time));
-      if (time_since_move >= MOVE_DURATION)
+      const ImVec2 pos = ImVec2(m_current_position.x, m_current_position.y - height);
+      m_current_position.y -= height + m_spacing;
+      return pos;
+    }
+
+    case NotificationLocation::BottomCenter:
+    {
+      const ImVec2 pos = ImVec2(ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f), m_current_position.y - height);
+      m_current_position.y -= height + m_spacing;
+      return pos;
+    }
+
+    case NotificationLocation::BottomRight:
+    {
+      const ImVec2 pos = ImVec2(m_current_position.x - width, m_current_position.y - height);
+      m_current_position.y -= height + m_spacing;
+      return pos;
+    }
+
+      DefaultCaseIsUnreachable();
+  }
+}
+
+std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float width, float height, bool active,
+                                                                           float anim_coeff, float width_coeff)
+{
+  switch (m_location)
+  {
+    case NotificationLocation::TopLeft:
+    case NotificationLocation::BottomLeft:
+    case NotificationLocation::TopRight:
+    case NotificationLocation::BottomRight:
+    {
+      float opacity;
+      ImVec2 pos;
+      if (m_location == NotificationLocation::TopLeft || m_location == NotificationLocation::BottomLeft)
       {
-        notif.move_time = current_time;
-        notif.last_y = notif.target_y;
-        actual_y = notif.last_y;
+        if (anim_coeff != 1.0f)
+        {
+          if (active)
+          {
+            const float eased_pct = Easing::OutExpo(anim_coeff);
+            pos.x = ImFloor(m_current_position.x - (width * width_coeff * (1.0f - eased_pct)));
+            opacity = anim_coeff;
+          }
+          else
+          {
+            const float eased_pct = Easing::OutExpo(anim_coeff);
+            pos.x = ImFloor(m_current_position.x - (width * width_coeff * (1.0f - eased_pct)));
+            opacity = eased_pct;
+          }
+        }
+        else
+        {
+          pos.x = m_current_position.x;
+          opacity = 1.0f;
+        }
       }
       else
       {
-        const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
-        actual_y = notif.last_y - ((notif.last_y - notif.target_y) * frac);
+        pos.x = m_current_position.x - width;
+        if (anim_coeff != 1.0f)
+        {
+          if (active)
+          {
+            const float eased_pct = std::clamp(Easing::OutExpo(anim_coeff), 0.0f, 1.0f);
+            pos.x = ImFloor(pos.x + (width * width_coeff * (1.0f - eased_pct)));
+            opacity = anim_coeff;
+          }
+          else
+          {
+            const float eased_pct = std::clamp(Easing::InExpo(anim_coeff), 0.0f, 1.0f);
+            pos.x = ImFloor(pos.x + (width * width_coeff * (1.0f - eased_pct)));
+            opacity = eased_pct;
+          }
+        }
+        else
+        {
+          opacity = 1.0f;
+        }
       }
-    }
 
-    const ImVec2 box_min(box_start, actual_y);
-    const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
-    const float background_opacity = opacity * 0.95f;
-
-    ImDrawList* const dl = ImGui::GetForegroundDrawList();
-    const u32 left_background_color32 = ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity));
-    const u32 right_background_color32 =
-      ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
-                                         (box_width - min_rounded_width) / (max_width - min_rounded_width)),
-                                  background_opacity));
-
-    dl->AddRectFilled(box_min, ImVec2(box_min.x + rounding, box_max.y), left_background_color32, rounding,
-                      ImDrawFlags_RoundCornersLeft);
-    dl->AddRectFilledMultiColor(ImVec2(box_min.x + rounding, box_min.y), ImVec2(box_max.x - rounding, box_max.y),
-                                left_background_color32, right_background_color32, right_background_color32,
-                                left_background_color32);
-    dl->AddRectFilled(ImVec2(box_max.x - rounding, box_min.y), box_max, right_background_color32, rounding,
-                      ImDrawFlags_RoundCornersRight);
-
-    const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
-    const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
-    if (!notif.badge_path.empty())
-    {
-      GPUTexture* tex = GetCachedTexture(notif.badge_path, static_cast<u32>(badge_size), static_cast<u32>(badge_size));
-      if (tex)
+      if (m_location == NotificationLocation::TopLeft || m_location == NotificationLocation::TopRight)
       {
-        dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
+        pos.y = m_current_position.y;
+        m_current_position.y = m_current_position.y + height + m_spacing;
       }
+      else
+      {
+        pos.y = m_current_position.y - height;
+        m_current_position.y = m_current_position.y - height - m_spacing;
+      }
+
+      return std::make_pair(pos, opacity);
     }
 
-    const u32 title_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
-    const u32 text_col = ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity));
-
-    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
-    const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
-    RenderShadowedTextClipped(dl, font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
-                              notif.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width - note_size.x, &title_bb);
-
-    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing);
-    const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
-    RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
-                              notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
-
-    if (!notif.note.empty())
+    case NotificationLocation::TopCenter:
     {
-      const ImVec2 note_pos =
-        ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
-      const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
-      RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
-                                notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
+      float opacity;
+      ImVec2 pos;
+
+      pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
+      pos.y = m_current_position.y;
+      if (anim_coeff != 1.0f)
+      {
+        if (active)
+        {
+          const float eased_pct = std::clamp(Easing::OutExpo(anim_coeff), 0.0f, 1.0f);
+          // pos.x = ImFloor(pos.x - (width * width_coeff * (1.0f - eased_pct)));
+          pos.y = ImFloor(pos.y - (height * width_coeff * (1.0f - eased_pct)));
+          opacity = anim_coeff;
+        }
+        else
+        {
+          const float eased_pct = std::clamp(Easing::InExpo(anim_coeff), 0.0f, 1.0f);
+          // pos.x = ImFloor(pos.x + (width * width_coeff * (1.0f - eased_pct)));
+          pos.y = ImFloor(pos.y - (height * width_coeff * (1.0f - eased_pct)));
+          opacity = eased_pct;
+        }
+      }
+      else
+      {
+        opacity = 1.0f;
+      }
+
+      m_current_position.y = m_current_position.y + height + m_spacing;
+
+      return std::make_pair(pos, opacity);
     }
 
-    position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
-    index++;
+    case NotificationLocation::BottomCenter:
+    {
+      float opacity;
+      ImVec2 pos;
+
+      pos.x = ImFloor((ImGui::GetIO().DisplaySize.x - width) * 0.5f);
+      pos.y = m_current_position.y - height;
+      if (anim_coeff != 1.0f)
+      {
+        if (active)
+        {
+          const float eased_pct = std::clamp(Easing::OutExpo(anim_coeff), 0.0f, 1.0f);
+          // pos.x = ImFloor(pos.x - (width * width_coeff * (1.0f - eased_pct)));
+          pos.y = ImFloor(pos.y + (height * width_coeff * (1.0f - eased_pct)));
+          opacity = anim_coeff;
+        }
+        else
+        {
+          const float eased_pct = std::clamp(Easing::InExpo(anim_coeff), 0.0f, 1.0f);
+          // pos.x = ImFloor(pos.x + (width * width_coeff * (1.0f - eased_pct)));
+          pos.y = ImFloor(pos.y + (height * width_coeff * (1.0f - eased_pct)));
+          opacity = eased_pct;
+        }
+      }
+      else
+      {
+        opacity = 1.0f;
+      }
+
+      m_current_position.y = m_current_position.y - height - m_spacing;
+
+      return std::make_pair(pos, opacity);
+    }
+
+      DefaultCaseIsUnreachable();
   }
+}
+
+std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float width, float height, bool active,
+                                                                           float time, float in_duration,
+                                                                           float out_duration, float width_coeff)
+{
+  const float anim_coeff = active ? std::min(time / in_duration, 1.0f) : std::min(time / out_duration, 1.0f);
+  return GetNextPosition(width, height, active, anim_coeff, width_coeff);
+}
+
+std::pair<ImVec2, float> FullscreenUI::NotificationLayout::GetNextPosition(float width, float height, float time_passed,
+                                                                           float total_duration, float in_duration,
+                                                                           float out_duration, float width_coeff)
+{
+  const bool active = (time_passed < (total_duration - out_duration));
+  const float anim_coeff =
+    active ? std::min(time_passed / in_duration, 1.0f) : std::max((total_duration - time_passed) / out_duration, 0.0f);
+  return GetNextPosition(width, height, active, anim_coeff, width_coeff);
 }
 
 void FullscreenUI::ShowToast(OSDMessageType type, std::string title, std::string message)
@@ -5230,7 +5264,7 @@ void FullscreenUI::ShowToast(OSDMessageType type, std::string title, std::string
     UpdateNotificationsRunIdle();
 }
 
-void FullscreenUI::DrawToast()
+void FullscreenUI::DrawToast(float& current_y)
 {
   if (s_state.toast_title.empty() && s_state.toast_message.empty())
     return;
@@ -5259,9 +5293,7 @@ void FullscreenUI::DrawToast()
   const float message_font_weight = UIStyle.NormalFontWeight;
   const float padding = LayoutScale(20.0f);
   const float total_padding = padding * 2.0f;
-  const float margin = LayoutScale(20.0f + (s_state.fullscreen_footer_text.empty() ? 0.0f : LAYOUT_FOOTER_HEIGHT));
   const float spacing = s_state.toast_title.empty() ? 0.0f : LayoutScale(10.0f);
-  const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const ImVec2 title_size = s_state.toast_title.empty() ?
                               ImVec2(0.0f, 0.0f) :
                               title_font->CalcTextSizeA(title_font_size, title_font_weight, FLT_MAX, max_width,
@@ -5273,7 +5305,7 @@ void FullscreenUI::DrawToast()
   const ImVec2 comb_size(std::max(title_size.x, message_size.x), title_size.y + spacing + message_size.y);
 
   const ImVec2 box_size(comb_size.x + total_padding, comb_size.y + total_padding);
-  const ImVec2 box_pos((display_size.x - box_size.x) * 0.5f, (display_size.y - margin - box_size.y));
+  const ImVec2 box_pos((ImGui::GetIO().DisplaySize.x - box_size.x) * 0.5f, current_y - box_size.y);
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
   dl->AddRectFilled(box_pos, box_pos + box_size,

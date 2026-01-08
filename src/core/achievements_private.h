@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -9,8 +9,20 @@
 
 #include <span>
 #include <string>
+#include <vector>
 
 namespace Achievements {
+
+static constexpr float INDICATOR_FADE_IN_TIME = 0.2f;
+static constexpr float INDICATOR_FADE_OUT_TIME = 0.4f;
+
+struct LeaderboardTrackerIndicator
+{
+  u32 tracker_id;
+  std::string text;
+  float time;
+  bool active;
+};
 
 struct ActiveChallengeIndicator
 {
@@ -21,12 +33,22 @@ struct ActiveChallengeIndicator
   bool active;
 };
 
+struct AchievementProgressIndicator
+{
+  const rc_client_achievement_t* achievement;
+  std::string badge_path;
+  float time;
+  bool active;
+};
+
 /// Returns the rc_client instance. Should have the lock held.
 rc_client_t* GetClient();
 
 const rc_client_user_game_summary_t& GetGameSummary();
 
-std::span<const ActiveChallengeIndicator> GetActiveChallengeIndicators();
+std::vector<LeaderboardTrackerIndicator>& GetLeaderboardTrackerIndicators();
+std::vector<ActiveChallengeIndicator>& GetActiveChallengeIndicators();
+std::optional<AchievementProgressIndicator>& GetActiveProgressIndicator();
 
 std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked,
                                     bool download_if_missing = true);

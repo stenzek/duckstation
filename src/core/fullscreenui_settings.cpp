@@ -2229,9 +2229,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   // have to queue because we're holding the settings lock, and UpdateWidgetsSettings() reads it
   if (widgets_settings_changed)
   {
-    Host::RunOnCoreThread([]() {
-      GPUThread::RunOnThread(&FullscreenUI::UpdateWidgetsSettings);
-    });
+    Host::RunOnCoreThread([]() { GPUThread::RunOnThread(&FullscreenUI::UpdateWidgetsSettings); });
   }
 
   MenuHeading(FSUI_VSTR("Behavior"));
@@ -4830,6 +4828,8 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
               "tracked by RetroAchievements."),
     "Cheevos", "UnofficialTestMode", false, enabled);
 
+  MenuHeading(FSUI_VSTR("Notifications"));
+
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_BELL, "Achievement Notifications"),
     FSUI_VSTR("Displays popup messages on events such as achievement unlocks and leaderboard submissions."), "Cheevos",
@@ -4837,26 +4837,39 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIST_OL, "Leaderboard Notifications"),
                     FSUI_VSTR("Displays popup messages when starting, submitting, or failing a leaderboard challenge."),
                     "Cheevos", "LeaderboardNotifications", true, enabled);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_CLOCK, "Leaderboard Trackers"),
-    FSUI_VSTR("Shows a timer in the bottom-right corner of the screen when leaderboard challenges are active."),
-    "Cheevos", "LeaderboardTrackers", true, enabled);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CLOCK, "Leaderboard Trackers"),
+                    FSUI_VSTR("Shows a timer in the selected location when leaderboard challenges are active."),
+                    "Cheevos", "LeaderboardTrackers", true, enabled);
   DrawToggleSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_MUSIC, "Sound Effects"),
     FSUI_VSTR("Plays sound effects for events such as achievement unlocks and leaderboard submissions."), "Cheevos",
     "SoundEffects", true, enabled);
-  DrawToggleSetting(
-    bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),
-    FSUI_VSTR(
-      "Shows a popup in the lower-right corner of the screen when progress towards a measured achievement changes."),
-    "Cheevos", "ProgressIndicators", true, enabled);
+
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_ENVELOPE, "Notification Location"),
+                  FSUI_VSTR("Selects the screen location for achievement and leaderboard notifications."), "Cheevos",
+                  "NotificationLocation", Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION,
+                  &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
+                  &Settings::GetNotificationLocationDisplayName, NotificationLocation::MaxCount, enabled);
+
+  MenuHeading(FSUI_VSTR("Progress Tracking"));
+
   DrawEnumSetting(
     bsi, FSUI_ICONVSTR(ICON_FA_TEMPERATURE_ARROW_UP, "Challenge Indicators"),
-    FSUI_VSTR("Shows a notification or icons in the lower-right corner of the screen when a challenge/primed "
-              "achievement is active."),
+    FSUI_VSTR("Shows a notification or icons in the selected location when a challenge/primed achievement is active."),
     "Cheevos", "ChallengeIndicatorMode", Settings::DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE,
     &Settings::ParseAchievementChallengeIndicatorMode, &Settings::GetAchievementChallengeIndicatorModeName,
     &Settings::GetAchievementChallengeIndicatorModeDisplayName, AchievementChallengeIndicatorMode::MaxCount, enabled);
+
+  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_LOCATION_DOT, "Indicator Location"),
+                  FSUI_VSTR("Selects the screen location for challenge/progress indicators, and leaderboard trackers."),
+                  "Cheevos", "IndicatorLocation", Settings::DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION,
+                  &Settings::ParseNotificationLocation, &Settings::GetNotificationLocationName,
+                  &Settings::GetNotificationLocationDisplayName, NotificationLocation::MaxCount, enabled);
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_BARS_PROGRESS, "Progress Indicators"),
+    FSUI_VSTR("Shows a popup in the selected location when progress towards a measured achievement changes."),
+    "Cheevos", "ProgressIndicators", true, enabled);
 
   if (!IsEditingGameSettings(bsi))
   {

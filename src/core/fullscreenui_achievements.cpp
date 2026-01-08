@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "achievements_private.h"
@@ -11,6 +11,7 @@
 #include "util/translation.h"
 
 #include "common/assert.h"
+#include "common/easing.h"
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/time_helpers.h"
@@ -37,7 +38,28 @@ static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 // How long the last progress update is shown in the pause menu.
 static constexpr float PAUSE_MENU_PROGRESS_DISPLAY_TIME = 60.0f;
 
+// Notification animation times.
+static constexpr float NOTIFICATION_APPEAR_ANIMATION_TIME = 0.2f;
+static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
+
+static constexpr float CHALLENGE_INDICATOR_FADE_IN_TIME = 0.1f;
+static constexpr float CHALLENGE_INDICATOR_FADE_OUT_TIME = 0.3f;
+
 namespace {
+
+struct Notification
+{
+  std::string key;
+  std::string title;
+  std::string text;
+  std::string note;
+  std::string badge_path;
+  u64 start_time;
+  u64 move_time;
+  float duration;
+  float target_y;
+  float last_y;
+};
 
 struct PauseMenuAchievementInfo
 {
@@ -65,6 +87,10 @@ struct PauseMenuTimedMeasuredAchievementInfo : PauseMenuMeasuredAchievementInfo
 };
 
 } // namespace
+
+static void DrawNotifications(NotificationLayout& layout);
+static void DrawIndicators(NotificationLayout& layout);
+static void UpdateAchievementOverlaysRunIdle();
 
 static void AddSubsetInfo(const rc_client_subset_t* subset);
 static bool IsCoreSubsetOpen();
@@ -111,6 +137,8 @@ struct SubsetInfo
 
 struct AchievementsLocals
 {
+  std::vector<Notification> notifications;
+
   // Shared by both achievements and leaderboards, TODO: add all filter
   std::vector<SubsetInfo> subset_info_list;
   const SubsetInfo* open_subset = nullptr;
@@ -149,6 +177,8 @@ void FullscreenUI::ClearAchievementsState()
 
   CloseLeaderboard();
 
+  s_achievements_locals.notifications = {};
+
   s_achievements_locals.achievement_badge_paths = {};
 
   s_achievements_locals.leaderboard_user_icon_paths = {};
@@ -171,6 +201,448 @@ void FullscreenUI::ClearAchievementsState()
 
   s_achievements_locals.most_recent_unlock.reset();
   s_achievements_locals.achievement_nearest_completion.reset();
+
+  UpdateAchievementOverlaysRunIdle();
+}
+
+void FullscreenUI::DrawAchievementsOverlays()
+{
+  if (!Achievements::IsActive())
+    return;
+
+  const auto lock = Achievements::GetLock();
+
+  NotificationLayout layout(g_settings.achievements_notification_location);
+  DrawNotifications(layout);
+
+  if (Achievements::HasActiveGame())
+  {
+    // need to group them together if they're in the same location
+    if (g_settings.achievements_indicator_location != layout.GetLocation())
+      layout = NotificationLayout(g_settings.achievements_indicator_location);
+
+    DrawIndicators(layout);
+  }
+}
+
+void FullscreenUI::AddAchievementNotification(std::string key, float duration, std::string image_path,
+                                              std::string title, std::string text, std::string note)
+{
+  const bool prev_had_notifications = s_achievements_locals.notifications.empty();
+  const Timer::Value current_time = Timer::GetCurrentValue();
+
+  if (!key.empty())
+  {
+    for (auto it = s_achievements_locals.notifications.begin(); it != s_achievements_locals.notifications.end(); ++it)
+    {
+      if (it->key == key)
+      {
+        it->duration = duration;
+        it->title = std::move(title);
+        it->text = std::move(text);
+        it->note = std::move(note);
+        it->badge_path = std::move(image_path);
+
+        // Don't fade it in again
+        const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
+        it->start_time =
+          current_time - Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_APPEAR_ANIMATION_TIME));
+        return;
+      }
+    }
+  }
+
+  Notification notif;
+  notif.key = std::move(key);
+  notif.duration = duration;
+  notif.title = std::move(title);
+  notif.text = std::move(text);
+  notif.note = std::move(note);
+  notif.badge_path = std::move(image_path);
+  notif.start_time = current_time;
+  notif.move_time = current_time;
+  notif.target_y = -1.0f;
+  notif.last_y = -1.0f;
+  s_achievements_locals.notifications.push_back(std::move(notif));
+
+  if (!prev_had_notifications)
+    UpdateAchievementOverlaysRunIdle();
+}
+
+void FullscreenUI::DrawNotifications(NotificationLayout& layout)
+{
+  if (s_achievements_locals.notifications.empty())
+    return;
+
+  static constexpr float MOVE_DURATION = 0.5f;
+  const Timer::Value current_time = Timer::GetCurrentValue();
+
+  const float horizontal_padding = FullscreenUI::LayoutScale(20.0f);
+  const float vertical_padding = FullscreenUI::LayoutScale(15.0f);
+  const float horizontal_spacing = FullscreenUI::LayoutScale(10.0f);
+  const float larger_horizontal_spacing = FullscreenUI::LayoutScale(18.0f);
+  const float vertical_spacing = FullscreenUI::LayoutScale(4.0f);
+  const float badge_size = FullscreenUI::LayoutScale(48.0f);
+  const float min_width = FullscreenUI::LayoutScale(200.0f);
+  const float max_width = FullscreenUI::LayoutScale(600.0f);
+  const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
+  const float min_height = (vertical_padding * 2.0f) + badge_size;
+  const float rounding = FullscreenUI::LayoutScale(20.0f);
+  const float min_rounded_width = rounding * 2.0f;
+
+  ImFont*& font = UIStyle.Font;
+  const float& title_font_size = UIStyle.LargeFontSize;
+  const float& title_font_weight = UIStyle.BoldFontWeight;
+  const float& text_font_size = UIStyle.MediumFontSize;
+  const float& text_font_weight = UIStyle.NormalFontWeight;
+  const float& note_font_size = UIStyle.MediumFontSize;
+  const float& note_font_weight = UIStyle.BoldFontWeight;
+
+  const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+  const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+  ImDrawList* const dl = ImGui::GetForegroundDrawList();
+
+  for (auto iter = s_achievements_locals.notifications.begin(); iter != s_achievements_locals.notifications.end();)
+  {
+    Notification& notif = *iter;
+    const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.start_time));
+    if (time_passed >= notif.duration)
+    {
+      iter = s_achievements_locals.notifications.erase(iter);
+      continue;
+    }
+
+    // place note to the right of the title
+    const ImVec2 note_size = notif.note.empty() ? ImVec2() :
+                                                  font->CalcTextSizeA(note_font_size, note_font_weight, FLT_MAX, 0.0f,
+                                                                      IMSTR_START_END(notif.note));
+    const ImVec2 title_size = font->CalcTextSizeA(title_font_size, title_font_weight, max_text_width - note_size.x,
+                                                  max_text_width - note_size.x, IMSTR_START_END(notif.title));
+    const ImVec2 text_size = font->CalcTextSizeA(text_font_size, text_font_weight, max_text_width, max_text_width,
+                                                 IMSTR_START_END(notif.text));
+
+    const float box_width =
+      std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+                 ImCeil(std::max(title_size.x + (notif.note.empty() ? 0.0f : (larger_horizontal_spacing + note_size.x)),
+                                 text_size.x)),
+               min_width);
+    const float box_height =
+      std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
+
+    const auto& [expected_pos, opacity] =
+      layout.GetNextPosition(box_width, box_height, time_passed, notif.duration, NOTIFICATION_APPEAR_ANIMATION_TIME,
+                             NOTIFICATION_DISAPPEAR_ANIMATION_TIME, 0.2f);
+
+    float actual_y;
+    if (!layout.IsVerticalAnimation() || opacity == 1.0f)
+    {
+      actual_y = notif.last_y;
+      if (notif.target_y != expected_pos.y)
+      {
+        notif.move_time = current_time;
+        notif.target_y = expected_pos.y;
+        notif.last_y = (notif.last_y < 0.0f) ? expected_pos.y : notif.last_y;
+        actual_y = notif.last_y;
+      }
+      else if (actual_y != expected_pos.y)
+      {
+        const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.move_time));
+        if (time_since_move >= MOVE_DURATION)
+        {
+          notif.move_time = current_time;
+          notif.last_y = notif.target_y;
+          actual_y = notif.last_y;
+        }
+        else
+        {
+          const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
+          actual_y = notif.last_y - ((notif.last_y - notif.target_y) * frac);
+        }
+      }
+    }
+    else
+    {
+      actual_y = expected_pos.y;
+    }
+
+    const ImVec2 box_min(expected_pos.x, actual_y);
+    const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
+    const float background_opacity = opacity * 0.95f;
+
+    DrawRoundedGradientRect(
+      dl, box_min, box_max, ImGui::GetColorU32(ModAlpha(left_background_color, background_opacity)),
+      ImGui::GetColorU32(ModAlpha(ImLerp(left_background_color, right_background_color,
+                                         (box_width - min_rounded_width) / (max_width - min_rounded_width)),
+                                  background_opacity)),
+      rounding);
+
+    const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
+    const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
+    if (!notif.badge_path.empty())
+    {
+      GPUTexture* tex = GetCachedTexture(notif.badge_path, static_cast<u32>(badge_size), static_cast<u32>(badge_size));
+      if (tex)
+      {
+        dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
+      }
+    }
+
+    const u32 title_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+    const u32 text_col = ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity));
+
+    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
+    const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
+    RenderShadowedTextClipped(dl, font, title_font_size, title_font_weight, title_bb.Min, title_bb.Max, title_col,
+                              notif.title, &title_size, ImVec2(0.0f, 0.0f), max_text_width - note_size.x, &title_bb);
+
+    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing);
+    const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
+    RenderShadowedTextClipped(dl, font, text_font_size, text_font_weight, text_bb.Min, text_bb.Max, text_col,
+                              notif.text, &text_size, ImVec2(0.0f, 0.0f), max_text_width, &text_bb);
+
+    if (!notif.note.empty())
+    {
+      const ImVec2 note_pos =
+        ImVec2((box_min.x + box_width) - horizontal_padding - note_size.x, box_min.y + vertical_padding);
+      const ImRect note_bb = ImRect(note_pos, note_pos + note_size);
+      RenderShadowedTextClipped(dl, font, note_font_size, note_font_weight, note_bb.Min, note_bb.Max, title_col,
+                                notif.note, &note_size, ImVec2(0.0f, 0.0f), max_text_width, &note_bb);
+    }
+
+    ++iter;
+  }
+
+  // cleared?
+  if (s_achievements_locals.notifications.empty())
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive, false);
+}
+
+void FullscreenUI::DrawIndicators(NotificationLayout& layout)
+{
+  static constexpr float INDICATOR_WIDTH_COEFF = 0.3f;
+
+  static constexpr const float& font_size = UIStyle.MediumFontSize;
+  static constexpr const float& font_weight = UIStyle.BoldFontWeight;
+
+  static constexpr float bg_opacity = 0.8f;
+
+  const float spacing = LayoutScale(10.0f);
+  const float padding = LayoutScale(10.0f);
+  const float rounding = LayoutScale(10.0f);
+  const ImVec2 image_size = LayoutScale(50.0f, 50.0f);
+  const ImGuiIO& io = ImGui::GetIO();
+  ImDrawList* dl = ImGui::GetBackgroundDrawList();
+
+  if (std::vector<Achievements::ActiveChallengeIndicator>& indicators = Achievements::GetActiveChallengeIndicators();
+      !indicators.empty() &&
+      (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::PersistentIcon ||
+       g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon))
+  {
+    const bool use_time_remaining =
+      (g_settings.achievements_challenge_indicator_mode == AchievementChallengeIndicatorMode::TemporaryIcon);
+    const float x_advance = image_size.x + spacing;
+    const float total_width = image_size.x + (static_cast<float>(indicators.size() - 1) * x_advance);
+    ImVec2 current_position = layout.GetFixedPosition(total_width, image_size.y);
+
+    for (auto it = indicators.begin(); it != indicators.end();)
+    {
+      Achievements::ActiveChallengeIndicator& indicator = *it;
+      bool active = indicator.active;
+      if (use_time_remaining)
+      {
+        indicator.time_remaining = std::max(indicator.time_remaining - io.DeltaTime, 0.0f);
+        active = (indicator.time_remaining > 0.0f);
+      }
+
+      const float target_opacity = active ? 1.0f : 0.0f;
+      const float rate = active ? CHALLENGE_INDICATOR_FADE_IN_TIME : -CHALLENGE_INDICATOR_FADE_OUT_TIME;
+      indicator.opacity =
+        (indicator.opacity != target_opacity) ? ImSaturate(indicator.opacity + (io.DeltaTime / rate)) : target_opacity;
+
+      GPUTexture* badge = FullscreenUI::GetCachedTextureAsync(indicator.badge_path);
+      if (badge)
+      {
+        dl->AddImage(badge, current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, indicator.opacity)));
+      }
+
+      current_position.x += x_advance;
+
+      if (!indicator.active && indicator.opacity <= 0.01f)
+      {
+        DEV_LOG("Remove challenge indicator");
+        it = indicators.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+  }
+
+  if (std::optional<Achievements::AchievementProgressIndicator>& indicator = Achievements::GetActiveProgressIndicator();
+      indicator.has_value())
+  {
+    indicator->time += indicator->active ? io.DeltaTime : -io.DeltaTime;
+
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    const ImVec2 progress_image_size = LayoutScale(32.0f, 32.0f);
+    const std::string_view text = indicator->achievement->measured_progress;
+    const ImVec2 text_size = UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(text));
+    const float box_width = progress_image_size.x + text_size.x + spacing + padding * 2.0f;
+    const float box_height = progress_image_size.y + padding * 2.0f;
+
+    const auto& [box_min, opacity] = layout.GetNextPosition(
+      box_width, box_height, indicator->active, indicator->time, Achievements::INDICATOR_FADE_IN_TIME,
+      Achievements::INDICATOR_FADE_OUT_TIME, INDICATOR_WIDTH_COEFF);
+    const ImVec2 box_max = box_min + ImVec2(box_width, box_height);
+
+    DrawRoundedGradientRect(dl, box_min, box_max,
+                            ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                            ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+
+    GPUTexture* const badge = FullscreenUI::GetCachedTextureAsync(indicator->badge_path);
+    if (badge)
+    {
+      const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
+      dl->AddImage(badge, badge_pos, badge_pos + progress_image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                   ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
+    }
+
+    const ImVec2 text_pos =
+      box_min + ImVec2(padding + progress_image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
+    const ImRect text_clip_rect(text_pos, box_max);
+    RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight, text_pos, box_max,
+                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text, &text_size,
+                              ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
+
+    if (!indicator->active && opacity <= 0.01f)
+    {
+      DEV_LOG("Remove progress indicator");
+      indicator.reset();
+    }
+  }
+
+  ImVec2 position;
+  if (std::vector<Achievements::LeaderboardTrackerIndicator>& trackers =
+        Achievements::GetLeaderboardTrackerIndicators();
+      !trackers.empty())
+  {
+    const ImVec4 left_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 1.3f);
+    const ImVec4 right_background_color = DarkerColor(UIStyle.ToastBackgroundColor, 0.8f);
+    TinyString tstr;
+
+    const auto measure_tracker = [&tstr](const Achievements::LeaderboardTrackerIndicator& indicator) {
+      tstr.assign(ICON_FA_STOPWATCH " ");
+      for (u32 i = 0; i < indicator.text.length(); i++)
+      {
+        // 8 is typically the widest digit
+        if (indicator.text[i] >= '0' && indicator.text[i] <= '9')
+          tstr.append('8');
+        else
+          tstr.append(indicator.text[i]);
+      }
+
+      return UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, 0.0f, IMSTR_START_END(tstr));
+    };
+
+    const auto draw_tracker = [&padding, &rounding, &dl, &left_background_color, &right_background_color, &tstr,
+                               &measure_tracker](Achievements::LeaderboardTrackerIndicator& indicator,
+                                                 const ImVec2& pos, float opacity) {
+      const ImVec2 size = measure_tracker(indicator);
+      const float box_width = size.x + padding * 2.0f;
+      const float box_height = size.y + padding * 2.0f;
+      const ImRect box(pos, ImVec2(pos.x + box_width, pos.y + box_height));
+
+      DrawRoundedGradientRect(dl, box.Min, box.Max,
+                              ImGui::GetColorU32(ModAlpha(left_background_color, opacity * bg_opacity)),
+                              ImGui::GetColorU32(ModAlpha(right_background_color, opacity * bg_opacity)), rounding);
+
+      tstr.format(ICON_FA_STOPWATCH " {}", indicator.text);
+
+      const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+      RenderShadowedTextClipped(dl, UIStyle.Font, font_size, font_weight,
+                                ImVec2(box.Min.x + padding, box.Min.y + padding), box.Max, text_col, tstr, nullptr,
+                                ImVec2(0.0f, 0.0f), 0.0f, &box);
+
+      return size.x;
+    };
+
+    // animations are not currently handled for more than one tracker... but this should be rare
+    if (trackers.size() > 1)
+    {
+      float total_width = 0.0f;
+      float max_height = 0.0f;
+      for (const Achievements::LeaderboardTrackerIndicator& indicator : trackers)
+      {
+        const ImVec2 size = measure_tracker(indicator);
+        total_width += ((total_width > 0.0f) ? spacing : 0.0f) + size.x + padding * 2.0f;
+        max_height = std::max(max_height, size.y);
+      }
+
+      ImVec2 current_pos = layout.GetFixedPosition(total_width, max_height + padding * 2.0f);
+      for (auto it = trackers.begin(); it != trackers.end();)
+      {
+        Achievements::LeaderboardTrackerIndicator& indicator = *it;
+        indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
+
+        current_pos.x += draw_tracker(indicator, current_pos, 1.0f);
+
+        if (!indicator.active)
+        {
+          DEV_LOG("Remove tracker indicator");
+          it = trackers.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+    }
+    else
+    {
+      // don't need to precalc size here either :D
+      Achievements::LeaderboardTrackerIndicator& indicator = trackers.front();
+      indicator.time += indicator.active ? io.DeltaTime : -io.DeltaTime;
+
+      const ImVec2 size = measure_tracker(indicator);
+      const float box_width = size.x + padding * 2.0f;
+      const float box_height = size.y + padding * 2.0f;
+      const auto& [box_pos, opacity] = layout.GetNextPosition(
+        box_width, box_height, indicator.active, indicator.time, Achievements::INDICATOR_FADE_IN_TIME,
+        Achievements::INDICATOR_FADE_OUT_TIME, INDICATOR_WIDTH_COEFF);
+      draw_tracker(indicator, box_pos, opacity);
+
+      if (!indicator.active && opacity <= 0.01f)
+      {
+        DEV_LOG("Remove tracker indicator");
+        trackers.clear();
+      }
+    }
+  }
+}
+
+void FullscreenUI::UpdateAchievementOverlaysRunIdle()
+{
+  // early out if we're already on the GPU thread
+  if (GPUThread::IsOnThread())
+  {
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive,
+                                !s_achievements_locals.notifications.empty());
+    return;
+  }
+
+  // need to check it again once we're executing on the gpu thread, it could've changed since
+  GPUThread::RunOnThread([]() {
+    bool is_active;
+    {
+      const auto lock = Achievements::GetLock();
+      is_active = !s_achievements_locals.notifications.empty();
+    }
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::AchievementOverlaysActive, is_active);
+  });
 }
 
 const std::string& FullscreenUI::GetCachedAchievementBadgePath(const rc_client_achievement_t* achievement, bool locked)

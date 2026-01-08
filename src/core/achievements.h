@@ -192,9 +192,6 @@ bool DownloadGameIcons(ProgressCallback* progress, Error* error);
 /// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
 u32 GetPauseThrottleFrames();
 
-/// Draws ImGui overlays when not paused.
-void DrawGameOverlays();
-
 /// The name of the RetroAchievements icon, which can be used in notifications.
 extern const char* const RA_LOGO_ICON_NAME;
 

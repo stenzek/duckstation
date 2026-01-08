@@ -4,6 +4,7 @@
 #include "gpu_presenter.h"
 #include "core.h"
 #include "fullscreenui.h"
+#include "fullscreenui_private.h"
 #include "fullscreenui_widgets.h"
 #include "gpu.h"
 #include "gpu_backend.h"
@@ -1198,12 +1199,16 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
 
     ImGuiManager::RenderDebugWindows();
 
-    FullscreenUI::Render();
+    FullscreenUI::DrawAchievementsOverlays();
+
+    FullscreenUI::UploadAsyncTextures();
 
     if (backend)
       ImGuiManager::RenderTextOverlays(backend);
 
     ImGuiManager::RenderOverlayWindows();
+
+    FullscreenUI::Render();
 
     FullscreenUI::RenderOverlays();
 

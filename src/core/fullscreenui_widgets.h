@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "types.h"
+
 #include "util/translation.h"
 
 #include "common/small_string.h"
@@ -271,6 +273,8 @@ void EndLayout();
 /// Enqueues a sound effect, and prevents any other sound effects from being started this frame.
 void EnqueueSoundEffect(std::string_view sound_effect);
 
+float GetScreenBottomMargin();
+
 bool IsAnyFixedPopupDialogOpen();
 bool IsFixedPopupDialogOpen(std::string_view name);
 void OpenFixedPopupDialog(std::string_view name);
@@ -494,10 +498,6 @@ void CloseMessageDialog();
 std::unique_ptr<ProgressCallbackWithPrompt> OpenModalProgressDialog(std::string title,
                                                                     float window_unscaled_width = 500.0f);
 
-float GetNotificationVerticalPosition();
-float GetNotificationVerticalDirection();
-void SetNotificationVerticalPosition(float position, float direction);
-
 void OpenBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max, s32 value);
 void UpdateBackgroundProgressDialog(std::string_view str_id, std::string message, s32 min, s32 max, s32 value);
 void CloseBackgroundProgressDialog(std::string_view str_id);
@@ -515,8 +515,29 @@ bool IsLoadingScreenOpen();
 void CloseLoadingScreen();
 
 /// Notification and toast support.
-void AddNotification(std::string key, float duration, std::string image_path, std::string title, std::string text,
-                     std::string note);
+class NotificationLayout
+{
+public:
+  NotificationLayout(NotificationLocation location);
+
+  ALWAYS_INLINE NotificationLocation GetLocation() const { return m_location; }
+  bool IsVerticalAnimation() const;
+
+  ImVec2 GetFixedPosition(float width, float height);
+
+  // [position, opacity]
+  std::pair<ImVec2, float> GetNextPosition(float width, float height, bool active, float anim_coeff, float width_coeff);
+  std::pair<ImVec2, float> GetNextPosition(float width, float height, bool active, float time, float in_duration,
+                                           float out_duration, float width_coeff);
+  std::pair<ImVec2, float> GetNextPosition(float width, float height, float time_passed, float total_duration,
+                                           float in_duration, float out_duration, float width_coeff);
+
+private:
+  ImVec2 m_current_position;
+  float m_spacing;
+  NotificationLocation m_location;
+};
+
 void ShowToast(OSDMessageType type, std::string title, std::string message);
 
 // Wrapper for an animated popup dialog.

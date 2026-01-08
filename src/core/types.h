@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -223,6 +223,17 @@ enum class DisplayScreenshotFormat : u8
   JPEG,
   WebP,
   Count
+};
+
+enum class NotificationLocation : u8
+{
+  TopLeft,
+  TopCenter,
+  TopRight,
+  BottomLeft,
+  BottomCenter,
+  BottomRight,
+  MaxCount
 };
 
 enum class AchievementChallengeIndicatorMode : u8

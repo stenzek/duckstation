@@ -483,24 +483,14 @@ void FullscreenUI::Shutdown(bool preserve_fsui_state)
 
 void FullscreenUI::Render()
 {
-  UploadAsyncTextures();
-
   if (!s_locals.initialized)
-  {
-    // achievement overlays still need to get drawn
-    Achievements::DrawGameOverlays();
     return;
-  }
 
   // draw background before any overlays
   if (!GPUThread::HasGPUBackend() && s_locals.current_main_window != MainWindowType::None)
     DrawBackground();
 
   BeginLayout();
-
-  // Primed achievements must come first, because we don't want the pause screen to be behind them.
-  if (s_locals.current_main_window == MainWindowType::None)
-    Achievements::DrawGameOverlays();
 
   switch (s_locals.current_main_window)
   {

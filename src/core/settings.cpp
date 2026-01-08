@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settings.h"
@@ -503,11 +503,13 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_trackers = si.GetBoolValue("Cheevos", "LeaderboardTrackers", true);
   achievements_sound_effects = si.GetBoolValue("Cheevos", "SoundEffects", true);
   achievements_progress_indicators = si.GetBoolValue("Cheevos", "ProgressIndicators", true);
+  achievements_notification_location =
+    ParseNotificationLocation(si.GetStringValue("Cheevos", "NotificationLocation").c_str())
+      .value_or(DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION);
+  achievements_indicator_location = ParseNotificationLocation(si.GetStringValue("Cheevos", "IndicatorLocation").c_str())
+                                      .value_or(DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION);
   achievements_challenge_indicator_mode =
-    ParseAchievementChallengeIndicatorMode(
-      si.GetStringValue("Cheevos", "ChallengeIndicatorMode",
-                        GetAchievementChallengeIndicatorModeName(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE))
-        .c_str())
+    ParseAchievementChallengeIndicatorMode(si.GetStringValue("Cheevos", "ChallengeIndicatorMode").c_str())
       .value_or(DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE);
   achievements_notification_duration =
     Truncate8(std::min<u32>(si.GetUIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME),
@@ -829,6 +831,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Cheevos", "LeaderboardTrackers", achievements_leaderboard_trackers);
   si.SetBoolValue("Cheevos", "SoundEffects", achievements_sound_effects);
   si.SetBoolValue("Cheevos", "ProgressIndicators", achievements_progress_indicators);
+  si.SetStringValue("Cheevos", "NotificationLocation", GetNotificationLocationName(achievements_notification_location));
+  si.SetStringValue("Cheevos", "IndicatorLocation", GetNotificationLocationName(achievements_indicator_location));
   si.SetStringValue("Cheevos", "ChallengeIndicatorMode",
                     GetAchievementChallengeIndicatorModeName(achievements_challenge_indicator_mode));
   si.SetUIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
@@ -2340,6 +2344,45 @@ static_assert(s_display_osd_message_type_names.size() == static_cast<size_t>(OSD
 const char* Settings::GetDisplayOSDMessageTypeName(OSDMessageType type)
 {
   return s_display_osd_message_type_names[static_cast<size_t>(type)];
+}
+
+static constexpr const std::array s_notification_location_names = {
+  "TopLeft", "TopCenter", "TopRight", "BottomLeft", "BottomCenter", "BottomRight",
+};
+static_assert(s_notification_location_names.size() == static_cast<size_t>(NotificationLocation::MaxCount));
+static constexpr const std::array s_notification_location_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Top Left", "NotificationLocation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Top Center", "NotificationLocation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Top Right", "NotificationLocation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Bottom Left", "NotificationLocation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Bottom Center", "NotificationLocation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Bottom Right", "NotificationLocation"),
+};
+static_assert(s_notification_location_display_names.size() == static_cast<size_t>(NotificationLocation::MaxCount));
+
+std::optional<NotificationLocation> Settings::ParseNotificationLocation(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_notification_location_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<NotificationLocation>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetNotificationLocationName(NotificationLocation location)
+{
+  return s_notification_location_names[static_cast<size_t>(location)];
+}
+
+const char* Settings::GetNotificationLocationDisplayName(NotificationLocation location)
+{
+  return Host::TranslateToCString("Settings", s_notification_location_display_names[static_cast<size_t>(location)],
+                                  "NotificationLocation");
 }
 
 static constexpr const std::array s_achievement_challenge_indicator_mode_names = {

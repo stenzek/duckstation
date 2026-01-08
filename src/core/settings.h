@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -344,6 +344,8 @@ struct Settings : public GPUSettings
   bool achievements_leaderboard_trackers : 1 = true;
   bool achievements_sound_effects : 1 = true;
   bool achievements_progress_indicators : 1 = true;
+  NotificationLocation achievements_notification_location = DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION;
+  NotificationLocation achievements_indicator_location = DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION;
   AchievementChallengeIndicatorMode achievements_challenge_indicator_mode =
     DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE;
   u8 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
@@ -544,6 +546,10 @@ struct Settings : public GPUSettings
   static const char* GetDisplayScreenshotModeName(DisplayScreenshotMode mode);
   static const char* GetDisplayScreenshotModeDisplayName(DisplayScreenshotMode mode);
 
+  static std::optional<NotificationLocation> ParseNotificationLocation(const char* str);
+  static const char* GetNotificationLocationName(NotificationLocation location);
+  static const char* GetNotificationLocationDisplayName(NotificationLocation location);
+
   static std::optional<AchievementChallengeIndicatorMode> ParseAchievementChallengeIndicatorMode(const char* str);
   static const char* GetAchievementChallengeIndicatorModeName(AchievementChallengeIndicatorMode mode);
   static const char* GetAchievementChallengeIndicatorModeDisplayName(AchievementChallengeIndicatorMode mode);
@@ -609,6 +615,8 @@ struct Settings : public GPUSettings
 
   static constexpr AchievementChallengeIndicatorMode DEFAULT_ACHIEVEMENT_CHALLENGE_INDICATOR_MODE =
     AchievementChallengeIndicatorMode::Notification;
+  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_NOTIFICATION_LOCATION = NotificationLocation::TopLeft;
+  static constexpr NotificationLocation DEFAULT_ACHIEVEMENT_INDICATOR_LOCATION = NotificationLocation::BottomRight;
   static constexpr u8 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr u8 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 
