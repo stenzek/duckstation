@@ -26,13 +26,12 @@ private:
   void resetVolume(bool fast_forward);
 
   void onStretchModeChanged();
-
   void updateDriverNames();
   void queueUpdateDeviceNames();
   void updateLatencyLabel();
   void updateMinimumLatencyLabel();
   void updateVolumeLabel();
-  void onMinimalOutputLatencyChecked(Qt::CheckState state);
+  void onMinimalOutputLatencyToggled();
   void onOutputVolumeChanged(int new_value);
   void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);

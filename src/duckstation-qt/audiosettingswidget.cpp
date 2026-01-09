@@ -12,7 +12,6 @@
 
 #include "util/audio_stream.h"
 
-#include <bit>
 #include <cmath>
 
 #include "moc_audiosettingswidget.cpp"
@@ -51,17 +50,18 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useAAFilter, "Audio", "StretchUseAAFilter",
                                                AudioStreamParameters::DEFAULT_STRETCH_USE_AA_FILTER);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
+
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
   connect(m_ui.stretchMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onStretchModeChanged);
-  onStretchModeChanged();
-  updateDriverNames();
-
   connect(m_ui.outputLatencyMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateLatencyLabel);
   connect(m_ui.outputLatencyMinimal, &QCheckBox::checkStateChanged, this,
-          &AudioSettingsWidget::onMinimalOutputLatencyChecked);
+          [this]() { onMinimalOutputLatencyToggled(); });
   connect(m_ui.bufferMS, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
   connect(m_ui.sequenceLength, &QSlider::valueChanged, this, &AudioSettingsWidget::updateMinimumLatencyLabel);
-  updateLatencyLabel();
+
+  updateDriverNames();
+  onStretchModeChanged();
+  onMinimalOutputLatencyToggled(); // also calls updateLatencyLabel()
 
   // for per-game, just use the normal path, since it needs to re-read/apply
   if (!dialog->isPerGameSettings())
@@ -350,7 +350,7 @@ void AudioSettingsWidget::updateVolumeLabel()
   m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
 }
 
-void AudioSettingsWidget::onMinimalOutputLatencyChecked(Qt::CheckState state)
+void AudioSettingsWidget::onMinimalOutputLatencyToggled()
 {
   const bool minimal = m_dialog->getEffectiveBoolValue("Audio", "OutputLatencyMinimal", false);
   m_ui.outputLatencyMS->setEnabled(!minimal);
