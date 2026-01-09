@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>674</width>
-    <height>524</height>
+    <width>600</width>
+    <height>488</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -147,13 +147,13 @@
         <item>
          <widget class="QSlider" name="achievementNotificationsDuration">
           <property name="minimum">
-           <number>3</number>
+           <number>1</number>
           </property>
           <property name="maximum">
            <number>30</number>
           </property>
           <property name="pageStep">
-           <number>1</number>
+           <number>5</number>
           </property>
           <property name="value">
            <number>5</number>
@@ -161,19 +161,16 @@
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>1</number>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="achievementNotificationsDurationLabel">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>5 seconds</string>
           </property>
@@ -193,13 +190,13 @@
         <item>
          <widget class="QSlider" name="leaderboardNotificationsDuration">
           <property name="minimum">
-           <number>3</number>
+           <number>1</number>
           </property>
           <property name="maximum">
            <number>30</number>
           </property>
           <property name="pageStep">
-           <number>1</number>
+           <number>5</number>
           </property>
           <property name="value">
            <number>5</number>
@@ -207,19 +204,16 @@
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>1</number>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="leaderboardNotificationsDurationLabel">
+          <property name="minimumSize">
+           <size>
+            <width>70</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>5 seconds</string>
           </property>
@@ -239,7 +233,7 @@
         <item>
          <widget class="QLabel" name="changeSoundsLink">
           <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
           <property name="openExternalLinks">
            <bool>true</bool>
@@ -314,8 +308,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>0</width>
+       <height>0</height>
       </size>
      </property>
     </spacer>
