@@ -162,13 +162,13 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.achievementNotificationsDurationLabel->setEnabled(notifications);
   m_ui.leaderboardNotificationsDuration->setEnabled(lb_notifications);
   m_ui.leaderboardNotificationsDurationLabel->setEnabled(lb_notifications);
-  m_ui.notificationLocationLabel->setEnabled(lb_notifications);
-  m_ui.notificationLocation->setEnabled(lb_notifications);
+  m_ui.notificationLocationLabel->setEnabled(enabled);
+  m_ui.notificationLocation->setEnabled(enabled);
   m_ui.soundEffects->setEnabled(enabled);
   m_ui.challengeIndicatorMode->setEnabled(enabled);
   m_ui.challengeIndicatorModeLabel->setEnabled(enabled);
-  m_ui.indicatorLocationLabel->setEnabled(lb_notifications);
-  m_ui.indicatorLocation->setEnabled(lb_notifications);
+  m_ui.indicatorLocationLabel->setEnabled(enabled);
+  m_ui.indicatorLocation->setEnabled(enabled);
   m_ui.progressIndicators->setEnabled(enabled);
   m_ui.leaderboardTrackers->setEnabled(enabled);
   m_ui.encoreMode->setEnabled(enabled);
