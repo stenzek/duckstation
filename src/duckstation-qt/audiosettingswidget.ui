@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>523</width>
-    <height>533</height>
+    <width>600</width>
+    <height>526</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -48,7 +48,7 @@
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBothSides</enum>
+         <enum>QSlider::TickPosition::TicksBelow</enum>
         </property>
         <property name="tickInterval">
          <number>10</number>
@@ -57,17 +57,17 @@
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="volumeLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+        <property name="minimumSize">
+         <size>
+          <width>36</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>100%</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -100,7 +100,7 @@
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBothSides</enum>
+         <enum>QSlider::TickPosition::TicksBelow</enum>
         </property>
         <property name="tickInterval">
          <number>10</number>
@@ -109,17 +109,17 @@
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="fastForwardVolumeLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+        <property name="minimumSize">
+         <size>
+          <width>36</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>100%</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignCenter</set>
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -245,15 +245,21 @@
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
-           <number>20</number>
+           <number>25</number>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="bufferMSLabel">
+          <property name="minimumSize">
+           <size>
+            <width>46</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>0 ms</string>
           </property>
@@ -292,15 +298,21 @@
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBothSides</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
-           <number>20</number>
+           <number>25</number>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="outputLatencyLabel">
+          <property name="minimumSize">
+           <size>
+            <width>46</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>0 ms</string>
           </property>
@@ -318,7 +330,7 @@
       <item row="5" column="0" colspan="3">
        <widget class="QLabel" name="bufferingLabel">
         <property name="text">
-         <string>Maximum latency: 0 frames (0.00ms)</string>
+         <string>Maximum Latency: 0 ms (0 ms stretch + 0 ms buffer + 0 ms output)</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -365,8 +377,17 @@
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="sequenceLengthLabel">
+        <property name="minimumSize">
+         <size>
+          <width>44</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>0 ms</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -411,8 +432,17 @@
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="seekWindowSizeLabel">
+        <property name="minimumSize">
+         <size>
+          <width>44</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>0 ms</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -457,8 +487,17 @@
       </item>
       <item row="2" column="2">
        <widget class="QLabel" name="overlapLabel">
+        <property name="minimumSize">
+         <size>
+          <width>44</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>0 ms</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
        </widget>
       </item>

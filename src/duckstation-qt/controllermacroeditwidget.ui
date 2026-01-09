@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>691</width>
-    <height>433</height>
+    <width>640</width>
+    <height>436</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0">
@@ -28,11 +28,8 @@
      <property name="title">
       <string>Binds/Buttons</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
-       <widget class="QListWidget" name="bindList"/>
-      </item>
-      <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</string>
@@ -42,6 +39,9 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QListWidget" name="bindList"/>
+      </item>
      </layout>
     </widget>
    </item>
@@ -50,7 +50,7 @@
      <property name="title">
       <string>Pressure</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -77,16 +77,16 @@
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>10</number>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="pressureValue">
+          <property name="minimumSize">
+           <size>
+            <width>36</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>100%</string>
           </property>
@@ -102,8 +102,8 @@
      <property name="title">
       <string>Trigger</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
         <item>
          <widget class="QLabel" name="label">
@@ -127,14 +127,14 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item>
        <widget class="InputBindingWidget" name="trigger">
         <property name="text">
          <string notr="true">PushButton</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item>
        <layout class="QHBoxLayout" name="deadzoneLayout" stretch="0,1,0">
         <item>
          <widget class="QLabel" name="label_4">
@@ -157,16 +157,16 @@
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
-          <property name="tickPosition">
-           <enum>QSlider::TickPosition::TicksBelow</enum>
-          </property>
-          <property name="tickInterval">
-           <number>10</number>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="deadzoneValue">
+          <property name="minimumSize">
+           <size>
+            <width>36</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="text">
            <string>100%</string>
           </property>
@@ -182,8 +182,8 @@
      <property name="title">
       <string>Frequency</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0">
         <item>
          <widget class="QLabel" name="frequencyText">

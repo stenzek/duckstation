@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>492</height>
+    <width>600</width>
+    <height>487</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -125,7 +125,7 @@
         <item>
          <widget class="QLabel" name="cpuClockSpeedLabel">
           <property name="text">
-           <string>100% (effective 33.3mhz)</string>
+           <string>100% (33.87MHz)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -142,6 +142,12 @@
         <property name="maximum">
          <number>1000</number>
         </property>
+        <property name="singleStep">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>50</number>
+        </property>
         <property name="value">
          <number>100</number>
         </property>
@@ -149,7 +155,7 @@
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBothSides</enum>
+         <enum>QSlider::TickPosition::TicksBelow</enum>
         </property>
         <property name="tickInterval">
          <number>50</number>

@@ -53,9 +53,6 @@
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
-        <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBelow</enum>
-        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -66,17 +63,8 @@
         <property name="maximum">
          <number>100</number>
         </property>
-        <property name="value">
-         <number>1</number>
-        </property>
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TickPosition::TicksBelow</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
         </property>
        </widget>
       </item>
@@ -89,6 +77,12 @@
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="sensitivityValue">
+        <property name="minimumSize">
+         <size>
+          <width>36</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>100%</string>
         </property>
@@ -103,6 +97,12 @@
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="deadzoneValue">
+        <property name="minimumSize">
+         <size>
+          <width>36</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>100%</string>
         </property>
