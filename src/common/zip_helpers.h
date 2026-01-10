@@ -17,10 +17,10 @@
 
 namespace ZipHelpers {
 
-inline void SetErrorObject(Error* error, std::string_view msg, zip_error_t* ze)
+inline void SetErrorObject(Error* error, std::string_view msg, zip_error_t* ze, bool finalize = true)
 {
   Error::SetStringFmt(error, "{}{}", msg, ze ? zip_error_strerror(ze) : "UNKNOWN");
-  if (ze)
+  if (finalize && ze)
     zip_error_fini(ze);
 }
 
@@ -131,7 +131,7 @@ inline ManagedZipFileT OpenManagedFileInZip(zip_t* zip, const char* filename, zi
 {
   zip_file_t* zf = zip_fopen(zip, filename, flags);
   if (!zf)
-    SetErrorObject(error, "zip_fopen() failed: ", zip_get_error(zip));
+    SetErrorObject(error, "zip_fopen() failed: ", zip_get_error(zip), false);
   return ManagedZipFileT(zf);
 }
 
@@ -140,7 +140,7 @@ inline ManagedZipFileT OpenManagedFileIndexInZip(zip_t* zip, zip_uint64_t index,
 {
   zip_file_t* zf = zip_fopen_index(zip, index, flags);
   if (!zf)
-    SetErrorObject(error, "zip_fopen_index() failed: ", zip_get_error(zip));
+    SetErrorObject(error, "zip_fopen_index() failed: ", zip_get_error(zip), false);
   return ManagedZipFileT(zf);
 }
 
@@ -164,7 +164,7 @@ inline std::optional<T> ReadFileInZipToContainer(zip_t* zip, const char* name, b
         ret->resize(static_cast<size_t>(zst.size));
         if (zip_fread(zf, ret->data(), ret->size()) != static_cast<zip_int64_t>(ret->size()))
         {
-          SetErrorObject(error, "zip_fread() failed: ", zip_get_error(zip));
+          SetErrorObject(error, "zip_fread() failed: ", zip_get_error(zip), false);
           ret.reset();
         }
 
@@ -173,12 +173,12 @@ inline std::optional<T> ReadFileInZipToContainer(zip_t* zip, const char* name, b
     }
     else
     {
-      SetErrorObject(error, "zip_stat_index() failed: ", zip_get_error(zip));
+      SetErrorObject(error, "zip_stat_index() failed: ", zip_get_error(zip), false);
     }
   }
   else
   {
-    SetErrorObject(error, "zip_name_locate() failed: ", zip_get_error(zip));
+    SetErrorObject(error, "zip_name_locate() failed: ", zip_get_error(zip), false);
   }
 
   return ret;
