@@ -522,7 +522,7 @@ bool CompressHelpers::DecompressHelper(ByteBuffer& ret, CompressType type, T dat
 
     case CompressType::Deflate:
     {
-      if (!decompressed_size.has_value() && !(decompressed_size = GetZstdDecompressedSize(data, error)).has_value())
+      if (!decompressed_size.has_value() && !(decompressed_size = GetDeflateDecompressedSize(data, error)).has_value())
         return false;
 
       ret.resize(decompressed_size.value());
