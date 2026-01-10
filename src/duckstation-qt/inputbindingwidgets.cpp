@@ -207,7 +207,8 @@ bool InputBindingWidget::event(QEvent* event)
   if (event->type() == QEvent::MouseButtonRelease)
   {
     QMouseEvent* mev = static_cast<QMouseEvent*>(event);
-    if (mev->button() == Qt::LeftButton && mev->modifiers() & Qt::ShiftModifier)
+    if (mev->button() == Qt::LeftButton && mev->modifiers() & Qt::ShiftModifier &&
+        !InputBindingInfo::IsEffectType(m_bind_type))
     {
       openDialog();
       return false;
