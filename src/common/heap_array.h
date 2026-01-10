@@ -272,7 +272,13 @@ public:
     std::swap(m_size, rhs.m_size);
   }
 
-  void resize(size_t new_size) { internal_resize(new_size, m_data, m_size); }
+  void resize(size_t new_size)
+  {
+    if (m_size == new_size)
+      return;
+
+    internal_resize(new_size, m_data, m_size);
+  }
 
   void deallocate()
   {
