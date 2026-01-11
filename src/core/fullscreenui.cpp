@@ -1699,9 +1699,9 @@ void FullscreenUI::DrawPauseMenu()
     }
 
     EndMenuButtons();
-
-    EndFullscreenWindow();
   }
+
+  EndFullscreenWindow();
 
   if (IsGamepadInputSource())
   {
