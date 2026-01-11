@@ -91,7 +91,6 @@ static void DrawPostProcessingSettingsPage();
 static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
 static void DrawControllerSettingsPage();
-static void DrawHotkeySettingsPage();
 static void DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock);
 static void DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::unique_lock<std::mutex>& settings_lock);
 static void DrawAdvancedSettingsPage();
@@ -207,9 +206,9 @@ struct SettingsLocals
   std::vector<std::string_view> game_cheat_groups;
   std::vector<PostProcessingStageInfo> postprocessing_stages;
   std::vector<const HotkeyInfo*> hotkey_list_cache;
+  s8 selected_controller_port = -1;
   bool settings_changed = false;
   bool game_settings_changed = false;
-  bool controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
   InputBindingDialog input_binding_dialog;
 };
 
@@ -1598,7 +1597,6 @@ void FullscreenUI::PopulateHotkeyList()
 void FullscreenUI::ClearSettingsState()
 {
   s_settings_locals.input_binding_dialog.ClearState();
-  std::memset(s_settings_locals.controller_macro_expanded, 0, sizeof(s_settings_locals.controller_macro_expanded));
   s_settings_locals.game_list_directories_cache = {};
   s_settings_locals.game_settings_entry.reset();
   s_settings_locals.game_settings_interface.reset();
@@ -1624,6 +1622,7 @@ void FullscreenUI::SwitchToSettings()
   s_settings_locals.game_cheats_list = {};
   s_settings_locals.enabled_game_cheat_cache = {};
   s_settings_locals.game_cheat_groups = {};
+  s_settings_locals.selected_controller_port = -1;
 
   PopulateGraphicsAdapterList();
   PopulateHotkeyList();
@@ -1681,6 +1680,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry, SettingsPa
     s_settings_locals.game_settings_entry->dbentry, s_settings_locals.game_settings_entry->serial, true, false);
   PopulatePatchesAndCheatsList();
   s_settings_locals.settings_page = page;
+  s_settings_locals.selected_controller_port = -1;
   SwitchToMainWindow(MainWindowType::Settings);
 }
 
@@ -1804,76 +1804,51 @@ void FullscreenUI::DrawSettingsWindow()
 
   const bool show_localized_titles = GameList::ShouldShowLocalizedTitles();
 
+  static constexpr const SettingsPage global_pages[] = {
+    SettingsPage::Interface,  SettingsPage::GameList,    SettingsPage::Console,        SettingsPage::Emulation,
+    SettingsPage::BIOS,       SettingsPage::Graphics,    SettingsPage::PostProcessing, SettingsPage::Audio,
+    SettingsPage::Controller, SettingsPage::MemoryCards, SettingsPage::Achievements,   SettingsPage::Advanced};
+  static constexpr const SettingsPage per_game_pages[] = {
+    SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
+    SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
+    SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
+  static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
+    {{FSUI_NSTR("Summary"), ICON_FA_FILE},
+     {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
+     {FSUI_NSTR("Game List Settings"), ICON_FA_LIST_UL},
+     {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
+     {FSUI_NSTR("Emulation Settings"), ICON_FA_GEAR},
+     {FSUI_NSTR("BIOS Settings"), ICON_PF_MICROCHIP},
+     {FSUI_NSTR("Controller Settings"), ICON_PF_GAMEPAD_ALT},
+     {FSUI_NSTR("Memory Card Settings"), ICON_PF_MEMORY_CARD},
+     {FSUI_NSTR("Graphics Settings"), ICON_PF_PICTURE},
+     {FSUI_NSTR("Post-Processing Settings"), ICON_FA_WAND_MAGIC_SPARKLES},
+     {FSUI_NSTR("Audio Settings"), ICON_PF_SOUND},
+     {FSUI_NSTR("Achievements Settings"), ICON_FA_TROPHY},
+     {FSUI_NSTR("Advanced Settings"), ICON_FA_TRIANGLE_EXCLAMATION},
+     {FSUI_NSTR("Patches"), ICON_PF_SPARKLING},
+     {FSUI_NSTR("Cheats"), ICON_PF_CHEATS}}};
+
+  const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
+  const u32 count =
+    (game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages))) -
+    BoolToUInt32(!ShouldShowAdvancedSettings());
+  const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
+  u32 index = 0;
+  for (u32 i = 0; i < count; i++)
+  {
+    if (pages[i] == s_settings_locals.settings_page)
+    {
+      index = i;
+      break;
+    }
+  }
+
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
                             ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z,
                                    s_settings_locals.settings_last_bg_alpha)))
   {
-    static constexpr const SettingsPage global_pages[] = {
-      SettingsPage::Interface,  SettingsPage::GameList, SettingsPage::Console,        SettingsPage::Emulation,
-      SettingsPage::BIOS,       SettingsPage::Graphics, SettingsPage::PostProcessing, SettingsPage::Audio,
-      SettingsPage::Controller, SettingsPage::Hotkey,   SettingsPage::MemoryCards,    SettingsPage::Achievements,
-      SettingsPage::Advanced};
-    static constexpr const SettingsPage per_game_pages[] = {
-      SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
-      SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
-      SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
-    static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
-      {{FSUI_NSTR("Summary"), ICON_FA_FILE},
-       {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
-       {FSUI_NSTR("Game List Settings"), ICON_FA_LIST_UL},
-       {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
-       {FSUI_NSTR("Emulation Settings"), ICON_FA_GEAR},
-       {FSUI_NSTR("BIOS Settings"), ICON_PF_MICROCHIP},
-       {FSUI_NSTR("Controller Settings"), ICON_PF_GAMEPAD_ALT},
-       {FSUI_NSTR("Hotkey Settings"), ICON_PF_KEYBOARD_ALT},
-       {FSUI_NSTR("Memory Card Settings"), ICON_PF_MEMORY_CARD},
-       {FSUI_NSTR("Graphics Settings"), ICON_PF_PICTURE},
-       {FSUI_NSTR("Post-Processing Settings"), ICON_FA_WAND_MAGIC_SPARKLES},
-       {FSUI_NSTR("Audio Settings"), ICON_PF_SOUND},
-       {FSUI_NSTR("Achievements Settings"), ICON_FA_TROPHY},
-       {FSUI_NSTR("Advanced Settings"), ICON_FA_TRIANGLE_EXCLAMATION},
-       {FSUI_NSTR("Patches"), ICON_PF_SPARKLING},
-       {FSUI_NSTR("Cheats"), ICON_PF_CHEATS}}};
-
-    const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
-    const u32 count =
-      (game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages))) -
-      BoolToUInt32(!ShouldShowAdvancedSettings());
-    const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
-    u32 index = 0;
-    for (u32 i = 0; i < count; i++)
-    {
-      if (pages[i] == s_settings_locals.settings_page)
-      {
-        index = i;
-        break;
-      }
-    }
-
     BeginNavBar();
-
-    if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
-    {
-      if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
-          ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
-      {
-        EnqueueSoundEffect(SFX_NAV_MOVE);
-        BeginTransition([page = pages[(index == 0) ? (count - 1) : (index - 1)]]() {
-          s_settings_locals.settings_page = page;
-          QueueResetFocus(FocusResetType::Other);
-        });
-      }
-      else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
-               ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) ||
-               ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
-      {
-        EnqueueSoundEffect(SFX_NAV_MOVE);
-        BeginTransition([page = pages[(index + 1) % count]]() {
-          s_settings_locals.settings_page = page;
-          QueueResetFocus(FocusResetType::Other);
-        });
-      }
-    }
 
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow();
@@ -1900,22 +1875,48 @@ void FullscreenUI::DrawSettingsWindow()
 
   EndFullscreenWindow();
 
-  // we have to do this here, because otherwise it uses target, and jumps a frame later.
-  // don't do it for popups opening/closing, otherwise we lose our position
-  if (IsFocusResetFromWindowChange())
-    ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
-
-  if (BeginFullscreenWindow(
-        ImVec2(0.0f, heading_size.y),
-        ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
-        TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
-        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
-               s_settings_locals.settings_last_bg_alpha),
-        0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+  const bool is_split_window = (s_settings_locals.settings_page == SettingsPage::Controller);
+  bool window_visible;
+  if (!is_split_window)
   {
+    // we have to do this here, because otherwise it uses target, and jumps a frame later.
+    // don't do it for popups opening/closing, otherwise we lose our position
+    if (IsFocusResetFromWindowChange())
+      ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
+
+    window_visible = BeginFullscreenWindow(
+      ImVec2(0.0f, heading_size.y),
+      ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
+      TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
+      ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
+             s_settings_locals.settings_last_bg_alpha),
+      0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+
     if (ImGui::IsWindowFocused() && WantsToCloseMenu())
       ReturnToPreviousWindow();
+  }
+  else
+  {
+    // split windows should have Y padding as well
+    window_visible = BeginFullscreenWindow(
+      ImVec2(0.0f, heading_size.y),
+      ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
+      TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
+      ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
+             s_settings_locals.settings_last_bg_alpha),
+      0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING));
 
+    // so the child windows get it
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,
+                          ModAlpha(UIStyle.BackgroundColor, s_settings_locals.settings_last_bg_alpha *
+                                                              s_settings_locals.settings_last_bg_alpha));
+
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && WantsToCloseMenu())
+      ReturnToPreviousWindow();
+  }
+
+  if (window_visible)
+  {
     auto lock = Core::GetSettingsLock();
 
     switch (s_settings_locals.settings_page)
@@ -1964,10 +1965,6 @@ void FullscreenUI::DrawSettingsWindow()
         DrawControllerSettingsPage();
         break;
 
-      case SettingsPage::Hotkey:
-        DrawHotkeySettingsPage();
-        break;
-
       case SettingsPage::Achievements:
         DrawAchievementsSettingsPage(lock);
         break;
@@ -1989,7 +1986,32 @@ void FullscreenUI::DrawSettingsWindow()
     }
   }
 
+  if (is_split_window)
+    ImGui::PopStyleColor(1);
+
   EndFullscreenWindow();
+
+  if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup) && !WasSplitWindowChanged())
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
+        ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
+    {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+      BeginTransition([page = pages[(index == 0) ? (count - 1) : (index - 1)]]() {
+        s_settings_locals.settings_page = page;
+        QueueResetFocus(FocusResetType::Other);
+      });
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
+             ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
+    {
+      EnqueueSoundEffect(SFX_NAV_MOVE);
+      BeginTransition([page = pages[(index + 1) % count]]() {
+        s_settings_locals.settings_page = page;
+        QueueResetFocus(FocusResetType::Other);
+      });
+    }
+  }
 
   if (IsGamepadInputSource())
   {
@@ -3112,92 +3134,23 @@ void FullscreenUI::BeginResetControllerSettings()
 
 void FullscreenUI::DrawControllerSettingsPage()
 {
-  BeginMenuButtons();
-
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
 
-  MenuHeading(FSUI_VSTR("Configuration"));
-  ResetFocusHere();
+  BeginInnerSplitWindow();
 
-  if (IsEditingGameSettings(bsi))
+  BeginSplitWindowSidebar(0.25f);
+
+  if (SplitWindowSidebarItem(FSUI_ICONVSTR(ICON_FA_GEARS, "Global Settings"),
+                             (s_settings_locals.selected_controller_port == -1)))
   {
-    if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEARS, "Per-Game Configuration"),
-                          FSUI_VSTR("Uses game-specific settings for controllers for this game."), "ControllerPorts",
-                          "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
-    {
-      // did we just enable per-game for the first time?
-      if (bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
-          !bsi->GetBoolValue("ControllerPorts", "GameSettingsInitialized", false))
-      {
-        bsi->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
-        CopyGlobalControllerSettingsToGame();
-      }
-    }
+    BeginTransition(DEFAULT_TRANSITION_TIME, []() { s_settings_locals.selected_controller_port = -1; });
+    FullscreenUI::FocusSplitWindowContent(true);
   }
-
-  if (IsEditingGameSettings(bsi) && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
-  {
-    // nothing to edit..
-    EndMenuButtons();
-    return;
-  }
-
-  if (IsEditingGameSettings(bsi))
-  {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_COPY, "Copy Global Settings"),
-                   FSUI_VSTR("Copies the global controller configuration to this game.")))
-    {
-      CopyGlobalControllerSettingsToGame();
-    }
-  }
-  else
-  {
-    if (MenuButton(FSUI_ICONVSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
-                   FSUI_VSTR("Resets all configuration to defaults (including bindings).")))
-    {
-      BeginResetControllerSettings();
-    }
-  }
-
-  if (MenuButton(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load Preset"),
-                 FSUI_VSTR("Replaces these settings with a previously saved controller preset.")))
-  {
-    DoLoadInputProfile();
-  }
-  if (MenuButton(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Save Preset"),
-                 FSUI_VSTR("Stores the current settings to a controller preset.")))
-  {
-    DoSaveInputProfile();
-  }
-
-  MenuHeading(FSUI_VSTR("Input Sources"));
-
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable SDL Input Source"),
-                    FSUI_VSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
-                    false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
-                    FSUI_VSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
-                    "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
-                    FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
-                    "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
-#ifdef _WIN32
-  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
-                    FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
-                              "are using a XInput wrapper library."),
-                    "InputSources", "XInput", false);
-#endif
-
-  MenuHeading(FSUI_VSTR("Multitap"));
-  DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SITEMAP, "Multitap Mode"),
-                  FSUI_VSTR("Enables an additional three controller slots on each port. Not supported in all games."),
-                  "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE, &Settings::ParseMultitapModeName,
-                  &Settings::GetMultitapModeName, &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
 
   // load mtap settings
   const MultitapMode mtap_mode =
-    Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode", "").c_str())
+    Settings::ParseMultitapModeName(bsi->GetTinyStringValue("ControllerPorts", "MultitapMode").c_str())
       .value_or(Settings::DEFAULT_MULTITAP_MODE);
   const std::array<bool, 2> mtap_enabled = {
     {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
@@ -3211,10 +3164,156 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (is_mtap_port && !mtap_enabled[mtap_port])
       continue;
 
-    MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_PLUG, "Controller Port {}")),
-                                        Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
+    const TinyString type =
+      bsi->GetTinyStringValue(TinyString::from_format("Pad{}", global_slot + 1).c_str(), "Type",
+                              Controller::GetControllerInfo(Settings::GetDefaultControllerType(global_slot)).name);
+    const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
+
+    if (SplitWindowSidebarItem(
+          TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ci ? ci->icon_name : ICON_FA_PLUG, "Controller Port {}")),
+                                  Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])),
+          ci->GetDisplayName(), (s_settings_locals.selected_controller_port == static_cast<s8>(global_slot))))
+    {
+      BeginTransition(DEFAULT_TRANSITION_TIME,
+                      [global_slot]() { s_settings_locals.selected_controller_port = static_cast<s8>(global_slot); });
+      FullscreenUI::FocusSplitWindowContent(true);
+    }
+  }
+
+  const bool show_hotkeys = !IsEditingGameSettings(bsi);
+  if (show_hotkeys && SplitWindowSidebarItem(FSUI_ICONVSTR(ICON_PF_KEYBOARD_ALT, "Hotkeys"),
+                                             (s_settings_locals.selected_controller_port == -2)))
+  {
+    BeginTransition(DEFAULT_TRANSITION_TIME, []() { s_settings_locals.selected_controller_port = -2; });
+    FullscreenUI::FocusSplitWindowContent(true);
+  }
+
+  EndSplitWindowSidebar();
+
+  BeginSplitWindowContent(false);
+
+  BeginMenuButtons();
+
+  static constexpr auto content_done = []() {
+    EndMenuButtons();
+    EndSplitWindowContent();
+    EndInnerSplitWindow();
+  };
+
+  if (s_settings_locals.selected_controller_port == -1)
+  {
+    MenuHeading(FSUI_VSTR("Configuration"));
+    ResetSplitWindowContentFocusHere();
+
+    if (IsEditingGameSettings(bsi))
+    {
+      if (DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEARS, "Per-Game Configuration"),
+                            FSUI_VSTR("Uses game-specific settings for controllers for this game."), "ControllerPorts",
+                            "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
+      {
+        // did we just enable per-game for the first time?
+        if (bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
+            !bsi->GetBoolValue("ControllerPorts", "GameSettingsInitialized", false))
+        {
+          bsi->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
+          CopyGlobalControllerSettingsToGame();
+        }
+      }
+    }
+
+    if (IsEditingGameSettings(bsi) && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+    {
+      // nothing to edit..
+      content_done();
+      return;
+    }
+
+    if (IsEditingGameSettings(bsi))
+    {
+      if (MenuButton(FSUI_ICONVSTR(ICON_FA_COPY, "Copy Global Settings"),
+                     FSUI_VSTR("Copies the global controller configuration to this game.")))
+      {
+        CopyGlobalControllerSettingsToGame();
+      }
+    }
+    else
+    {
+      if (MenuButton(FSUI_ICONVSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
+                     FSUI_VSTR("Resets all configuration to defaults (including bindings).")))
+      {
+        BeginResetControllerSettings();
+      }
+    }
+
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FOLDER_OPEN, "Load Preset"),
+                   FSUI_VSTR("Replaces these settings with a previously saved controller preset.")))
+    {
+      DoLoadInputProfile();
+    }
+    if (MenuButton(FSUI_ICONVSTR(ICON_FA_FLOPPY_DISK, "Save Preset"),
+                   FSUI_VSTR("Stores the current settings to a controller preset.")))
+    {
+      DoSaveInputProfile();
+    }
+
+    MenuHeading(FSUI_VSTR("Input Sources"));
+
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable SDL Input Source"),
+                      FSUI_VSTR("The SDL input source supports most controllers."), "InputSources", "SDL", true, true,
+                      false);
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_WIFI, "SDL DualShock 4 / DualSense Enhanced Mode"),
+                      FSUI_VSTR("Provides vibration and LED control support over Bluetooth."), "InputSources",
+                      "SDLControllerEnhancedMode", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+    DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_LIGHTBULB, "SDL DualSense Player LED"),
+                      FSUI_VSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources",
+                      "SDLPS5PlayerLED", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+#ifdef _WIN32
+    DrawToggleSetting(
+      bsi, FSUI_ICONVSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
+      FSUI_VSTR("Support for controllers that use the XInput protocol. XInput should only be used if you "
+                "are using a XInput wrapper library."),
+      "InputSources", "XInput", false);
+#endif
+
+    MenuHeading(FSUI_VSTR("Multitap"));
+    DrawEnumSetting(bsi, FSUI_ICONVSTR(ICON_FA_SITEMAP, "Multitap Mode"),
+                    FSUI_VSTR("Enables an additional three controller slots on each port. Not supported in all games."),
+                    "ControllerPorts", "MultitapMode", Settings::DEFAULT_MULTITAP_MODE,
+                    &Settings::ParseMultitapModeName, &Settings::GetMultitapModeName,
+                    &Settings::GetMultitapModeDisplayName, MultitapMode::Count);
+  }
+  else if (s_settings_locals.selected_controller_port == -2)
+  {
+    ResetSplitWindowContentFocusHere();
+
+    const HotkeyInfo* last_category = nullptr;
+    for (const HotkeyInfo* hotkey : s_settings_locals.hotkey_list_cache)
+    {
+      if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
+      {
+        MenuHeading(Host::TranslateToStringView("Hotkeys", hotkey->category));
+        last_category = hotkey;
+      }
+
+      DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
+                             Host::TranslateToStringView("Hotkeys", hotkey->display_name), std::string_view(), false);
+    }
+  }
+  else
+  {
+    // create the ports
+    const u32 global_slot = static_cast<u32>(s_settings_locals.selected_controller_port);
+    const auto [mtap_port, mtap_slot] = Controller::ConvertPadToPortAndSlot(global_slot);
+    const bool is_mtap_port = Controller::PortAndSlotIsMultitap(mtap_port, mtap_slot);
+    if (is_mtap_port && !mtap_enabled[mtap_port])
+    {
+      content_done();
+      return;
+    }
 
     ImGui::PushID(TinyString::from_format("port_{}", global_slot));
+
+    ResetSplitWindowContentFocusHere();
 
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
     const TinyString type = bsi->GetTinyStringValue(
@@ -3259,7 +3358,8 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (!ci || ci->bindings.empty())
     {
       ImGui::PopID();
-      continue;
+      content_done();
+      return;
     }
 
     if (MenuButton(FSUI_ICONVSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"),
@@ -3274,9 +3374,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       StartClearBindingsForPort(global_slot);
     }
 
-    MenuHeading(
-      SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Controller Port {} Bindings")),
-                               Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
+    MenuHeading(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Bindings"));
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
     {
@@ -3284,24 +3382,65 @@ void FullscreenUI::DrawControllerSettingsPage()
                              bi.icon_name ? std::string_view(bi.icon_name) : std::string_view(), true);
     }
 
-    MenuHeading(
-      SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
-                               Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
+    if (!ci->settings.empty())
+    {
+      MenuHeading(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Settings"));
+
+      for (const SettingInfo& si : ci->settings)
+      {
+        TinyString title;
+        title.format(ICON_FA_GEAR "{}", Host::TranslateToStringView(ci->name, si.display_name));
+        std::string_view description = Host::TranslateToStringView(ci->name, si.description);
+        switch (si.type)
+        {
+          case SettingInfo::Type::Boolean:
+          {
+            DrawToggleSetting(bsi, title, description, section.c_str(), si.name, si.BooleanDefaultValue(), true, false);
+          }
+          break;
+
+          case SettingInfo::Type::Integer:
+          {
+            DrawIntRangeSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
+                                si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
+          }
+          break;
+
+          case SettingInfo::Type::IntegerList:
+          {
+            size_t option_count = 0;
+            if (si.options)
+            {
+              while (si.options[option_count])
+                option_count++;
+            }
+
+            DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
+                               std::span<const char* const>(si.options, option_count), true, si.IntegerMinValue(), true,
+                               ci->name);
+          }
+          break;
+
+          case SettingInfo::Type::Float:
+          {
+            DrawFloatSpinBoxSetting(bsi, title, description, section.c_str(), si.name, si.FloatDefaultValue(),
+                                    si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier,
+                                    si.format, true);
+          }
+          break;
+
+          default:
+            break;
+        }
+      }
+    }
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
       ImGui::PushID(TinyString::from_format("macro_{}", macro_index));
 
-      bool& expanded = s_settings_locals.controller_macro_expanded[global_slot][macro_index];
-      expanded ^= MenuHeadingButton(
-        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_PF_EMPTY_KEYCAP, "Macro Button {}")), macro_index + 1),
-        s_settings_locals.controller_macro_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP :
-                                                                                ICON_FA_CHEVRON_DOWN);
-      if (!expanded)
-      {
-        ImGui::PopID();
-        continue;
-      }
+      MenuHeading(
+        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_PF_EMPTY_KEYCAP, "Macro {}")), macro_index + 1));
 
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"),
@@ -3446,88 +3585,10 @@ void FullscreenUI::DrawControllerSettingsPage()
       ImGui::PopID();
     }
 
-    if (!ci->settings.empty())
-    {
-      MenuHeading(
-        SmallString::from_format(fmt::runtime(FSUI_ICONVSTR(ICON_FA_SLIDERS, "Controller Port {} Settings")),
-                                 Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
-
-      for (const SettingInfo& si : ci->settings)
-      {
-        TinyString title;
-        title.format(ICON_FA_GEAR "{}", Host::TranslateToStringView(ci->name, si.display_name));
-        std::string_view description = Host::TranslateToStringView(ci->name, si.description);
-        switch (si.type)
-        {
-          case SettingInfo::Type::Boolean:
-          {
-            DrawToggleSetting(bsi, title, description, section.c_str(), si.name, si.BooleanDefaultValue(), true, false);
-          }
-          break;
-
-          case SettingInfo::Type::Integer:
-          {
-            DrawIntRangeSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
-                                si.IntegerMinValue(), si.IntegerMaxValue(), si.format, true);
-          }
-          break;
-
-          case SettingInfo::Type::IntegerList:
-          {
-            size_t option_count = 0;
-            if (si.options)
-            {
-              while (si.options[option_count])
-                option_count++;
-            }
-
-            DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(),
-                               std::span<const char* const>(si.options, option_count), true, si.IntegerMinValue(), true,
-                               ci->name);
-          }
-          break;
-
-          case SettingInfo::Type::Float:
-          {
-            DrawFloatSpinBoxSetting(bsi, title, description, section.c_str(), si.name, si.FloatDefaultValue(),
-                                    si.FloatMinValue(), si.FloatMaxValue(), si.FloatStepValue(), si.multiplier,
-                                    si.format, true);
-          }
-          break;
-
-          default:
-            break;
-        }
-      }
-    }
-
     ImGui::PopID();
   }
 
-  EndMenuButtons();
-}
-
-void FullscreenUI::DrawHotkeySettingsPage()
-{
-  SettingsInterface* bsi = GetEditingSettingsInterface();
-
-  BeginMenuButtons();
-  ResetFocusHere();
-
-  const HotkeyInfo* last_category = nullptr;
-  for (const HotkeyInfo* hotkey : s_settings_locals.hotkey_list_cache)
-  {
-    if (!last_category || std::strcmp(hotkey->category, last_category->category) != 0)
-    {
-      MenuHeading(Host::TranslateToStringView("Hotkeys", hotkey->category));
-      last_category = hotkey;
-    }
-
-    DrawInputBindingButton(bsi, InputBindingInfo::Type::Button, "Hotkeys", hotkey->name,
-                           Host::TranslateToStringView("Hotkeys", hotkey->display_name), std::string_view(), false);
-  }
-
-  EndMenuButtons();
+  content_done();
 }
 
 void FullscreenUI::DrawMemoryCardSettingsPage()

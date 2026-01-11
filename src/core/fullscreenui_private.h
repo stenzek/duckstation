@@ -38,7 +38,6 @@ enum class SettingsPage : u8
   Emulation,
   BIOS,
   Controller,
-  Hotkey,
   MemoryCards,
   Graphics,
   PostProcessing,
