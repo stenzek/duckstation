@@ -296,9 +296,11 @@ enum class FocusResetType : u8
   PopupOpened,
   PopupClosed,
   ViewChanged,
+  SplitWindowChanged,
   Other,
 };
 void QueueResetFocus(FocusResetType type);
+void CancelResetFocus();
 bool ResetFocusHere();
 bool IsFocusResetQueued();
 bool IsFocusResetFromWindowChange();
@@ -460,6 +462,25 @@ bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2&
 void EndHorizontalMenu();
 bool HorizontalMenuItem(GPUTexture* icon, std::string_view title, std::string_view description,
                         u32 color = IM_COL32(255, 255, 255, 255));
+
+// Sidebars
+bool BeginSplitWindow(const ImVec2& position, const ImVec2& size, const char* name,
+                      const ImVec4& background = UIStyle.BackgroundColor, float rounding = 0.0f,
+                      const ImVec2& padding = ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING),
+                      ImGuiWindowFlags flags = 0);
+void EndSplitWindow();
+void BeginInnerSplitWindow();
+void EndInnerSplitWindow();
+bool BeginSplitWindowSidebar(float sidebar_width = 0.2f);
+void EndSplitWindowSidebar();
+bool SplitWindowSidebarItem(std::string_view title, bool active = false, bool enabled = true);
+bool SplitWindowSidebarItem(std::string_view title, std::string_view summary, bool active = false, bool enabled = true);
+void SplitWindowSidebarSeparator();
+bool BeginSplitWindowContent(bool background);
+void ResetSplitWindowContentFocusHere();
+void EndSplitWindowContent();
+bool WasSplitWindowChanged();
+void FocusSplitWindowContent(bool reset_content_nav);
 
 using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;

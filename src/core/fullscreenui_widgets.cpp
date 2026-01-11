@@ -54,6 +54,13 @@ static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
+enum class SplitWindowFocusChange : u8
+{
+  None,
+  FocusSidebar,
+  FocusContent,
+};
+
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
@@ -329,6 +336,7 @@ struct WidgetsState
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
 
+  SplitWindowFocusChange split_window_focus_change = SplitWindowFocusChange::None;
   bool had_hovered_menu_item = false;
   bool has_hovered_menu_item = false;
   bool rendered_menu_item_border = false;
@@ -1188,6 +1196,11 @@ void FullscreenUI::QueueResetFocus(FocusResetType type)
   GImGui->NavScoringNoClipRect = ImRect(+FLT_MAX, +FLT_MAX, -FLT_MAX, -FLT_MAX);
 }
 
+void FullscreenUI::CancelResetFocus()
+{
+  s_state.focus_reset_queued = FocusResetType::None;
+}
+
 bool FullscreenUI::ResetFocusHere()
 {
   if (s_state.focus_reset_queued == FocusResetType::None)
@@ -1210,10 +1223,15 @@ bool FullscreenUI::ResetFocusHere()
   ImGui::SetWindowFocus();
 
   // If this is a popup closing, we don't want to reset the current nav item, since we were presumably opened by one.
-  if (s_state.focus_reset_queued != FocusResetType::PopupClosed)
+  if (s_state.focus_reset_queued != FocusResetType::PopupClosed &&
+      s_state.focus_reset_queued != FocusResetType::SplitWindowChanged)
+  {
     ImGui::NavInitWindow(window, true);
+  }
   else
+  {
     ImGui::SetNavWindow(window);
+  }
 
   // prevent any sound from playing on the nav change
   s_state.had_focus_reset = true;
@@ -1234,7 +1252,8 @@ bool FullscreenUI::IsFocusResetFromWindowChange()
 {
   return (s_state.focus_reset_queued != FocusResetType::None &&
           s_state.focus_reset_queued != FocusResetType::PopupOpened &&
-          s_state.focus_reset_queued != FocusResetType::PopupClosed);
+          s_state.focus_reset_queued != FocusResetType::PopupClosed &&
+          s_state.focus_reset_queued != FocusResetType::SplitWindowChanged);
 }
 
 FullscreenUI::FocusResetType FullscreenUI::GetQueuedFocusResetType()
@@ -3261,6 +3280,216 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
   ImGui::SameLine();
 
   return pressed;
+}
+
+bool FullscreenUI::BeginSplitWindow(const ImVec2& position, const ImVec2& size, const char* name,
+                                    const ImVec4& background /*= UIStyle.BackgroundColor*/, float rounding /*= 0.0f*/,
+                                    const ImVec2& padding /*= ImVec2()*/, ImGuiWindowFlags flags /*= 0*/)
+{
+  const bool ret = BeginFullscreenWindow(position, size, name, background, rounding, padding, flags);
+  BeginInnerSplitWindow();
+  return ret;
+}
+
+void FullscreenUI::EndSplitWindow()
+{
+  EndInnerSplitWindow();
+  EndFullscreenWindow();
+}
+
+void FullscreenUI::BeginInnerSplitWindow()
+{
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  window->DC.LayoutType = ImGuiLayoutType_Horizontal;
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(10.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+  s_state.split_window_focus_change = SplitWindowFocusChange::None;
+
+  if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
+    {
+      s_state.split_window_focus_change = SplitWindowFocusChange::FocusSidebar;
+      QueueResetFocus(FocusResetType::SplitWindowChanged);
+    }
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
+    {
+      s_state.split_window_focus_change = SplitWindowFocusChange::FocusContent;
+      QueueResetFocus(FocusResetType::SplitWindowChanged);
+    }
+  }
+}
+
+void FullscreenUI::EndInnerSplitWindow()
+{
+  ImGui::PopStyleVar(4);
+}
+
+bool FullscreenUI::BeginSplitWindowSidebar(float sidebar_width /*= 0.2f*/)
+{
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.2f));
+
+  if (IsFocusResetFromWindowChange())
+    ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
+
+  const float sidebar_width_px = ImFloor(ImGui::GetCurrentWindowRead()->WorkRect.GetWidth() * sidebar_width);
+  if (!ImGui::BeginChild("sidebar", ImVec2(sidebar_width_px, 0.0f)))
+    return false;
+
+  if (ImGui::IsWindowFocused())
+  {
+    // cancel any pending focus change
+    if (s_state.split_window_focus_change == SplitWindowFocusChange::FocusSidebar)
+    {
+      s_state.split_window_focus_change = SplitWindowFocusChange::None;
+      CancelResetFocus();
+    }
+  }
+
+  // todo: use own splitter
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  dl->ChannelsSplit(2);
+  dl->ChannelsSetCurrent(1);
+
+  BeginMenuButtons();
+
+  // todo: do we need to move this down if our first item is a heading?
+  if (s_state.split_window_focus_change == SplitWindowFocusChange::FocusSidebar)
+    ResetFocusHere();
+  if (ImGui::IsWindowFocused() && GImGui->NavId == 0)
+    ImGui::NavInitWindow(ImGui::GetCurrentWindow(), true);
+
+  return true;
+}
+
+void FullscreenUI::EndSplitWindowSidebar()
+{
+  EndMenuButtons();
+
+  ImGui::GetWindowDrawList()->ChannelsMerge();
+  ImGui::PopStyleColor(1);
+  ImGui::PopStyleVar(1);
+  ImGui::EndChild();
+}
+
+bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, bool active /*= false*/, bool enabled /*= true*/)
+{
+  if (active)
+  {
+    // todo: use own splitter
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    dl->ChannelsSetCurrent(0);
+
+    const MenuButtonBounds bb(title, std::string_view(), std::string_view());
+    dl->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max, ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, 0.6f)),
+                      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+    dl->ChannelsSetCurrent(1);
+  }
+
+  return MenuButtonWithoutSummary(title, enabled);
+}
+
+void FullscreenUI::SplitWindowSidebarSeparator()
+{
+  const float line_width = MenuButtonBounds::CalcAvailWidth();
+
+  const float line_thickness = LayoutScale(1.0f);
+  const float line_padding = LayoutScale(2.0f);
+
+  const ImVec2 line_start =
+    ImGui::GetCurrentWindowRead()->DC.CursorPos + ImVec2(ImGui::GetStyle().FramePadding.x, line_padding);
+  const ImVec2 line_end = ImVec2(line_start.x + line_width, line_start.y);
+  const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
+  const u32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+#if 0
+  ImGui::GetWindowDrawList()->AddLine(line_start + shadow_offset, line_end + shadow_offset, UIStyle.ShadowColor,
+                                      line_thickness);
+#endif
+  ImGui::GetWindowDrawList()->AddLine(line_start, line_end, color, line_thickness);
+
+  ImGui::Dummy(ImVec2(0.0f, line_padding * 2.0f + line_thickness));
+}
+
+bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, std::string_view summary, bool active /*= false*/,
+                                          bool enabled /*= true*/)
+{
+  if (active)
+  {
+    // todo: use own splitter
+    ImDrawList* const dl = ImGui::GetWindowDrawList();
+    dl->ChannelsSetCurrent(0);
+
+    const MenuButtonBounds bb(title, std::string_view(), summary);
+    dl->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max,
+                      ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 0.6f)),
+                      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+    dl->ChannelsSetCurrent(1);
+  }
+
+  return MenuButton(title, summary, enabled);
+}
+
+bool FullscreenUI::BeginSplitWindowContent(bool background)
+{
+  ImGui::PushStyleColor(ImGuiCol_ChildBg, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.1f));
+
+  if (IsFocusResetFromWindowChange())
+    ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
+
+  ImGuiWindow* const window = ImGui::GetCurrentWindow();
+  const float content_width = window->WorkRect.Max.x - window->DC.CursorPos.x;
+
+  const bool ret =
+    ImGui::BeginChild("content", ImVec2(content_width, 0.0f), 0, background ? 0 : ImGuiWindowFlags_NoBackground);
+
+  if (ImGui::IsWindowFocused())
+  {
+    // cancel any pending focus change
+    if (s_state.split_window_focus_change == SplitWindowFocusChange::FocusContent)
+    {
+      s_state.split_window_focus_change = SplitWindowFocusChange::None;
+      CancelResetFocus();
+    }
+  }
+
+  return ret;
+}
+
+void FullscreenUI::ResetSplitWindowContentFocusHere()
+{
+  if (s_state.split_window_focus_change == SplitWindowFocusChange::FocusSidebar ||
+      (s_state.split_window_focus_change == SplitWindowFocusChange::None && IsFocusResetQueued()))
+  {
+    ResetFocusHere();
+  }
+
+  if (ImGui::IsWindowFocused() && GImGui->NavId == 0)
+    ImGui::NavInitWindow(ImGui::GetCurrentWindow(), true);
+}
+
+void FullscreenUI::EndSplitWindowContent()
+{
+  ImGui::PopStyleColor(1);
+  ImGui::EndChild();
+}
+
+bool FullscreenUI::WasSplitWindowChanged()
+{
+  return (s_state.split_window_focus_change != SplitWindowFocusChange::None);
+}
+
+void FullscreenUI::FocusSplitWindowContent(bool reset_content_nav)
+{
+  s_state.split_window_focus_change = SplitWindowFocusChange::FocusContent;
+  QueueResetFocus(reset_content_nav ? FocusResetType::Other : FocusResetType::SplitWindowChanged);
 }
 
 FullscreenUI::PopupDialog::PopupDialog() = default;
