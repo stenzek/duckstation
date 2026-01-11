@@ -207,8 +207,8 @@ struct SettingsLocals
   std::vector<std::string_view> game_cheat_groups;
   std::vector<PostProcessingStageInfo> postprocessing_stages;
   std::vector<const HotkeyInfo*> hotkey_list_cache;
-  std::atomic_bool settings_changed{false};
-  std::atomic_bool game_settings_changed{false};
+  bool settings_changed = false;
+  bool game_settings_changed = false;
   bool controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
   InputBindingDialog input_binding_dialog;
 };
@@ -245,9 +245,9 @@ SettingsInterface* FullscreenUI::GetEditingSettingsInterface(bool game_settings)
 void FullscreenUI::SetSettingsChanged(SettingsInterface* bsi)
 {
   if (bsi && bsi == s_settings_locals.game_settings_interface.get())
-    s_settings_locals.game_settings_changed.store(true, std::memory_order_release);
+    s_settings_locals.game_settings_changed = true;
   else
-    s_settings_locals.settings_changed.store(true, std::memory_order_release);
+    s_settings_locals.settings_changed = true;
 }
 
 bool FullscreenUI::GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key,
@@ -2013,14 +2013,15 @@ void FullscreenUI::DrawSettingsWindow()
   else
     s_settings_locals.input_binding_dialog.Draw();
 
-  if (s_settings_locals.settings_changed.load(std::memory_order_relaxed))
+  if (s_settings_locals.settings_changed)
   {
+    s_settings_locals.settings_changed = false;
     Host::CommitBaseSettingChanges();
     Host::RunOnCoreThread([]() { System::ApplySettings(false); });
-    s_settings_locals.settings_changed.store(false, std::memory_order_release);
   }
-  if (s_settings_locals.game_settings_changed.load(std::memory_order_relaxed))
+  if (s_settings_locals.game_settings_changed)
   {
+    s_settings_locals.game_settings_changed = false;
     if (s_settings_locals.game_settings_interface)
     {
       Error error;
@@ -2052,7 +2053,6 @@ void FullscreenUI::DrawSettingsWindow()
       if (GPUThread::HasGPUBackend())
         Host::RunOnCoreThread([]() { System::ReloadGameSettings(false); });
     }
-    s_settings_locals.game_settings_changed.store(false, std::memory_order_release);
   }
 }
 
