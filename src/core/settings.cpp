@@ -901,34 +901,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
 }
 
-void Settings::Clear(SettingsInterface& si)
-{
-  si.ClearSection("Main");
-  si.ClearSection("Console");
-  si.ClearSection("CPU");
-  si.ClearSection("GPU");
-  si.ClearSection("Display");
-  si.ClearSection("CDROM");
-  si.ClearSection("Audio");
-  si.ClearSection("Hacks");
-  si.ClearSection("PCDrv");
-  si.ClearSection("BIOS");
-
-  si.ClearSection("ControllerPorts");
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-    si.ClearSection(Controller::GetSettingsSection(i).c_str());
-
-  si.ClearSection("MemoryCards");
-  si.ClearSection("Cheevos");
-  si.ClearSection("Logging");
-  si.ClearSection("Debug");
-  si.ClearSection("TextureReplacements");
-
-  // Cheats/patches have to be removed too.
-  si.ClearSection("Cheats");
-  si.ClearSection("Patches");
-}
-
 bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
 {
   return (max_hash_cache_entries == rhs.max_hash_cache_entries &&

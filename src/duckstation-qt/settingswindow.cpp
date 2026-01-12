@@ -344,7 +344,7 @@ void SettingsWindow::onClearSettingsClicked()
     return;
   }
 
-  Settings::Clear(*m_sif.get());
+  m_sif->Clear();
   saveAndReloadGameSettings();
 
   reloadPages();
