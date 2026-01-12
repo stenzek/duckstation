@@ -4727,8 +4727,7 @@ void FullscreenUI::DrawAchievementsSettingsHeader(SettingsInterface* bsi, std::u
 
   const ImVec2 bg_pos = ImGui::GetCursorScreenPos() + ImVec2(0.0f, spacing * 2.0f);
   const ImVec2 bg_size = ImVec2(ImGui::GetContentRegionAvail().x, LayoutScale(100.0f));
-  dl->AddRectFilled(bg_pos, bg_pos + bg_size,
-                    ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.BackgroundColor), GetBackgroundAlpha())),
+  dl->AddRectFilled(bg_pos, bg_pos + bg_size, ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.BackgroundColor), 0.5f)),
                     panel_rounding);
 
   // must be after background rect
