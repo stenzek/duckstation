@@ -101,7 +101,7 @@ void FullscreenUI::DoSetCoverImage(std::string entry_path)
       if (!existing_path.empty())
       {
         OpenConfirmMessageDialog(
-          FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"),
+          ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_FA_IMAGE, "Set Cover Image"),
           FSUI_STR("A cover already exists for this game. Are you sure that you want to overwrite it?"),
           [path = std::move(path), existing_path = std::move(existing_path),
            new_path = std::move(new_path)](bool result) {

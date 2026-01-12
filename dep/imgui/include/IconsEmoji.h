@@ -12,6 +12,7 @@
 #define ICON_EMOJI_OPTICAL_DISK "\xf0\x9f\x92\xbf"
 #define ICON_EMOJI_FLOPPY_DISK "\xf0\x9f\x92\xbe"
 #define ICON_EMOJI_INFORMATION "\xe2\x84\xb9"
+#define ICON_EMOJI_QUESTION_MARK "\xe2\x93\x98"
 #define ICON_EMOJI_FAST_FORWARD "\xe2\x8f\xa9"
 #define ICON_EMOJI_FAST_REVERSE "\xe2\x8f\xaa"
 #define ICON_EMOJI_RECORD "\xe2\x8f\xba"

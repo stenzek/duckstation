@@ -639,7 +639,7 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
         if (!IsInitialized())
           return;
 
-        OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
+        OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, TRANSLATE_STR("System", "Error"),
                               fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
         ClearSaveStateEntryList();
         UpdateRunIdleState();
@@ -730,7 +730,7 @@ void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<
       }
 
       OpenConfirmMessageDialog(
-        FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
+        ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
         fmt::format(
           FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
                     "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "

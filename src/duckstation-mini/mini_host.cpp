@@ -1071,9 +1071,10 @@ void Host::OnSystemAbnormalShutdown(const std::string_view reason)
 {
   GPUThread::RunOnThread([reason = std::string(reason)]() {
     FullscreenUI::OpenInfoMessageDialog(
-      "Abnormal System Shutdown", fmt::format("Unfortunately, the virtual machine has abnormally shut down and cannot "
-                                              "be recovered. More information about the error is below:\n\n{}",
-                                              reason));
+      ICON_EMOJI_NO_ENTRY_SIGN, "Abnormal System Shutdown",
+      fmt::format("Unfortunately, the virtual machine has abnormally shut down and cannot "
+                  "be recovered. More information about the error is below:\n\n{}",
+                  reason));
   });
 }
 
@@ -1460,8 +1461,8 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
         callback(result);
       };
 
-      FullscreenUI::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
-                                             fmt::format(ICON_FA_CHECK " {}", yes_text),
+      FullscreenUI::OpenConfirmMessageDialog(ICON_EMOJI_QUESTION_MARK, std::move(title), std::move(message),
+                                             std::move(final_callback), fmt::format(ICON_FA_CHECK " {}", yes_text),
                                              fmt::format(ICON_FA_XMARK " {}", no_text));
       FullscreenUI::UpdateRunIdleState();
     });

@@ -1552,7 +1552,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
 void FullscreenUI::StartClearBindingsForPort(u32 port)
 {
   OpenConfirmMessageDialog(
-    FSUI_STR("Clear Mappings"),
+    ICON_EMOJI_WARNING, FSUI_STR("Clear Mappings"),
     FSUI_STR("Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action."),
     [port](bool result) {
       if (!result)
@@ -1743,7 +1743,7 @@ void FullscreenUI::PopulatePatchesAndCheatsList()
 
 void FullscreenUI::BeginResetSettings()
 {
-  OpenConfirmMessageDialog(FSUI_STR("Restore Defaults"),
+  OpenConfirmMessageDialog(ICON_EMOJI_WARNING, FSUI_STR("Restore Defaults"),
                            FSUI_STR("Are you sure you want to restore the default settings? Any preferences will be "
                                     "lost.\n\nYou cannot undo this action."),
                            [](bool result) {
@@ -2053,7 +2053,7 @@ void FullscreenUI::DrawSettingsWindow()
           INFO_LOG("Removing empty game settings {}", s_settings_locals.game_settings_interface->GetPath());
           if (!FileSystem::DeleteFile(s_settings_locals.game_settings_interface->GetPath().c_str(), &error))
           {
-            OpenInfoMessageDialog(FSUI_STR("Error"),
+            OpenInfoMessageDialog(ICON_EMOJI_WARNING, FSUI_STR("Error"),
                                   fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
                                               error.GetDescription()));
           }
@@ -2064,7 +2064,7 @@ void FullscreenUI::DrawSettingsWindow()
         if (!s_settings_locals.game_settings_interface->Save(&error))
         {
           OpenInfoMessageDialog(
-            FSUI_STR("Error"),
+            ICON_EMOJI_WARNING, FSUI_STR("Error"),
             fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
         }
       }
@@ -2613,7 +2613,7 @@ void FullscreenUI::DrawCoverDownloaderWindow()
               });
             }))
       {
-        OpenInfoMessageDialog(FSUI_STR("Cover Download Error"), error.TakeDescription());
+        OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Cover Download Error"), error.TakeDescription());
       }
 
       // close the parent window if we weren't cancelled
@@ -3117,7 +3117,7 @@ void FullscreenUI::DoSaveInputProfile()
 
 void FullscreenUI::BeginResetControllerSettings()
 {
-  OpenConfirmMessageDialog(FSUI_STR("Reset Controller Settings"),
+  OpenConfirmMessageDialog(ICON_EMOJI_WARNING, FSUI_STR("Reset Controller Settings"),
                            FSUI_STR("Are you sure you want to restore the default controller configuration?\n\nAll "
                                     "bindings and configuration will be lost. You cannot undo this action."),
                            [](bool result) {
@@ -4312,7 +4312,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   if (MenuButton(FSUI_ICONVSTR(ICON_PF_TRASH, "Clear Shaders"), FSUI_VSTR("Clears a shader from the chain.")))
   {
     OpenConfirmMessageDialog(
-      FSUI_ICONVSTR(ICON_PF_TRASH, "Clear Shaders"),
+      ICON_EMOJI_WARNING, FSUI_ICONVSTR(ICON_PF_TRASH, "Clear Shaders"),
       FSUI_STR("Are you sure you want to clear the current post-processing chain? All configuration will be lost."),
       [](bool confirmed) {
         if (!confirmed)
@@ -4880,7 +4880,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
       if (Achievements::HasActiveGame())
       {
         OpenConfirmMessageDialog(
-          FSUI_ICONVSTR(ICON_FA_HAT_COWBOY, "Hardcore Mode"),
+          ICON_EMOJI_INFORMATION, FSUI_ICONVSTR(ICON_FA_HAT_COWBOY, "Hardcore Mode"),
           FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
           [](bool result) {
             if (result)
@@ -5100,9 +5100,14 @@ void FullscreenUI::StartAchievementsProgressRefresh()
       GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
         delete progress;
         if (result)
+        {
           ShowToast(OSDMessageType::Info, {}, FSUI_STR("Progress database updated."));
+        }
         else
-          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Update Progress"), error.TakeDescription());
+        {
+          FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Update Progress"),
+                                              error.TakeDescription());
+        }
       });
     });
   });
@@ -5119,9 +5124,14 @@ void FullscreenUI::StartAchievementsGameIconDownload()
       GPUThread::RunOnThread([error = std::move(error), progress, result]() mutable {
         delete progress;
         if (result)
+        {
           ShowToast(OSDMessageType::Info, {}, FSUI_STR("Game icons downloaded."));
+        }
         else
-          FullscreenUI::OpenInfoMessageDialog(FSUI_STR("Download Game Icons"), error.TakeDescription());
+        {
+          FullscreenUI::OpenInfoMessageDialog(ICON_EMOJI_NO_ENTRY_SIGN, FSUI_STR("Download Game Icons"),
+                                              error.TakeDescription());
+        }
       });
     });
   });

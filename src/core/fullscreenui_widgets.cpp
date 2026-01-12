@@ -168,8 +168,8 @@ public:
   MessageDialog();
   ~MessageDialog();
 
-  void Open(std::string_view title, std::string message, CallbackVariant callback, std::string first_button_text,
-            std::string second_button_text, std::string third_button_text);
+  void Open(std::string_view icon, std::string_view title, std::string message, CallbackVariant callback,
+            std::string first_button_text, std::string second_button_text, std::string third_button_text);
   void ClearState();
 
   void Draw();
@@ -177,6 +177,7 @@ public:
 private:
   static void InvokeCallback(const CallbackVariant& cb, std::optional<s32> choice);
 
+  std::string m_icon;
   std::string m_message;
   std::array<std::string, 3> m_buttons;
   CallbackVariant m_callback;
@@ -4209,11 +4210,12 @@ FullscreenUI::MessageDialog::MessageDialog() = default;
 
 FullscreenUI::MessageDialog::~MessageDialog() = default;
 
-void FullscreenUI::MessageDialog::Open(std::string_view title, std::string message, CallbackVariant callback,
-                                       std::string first_button_text, std::string second_button_text,
-                                       std::string third_button_text)
+void FullscreenUI::MessageDialog::Open(std::string_view icon, std::string_view title, std::string message,
+                                       CallbackVariant callback, std::string first_button_text,
+                                       std::string second_button_text, std::string third_button_text)
 {
   SetTitleAndOpen(fmt::format("{}##message_dialog", title));
+  m_icon = icon;
   m_message = std::move(message);
   m_callback = std::move(callback);
   m_buttons[0] = std::move(first_button_text);
@@ -4244,22 +4246,51 @@ void FullscreenUI::MessageDialog::Draw()
 
   std::optional<s32> result;
 
-  ResetFocusHere();
-  BeginMenuButtons();
+  if (!m_icon.empty())
+  {
+    ImGui::PushFont(nullptr, LayoutScale(50.0f), 0.0f);
+    ImGui::TextUnformatted(IMSTR_START_END(m_icon));
+    ImGui::PopFont();
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + LayoutScale(10.0f));
+  }
 
   ImGui::TextWrapped("%s", m_message.c_str());
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(20.0f));
 
-  for (s32 button_index = 0; button_index < static_cast<s32>(m_buttons.size()); button_index++)
-  {
-    if (!m_buttons[button_index].empty() &&
-        MenuButtonWithoutSummary(m_buttons[button_index], true, LAYOUT_CENTER_ALIGN_TEXT))
-    {
-      result = button_index;
-    }
-  }
+  ResetFocusHere();
 
-  EndMenuButtons();
+  // use vertical buttons for long text
+  if (!m_buttons[0].empty() && StringUtil::GetUTF8CharacterCount(m_buttons[0]) >= 15)
+  {
+    BeginMenuButtons();
+
+    for (s32 button_index = 0; button_index < static_cast<s32>(m_buttons.size()); button_index++)
+    {
+      if (!m_buttons[button_index].empty() &&
+          MenuButtonWithoutSummary(m_buttons[button_index], true, LAYOUT_CENTER_ALIGN_TEXT))
+      {
+        result = button_index;
+      }
+    }
+    EndMenuButtons();
+  }
+  else
+  {
+    BeginHorizontalMenuButtons(
+      static_cast<u32>(std::ranges::count_if(m_buttons, [](const std::string& str) { return !str.empty(); })));
+
+    for (s32 button_index = 0; button_index < static_cast<s32>(m_buttons.size()); button_index++)
+    {
+      if (!m_buttons[button_index].empty() &&
+          HorizontalMenuButton(m_buttons[button_index], true, LAYOUT_CENTER_ALIGN_TEXT))
+      {
+        result = button_index;
+      }
+    }
+
+    EndHorizontalMenuButtons();
+  }
 
   SetStandardSelectionFooterText(false);
 
@@ -4294,27 +4325,28 @@ bool FullscreenUI::IsMessageBoxDialogOpen()
   return s_state.message_dialog.IsOpen();
 }
 
-void FullscreenUI::OpenConfirmMessageDialog(std::string_view title, std::string message,
+void FullscreenUI::OpenConfirmMessageDialog(std::string_view icon, std::string_view title, std::string message,
                                             ConfirmMessageDialogCallback callback, std::string yes_button_text,
                                             std::string no_button_text)
 {
-  s_state.message_dialog.Open(std::move(title), std::move(message), std::move(callback), std::move(yes_button_text),
-                              std::move(no_button_text), std::string());
+  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+                              std::move(yes_button_text), std::move(no_button_text), std::string());
 }
 
-void FullscreenUI::OpenInfoMessageDialog(std::string_view title, std::string message,
+void FullscreenUI::OpenInfoMessageDialog(std::string_view icon, std::string_view title, std::string message,
                                          InfoMessageDialogCallback callback, std::string button_text)
 {
-  s_state.message_dialog.Open(std::move(title), std::move(message), std::move(callback), std::move(button_text),
+  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback), std::move(button_text),
                               std::string(), std::string());
 }
 
-void FullscreenUI::OpenMessageDialog(std::string_view title, std::string message, MessageDialogCallback callback,
-                                     std::string first_button_text, std::string second_button_text,
-                                     std::string third_button_text)
+void FullscreenUI::OpenMessageDialog(std::string_view icon, std::string_view title, std::string message,
+                                     MessageDialogCallback callback, std::string first_button_text,
+                                     std::string second_button_text, std::string third_button_text)
 {
-  s_state.message_dialog.Open(std::move(title), std::move(message), std::move(callback), std::move(first_button_text),
-                              std::move(second_button_text), std::move(third_button_text));
+  s_state.message_dialog.Open(icon, std::move(title), std::move(message), std::move(callback),
+                              std::move(first_button_text), std::move(second_button_text),
+                              std::move(third_button_text));
 }
 
 void FullscreenUI::CloseMessageDialog()
@@ -4501,8 +4533,8 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
 {
   s_state.progress_dialog.m_prompt_waiting.test_and_set(std::memory_order_release);
 
-  Host::RunOnCoreThread([message = std::string(message)]() mutable {
-    GPUThread::RunOnThread([message = std::move(message)]() mutable {
+  Host::RunOnCoreThread([message = std::string(message), icon]() mutable {
+    GPUThread::RunOnThread([message = std::move(message), icon]() mutable {
       if (!s_state.progress_dialog.IsOpen())
       {
         s_state.progress_dialog.m_prompt_waiting.clear(std::memory_order_release);
@@ -4518,8 +4550,26 @@ void FullscreenUI::ProgressDialog::ProgressCallbackImpl::AlertPrompt(PromptIcon 
       float width = s_state.progress_dialog.m_width;
       s_state.progress_dialog.CloseImmediately();
 
+      std::string_view icon_str;
+      switch (icon)
+      {
+        case PromptIcon::Error:
+          icon_str = ICON_EMOJI_NO_ENTRY_SIGN;
+          break;
+        case PromptIcon::Warning:
+          icon_str = ICON_EMOJI_WARNING;
+          break;
+        case PromptIcon::Question:
+          icon_str = ICON_EMOJI_QUESTION_MARK;
+          break;
+        case PromptIcon::Information:
+        default:
+          icon_str = ICON_EMOJI_INFORMATION;
+          break;
+      }
+
       OpenInfoMessageDialog(
-        s_state.progress_dialog.GetTitle(), std::move(message),
+        icon_str, s_state.progress_dialog.GetTitle(), std::move(message),
         [existing_title = std::move(existing_title), progress_range, progress_value, last_frac, width]() mutable {
           s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
           s_state.progress_dialog.m_progress_range = progress_range;
@@ -4566,7 +4616,7 @@ bool FullscreenUI::ProgressDialog::ProgressCallbackImpl::ConfirmPrompt(PromptIco
           if (no_text.empty())
             no_text = FSUI_ICONSTR(ICON_FA_XMARK, "No");
 
-          OpenConfirmMessageDialog(s_state.progress_dialog.GetTitle(), std::move(message),
+          OpenConfirmMessageDialog(ICON_EMOJI_QUESTION_MARK, s_state.progress_dialog.GetTitle(), std::move(message),
                                    [existing_title = std::move(existing_title), progress_range, progress_value,
                                     last_frac, width](bool result) mutable {
                                      s_state.progress_dialog.SetTitleAndOpen(std::move(existing_title));
