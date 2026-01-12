@@ -2047,7 +2047,7 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
 
   // https://stackoverflow.com/questions/34135624/how-to-properly-execute-gui-operations-in-qt-main-thread
   QTimer* timer = new QTimer();
-  QThread* ui_thread = qApp->thread();
+  QThread* const ui_thread = qApp->thread();
   if (QThread::currentThread() == ui_thread)
   {
     // On UI thread, we can do it straight away.
@@ -2058,8 +2058,12 @@ void Host::ReportFatalError(std::string_view title, std::string_view message)
     timer->moveToThread(ui_thread);
     timer->setSingleShot(true);
     QObject::connect(timer, &QTimer::timeout, std::move(cb));
-    QMetaObject::invokeMethod(timer, static_cast<void (QTimer::*)(int)>(&QTimer::start), Qt::BlockingQueuedConnection,
+    QMetaObject::invokeMethod(timer, static_cast<void (QTimer::*)(int)>(&QTimer::start), Qt::QueuedConnection,
                               static_cast<int>(0));
+
+    // should never return
+    while (ui_thread->isRunning())
+      Timer::NanoSleep(1000000000ULL);
   }
 
   std::abort();
