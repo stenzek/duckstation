@@ -1485,6 +1485,22 @@ void GPUThread::SetRunIdleReason(RunIdleReason reason, bool enabled)
   if (((s_state.run_idle_reasons & bit) != 0) == enabled)
     return;
 
+  if (Log::IsLogVisible(Log::Level::Dev, Log::Channel::GPUThread))
+  {
+    static constexpr const std::array reason_strings = {
+      "NoGPUBackend",        "SystemPaused",        "OSDMessagesActive",         "FullscreenUIActive",
+      "NotificationsActive", "LoadingScreenActive", "AchievementOverlaysActive",
+    };
+    for (u32 i = 0; i < reason_strings.size(); ++i)
+    {
+      if (static_cast<RunIdleReason>(1u << i) == reason)
+      {
+        DEV_COLOR_LOG(StrongYellow, "Setting run idle reason '{}' to {}", reason_strings[i], enabled);
+        break;
+      }
+    }
+  }
+
   s_state.run_idle_reasons = enabled ? (s_state.run_idle_reasons | bit) : (s_state.run_idle_reasons & ~bit);
   UpdateRunIdle();
 }
@@ -1508,8 +1524,9 @@ void GPUThread::UpdateRunIdle()
                                      static_cast<u8>(RunIdleReason::SystemPaused) |
                                      static_cast<u8>(RunIdleReason::LoadingScreenActive);
   static constexpr u8 ACTIVATE_MASK =
-    static_cast<u8>(RunIdleReason::FullscreenUIActive) | static_cast<u8>(RunIdleReason::NotificationsActive) |
-    static_cast<u8>(RunIdleReason::LoadingScreenActive) | static_cast<u8>(RunIdleReason::AchievementOverlaysActive);
+    static_cast<u8>(RunIdleReason::OSDMessagesActive) | static_cast<u8>(RunIdleReason::FullscreenUIActive) |
+    static_cast<u8>(RunIdleReason::NotificationsActive) | static_cast<u8>(RunIdleReason::LoadingScreenActive) |
+    static_cast<u8>(RunIdleReason::AchievementOverlaysActive);
 
   const bool new_flag = (g_gpu_device && ((s_state.run_idle_reasons & REQUIRE_MASK) != 0) &&
                          ((s_state.run_idle_reasons & ACTIVATE_MASK) != 0));

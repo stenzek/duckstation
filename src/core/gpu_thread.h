@@ -36,10 +36,11 @@ enum class RunIdleReason : u8
 {
   NoGPUBackend = (1 << 0),
   SystemPaused = (1 << 1),
-  FullscreenUIActive = (1 << 2),
-  NotificationsActive = (1 << 3),
-  LoadingScreenActive = (1 << 4),
-  AchievementOverlaysActive = (1 << 5),
+  OSDMessagesActive = (1 << 2),
+  FullscreenUIActive = (1 << 3),
+  NotificationsActive = (1 << 4),
+  LoadingScreenActive = (1 << 5),
+  AchievementOverlaysActive = (1 << 6),
 };
 
 /// Starts Big Picture UI.

@@ -15,6 +15,7 @@
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"
+#include "core/system_private.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -24,6 +25,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 #include "common/thirdparty/usb_key_code_data.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
@@ -101,6 +103,7 @@ static void AddOSDMessage(OSDMessageType type, std::string key, std::string icon
                           std::string message);
 static void RemoveKeyedOSDMessage(std::string key);
 static void ClearOSDMessages();
+static void UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock);
 static void AcquirePendingOSDMessages(Timer::Value current_time);
 static void DrawOSDMessages(Timer::Value current_time);
 static void CreateSoftwareCursorTextures();
@@ -868,6 +871,41 @@ void ImGuiManager::AddOSDMessage(OSDMessageType type, std::string key, std::stri
     .text = std::move(message),
     .type = type,
   });
+
+  // trigger run idle on first message
+  if (s_state.osd_posted_messages.size() == 1)
+    UpdateOSDMessageRunIdle(lock);
+}
+
+void ImGuiManager::UpdateOSDMessageRunIdle(const std::unique_lock<std::mutex>& lock)
+{
+  static constexpr auto cb = []() {
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::OSDMessagesActive,
+                                (!s_state.osd_active_messages.empty() || !s_state.osd_posted_messages.empty()));
+  };
+
+  if (GPUThread::IsOnThread())
+  {
+    cb();
+    return;
+  }
+
+  if (System::GetCoreThreadHandle().IsCallingThread())
+  {
+    GPUThread::RunOnThread([]() {
+      const std::unique_lock lock(s_state.osd_messages_lock);
+      cb();
+    });
+  }
+  else
+  {
+    Host::RunOnCoreThread([]() {
+      GPUThread::RunOnThread([]() {
+        const std::unique_lock lock(s_state.osd_messages_lock);
+        cb();
+      });
+    });
+  }
 }
 
 void ImGuiManager::RemoveKeyedOSDMessage(std::string key)
@@ -880,6 +918,8 @@ void ImGuiManager::RemoveKeyedOSDMessage(std::string key)
     .text = {},
     .type = OSDMessageType::MaxCount,
   });
+  if (s_state.osd_posted_messages.size() == 1)
+    UpdateOSDMessageRunIdle(lock);
 }
 
 void ImGuiManager::ClearOSDMessages()
@@ -894,16 +934,8 @@ void ImGuiManager::ClearOSDMessages()
 
 void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 {
-  std::atomic_thread_fence(std::memory_order_acquire);
-  if (s_state.osd_posted_messages.empty())
-    return;
-
-  std::unique_lock lock(s_state.osd_messages_lock);
-  for (;;)
+  while (!s_state.osd_posted_messages.empty())
   {
-    if (s_state.osd_posted_messages.empty())
-      break;
-
     PostedOSDMessage& new_msg = s_state.osd_posted_messages.front();
 
     // MaxCount is used to indicate removal of a message.
@@ -1151,9 +1183,22 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
 void ImGuiManager::RenderOSDMessages()
 {
+  s_state.osd_messages_lock.lock();
+  if (s_state.osd_posted_messages.empty() && s_state.osd_active_messages.empty())
+  {
+    s_state.osd_messages_lock.unlock();
+    return;
+  }
+
   const Timer::Value current_time = Timer::GetCurrentValue();
   AcquirePendingOSDMessages(current_time);
+  s_state.osd_messages_lock.unlock();
+
   DrawOSDMessages(current_time);
+
+  // last one displayed?
+  if (s_state.osd_active_messages.empty())
+    GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::OSDMessagesActive, false);
 }
 
 void Host::AddOSDMessage(OSDMessageType type, std::string message)
