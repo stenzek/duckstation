@@ -219,7 +219,11 @@ void MainWindow::reportError(const QString& title, const QString& message)
 
 void MainWindow::onStatusMessage(const QString& message)
 {
-  m_ui.statusBar->showMessage(message);
+  // display as OSD message if fullscreen
+  if (isRenderingFullscreen())
+    Host::AddOSDMessage(OSDMessageType::Info, message.toStdString());
+  else
+    m_ui.statusBar->showMessage(message);
 }
 
 std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, bool fullscreen,
