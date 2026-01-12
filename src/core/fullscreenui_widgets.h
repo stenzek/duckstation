@@ -348,17 +348,16 @@ void SetFullscreenStatusText(std::string_view text);
 void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
 void DrawFullscreenFooter();
 
-void PrerenderMenuButtonBorder();
 void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,
                       float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING, float x_spacing = 0.0f,
-                      float y_spacing = LAYOUT_MENU_BUTTON_SPACING, bool prerender_frame = true);
+                      float y_spacing = LAYOUT_MENU_BUTTON_SPACING);
 void EndMenuButtons();
 float GetMenuButtonAvailableWidth();
 bool MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible, bool* hovered,
-                     ImGuiButtonFlags flags = 0, float alpha = 1.0f);
+                     ImGuiButtonFlags flags = 0);
 bool MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible, bool* hovered,
-                     ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
-void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
+                     ImGuiButtonFlags flags = 0);
+void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, bool held);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, float font_size, float font_weight, const ImVec2& pos_min,
                                const ImVec2& pos_max, u32 color, std::string_view text,

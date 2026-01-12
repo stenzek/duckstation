@@ -950,7 +950,6 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
   ImGui::PopFont();
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
-  BeginMenuButtons();
   ResetFocusHere();
 
   float dlg_value = value.value_or(default_value) * multiplier;
@@ -961,6 +960,8 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
 
   if (manual_input)
   {
+    BeginMenuButtons();
+
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
 
@@ -1011,6 +1012,8 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, std::string_v
       dlg_value += step * multiplier;
       dlg_value_changed = true;
     }
+
+    BeginMenuButtons();
   }
 
   if (dlg_value_changed)
@@ -1212,7 +1215,6 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
   ImGui::PopFont();
   ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
 
-  BeginMenuButtons();
   ResetFocusHere();
 
   s32 dlg_value = static_cast<s32>(value.value_or(default_value));
@@ -1223,6 +1225,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
 
   if (manual_input)
   {
+    BeginMenuButtons();
+
     const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
     ImGui::SetNextItemWidth(end);
 
@@ -1267,6 +1271,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, std::string_vie
       dlg_value += step;
       dlg_value_changed = true;
     }
+
+    BeginMenuButtons();
   }
 
   if (dlg_value_changed)

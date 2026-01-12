@@ -1962,16 +1962,7 @@ void FullscreenUI::DrawSaveStateSelector()
         bool hovered;
         bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
         if (hovered)
-        {
-          const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-
-          const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
-          ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-
-          DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-
-          ImGui::PopStyleColor();
-        }
+          DrawMenuButtonFrame(bb.Min, bb.Max, held);
 
         bb.Min += style.FramePadding;
         bb.Max -= style.FramePadding;

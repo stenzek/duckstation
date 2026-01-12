@@ -54,6 +54,11 @@ static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static constexpr u32 LOADING_PROGRESS_SAMPLE_COUNT = 30;
 
+static constexpr int MENU_BUTTON_SPLIT_LAYER_BACKGROUND = 0;
+static constexpr int MENU_BUTTON_SPLIT_LAYER_HIGHLIGHT = 1;
+static constexpr int MENU_BUTTON_SPLIT_LAYER_FOREGROUND = 2;
+static constexpr int NUM_MENU_BUTTON_SPLIT_LAYERS = 3;
+
 enum class SplitWindowFocusChange : u8
 {
   None,
@@ -68,6 +73,12 @@ static bool CompileTransitionPipelines(Error* error);
 
 static void CreateFooterTextString(SmallStringBase& dest,
                                    std::span<const std::pair<const char*, std::string_view>> items);
+
+static void BeginMenuButtonDrawSplit();
+static void EndMenuButtonDrawSplit();
+static void SetMenuButtonSplitLayer(int layer);
+static void DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border);
+static void PostDrawMenuButtonFrame();
 
 static void DrawBackgroundProgressDialogs(float& current_y);
 static void UpdateLoadingScreenProgress(s32 progress_min, s32 progress_max, s32 progress_value);
@@ -1621,30 +1632,10 @@ void FullscreenUI::DrawFullscreenFooter()
   }
 }
 
-void FullscreenUI::PrerenderMenuButtonBorder()
-{
-  if (!s_state.had_hovered_menu_item || GImGui->CurrentWindow != GImGui->NavWindow)
-    return;
-
-  // updating might finish the animation
-  const ImVec2& min = s_state.menu_button_frame_min_animated.UpdateAndGetValue();
-  const ImVec2& max = s_state.menu_button_frame_max_animated.UpdateAndGetValue();
-  const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-
-  const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
-  ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-
-  ImGui::RenderFrame(min, max, col, true, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
-
-  ImGui::PopStyleColor();
-
-  s_state.rendered_menu_item_border = true;
-}
-
 void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 0.0f */,
                                     float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */,
                                     float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */, float x_spacing /* = 0.0f */,
-                                    float y_spacing /* = LAYOUT_MENU_BUTTON_SPACING */, bool prerender_frame /*= true*/)
+                                    float y_spacing /* = LAYOUT_MENU_BUTTON_SPACING */)
 {
   // If we're scrolling up and down, it's possible that the first menu item won't be enabled.
   // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
@@ -1688,12 +1679,14 @@ void FullscreenUI::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 
       ImGui::SetCursorPosY((window_height - total_size) * y_align);
   }
 
-  if (prerender_frame)
-    PrerenderMenuButtonBorder();
+  BeginMenuButtonDrawSplit();
 }
 
 void FullscreenUI::EndMenuButtons()
 {
+  PostDrawMenuButtonFrame();
+  EndMenuButtonDrawSplit();
+
   ImGui::PopStyleVar(4);
 }
 
@@ -1703,7 +1696,7 @@ float FullscreenUI::GetMenuButtonAvailableWidth()
 }
 
 bool FullscreenUI::MenuButtonFrame(std::string_view str_id, float height, bool enabled, ImRect* item_bb, bool* visible,
-                                   bool* hovered, ImGuiButtonFlags flags /*= 0*/, float alpha /*= 1.0f*/)
+                                   bool* hovered, ImGuiButtonFlags flags /*= 0*/)
 {
   const ImVec2 pos = ImGui::GetCursorScreenPos();
   const float avail_width = MenuButtonBounds::CalcAvailWidth();
@@ -1711,7 +1704,7 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, float height, bool e
 
   *item_bb = ImRect(pos + style.FramePadding, pos + style.FramePadding + ImVec2(avail_width, height));
   const ImRect frame_bb = ImRect(pos, pos + style.FramePadding * 2.0f + ImVec2(avail_width, height));
-  return MenuButtonFrame(str_id, enabled, frame_bb, visible, hovered, 0, alpha);
+  return MenuButtonFrame(str_id, enabled, frame_bb, visible, hovered, 0);
 }
 
 void FullscreenUI::DrawWindowTitle(std::string_view title)
@@ -1738,7 +1731,7 @@ void FullscreenUI::DrawWindowTitle(std::string_view title)
 }
 
 bool FullscreenUI::MenuButtonFrame(std::string_view str_id, bool enabled, const ImRect& bb, bool* visible,
-                                   bool* hovered, ImGuiButtonFlags flags, float hover_alpha)
+                                   bool* hovered, ImGuiButtonFlags flags)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (ImGui::GetCurrentWindowRead()->SkipItems)
@@ -1777,16 +1770,7 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, bool enabled, const 
   {
     pressed = ImGui::ButtonBehavior(bb, id, hovered, &held, flags);
     if (*hovered)
-    {
-      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, hover_alpha);
-
-      const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
-      ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-
-      ImGui::PopStyleColor();
-    }
+      DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
@@ -1797,8 +1781,7 @@ bool FullscreenUI::MenuButtonFrame(std::string_view str_id, bool enabled, const 
   return pressed;
 }
 
-void FullscreenUI::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col,
-                                       bool border /* = true */)
+void FullscreenUI::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, bool held)
 {
   ImVec2 frame_min = p_min;
   ImVec2 frame_max = p_max;
@@ -1835,8 +1818,65 @@ void FullscreenUI::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max,
   if (!s_state.rendered_menu_item_border)
   {
     s_state.rendered_menu_item_border = true;
-    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+    const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
+    DrawMenuButtonFrameAt(frame_min, frame_max, col, true);
   }
+}
+
+void FullscreenUI::DrawMenuButtonFrameAt(const ImVec2& frame_min, const ImVec2& frame_max, u32 col, bool border)
+{
+  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_HIGHLIGHT);
+
+  const float rounding = LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING);
+  if (border && UIStyle.MenuBorders)
+  {
+    const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
+    ImGui::RenderFrame(frame_min, frame_max, col, true, rounding);
+    ImGui::PopStyleColor();
+  }
+  else
+  {
+    ImGui::RenderFrame(frame_min, frame_max, col, false, rounding);
+  }
+
+  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+}
+
+void FullscreenUI::PostDrawMenuButtonFrame()
+{
+  if (s_state.rendered_menu_item_border || !s_state.had_hovered_menu_item || GImGui->CurrentWindow != GImGui->NavWindow)
+    return;
+
+  // updating might finish the animation
+  const ImVec2& frame_min = s_state.menu_button_frame_min_animated.UpdateAndGetValue();
+  const ImVec2& frame_max = s_state.menu_button_frame_max_animated.UpdateAndGetValue();
+  const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+  DrawMenuButtonFrameAt(frame_min, frame_max, col, true);
+}
+
+void FullscreenUI::BeginMenuButtonDrawSplit()
+{
+  // NOTE: I would use my own splitter instance here, but we're currently nesting these calls
+  // due to the setting popups that get created inline...
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  dl->_Splitter.Split(dl, NUM_MENU_BUTTON_SPLIT_LAYERS);
+  dl->_Splitter.SetCurrentChannel(dl, MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+}
+
+void FullscreenUI::EndMenuButtonDrawSplit()
+{
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  DebugAssert(dl->_Splitter._Count == NUM_MENU_BUTTON_SPLIT_LAYERS);
+  dl->_Splitter.Merge(ImGui::GetWindowDrawList());
+}
+
+void FullscreenUI::SetMenuButtonSplitLayer(int layer)
+{
+  ImDrawList* const dl = ImGui::GetWindowDrawList();
+  DebugAssert(dl->_Splitter._Count == NUM_MENU_BUTTON_SPLIT_LAYERS);
+  dl->_Splitter.SetCurrentChannel(dl, layer);
 }
 
 float FullscreenUI::MenuButtonBounds::CalcAvailWidth()
@@ -2436,13 +2476,7 @@ bool FullscreenUI::FloatingButton(std::string_view text, float x, float y, float
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
     if (hovered)
-    {
-      const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
-      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-      ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-      ImGui::PopStyleColor();
-    }
+      DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
@@ -2743,19 +2777,7 @@ void FullscreenUI::BeginHorizontalMenuButtons(u32 num_items, float max_item_widt
             0.5f);
   ImGui::SetCursorPosX(ImGui::GetCursorPosX() + left_padding);
 
-  // need to prerender the backgrounds for all inactive items, otherwise the animation overlaps it
-  const ImU32 frame_background = ImGui::GetColorU32(
-    DarkerColor((window->Flags & ImGuiWindowFlags_Popup) ? UIStyle.PopupBackgroundColor : UIStyle.BackgroundColor));
-  ImVec2 current_pos = ImGui::GetCursorScreenPos();
-  for (u32 i = 0; i < num_items; i++)
-  {
-    ImGui::RenderFrame(current_pos, current_pos + s_state.horizontal_menu_button_size, frame_background, false,
-                       LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
-
-    current_pos.x += s_state.horizontal_menu_button_size.x + style.ItemSpacing.x;
-  }
-
-  PrerenderMenuButtonBorder();
+  BeginMenuButtonDrawSplit();
 }
 
 void FullscreenUI::EndHorizontalMenuButtons(float add_vertical_spacing /*= -1.0f*/)
@@ -2766,6 +2788,9 @@ void FullscreenUI::EndHorizontalMenuButtons(float add_vertical_spacing /*= -1.0f
   const float dummy_height = ImGui::GetCurrentWindowRead()->DC.CurrLineSize.y +
                              ((add_vertical_spacing > 0.0f) ? LayoutScale(add_vertical_spacing) : 0.0f);
   ImGui::ItemSize(ImVec2(0.0f, (dummy_height > 0.0f) ? dummy_height : ImGui::GetFontSize()));
+
+  PostDrawMenuButtonFrame();
+  EndMenuButtonDrawSplit();
 }
 
 bool FullscreenUI::HorizontalMenuButton(std::string_view title, bool enabled /* = true */,
@@ -2794,6 +2819,13 @@ bool FullscreenUI::HorizontalMenuButton(std::string_view title, bool enabled /* 
       return false;
   }
 
+  // horizontal menu buttons always have frames
+  const ImU32 frame_background = ImGui::GetColorU32(
+    DarkerColor((window->Flags & ImGuiWindowFlags_Popup) ? UIStyle.PopupBackgroundColor : UIStyle.BackgroundColor));
+  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
+  ImGui::RenderFrame(bb.Min, bb.Max, frame_background, false, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+
   bool hovered;
   bool held;
   bool pressed;
@@ -2801,16 +2833,7 @@ bool FullscreenUI::HorizontalMenuButton(std::string_view title, bool enabled /* 
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, flags);
     if (hovered)
-    {
-      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
-
-      const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
-      ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-
-      ImGui::PopStyleColor();
-    }
+      DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
@@ -2837,10 +2860,12 @@ void FullscreenUI::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(1.0f, 0.0f));
   PushPrimaryColor();
+  BeginMenuButtonDrawSplit();
 }
 
 void FullscreenUI::EndNavBar()
 {
+  EndMenuButtonDrawSplit();
   PopPrimaryColor();
   ImGui::PopStyleVar(4);
 }
@@ -2929,10 +2954,7 @@ bool FullscreenUI::NavButton(std::string_view title, bool is_active, bool enable
   {
     pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoNavFocus);
     if (hovered)
-    {
-      const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-    }
+      DrawMenuButtonFrame(bb.Min, bb.Max, held);
   }
   else
   {
@@ -3201,12 +3223,15 @@ bool FullscreenUI::BeginHorizontalMenu(const char* name, const ImVec2& position,
 
   ImGui::SetCursorPos(ImFloor(ImVec2((size.x - menu_width) * 0.5f, (size.y - menu_height) * 0.5f)));
 
-  PrerenderMenuButtonBorder();
+  BeginMenuButtonDrawSplit();
   return true;
 }
 
 void FullscreenUI::EndHorizontalMenu()
 {
+  PostDrawMenuButtonFrame();
+  EndMenuButtonDrawSplit();
+
   ImGui::PopStyleVar(4);
   EndFullscreenWindow(true, true);
 }
@@ -3230,16 +3255,7 @@ bool FullscreenUI::HorizontalMenuItem(GPUTexture* icon, std::string_view title, 
   bool hovered;
   const bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
   if (hovered)
-  {
-    const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-
-    const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
-    ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-
-    DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
-
-    ImGui::PopStyleColor();
-  }
+    DrawMenuButtonFrame(bb.Min, bb.Max, held);
 
   const ImGuiStyle& style = ImGui::GetStyle();
   bb.Min += style.FramePadding;
@@ -3360,11 +3376,6 @@ bool FullscreenUI::BeginSplitWindowSidebar(float sidebar_width /*= 0.2f*/)
     }
   }
 
-  // todo: use own splitter
-  ImDrawList* const dl = ImGui::GetWindowDrawList();
-  dl->ChannelsSplit(2);
-  dl->ChannelsSetCurrent(1);
-
   BeginMenuButtons();
 
   // todo: do we need to move this down if our first item is a heading?
@@ -3393,15 +3404,14 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, bool active /*
 {
   if (active)
   {
-    // todo: use own splitter
-    ImDrawList* const dl = ImGui::GetWindowDrawList();
-    dl->ChannelsSetCurrent(0);
+    SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
 
     const MenuButtonBounds bb(title, std::string_view(), std::string_view());
-    dl->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max, ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, 0.6f)),
-                      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+    ImGui::GetWindowDrawList()->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max,
+                                              ImGui::GetColorU32(DarkerColor(UIStyle.BackgroundColor, 0.6f)),
+                                              LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
-    dl->ChannelsSetCurrent(1);
+    SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
   }
 
   return MenuButtonWithoutSummary(title, enabled);
@@ -3429,16 +3439,15 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, std::string_vi
 {
   if (active)
   {
-    // todo: use own splitter
-    ImDrawList* const dl = ImGui::GetWindowDrawList();
-    dl->ChannelsSetCurrent(0);
+    SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
 
     const MenuButtonBounds bb(title, std::string_view(), summary);
-    dl->AddRectFilled(bb.frame_bb.Min, bb.frame_bb.Max,
-                      ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 0.6f)),
-                      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+    ImGui::GetWindowDrawList()->AddRectFilled(
+      bb.frame_bb.Min, bb.frame_bb.Max,
+      ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 0.6f)),
+      LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
 
-    dl->ChannelsSetCurrent(1);
+    SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
   }
 
   return MenuButton(title, summary, enabled);
@@ -4007,30 +4016,8 @@ void FullscreenUI::ChoiceDialog::Draw()
   {
     // frame padding is needed for MenuButtonBounds()
     BeginMenuButtons(0, 0.0f, LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING, 0.0f,
-                     LAYOUT_MENU_BUTTON_SPACING, false);
+                     LAYOUT_MENU_BUTTON_SPACING);
 
-    if (std::any_of(m_options.begin(), m_options.end(), [](const auto& it) { return it.second; }))
-    {
-      // draw background first, because otherwise it'll obscure the frame border
-      ImVec2 pos = ImGui::GetCurrentWindowRead()->DC.CursorPos;
-      for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
-      {
-        const auto& option = m_options[i];
-        const MenuButtonBounds bb(option.first, ImVec2(), {});
-        if (!option.second)
-        {
-          pos.y += bb.frame_bb.GetHeight() + ImGui::GetStyle().ItemSpacing.y;
-          continue;
-        }
-
-        ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(),
-                           ImGui::GetColorU32(DarkerColor(UIStyle.PopupBackgroundColor, 0.6f)), false,
-                           LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
-        break;
-      }
-    }
-
-    PrerenderMenuButtonBorder();
     ResetFocusHere();
 
     const bool appearing = ImGui::IsWindowAppearing();
@@ -4038,6 +4025,19 @@ void FullscreenUI::ChoiceDialog::Draw()
     for (s32 i = 0; i < static_cast<s32>(m_options.size()); i++)
     {
       auto& option = m_options[i];
+
+      if (option.second)
+      {
+        SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_BACKGROUND);
+
+        const MenuButtonBounds bb(option.first, ImVec2(), {});
+        const ImVec2 pos = ImGui::GetCursorScreenPos();
+        ImGui::RenderFrame(pos, pos + bb.frame_bb.GetSize(),
+                           ImGui::GetColorU32(DarkerColor(UIStyle.PopupBackgroundColor, 0.6f)), false,
+                           LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+
+        SetMenuButtonSplitLayer(MENU_BUTTON_SPLIT_LAYER_FOREGROUND);
+      }
 
       bool visible;
       if (MenuButtonWithVisibilityQuery(TinyString::from_format("item{}", i), option.first, {},
