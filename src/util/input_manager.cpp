@@ -1865,13 +1865,11 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
       HasAnyBindingsForSource(key))
   {
-    Host::RunOnCoreThread([identifier = std::string(identifier)]() {
-      System::PauseSystem(true);
+    System::PauseSystem(true);
 
-      // has to be done after pause, otherwise pause message takes precedence
-      Host::ReportStatusMessage(
-        fmt::format(TRANSLATE_FS("InputManager", "System paused because controller {} was disconnected."), identifier));
-    });
+    // has to be done after pause, otherwise pause message takes precedence
+    Host::ReportStatusMessage(
+      fmt::format(TRANSLATE_FS("InputManager", "System paused because controller {} was disconnected."), identifier));
   }
 }
 
