@@ -1152,7 +1152,7 @@ void FullscreenUI::PushResetLayout()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(8.0f, 8.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(4.0f, 3.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(8.0f, 4.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(LAYOUT_ITEM_X_SPACING, LAYOUT_ITEM_Y_SPACING));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, LayoutScale(4.0f, 4.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, LayoutScale(4.0f, 2.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, LayoutScale(21.0f));
@@ -1252,10 +1252,8 @@ bool FullscreenUI::IsFocusResetQueued()
 
 bool FullscreenUI::IsFocusResetFromWindowChange()
 {
-  return (s_state.focus_reset_queued != FocusResetType::None &&
-          s_state.focus_reset_queued != FocusResetType::PopupOpened &&
-          s_state.focus_reset_queued != FocusResetType::PopupClosed &&
-          s_state.focus_reset_queued != FocusResetType::SplitWindowChanged);
+  return (s_state.focus_reset_queued == FocusResetType::ViewChanged ||
+          s_state.focus_reset_queued == FocusResetType::Other);
 }
 
 FullscreenUI::FocusResetType FullscreenUI::GetQueuedFocusResetType()
@@ -2216,8 +2214,8 @@ void FullscreenUI::MenuHeading(std::string_view title, bool draw_line /*= true*/
   const ImVec2 title_size =
     UIStyle.Font->CalcTextSizeA(font_size, font_weight, FLT_MAX, avail_width, IMSTR_START_END(title));
   const u32 title_color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(UIStyle.Font, font_size, font_weight, pos, pos + title_size,
-                            title_color, title, &title_size, ImVec2(0.0f, 0.0f), avail_width);
+  RenderShadowedTextClipped(UIStyle.Font, font_size, font_weight, pos, pos + title_size, title_color, title,
+                            &title_size, ImVec2(0.0f, 0.0f), avail_width);
 
   float total_height = UIStyle.LargeFontSize + style.FramePadding.y;
 
@@ -3310,9 +3308,9 @@ void FullscreenUI::BeginInnerSplitWindow()
   window->DC.LayoutType = ImGuiLayoutType_Horizontal;
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(10.0f, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, LayoutScale(LAYOUT_MENU_ITEM_BORDER_ROUNDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
 
   s_state.split_window_focus_change = SplitWindowFocusChange::None;
 
@@ -3338,14 +3336,18 @@ void FullscreenUI::EndInnerSplitWindow()
 
 bool FullscreenUI::BeginSplitWindowSidebar(float sidebar_width /*= 0.2f*/)
 {
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.2f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                      LayoutScale(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(LAYOUT_ITEM_X_SPACING, LAYOUT_ITEM_Y_SPACING));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg,
+                        ModAlpha(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.75f), 0.25f));
 
   if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
   const float sidebar_width_px = ImFloor(ImGui::GetCurrentWindowRead()->WorkRect.GetWidth() * sidebar_width);
-  if (!ImGui::BeginChild("sidebar", ImVec2(sidebar_width_px, 0.0f)))
+  if (!ImGui::BeginChild("sidebar", ImVec2(sidebar_width_px, 0.0f),
+                         ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_NoNavCancel))
     return false;
 
   if (ImGui::IsWindowFocused())
@@ -3380,7 +3382,7 @@ void FullscreenUI::EndSplitWindowSidebar()
 
   ImGui::GetWindowDrawList()->ChannelsMerge();
   ImGui::PopStyleColor(1);
-  ImGui::PopStyleVar(1);
+  ImGui::PopStyleVar(2);
 
   SetWindowNavWrapping(false, true);
 
@@ -3444,7 +3446,10 @@ bool FullscreenUI::SplitWindowSidebarItem(std::string_view title, std::string_vi
 
 bool FullscreenUI::BeginSplitWindowContent(bool background)
 {
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.1f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(LAYOUT_ITEM_X_SPACING, LAYOUT_ITEM_Y_SPACING));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg,
+                        ModAlpha(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_WindowBg], 1.5f), 0.25f));
 
   if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
@@ -3452,8 +3457,9 @@ bool FullscreenUI::BeginSplitWindowContent(bool background)
   ImGuiWindow* const window = ImGui::GetCurrentWindow();
   const float content_width = window->WorkRect.Max.x - window->DC.CursorPos.x;
 
-  const bool ret =
-    ImGui::BeginChild("content", ImVec2(content_width, 0.0f), 0, background ? 0 : ImGuiWindowFlags_NoBackground);
+  const bool ret = ImGui::BeginChild("content", ImVec2(content_width, 0.0f),
+                                     ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_NoNavCancel,
+                                     background ? 0 : ImGuiWindowFlags_NoBackground);
 
   if (ImGui::IsWindowFocused())
   {
@@ -3483,6 +3489,7 @@ void FullscreenUI::ResetSplitWindowContentFocusHere()
 void FullscreenUI::EndSplitWindowContent()
 {
   ImGui::PopStyleColor(1);
+  ImGui::PopStyleVar(2);
 
   SetWindowNavWrapping(false, true);
 
@@ -3494,10 +3501,10 @@ bool FullscreenUI::WasSplitWindowChanged()
   return (s_state.split_window_focus_change != SplitWindowFocusChange::None);
 }
 
-void FullscreenUI::FocusSplitWindowContent(bool reset_content_nav)
+void FullscreenUI::FocusSplitWindowContent()
 {
   s_state.split_window_focus_change = SplitWindowFocusChange::FocusContent;
-  QueueResetFocus(reset_content_nav ? FocusResetType::Other : FocusResetType::SplitWindowChanged);
+  QueueResetFocus(FocusResetType::SplitContentChanged);
 }
 
 bool FullscreenUI::SplitWindowIsNavWindow()

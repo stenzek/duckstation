@@ -1903,13 +1903,7 @@ void FullscreenUI::DrawSettingsWindow()
       ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
       TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_locals.settings_page)).c_str(),
       ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
-             s_settings_locals.settings_last_bg_alpha),
-      0.0f, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, LAYOUT_MENU_WINDOW_Y_PADDING));
-
-    // so the child windows get it
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,
-                          ModAlpha(UIStyle.BackgroundColor, s_settings_locals.settings_last_bg_alpha *
-                                                              s_settings_locals.settings_last_bg_alpha));
+             s_settings_locals.settings_last_bg_alpha));
 
     if (SplitWindowIsNavWindow() && WantsToCloseMenu())
       ReturnToPreviousWindow();
@@ -1985,9 +1979,6 @@ void FullscreenUI::DrawSettingsWindow()
         break;
     }
   }
-
-  if (is_split_window)
-    ImGui::PopStyleColor(1);
 
   EndFullscreenWindow();
 
@@ -3144,8 +3135,10 @@ void FullscreenUI::DrawControllerSettingsPage()
   if (SplitWindowSidebarItem(FSUI_ICONVSTR(ICON_FA_GEARS, "Global Settings"),
                              (s_settings_locals.selected_controller_port == -1)))
   {
-    BeginTransition(DEFAULT_TRANSITION_TIME, []() { s_settings_locals.selected_controller_port = -1; });
-    FullscreenUI::FocusSplitWindowContent(true);
+    BeginTransition(DEFAULT_TRANSITION_TIME, []() {
+      s_settings_locals.selected_controller_port = -1;
+      FullscreenUI::FocusSplitWindowContent();
+    });
   }
 
   // load mtap settings
@@ -3174,9 +3167,10 @@ void FullscreenUI::DrawControllerSettingsPage()
                                   Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])),
           ci->GetDisplayName(), (s_settings_locals.selected_controller_port == static_cast<s8>(global_slot))))
     {
-      BeginTransition(DEFAULT_TRANSITION_TIME,
-                      [global_slot]() { s_settings_locals.selected_controller_port = static_cast<s8>(global_slot); });
-      FullscreenUI::FocusSplitWindowContent(true);
+      BeginTransition(DEFAULT_TRANSITION_TIME, [global_slot]() {
+        s_settings_locals.selected_controller_port = static_cast<s8>(global_slot);
+        FullscreenUI::FocusSplitWindowContent();
+      });
     }
   }
 
@@ -3184,8 +3178,10 @@ void FullscreenUI::DrawControllerSettingsPage()
   if (show_hotkeys && SplitWindowSidebarItem(FSUI_ICONVSTR(ICON_PF_KEYBOARD_ALT, "Hotkeys"),
                                              (s_settings_locals.selected_controller_port == -2)))
   {
-    BeginTransition(DEFAULT_TRANSITION_TIME, []() { s_settings_locals.selected_controller_port = -2; });
-    FullscreenUI::FocusSplitWindowContent(true);
+    BeginTransition(DEFAULT_TRANSITION_TIME, []() {
+      s_settings_locals.selected_controller_port = -2;
+      FullscreenUI::FocusSplitWindowContent();
+    });
   }
 
   EndSplitWindowSidebar();
@@ -3312,6 +3308,8 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
 
     ImGui::PushID(TinyString::from_format("port_{}", global_slot));
+
+    MenuHeading(FSUI_VSTR("Controller Type"));
 
     ResetSplitWindowContentFocusHere();
 

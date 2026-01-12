@@ -56,7 +56,9 @@ inline constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
 inline constexpr float LAYOUT_MENU_WINDOW_Y_PADDING = 12.0f;
 inline constexpr float LAYOUT_MENU_ITEM_TITLE_SUMMARY_SPACING = 6.0f;
 inline constexpr float LAYOUT_MENU_ITEM_EXTRA_HEIGHT = 2.0f;
-static constexpr float LAYOUT_MENU_ITEM_BORDER_ROUNDING = 10.0f;
+inline constexpr float LAYOUT_MENU_ITEM_BORDER_ROUNDING = 10.0f;
+inline constexpr float LAYOUT_ITEM_X_SPACING = 8.0f;
+inline constexpr float LAYOUT_ITEM_Y_SPACING = 4.0f;
 inline constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 inline constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 inline constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -297,6 +299,7 @@ enum class FocusResetType : u8
   PopupClosed,
   ViewChanged,
   SplitWindowChanged,
+  SplitContentChanged,
   Other,
 };
 void QueueResetFocus(FocusResetType type);
@@ -480,7 +483,7 @@ bool BeginSplitWindowContent(bool background);
 void ResetSplitWindowContentFocusHere();
 void EndSplitWindowContent();
 bool WasSplitWindowChanged();
-void FocusSplitWindowContent(bool reset_content_nav);
+void FocusSplitWindowContent();
 bool SplitWindowIsNavWindow();
 
 using FileSelectorCallback = std::function<void(std::string path)>;
