@@ -358,15 +358,10 @@ void Host::AddFixedInputBindings(const SettingsInterface& si)
 
 void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
 {
-  Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("InputDeviceConnected-{}", identifier),
-                          ICON_EMOJI_INFORMATION,
-                          fmt::format("Input device {0} ({1}) connected.", device_name, identifier));
 }
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
-  Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("InputDeviceConnected-{}", identifier),
-                          ICON_EMOJI_INFORMATION, fmt::format("Input device {} disconnected.", identifier));
 }
 
 s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,

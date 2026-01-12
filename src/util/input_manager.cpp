@@ -8,8 +8,10 @@
 
 #include "core/controller.h"
 #include "core/core.h"
+#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/system.h"
+#include "core/system_private.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -21,6 +23,7 @@
 #include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
+#include "IconsFontAwesome.h"
 #include "IconsPromptFont.h"
 
 #include "fmt/core.h"
@@ -54,6 +57,9 @@ enum : u32
   FIRST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Pointer) + 1u,
   LAST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Count),
 };
+
+/// Delay before showing any controller connected notifications after startup.
+static constexpr float DEVICE_CONNECTED_NOTIFICATION_DELAY = 3.0f;
 
 // ------------------------------------------------------------------------
 // Binding Type
@@ -1836,12 +1842,37 @@ void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view 
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
   SynchronizePadEffectBindings(key);
   Host::OnInputDeviceConnected(key, identifier, device_name);
+
+  if ((System::IsValid() || GPUThread::IsFullscreenUIRequested()) &&
+      System::GetProcessUptime() >= DEVICE_CONNECTED_NOTIFICATION_DELAY)
+  {
+    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("InputManager", "Controller {} connected."), identifier));
+  }
 }
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   INFO_LOG("Device '{}' disconnected", identifier);
   Host::OnInputDeviceDisconnected(key, identifier);
+
+  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
+  {
+    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
+                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier));
+  }
+
+  if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
+      HasAnyBindingsForSource(key))
+  {
+    Host::RunOnCoreThread([identifier = std::string(identifier)]() {
+      System::PauseSystem(true);
+
+      // has to be done after pause, otherwise pause message takes precedence
+      Host::ReportStatusMessage(
+        fmt::format(TRANSLATE_FS("InputManager", "System paused because controller {} was disconnected."), identifier));
+    });
+  }
 }
 
 std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(const std::string_view device,

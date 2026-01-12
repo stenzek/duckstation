@@ -2699,12 +2699,6 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier),
                             QtUtils::StringViewToQString(device_name), qeffect_list);
   g_core_thread->updateBackgroundControllerPollInterval();
-
-  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
-  {
-    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
-                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier));
-  }
 }
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
@@ -2712,26 +2706,6 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
   QMetaObject::invokeMethod(g_core_thread->getInputDeviceListModel(), &InputDeviceListModel::onDeviceDisconnected,
                             Qt::QueuedConnection, key, QtUtils::StringViewToQString(identifier));
   g_core_thread->updateBackgroundControllerPollInterval();
-
-  if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
-      InputManager::HasAnyBindingsForSource(key))
-  {
-    std::string message =
-      fmt::format(TRANSLATE_FS("QtHost", "System paused because controller {} was disconnected."), identifier);
-    Host::RunOnCoreThread([message = QString::fromStdString(message)]() {
-      System::PauseSystem(true);
-
-      // has to be done after pause, otherwise pause message takes precedence
-      emit g_core_thread->statusMessage(message);
-    });
-    Host::AddIconOSDMessage(OSDMessageType::Warning, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
-                            std::move(message));
-  }
-  else if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
-  {
-    Host::AddIconOSDMessage(OSDMessageType::Info, fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
-                            fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier));
-  }
 }
 
 void Host::AddFixedInputBindings(const SettingsInterface& si)
