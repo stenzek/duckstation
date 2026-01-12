@@ -3133,6 +3133,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
   const bool game_settings = IsEditingGameSettings(bsi);
+  const bool empty_game_settings =
+    (game_settings && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false));
 
   BeginInnerSplitWindow();
 
@@ -3155,28 +3157,32 @@ void FullscreenUI::DrawControllerSettingsPage()
     {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
      (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
 
-  // create the ports
-  for (const u32 global_slot : Controller::PortDisplayOrder)
+  if (!empty_game_settings)
   {
-    const auto [mtap_port, mtap_slot] = Controller::ConvertPadToPortAndSlot(global_slot);
-    const bool is_mtap_port = Controller::PortAndSlotIsMultitap(mtap_port, mtap_slot);
-    if (is_mtap_port && !mtap_enabled[mtap_port])
-      continue;
-
-    const TinyString type =
-      bsi->GetTinyStringValue(TinyString::from_format("Pad{}", global_slot + 1).c_str(), "Type",
-                              Controller::GetControllerInfo(Settings::GetDefaultControllerType(global_slot)).name);
-    const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
-
-    if (SplitWindowSidebarItem(
-          TinyString::from_format(fmt::runtime(FSUI_ICONVSTR(ci ? ci->icon_name : ICON_FA_PLUG, "Controller Port {}")),
-                                  Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])),
-          ci->GetDisplayName(), (s_settings_locals.selected_controller_port == static_cast<s8>(global_slot))))
+    // create the ports
+    for (const u32 global_slot : Controller::PortDisplayOrder)
     {
-      BeginTransition(DEFAULT_TRANSITION_TIME, [global_slot]() {
-        s_settings_locals.selected_controller_port = static_cast<s8>(global_slot);
-        FullscreenUI::FocusSplitWindowContent();
-      });
+      const auto [mtap_port, mtap_slot] = Controller::ConvertPadToPortAndSlot(global_slot);
+      const bool is_mtap_port = Controller::PortAndSlotIsMultitap(mtap_port, mtap_slot);
+      if (is_mtap_port && !mtap_enabled[mtap_port])
+        continue;
+
+      const TinyString type =
+        bsi->GetTinyStringValue(TinyString::from_format("Pad{}", global_slot + 1).c_str(), "Type",
+                                Controller::GetControllerInfo(Settings::GetDefaultControllerType(global_slot)).name);
+      const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
+
+      if (SplitWindowSidebarItem(TinyString::from_format(
+                                   fmt::runtime(FSUI_ICONVSTR(ci ? ci->icon_name : ICON_FA_PLUG, "Controller Port {}")),
+                                   Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])),
+                                 ci->GetDisplayName(),
+                                 (s_settings_locals.selected_controller_port == static_cast<s8>(global_slot))))
+      {
+        BeginTransition(DEFAULT_TRANSITION_TIME, [global_slot]() {
+          s_settings_locals.selected_controller_port = static_cast<s8>(global_slot);
+          FullscreenUI::FocusSplitWindowContent();
+        });
+      }
     }
   }
 
@@ -3223,7 +3229,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       }
     }
 
-    if (IsEditingGameSettings(bsi) && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+    if (empty_game_settings)
     {
       // nothing to edit..
       content_done();
