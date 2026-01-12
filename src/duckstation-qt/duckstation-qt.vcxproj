@@ -190,9 +190,6 @@
     <QtUi Include="controllersettingswindow.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="controllermacrowidget.ui">
-      <FileType>Document</FileType>
-    </QtUi>
     <QtUi Include="controllermacroeditwidget.ui">
       <FileType>Document</FileType>
     </QtUi>
