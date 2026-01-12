@@ -1911,7 +1911,7 @@ void FullscreenUI::DrawSettingsWindow()
                           ModAlpha(UIStyle.BackgroundColor, s_settings_locals.settings_last_bg_alpha *
                                                               s_settings_locals.settings_last_bg_alpha));
 
-    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && WantsToCloseMenu())
+    if (SplitWindowIsNavWindow() && WantsToCloseMenu())
       ReturnToPreviousWindow();
   }
 

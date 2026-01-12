@@ -3374,6 +3374,9 @@ void FullscreenUI::EndSplitWindowSidebar()
   ImGui::GetWindowDrawList()->ChannelsMerge();
   ImGui::PopStyleColor(1);
   ImGui::PopStyleVar(1);
+
+  SetWindowNavWrapping(false, true);
+
   ImGui::EndChild();
 }
 
@@ -3405,13 +3408,8 @@ void FullscreenUI::SplitWindowSidebarSeparator()
   const ImVec2 line_start =
     ImGui::GetCurrentWindowRead()->DC.CursorPos + ImVec2(ImGui::GetStyle().FramePadding.x, line_padding);
   const ImVec2 line_end = ImVec2(line_start.x + line_width, line_start.y);
-  const ImVec2 shadow_offset = LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET);
   const u32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
-#if 0
-  ImGui::GetWindowDrawList()->AddLine(line_start + shadow_offset, line_end + shadow_offset, UIStyle.ShadowColor,
-                                      line_thickness);
-#endif
   ImGui::GetWindowDrawList()->AddLine(line_start, line_end, color, line_thickness);
 
   ImGui::Dummy(ImVec2(0.0f, line_padding * 2.0f + line_thickness));
@@ -3478,6 +3476,9 @@ void FullscreenUI::ResetSplitWindowContentFocusHere()
 void FullscreenUI::EndSplitWindowContent()
 {
   ImGui::PopStyleColor(1);
+
+  SetWindowNavWrapping(false, true);
+
   ImGui::EndChild();
 }
 
@@ -3490,6 +3491,13 @@ void FullscreenUI::FocusSplitWindowContent(bool reset_content_nav)
 {
   s_state.split_window_focus_change = SplitWindowFocusChange::FocusContent;
   QueueResetFocus(reset_content_nav ? FocusResetType::Other : FocusResetType::SplitWindowChanged);
+}
+
+bool FullscreenUI::SplitWindowIsNavWindow()
+{
+  const ImGuiWindow* const nav_window = GImGui->NavWindow;
+  const ImGuiWindow* const current_window = ImGui::GetCurrentWindowRead();
+  return (nav_window && (nav_window == current_window || nav_window->ParentWindow == current_window));
 }
 
 FullscreenUI::PopupDialog::PopupDialog() = default;

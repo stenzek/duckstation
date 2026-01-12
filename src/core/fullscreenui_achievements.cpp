@@ -525,7 +525,6 @@ void FullscreenUI::DrawIndicators(NotificationLayout& layout)
     }
   }
 
-  ImVec2 position;
   if (std::vector<Achievements::LeaderboardTrackerIndicator>& trackers =
         Achievements::GetLeaderboardTrackerIndicators();
       !trackers.empty())

@@ -481,6 +481,7 @@ void ResetSplitWindowContentFocusHere();
 void EndSplitWindowContent();
 bool WasSplitWindowChanged();
 void FocusSplitWindowContent(bool reset_content_nav);
+bool SplitWindowIsNavWindow();
 
 using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
