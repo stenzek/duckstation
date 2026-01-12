@@ -1816,7 +1816,7 @@ void FullscreenUI::DrawSettingsWindow()
     {{FSUI_NSTR("Summary"), ICON_FA_FILE},
      {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
      {FSUI_NSTR("Game List Settings"), ICON_FA_LIST_UL},
-     {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
+     {FSUI_NSTR("Console Settings"), ICON_PF_CONSOLE},
      {FSUI_NSTR("Emulation Settings"), ICON_FA_GEAR},
      {FSUI_NSTR("BIOS Settings"), ICON_PF_MICROCHIP},
      {FSUI_NSTR("Controller Settings"), ICON_PF_GAMEPAD_ALT},
