@@ -4256,7 +4256,7 @@ void FullscreenUI::MessageDialog::Draw()
   }
 
   ImGui::TextWrapped("%s", m_message.c_str());
-  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(20.0f));
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(25.0f));
 
   ResetFocusHere();
 
@@ -4278,7 +4278,7 @@ void FullscreenUI::MessageDialog::Draw()
   else
   {
     BeginHorizontalMenuButtons(
-      static_cast<u32>(std::ranges::count_if(m_buttons, [](const std::string& str) { return !str.empty(); })));
+      static_cast<u32>(std::ranges::count_if(m_buttons, [](const std::string& str) { return !str.empty(); })), 200.0f);
 
     for (s32 button_index = 0; button_index < static_cast<s32>(m_buttons.size()); button_index++)
     {
